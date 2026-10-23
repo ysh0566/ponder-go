@@ -1,0 +1,232 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "6 new source mappings plus 3 upgraded existing source mappings; original atomic companion tests and 20 additional backend crash/guard tests do not add source credit.",
+  "storage_format": "json-v3, mode fingerprint separates atomic Store and staged Actions namespaces",
+  "transaction_semantics": {
+    "raw_batch": "business and MAX journal commit in one transaction; no latest checkpoint advancement",
+    "commit_block": "assign MAX journal for one table, with chain predicate in isolated mode",
+    "transaction_commit_block": "Writer.CommitBlock/AdvanceLatest can share RawBatch transaction; process exits before commit roll everything back",
+    "crash_recovery": "restore all retained journal records, both assigned and pending; checkpoint metadata intentionally unchanged until caller resets latest to safe",
+    "empty_finalize": "update only existing matching chain safe/finalized, preserve latest and other chains"
+  },
+  "limitations": [
+    "Physical source reorg tables are a native persisted global journal with a full row projection, not old-layout adoption.",
+    "Permanent write guard survives capture-trigger removal. Public writes without a journal are rejected; controlled undo uses revert context.",
+    "Pending preconditions are checked under the same namespace transaction lock; staged finalization/revert require assigned checkpoints (isolated scopes this by chain).",
+    "Staged actions not yet wired to full runtime/migration scheduler. Atomic Apply remains separate and rejects staged schema fingerprints.",
+    "Original live-query large-payload action case remains unimplemented; original DB oracle still blocked by pending Foundry.",
+    "Application-process termination tested; no PostgreSQL-server or host power-loss experiment."
+  ],
+  "cases": [
+    {
+      "source_id": "845e55316d169ecc0355",
+      "source_file": "packages/core/src/database/actions.test.ts",
+      "source_sha256": "e3c440dee93316c3156eaf41b6eef92c317510b5d0e37f8d2ef1a3d2f5364cde",
+      "source_name": "createTriggers()",
+      "source_state": "active",
+      "source_inputs": [
+        "{ database } = await setupDatabaseServices({\n    schemaBuild: { schema: { account } },\n  })",
+        "{ rows } = await database.userQB.wrap((tx) =>\n    tx.execute(sql`SELECT * FROM _reorg__account`),\n  )"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 165,
+          "text": "expect(rows).toStrictEqual([\n    {\n      address: zeroAddress,\n      balance: \"10\",\n      operation: 0,\n      operation_id: 1,\n      checkpoint: MAX_CHECKPOINT_STRING,\n    },\n  ])"
+        }
+      ],
+      "upgraded_existing_mapping": false,
+      "target_file": "store/actions_stage_upstream_test.go",
+      "target_test": "TestUpstreamStagedActions/postgres/createTriggers()",
+      "adaptation": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit."
+    },
+    {
+      "source_id": "1b78aef2f0671f40bcb4",
+      "source_file": "packages/core/src/database/actions.test.ts",
+      "source_sha256": "e3c440dee93316c3156eaf41b6eef92c317510b5d0e37f8d2ef1a3d2f5364cde",
+      "source_name": "createTriggers() duplicate",
+      "source_state": "active",
+      "source_inputs": [
+        "{ database } = await setupDatabaseServices({\n    schemaBuild: { schema: { account } },\n  })"
+      ],
+      "assertions": [],
+      "upgraded_existing_mapping": false,
+      "target_file": "store/actions_stage_upstream_test.go",
+      "target_test": "TestUpstreamStagedActions/postgres/createTriggers()_duplicate",
+      "adaptation": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit."
+    },
+    {
+      "source_id": "5af6ac206ec7bb5dde3d",
+      "source_file": "packages/core/src/database/actions.test.ts",
+      "source_sha256": "e3c440dee93316c3156eaf41b6eef92c317510b5d0e37f8d2ef1a3d2f5364cde",
+      "source_name": "commitBlock()",
+      "source_state": "active",
+      "source_inputs": [
+        "{ database } = await setupDatabaseServices({\n    schemaBuild: { schema: { account } },\n  })",
+        "{ rows } = await database.userQB.wrap((tx) =>\n    tx.execute(sql`SELECT * FROM _reorg__account`),\n  )"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 326,
+          "text": "expect(rows).toStrictEqual([\n    {\n      address: zeroAddress,\n      balance: \"10\",\n      operation: 0,\n      operation_id: 1,\n      checkpoint: createCheckpoint({ chainId: 1n, blockNumber: 10n }),\n    },\n  ])"
+        }
+      ],
+      "upgraded_existing_mapping": false,
+      "target_file": "store/actions_stage_upstream_test.go",
+      "target_test": "TestUpstreamStagedActions/postgres/commitBlock()",
+      "adaptation": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit."
+    },
+    {
+      "source_id": "ee66ce08ed33a5ee5caf",
+      "source_file": "packages/core/src/database/actions.test.ts",
+      "source_sha256": "e3c440dee93316c3156eaf41b6eef92c317510b5d0e37f8d2ef1a3d2f5364cde",
+      "source_name": "commitBlock() isolated",
+      "source_state": "active",
+      "source_inputs": [
+        "account = onchainTable(\n    \"account\",\n    (p) => ({\n      chainId: p.integer().notNull(),\n      address: p.hex().notNull(),\n      balance: p.bigint(),\n    }),\n    (table) => ({\n      pk: primaryKey({ columns: [table.chainId, table.address] }),\n    }),\n  )",
+        "{ database } = await setupDatabaseServices({\n    schemaBuild: { schema: { account } },\n  })",
+        "{ rows: rows1 } = await database.userQB.wrap((tx) =>\n    tx.execute(sql`SELECT * FROM _reorg__account`),\n  )",
+        "{ rows: rows2 } = await database.userQB.wrap((tx) =>\n    tx.execute(sql`SELECT * FROM _reorg__account`),\n  )"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 370,
+          "text": "expect(rows1).toMatchInlineSnapshot(`\n    [\n      {\n        \"address\": \"0x0000000000000000000000000000000000000000\",\n        \"balance\": \"10\",\n        \"chain_id\": 1,\n        \"checkpoint\": \"999999999999999999999999999999999999999999999999999999999999999999999999999\",\n        \"operation\": 0,\n        \"operation_id\": 1,\n      },\n    ]\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 393,
+          "text": "expect(rows2).toMatchInlineSnapshot(`\n    [\n      {\n        \"address\": \"0x0000000000000000000000000000000000000000\",\n        \"balance\": \"10\",\n        \"chain_id\": 1,\n        \"checkpoint\": \"000000000000000000000000010000000000000010000000000000000000000000000000000\",\n        \"operation\": 0,\n        \"operation_id\": 1,\n      },\n    ]\n  `)"
+        }
+      ],
+      "upgraded_existing_mapping": false,
+      "target_file": "store/actions_stage_upstream_test.go",
+      "target_test": "TestUpstreamStagedActions/postgres/commitBlock()_isolated",
+      "adaptation": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit."
+    },
+    {
+      "source_id": "a5dd45846f8198c745c2",
+      "source_file": "packages/core/src/database/actions.test.ts",
+      "source_sha256": "e3c440dee93316c3156eaf41b6eef92c317510b5d0e37f8d2ef1a3d2f5364cde",
+      "source_name": "empty schema",
+      "source_state": "active",
+      "source_inputs": [
+        "{ database } = await setupDatabaseServices({\n    schemaBuild: { schema: {} },\n  })"
+      ],
+      "assertions": [],
+      "upgraded_existing_mapping": false,
+      "target_file": "store/actions_stage_upstream_test.go",
+      "target_test": "TestUpstreamStagedActions/postgres/empty_schema",
+      "adaptation": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit."
+    },
+    {
+      "source_id": "d6fb794bd43d2a0c0454",
+      "source_file": "packages/core/src/database/actions.test.ts",
+      "source_sha256": "e3c440dee93316c3156eaf41b6eef92c317510b5d0e37f8d2ef1a3d2f5364cde",
+      "source_name": "finalizeMultichain() with empty schema only updates matching chain",
+      "source_state": "active",
+      "source_inputs": [
+        "{ database } = await setupDatabaseServices({\n    schemaBuild: { schema: {} },\n  })",
+        "checkpointTable = getPonderCheckpointTable()",
+        "mainnetCheckpoint = createCheckpoint({\n    chainId: 1n,\n    blockNumber: 1n,\n  })",
+        "optimismCheckpoint = createCheckpoint({\n    chainId: 10n,\n    blockNumber: 1n,\n  })",
+        "finalizedCheckpoint = createCheckpoint({\n    chainId: 1n,\n    blockNumber: 10n,\n  })",
+        "checkpoints = await database.userQB.wrap((db) =>\n    db.select().from(checkpointTable).orderBy(checkpointTable.chainId),\n  )"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 586,
+          "text": "expect(checkpoints).toStrictEqual([\n    {\n      chainName: \"mainnet\",\n      chainId: 1,\n      safeCheckpoint: finalizedCheckpoint,\n      latestCheckpoint: mainnetCheckpoint,\n      finalizedCheckpoint,\n    },\n    {\n      chainName: \"optimism\",\n      chainId: 10,\n      safeCheckpoint: optimismCheckpoint,\n      latestCheckpoint: optimismCheckpoint,\n      finalizedCheckpoint: optimismCheckpoint,\n    },\n  ])"
+        }
+      ],
+      "upgraded_existing_mapping": false,
+      "target_file": "store/actions_stage_upstream_test.go",
+      "target_test": "TestUpstreamStagedActions/postgres/finalizeMultichain()_with_empty_schema_only_updates_matching_chain",
+      "adaptation": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit."
+    },
+    {
+      "source_id": "e4e3e0e572a024c59891",
+      "source_file": "packages/core/src/database/actions.test.ts",
+      "source_sha256": "e3c440dee93316c3156eaf41b6eef92c317510b5d0e37f8d2ef1a3d2f5364cde",
+      "source_name": "finalize()",
+      "source_state": "active",
+      "source_inputs": [
+        "{ database } = await setupDatabaseServices({\n    schemaBuild: { schema: { account } },\n  })",
+        "rows = await database.userQB.wrap((tx) =>\n    tx.select().from(getReorgTable(account)),\n  )"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 120,
+          "text": "expect(rows).toHaveLength(2)"
+        }
+      ],
+      "upgraded_existing_mapping": true,
+      "target_file": "store/actions_data_upstream_test.go",
+      "target_test": "TestUpstreamStagedDataActions/postgres/finalize()",
+      "adaptation": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit."
+    },
+    {
+      "source_id": "92e1917114a7b97f6516",
+      "source_file": "packages/core/src/database/actions.test.ts",
+      "source_sha256": "e3c440dee93316c3156eaf41b6eef92c317510b5d0e37f8d2ef1a3d2f5364cde",
+      "source_name": "revert()",
+      "source_state": "active",
+      "source_inputs": [
+        "{ database } = await setupDatabaseServices({\n    schemaBuild: { schema: { account } },\n  })",
+        "rows = await database.userQB.wrap((tx) => tx.select().from(account))"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 460,
+          "text": "expect(rows).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 461,
+          "text": "expect(rows[0]).toStrictEqual({ address: zeroAddress, balance: 10n })"
+        }
+      ],
+      "upgraded_existing_mapping": true,
+      "target_file": "store/actions_data_upstream_test.go",
+      "target_test": "TestUpstreamStagedDataActions/postgres/revert()",
+      "adaptation": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit."
+    },
+    {
+      "source_id": "85850bb7dc28762a2dd7",
+      "source_file": "packages/core/src/database/actions.test.ts",
+      "source_sha256": "e3c440dee93316c3156eaf41b6eef92c317510b5d0e37f8d2ef1a3d2f5364cde",
+      "source_name": "revert() with composite primary key",
+      "source_state": "active",
+      "source_inputs": [
+        "test = onchainTable(\n    \"Test\",\n    (p) => ({\n      a: p.integer(\"A\").notNull(),\n      b: p.integer(\"B\").notNull(),\n      c: p.integer(\"C\"),\n    }),\n    (table) => ({\n      pk: primaryKey({ columns: [table.a, table.b] }),\n    }),\n  )",
+        "{ database } = await setupDatabaseServices({\n    schemaBuild: { schema: { test } },\n  })",
+        "rows = await database.userQB.wrap((tx) => tx.select().from(test))"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 512,
+          "text": "expect(rows).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 513,
+          "text": "expect(rows[0]).toStrictEqual({ a: 1, b: 1, c: null })"
+        }
+      ],
+      "upgraded_existing_mapping": true,
+      "target_file": "store/actions_data_upstream_test.go",
+      "target_test": "TestUpstreamStagedDataActions/postgres/revert()_with_composite_primary_key",
+      "adaptation": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit."
+    }
+  ]
+}

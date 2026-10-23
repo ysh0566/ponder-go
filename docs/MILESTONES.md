@@ -95,3 +95,11 @@ SELECT INTO（含 TEMP）、多语句写入显式拒绝；双后端另验证 CTE
 Scalar typed CRUD、nullable/unchanged、JSON往返与CLI codegen --typed 已实现。缓存增加采样/预测/批量预取/负缓存/spillover淘汰/内存预算，共享profile元数据，业务行留在事件事务内。原 eviction逐例映射；合成事件预取、32并发更新、跨事件/rollback/reorg/内存等补充测试单独计数。原 deploy/mint/readonly metadata prefetch仍未映射。
 
 最终完整 verify退出0：Go/race各360/360，无skip；PG81/81、PGlite80/80；vet/build、所选core原oracle167活动通过（原skip2）、SDK4、ABI typed runtime/race各53、原类型检查及2466差分向量通过。所有边界、生成依赖、未实现项与不可变日志/hash见batch-10.json和CONTINUATION.md。Foundry1.8.5仍待批准，未安装。剩余database actions尚未完成，整体任务继续。
+
+## M13：durable staged database actions
+
+新增6条源映射，3条既有finalize/revert映射升级为完整staged fixture；累计228/905（224 Go+4 SDK），677未实现。224 Go通过，167原版oracle也通过、57 fixture oracle阻塞。原actions.test.ts目前10/11映射，large-payload notify未移植。
+
+RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋checkpoint；AdvanceLatest单独更新metadata，也支持Writer作用域共事务执行。CrashRecovery撤销全部保留journal并保留metadata，调用方再复位latest=safe。空schema finalize保留latest/其他链；非空未初始化metadata和pending边界拒绝丢弃undo。永久guard防止drop capture后绕过journal。json-v3持久row_data/operation并隔离staged/atomic模式，新影子升级不接管旧DB。
+
+14个新应用进程退出叶子与6个guard/ordering补充叶子通过；最终Go/race各398/398，PG100/100、PGlite99/99，无skip。vet/build、可运行oracle/SDK、ABI/ORM编译fixture及2466差分向量通过。Foundry未安装。精确命令、限制和不可变证据hash见batch-11.json；自动staged runtime/migration和所有剩余功能继续。

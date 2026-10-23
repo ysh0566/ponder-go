@@ -144,7 +144,7 @@ func TestStorageVersionRejectsOldJournal(t *testing.T) {
 			if e != nil {
 				t.Fatal(e)
 			}
-			if !strings.HasPrefix(fresh.Namespace, "ponder_go_shadow_v2_") {
+			if !strings.HasPrefix(fresh.Namespace, "ponder_go_shadow_v3_") {
 				t.Fatal("new default namespace lacks storage version", fresh.Namespace)
 			}
 		})

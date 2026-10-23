@@ -21,17 +21,17 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 222,
-    "executed": 222,
-    "passed": 222,
+    "ported": 228,
+    "executed": 228,
+    "passed": 228,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 683,
-    "go_ports": 218,
+    "unimplemented": 677,
+    "go_ports": 224,
     "retained_sdk": 4,
     "oracle_passed": 171,
-    "oracle_blocked": 51,
-    "go_passed": 218,
+    "oracle_blocked": 57,
+    "go_passed": 224,
     "sdk_passed": 4,
     "go_and_original_oracle_passed": 167,
     "target_and_original_oracle_passed": 171
@@ -7204,13 +7204,14 @@
         "source_line": 65,
         "assertions_sha256": "30f6143b0f76fe0379838d3aff3b9db15b00d21ac70ecab92fa4731bd9d5b4ae",
         "original_assertions": 1,
-        "target_file": "store/actions_upstream_test.go",
+        "target_file": "store/actions_data_upstream_test.go",
         "go_package": "ponder.local/ponder-go/store",
-        "go_test": "TestUpstreamDatabaseActions/postgres/finalize()",
-        "assertion_policy": "Original schema, inputs, checkpoints, NULL values and all assertions preserved. Original raw writes + commitBlock become atomic native Apply; internal tables use owned shadow namespace. PGlite companion executes separately.",
+        "go_test": "TestUpstreamStagedDataActions/postgres/finalize()",
+        "assertion_policy": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit.",
         "oracle_blocker": {
           "status": "blocked",
-          "reason": "Original database fixture imports generated contracts; complete oracle setup requires pending project-local Foundry 1.8.5 authorization."
+          "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+          "evidence": "parity/foundry-generation-dependencies.json"
         }
       },
       "execution_status": "executed",
@@ -7219,7 +7220,8 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "blocked",
-        "reason": "Original database fixture imports generated contracts; complete oracle setup requires pending project-local Foundry 1.8.5 authorization."
+        "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+        "evidence": "parity/foundry-generation-dependencies.json"
       },
       "race": {
         "status": "pass",
@@ -7323,12 +7325,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/database/actions.test.ts",
+        "source_name": "createTriggers()",
+        "source_id": "845e55316d169ecc0355",
+        "source_line": 150,
+        "assertions_sha256": "633f5268136ba07b1d1a03cc6ca91ec9bb4ff80221c1801b5a6dc09c2105cf05",
+        "original_assertions": 1,
+        "target_file": "store/actions_stage_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamStagedActions/postgres/createTriggers()",
+        "assertion_policy": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+          "evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+        "evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "1b78aef2f0671f40bcb4",
@@ -7354,12 +7383,39 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/database/actions.test.ts",
+        "source_name": "createTriggers() duplicate",
+        "source_id": "1b78aef2f0671f40bcb4",
+        "source_line": 176,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original_assertions": 0,
+        "target_file": "store/actions_stage_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamStagedActions/postgres/createTriggers()_duplicate",
+        "assertion_policy": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+          "evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+        "evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "62ab7283dd1c52844624",
@@ -7447,12 +7503,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/database/actions.test.ts",
+        "source_name": "commitBlock()",
+        "source_id": "5af6ac206ec7bb5dde3d",
+        "source_line": 305,
+        "assertions_sha256": "6fd6a8d7caa177c197430a47125b8414328d09bab175192a2cfc18bd0bae5a6a",
+        "original_assertions": 1,
+        "target_file": "store/actions_stage_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamStagedActions/postgres/commitBlock()",
+        "assertion_policy": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+          "evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+        "evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "ee66ce08ed33a5ee5caf",
@@ -7492,12 +7575,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/database/actions.test.ts",
+        "source_name": "commitBlock() isolated",
+        "source_id": "ee66ce08ed33a5ee5caf",
+        "source_line": 337,
+        "assertions_sha256": "cb08f9abb411eb612b61947b8aad683be02401f8f7920be51859deea76292ad8",
+        "original_assertions": 2,
+        "target_file": "store/actions_stage_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamStagedActions/postgres/commitBlock()_isolated",
+        "assertion_policy": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+          "evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+        "evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "92e1917114a7b97f6516",
@@ -7543,13 +7653,14 @@
         "source_line": 407,
         "assertions_sha256": "13baacf4c24873bea1f31fba43840ec2a6da911d30127caa2f847e59510ef2c1",
         "original_assertions": 2,
-        "target_file": "store/actions_upstream_test.go",
+        "target_file": "store/actions_data_upstream_test.go",
         "go_package": "ponder.local/ponder-go/store",
-        "go_test": "TestUpstreamDatabaseActions/postgres/revert()",
-        "assertion_policy": "Original schema, inputs, checkpoints, NULL values and all assertions preserved. Original raw writes + commitBlock become atomic native Apply; internal tables use owned shadow namespace. PGlite companion executes separately.",
+        "go_test": "TestUpstreamStagedDataActions/postgres/revert()",
+        "assertion_policy": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit.",
         "oracle_blocker": {
           "status": "blocked",
-          "reason": "Original database fixture imports generated contracts; complete oracle setup requires pending project-local Foundry 1.8.5 authorization."
+          "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+          "evidence": "parity/foundry-generation-dependencies.json"
         }
       },
       "execution_status": "executed",
@@ -7558,7 +7669,8 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "blocked",
-        "reason": "Original database fixture imports generated contracts; complete oracle setup requires pending project-local Foundry 1.8.5 authorization."
+        "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+        "evidence": "parity/foundry-generation-dependencies.json"
       },
       "race": {
         "status": "pass",
@@ -7612,13 +7724,14 @@
         "source_line": 464,
         "assertions_sha256": "01ef7714735b93e2adffedb5c7951faececbef658575f4beb3ef6fa54dc48b49",
         "original_assertions": 2,
-        "target_file": "store/actions_upstream_test.go",
+        "target_file": "store/actions_data_upstream_test.go",
         "go_package": "ponder.local/ponder-go/store",
-        "go_test": "TestUpstreamDatabaseActions/postgres/revert()_with_composite_primary_key",
-        "assertion_policy": "Original schema, inputs, checkpoints, NULL values and all assertions preserved. Original raw writes + commitBlock become atomic native Apply; internal tables use owned shadow namespace. PGlite companion executes separately.",
+        "go_test": "TestUpstreamStagedDataActions/postgres/revert()_with_composite_primary_key",
+        "assertion_policy": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit.",
         "oracle_blocker": {
           "status": "blocked",
-          "reason": "Original database fixture imports generated contracts; complete oracle setup requires pending project-local Foundry 1.8.5 authorization."
+          "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+          "evidence": "parity/foundry-generation-dependencies.json"
         }
       },
       "execution_status": "executed",
@@ -7627,7 +7740,8 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "blocked",
-        "reason": "Original database fixture imports generated contracts; complete oracle setup requires pending project-local Foundry 1.8.5 authorization."
+        "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+        "evidence": "parity/foundry-generation-dependencies.json"
       },
       "race": {
         "status": "pass",
@@ -7660,12 +7774,39 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/database/actions.test.ts",
+        "source_name": "empty schema",
+        "source_id": "a5dd45846f8198c745c2",
+        "source_line": 516,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original_assertions": 0,
+        "target_file": "store/actions_stage_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamStagedActions/postgres/empty_schema",
+        "assertion_policy": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+          "evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+        "evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "d6fb794bd43d2a0c0454",
@@ -7702,12 +7843,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/database/actions.test.ts",
+        "source_name": "finalizeMultichain() with empty schema only updates matching chain",
+        "source_id": "d6fb794bd43d2a0c0454",
+        "source_line": 539,
+        "assertions_sha256": "21d59a19607849cb216764a64d929d8194af2fcfc0e0f5c143bdda60e4557833",
+        "original_assertions": 1,
+        "target_file": "store/actions_stage_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamStagedActions/postgres/finalizeMultichain()_with_empty_schema_only_updates_matching_chain",
+        "assertion_policy": "Original schema/column casing, literal addresses/balances/NULL, checkpoint inputs, operation order, every runtime assertion and full journal/checkpoint snapshots retained. RawBatch and separate CommitBlock are real durable phases; transaction-scoped Writer.CommitBlock is separately crash-tested. Journal reads project persisted row_data/operation/operation_id/checkpoint, not reconstructed current business state. Source per-table reorg layout is adapted to a single native global journal; no old DB adoption or raw physical-layout compatibility claim. PostgreSQL primary/PGlite companion. Empty-schema target-chain finalize preserves latest and other chains. Upgrade replaces earlier atomic Apply mappings without double source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+          "evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+        "evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "ff74c6c71a871121c108",

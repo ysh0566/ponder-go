@@ -17,6 +17,7 @@ import (
 )
 
 type Store struct {
+	staged                   bool
 	profileState             *CacheProfile
 	Backend                  Backend
 	Namespace, SyncNamespace string
@@ -34,22 +35,23 @@ type Event struct {
 	Payload    json.RawMessage       `json:"payload"`
 }
 type Writer struct {
-	s       *Store
-	tx      Transaction
-	event   Event
-	encoded string
-	changed map[string]bool
-	err     error
-	ormMu   sync.Mutex
-	orm     *IndexingStore
-	closed  atomic.Bool
+	advanced bool
+	s        *Store
+	tx       Transaction
+	event    Event
+	encoded  string
+	changed  map[string]bool
+	err      error
+	ormMu    sync.Mutex
+	orm      *IndexingStore
+	closed   atomic.Bool
 }
 type Row map[string]any
 type WriteMode int
 
 // Storage changes use a fresh default shadow. Explicit older namespaces are
 // rejected by the fingerprint instead of silently rewriting an undo journal.
-const storageVersion = "json-v2"
+const storageVersion = "json-v3"
 
 const (
 	Insert WriteMode = iota
@@ -59,6 +61,9 @@ const (
 )
 
 func New(ctx context.Context, backend Backend, model schema.Schema, namespace string, ordering schema.Ordering) (*Store, error) {
+	return newStore(ctx, backend, model, namespace, ordering, false)
+}
+func newStore(ctx context.Context, backend Backend, model schema.Schema, namespace string, ordering schema.Ordering, staged bool) (*Store, error) {
 	if ordering == "" {
 		ordering = schema.Multichain
 	}
@@ -68,12 +73,16 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 	encoded, _ := json.Marshal(model)
 	hash := sha256.Sum256(encoded)
 	if namespace == "" {
-		namespace = fmt.Sprintf("ponder_go_shadow_v2_%x", hash[:6])
+		prefix := "shadow"
+		if staged {
+			prefix = "actions"
+		}
+		namespace = fmt.Sprintf("ponder_go_%s_v3_%x", prefix, hash[:6])
 	}
 	if !schema.Identifier(namespace) || len(namespace) > 45 || !strings.HasPrefix(namespace, "ponder_go_") {
 		return nil, fmt.Errorf("task schemas must start with ponder_go_ and contain at most 45 identifier characters")
 	}
-	s := &Store{Backend: backend, Namespace: namespace, SyncNamespace: namespace + "_sync", Schema: model, Ordering: ordering, subscribers: map[chan Change]struct{}{}, profileState: NewCacheProfile()}
+	s := &Store{Backend: backend, Namespace: namespace, SyncNamespace: namespace + "_sync", Schema: model, Ordering: ordering, subscribers: map[chan Change]struct{}{}, profileState: NewCacheProfile(), staged: staged}
 	tx, e := backend.Begin(ctx)
 	if e != nil {
 		return nil, e
@@ -111,7 +120,8 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 	statements := []string{
 		"CREATE TABLE IF NOT EXISTS " + s.syncTable("_ponder_go_meta") + " (key text PRIMARY KEY,value text NOT NULL)",
 		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_meta") + " (key text PRIMARY KEY,value text NOT NULL)",
-		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_journal") + " (operation_id bigserial PRIMARY KEY, table_name text NOT NULL, row_key jsonb NOT NULL, before_row json, checkpoint char(75) NOT NULL, chain_id numeric NOT NULL)",
+		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_journal") + " (operation_id bigserial PRIMARY KEY, table_name text NOT NULL, row_key jsonb NOT NULL, before_row json, row_data json NOT NULL, operation smallint NOT NULL, checkpoint char(75) NOT NULL, chain_id numeric NOT NULL)",
+		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_chains") + " (chain_id numeric PRIMARY KEY,chain_name text NOT NULL UNIQUE)",
 		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_events") + " (event_id text PRIMARY KEY, checkpoint char(75) NOT NULL, chain_id numeric NOT NULL, operation_boundary bigint NOT NULL, operation_end bigint NOT NULL)",
 		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_progress") + " (chain_id numeric PRIMARY KEY, checkpoint char(75) NOT NULL)",
 		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_finalized") + " (chain_id numeric PRIMARY KEY, checkpoint char(75) NOT NULL, safe_checkpoint char(75) NOT NULL)",
@@ -125,7 +135,7 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 			return nil, e
 		}
 	}
-	fingerprint := fmt.Sprintf("%s:%x:%s", storageVersion, hash, ordering)
+	fingerprint := fmt.Sprintf("%s:%x:%s:staged=%t", storageVersion, hash, ordering, staged)
 	if e = tx.Exec(ctx, "INSERT INTO "+s.syncTable("_ponder_go_meta")+" VALUES ('owner',$1) ON CONFLICT(key) DO NOTHING", namespace); e != nil {
 		return nil, e
 	}
@@ -163,8 +173,13 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 	if e = s.createViews(ctx, tx); e != nil {
 		return nil, e
 	}
-	if e = s.createJournalTriggers(ctx, tx); e != nil {
+	if e = s.createWriteGuards(ctx, tx); e != nil {
 		return nil, e
+	}
+	if !staged {
+		if e = s.createJournalTriggers(ctx, tx); e != nil {
+			return nil, e
+		}
 	}
 	if e = tx.Commit(ctx); e != nil {
 		return nil, e
@@ -193,6 +208,9 @@ func (s *Store) lock(ctx context.Context, tx Transaction) error {
 	return nil
 }
 func (s *Store) Apply(ctx context.Context, event Event, handler func(*Writer) error) error {
+	if s.staged {
+		return fmt.Errorf("staged actions store cannot use atomic Apply")
+	}
 	encoded, e := checkpoint.Encode(event.Checkpoint)
 	if e != nil {
 		return e
