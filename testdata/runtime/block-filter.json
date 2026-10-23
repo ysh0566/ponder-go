@@ -1,0 +1,117 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "sources": [
+    {
+      "file": "packages/core/src/utils/lowercase.ts",
+      "sha256": "0aa78833df2cdf1c9f517c636f979de22f8cb308e4bb52bb0747ec198fd12385"
+    },
+    {
+      "file": "packages/core/src/utils/dedupe.ts",
+      "sha256": "ecba745be6172e75021e553749d487b87f4f704b205a8c1f6261bb3ac2ddb1bf"
+    },
+    {
+      "file": "packages/core/src/_test/constants.ts",
+      "sha256": "b214b5a5504156518027fbea443927abdabe11b735413eabbadd285e22fcb9b0"
+    },
+    {
+      "file": "packages/core/src/rpc/index.ts",
+      "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+    },
+    {
+      "file": "packages/core/src/rpc/actions.ts",
+      "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+    },
+    {
+      "file": "packages/core/src/runtime/filter.ts",
+      "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+    },
+    {
+      "file": "packages/core/src/runtime/fragments.ts",
+      "sha256": "598f0605739d2348adc6a39e8d0fc9cd30bb1c996b132f6f642b1e6024bdf77f"
+    },
+    {
+      "file": "packages/core/src/runtime/fragments.test.ts",
+      "sha256": "a6553370dd1a5c7fd69ca98be4f3cdd93ca1415617045a240dd848a4bb764842"
+    },
+    {
+      "file": "packages/core/src/runtime/filter.test.ts",
+      "sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b"
+    },
+    {
+      "file": "packages/core/src/_test/utils.ts",
+      "sha256": "c82853764e17721ff80d6a669362ac6b6f6a17cfe634dd33fbac4fc97bff4d23"
+    }
+  ],
+  "source_id": "ad3050b801ac9f9e4a4b",
+  "source_name": "isBlockFilterMatched",
+  "source_file": "packages/core/src/runtime/filter.test.ts",
+  "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+  "source_assertions": [
+    {
+      "kind": "runtime",
+      "line": 177,
+      "text": "expect(isMatched).toBe(true)"
+    },
+    {
+      "kind": "runtime",
+      "line": 186,
+      "text": "expect(isMatched).toBe(false)"
+    }
+  ],
+  "source_contexts": [],
+  "helper_source": "export const getBlocksIndexingBuild = (params: {\n  interval: number;\n}): {\n  indexingFunctions: [IndexingFunctions[number]];\n  eventCallbacks: [EventCallback];\n} => {\n  const eventCallbacks = [\n    {\n      filter: {\n        type: \"block\",\n        chainId: 1,\n        sourceId: \"Blocks\",\n        interval: params.interval,\n        offset: 0,\n        fromBlock: undefined,\n        toBlock: undefined,\n        hasTransactionReceipt: false,\n        include: defaultBlockFilterInclude,\n      },\n      name: \"Blocks:block\",\n      fn: vi.fn(),\n      chain: getChain(),\n      type: \"block\",\n    },\n  ] satisfies [EventCallback];\n\n  const indexingFunctions = [{ name: \"Blocks:block\", fn: vi.fn() }] satisfies [\n    IndexingFunctions[number],\n  ];\n\n  return { eventCallbacks, indexingFunctions };\n};",
+  "initial_filter": {
+    "chainId": 1,
+    "fromBlock": {
+      "$undefined": true
+    },
+    "hasTransactionReceipt": false,
+    "include": [
+      "block.baseFeePerGas",
+      "block.difficulty",
+      "block.extraData",
+      "block.gasLimit",
+      "block.gasUsed",
+      "block.hash",
+      "block.logsBloom",
+      "block.miner",
+      "block.mixHash",
+      "block.totalDifficulty",
+      "block.nonce",
+      "block.number",
+      "block.parentHash",
+      "block.receiptsRoot",
+      "block.sha3Uncles",
+      "block.size",
+      "block.stateRoot",
+      "block.timestamp",
+      "block.transactionsRoot"
+    ],
+    "interval": 1,
+    "offset": 0,
+    "sourceId": "Blocks",
+    "toBlock": {
+      "$undefined": true
+    },
+    "type": "block"
+  },
+  "rpc": {
+    "method": "eth_getBlockByNumber",
+    "params": [
+      "0x0",
+      true
+    ]
+  },
+  "expected": [
+    true,
+    false
+  ],
+  "mutation": {
+    "interval": 2,
+    "offset": 1
+  }
+}

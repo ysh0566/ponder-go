@@ -1,0 +1,2223 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "method": "Only complete static-input source cases selected; deployment/mint/range-selector cases remain unimplemented. Original test body/constants/threshold used, no generated contract ABI replacement. Native fixtures retain source contexts; full original filter oracle is separate.",
+  "sources": [
+    {
+      "file": "packages/core/src/utils/lowercase.ts",
+      "sha256": "0aa78833df2cdf1c9f517c636f979de22f8cb308e4bb52bb0747ec198fd12385"
+    },
+    {
+      "file": "packages/core/src/utils/dedupe.ts",
+      "sha256": "ecba745be6172e75021e553749d487b87f4f704b205a8c1f6261bb3ac2ddb1bf"
+    },
+    {
+      "file": "packages/core/src/_test/constants.ts",
+      "sha256": "b214b5a5504156518027fbea443927abdabe11b735413eabbadd285e22fcb9b0"
+    },
+    {
+      "file": "packages/core/src/rpc/index.ts",
+      "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+    },
+    {
+      "file": "packages/core/src/rpc/actions.ts",
+      "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+    },
+    {
+      "file": "packages/core/src/runtime/filter.ts",
+      "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+    },
+    {
+      "file": "packages/core/src/runtime/fragments.ts",
+      "sha256": "598f0605739d2348adc6a39e8d0fc9cd30bb1c996b132f6f642b1e6024bdf77f"
+    },
+    {
+      "file": "packages/core/src/runtime/fragments.test.ts",
+      "sha256": "a6553370dd1a5c7fd69ca98be4f3cdd93ca1415617045a240dd848a4bb764842"
+    },
+    {
+      "file": "packages/core/src/runtime/filter.test.ts",
+      "sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b"
+    }
+  ],
+  "cases": [
+    {
+      "id": "dcb5e73908e894a2b815",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "getChildAddress() topics",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 71,
+          "text": "expect(getChildAddress({ log, factory })).toBe(\n    \"0xa21a16ec22a940990922220e4ab5bf4c2310f556\",\n  )"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "getChildAddress",
+          "args": [
+            {
+              "factory": {
+                "childAddressLocation": "topic1",
+                "type": "log"
+              },
+              "log": {
+                "topics": [
+                  null,
+                  "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556"
+                ]
+              }
+            }
+          ],
+          "result": "0xa21a16ec22a940990922220e4ab5bf4c2310f556"
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toBe",
+          "call_index": 0,
+          "path": [],
+          "expected": "0xa21a16ec22a940990922220e4ab5bf4c2310f556"
+        }
+      ]
+    },
+    {
+      "id": "8b843d8b055a534d8600",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "getChildAddress() offset",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 85,
+          "text": "expect(getChildAddress({ log, factory })).toBe(\n    \"0xa21a16ec22a940990922220e4ab5bf4c2310f556\",\n  )"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "getChildAddress",
+          "args": [
+            {
+              "factory": {
+                "childAddressLocation": "offset32",
+                "type": "log"
+              },
+              "log": {
+                "data": "0x0000000000000000000000000000000000000000000000000000000017d435c9000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556"
+              }
+            }
+          ],
+          "result": "0xa21a16ec22a940990922220e4ab5bf4c2310f556"
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toBe",
+          "call_index": 0,
+          "path": [],
+          "expected": "0xa21a16ec22a940990922220e4ab5bf4c2310f556"
+        }
+      ]
+    },
+    {
+      "id": "81d93c6efbaaa64aa4e8",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "mergeLogFiltersToBlockRequest returns undefined for no inputs",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 548,
+          "text": "expect(mergeLogFiltersToBlockRequest({ logFilters: [], factories: [] })).toBe(\n    undefined,\n  )"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [],
+              "logFilters": []
+            }
+          ],
+          "result": {
+            "$undefined": true
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toBe",
+          "call_index": 0,
+          "path": [],
+          "expected": {
+            "$undefined": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "297ff86a54e9010cbb83",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "mergeLogFiltersToBlockRequest returns one log filter",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 561,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({ logFilters: [filter], factories: [] }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_A],\n    topics: [[REQUEST_TOPIC_A], null, [REQUEST_TOPIC_B]],\n  })"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [],
+              "logFilters": [
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "topic1": null,
+                  "topic2": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "topic3": null,
+                  "type": "log"
+                }
+              ]
+            }
+          ],
+          "result": {
+            "address": [
+              "0x000000000000000000000000000000000000000a"
+            ],
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              ],
+              null,
+              [
+                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              ]
+            ]
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toStrictEqual",
+          "call_index": 0,
+          "path": [],
+          "expected": {
+            "address": [
+              "0x000000000000000000000000000000000000000a"
+            ],
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              ],
+              null,
+              [
+                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "bc00255fef95d9272b16",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "mergeLogFiltersToBlockRequest unions addresses and topics",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 583,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filterA, filterB],\n      factories: [],\n    }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_A, REQUEST_ADDRESS_B],\n    topics: [\n      [REQUEST_TOPIC_A, REQUEST_TOPIC_B],\n      [REQUEST_TOPIC_C, REQUEST_TOPIC_A],\n    ],\n  })"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [],
+              "logFilters": [
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "topic1": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": [
+                    "0x000000000000000000000000000000000000000a",
+                    "0x000000000000000000000000000000000000000b"
+                  ],
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "topic1": [
+                    "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                    "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ],
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                }
+              ]
+            }
+          ],
+          "result": {
+            "address": [
+              "0x000000000000000000000000000000000000000a",
+              "0x000000000000000000000000000000000000000b"
+            ],
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              ],
+              [
+                "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              ]
+            ]
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toStrictEqual",
+          "call_index": 0,
+          "path": [],
+          "expected": {
+            "address": [
+              "0x000000000000000000000000000000000000000a",
+              "0x000000000000000000000000000000000000000b"
+            ],
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              ],
+              [
+                "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "3c2b8cc0a9fc66f15c4a",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "mergeLogFiltersToBlockRequest matches all values if one input matches all values",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 610,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filterA, filterB],\n      factories: [],\n    }),\n  ).toStrictEqual({\n    address: undefined,\n    topics: [[REQUEST_TOPIC_A, REQUEST_TOPIC_B]],\n  })"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [],
+              "logFilters": [
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "topic1": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": {
+                    "$undefined": true
+                  },
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                }
+              ]
+            }
+          ],
+          "result": {
+            "address": {
+              "$undefined": true
+            },
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              ]
+            ]
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toStrictEqual",
+          "call_index": 0,
+          "path": [],
+          "expected": {
+            "address": {
+              "$undefined": true
+            },
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "87aa9c053835c17a0bdf",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "mergeLogFiltersToBlockRequest matches all addresses for a factory log filter",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 628,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filter],\n      factories: [REQUEST_FACTORY],\n    }),\n  ).toStrictEqual({\n    address: undefined,\n    topics: [[REQUEST_TOPIC_A, REQUEST_TOPIC_C]],\n  })"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [
+                {
+                  "address": "0x000000000000000000000000000000000000000b",
+                  "chainId": 1,
+                  "childAddressLocation": "topic1",
+                  "eventSelector": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "id": "factory",
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "log"
+                }
+              ],
+              "logFilters": [
+                {
+                  "address": {
+                    "address": "0x000000000000000000000000000000000000000b",
+                    "chainId": 1,
+                    "childAddressLocation": "topic1",
+                    "eventSelector": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "id": "factory",
+                    "sourceId": "test",
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "log"
+                  },
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                }
+              ]
+            }
+          ],
+          "result": {
+            "address": {
+              "$undefined": true
+            },
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              ]
+            ]
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toStrictEqual",
+          "call_index": 0,
+          "path": [],
+          "expected": {
+            "address": {
+              "$undefined": true
+            },
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "063b2ef6ce1710b5e907",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "mergeLogFiltersToBlockRequest includes factories without log filters",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 640,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [],\n      factories: [REQUEST_FACTORY],\n    }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_B],\n    topics: [[REQUEST_TOPIC_C]],\n  })"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [
+                {
+                  "address": "0x000000000000000000000000000000000000000b",
+                  "chainId": 1,
+                  "childAddressLocation": "topic1",
+                  "eventSelector": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "id": "factory",
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "log"
+                }
+              ],
+              "logFilters": []
+            }
+          ],
+          "result": {
+            "address": [
+              "0x000000000000000000000000000000000000000b"
+            ],
+            "topics": [
+              [
+                "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              ]
+            ]
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toStrictEqual",
+          "call_index": 0,
+          "path": [],
+          "expected": {
+            "address": [
+              "0x000000000000000000000000000000000000000b"
+            ],
+            "topics": [
+              [
+                "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "10f0068f97080c079808",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "mergeLogFiltersToBlockRequest unions factory and log filter addresses",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 659,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filter],\n      factories: [REQUEST_FACTORY],\n    }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_A, REQUEST_ADDRESS_B],\n    topics: [[REQUEST_TOPIC_A, REQUEST_TOPIC_C]],\n  })"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [
+                {
+                  "address": "0x000000000000000000000000000000000000000b",
+                  "chainId": 1,
+                  "childAddressLocation": "topic1",
+                  "eventSelector": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "id": "factory",
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "log"
+                }
+              ],
+              "logFilters": [
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "topic1": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                }
+              ]
+            }
+          ],
+          "result": {
+            "address": [
+              "0x000000000000000000000000000000000000000a",
+              "0x000000000000000000000000000000000000000b"
+            ],
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              ]
+            ]
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toStrictEqual",
+          "call_index": 0,
+          "path": [],
+          "expected": {
+            "address": [
+              "0x000000000000000000000000000000000000000a",
+              "0x000000000000000000000000000000000000000b"
+            ],
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "60183027e2d8b2084d58",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "mergeLogFiltersToBlockRequest matches all addresses for a factory without an address",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 677,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filter],\n      factories: [{ ...REQUEST_FACTORY, address: undefined }],\n    }),\n  ).toStrictEqual({\n    address: undefined,\n    topics: [[REQUEST_TOPIC_A, REQUEST_TOPIC_C]],\n  })"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [
+                {
+                  "address": {
+                    "$undefined": true
+                  },
+                  "chainId": 1,
+                  "childAddressLocation": "topic1",
+                  "eventSelector": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "id": "factory",
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "log"
+                }
+              ],
+              "logFilters": [
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                }
+              ]
+            }
+          ],
+          "result": {
+            "address": {
+              "$undefined": true
+            },
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              ]
+            ]
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toStrictEqual",
+          "call_index": 0,
+          "path": [],
+          "expected": {
+            "address": {
+              "$undefined": true
+            },
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "163687e53f937f38bdc3",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "mergeLogFiltersToBlockRequest ignores inputs with an empty address list",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 695,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filter],\n      factories: [{ ...REQUEST_FACTORY, address: [] }],\n    }),\n  ).toBe(undefined)"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [
+                {
+                  "address": [],
+                  "chainId": 1,
+                  "childAddressLocation": "topic1",
+                  "eventSelector": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "id": "factory",
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "log"
+                }
+              ],
+              "logFilters": [
+                {
+                  "address": [],
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                }
+              ]
+            }
+          ],
+          "result": {
+            "$undefined": true
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toBe",
+          "call_index": 0,
+          "path": [],
+          "expected": {
+            "$undefined": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "2f13a001ab8416f18cce",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "mergeLogFiltersToBlockRequest matches all addresses above ADDRESS_CHUNK_SIZE",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 714,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({ logFilters: [filter], factories: [] }),\n  ).toStrictEqual({ address: undefined, topics: [[REQUEST_TOPIC_A]] })"
+        },
+        {
+          "kind": "runtime",
+          "line": 718,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [{ ...filter, address: addresses.slice(1) }],\n      factories: [],\n    })?.address,\n  ).toHaveLength(ADDRESS_CHUNK_SIZE)"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [],
+              "logFilters": [
+                {
+                  "address": [
+                    "0x0000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000001",
+                    "0x0000000000000000000000000000000000000002",
+                    "0x0000000000000000000000000000000000000003",
+                    "0x0000000000000000000000000000000000000004",
+                    "0x0000000000000000000000000000000000000005",
+                    "0x0000000000000000000000000000000000000006",
+                    "0x0000000000000000000000000000000000000007",
+                    "0x0000000000000000000000000000000000000008",
+                    "0x0000000000000000000000000000000000000009",
+                    "0x000000000000000000000000000000000000000a",
+                    "0x000000000000000000000000000000000000000b",
+                    "0x000000000000000000000000000000000000000c",
+                    "0x000000000000000000000000000000000000000d",
+                    "0x000000000000000000000000000000000000000e",
+                    "0x000000000000000000000000000000000000000f",
+                    "0x0000000000000000000000000000000000000010",
+                    "0x0000000000000000000000000000000000000011",
+                    "0x0000000000000000000000000000000000000012",
+                    "0x0000000000000000000000000000000000000013",
+                    "0x0000000000000000000000000000000000000014",
+                    "0x0000000000000000000000000000000000000015",
+                    "0x0000000000000000000000000000000000000016",
+                    "0x0000000000000000000000000000000000000017",
+                    "0x0000000000000000000000000000000000000018",
+                    "0x0000000000000000000000000000000000000019",
+                    "0x000000000000000000000000000000000000001a",
+                    "0x000000000000000000000000000000000000001b",
+                    "0x000000000000000000000000000000000000001c",
+                    "0x000000000000000000000000000000000000001d",
+                    "0x000000000000000000000000000000000000001e",
+                    "0x000000000000000000000000000000000000001f",
+                    "0x0000000000000000000000000000000000000020",
+                    "0x0000000000000000000000000000000000000021",
+                    "0x0000000000000000000000000000000000000022",
+                    "0x0000000000000000000000000000000000000023",
+                    "0x0000000000000000000000000000000000000024",
+                    "0x0000000000000000000000000000000000000025",
+                    "0x0000000000000000000000000000000000000026",
+                    "0x0000000000000000000000000000000000000027",
+                    "0x0000000000000000000000000000000000000028",
+                    "0x0000000000000000000000000000000000000029",
+                    "0x000000000000000000000000000000000000002a",
+                    "0x000000000000000000000000000000000000002b",
+                    "0x000000000000000000000000000000000000002c",
+                    "0x000000000000000000000000000000000000002d",
+                    "0x000000000000000000000000000000000000002e",
+                    "0x000000000000000000000000000000000000002f",
+                    "0x0000000000000000000000000000000000000030",
+                    "0x0000000000000000000000000000000000000031",
+                    "0x0000000000000000000000000000000000000032"
+                  ],
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                }
+              ]
+            }
+          ],
+          "result": {
+            "address": {
+              "$undefined": true
+            },
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              ]
+            ]
+          }
+        },
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [],
+              "logFilters": [
+                {
+                  "address": [
+                    "0x0000000000000000000000000000000000000001",
+                    "0x0000000000000000000000000000000000000002",
+                    "0x0000000000000000000000000000000000000003",
+                    "0x0000000000000000000000000000000000000004",
+                    "0x0000000000000000000000000000000000000005",
+                    "0x0000000000000000000000000000000000000006",
+                    "0x0000000000000000000000000000000000000007",
+                    "0x0000000000000000000000000000000000000008",
+                    "0x0000000000000000000000000000000000000009",
+                    "0x000000000000000000000000000000000000000a",
+                    "0x000000000000000000000000000000000000000b",
+                    "0x000000000000000000000000000000000000000c",
+                    "0x000000000000000000000000000000000000000d",
+                    "0x000000000000000000000000000000000000000e",
+                    "0x000000000000000000000000000000000000000f",
+                    "0x0000000000000000000000000000000000000010",
+                    "0x0000000000000000000000000000000000000011",
+                    "0x0000000000000000000000000000000000000012",
+                    "0x0000000000000000000000000000000000000013",
+                    "0x0000000000000000000000000000000000000014",
+                    "0x0000000000000000000000000000000000000015",
+                    "0x0000000000000000000000000000000000000016",
+                    "0x0000000000000000000000000000000000000017",
+                    "0x0000000000000000000000000000000000000018",
+                    "0x0000000000000000000000000000000000000019",
+                    "0x000000000000000000000000000000000000001a",
+                    "0x000000000000000000000000000000000000001b",
+                    "0x000000000000000000000000000000000000001c",
+                    "0x000000000000000000000000000000000000001d",
+                    "0x000000000000000000000000000000000000001e",
+                    "0x000000000000000000000000000000000000001f",
+                    "0x0000000000000000000000000000000000000020",
+                    "0x0000000000000000000000000000000000000021",
+                    "0x0000000000000000000000000000000000000022",
+                    "0x0000000000000000000000000000000000000023",
+                    "0x0000000000000000000000000000000000000024",
+                    "0x0000000000000000000000000000000000000025",
+                    "0x0000000000000000000000000000000000000026",
+                    "0x0000000000000000000000000000000000000027",
+                    "0x0000000000000000000000000000000000000028",
+                    "0x0000000000000000000000000000000000000029",
+                    "0x000000000000000000000000000000000000002a",
+                    "0x000000000000000000000000000000000000002b",
+                    "0x000000000000000000000000000000000000002c",
+                    "0x000000000000000000000000000000000000002d",
+                    "0x000000000000000000000000000000000000002e",
+                    "0x000000000000000000000000000000000000002f",
+                    "0x0000000000000000000000000000000000000030",
+                    "0x0000000000000000000000000000000000000031",
+                    "0x0000000000000000000000000000000000000032"
+                  ],
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                }
+              ]
+            }
+          ],
+          "result": {
+            "address": [
+              "0x0000000000000000000000000000000000000001",
+              "0x0000000000000000000000000000000000000002",
+              "0x0000000000000000000000000000000000000003",
+              "0x0000000000000000000000000000000000000004",
+              "0x0000000000000000000000000000000000000005",
+              "0x0000000000000000000000000000000000000006",
+              "0x0000000000000000000000000000000000000007",
+              "0x0000000000000000000000000000000000000008",
+              "0x0000000000000000000000000000000000000009",
+              "0x000000000000000000000000000000000000000a",
+              "0x000000000000000000000000000000000000000b",
+              "0x000000000000000000000000000000000000000c",
+              "0x000000000000000000000000000000000000000d",
+              "0x000000000000000000000000000000000000000e",
+              "0x000000000000000000000000000000000000000f",
+              "0x0000000000000000000000000000000000000010",
+              "0x0000000000000000000000000000000000000011",
+              "0x0000000000000000000000000000000000000012",
+              "0x0000000000000000000000000000000000000013",
+              "0x0000000000000000000000000000000000000014",
+              "0x0000000000000000000000000000000000000015",
+              "0x0000000000000000000000000000000000000016",
+              "0x0000000000000000000000000000000000000017",
+              "0x0000000000000000000000000000000000000018",
+              "0x0000000000000000000000000000000000000019",
+              "0x000000000000000000000000000000000000001a",
+              "0x000000000000000000000000000000000000001b",
+              "0x000000000000000000000000000000000000001c",
+              "0x000000000000000000000000000000000000001d",
+              "0x000000000000000000000000000000000000001e",
+              "0x000000000000000000000000000000000000001f",
+              "0x0000000000000000000000000000000000000020",
+              "0x0000000000000000000000000000000000000021",
+              "0x0000000000000000000000000000000000000022",
+              "0x0000000000000000000000000000000000000023",
+              "0x0000000000000000000000000000000000000024",
+              "0x0000000000000000000000000000000000000025",
+              "0x0000000000000000000000000000000000000026",
+              "0x0000000000000000000000000000000000000027",
+              "0x0000000000000000000000000000000000000028",
+              "0x0000000000000000000000000000000000000029",
+              "0x000000000000000000000000000000000000002a",
+              "0x000000000000000000000000000000000000002b",
+              "0x000000000000000000000000000000000000002c",
+              "0x000000000000000000000000000000000000002d",
+              "0x000000000000000000000000000000000000002e",
+              "0x000000000000000000000000000000000000002f",
+              "0x0000000000000000000000000000000000000030",
+              "0x0000000000000000000000000000000000000031",
+              "0x0000000000000000000000000000000000000032"
+            ],
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              ]
+            ]
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toStrictEqual",
+          "call_index": 0,
+          "path": [],
+          "expected": {
+            "address": {
+              "$undefined": true
+            },
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              ]
+            ]
+          }
+        },
+        {
+          "matcher": "toHaveLength",
+          "call_index": 1,
+          "path": [
+            "address"
+          ],
+          "expected": 50
+        }
+      ]
+    },
+    {
+      "id": "68d640b52be58334d6d2",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_name": "mergeLogFiltersToBlockRequest matches all topics above ADDRESS_CHUNK_SIZE",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "source_assertions": [
+        {
+          "kind": "runtime",
+          "line": 738,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({ logFilters: [filter], factories: [] }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_A],\n    topics: [[REQUEST_TOPIC_A]],\n  })"
+        },
+        {
+          "kind": "runtime",
+          "line": 745,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: topics.map((topic0) => ({ ...filter, topic0, topic1: null })),\n      factories: [],\n    }),\n  ).toStrictEqual({ address: [REQUEST_ADDRESS_A], topics: undefined })"
+        }
+      ],
+      "source_contexts": [],
+      "calls": [
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [],
+              "logFilters": [
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "topic1": [
+                    "0x0000000000000000000000000000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000000000000000000000000000001",
+                    "0x0000000000000000000000000000000000000000000000000000000000000002",
+                    "0x0000000000000000000000000000000000000000000000000000000000000003",
+                    "0x0000000000000000000000000000000000000000000000000000000000000004",
+                    "0x0000000000000000000000000000000000000000000000000000000000000005",
+                    "0x0000000000000000000000000000000000000000000000000000000000000006",
+                    "0x0000000000000000000000000000000000000000000000000000000000000007",
+                    "0x0000000000000000000000000000000000000000000000000000000000000008",
+                    "0x0000000000000000000000000000000000000000000000000000000000000009",
+                    "0x000000000000000000000000000000000000000000000000000000000000000a",
+                    "0x000000000000000000000000000000000000000000000000000000000000000b",
+                    "0x000000000000000000000000000000000000000000000000000000000000000c",
+                    "0x000000000000000000000000000000000000000000000000000000000000000d",
+                    "0x000000000000000000000000000000000000000000000000000000000000000e",
+                    "0x000000000000000000000000000000000000000000000000000000000000000f",
+                    "0x0000000000000000000000000000000000000000000000000000000000000010",
+                    "0x0000000000000000000000000000000000000000000000000000000000000011",
+                    "0x0000000000000000000000000000000000000000000000000000000000000012",
+                    "0x0000000000000000000000000000000000000000000000000000000000000013",
+                    "0x0000000000000000000000000000000000000000000000000000000000000014",
+                    "0x0000000000000000000000000000000000000000000000000000000000000015",
+                    "0x0000000000000000000000000000000000000000000000000000000000000016",
+                    "0x0000000000000000000000000000000000000000000000000000000000000017",
+                    "0x0000000000000000000000000000000000000000000000000000000000000018",
+                    "0x0000000000000000000000000000000000000000000000000000000000000019",
+                    "0x000000000000000000000000000000000000000000000000000000000000001a",
+                    "0x000000000000000000000000000000000000000000000000000000000000001b",
+                    "0x000000000000000000000000000000000000000000000000000000000000001c",
+                    "0x000000000000000000000000000000000000000000000000000000000000001d",
+                    "0x000000000000000000000000000000000000000000000000000000000000001e",
+                    "0x000000000000000000000000000000000000000000000000000000000000001f",
+                    "0x0000000000000000000000000000000000000000000000000000000000000020",
+                    "0x0000000000000000000000000000000000000000000000000000000000000021",
+                    "0x0000000000000000000000000000000000000000000000000000000000000022",
+                    "0x0000000000000000000000000000000000000000000000000000000000000023",
+                    "0x0000000000000000000000000000000000000000000000000000000000000024",
+                    "0x0000000000000000000000000000000000000000000000000000000000000025",
+                    "0x0000000000000000000000000000000000000000000000000000000000000026",
+                    "0x0000000000000000000000000000000000000000000000000000000000000027",
+                    "0x0000000000000000000000000000000000000000000000000000000000000028",
+                    "0x0000000000000000000000000000000000000000000000000000000000000029",
+                    "0x000000000000000000000000000000000000000000000000000000000000002a",
+                    "0x000000000000000000000000000000000000000000000000000000000000002b",
+                    "0x000000000000000000000000000000000000000000000000000000000000002c",
+                    "0x000000000000000000000000000000000000000000000000000000000000002d",
+                    "0x000000000000000000000000000000000000000000000000000000000000002e",
+                    "0x000000000000000000000000000000000000000000000000000000000000002f",
+                    "0x0000000000000000000000000000000000000000000000000000000000000030",
+                    "0x0000000000000000000000000000000000000000000000000000000000000031",
+                    "0x0000000000000000000000000000000000000000000000000000000000000032"
+                  ],
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                }
+              ]
+            }
+          ],
+          "result": {
+            "address": [
+              "0x000000000000000000000000000000000000000a"
+            ],
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              ]
+            ]
+          }
+        },
+        {
+          "operation": "mergeLogFiltersToBlockRequest",
+          "args": [
+            {
+              "factories": [],
+              "logFilters": [
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000002",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000003",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000004",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000005",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000006",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000007",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000008",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000009",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000000a",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000000b",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000000c",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000000d",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000000e",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000000f",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000010",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000011",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000012",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000013",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000014",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000015",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000016",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000017",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000018",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000019",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000001a",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000001b",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000001c",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000001d",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000001e",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000001f",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000020",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000021",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000022",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000023",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000024",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000025",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000026",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000027",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000028",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000029",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000002a",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000002b",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000002c",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000002d",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000002e",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x000000000000000000000000000000000000000000000000000000000000002f",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000030",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000031",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                },
+                {
+                  "address": "0x000000000000000000000000000000000000000a",
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [],
+                  "sourceId": "test",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "topic0": "0x0000000000000000000000000000000000000000000000000000000000000032",
+                  "topic1": null,
+                  "topic2": null,
+                  "topic3": null,
+                  "type": "log"
+                }
+              ]
+            }
+          ],
+          "result": {
+            "address": [
+              "0x000000000000000000000000000000000000000a"
+            ],
+            "topics": {
+              "$undefined": true
+            }
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "matcher": "toStrictEqual",
+          "call_index": 0,
+          "path": [],
+          "expected": {
+            "address": [
+              "0x000000000000000000000000000000000000000a"
+            ],
+            "topics": [
+              [
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              ]
+            ]
+          }
+        },
+        {
+          "matcher": "toStrictEqual",
+          "call_index": 1,
+          "path": [],
+          "expected": {
+            "address": [
+              "0x000000000000000000000000000000000000000a"
+            ],
+            "topics": {
+              "$undefined": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
