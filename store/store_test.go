@@ -230,6 +230,13 @@ func crashWorker(t *testing.T) {
 		if e := w.Write(ctx, "account", Row{"id": "uncommitted", "balance": "9"}, Insert); e != nil {
 			return e
 		}
+		if os.Getenv("PONDER_CRASH_STAGE") == "after_journal" {
+			r, e := w.tx.Query(ctx, "SELECT operation_id FROM "+s.internal("_ponder_go_journal")+" WHERE checkpoint=$1", checkpoint.MustEncode(event("", 1, 2).Checkpoint))
+			if e != nil || len(r.Rows) != 1 {
+				t.Fatalf("journal was not captured: %v %v", r, e)
+			}
+			os.Exit(73)
+		}
 		return nil
 	})
 	t.Fatal("crash worker returned")

@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "87 mapped records (83 Go + 4 retained SDK); 818 unimplemented. Exact source assertions and fixtures remain authoritative."
+      "remaining": "89 mapped and Go/SDK-executed records (85 Go + 4 retained SDK); 816 unimplemented. Original oracle passed for 87 mapped records; 2 SQL case oracles blocked by pending pinned Foundry setup."
     },
     {
       "id": "differential-harness",
@@ -348,13 +348,17 @@
     },
     {
       "id": "business-raw-sql-journal",
-      "status": "unimplemented",
-      "implementation_files": [],
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/triggers.go",
+        "store/sql.go",
+        "store/sql_test.go"
+      ],
       "upstream_sources": [
         "packages/core/src/indexing-store/index.ts"
       ],
       "evidence": [],
-      "remaining": "Native API, rollback integration, queries and all exact source tests remain."
+      "remaining": "One-statement SELECT/INSERT/UPDATE/DELETE executes inside event transaction with savepoint recovery. Base-table triggers cover API, bulk raw DML and updatable views. DDL/internal state edits rejected. Full Drizzle API, complete type codecs and source store/action cases remain."
     },
     {
       "id": "relations",
@@ -383,6 +387,7 @@
       "id": "journal",
       "status": "verified_subset",
       "implementation_files": [
+        "store/triggers.go",
         "store/store.go",
         "store/reorg.go"
       ],
@@ -390,7 +395,7 @@
         "packages/core/src/database/actions.ts"
       ],
       "evidence": [],
-      "remaining": "Row-level operations journaled atomically. Arbitrary business raw SQL and exact original action/store tests remain."
+      "remaining": "A single database trigger captures declared business-table DML; manual Go capture removed. Statement failure and four process boundaries verified on both backends. All source action/store tests and server/host crash cases remain."
     },
     {
       "id": "reorg",
@@ -418,7 +423,7 @@
       "evidence": [
         "parity/runs/store-crash-boundaries.jsonl"
       ],
-      "remaining": "Four application-process SQL boundaries on each backend; server/host power loss and original checkpoint safety migration remain."
+      "remaining": "Four application-process boundaries tested per backend. Business mutation and journal capture now share one database statement; journal constraint failure proves that statement rolls back atomically. Server/host power loss and complete source checkpoint action mapping remain."
     },
     {
       "id": "finalize",
@@ -470,7 +475,7 @@
         "packages/core/src/client/index.ts"
       ],
       "evidence": [],
-      "remaining": "Initial hash/no initial message and result-change gating verified with original client. View dependencies, external SQL notifications, full load/error cases remain."
+      "remaining": "Base and nested-view SQL/SSE tested with original client on both backends; raw SQL mutations invalidate dependent views after commit. External-process notifications, full load/error cases remain."
     },
     {
       "id": "custom-api",

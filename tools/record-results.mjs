@@ -38,6 +38,7 @@ const oracleReports = [
 		"parity/runs/finality-oracle.json",
 		"parity/runs/schema-oracle.json",
 		"parity/runs/event-oracle.json",
+		"parity/runs/indexing-store-oracle.json",
 		coreOraclePath,
 	]
 		.filter((x) => x && exists(x))
@@ -63,6 +64,8 @@ for (const test of ledger.tests) {
 			test.oracle = { status: original.status, evidence: selected.path };
 	}
 	if (!test.mapping) continue;
+	if (!test.oracle && test.mapping.oracle_blocker)
+		test.oracle = { ...test.mapping.oracle_blocker };
 	let status, evidence;
 	if (test.mapping.target_kind === "retained_sdk") {
 		const actual = fs.readFileSync(path.join(root, test.mapping.target_file));
@@ -86,6 +89,11 @@ for (const test of ledger.tests) {
 			};
 	}
 	if (status) {
+		if (test.mapping.target_kind === "retained_sdk")
+			test.oracle = {
+				status: ["pass", "passed"].includes(status) ? "passed" : status,
+				evidence,
+			};
 		test.execution_status = status === "skip" ? "blocked" : "executed";
 		test.pass_status = ["pass", "passed"].includes(status)
 			? "passed"
@@ -112,6 +120,12 @@ ledger.summary = {
 	failed: ledger.tests.filter((x) => x.pass_status === "failed").length,
 	blocked: ledger.tests.filter((x) => x.execution_status === "blocked").length,
 	unimplemented: ledger.tests.filter((x) => !x.mapping).length,
+	oracle_passed: ledger.tests.filter(
+		(x) => x.mapping && x.oracle?.status === "passed",
+	).length,
+	oracle_blocked: ledger.tests.filter(
+		(x) => x.mapping && x.oracle?.status === "blocked",
+	).length,
 };
 fs.writeFileSync(
 	path.join(root, "parity/test-ledger.json"),

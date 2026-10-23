@@ -1091,5 +1091,41 @@
     "assertions_sha256": "0d554090bafb46766b6149e24c08f143fd1e7952eb5af7988d7afeb6ddbf9694",
     "original_assertions": 1,
     "assertion_policy": "All original fixture values, calls, rejection checks, and observer assertions retained; additional Go error checks permitted."
+  },
+  {
+    "source_id": "5b25add55a497fbe4ece",
+    "source_file": "packages/core/src/indexing-store/index.test.ts",
+    "source_line": 916,
+    "source_name": "sql followed by find",
+    "source_full_name": "sql followed by find",
+    "target_file": "store/sql_test.go",
+    "go_package": "ponder.local/ponder-go/store",
+    "go_test": "TestUpstreamSQLCases/postgres/sql_followed_by_find",
+    "assertions_sha256": "4773684dab8172eaba8cfda04a703692581bebe6d10308002130e29a37c5cbaf",
+    "original_assertions": 1,
+    "assertion_policy": "Original account fixture, zero address, balance 10n, RawSqlError type and next-query success assertions retained in native event transaction; companion PGlite execution is separate.",
+    "oracle_blocker": {
+      "status": "blocked",
+      "action": "Run original indexing-store suite with its unchanged setup/generated Solidity fixtures",
+      "reason": "Foundry v1.8.5 is required by pinned setup; installed 0.2.0 does not satisfy it, project-level installation approval is pending."
+    }
+  },
+  {
+    "source_id": "1de9f88b7a1032557590",
+    "source_file": "packages/core/src/indexing-store/index.test.ts",
+    "source_line": 961,
+    "source_name": "sql with error",
+    "source_full_name": "sql with error",
+    "target_file": "store/sql_test.go",
+    "go_package": "ponder.local/ponder-go/store",
+    "go_test": "TestUpstreamSQLCases/postgres/sql_with_error",
+    "assertions_sha256": "1ff8ea538b7cf494ae5b5dc20546d060cb7910cca5ce68e467b847a03956c228",
+    "original_assertions": 1,
+    "assertion_policy": "Original account fixture, zero address, balance 10n, RawSqlError type and next-query success assertions retained in native event transaction; companion PGlite execution is separate.",
+    "oracle_blocker": {
+      "status": "blocked",
+      "action": "Run original indexing-store suite with its unchanged setup/generated Solidity fixtures",
+      "reason": "Foundry v1.8.5 is required by pinned setup; installed 0.2.0 does not satisfy it, project-level installation approval is pending."
+    }
   }
 ]

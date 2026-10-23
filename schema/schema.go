@@ -2,6 +2,7 @@
 package schema
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -305,6 +306,14 @@ func (s Schema) TableDDL(t Table, namespace string) string {
 		col := Quote(c.Name) + " " + typ
 		if c.NotNull {
 			col += " NOT NULL"
+		}
+		if c.Default != nil {
+			value := fmt.Sprint(c.Default)
+			if c.Type == "json" || c.Type == "jsonb" {
+				raw, _ := json.Marshal(c.Default)
+				value = string(raw)
+			}
+			col += " DEFAULT '" + strings.ReplaceAll(value, "'", "''") + "'"
 		}
 		parts = append(parts, col)
 	}

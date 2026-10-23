@@ -13,7 +13,7 @@ const bigint = customType({
 	dataType: () => "numeric(78)",
 	fromDriver: (v: string) => BigInt(v),
 });
-const account = pgTable("account", {
+const account = pgTable(process.argv[3] ?? "account", {
 	id: text("id").primaryKey(),
 	balance: bigint("balance"),
 });

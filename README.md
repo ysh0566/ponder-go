@@ -11,7 +11,7 @@
 权威结果是 [parity/runs/summary.json](parity/runs/summary.json)。用例发现、移植、执行、通过分别登记，不合并计数。
 
 - 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条类型测试、客户端/React/E2E。
-- 已逐例映射 87 条：83 条 Go checkpoint/interval/finality/schema/event 测试，加原样保留的 3 条 TS 客户端测试、1 条 React 类型测试。另有 **818 条未实现**。
+- 已逐例映射 89 条：85 条 Go checkpoint/interval/finality/schema/event/SQL 测试，加原样保留的 3 条 TS 客户端测试、1 条 React 类型测试。另有 **816 条未实现**。
 - 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
 - 2,400 个确定性差分向量独立计数。
 - 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
@@ -55,10 +55,10 @@ bin/ponder codegen --schema examples/erc20/schema.json --out examples/erc20/pond
 ## 存储边界
 
 - 默认创建新的 `ponder_go_shadow_<schema hash>`，索引 schema 与 sync schema 分离；拒绝接管没有本项目 ownership marker 的 schema。
-- 业务写、undo journal、事件去重、checkpoint 进度在同一数据库事务内提交。默认 multichain 回滚从目标链边界后的最小 operation_id 撤销全局后缀；isolated 只回滚目标链。
-- 四个进程崩溃边界（业务写后、journal 后、进度后、commit 后）在两个后端分别测试。没有测试数据库服务端断电或磁盘损坏，不外推这些保证。
+- 业务 DML 与 undo journal 在同一数据库语句的 trigger 内完成；事件去重与 checkpoint 进度在同一事务内提交。默认 multichain 回滚从目标链边界后的最小 operation_id 撤销全局后缀；isolated 只回滚目标链。
+- 四个应用进程边界（业务 SQL 后、确认 journal 后、进度后、commit 后）在两个后端分别测试；前两个现已位于同一业务/trigger SQL 语句完成之后。额外 journal 约束失败验证语句内回滚。没有测试数据库服务端断电或磁盘损坏，不外推这些保证。
 - `reorgWindow` 按时间戳秒计算。调度器目前明确限制单链；多链调度尚未实现，存储层的多链回滚已经有真实验证。
-- 当前原生 schema/ABI 已补齐 build/schema、event-log 和 finality 所选源测试，并在两个后端执行枚举及视图；完整参数/类型测试、业务 raw SQL journal、关系、factory、trace、GraphQL 等尚待实现。
+- 当前原生 schema/ABI 已补齐 build/schema、event-log 和 finality 所选源测试，并在两个后端执行枚举及视图；业务 raw SQL 已统一经过数据库 trigger journal 并验证 savepoint 错误恢复；完整参数/类型测试、关系、factory、trace、GraphQL 等尚待实现。
 
 Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地接管，是不同工作轨道。后两项均未实现，也未进行数据迁移。当前模型 hash 不包含 handler/config 内容，修改这些内容时必须选择新的影子 schema；自动开发重建尚待实现。
 
@@ -67,3 +67,5 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 保留原 MIT [LICENSE](LICENSE)、SDK 各自许可证、实际 Go 依赖许可证清单 [licenses/manifest.json](licenses/manifest.json)。`third_party/pg_query_go` 固定为 v5.1.0，保留原许可证；仅将本地 `strchrnul` fallback 重命名，解决 macOS SDK 15.4+ 同名声明冲突，未改变 SQL 解析规则。`sqlquery/rules.json` 从固定源码的 83 个允许节点、62 个函数与 264 个系统表限制生成。
 
 未取得计划 PDF 的本地可读副本：Library 已解析给定文件，但所提供下载经指定 helper 两次失败；未伪造本地文件。实现以完整委托范围和固定源码为依据。
+
+当前 89 条映射中，87 条也取得原版 oracle 通过，2 条 SQL 用例已在 Go 双后端执行，其完整原版 setup 因待批准的 Foundry 1.8.5 安装仍阻塞。见台账 `oracle_passed` / `oracle_blocked`，不将 Go 通过冒充 oracle 通过。

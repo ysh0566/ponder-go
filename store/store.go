@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/schema"
 	"sort"
@@ -153,6 +154,9 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 	if e = s.createViews(ctx, tx); e != nil {
 		return nil, e
 	}
+	if e = s.createJournalTriggers(ctx, tx); e != nil {
+		return nil, e
+	}
 	if e = tx.Commit(ctx); e != nil {
 		return nil, e
 	}
@@ -197,6 +201,9 @@ func (s *Store) Apply(ctx context.Context, event Event, handler func(*Writer) er
 	if e = s.lock(ctx, tx); e != nil {
 		return e
 	}
+	if e = s.eventContext(ctx, tx, encoded, event.Checkpoint.ChainID, false); e != nil {
+		return e
+	}
 	existing, e := tx.Query(ctx, "SELECT event_id FROM "+s.internal("_ponder_go_events")+" WHERE event_id=$1", event.ID)
 	if e != nil {
 		return e
@@ -232,6 +239,13 @@ func (s *Store) Apply(ctx context.Context, event Event, handler func(*Writer) er
 	end, e := tx.Query(ctx, "SELECT COALESCE(MAX(operation_id),0)::text AS id FROM "+s.internal("_ponder_go_journal"))
 	if e != nil {
 		return e
+	}
+	mutations, e := tx.Query(ctx, "SELECT DISTINCT table_name FROM "+s.internal("_ponder_go_journal")+" WHERE operation_id>$1", boundary.Rows[0]["id"])
+	if e != nil {
+		return e
+	}
+	for _, row := range mutations.Rows {
+		w.changed[fmt.Sprint(row["table_name"])] = true
 	}
 	if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_events")+" VALUES ($1,$2,$3,$4,$5)", event.ID, encoded, event.Checkpoint.ChainID, boundary.Rows[0]["id"], end.Rows[0]["id"]); e != nil {
 		return e
@@ -290,6 +304,17 @@ func (w *Writer) Find(ctx context.Context, name string, key Row) (Row, error) {
 	d := json.NewDecoder(strings.NewReader(*before))
 	d.UseNumber()
 	e = d.Decode(&out)
+	if e == nil {
+		for _, column := range t.Columns {
+			if column.Type == "bigint" && out[column.Name] != nil {
+				value, ok := new(big.Int).SetString(fmt.Sprint(out[column.Name]), 10)
+				if !ok {
+					return nil, fmt.Errorf("invalid stored bigint %s.%s", name, column.Name)
+				}
+				out[column.Name] = value
+			}
+		}
+	}
 	return out, e
 }
 func (w *Writer) Write(ctx context.Context, name string, row Row, mode WriteMode) (err error) {
@@ -406,18 +431,6 @@ func (w *Writer) Write(ctx context.Context, name string, row Row, mode WriteMode
 		e = w.tx.Exec(ctx, sql, args...)
 	}
 	if e != nil {
-		return e
-	}
-	key := Row{}
-	for _, k := range t.Keys() {
-		key[k] = row[k]
-	}
-	keyJSON, _ := json.Marshal(key)
-	var beforeValue any
-	if before != nil {
-		beforeValue = *before
-	}
-	if e = w.tx.Exec(ctx, "INSERT INTO "+w.s.internal("_ponder_go_journal")+" (table_name,row_key,before_row,checkpoint,chain_id) VALUES ($1,$2::jsonb,$3::jsonb,$4,$5)", name, string(keyJSON), beforeValue, w.encoded, w.event.Checkpoint.ChainID); e != nil {
 		return e
 	}
 	w.changed[name] = true

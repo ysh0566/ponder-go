@@ -39,6 +39,11 @@ func Parse(sql string) (map[string]any, error) {
 	if len(sql) > 5000 {
 		return nil, fmt.Errorf("Invalid query")
 	}
+	return ParseStatement(sql)
+}
+
+// ParseStatement parses trusted indexing SQL without the public HTTP size cap.
+func ParseStatement(sql string) (map[string]any, error) {
 	text, e := pgquery.ParseToJSON(sql)
 	if e != nil {
 		return nil, e
