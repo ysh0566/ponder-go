@@ -79,7 +79,7 @@ const scratch=fs.mkdtempSync(path.join(os.tmpdir(),"ponder-go-compile-"));
 try {
   const importcfg=requireSuccess(["list","-deps","-export","-f","{{if .Export}}packagefile {{.ImportPath}}={{.Export}}{{end}}","./abi"]);
   const cfg=path.join(scratch,"importcfg");fs.writeFileSync(cfg,importcfg);
-  const report={baseline:"17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",tool:requireSuccess(["version"]).trim(),method:"ABI inputs generate decoder signatures; independent source expectTypeOf AST generates positive assignments. Each obligation also has an intentionally incompatible leaf assignment as a negative control. Native fixed arrays/structs replace TS tuples; readonly has no Go equivalent, and template-literal Address/Hex are strings. These adaptations are explicit, not strict TS source compatibility.",obligations:[],supplementary_negative_controls:0};
+  const report={baseline:"17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",tool:requireSuccess(["version"]).trim(),method:"ABI inputs generate decoder signatures; independent source expectTypeOf AST generates positive assignments. Each obligation also has an intentionally incompatible leaf assignment as a negative control. Native fixed arrays/structs replace TS tuples; readonly has no Go equivalent, and template-literal Address/Hex are strings. These adaptations are explicit, not strict TS source compatibility.",obligations:[],directives:[],supplementary_negative_controls:0};
   for(const a of obligations) {
     const typ=expectedType(a.expected_type.tree,{root:a.input.params});
     const imports=typ.includes("*big.Int")?'import "math/big"\n':"";
@@ -97,7 +97,24 @@ try {
     if(!passed)throw Error("Compile fixture failed: "+a.full_name+"\n"+pass.stdout+pass.stderr+fail.stdout+fail.stderr);
   }
   report.supplementary_negative_controls=report.obligations.length;
+  const ledger=JSON.parse(fs.readFileSync(path.join(root,"parity/test-ledger.json")));
+  const original=ledger.tests.find(x=>x.source_file.endsWith("/decodeEventLog.test.ts")&&x.title==="errors: namehash");
+  const event=JSON.parse(fs.readFileSync(path.join(root,"testdata/abi/event-cases.json"))).find(x=>x.id===original.id);
+  const topics=event.assertions[0].input.topics;
+  if(topics.length!==4||topics[2]!==null||topics[3]!==null||original.type_error_directives.length!==1)throw Error("Namehash type-error input changed");
+  const passfile=positive+"/EventNamehash.go",failfile=negative+"/EventNamehash.go";
+  const prefix='package fixture\nimport "ponder.local/ponder-go/abi"\nfunc check() { _, _ = abi.DecodeEventLog(abi.Event{}, []string{';
+  const passcode=prefix+topics.slice(0,2).map(JSON.stringify).join(",")+'},"0x") }\n';
+  const failcode=prefix+topics.map(x=>x===null?"nil":JSON.stringify(x)).join(",")+'},"0x") }\n';
+  fs.writeFileSync(path.join(root,passfile),passcode);fs.writeFileSync(path.join(root,failfile),failcode);
+  const args=["tool","compile","-p","ponder.local/ponder-go/abi/eventfixture","-importcfg",cfg,"-o",path.join(scratch,"event.a")];
+  const pass=command([...args,passfile]),fail=command([...args,failfile]);
+  const valid=pass.status===0&&fail.status!==0&&(fail.stdout+fail.stderr).includes("cannot use nil as string value");
+  report.directives.push({source_id:original.id,source_sha256:original.source_sha256,original_directive:original.type_error_directives[0],status:valid?"passed":"failed",adaptation:"TS null topic entries become Go nil string entries and must fail compilation; the runtime JSON fixture separately exercises missing-topic errors.",positive:{file:passfile,sha256:hash(passcode),exit_code:pass.status,diagnostics:pass.stdout+pass.stderr},negative:{file:failfile,sha256:hash(failcode),exit_code:fail.status,diagnostics:fail.stdout+fail.stderr}});
+  if(!valid)throw Error("Event namehash directive not verified: "+pass.stdout+pass.stderr+fail.stdout+fail.stderr);
   report.summary={inline_source_type_obligations:obligations.length,positive_passed:report.obligations.filter(x=>x.positive.exit_code===0).length,negative_controls_rejected:report.obligations.filter(x=>x.negative_control.exit_code!==0).length,failed:report.obligations.filter(x=>x.status!=="passed").length};
+  report.summary.source_error_directives=report.directives.length;
+  report.summary.source_error_directives_passed=report.directives.filter(x=>x.status==="passed").length;
   fs.writeFileSync(path.join(root,"parity/runs/compile-fixtures.json"),JSON.stringify(report,null,2)+"\n");
   console.log(report.summary);
 } finally {fs.rmSync(scratch,{recursive:true,force:true});}

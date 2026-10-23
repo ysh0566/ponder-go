@@ -26,6 +26,7 @@ const goFile = exists("parity/runs/go-test.jsonl")
 const go = goResults(goFile);
 const race = goResults("parity/runs/go-race.jsonl");
 const typedGo = goResults("parity/runs/abi-typed-go.jsonl");
+const typedRace = goResults("parity/runs/abi-typed-race.jsonl");
 const compile = exists("parity/runs/compile-fixtures.json") ? read("parity/runs/compile-fixtures.json") : null;
 const parameterTypes = exists("parity/runs/parameters-typecheck.json") ? read("parity/runs/parameters-typecheck.json") : null;
 const fileHash = file => crypto.createHash("sha256").update(fs.readFileSync(path.join(root,file))).digest("hex");
@@ -43,6 +44,7 @@ const oracleReports = [
 		"parity/runs/schema-oracle.json",
 		"parity/runs/event-oracle.json",
 		"parity/runs/parameters-oracle.json",
+		"parity/runs/factory-offset-oracle.json",
 		"parity/runs/indexing-store-oracle.json",
 		coreOraclePath,
 	]
@@ -73,6 +75,8 @@ for (const test of ledger.tests) {
 			test.oracle = { status: original.status, evidence: selected.path };
 	}
 	if (test.source_file.endsWith("/decodeAbiParameters.test.ts") && parameterTypes?.source_sha256 === test.source_sha256)
+		test.oracle_types = {status: parameterTypes.exit_code === 0 ? "passed" : "failed", evidence:"parity/runs/parameters-typecheck.json"};
+	if (test.source_file.endsWith("/decodeEventLog.test.ts") && parameterTypes?.event_source_sha256 === test.source_sha256)
 		test.oracle_types = {status: parameterTypes.exit_code === 0 ? "passed" : "failed", evidence:"parity/runs/parameters-typecheck.json"};
 	if (!test.mapping) continue;
 	if (!test.oracle && test.mapping.oracle_blocker)
@@ -106,6 +110,12 @@ for (const test of ledger.tests) {
 			test.type_verification = {status:valid?"passed":"blocked", obligations:expected, compile_evidence:"parity/runs/compile-fixtures.json", typed_runtime_evidence:"parity/runs/abi-typed-go.jsonl"};
 			test.runtime_status = status;
 			if (!valid) {status="skip";test.blockers.push("Native runtime alone is insufficient: inline type compilation/typed output evidence is incomplete.");}
+		}
+		if (test.type_error_directives.length) {
+			const directives=compile?.directives?.filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256)??[];
+			const valid=directives.length===test.type_error_directives.length&&directives.every(x=>x.status==="passed"&&[x.positive,x.negative].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
+			test.type_directives_verification={status:valid?"passed":"blocked",evidence:"parity/runs/compile-fixtures.json"};
+			if(!valid){status="skip";test.blockers.push("Source type-error directive requires a verified native compile-failure fixture.");}
 		}
 	}
 	if (status) {
@@ -181,7 +191,21 @@ const summary = {
 	retained_sdk: {mapped:ledger.summary.retained_sdk,passed:ledger.summary.sdk_passed},
 	original_oracle: {mapped_passed:ledger.summary.oracle_passed,mapped_blocked:ledger.summary.oracle_blocked,meaning:"Original tests executed separately; only explicit differential vectors are labelled differential verification."},
 	type_fixtures: compile?.summary ?? null,
+	type_scope: {
+		dedicated_source_records: ledger.summary.type_records,
+		dedicated_retained_sdk_passed: ledger.tests.filter(x=>x.kind==="type"&&x.mapping?.target_kind==="retained_sdk"&&x.pass_status==="passed").length,
+		inline_assertions_discovered:ledger.summary.inline_type_assertions,
+		inline_assertions_native_compiled:ledger.tests.filter(x=>x.type_verification?.status==="passed").reduce((n,x)=>n+x.type_verification.obligations,0),
+		error_directives_discovered:ledger.summary.type_error_directives,
+		error_directives_native_verified:ledger.tests.filter(x=>x.type_directives_verification?.status==="passed").reduce((n,x)=>n+x.type_error_directives.length,0),
+		error_directives_retained_sdk_verified:ledger.tests.filter(x=>x.mapping?.target_kind==="retained_sdk"&&x.pass_status==="passed").reduce((n,x)=>n+x.type_error_directives.length,0),
+	},
 	typed_abi_runtime: {file:"parity/runs/abi-typed-go.jsonl",leaf_cases:leaves(typedGo).length,...count(leaves(typedGo)),counting:"Supplementary typed decoder execution; not additional source test records."},
+	typed_abi_race: {file:"parity/runs/abi-typed-race.jsonl",leaf_cases:leaves(typedRace).length,...count(leaves(typedRace))},
+	backend_execution: Object.fromEntries(["postgres","pglite"].map(backend=>{
+		const selected=native.filter(x=>x.Test.toLowerCase().includes(backend)),selectedRace=nativeRace.filter(x=>x.Test.toLowerCase().includes(backend));
+		return [backend,{counting:"Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",go:{leaf_cases:selected.length,...count(selected)},race:{leaf_cases:selectedRace.length,...count(selectedRace)},evidence:goFile}];
+	})),
 	simulation: {seed_space:"unbounded",status:"unimplemented",executed_seeds:0},
 	native_go: { file: goFile, leaf_cases: native.length, ...count(native) },
 	race: {

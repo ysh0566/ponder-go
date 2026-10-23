@@ -1329,11 +1329,34 @@
       }
     }
   ],
+  "directives": [
+    {
+      "source_id": "5d5b6742a0786ee1cbfa",
+      "source_sha256": "c5609755c299a8b4cf287418ae713bc0b24cf29d2f8a2b315c511b1ba936c569",
+      "original_directive": "// @ts-expect-error",
+      "status": "passed",
+      "adaptation": "TS null topic entries become Go nil string entries and must fail compilation; the runtime JSON fixture separately exercises missing-topic errors.",
+      "positive": {
+        "file": "abi/testdata/compile/pass/EventNamehash.go",
+        "sha256": "adb07ebd399ab976508ac92254660fb599752fbf017487ebabae303ac7b0f1c5",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "abi/testdata/compile/fail/EventNamehash.go",
+        "sha256": "40a0b86de02e21e103039a1bf28d67874573fbcd4dca84b880b4574297235659",
+        "exit_code": 2,
+        "diagnostics": "abi/testdata/compile/fail/EventNamehash.go:3:202: cannot use nil as string value in array or slice literal\n"
+      }
+    }
+  ],
   "supplementary_negative_controls": 53,
   "summary": {
     "inline_source_type_obligations": 53,
     "positive_passed": 53,
     "negative_controls_rejected": 53,
-    "failed": 0
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
   }
 }

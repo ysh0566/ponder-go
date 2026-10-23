@@ -9,6 +9,7 @@ import (
 	"ponder.local/ponder-go/abi"
 	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/config"
+	"ponder.local/ponder-go/factory"
 	"ponder.local/ponder-go/finality"
 	"ponder.local/ponder-go/interval"
 	"ponder.local/ponder-go/rpc"
@@ -53,13 +54,14 @@ type Context struct {
 }
 type Handler func(context.Context, *Context) error
 type Engine struct {
-	Config   config.Config
-	Store    *store.Store
-	Handlers map[string]Handler
-	Client   *rpc.Client
-	abis     map[string]abi.ABI
-	filter   string
-	chain    config.Chain
+	Config    config.Config
+	Store     *store.Store
+	Handlers  map[string]Handler
+	Client    *rpc.Client
+	abis      map[string]abi.ABI
+	factories map[string]factory.LogFactory
+	filter    string
+	chain     config.Chain
 }
 
 func New(c config.Config, s *store.Store, handlers map[string]Handler) (*Engine, error) {
@@ -76,13 +78,27 @@ func New(c config.Config, s *store.Store, handlers map[string]Handler) (*Engine,
 	if len(c.Chains) != 1 {
 		return nil, fmt.Errorf("multi-chain runtime scheduling is not implemented yet; storage rollback modes are implemented")
 	}
-	engine := &Engine{Config: c, Store: s, Handlers: handlers, chain: c.Chains[0], abis: map[string]abi.ABI{}}
+	engine := &Engine{Config: c, Store: s, Handlers: handlers, chain: c.Chains[0], abis: map[string]abi.ABI{}, factories: map[string]factory.LogFactory{}}
 	for _, contract := range c.Contracts {
 		a, e := abi.Parse(string(contract.ABI))
 		if e != nil {
 			return nil, e
 		}
 		engine.abis[contract.Name] = a
+		if contract.Factory != nil {
+			cfg := *contract.Factory
+			cfg.ChainID = engine.chain.ID
+			cfg.SourceID = contract.Name
+			if cfg.FromBlock == nil {
+				n := contract.StartBlock
+				cfg.FromBlock = &n
+			}
+			f, e := factory.Build(cfg)
+			if e != nil {
+				return nil, e
+			}
+			engine.factories[contract.Name] = f
+		}
 	}
 	encoded, _ := json.Marshal(c)
 	hash := sha256.Sum256(encoded)
@@ -131,6 +147,9 @@ func (e *Engine) Sync(ctx context.Context) error {
 	hasSource := false
 	for _, c := range e.Config.Contracts {
 		start = min(start, c.StartBlock)
+		if f, ok := e.factories[c.Name]; ok && f.FromBlock != nil {
+			start = min(start, *f.FromBlock)
+		}
 		hasSource = true
 	}
 	for _, b := range e.Config.Blocks {
@@ -228,6 +247,9 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 		return err
 	}
 	base := checkpoint.Block(timestamp, e.chain.ID, number, false)
+	if err = e.discoverFactories(ctx, b, number); err != nil {
+		return err
+	}
 	events := []pending{}
 	receipts := map[string]map[string]any{}
 	for _, contract := range e.Config.Contracts {
@@ -238,7 +260,21 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 			events = append(events, pending{cursor: base, id: fmt.Sprintf("setup:%d:%s:%s", e.chain.ID, contract.Name, b.Hash), event: Event{Name: contract.Name + ":setup", Block: b}})
 		}
 		filter := map[string]any{"blockHash": b.Hash}
-		if len(contract.Address) > 0 {
+		if factory, ok := e.factories[contract.Name]; ok {
+			children, e2 := e.Store.FactoryChildren(ctx, factory.ID, e.chain.ID, number)
+			if e2 != nil {
+				return e2
+			}
+			if len(children) == 0 {
+				continue
+			}
+			addresses := make([]string, 0, len(children))
+			for address := range children {
+				addresses = append(addresses, address)
+			}
+			sort.Strings(addresses)
+			filter["address"] = addresses
+		} else if len(contract.Address) > 0 {
 			filter["address"] = contract.Address
 		}
 		var logs []Log

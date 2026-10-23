@@ -9,6 +9,7 @@ const env = {
 	...process.env,
 	GOMODCACHE: path.join(root, ".toolcache/gomod"),
 	GOCACHE: path.join(root, ".toolcache/gobuild"),
+	TSX_TSCONFIG_PATH: path.join(upstream,"packages/core/tsconfig.json"),
 };
 fs.mkdirSync(path.join(root, "bin"), { recursive: true });
 execFileSync("go", ["build", "-o", "bin/parity-probe", "./cmd/parity-probe"], {
@@ -57,6 +58,17 @@ for (let i = 0; i < 400; i++) {
 		{ op: "chunks", Interval: [0, random(100)], Size: random(20) + 1 },
 	);
 }
+const sourceFactories=JSON.parse(fs.readFileSync(path.join(root,"testdata/factory/build-cases.json"))).flatMap(x=>x.assertions.map(a=>a.input.args[0]));
+for (const input of sourceFactories) inputs.push({op:"factory",factory:input});
+const sample=sourceFactories[1];
+for(const address of [undefined,[],["0xB","0xa","0xB","0xb"],"0xAa"]) {
+  for(const location of ["topic1","topic2","topic3","offset0","offset32","offset-1","offset1e2","offset0x20","offset0b10","offset0o10","offset", "offset1.5","invalid"]) {
+    const config={...sample,address,location};delete config.parameter;
+    inputs.push({op:"factory",factory:config});
+  }
+}
+for(const parameter of ["deployer","name","llamaCore","llamaPolicy","chainId","missing","llamaCore.x"])inputs.push({op:"factory",factory:{...sample,parameter,fromBlock:0,toBlock:123}});
+inputs.push({op:"factory",factory:{...sample,parameter:undefined}});
 const input = inputs.map((x) => JSON.stringify(x)).join("\n") + "\n";
 const run = (file, args) => {
 	const result = spawnSync(file, args, {
@@ -95,6 +107,7 @@ const result = {
 	seed: "0x17c6d5ba",
 	counting: "Generated differential vectors, not transplanted upstream tests.",
 	vectors: inputs.length,
+	operations:Object.fromEntries([...new Set(inputs.map(x=>x.op))].map(op=>[op,inputs.filter(x=>x.op===op).length])),
 	passed: inputs.length - differences.length,
 	failed: differences.length,
 	go: execFileSync("go", ["version"], { encoding: "utf8" }).trim(),

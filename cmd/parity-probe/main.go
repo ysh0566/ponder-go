@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"ponder.local/ponder-go/checkpoint"
+	"ponder.local/ponder-go/factory"
 	"ponder.local/ponder-go/interval"
 	"strconv"
 )
@@ -17,6 +18,7 @@ type request struct {
 	A, B       []interval.Interval
 	Interval   interval.Interval
 	Size       int64
+	Factory    factory.Config `json:"factory"`
 }
 
 func main() {
@@ -28,6 +30,8 @@ func main() {
 		err := json.Unmarshal(scanner.Bytes(), &r)
 		if err == nil {
 			switch r.Op {
+			case "factory":
+				value, err = factory.Build(r.Factory)
 			case "encode":
 				get := func(k string) uint64 { v, _ := strconv.ParseUint(r.Checkpoint[k], 10, 64); return v }
 				et, _ := strconv.Atoi(r.Checkpoint["eventType"])

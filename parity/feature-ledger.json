@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "163 mapped: 159 native Go passed (152 original oracle passed, 7 database oracle blocked) + 4 retained SDK passed. 742 static records unimplemented; dynamic collection still incomplete. 53 inline source types compiled, 10 inline obligations remain; dedicated type/negative directives separately inventoried."
+      "remaining": "176 mapped: 172 native Go passed (165 original oracle passed, 7 database oracle blocked) + 4 retained SDK passed; 729 static records remain unimplemented. Runtime collection still incomplete."
     },
     {
       "id": "differential-harness",
@@ -50,7 +50,7 @@
       "evidence": [
         "parity/runs/differential.json"
       ],
-      "remaining": "Expand beyond checkpoint/interval and add exceptional inputs."
+      "remaining": "2466 vectors passed: foundation 2400 + factory 66. Extend to ABI errors, filters, stores and full runtime; these vectors do not add source port credit."
     },
     {
       "id": "native-config",
@@ -84,15 +84,22 @@
       "implementation_files": [
         "abi/abi.go",
         "abi/parameters.go",
+        "abi/generated.go",
+        "abi/parameters_test.go",
         "abi/event_test.go",
-        "testdata/abi/event-cases.json"
+        "abi/offset.go",
+        "abi/offset_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/utils/decodeAbiParameters.ts",
         "packages/core/src/utils/decodeEventLog.ts"
       ],
-      "evidence": [],
-      "remaining": "All 19 event-log source cases/21 assertions mapped and oracle-verified. Parameter decoder translated but its source runtime/type assertions and pathological-input differential coverage remain unported."
+      "evidence": [
+        "parity/runs/core-oracle.json",
+        "parity/runs/compile-fixtures.json",
+        "parity/runs/parameters-typecheck.json"
+      ],
+      "remaining": "69 active parameter +19 event +7 offset source cases mapped. Original skipped parameter cases retained. Native typed codegen verifies 53 inline type obligations and null-topic error directive; Go readonly/Hex string adaptations explicit. Broader ABI pathological/format/out options differential coverage remains."
     },
     {
       "id": "checkpoint",
@@ -172,13 +179,24 @@
     },
     {
       "id": "factory-dynamic-addresses",
-      "status": "unimplemented",
-      "implementation_files": [],
+      "status": "verified_subset",
+      "implementation_files": [
+        "factory/factory.go",
+        "factory/factory_test.go",
+        "runtime/factory.go",
+        "runtime/factory_test.go",
+        "store/sync.go"
+      ],
       "upstream_sources": [
         "packages/core/src/build/factory.ts"
       ],
-      "evidence": [],
-      "remaining": "Native implementation and all exact tests required."
+      "evidence": [
+        "parity/runs/factory-offset-oracle.json",
+        "parity/runs/factory-persistence-go.jsonl",
+        "parity/runs/go-race.jsonl",
+        "parity/runs/differential.json"
+      ],
+      "remaining": "6 factory +7 ABI offset source tests pass; single-chain log discovery persists separately from indexing data and rewinds forks. Complete original factory E2E, source/filter/fragments, trace/account factory targets and multichain pending. Malformed/truncated child-address RPC words are explicitly rejected by native extraction."
     },
     {
       "id": "receipt",
@@ -352,13 +370,14 @@
       "implementation_files": [
         "store/triggers.go",
         "store/sql.go",
-        "store/sql_test.go"
+        "store/sql_test.go",
+        "store/sql_boundaries_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/indexing-store/index.ts"
       ],
       "evidence": [],
-      "remaining": "One-statement SELECT/INSERT/UPDATE/DELETE executes inside event transaction with savepoint recovery. Base-table triggers cover API, bulk raw DML and updatable views. DDL/internal state edits rejected. Full Drizzle API, complete type codecs and source store/action cases remain."
+      "remaining": "Declared one-statement SELECT/INSERT/UPDATE/DELETE with savepoint recovery; API, bulk DML, CTE mutations and updatable-view writes/deletes use base triggers. SELECT INTO, multi-statements, DDL/internal settings rejected. Full Drizzle and additional source cases remain."
     },
     {
       "id": "relations",
@@ -674,6 +693,9 @@
       "id": "type-fixtures",
       "status": "partial",
       "implementation_files": [
+        "abi/generated.go",
+        "tools/compile-fixtures.mjs",
+        "abi/testdata/compile",
         "sdk/typescript/react/src/hook.test-d.ts"
       ],
       "upstream_sources": [
@@ -681,8 +703,12 @@
         "packages/core/src/config",
         "packages/react/src/hook.test-d.ts"
       ],
-      "evidence": [],
-      "remaining": "React retained fixture passed; all native Go compile success/failure fixture mappings remain."
+      "evidence": [
+        "parity/runs/compile-fixtures.json",
+        "parity/runs/parameters-typecheck.json",
+        "parity/runs/abi-typed-go.jsonl"
+      ],
+      "remaining": "53 source inline type obligations +1 source null-topic error directive verified natively; 53 extra negative controls separate. React retained type record passes. 10 other inline assertions, 72 dedicated native type records and most source error directives remain."
     },
     {
       "id": "simulation-e2e",

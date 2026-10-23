@@ -13,12 +13,13 @@
 
 ## 下一可执行批次
 
-1. 审阅 `schema/schema.go`、`abi/abi.go` 的现有子集，对照 `build/schema.test.ts`、`decodeAbiParameters.test.ts`、`decodeEventLog.test.ts` 逐例移植。不能只补测试标题：保留同一 setup、输入、每条断言、异常消息、skip/todo，并在 `parity/mappings.json` 登记准确目标。本批 24 条 schema、19 条 event-log 已逐例通过。ABI 参数解码算法已移植，但 decodeAbiParameters.test.ts 的 runtime 与内联类型断言尚未完成映射；先补这些测试，不能把已实现函数等同于测试通过。
-2. 将上游 finality 的 lowerBound、blockTime 初始猜测、时间戳相等边界逐例移植。本批 6 条 finality 原测试已完成映射并通过，Engine 已委托相同算法；自动 finalize 调度与数据库 actions 原测试仍待接入。
-3. 扩展 runtime 到账户交易、原生转账、trace、factory 持久动态地址与 receipt 语义，再逐项补 sync-store 原始事件持久化、过滤片段、历史缺口与实时故障恢复。
-4. 加入跨链事件调度，验证 omnichain/multichain/experimental_isolated 的完整处理顺序。当前 `runtime.New` 对多链配置明确报未实现；存储层已经支持并验证全局后缀和 isolated 回滚。
-5. 逐例补齐 PG CRUD 细节、函数默认值、raw SQL journal、关系、enum、view，再实现 GraphQL/完整 SQL 类型协议、所有 CLI/模板/热重载与观测。
-6. Go 类型成功/失败 fixture 仍待建立；73 条源类型测试中的 React 1 条由保留 SDK 执行，其余原生类型测试不可用普通 runtime 测试替代。Simulation 仍缺本地可复用的完整数据集和种子验证。
+1. 从最新提交和 summary.json 恢复，保留已通过 176 条映射（172 Go + 4 SDK）；其中 165 Go 原版 oracle 通过，7 DB oracle 阻塞。不要重做已完成的 ABI 参数 69、event 19、schema 24、finality 6、factory 6、offset 7。
+2. 继续 indexing-store/index.test.ts 的 find/insert/update 返回值、缓存副本、mutable values、missing rows、default/$default/$onUpdateFn 等原例。当前 Writer.Write 只返回 error，不能把现有简化 CRUD 当成完整 ORM；尤其 find 源例的 clear/invalidate 后可见性不同。actions 的 commitBlock、trigger 原内部布局、空 schema finalization 和通知大 payload 原例仍待完成。
+3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments、sync-store 原事件和 factory 原 E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
+4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。自动 finalize 和无表 finalization 边界也待实现。
+5. 完整关系/查询/GraphQL、SQL/SuperJSON 全类型、全部 CLI/模板/热重载/观测/示例，以及严格源码兼容和旧 DB 接管的独立轨，仍按 feature-ledger 推进。默认新影子 schema，不访问业务数据。
+6. ABI 原生类型生成和 53 个内联成功 fixture 已建立，另有 53 额外负向控制、1 个源 null-topic 错误 fixture；原两份 ABI 文件 tsc 通过。剩余 10 个内联类型断言、72 条专门 native 类型记录及绝大部分类型错误指令尚待移植。Simulation 的 8 个应用、无限 seed 空间尚未执行。
+
 
 `parity/public-manifest.json` 包含各包 exports、CLI 命令与选项、配置属性、模板/示例文件 hash 与当前文档路径。`parity/discovery-audit.json` 描述发现范围和静态限制。全套 Vitest 的 runtime collection 尚未完成，905 不是已证明穷尽的动态执行总数。
 
@@ -78,3 +79,13 @@ Foundry v1.8.5 项目级安装批准正在由父会话向用户请求，尚未�
 台账独立列 source_records / mapped_go / retained_sdk / original_oracle / type_fixtures / simulation。63 个内联类型断言与 84 条错误指令现在显式发现，不能用 73 个专门类型记录代表全部类型义务；尚余 10 个内联义务、绝大部分专门类型测试和错误指令待移植。静态发现仍非动态穷尽证明。
 
 下一批继续 factory/offset 原测试与动态地址持久化、更多 DB cache/CRUD/actions。raw SQL 审计还发现 SELECT INTO 可能创建非声明表，下一步补显式拒绝与回归；完整 Drizzle、自动 finalize、无表 finalization 和多链 runtime 仍待实现。Foundry 安装仍待批准，不安装。
+
+## M7：factory / offset 与写入边界
+
+在 8923f8f 后再增 13 条源映射（factory 6 + offset 7），全部 20 个源断言在 Go 与原版通过。累计 176/905：172 Go 映射通过，其中 165 原版 oracle 也通过、7 DB oracle 阻塞；另 4 SDK 通过，729 未实现。所选 core oracle 活动 165/165，原 skip 2（共 167）。全套 Go/race 各 238/238、无 skip；其中明确命名的 PostgreSQL 32、PGlite 32，分别全部通过。ABI typed runtime/race 各 53/53 另计。确定性差分 2466/2466（factory 66 + 基础 2400）单列。
+
+已实现 factory 参数/显式 location、事件 selector、地址归一化/排序/来源 ID、嵌套 ABI offset。Config.Contract.Factory 接入单链引擎；发现保存在独立 sync schema 的 factory_addresses，按 canonical block/hash/log index 重放替换，遇到重组 rewind 删除旧分支。原子业务 handler 失败后同步发现可以重试，PG 连接/PGlite 磁盘重开、同区块 child 日志、后续日志、去重与重组改换 child 地址均通过新增集成测试。原版完整 factory E2E/过滤片段/trace/多链仍待实现，未据此计通过。
+
+SELECT INTO（含 TEMP）、多语句写入显式拒绝；双后端另验证 CTE DML 与可更新视图 DELETE 都进入同一 base-table journal，删除重组恢复、finalize 清理与 safe checkpoint 拒绝回滚均通过。SQL 仍是声明内单语句子集，不是全部 Drizzle。
+
+类型审计补出此前 event errors:namehash 的 @ts-expect-error（null topics），现有独立 Go 成功/失败 fixture，且原 event 文件与 parameter 文件一起 tsc 通过。53 个内联类型要求和 1 条源错误要求分开计数。成功/失败编译证据见 compile-fixtures.json，不能把辅助 53 个负向控制当成新增源用例。Foundry 1.8.5 安装仍待用户批准，未尝试。

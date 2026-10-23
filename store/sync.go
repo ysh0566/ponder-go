@@ -83,7 +83,13 @@ func (s *Store) RewindSync(ctx context.Context, chain, number uint64) error {
 		return e
 	}
 	defer tx.Rollback(context.Background())
+	if e = s.lock(ctx, tx); e != nil {
+		return e
+	}
 	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number>$2", chain, number); e != nil {
+		return e
+	}
+	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("factory_addresses")+" WHERE chain_id=$1 AND block_number>$2", chain, number); e != nil {
 		return e
 	}
 	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("intervals")+" WHERE chain_id=$1 AND start_block>$2", chain, number); e != nil {
@@ -93,6 +99,50 @@ func (s *Store) RewindSync(ctx context.Context, chain, number uint64) error {
 		return e
 	}
 	return tx.Commit(ctx)
+}
+
+type FactoryChild struct {
+	Address  string
+	LogIndex uint64
+}
+
+// RecordFactoryChildren replaces one canonical block's discoveries atomically.
+// Sync provenance survives handler failures and is replay-safe; it is kept out
+// of the indexing journal and removed when the sync store rewinds a fork.
+func (s *Store) RecordFactoryChildren(ctx context.Context, id string, chain, block uint64, hash string, children []FactoryChild) error {
+	tx, e := s.Backend.Begin(ctx)
+	if e != nil {
+		return e
+	}
+	defer tx.Rollback(context.Background())
+	if e = s.lock(ctx, tx); e != nil {
+		return e
+	}
+	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("factory_addresses")+" WHERE factory_id=$1 AND chain_id=$2 AND block_number=$3", id, chain, block); e != nil {
+		return e
+	}
+	for _, child := range children {
+		if e = tx.Exec(ctx, "INSERT INTO "+s.syncTable("factory_addresses")+" VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING", id, chain, child.Address, block, hash, child.LogIndex); e != nil {
+			return e
+		}
+	}
+	return tx.Commit(ctx)
+}
+
+func (s *Store) FactoryChildren(ctx context.Context, id string, chain, through uint64) (map[string]uint64, error) {
+	r, e := s.Backend.Query(ctx, "SELECT address,MIN(block_number)::text AS block FROM "+s.syncTable("factory_addresses")+" WHERE factory_id=$1 AND chain_id=$2 AND block_number<=$3 GROUP BY address ORDER BY address", id, chain, through)
+	if e != nil {
+		return nil, e
+	}
+	children := map[string]uint64{}
+	for _, row := range r.Rows {
+		n, e := strconv.ParseUint(fmt.Sprint(row["block"]), 10, 64)
+		if e != nil {
+			return nil, e
+		}
+		children[fmt.Sprint(row["address"])] = n
+	}
+	return children, nil
 }
 func (s *Store) CacheGet(ctx context.Context, key string) (json.RawMessage, bool, error) {
 	r, e := s.Backend.Query(ctx, "SELECT value::text AS value FROM "+s.syncTable("rpc_cache")+" WHERE key=$1", key)

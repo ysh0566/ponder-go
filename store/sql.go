@@ -62,6 +62,9 @@ func (w *Writer) validateSQLScope(tree map[string]any) error {
 	walk = func(value any) error {
 		switch n := value.(type) {
 		case map[string]any:
+			if _, ok := n["intoClause"]; ok {
+				return fmt.Errorf("SELECT INTO creates an undeclared table and is unsupported in indexing SQL")
+			}
 			for _, kind := range []string{"InsertStmt", "UpdateStmt", "DeleteStmt"} {
 				if statement, ok := n[kind].(map[string]any); ok {
 					relation, _ := statement["relation"].(map[string]any)

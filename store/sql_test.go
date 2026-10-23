@@ -146,7 +146,7 @@ func TestRawSQLJournal(t *testing.T) {
 			})
 			t.Run("DDL internal context and primary key changes are rejected", func(t *testing.T) {
 				e := s.Apply(ctx, event("guarded", 1, 4), func(w *Writer) error {
-					for _, q := range []string{`TRUNCATE account`, `ALTER TABLE account DISABLE TRIGGER ALL`, `SELECT set_config('ponder_go.reverting','1',true)`, `DELETE FROM _ponder_go_journal`, `UPDATE account SET id='changed' WHERE id='kept'`} {
+					for _, q := range []string{`TRUNCATE account`, `ALTER TABLE account DISABLE TRIGGER ALL`, `SELECT * INTO account_copy FROM account`, `SELECT * INTO TEMP account_temp FROM account`, `INSERT INTO account (id) VALUES ('first'); DELETE FROM account`, `SELECT set_config('ponder_go.reverting','1',true)`, `DELETE FROM _ponder_go_journal`, `UPDATE account SET id='changed' WHERE id='kept'`} {
 						if _, e := w.SQL(ctx, q); e == nil {
 							return fmt.Errorf("accepted %s", q)
 						}

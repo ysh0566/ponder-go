@@ -1,4 +1,5 @@
 import readline from "node:readline";
+import {buildLogFactory} from "../../ponder-upstream/packages/core/src/build/factory.ts";
 import {
 	encodeCheckpoint,
 	decodeCheckpoint,
@@ -14,6 +15,7 @@ for await (const line of readline.createInterface({ input: process.stdin })) {
 		const r = JSON.parse(line);
 		let value;
 		switch (r.op) {
+			case "factory":value=buildLogFactory(r.factory);break;
 			case "encode": {
 				const c: any = {};
 				for (const [key, v] of Object.entries(r.checkpoint))
