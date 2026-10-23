@@ -14,10 +14,10 @@
 
 ## 下一可执行批次
 
-1. 从最新提交和 summary.json 恢复。M19 后累计 250 条映射（246 Go + 4 SDK），Go oracle 167 通过、79 fixture oracle 阻塞，655 静态记录未实现；精确执行结果看 batch-17.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
-2. Database actions.test.ts 的11个源例及 database/index.test.ts 的16个生命周期源例已映射；M17已补齐剩余2个database/index记录（historical-baseline recovery rows和camelCase/views-schema），以及 ORM insert-then/full SQL 原例和 SQL 真编译错误义务。M16 sync迁移完整保留原SQL，但仅接受已拥有shadow，不代表真实旧DB布局接管；M17已将9表协议缓存接入默认单链runtime。M18已验证冷重开禁用缓存/重启启用的失效边界，继续自动staged runtime/重组通知、真实deploy/mint/readonly prefetch原例、typed JSON/bytes/array/custom codec/强枚举/Hex、关系DSL和自动profile/指标；随后接自动staged runtime及跨链重组通知调度。
-3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments、sync-store 原事件和 factory 原 E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
-4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。staged runtime 和自动 finalize 仍待接入；无 journal/无 checkpoint finalize 空操作已对应源 camelCase 验证，不能外推未初始化且有 journal 的情况。
+1. 从最新提交和 summary.json 恢复。M20 后累计 282 条映射（278 Go + 4 SDK），Go oracle 185 通过、93 fixture oracle 阻塞，623 静态记录未实现；精确执行结果看 batch-18.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
+2. Database actions.test.ts 的11个源例及 database/index.test.ts 的16个生命周期源例已映射；M17已补齐剩余2个database/index记录（historical-baseline recovery rows和camelCase/views-schema），以及 ORM insert-then/full SQL 原例和 SQL 真编译错误义务。M16 sync迁移完整保留原SQL，但仅接受已拥有shadow，不代表真实旧DB布局接管；M17已将9表协议缓存接入默认单链runtime。M18已验证冷缓存重组，M19已接入自动单链staged runtime，M20已补32条filter/fragments；继续真实deploy/mint/readonly prefetch原例、typed JSON/bytes/array/custom codec/强枚举/Hex、关系DSL和自动profile/指标；随后接自动staged runtime及跨链重组通知调度。
+3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments剩余Foundry源例、events构建/转换、sync-store原事件和factory原E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
+4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。自动单链staged runtime和自动finalize已接入，多链尚未实现；无 journal/无 checkpoint finalize 空操作已对应源 camelCase 验证，不能外推未初始化且有 journal 的情况。
 5. 完整关系/查询/GraphQL、SQL/SuperJSON 全类型、全部 CLI/模板/热重载/观测/示例，以及严格源码兼容和旧 DB 接管的独立轨，仍按 feature-ledger 推进。默认新影子 schema，不访问业务数据。
 6. ABI 原生类型生成和 53 个内联成功 fixture 已建立，另有 53 额外负向控制、1 个源 null-topic 错误 fixture；原两份 ABI 文件 tsc 通过。剩余 10 个内联类型断言、72 条专门 native 类型记录及绝大部分类型错误指令尚待移植。Simulation 的 8 个应用、无限 seed 空间尚未执行。
 
@@ -207,3 +207,14 @@ handler内缓存RPC原先会嵌套获取store/PGlite事务锁。现改为EventPr
 最终证据入口为batch-17.json，最终完整验收退出0：Go/race570/570，PG175/PGlite172，零skip/fail；vet/build、编译、适用oracle/SDK/differential均通过。不要把staged-before-cursor-finalization中的中间版本日志当最终结果。继续时先读最终summary及HEAD。下一批按依赖推进原版filter/fragments/events及source/trace，随后多链完整调度和查询/工具链。当前NewStaged明确仅单链，historical为native逐块事务而非source范围批处理；concurrent fetch/profile/prefetch/metrics、全部Foundry源例仍未覆盖。
 
 M19冻结batch-17-evidence共24份日志/源码审计快照及hash，implementation字段记录9个实现文件hash。唯一新增源credit是splitEvents()完整快照；本批30额外native叶子（含6真实进程退出）不加源credit。当前下一阶段继续原版runtime filter/fragments/events与source/trace，并推进多链、完整缓存查询和API/CLI，不能以570 native通过代替655未实现源码例。自动HTTPReady、完整SSE断线恢复仍没有接线，不外推LISTEN重连测试。
+
+
+## M20：原版 filter/fragments 精确映射与日志路径接入
+
+累计282/905映射（278 Go全部通过，其中185原版oracle通过、93阻塞；SDK4通过），623静态记录未实现。新增32源记录=18fragments+14filter，38静态断言表达式实际75次断言；source loops/snapshots/fixtures/context完整保留在parity/filter-fragments-source-cases.json与testdata/runtime。全部源fragments未改动Vitest18/18通过；完整filter oracle实际尝试0测试/1收集失败suite，仍缺generated.js，Foundry安装pending未执行。不能把867个补充向量或8个native后端叶子算源例。
+
+filter包有ID/adjacency/recovery、地址/topic/factory/区间谓词、80% overlap range合并、50地址block请求放宽和include unions。runtime已用predicate再次过滤宽RPC结果，显式空地址不请求，动态child按持久发现区块核对，canonical hash在规范化缓存前验证。真实EVM+PG/PGlite的cache开/关验证宽请求多余日志、Created与Transfer同交易、发现前排除、实际fork替换及旧缓存清理。原历史完整coalesced planner、完整source config filter DSL和typed事件projection未完成，factory仍先discover再fetch child分离请求。
+
+最终完整verify退出0：Go/race1477/1477，其中867额外filter差分向量各自通过；PG179/PGlite176，零skip/fail。vet/build、53ABI运行/race/编译和既有ORM类型正反例、core185活动/2原skip、SDK4、2466旧差分及20协议向量均通过。first差分红灯保留，修正undefined topic恢复与额外非法dynamic对象的JS coercion；wide first红灯是fixture无等待receipt，已改为有期限实际挖矿等待。当前完整证据/hash见batch-18.json。历史batch17证据未改动。
+
+下一可执行批次：先核验最新HEAD/summary与无挂起命令。原filter中的transaction/from、null transaction.to和transfer源例可沿_test/simulate.ts:transferEth与_test/utils.ts:getAccountsIndexingBuild检查真实ETH转账/trace fixture，不依赖forge生成合约ABI，保留原全部输入/断言/loop。其余range-selector/contract trace继续保留generated ABI阻塞。随后实现events.ts的sync-to-internal转换与buildEvents（receipt按transaction index、matched trace才增traceIndex、stable checkpoint排序/zkSync缺transaction），不以现有log路径代替。再接account/trace runtime、多链和查询/工具链。整体未完成，不将282映射当全量。

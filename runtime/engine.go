@@ -10,6 +10,7 @@ import (
 	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/config"
 	"ponder.local/ponder-go/factory"
+	selection "ponder.local/ponder-go/filter"
 	"ponder.local/ponder-go/finality"
 	"ponder.local/ponder-go/interval"
 	"ponder.local/ponder-go/rpc"
@@ -345,7 +346,9 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 		if e.staged == nil && number == contract.StartBlock {
 			events = append(events, pending{cursor: base, id: fmt.Sprintf("setup:%d:%s:%s", e.chain.ID, contract.Name, b.Hash), event: Event{Name: contract.Name + ":setup", Block: b}})
 		}
-		filter := map[string]any{"blockHash": b.Hash}
+		compiled := nativeContractFilter(contract, "")
+		requestAddress := compiled["address"]
+		childEntries := []selection.ChildAddress{}
 		if factory, ok := e.factories[contract.Name]; ok {
 			children, e2 := e.Store.FactoryChildren(ctx, factory.ID, e.chain.ID, number)
 			if e2 != nil {
@@ -357,15 +360,24 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 			addresses := make([]string, 0, len(children))
 			for address := range children {
 				addresses = append(addresses, address)
+				childEntries = append(childEntries, selection.ChildAddress{Address: address, Block: children[address]})
 			}
 			sort.Strings(addresses)
-			filter["address"] = addresses
-		} else if len(contract.Address) > 0 {
-			filter["address"] = contract.Address
+			requestAddress = addresses
+			compiled["address"] = nativeFactory(factory)
+		}
+		query, needed := plannedBlockLogs(requestAddress, b.Hash)
+		if !needed {
+			continue
 		}
 		var logs []Log
-		if err = e.Client.CallCached(ctx, "eth_getLogs", []any{filter}, &logs); err != nil {
+		if err = e.Client.CallCached(ctx, "eth_getLogs", []any{query}, &logs); err != nil {
 			return err
+		}
+		for _, log := range logs {
+			if log.BlockHash != "" && !strings.EqualFold(log.BlockHash, b.Hash) {
+				return fmt.Errorf("RPC log belongs to a different block")
+			}
 		}
 		if err = e.cacheLogs(ctx, logs); err != nil {
 			return err
@@ -376,7 +388,11 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 				continue
 			}
 			for name, item := range a.Events {
-				if !strings.EqualFold(item.ID.Hex(), log.Topics[0]) {
+				compiled["topic0"] = item.ID.Hex()
+				if !selection.IsLogFilterMatched(compiled, nativeLog(log, number)) {
+					continue
+				}
+				if _, dynamic := e.factories[contract.Name]; dynamic && !selection.IsAddressMatched(log.Address, float64(number), childEntries) {
 					continue
 				}
 				eventName := contract.Name + ":" + name

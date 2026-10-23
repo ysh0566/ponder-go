@@ -3,6 +3,7 @@ package runtime
 import (
 	"context"
 	"fmt"
+	selection "ponder.local/ponder-go/filter"
 	"ponder.local/ponder-go/store"
 	"strings"
 )
@@ -36,16 +37,18 @@ func (e *Engine) discoverFactories(ctx context.Context, b Block, number uint64) 
 				return err
 			}
 		}
+		for _, log := range logs {
+			if log.BlockHash != "" && !strings.EqualFold(log.BlockHash, b.Hash) {
+				return fmt.Errorf("factory RPC log belongs to a different block")
+			}
+		}
 		if err := e.cacheLogs(ctx, logs); err != nil {
 			return err
 		}
 		children := []store.FactoryChild{}
 		for _, log := range logs {
-			if log.Removed || len(log.Topics) == 0 || !strings.EqualFold(log.Topics[0], f.EventSelector) {
+			if log.Removed || !selection.IsLogFactoryMatched(nativeFactory(f), nativeLog(log, number)) {
 				continue
-			}
-			if log.BlockHash != "" && !strings.EqualFold(log.BlockHash, b.Hash) {
-				return fmt.Errorf("factory RPC log belongs to a different block")
 			}
 			address, err := f.ChildAddress(log.Topics, log.Data)
 			if err != nil {

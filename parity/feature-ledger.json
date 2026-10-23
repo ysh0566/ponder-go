@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "250 mapped: 246 native Go passed (167 original oracle also passed, 79 fixture oracle blocked) +4 retained SDK passed; 655 static records unimplemented. Dynamic exhaustive discovery still pending."
+      "remaining": "282 mapped:278 native Go passed (185 original oracle also passed,93 fixture oracle blocked)+4 retained SDK passed;623 static records unimplemented. Dynamic exhaustive discovery still pending."
     },
     {
       "id": "differential-harness",
@@ -48,9 +48,10 @@
         "packages/core/src/utils/interval.ts"
       ],
       "evidence": [
-        "parity/runs/differential.json"
+        "parity/runs/differential.json",
+        "testdata/runtime/filter-differential.json"
       ],
-      "remaining": "2466 vectors passed: foundation 2400 + factory 66. Extend to ABI errors, filters, stores and full runtime; these vectors do not add source port credit."
+      "remaining": "2466 foundation/factory vectors +867 filter/fragments vectors +20 protocol vectors independently verified. Continue stores/full runtime; no synthetic vector adds original test credit."
     },
     {
       "id": "native-config",
@@ -196,7 +197,7 @@
         "parity/runs/go-race.jsonl",
         "parity/runs/differential.json"
       ],
-      "remaining": "6 factory +7 ABI offset source tests pass; single-chain log discovery persists separately from indexing data and rewinds forks. Complete original factory E2E, source/filter/fragments, trace/account factory targets and multichain pending. Malformed/truncated child-address RPC words are explicitly rejected by native extraction."
+      "remaining": "32 filter/fragments records now mapped separately. Real EVM factory same-transaction birth/child logs, pre-discovery exclusion and reorg/cache on/off verified on both backends. Complete original generated-ABI factory E2E, trace/account targets and multichain remain pending."
     },
     {
       "id": "receipt",
@@ -939,7 +940,7 @@
         "docs/PROTOCOL_CACHE.md",
         "parity/runs/batch-16.json"
       ],
-      "remaining": "Full original CRUD fixtures, source request hash/block cache metadata, full filter/include/pagination, automatic traces, multichain scheduling and history/live handoff remain incomplete. Twenty generated codec vectors are extra evidence, not source credit. Cold re-enable does not backfill logs/receipts for the uncached period; complete missing-interval fetch remains."
+      "remaining": "Full original CRUD fixtures, source request hash/block cache metadata, full include/pagination/history planner, automatic traces and multichain remain incomplete. Automatic single-chain staged handoff is now connected and separately verified. Cold re-enable does not backfill logs/receipts for the uncached period; complete missing-interval fetch remains."
     },
     {
       "id": "staged-runtime-single-chain",
@@ -961,6 +962,32 @@
         "docs/STAGED_RUNTIME.md"
       ],
       "remaining": "Single-chain native per-block history/live scheduling only. Full original runtime/Foundry fixtures, source range batching/concurrent fetch/profile/metrics, multichain, trace/account/native-transfer and full query/SSE/CLI integration remain unimplemented. NOTIFY reconnect reads current state and later commits; it is not durable message replay."
+    },
+    {
+      "id": "runtime-filter-fragments",
+      "status": "verified_subset",
+      "implementation_files": [
+        "filter/fragments.go",
+        "filter/match.go",
+        "filter/requests.go",
+        "filter/values.go",
+        "runtime/native_filter.go",
+        "runtime/engine.go",
+        "runtime/factory.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/filter.ts",
+        "packages/core/src/runtime/fragments.ts"
+      ],
+      "evidence": [
+        "parity/filter-fragments-source-cases.json",
+        "testdata/runtime/fragments.json",
+        "testdata/runtime/filters.json",
+        "testdata/runtime/block-filter.json",
+        "testdata/runtime/filter-differential.json",
+        "docs/FILTER_FRAGMENTS.md"
+      ],
+      "remaining": "32 source records mapped; full original filter suite remains blocked before collection by missing generated.js/Foundry1.8.5 pending approval. Original deployment/mint/range-selector/trace records not replaced. Single-chain log predicate and >50-address widening connected; full config filter DSL, complete history planner, typed event projection, account/trace/multichain scheduling remain unfinished.867 generated vectors and8 real-backend leaves give no source credit."
     }
   ]
 }

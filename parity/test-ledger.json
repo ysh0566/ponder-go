@@ -21,20 +21,20 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 250,
-    "executed": 250,
-    "passed": 250,
+    "ported": 282,
+    "executed": 282,
+    "passed": 282,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 655,
-    "go_ports": 246,
+    "unimplemented": 623,
+    "go_ports": 278,
     "retained_sdk": 4,
-    "oracle_passed": 171,
-    "oracle_blocked": 79,
-    "go_passed": 246,
+    "oracle_passed": 189,
+    "oracle_blocked": 93,
+    "go_passed": 278,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 167,
-    "target_and_original_oracle_passed": 171
+    "go_and_original_oracle_passed": 185,
+    "target_and_original_oracle_passed": 189
   },
   "unresolved_expansion_ids": [],
   "files": [
@@ -20464,12 +20464,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "getChildAddress() topics",
+        "source_id": "dcb5e73908e894a2b815",
+        "source_line": 59,
+        "assertions_sha256": "2780c071ebee04c24d67cf83e14c9c7c1f20b9d60fa2f4f5e35fb7747b4eb8a6",
+        "original_assertions": 1,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/getChildAddress()_topics",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 1,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "8b843d8b055a534d8600",
@@ -20502,12 +20533,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "getChildAddress() offset",
+        "source_id": "8b843d8b055a534d8600",
+        "source_line": 76,
+        "assertions_sha256": "2780c071ebee04c24d67cf83e14c9c7c1f20b9d60fa2f4f5e35fb7747b4eb8a6",
+        "original_assertions": 1,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/getChildAddress()_offset",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 1,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "d4a44fd18de58d842e60",
@@ -20651,12 +20713,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isBlockFilterMatched",
+        "source_id": "ad3050b801ac9f9e4a4b",
+        "source_line": 158,
+        "assertions_sha256": "3b93d7fbb0c4eb152e21bac4b4178235f996f10635ec65689ea37ad4d8eece99",
+        "original_assertions": 2,
+        "target_file": "filter/block_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamBlockFilter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/block-filter.json",
+        "runtime_assertions": 2,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "53007c4c2fcd23a21915",
@@ -21029,12 +21122,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToBlockRequest returns undefined for no inputs",
+        "source_id": "81d93c6efbaaa64aa4e8",
+        "source_line": 547,
+        "assertions_sha256": "6bfb268fac5631ccfc8f67f90cb4ab48fdde1a05def5fc8b4d3c52f50bf4e85c",
+        "original_assertions": 1,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/mergeLogFiltersToBlockRequest_returns_undefined_for_no_inputs",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 1,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "297ff86a54e9010cbb83",
@@ -21066,12 +21190,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToBlockRequest returns one log filter",
+        "source_id": "297ff86a54e9010cbb83",
+        "source_line": 553,
+        "assertions_sha256": "9ab96c2d0ac0e0746aecff8bc9bd700acd1711420f0b4a49835be8c1c6f18ee1",
+        "original_assertions": 1,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/mergeLogFiltersToBlockRequest_returns_one_log_filter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 1,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "bc00255fef95d9272b16",
@@ -21104,12 +21259,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToBlockRequest unions addresses and topics",
+        "source_id": "bc00255fef95d9272b16",
+        "source_line": 569,
+        "assertions_sha256": "cb1fd071ed736563e2e316b1f197a1afb7d204c2cd386be481fca6c8ab23907c",
+        "original_assertions": 1,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/mergeLogFiltersToBlockRequest_unions_addresses_and_topics",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 1,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "3c2b8cc0a9fc66f15c4a",
@@ -21142,12 +21328,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToBlockRequest matches all values if one input matches all values",
+        "source_id": "3c2b8cc0a9fc66f15c4a",
+        "source_line": 597,
+        "assertions_sha256": "c84521c3e794a9f46a954b9fc13f034e96bc8639544d92731fdc183444118fff",
+        "original_assertions": 1,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/mergeLogFiltersToBlockRequest_matches_all_values_if_one_input_matches_all_values",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 1,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "87aa9c053835c17a0bdf",
@@ -21179,12 +21396,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToBlockRequest matches all addresses for a factory log filter",
+        "source_id": "87aa9c053835c17a0bdf",
+        "source_line": 621,
+        "assertions_sha256": "3291a86ea53e4060aacf99ada97b806dee7dd4ea54920cdf34dac0aee49b42e2",
+        "original_assertions": 1,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/mergeLogFiltersToBlockRequest_matches_all_addresses_for_a_factory_log_filter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 1,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "063b2ef6ce1710b5e907",
@@ -21214,12 +21462,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToBlockRequest includes factories without log filters",
+        "source_id": "063b2ef6ce1710b5e907",
+        "source_line": 639,
+        "assertions_sha256": "419e0a530b58de9d84afa6c6e5f9fabe8172c7333db7f1ebb17cda9781511e56",
+        "original_assertions": 1,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/mergeLogFiltersToBlockRequest_includes_factories_without_log_filters",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 1,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "10f0068f97080c079808",
@@ -21251,12 +21530,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToBlockRequest unions factory and log filter addresses",
+        "source_id": "10f0068f97080c079808",
+        "source_line": 651,
+        "assertions_sha256": "e38e4baa1c775b13e1ced5c64341718d854e66d7859a8cddf17b74249479a7a9",
+        "original_assertions": 1,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/mergeLogFiltersToBlockRequest_unions_factory_and_log_filter_addresses",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 1,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "60183027e2d8b2084d58",
@@ -21288,12 +21598,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToBlockRequest matches all addresses for a factory without an address",
+        "source_id": "60183027e2d8b2084d58",
+        "source_line": 670,
+        "assertions_sha256": "906ea87f8bbfab59c6046e4ea33f6591d18a2844c68115f1be7faefde0a74b38",
+        "original_assertions": 1,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/mergeLogFiltersToBlockRequest_matches_all_addresses_for_a_factory_without_an_address",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 1,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "163687e53f937f38bdc3",
@@ -21325,12 +21666,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToBlockRequest ignores inputs with an empty address list",
+        "source_id": "163687e53f937f38bdc3",
+        "source_line": 688,
+        "assertions_sha256": "91a6a8a24aba5c73e8e86e11e148f9f59335795ca34c60f947ce54fecd49bb1d",
+        "original_assertions": 1,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/mergeLogFiltersToBlockRequest_ignores_inputs_with_an_empty_address_list",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 1,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "2f13a001ab8416f18cce",
@@ -21368,12 +21740,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToBlockRequest matches all addresses above ADDRESS_CHUNK_SIZE",
+        "source_id": "2f13a001ab8416f18cce",
+        "source_line": 703,
+        "assertions_sha256": "48c05e536b9f186678c0332a51e6532958f81f1b722dfa76a6f4fac3e17024ad",
+        "original_assertions": 2,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/mergeLogFiltersToBlockRequest_matches_all_addresses_above_ADDRESS_CHUNK_SIZE",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 2,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "68d640b52be58334d6d2",
@@ -21411,12 +21814,43 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToBlockRequest matches all topics above ADDRESS_CHUNK_SIZE",
+        "source_id": "68d640b52be58334d6d2",
+        "source_line": 726,
+        "assertions_sha256": "24c14289372467f4d36c1f1fcda457b7b21a83abcc6796578da2e8c942833f06",
+        "original_assertions": 2,
+        "target_file": "filter/filters_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFilters/mergeLogFiltersToBlockRequest_matches_all_topics_above_ADDRESS_CHUNK_SIZE",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/filters.json",
+        "runtime_assertions": 2,
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
+        "evidence": "parity/runs/filter-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "f5648e97da46c3374944",
@@ -21448,12 +21882,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "getFragments() block filter",
+        "source_id": "f5648e97da46c3374944",
+        "source_line": 18,
+        "assertions_sha256": "e9bb7f5588f8b2c9cf2d74faef5ddf9c24b459bc2ad2fba06878a664b0e933b0",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/getFragments()_block_filter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "0a437a265c09689bdf51",
@@ -21485,12 +21942,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "getFragments() transaction filter",
+        "source_id": "0a437a265c09689bdf51",
+        "source_line": 42,
+        "assertions_sha256": "213cb63a49032fff207e5a407775dbaeddc3a78e0e292ce1bdc905f8de3cfb72",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/getFragments()_transaction_filter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "49d5b7beb29f46b772f5",
@@ -21522,12 +22002,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "getFragments() log filter",
+        "source_id": "49d5b7beb29f46b772f5",
+        "source_line": 69,
+        "assertions_sha256": "61e3f9e696afc4bc5243cfa54a12ffe41b3570fa08df52529be4bf48ea912d16",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/getFragments()_log_filter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "b17be531af2c7bfddf08",
@@ -21559,12 +22062,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "getFragments() log filter with transaction receipts",
+        "source_id": "b17be531af2c7bfddf08",
+        "source_line": 129,
+        "assertions_sha256": "ebf9b6fa5863c3e479d3f3ff57a77796c5929889048363da0b99529aaaf2db12",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/getFragments()_log_filter_with_transaction_receipts",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "69b3f27f108b5c36be3b",
@@ -21596,12 +22122,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "getFragments() trace filter",
+        "source_id": "69b3f27f108b5c36be3b",
+        "source_line": 156,
+        "assertions_sha256": "7274e1f75942ca5a4f32317fbf913a4d9f9ec54eb1a374f4a640eb1fbb896ef0",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/getFragments()_trace_filter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "63c5eba708b28d80f496",
@@ -21633,12 +22182,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "getFragments() transfer filter",
+        "source_id": "63c5eba708b28d80f496",
+        "source_line": 187,
+        "assertions_sha256": "79482f4a334a66b9d8dc80a6427356f72159544565bf4ecd6b444a84c8d77cb6",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/getFragments()_transfer_filter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "5fb639ce80ab1306ed1a",
@@ -21670,12 +22242,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "getFragments() factory with topic",
+        "source_id": "5fb639ce80ab1306ed1a",
+        "source_line": 215,
+        "assertions_sha256": "1587707243efc71b57189846589c721294fbb35f881c6f4dd04ed2752fdc885c",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/getFragments()_factory_with_topic",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "569d62fab55852cfea89",
@@ -21707,12 +22302,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "getFragments() factory with offset",
+        "source_id": "569d62fab55852cfea89",
+        "source_line": 259,
+        "assertions_sha256": "64a17b8109171ee5c0f213d73e811e765d52b82c6b7f997c537686a7838d1914",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/getFragments()_factory_with_offset",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "dd09087ca8ed5391f7fb",
@@ -21744,12 +22362,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "getFragments() multiple factories",
+        "source_id": "dd09087ca8ed5391f7fb",
+        "source_line": 303,
+        "assertions_sha256": "7cc6d4a567de907cd00d27b1e8431aa85c90880a64869a6ce6f12810fe989234",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/getFragments()_multiple_factories",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "73227d8a0af2fe98b355",
@@ -21799,12 +22440,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "decodeFragment()",
+        "source_id": "73227d8a0af2fe98b355",
+        "source_line": 369,
+        "assertions_sha256": "9b5875412fd39cbffea29bf6a712903f8c7b34f88d432293ed9b97f6ae966e93",
+        "original_assertions": 4,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/decodeFragment()",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 4
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "4218faeb99892980df17",
@@ -21842,12 +22506,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "decodeFragment() factory addresses",
+        "source_id": "4218faeb99892980df17",
+        "source_line": 427,
+        "assertions_sha256": "f0f4d71fa656da7e713c86d7632bb87a6eeae8d52fb23e03481877d639f8d7bf",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/decodeFragment()_factory_addresses",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 38
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "7843a470ea0c58546a99",
@@ -21881,12 +22568,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "recoverFilter() block filter",
+        "source_id": "7843a470ea0c58546a99",
+        "source_line": 494,
+        "assertions_sha256": "8d9523df87469c80faf8018358a715bccae2d2dc58b3092afbbdcbbe353b5b08",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/recoverFilter()_block_filter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "73f03a8f1fbe91572d9f",
@@ -21920,12 +22630,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "recoverFilter() transaction filter",
+        "source_id": "73f03a8f1fbe91572d9f",
+        "source_line": 507,
+        "assertions_sha256": "8d9523df87469c80faf8018358a715bccae2d2dc58b3092afbbdcbbe353b5b08",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/recoverFilter()_transaction_filter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "f2eba09b1a5cf035a497",
@@ -21959,12 +22692,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "recoverFilter() log filter",
+        "source_id": "f2eba09b1a5cf035a497",
+        "source_line": 524,
+        "assertions_sha256": "8d9523df87469c80faf8018358a715bccae2d2dc58b3092afbbdcbbe353b5b08",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/recoverFilter()_log_filter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "3afe8e5e8f38c9c427b6",
@@ -21998,12 +22754,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "recoverFilter() trace filter",
+        "source_id": "3afe8e5e8f38c9c427b6",
+        "source_line": 544,
+        "assertions_sha256": "8d9523df87469c80faf8018358a715bccae2d2dc58b3092afbbdcbbe353b5b08",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/recoverFilter()_trace_filter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "0051d83addf83ab38b55",
@@ -22037,12 +22816,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "recoverFilter() transfer filter",
+        "source_id": "0051d83addf83ab38b55",
+        "source_line": 563,
+        "assertions_sha256": "8d9523df87469c80faf8018358a715bccae2d2dc58b3092afbbdcbbe353b5b08",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/recoverFilter()_transfer_filter",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "79c69cf8dd3c1f800862",
@@ -22076,12 +22878,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "recoverFilter() factory",
+        "source_id": "79c69cf8dd3c1f800862",
+        "source_line": 580,
+        "assertions_sha256": "8d9523df87469c80faf8018358a715bccae2d2dc58b3092afbbdcbbe353b5b08",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/recoverFilter()_factory",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "5b801d3ec2d1f301b006",
@@ -22115,12 +22940,35 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/fragments.test.ts",
+        "source_name": "recoverFilter() multiple factories",
+        "source_id": "5b801d3ec2d1f301b006",
+        "source_line": 606,
+        "assertions_sha256": "8d9523df87469c80faf8018358a715bccae2d2dc58b3092afbbdcbbe353b5b08",
+        "original_assertions": 1,
+        "target_file": "filter/fragments_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamFragments/recoverFilter()_multiple_factories",
+        "assertion_policy": "Complete fixed-source inputs/loops, assertions, snapshots, setup contexts, status and source text retained. Undefined/null distinguished. Every actual source operation and runtime assertion replayed, not just output lengths. Static filter fixtures use actual existing Anvil0.2.0 for registered chain setup; block case reads actual RPC genesis and uses unchanged helper filter expression. Original Foundry1.8.5 suite remains separately blocked.",
+        "fixture": "testdata/runtime/fragments.json",
+        "runtime_assertions": 1
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "1337ad403051f00c5d99",
