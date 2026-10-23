@@ -134,10 +134,8 @@ func (s *Store) RewindSync(ctx context.Context, chain, number uint64) error {
 }
 
 func (s *Store) rewindSync(ctx context.Context, tx Transaction, chain, number uint64) error {
-	if cache := s.protocol.Load(); cache != nil {
-		if e := cache.rewind(ctx, tx, chain, number); e != nil {
-			return e
-		}
+	if e := s.rewindProtocolCache(ctx, tx, chain, number); e != nil {
+		return e
 	}
 	var e error
 	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number>$2", chain, number); e != nil {

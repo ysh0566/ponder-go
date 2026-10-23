@@ -28,7 +28,11 @@ cache entries use a chain-scoped SHA256 request key and nullable block metadata;
 rewind conservatively clears unknown-block results for the affected chain.
 This differs from the source MD5/ordered-object request-key algorithm and does
 not promise reuse of existing TS client cache entries. Closed adapters reject
-reads/writes; backend lifecycle and lease fencing still govern writes.
+reads/writes; backend lifecycle and lease fencing still govern writes. A cold or
+disabled runtime discovers an existing owned/complete schema inside its rewind
+transaction and invalidates it without enabling caching or creating a schema.
+Native factory IDs include chain ID before entering the source global factory
+identity relation, preserving the native API's per-chain key separation.
 
 Twenty generated vectors evaluate the unmodified fixed-source encode.ts and
 lowercase.ts functions using installed dependencies. Their hashes and exact
@@ -39,7 +43,17 @@ repeat sync and a fork replacement; it does not establish Foundry 1.8.5 oracle
 compatibility.
 
 Still required: original source CRUD/fragment/filter cases with their exact
-Foundry fixtures; cold disabled-cache/re-enable invalidation; full request hash
+Foundry fixtures; full request hash
 and block-number pruning protocol; query projections/pagination; automatic trace
 and account/native-transfer sources; staged/multichain scheduling and full
 history-to-realtime handoff. Old DB takeover remains a separate track.
+
+Cold-cache regression tests close/reopen real PG connections and disk-backed
+PGlite, invalidate all five event relations plus factory addresses/RPC results,
+preserve another chain, and re-enable/replay. A real cache DELETE trigger error
+proves that cold invalidation and business undo/provenance roll back together.
+Disabled rewinds leave an absent cache schema absent and refuse an unowned
+colliding schema. The original red run is retained separately. These are native
+regressions, not additional source mappings. Re-enabling does not backfill cached
+logs/receipts for an uncached period; the complete cache planner must use missing
+intervals to fetch those data in a later milestone.

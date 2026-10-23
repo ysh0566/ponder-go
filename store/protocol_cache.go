@@ -291,6 +291,10 @@ func (c *ProtocolCache) complete(ctx context.Context, tx Transaction, chain, num
 	return tx.Exec(ctx, "INSERT INTO "+c.table("intervals")+"(fragment_id,chain_id,blocks) VALUES($1,$2,nummultirange(numrange($3::numeric,$3::numeric,'[]'))) ON CONFLICT(fragment_id) DO UPDATE SET blocks="+c.table("intervals")+".blocks + excluded.blocks", fragment, chain, number)
 }
 func (c *ProtocolCache) factoryChildren(ctx context.Context, tx Transaction, id string, chain, block uint64, children []FactoryChild) error {
+	// The native API permits the same caller ID on different chains. Source
+	// factory fragment IDs already embed their chain; mirror that separation
+	// explicitly rather than colliding on (factory_id,address).
+	id = fmt.Sprintf("native:%d:%s", chain, id)
 	r, e := tx.Query(ctx, "INSERT INTO "+c.table("factories")+"(fragment_id) VALUES($1) ON CONFLICT(fragment_id) DO UPDATE SET fragment_id=excluded.fragment_id RETURNING id", id)
 	if e != nil {
 		return e
@@ -305,6 +309,31 @@ func (c *ProtocolCache) factoryChildren(ctx context.Context, tx Transaction, id 
 		}
 	}
 	return nil
+}
+
+// A disabled/cold runtime must still invalidate an already owned disk cache.
+// Discover it in the rewind transaction without enabling cache reads/writes or
+// creating schemas. Ownership and completeness are verified before any DELETE.
+func (s *Store) rewindProtocolCache(ctx context.Context, tx Transaction, chain, number uint64) error {
+	cache := s.protocol.Load()
+	if cache == nil {
+		m, e := NewSyncMigrator(s.Backend, s.Namespace)
+		if e != nil {
+			return e
+		}
+		exists, e := m.owned(ctx, tx, m.LatestSchema(), m.latestOwner())
+		if e != nil {
+			return e
+		}
+		if !exists {
+			return nil
+		}
+		if e = m.validateLatest(ctx, tx); e != nil {
+			return e
+		}
+		cache = &ProtocolCache{s: s, namespace: m.LatestSchema()}
+	}
+	return cache.rewind(ctx, tx, chain, number)
 }
 
 // Cache keys here are native JSON-RPC request keys, hashed with SHA256 and

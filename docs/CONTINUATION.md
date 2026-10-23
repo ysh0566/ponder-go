@@ -15,7 +15,7 @@
 ## 下一可执行批次
 
 1. 从最新提交和 summary.json 恢复。M17 后累计 249 条映射（245 Go + 4 SDK），Go oracle 167 通过、78 fixture oracle 阻塞，656 静态记录未实现；精确执行结果看 batch-15.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
-2. Database actions.test.ts 的11个源例及 database/index.test.ts 的16个生命周期源例已映射；M17已补齐剩余2个database/index记录（historical-baseline recovery rows和camelCase/views-schema），以及 ORM insert-then/full SQL 原例和 SQL 真编译错误义务。M16 sync迁移完整保留原SQL，但仅接受已拥有shadow，不代表真实旧DB布局接管；M17已将9表协议缓存接入默认单链runtime。继续冷重开禁用缓存/重启启用的失效边界、真实deploy/mint/readonly prefetch原例、typed JSON/bytes/array/custom codec/强枚举/Hex、关系DSL和自动profile/指标；随后接自动staged runtime及跨链重组通知调度。
+2. Database actions.test.ts 的11个源例及 database/index.test.ts 的16个生命周期源例已映射；M17已补齐剩余2个database/index记录（historical-baseline recovery rows和camelCase/views-schema），以及 ORM insert-then/full SQL 原例和 SQL 真编译错误义务。M16 sync迁移完整保留原SQL，但仅接受已拥有shadow，不代表真实旧DB布局接管；M17已将9表协议缓存接入默认单链runtime。M18已验证冷重开禁用缓存/重启启用的失效边界，继续自动staged runtime/重组通知、真实deploy/mint/readonly prefetch原例、typed JSON/bytes/array/custom codec/强枚举/Hex、关系DSL和自动profile/指标；随后接自动staged runtime及跨链重组通知调度。
 3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments、sync-store 原事件和 factory 原 E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
 4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。staged runtime 和自动 finalize 仍待接入；无 journal/无 checkpoint finalize 空操作已对应源 camelCase 验证，不能外推未初始化且有 journal 的情况。
 5. 完整关系/查询/GraphQL、SQL/SuperJSON 全类型、全部 CLI/模板/热重载/观测/示例，以及严格源码兼容和旧 DB 接管的独立轨，仍按 feature-ledger 推进。默认新影子 schema，不访问业务数据。
@@ -182,4 +182,12 @@ HistoricalBatch仍逐写journal，初始safe metadata与安全前缀清理同事
 
 Store.EnableProtocolCache + runtime默认路径已接入完整RPC block/transactions/logs/receipt，区间/factory镜像与attached-cache重组删除同事务；PG/PGlite真实已有Anvil分别验证写入、重放、fork与旧日志删除。原native factory简略RPC fixture明确使用DisableCache，未冒充完整RPC oracle。source完整CRUD fixtures、过滤分页、source MD5请求哈希、自动trace、冷disable/re-enable失效、自动staged runtime/多链仍缺。详见PROTOCOL_CACHE.md。
 
-下一步先处理冷reopen禁用缓存后rewind再启用的缓存失效：当前 Store.rewindSync 仅清已attach的protocol pointer，重启后未attach但磁盘已有owned schema的情况仍需补；不要假定本批覆盖它。然后把Lifecycle/Actions真实接入staged事件调度与重组/通知，保持MAX暂态、逐事件业务/journal和最终latest原子性，接续source/trace/多链及查询工具链。
+M17当时记录的冷reopen禁用缓存后rewind再启用缺口已由下方M18修复并验证。继续把Lifecycle/Actions真实接入staged事件调度与重组/通知，保持MAX暂态、逐事件业务/journal和最终latest原子性，接续source/trace/多链及查询工具链。
+
+## M18：冷缓存重组与跨链 factory 镜像
+
+在M17发布提交3c35307之后，新增8个原生回归叶子，无新增源credit。真实disk PGlite/PG连接关闭重开复现了未attach缓存旧分支残留、cold DELETE未参与undo事务，以及同native factory ID/address跨链镜像冲突。修复为rewind事务内只发现已归属/完整schema，不启用缓存、不创建schema；镜像factory身份显式含chain ID。测试还验证closed adapter、另一链保留、真实DELETE触发器失败全回滚、重启后重新启用/重放、不存在schema保持不存在和拒绝未归属schema。详见batch-16.json与protocol-cold-red/fixed-race日志。
+
+下一项以自动staged runtime为先：Engine.Store当前只接受atomic Store.Apply，而Lifecycle/Actions的原版granular MAX/commitBlock/latest路径尚未接入Engine。接入前须决定并验证启动migrate返回safe与持久latest的协调、历史到实时切换、handler逐事务journal、MAX暂态进程退出、commitBlock+latest/通知边界、revert/finalize后的事件去重与cache失效。当前source原例cache/history/runtime/filter/trace仍未移植，不可拿原生Anvil回归代替。
+
+M18完整verify退出0：Go/race539/539；PG161/PGlite158均通过，无skip/fail。vet/build、ABI53编译/运行/race、ORM6源错误+6额外控制、core167活动/2原skip、SDK4和2466差分均通过。源映射249，原版Go oracle167通过/78阻塞，SDK4，656未实现。batch-16-evidence冻结16份日志/hash，batch-15-evidence保留M17原始结果。当前下一实现入口仍为自动staged runtime/重组通知；保留M17发布SHA和所有历史身份修复备份。

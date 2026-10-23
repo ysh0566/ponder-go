@@ -1,0 +1,218 @@
+{
+  "milestone": "M18",
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "base_commit": "3c35307eab6eb8ec874bb5551cab88cefb77a465",
+  "overall_complete": false,
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 249,
+    "unimplemented": 656,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 245,
+    "passed_with_required_type_checks": 245,
+    "original_oracle_also_passed": 167,
+    "original_oracle_blocked": 78
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 171,
+    "mapped_blocked": 78,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "new_exact_source_records": 0,
+  "new_native_regression_leaves": 8,
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 539,
+    "pass": 539,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 539,
+    "pass": 539,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 161,
+        "pass": 161,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 161,
+        "pass": 161,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 158,
+        "pass": 158,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 158,
+        "pass": 158,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "orm_type_fixtures": {
+    "source_error_directives": 6,
+    "source_error_directives_passed": 6,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 169,
+    "passed": 167,
+    "failed": 0
+  },
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.27.1 darwin/arm64",
+    "node": "v25.2.1",
+    "differences": []
+  },
+  "command": {
+    "command": "PONDER_TEST_POSTGRES=<task-only127.0.0.1:53398> ./tools/verify.sh",
+    "exit_code": 0
+  },
+  "fixes": [
+    "Cold/disabled rewind discovers existing owned complete cache in the business undo transaction without enabling caching or creating schemas.",
+    "Closed adapters still allow Store-owned reorg cleanup while their public read/write calls remain closed.",
+    "Native factory mirror IDs include chain ID to prevent source global(factory_id,address) collisions."
+  ],
+  "tested": [
+    "Disk PGlite/real PG close and reopen, disabled rewind and reenable/replay.",
+    "All five event relations and factory addresses/RPC rows invalidated for only target chain.",
+    "Real cache DELETE trigger failure rolls business undo/native provenance/cache invalidation back together.",
+    "Absent cache schema stays absent; an unowned colliding namespace is refused unchanged."
+  ],
+  "blockers": [
+    {
+      "target": "Foundry1.8.5 project-local installation",
+      "status": "pending_approval",
+      "executed": false,
+      "impact": "Original full DB/indexing/runtime collection depends on missing _test/generated.js. No repeated install attempt or substitute fixture."
+    }
+  ],
+  "remaining": [
+    "656 static source records unimplemented; dynamic exhaustive discovery still unproven.",
+    "Automatic staged runtime/history-live handoff/reorg notification scheduler.",
+    "Full original source RPC hash/filter/query/CRUD fixtures and uncached-period log/receipt backfill.",
+    "Automatic trace/account/native transfer sources, multichain, GraphQL/API/CLI/templates/hot reload/observability.",
+    "Separate strict TS source compatibility and real old-DB takeover tracks."
+  ],
+  "evidence": [
+    {
+      "path": "parity/runs/batch-16-evidence/go-test.jsonl",
+      "sha256": "3e106681b50e99a6a6347104b77adb0542b4371cce078f88958732a49154478b"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/go-race.jsonl",
+      "sha256": "770e8aee2bf60907f0a4b1493298433c25cb6a6bd0bf2667f82c0feaa5cdbee9"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/go-vet.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/summary.json",
+      "sha256": "c91eed27e83ae6b79d34a9861a8bb9ee8e41b6bfbe5731cf895a97309e6f45d4"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/tool-versions.txt",
+      "sha256": "4b91ecd59a944510c8acc3e68e9b233347188b51f182bce2d0ee00d88e2524ba"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/batch-16-verify.txt",
+      "sha256": "161c75d017ef458dbd7994a9fdd87d582ec0949737c1b8eed48c84e8c8d45556"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/core-oracle.json",
+      "sha256": "78e0481c8ac123f0611c476a70e5e7d974d4920c1cee82a65e35fade39bb1835"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/foundation-oracle.json",
+      "sha256": "2d196e200a554e0ec48fffcff6b8cb594826da59949aafa83a52dd323f7e066b"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/orm-compile-fixtures.json",
+      "sha256": "406811fc58e8a77c089dc06b8825664dc690be8656315ab4ed12c5f30f06011b"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/compile-fixtures.json",
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/abi-typed-go.jsonl",
+      "sha256": "bae6e3544a0ba8df2a22fa99676da2fb49baad772d47168583bd85303888c848"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/abi-typed-race.jsonl",
+      "sha256": "40a941e64cbe49a62c06df0b9c1e678c50deee3d869805e0943864359933ddb5"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/parameters-typecheck.json",
+      "sha256": "92c5c2a30ff31db3f5dea19de6564d9ca1ea58336682f70137a6be4443157bcb"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/differential.json",
+      "sha256": "88787f0cf3676c14d06ab381bfba412823a6c4815779fc6453ba4cdfd4efacf9"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/protocol-cold-red.jsonl",
+      "sha256": "6fa8215139d813b176d8793e6a80cc735affce9e1172b940be1bafa17004e5d9"
+    },
+    {
+      "path": "parity/runs/batch-16-evidence/protocol-cold-fixed-race.jsonl",
+      "sha256": "a19be7f13f61486c2e7f3dc94ad6c991ef05debe0b63d4c5827143a78748f197"
+    }
+  ]
+}
