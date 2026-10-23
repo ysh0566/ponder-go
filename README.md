@@ -1,0 +1,69 @@
+# Ponder-Go
+
+固定 `ponder-sh/ponder@17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`（核心 `0.18.2`）的本地 Go 复刻，**仍在实现，不是全功能完成版**。
+
+项目：`/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-go`。完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。此项目没有远端、推送、PR 或部署。
+
+目前已有可运行的单链路径：本地 Ethereum RPC → 合约日志/receipt → Go handler → PostgreSQL 事务写入、journal、checkpoint → SQL HTTP/SSE。Anvil 重组后可以撤销并重新索引。PostgreSQL 与真实 PGlite 分别验证；没有 SQLite 替代实现。
+
+## 当前验证与计数
+
+权威结果是 [parity/runs/summary.json](parity/runs/summary.json)。用例发现、移植、执行、通过分别登记，不合并计数。
+
+- 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条类型测试、客户端/React/E2E。
+- 已逐例映射 38 条：34 条 Go checkpoint/interval 测试，加原样保留的 3 条 TS 客户端测试、1 条 React 类型测试。另有 **867 条未实现**。
+- 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
+- 2,400 个确定性差分向量独立计数。
+- 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
+
+静态发现不能证明任意 JavaScript 动态执行的全部实例均已收集。4 个 literal `test.each` 声明已展开；本基线未发现动态测试生成、别名测试遗漏、`describe.each` 或 `only`。Simulation 的 8 个应用和无限 seed 空间单列。详见 [discovery-audit.json](parity/discovery-audit.json)，完整测试源码和 247 个依赖/fixture 模块分别保存在 `parity/source-tests/`、`parity/source-support/`。早期 1,957 个断言表达式计数重复计算了链式 `expect().rejects`，已修正为 1,905；905 条测试记录不变。
+
+## 验证
+
+当前工具：Go 1.27.1、Node 25.2.1、pnpm 12.10.1（工作区 corepack）、Vitest 5.0.2、PGlite 0.2.13、PostgreSQL 16。已安装的 Anvil 为 0.2.0，不符合上游全套测试要求的 Foundry 1.8.5，不能据此声称整套 oracle 已通过。
+
+本任务 Docker 容器 `ponder-go-task-20261023`，卷 `ponder_go_task_20261023`，监听 `127.0.0.1:53398`，数据库 `ponder_test`。账户/密码 `ponder` / `ponder-local-test` 仅用于此隔离测试库。未操作已有业务容器或业务库。后续先 inspect 现有任务容器，避免重复创建。
+
+```sh
+export PONDER_TEST_POSTGRES='postgres://ponder:ponder-local-test@127.0.0.1:53398/ponder_test?sslmode=disable'
+./tools/verify.sh
+```
+
+该脚本执行 `go test -count=1 -json ./...`、`go test -count=1 -race -json ./...`、`go vet ./...`、CLI/示例编译、原版 34 条纯函数测试及差分 harness。本环境的沙箱限制本地 TCP/IPC，执行数据库、HTTP 和 Anvil 测试需要已授权的工具网络能力。缺少 PostgreSQL 环境变量的单独 `go test` 会明确报告相关集成测试未运行；完整验收脚本直接要求该变量。
+
+SDK 测试单独运行，保留原断言与 inline snapshots：
+
+```sh
+(cd sdk/typescript/client && CI=1 ./node_modules/.bin/vitest run --configLoader native)
+(cd sdk/typescript/react && CI=1 ./node_modules/.bin/vitest run --typecheck.only --configLoader native)
+```
+
+SDK 源码与原版相同；本机的 `node_modules` 为复用基线依赖的忽略链接。重新准备环境时见 [CONTINUATION.md](docs/CONTINUATION.md)。原客户端对 Go 的协议验证在 `query/http_test.go` / `bridge/client-compat.ts`，覆盖大整数、列顺序、status、SSE 初始 hash 与结果去重。React 已通过原类型 fixture；尚未进行 React 浏览器集成验证。
+
+## 使用代码
+
+`config.Config`、`schema.Schema`、`runtime.Handler` 是 Go 原生 API。`examples/erc20/main.go` 展示显式本地数据库、链和合约配置，HTTP 服务仅监听 `127.0.0.1:42069`。它需要显式设置 `PONDER_LOCAL_DATABASE_URL`、`PONDER_LOCAL_RPC_URL` 和 `PONDER_LOCAL_CONTRACT`，不会读取普通 `DATABASE_URL` 自动连接数据库。
+
+```sh
+go build -o bin/ponder ./cmd/ponder
+bin/ponder --help
+bin/ponder codegen --schema examples/erc20/schema.json --out examples/erc20/ponder_generated.go
+```
+
+`start` / `serve` 编译并启动原生 Go 应用；`serve` 的语义由应用读取 `PONDER_COMMAND=serve` 实现。示例已实现该分支。当前 `dev`、`db prune`、`db create-views` 明确返回未实现，不伪装成功。完整 CLI 选项、模板与全部配置保留在 `parity/public-manifest.json`，功能状态在 `parity/feature-ledger.json`。
+
+## 存储边界
+
+- 默认创建新的 `ponder_go_shadow_<schema hash>`，索引 schema 与 sync schema 分离；拒绝接管没有本项目 ownership marker 的 schema。
+- 业务写、undo journal、事件去重、checkpoint 进度在同一数据库事务内提交。默认 multichain 回滚从目标链边界后的最小 operation_id 撤销全局后缀；isolated 只回滚目标链。
+- 四个进程崩溃边界（业务写后、journal 后、进度后、commit 后）在两个后端分别测试。没有测试数据库服务端断电或磁盘损坏，不外推这些保证。
+- `reorgWindow` 按时间戳秒计算。调度器目前明确限制单链；多链调度尚未实现，存储层的多链回滚已经有真实验证。
+- 当前原生 schema/ABI 只覆盖部分类型、默认值和约束；业务 raw SQL 的 journal、关系/视图、factory、trace、GraphQL 等尚待实现。
+
+Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地接管，是不同工作轨道。后两项均未实现，也未进行数据迁移。当前模型 hash 不包含 handler/config 内容，修改这些内容时必须选择新的影子 schema；自动开发重建尚待实现。
+
+## 来源与许可
+
+保留原 MIT [LICENSE](LICENSE)、SDK 各自许可证、实际 Go 依赖许可证清单 [licenses/manifest.json](licenses/manifest.json)。`third_party/pg_query_go` 固定为 v5.1.0，保留原许可证；仅将本地 `strchrnul` fallback 重命名，解决 macOS SDK 15.4+ 同名声明冲突，未改变 SQL 解析规则。`sqlquery/rules.json` 从固定源码的 83 个允许节点、62 个函数与 264 个系统表限制生成。
+
+未取得计划 PDF 的本地可读副本：Library 已解析给定文件，但所提供下载经指定 helper 两次失败；未伪造本地文件。实现以完整委托范围和固定源码为依据。

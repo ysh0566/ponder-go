@@ -1,0 +1,1890 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "packages": [
+    {
+      "name": "@ponder/client",
+      "version": "0.18.2",
+      "path": "packages/client",
+      "exports": {
+        ".": {
+          "types": "./dist/index.d.ts",
+          "import": "./dist/index.js"
+        }
+      },
+      "bin": null,
+      "scripts": {
+        "build": "tsup",
+        "test": "vitest",
+        "test:typecheck": "vitest --typecheck.only",
+        "typecheck": "tsc --noEmit"
+      },
+      "public_declarations": [
+        "export type Status = {\n  [chainName: string]: {\n    id: number;\n    block: { number: number; timestamp: number };\n  };\n};",
+        "export type Client<schema extends Schema = Schema> = {\n  /** Query the database. */\n  db: ClientDb<schema>;\n  /**\n   * Subscribe to live updates.\n   *\n   * @param queryFn - The query to subscribe to.\n   * @param onData - The callback to call with each new query result\n   * @param onError - The callback to call when an error occurs.\n   *\n   * @example\n   * ```ts\n   * import { createClient } from \"@ponder/client\";\n   * import * as schema from \"../ponder.schema\";\n   *\n   * const client = createClient(\"https://.../sql\", { schema });\n   *\n   * client.live(\n   *   (db) => db.select().from(schema.account),\n   *   (result) => console.log(result),\n   *   (error) => console.error(error),\n   * );\n   * ```\n   */\n  live: <result>(\n    queryFn: (db: ClientDb<schema>) => Promise<result>,\n    onData: (result: result) => void,\n    onError?: (error: Error) => void,\n  ) => {\n    unsubscribe: () => void;\n  };\n  /** Get the status of all chains. */\n  getStatus: () => Promise<Status>;\n};",
+        "export const compileQuery = (query: SQLWrapper) => {\n  return dialect.sqlToQuery(query.getSQL());\n};",
+        "export const createClient = <schema extends Schema>(\n  baseUrl: string,\n  params: { schema?: schema } = {},\n): Client<schema> => {\n  const client: Client<schema> = {\n    db: drizzle(\n      async (sql, params, method, typings) => {\n        const builtQuery = { sql, params, typings };\n        const response = await fetch(getUrl(baseUrl, \"db\", builtQuery), {\n          method: \"GET\",\n        });\n\n        if (response.ok === false) {\n          const error = new Error(await response.text());\n          error.stack = undefined;\n          throw error;\n        }\n\n        const result = await response.json();\n\n        if (method === \"all\") {\n          return {\n            ...result,\n            rows: result.rows.map((row: object) => Object.values(row)),\n          };\n        }\n\n        return result;\n      },\n      { schema: params.schema, casing: \"snake_case\" },\n    ),\n    live: (queryFn, onData, onError) => {\n      const noopDatabase = drizzle(() => Promise.resolve({ rows: [] }), {\n        schema: params.schema,\n        casing: \"snake_case\",\n      });\n\n      const queryPromise = queryFn(noopDatabase);\n\n      if (\"getSQL\" in queryPromise === false) {\n        throw new Error(\n          '\"queryFn\" must return SQL. You may have to remove `.execute()` from your query.',\n        );\n      }\n      const queryBuilder = queryPromise as unknown as SQLWrapper;\n      const query = compileQuery(queryBuilder);\n\n      const sse = new EventSource(getUrl(baseUrl, \"live\", query));\n\n      const onDataListener = async (event: MessageEvent) => {\n        try {\n          const result = JSON.parse(event.data);\n\n          const drizzleShim = drizzle(\n            (_, __, method) => {\n              if (method === \"all\") {\n                return Promise.resolve({\n                  ...result,\n                  rows: result.rows.map((row: object) => Object.values(row)),\n                });\n              }\n\n              return Promise.resolve(result);\n            },\n            { schema: params.schema },\n          );\n\n          let data: unknown;\n\n          if (queryBuilder instanceof TypedQueryBuilder) {\n            const fields = queryBuilder._.selectedFields as Record<\n              string,\n              unknown\n            >;\n            const orderedFields = orderSelectedFields(fields);\n\n            data = await drizzleShim._.session\n              .prepareQuery(\n                query,\n                // @ts-expect-error\n                orderedFields,\n                undefined,\n                false,\n              )\n              .execute();\n          } else if (queryBuilder instanceof PgRelationalQuery) {\n            // @ts-expect-error\n            const selection = queryBuilder._toSQL().query.selection;\n            data = await drizzleShim._.session\n              .prepareQuery(\n                query,\n                undefined,\n                undefined,\n                true,\n                (rawRows, mapColumnValue) => {\n                  const rows = rawRows.map((row) =>\n                    mapRelationalRow(\n                      // @ts-expect-error\n                      queryBuilder.schema,\n                      // @ts-expect-error\n                      queryBuilder.tableConfig,\n                      row,\n                      selection,\n                      mapColumnValue,\n                    ),\n                  );\n                  // @ts-expect-error\n                  if (queryBuilder.mode === \"first\") {\n                    return rows[0];\n                  }\n                  return rows;\n                },\n              )\n              .execute();\n          } else if (queryBuilder instanceof PgRaw) {\n            data = await drizzleShim._.session\n              .prepareQuery(query, undefined, undefined, false)\n              .execute();\n          } else if (queryBuilder instanceof PgCountBuilder) {\n            data = await drizzleShim._.session.count(queryBuilder.getSQL());\n          } else {\n            throw new Error(\"Unsupported query builder\");\n          }\n\n          // @ts-expect-error\n          onData(data);\n        } catch (error) {\n          onError?.(error as Error);\n        }\n      };\n\n      const onErrorListener = (_event: MessageEvent) => {\n        onError?.(new Error(\"server disconnected\"));\n      };\n\n      sse.addEventListener(\"message\", onDataListener);\n      sse.addEventListener(\"error\", onErrorListener);\n\n      return {\n        unsubscribe: () => {\n          sse.removeEventListener(\"message\", onDataListener);\n          sse.removeEventListener(\"error\", onErrorListener);\n          sse.close();\n        },\n      };\n    },\n    getStatus: async () => {\n      const response = await fetch(`${new URL(baseUrl).origin}/status`);\n\n      return response.json();\n    },\n  };\n\n  return client;\n};",
+        "export {\n  and,\n  asc,\n  avg,\n  avgDistinct,\n  between,\n  count,\n  countDistinct,\n  desc,\n  eq,\n  exists,\n  gt,\n  gte,\n  ilike,\n  inArray,\n  isNotNull,\n  isNull,\n  like,\n  lt,\n  lte,\n  max,\n  min,\n  ne,\n  not,\n  notBetween,\n  notExists,\n  notIlike,\n  notInArray,\n  notLike,\n  or,\n  relations,\n  SQL,\n  sql,\n  sum,\n  sumDistinct,\n} from \"drizzle-orm\";",
+        "export {\n  alias,\n  except,\n  exceptAll,\n  intersect,\n  intersectAll,\n  union,\n  unionAll,\n} from \"drizzle-orm/pg-core\";",
+        "export const setDatabaseSchema = <T extends { [name: string]: unknown }>(\n  schema: T,\n  schemaName: string,\n) => {\n  for (const table of Object.values(schema)) {\n    if (isTable(table)) {\n      // @ts-expect-error\n      table[Table.Symbol.Schema] = schemaName;\n    } else if (isPgEnum(table)) {\n      // @ts-expect-error\n      table.schema = schemaName;\n    }\n  }\n};"
+      ]
+    },
+    {
+      "name": "ponder",
+      "version": "0.18.2",
+      "path": "packages/core",
+      "exports": {
+        ".": {
+          "types": "./dist/types/index.d.ts",
+          "import": "./dist/esm/index.js"
+        },
+        "./virtual": {
+          "types": "./src/types.d.ts"
+        }
+      },
+      "bin": {
+        "ponder": "./dist/esm/bin/ponder.js"
+      },
+      "scripts": {
+        "build": "tsx build.ts",
+        "test": "vitest",
+        "test:bun": "bun test",
+        "test:typecheck": "vitest --typecheck.only",
+        "typecheck": "tsc --noEmit"
+      },
+      "public_declarations": [
+        "export {\n  loadBalance,\n  type MergeAbis,\n  mergeAbis,\n  type ReplaceBigInts,\n  rateLimit,\n  replaceBigInts,\n} from \"@ponder/utils\";",
+        "export { factory } from \"@/config/address.js\";",
+        "export { createConfig } from \"@/config/index.js\";",
+        "export type {\n  Block,\n  Log,\n  Transaction,\n  TransactionReceipt,\n} from \"@/types/eth.js\";",
+        "export type { Virtual } from \"@/types/virtual.js\";",
+        "export type ContractConfig = Prettify<Config[\"contracts\"][string]>;",
+        "export type ChainConfig = Prettify<Config[\"chains\"][string]>;",
+        "export type BlockConfig = Prettify<Config[\"blocks\"][string]>;",
+        "export type DatabaseConfig = Prettify<Config[\"database\"]>;",
+        "export {\n  and,\n  asc,\n  avg,\n  avgDistinct,\n  between,\n  count,\n  countDistinct,\n  desc,\n  eq,\n  exists,\n  gt,\n  gte,\n  ilike,\n  inArray,\n  isNotNull,\n  isNull,\n  like,\n  lt,\n  lte,\n  max,\n  min,\n  ne,\n  not,\n  notBetween,\n  notExists,\n  notIlike,\n  notInArray,\n  notLike,\n  or,\n  relations,\n  sql,\n  sum,\n  sumDistinct,\n} from \"drizzle-orm\";",
+        "export type {\n  AnyPgColumn,\n  ExtraConfigColumn,\n  PgColumn,\n  PgColumnBuilder,\n  PgColumnBuilderBase,\n  PgEnumColumnBuilder,\n  PgEnumColumnBuilderInitial,\n  PgTable,\n  PgTableExtraConfig,\n  PgTableWithColumns,\n  PgTextConfig,\n  TableConfig,\n} from \"drizzle-orm/pg-core\";",
+        "export {\n  alias,\n  bigint as int8,\n  boolean,\n  char,\n  cidr,\n  date,\n  doublePrecision,\n  except,\n  exceptAll,\n  foreignKey,\n  index,\n  inet,\n  integer,\n  intersect,\n  intersectAll,\n  interval,\n  json,\n  jsonb,\n  line,\n  macaddr,\n  macaddr8,\n  numeric,\n  point,\n  real,\n  smallint,\n  text,\n  time,\n  timestamp,\n  union,\n  unionAll,\n  uniqueIndex,\n  uuid,\n  varchar,\n} from \"drizzle-orm/pg-core\";",
+        "export { client } from \"@/client/index.js\";",
+        "export type { AddressConfig, Factory } from \"@/config/address.js\";",
+        "export type { GetEventFilter } from \"@/config/eventFilter.js\";",
+        "export type { CreateConfigReturnType } from \"@/config/index.js\";",
+        "export type {\n  BuildExtraConfigColumns,\n  OnchainEnum,\n  OnchainTable,\n  PgColumnsBuilders,\n  PrimaryKeyBuilder,\n} from \"@/drizzle/onchain.js\";",
+        "export {\n  bigint,\n  hex,\n  onchainEnum,\n  onchainTable,\n  onchainView,\n  primaryKey,\n} from \"@/drizzle/onchain.js\";",
+        "export { graphql } from \"@/graphql/middleware.js\";",
+        "export type { ReadonlyDrizzle } from \"@/types/db.js\";",
+        "export {\n  type Checkpoint,\n  decodeCheckpoint,\n  encodeCheckpoint,\n} from \"@/utils/checkpoint.js\";"
+      ]
+    },
+    {
+      "name": "create-ponder",
+      "version": "0.18.2",
+      "path": "packages/create-ponder",
+      "exports": null,
+      "bin": {
+        "create-ponder": "./dist/index.js"
+      },
+      "scripts": {
+        "build": "tsup",
+        "test": "vitest run",
+        "test:bun": "bun test",
+        "typecheck": "tsc --noEmit"
+      },
+      "public_declarations": [
+        "export type SerializableChain = {\n  id: number;\n  rpc: string;\n};",
+        "export type SerializableContract = {\n  abi:\n    | { abi: Abi; name: string; dir: string }\n    | { abi: Abi; name: string; dir: string }[];\n  address: string;\n  chain: Record<string, any> | string;\n  startBlock?: number;\n};",
+        "export type SerializableConfig = {\n  chains: Record<string, SerializableChain>;\n  contracts: Record<string, SerializableContract>;\n};",
+        "export type Template = {\n  title: string;\n  description: string;\n  id: string;\n};",
+        "export type CLIArgs = readonly string[];",
+        "export type CLIOptions = {\n  [k: string]: any;\n};",
+        "export async function run({\n  args,\n  options,\n}: {\n  args: CLIArgs;\n  options: CLIOptions;\n}) {\n  if (options.help) return;\n\n  const warnings: string[] = [];\n\n  log();\n  log(\n    `Welcome to ${pico.bold(\n      pico.blue(\"create-ponder\"),\n    )} – the quickest way to get started with Ponder!`,\n  );\n  log();\n\n  const __dirname = fileURLToPath(new URL(\".\", import.meta.url));\n  const templatesPath = path.join(__dirname, \"..\", \"templates\");\n  let templateId = options.template || options.t;\n\n  // Validate template if provided\n  let templateValidation = await validateTemplateName({\n    isNameRequired: false,\n    templateId,\n    templates,\n  });\n  if (!templateValidation.valid) throw new ValidationError(templateValidation);\n\n  // Project name.\n  let projectName: string;\n  // Absolute path to project directory.\n  let projectPath: string;\n\n  if (args[0]) {\n    projectPath = args[0].trim();\n    // If the provided path is not absolute, make it absolute.\n    if (!path.isAbsolute(projectPath)) projectPath = path.resolve(projectPath);\n    const splitPath = projectPath.split(path.sep);\n    // Use the last segment of the provided path as the project name.\n    projectName = splitPath[splitPath.length - 1]?.trim() || \"\";\n\n    const nameValidation = await validateProjectName({ projectName });\n    if (!nameValidation.valid) throw new ValidationError(nameValidation);\n\n    log(pico.green(\"✔\"), pico.bold(\"Using project name:\"), projectName);\n  } else {\n    const res = await prompts({\n      initial: \"my-app\",\n      name: \"projectName\",\n      message: \"What's the name of your project?\",\n      type: \"text\",\n      async validate(projectName) {\n        const validation = await validateProjectName({ projectName });\n        if (!validation.valid) return validation.message;\n        return true;\n      },\n    });\n    projectName = res.projectName?.trim();\n    projectPath = path.resolve(projectName);\n  }\n\n  // Validate project path\n  const pathValidation = await validateProjectPath({ projectPath });\n  if (!pathValidation.valid) throw new ValidationError(pathValidation);\n\n  // After validating that the directory does not already exist, create it.\n  mkdirSync(projectPath, { recursive: true });\n\n  // Automatically set template if using shortcut.\n  if (options.etherscan && !templateId) templateId = \"etherscan\";\n  if (options.subgraph && !templateId) templateId = \"subgraph\";\n\n  // Extract template ID from CLI or prompt\n  if (!templateId) {\n    templateId = (\n      await prompts({\n        name: \"templateId\",\n        message: \"Which template would you like to use?\",\n        type: \"select\",\n        choices: templates.map(({ id, ...t }) => ({\n          ...t,\n          value: id,\n        })),\n      })\n    ).templateId;\n  }\n\n  // Get template meta\n  const templateMeta = templates.find(({ id }) => id === templateId);\n  if (!templateMeta) throw new ValidationError(templateValidation);\n\n  // Validate template name\n  templateValidation = await validateTemplateName({\n    templateId,\n    templates,\n  });\n  if (!templateValidation.valid) throw new ValidationError(templateValidation);\n\n  let config: SerializableConfig | undefined;\n\n  log();\n\n  // Copy template contents into the target path\n  const templatePath = path.join(templatesPath, templateMeta.id);\n  await cpy(path.join(templatePath, \"**\", \"*\"), projectPath, {\n    rename: (name) => name.replace(/^_dot_/, \".\"),\n  });\n\n  if (config) {\n    // Write the config file.\n    const configContent = `\n      import { createConfig${\n        Object.values(config.contracts).some((c) => Array.isArray(c.abi))\n          ? \", mergeAbis\"\n          : \"\"\n      } } from \"ponder\";\n\n      ${Object.values(config.contracts)\n        .flatMap((c) => c.abi)\n        .filter(\n          (tag, index, array) =>\n            array.findIndex((t) => t.dir === tag.dir) === index,\n        )\n        .map(\n          (abi) =>\n            `import {${abi.name}} from \"${abi.dir.slice(0, abi.dir.length - 3)}\"`,\n        )\n        .join(\"\\n\")}\n\n      export default createConfig({\n        chains: ${JSON.stringify(config.chains).replaceAll(\n          /\"process.env.PONDER_RPC_URL_(.*?)\"/g,\n          \"process.env.PONDER_RPC_URL_$1\",\n        )},\n        contracts: ${JSON.stringify(\n          Object.entries(config.contracts).reduce<Record<string, any>>(\n            (acc, [name, c]) => {\n              acc[name] = {\n                ...c,\n                abi: Array.isArray(c.abi)\n                  ? `mergeAbis([${c.abi.map((a) => a.name).join(\",\")}])`\n                  : c.abi.name,\n              };\n              return acc;\n            },\n            {},\n          ),\n        ).replaceAll(/\"abi\":\"(.*?)\"/g, \"abi:$1\")},\n      });\n    `;\n\n    writeFileSync(\n      path.join(projectPath, \"ponder.config.ts\"),\n      await prettier.format(configContent, { parser: \"typescript\" }),\n    );\n\n    // Write the indexing function files.\n    for (const [name, contract] of Object.entries(config.contracts)) {\n      // If it's an array of ABIs, use the 2nd one (the implementation ABI).\n      const abi = Array.isArray(contract.abi)\n        ? mergeAbis(contract.abi.map((a) => a.abi))\n        : contract.abi.abi;\n\n      const abiEvents = abi.filter(\n        (item): item is AbiEvent => item.type === \"event\" && !item.anonymous,\n      );\n\n      const eventNamesToWrite = abiEvents\n        .map((event) => event.name)\n        .slice(0, 4);\n\n      const indexingFunctionFileContents = `\n      import { ponder } from 'ponder:registry'\n\n      ${eventNamesToWrite\n        .map(\n          (eventName) => `\n          ponder.on(\"${name}:${eventName}\", async ({ event, context }) => {\n            console.log(event.args)\n          })`,\n        )\n        .join(\"\\n\")}\n    `;\n\n      writeFileSync(\n        path.join(projectPath, \"src\", `${name}.ts`),\n        await prettier.format(indexingFunctionFileContents, {\n          parser: \"typescript\",\n        }),\n      );\n    }\n  }\n\n  // Create package.json for project\n  const packageJson = await fs.readJSON(path.join(projectPath, \"package.json\"));\n  packageJson.name = projectName;\n  packageJson.dependencies.ponder = `^${rootPackageJson.version}`;\n  packageJson.devDependencies[\"eslint-config-ponder\"] =\n    `^${rootPackageJson.version}`;\n  if (\"bun\" in process.versions) {\n    packageJson.scripts = addBunFlagToScripts(packageJson.scripts ?? {});\n  }\n\n  await fs.writeFile(\n    path.join(projectPath, \"package.json\"),\n    JSON.stringify(packageJson, null, 2),\n  );\n\n  const packageManager = getPackageManager({ options });\n\n  // Install in background to not clutter screen\n  const installArgs = [\n    \"install\",\n    packageManager === \"npm\" ? \"--quiet\" : \"--silent\",\n  ];\n  if (!options.skipInstall) {\n    await oraPromise(\n      execa(packageManager, installArgs, {\n        cwd: projectPath,\n        env: {\n          ...process.env,\n          ADBLOCK: \"1\",\n          DISABLE_OPENCOLLECTIVE: \"1\",\n          // we set NODE_ENV to development as pnpm skips dev\n          // dependencies when production\n          NODE_ENV: \"development\",\n        },\n      }),\n      {\n        text: `Installing packages with ${pico.bold(packageManager)}. This may take a few seconds.`,\n        failText: \"Failed to install packages.\",\n        successText: `Installed packages with ${pico.bold(packageManager)}.`,\n      },\n    );\n  }\n\n  // Create git repository\n  if (!options.skipGit) {\n    await oraPromise(\n      async () => {\n        await execa(\"git\", [\"init\"], { cwd: projectPath });\n        await execa(\"git\", [\"add\", \".\"], { cwd: projectPath });\n        await execa(\n          \"git\",\n          [\n            \"commit\",\n            \"--no-verify\",\n            \"--message\",\n            \"chore: initial commit from create-ponder\",\n          ],\n          { cwd: projectPath },\n        );\n      },\n      {\n        text: \"Initializing git repository.\",\n        failText: \"Failed to initialize git repository.\",\n        successText: \"Initialized git repository.\",\n      },\n    );\n  }\n\n  log();\n  for (const warning of warnings) {\n    log(`${pico.yellow(\"⚠\")} ${warning}`);\n  }\n\n  log();\n  log(\"―――――――――――――――――――――\");\n  log();\n  log(\n    `${pico.green(\"Success!\")} Created ${pico.bold(projectName)} at ${pico.green(\n      path.resolve(projectPath),\n    )}`,\n  );\n  log();\n  log(\n    `To start your app, run ${pico.bold(\n      pico.cyan(`cd ${path.relative(process.cwd(), projectPath)}`),\n    )} and then ${pico.bold(\n      pico.cyan(\n        `${packageManager}${\n          packageManager === \"npm\" || packageManager === \"bun\" ? \" run\" : \"\"\n        } dev`,\n      ),\n    )}`,\n  );\n  log();\n  log(\"―――――――――――――――――――――\");\n  log();\n}"
+      ]
+    },
+    {
+      "name": "eslint-config-ponder",
+      "version": "0.18.2",
+      "path": "packages/eslint-config-ponder",
+      "exports": null,
+      "bin": null,
+      "scripts": {},
+      "public_declarations": []
+    },
+    {
+      "name": "@ponder/react",
+      "version": "0.18.2",
+      "path": "packages/react",
+      "exports": {
+        ".": {
+          "types": "./dist/types/index.d.ts",
+          "default": "./dist/esm/index.js"
+        }
+      },
+      "bin": null,
+      "scripts": {
+        "build": "tsx build.ts",
+        "test": "vitest",
+        "test:typecheck": "vitest --typecheck.only",
+        "typecheck": "tsc --noEmit"
+      },
+      "public_declarations": [
+        "export { PonderContext, PonderProvider } from \"./context.js\";",
+        "export {\n  usePonderClient,\n  usePonderQuery,\n  usePonderQueryOptions,\n  usePonderStatus,\n} from \"./hook.js\";",
+        "export { getPonderQueryOptions } from \"./utils.js\";",
+        "export interface Register {}",
+        "export type ResolvedSchema = Register extends { schema: infer schema }\n  ? schema\n  : {\n      [name: string]: unknown;\n    };"
+      ]
+    },
+    {
+      "name": "@ponder/utils",
+      "version": "0.3.0",
+      "path": "packages/utils",
+      "exports": {
+        ".": {
+          "types": "./dist/index.d.ts",
+          "import": "./dist/index.js",
+          "default": "./dist/index.cjs"
+        }
+      },
+      "bin": null,
+      "scripts": {
+        "build": "tsup",
+        "test": "vitest",
+        "test:bun": "bun test",
+        "typecheck": "tsc --noEmit"
+      },
+      "public_declarations": [
+        "export {\n  type GetLogsRetryHelperParameters,\n  type GetLogsRetryHelperReturnType,\n  getLogsRetryHelper,\n} from \"./getLogsRetryHelper.js\";",
+        "export { loadBalance } from \"./loadBalance.js\";",
+        "export { type MergeAbis, mergeAbis } from \"./mergeAbis.js\";",
+        "export { rateLimit } from \"./rateLimit.js\";",
+        "export { type ReplaceBigInts, replaceBigInts } from \"./replaceBigInts.js\";"
+      ]
+    }
+  ],
+  "cli": {
+    "source": "packages/core/src/bin/ponder.ts",
+    "entries": [
+      {
+        "kind": "option",
+        "owner": "ponder",
+        "arguments": [
+          "\"--log-format <FORMAT>\"",
+          "'The log format (\"pretty\" or \"json\")'",
+          "\"pretty\""
+        ],
+        "line": 24
+      },
+      {
+        "kind": "option",
+        "owner": "ponder",
+        "arguments": [
+          "\"--log-level <LEVEL>\"",
+          "'Minimum log level (\"error\", \"warn\", \"info\", \"debug\", or \"trace\", default: \"info\")'"
+        ],
+        "line": 24
+      },
+      {
+        "kind": "option",
+        "owner": "ponder",
+        "arguments": [
+          "\"-vv, --trace\"",
+          "\"Enable trace logs, e.g. db queries, indexing checkpoints\""
+        ],
+        "line": 24
+      },
+      {
+        "kind": "option",
+        "owner": "ponder",
+        "arguments": [
+          "\"-v, --debug\"",
+          "\"Enable debug logs, e.g. realtime blocks, internal events\""
+        ],
+        "line": 24
+      },
+      {
+        "kind": "option",
+        "owner": "ponder",
+        "arguments": [
+          "\"--config <PATH>\"",
+          "\"Path to the project config file\"",
+          "\"ponder.config.ts\""
+        ],
+        "line": 24
+      },
+      {
+        "kind": "option",
+        "owner": "ponder",
+        "arguments": [
+          "\"--root <PATH>\"",
+          "\"Path to the project root directory (default: working directory)\""
+        ],
+        "line": 24
+      },
+      {
+        "kind": "command",
+        "owner": "ponder",
+        "arguments": [
+          "\"ponder\""
+        ],
+        "line": 24
+      },
+      {
+        "kind": "option",
+        "owner": "devCommand",
+        "arguments": [
+          "\"--disable-ui\"",
+          "\"Disable the terminal UI\""
+        ],
+        "line": 65
+      },
+      {
+        "kind": "option",
+        "owner": "devCommand",
+        "arguments": [
+          "\"-H, --hostname <HOSTNAME>\"",
+          "'Hostname for the web server (default: \"0.0.0.0\" or \"::\")'"
+        ],
+        "line": 65
+      },
+      {
+        "kind": "option",
+        "owner": "devCommand",
+        "arguments": [
+          "\"-p, --port <PORT>\"",
+          "\"Port for the web server\"",
+          "Number",
+          "42069"
+        ],
+        "line": 65
+      },
+      {
+        "kind": "option",
+        "owner": "devCommand",
+        "arguments": [
+          "\"--schema <SCHEMA>\"",
+          "\"Database schema (max: 45 characters)\"",
+          "String"
+        ],
+        "line": 65
+      },
+      {
+        "kind": "command",
+        "owner": "devCommand",
+        "arguments": [
+          "\"dev\""
+        ],
+        "line": 65
+      },
+      {
+        "kind": "option",
+        "owner": "startCommand",
+        "arguments": [
+          "\"-H, --hostname <HOSTNAME>\"",
+          "'Hostname for the web server (default: \"0.0.0.0\" or \"::\")'"
+        ],
+        "line": 88
+      },
+      {
+        "kind": "option",
+        "owner": "startCommand",
+        "arguments": [
+          "\"-p, --port <PORT>\"",
+          "\"Port for the web server\"",
+          "Number",
+          "42069"
+        ],
+        "line": 88
+      },
+      {
+        "kind": "option",
+        "owner": "startCommand",
+        "arguments": [
+          "\"--views-schema <SCHEMA>\"",
+          "\"Views database schema (max: 45 characters)\"",
+          "String"
+        ],
+        "line": 88
+      },
+      {
+        "kind": "option",
+        "owner": "startCommand",
+        "arguments": [
+          "\"--schema <SCHEMA>\"",
+          "\"Database schema (max: 45 characters)\"",
+          "String"
+        ],
+        "line": 88
+      },
+      {
+        "kind": "command",
+        "owner": "startCommand",
+        "arguments": [
+          "\"start\""
+        ],
+        "line": 88
+      },
+      {
+        "kind": "option",
+        "owner": "serveCommand",
+        "arguments": [
+          "\"-H, --hostname <HOSTNAME>\"",
+          "'Hostname for the web server (default: \"0.0.0.0\" or \"::\")'"
+        ],
+        "line": 111
+      },
+      {
+        "kind": "option",
+        "owner": "serveCommand",
+        "arguments": [
+          "\"-p, --port <PORT>\"",
+          "\"Port for the web server\"",
+          "Number",
+          "42069"
+        ],
+        "line": 111
+      },
+      {
+        "kind": "option",
+        "owner": "serveCommand",
+        "arguments": [
+          "\"--schema <SCHEMA>\"",
+          "\"Database schema (max: 45 characters)\"",
+          "String"
+        ],
+        "line": 111
+      },
+      {
+        "kind": "command",
+        "owner": "serveCommand",
+        "arguments": [
+          "\"serve\""
+        ],
+        "line": 111
+      },
+      {
+        "kind": "option",
+        "owner": "createViewsCommand",
+        "arguments": [
+          "\"--views-schema <SCHEMA>\"",
+          "\"Views database schema (max: 45 characters)\"",
+          "String"
+        ],
+        "line": 129
+      },
+      {
+        "kind": "option",
+        "owner": "createViewsCommand",
+        "arguments": [
+          "\"--schema <SCHEMA>\"",
+          "\"Database schema (max: 45 characters)\"",
+          "String"
+        ],
+        "line": 129
+      },
+      {
+        "kind": "command",
+        "owner": "createViewsCommand",
+        "arguments": [
+          "\"create-views\""
+        ],
+        "line": 129
+      },
+      {
+        "kind": "command",
+        "owner": "dbCommand",
+        "arguments": [
+          "\"db\""
+        ],
+        "line": 147
+      },
+      {
+        "kind": "command",
+        "owner": "listCommand",
+        "arguments": [
+          "\"list\""
+        ],
+        "line": 149
+      },
+      {
+        "kind": "command",
+        "owner": "pruneCommand",
+        "arguments": [
+          "\"prune\""
+        ],
+        "line": 161
+      },
+      {
+        "kind": "command",
+        "owner": "codegenCommand",
+        "arguments": [
+          "\"codegen\""
+        ],
+        "line": 175
+      }
+    ]
+  },
+  "configuration": {
+    "source": "packages/core/src/config/index.ts",
+    "properties": [
+      {
+        "name": "database",
+        "optional": true,
+        "type": "DatabaseConfig",
+        "line": 10
+      },
+      {
+        "name": "ordering",
+        "optional": true,
+        "type": "\"omnichain\" | \"multichain\" | \"experimental_isolated\"",
+        "line": 11
+      },
+      {
+        "name": "chains",
+        "optional": false,
+        "type": "{ [chainName: string]: ChainConfig<unknown> }",
+        "line": 12
+      },
+      {
+        "name": "contracts",
+        "optional": false,
+        "type": "{ [contractName: string]: GetContract }",
+        "line": 13
+      },
+      {
+        "name": "accounts",
+        "optional": false,
+        "type": "{ [accountName: string]: AccountConfig<unknown> }",
+        "line": 14
+      },
+      {
+        "name": "blocks",
+        "optional": false,
+        "type": "{\n    [sourceName: string]: GetBlockFilter<unknown>;\n  }",
+        "line": 15
+      },
+      {
+        "name": "database",
+        "optional": true,
+        "type": "DatabaseConfig",
+        "line": 21
+      },
+      {
+        "name": "ordering",
+        "optional": true,
+        "type": "\"omnichain\" | \"multichain\" | \"experimental_isolated\"",
+        "line": 22
+      },
+      {
+        "name": "chains",
+        "optional": false,
+        "type": "chains",
+        "line": 23
+      },
+      {
+        "name": "contracts",
+        "optional": false,
+        "type": "contracts",
+        "line": 24
+      },
+      {
+        "name": "accounts",
+        "optional": false,
+        "type": "accounts",
+        "line": 25
+      },
+      {
+        "name": "blocks",
+        "optional": false,
+        "type": "blocks",
+        "line": 26
+      },
+      {
+        "name": "database",
+        "optional": true,
+        "type": "DatabaseConfig",
+        "line": 35
+      },
+      {
+        "name": "ordering",
+        "optional": true,
+        "type": "\"omnichain\" | \"multichain\" | \"experimental_isolated\"",
+        "line": 36
+      },
+      {
+        "name": "chains",
+        "optional": false,
+        "type": "ChainsConfig<Narrow<chains>>",
+        "line": 38
+      },
+      {
+        "name": "contracts",
+        "optional": true,
+        "type": "ContractsConfig<chains, Narrow<contracts>>",
+        "line": 39
+      },
+      {
+        "name": "accounts",
+        "optional": true,
+        "type": "AccountsConfig<chains, Narrow<accounts>>",
+        "line": 40
+      },
+      {
+        "name": "blocks",
+        "optional": true,
+        "type": "BlockFiltersConfig<chains, blocks>",
+        "line": 41
+      },
+      {
+        "name": "kind",
+        "optional": false,
+        "type": "\"pglite\"",
+        "line": 51
+      },
+      {
+        "name": "directory",
+        "optional": true,
+        "type": "string",
+        "line": 53
+      },
+      {
+        "name": "kind",
+        "optional": false,
+        "type": "\"postgres\"",
+        "line": 56
+      },
+      {
+        "name": "connectionString",
+        "optional": true,
+        "type": "string",
+        "line": 58
+      },
+      {
+        "name": "poolConfig",
+        "optional": true,
+        "type": "{\n        /** Maximum number of clients in the pool. Default: `30`. */\n        max?: number;\n        /** Enable SSL, or provide a custom SSL configuration. Default: `undefined`. */\n        ssl?: boolean | Prettify<ConnectionOptions>;\n      } & Omit<PoolConfig, \"max\" | \"ssl\" | \"connectionString\">",
+        "line": 60
+      },
+      {
+        "name": "max",
+        "optional": true,
+        "type": "number",
+        "line": 62
+      },
+      {
+        "name": "ssl",
+        "optional": true,
+        "type": "boolean | Prettify<ConnectionOptions>",
+        "line": 64
+      },
+      {
+        "name": "startBlock",
+        "optional": true,
+        "type": "number | \"latest\"",
+        "line": 72
+      },
+      {
+        "name": "endBlock",
+        "optional": true,
+        "type": "number | \"latest\"",
+        "line": 74
+      },
+      {
+        "name": "includeTransactionReceipts",
+        "optional": true,
+        "type": "boolean",
+        "line": 78
+      },
+      {
+        "name": "includeCallTraces",
+        "optional": true,
+        "type": "boolean",
+        "line": 87
+      },
+      {
+        "name": "id",
+        "optional": false,
+        "type": "chain extends { id: infer id extends number } ? id | number : number",
+        "line": 94
+      },
+      {
+        "name": "id",
+        "optional": false,
+        "type": "infer id extends number",
+        "line": 94
+      },
+      {
+        "name": "rpc",
+        "optional": false,
+        "type": "string | string[] | Transport | undefined",
+        "line": 96
+      },
+      {
+        "name": "ws",
+        "optional": true,
+        "type": "string",
+        "line": 97
+      },
+      {
+        "name": "pollingInterval",
+        "optional": true,
+        "type": "number",
+        "line": 99
+      },
+      {
+        "name": "reorgWindow",
+        "optional": true,
+        "type": "number",
+        "line": 105
+      },
+      {
+        "name": "maxRequestsPerSecond",
+        "optional": true,
+        "type": "number",
+        "line": 110
+      },
+      {
+        "name": "cacheRpcRequests",
+        "optional": true,
+        "type": "boolean",
+        "line": 116
+      },
+      {
+        "name": "ethGetLogsBlockRange",
+        "optional": true,
+        "type": "number",
+        "line": 121
+      },
+      {
+        "name": "abi",
+        "optional": false,
+        "type": "abi",
+        "line": 134
+      },
+      {
+        "name": "chain",
+        "optional": false,
+        "type": "| allChainNames\n    | {\n        [name in allChainNames]?: Prettify<\n          AddressConfig &\n            GetEventFilter<abi> &\n            TransactionReceiptConfig &\n            FunctionCallConfig &\n            BlockConfig\n        >;\n      }",
+        "line": 149
+      },
+      {
+        "name": "abi",
+        "optional": false,
+        "type": "infer abi extends Abi",
+        "line": 173
+      },
+      {
+        "name": "chain",
+        "optional": false,
+        "type": "| allChainNames\n    | {\n        [name in allChainNames]?: Prettify<\n          AddressConfig & TransactionReceiptConfig & BlockConfig\n        >;\n      }",
+        "line": 200
+      },
+      {
+        "name": "startBlock",
+        "optional": true,
+        "type": "number | \"latest\"",
+        "line": 226
+      },
+      {
+        "name": "endBlock",
+        "optional": true,
+        "type": "number | \"latest\"",
+        "line": 228
+      },
+      {
+        "name": "interval",
+        "optional": true,
+        "type": "number",
+        "line": 229
+      },
+      {
+        "name": "chain",
+        "optional": false,
+        "type": "| allChainNames\n    | {\n        [name in allChainNames]?: BlockFilterConfig;\n      }",
+        "line": 239
+      }
+    ]
+  },
+  "templates": [
+    {
+      "path": "examples/feature-accounts/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/feature-accounts/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/feature-accounts/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/feature-accounts/package.json",
+      "sha256": "f2b3c44a6cd4da52b2db39be38716a587a96160e67704397053dda31ecb5eeb0"
+    },
+    {
+      "path": "examples/feature-accounts/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/feature-accounts/ponder.config.ts",
+      "sha256": "fd697fb2f6d05016b02277efcbc9e398e515178378757dc06ad2c71aaabb0a70"
+    },
+    {
+      "path": "examples/feature-accounts/ponder.schema.ts",
+      "sha256": "4f3f974456fea9d5ff6630077132fd991734f06253a3bfd5b3d2080db6dd4d86"
+    },
+    {
+      "path": "examples/feature-accounts/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/feature-accounts/src/index.ts",
+      "sha256": "8a4280043af26d24970a1f6b89f68e29ba26a61860512f3e7f8f2846ee30eda3"
+    },
+    {
+      "path": "examples/feature-accounts/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/feature-api-functions/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/feature-api-functions/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/feature-api-functions/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/feature-api-functions/abis/erc20ABI.ts",
+      "sha256": "e069eb836560faea40f77e480ecf190535b35602e66907618cba7fbbbe565dae"
+    },
+    {
+      "path": "examples/feature-api-functions/package.json",
+      "sha256": "43a09813f44f05fd66a07ed7c06293aeb7b9e3e8cd2b19df9817608457078818"
+    },
+    {
+      "path": "examples/feature-api-functions/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/feature-api-functions/ponder.config.ts",
+      "sha256": "1a2968e36eb773e2933b36e53974718f9b8a6cb96715eb20ae306ccd3b1f2f11"
+    },
+    {
+      "path": "examples/feature-api-functions/ponder.schema.ts",
+      "sha256": "9cb8da8cc33fa80b520a8a824467660868efd0af584fa5e8454ed052294d9340"
+    },
+    {
+      "path": "examples/feature-api-functions/src/api/index.ts",
+      "sha256": "4c393b14f3049606be44c7cc2a8d1e3605031dcf36f42a05752d1e6fffa76d6c"
+    },
+    {
+      "path": "examples/feature-api-functions/src/index.ts",
+      "sha256": "d5493e4d1f8f813f73877136377e44e5fb1433927738722f0e5868e53cdb00a7"
+    },
+    {
+      "path": "examples/feature-api-functions/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/feature-blocks/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/feature-blocks/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/feature-blocks/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/feature-blocks/package.json",
+      "sha256": "f56331c8f73d4cb1b8ab7f754eb152bd0919ae42bb2eefe94172ec3c380ca395"
+    },
+    {
+      "path": "examples/feature-blocks/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/feature-blocks/ponder.config.ts",
+      "sha256": "23ada9b0de00bcb7bf21da02d8f1ee0b2a959590603439cc315aac3dd885a509"
+    },
+    {
+      "path": "examples/feature-blocks/ponder.schema.ts",
+      "sha256": "b23d238b495caa074ccecafbf61b66c0fec91bb6e7755dea825759e60fd6f151"
+    },
+    {
+      "path": "examples/feature-blocks/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/feature-blocks/src/index.ts",
+      "sha256": "dab7ac7a46bd580430fe03a87cef52903b83c845960f336788e28ad4a5842b06"
+    },
+    {
+      "path": "examples/feature-blocks/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/feature-call-traces/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/feature-call-traces/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/feature-call-traces/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/feature-call-traces/package.json",
+      "sha256": "36bfee93f053798e95caceb04fbacbd7e3cb29ca0c2a1c515535bff97b6bac64"
+    },
+    {
+      "path": "examples/feature-call-traces/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/feature-call-traces/ponder.config.ts",
+      "sha256": "b51bb60ac3fc6b503c6098cb91e2d1b19c351d418c428e10743a87cad8383cc9"
+    },
+    {
+      "path": "examples/feature-call-traces/ponder.schema.ts",
+      "sha256": "82488ca15693d3c07f08c8ceafa2e05d69080e31eca515c31824dc16ed0d079a"
+    },
+    {
+      "path": "examples/feature-call-traces/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/feature-call-traces/src/index.ts",
+      "sha256": "756e38d950f274727af671f3d52ea1d0f8013345931307b8c382b386f73c30c5"
+    },
+    {
+      "path": "examples/feature-call-traces/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/feature-factory/.env.example",
+      "sha256": "f17a6a689041b77c65e26076e79e1402378df9a5c093d013e34faaf8b47c78e1"
+    },
+    {
+      "path": "examples/feature-factory/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/feature-factory/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/feature-factory/abis/LlamaCoreAbi.ts",
+      "sha256": "fe86c4774d244fea6fcbce090da72d155462a5a0e14b8b7b4165a95f24fb4b9b"
+    },
+    {
+      "path": "examples/feature-factory/abis/LlamaPolicyAbi.ts",
+      "sha256": "06e924e12f8aadc7a386cb5bf104a6204b92948d6bb0cb8d49df2daa298e2502"
+    },
+    {
+      "path": "examples/feature-factory/package.json",
+      "sha256": "402872cd638c53cb73cf98f8df00a096d31f584b9c27eb4bc6d750b396fe1fd7"
+    },
+    {
+      "path": "examples/feature-factory/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/feature-factory/ponder.config.ts",
+      "sha256": "b9d39924fdec3e19aa5d143634699d2bf8382bc6ff966143b0666864c6064882"
+    },
+    {
+      "path": "examples/feature-factory/ponder.schema.ts",
+      "sha256": "85932b7602ef77396a3488f88bc77253eddc20e19565c84aa21e8fb2be1706b8"
+    },
+    {
+      "path": "examples/feature-factory/src/LlamaCore.ts",
+      "sha256": "44217a71fdbfb237d0283831005aec8129eb11a719b442774b8bd19cecb202b8"
+    },
+    {
+      "path": "examples/feature-factory/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/feature-factory/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/feature-filter/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/feature-filter/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/feature-filter/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/feature-filter/abis/PrimitiveManagerAbi.ts",
+      "sha256": "3f3901b1cdf6d398f3243a5db72889dbd34ae80f8c40ddebab1ea01de4c43519"
+    },
+    {
+      "path": "examples/feature-filter/package.json",
+      "sha256": "3547904c1835b99d3da3fb0581d5fafd6608487a5a89b16201eb6599930160db"
+    },
+    {
+      "path": "examples/feature-filter/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/feature-filter/ponder.config.ts",
+      "sha256": "fc871ca7584532dfb43869adaed2243ba1ae9bf25677ed978e6b8ffea00f9324"
+    },
+    {
+      "path": "examples/feature-filter/ponder.schema.ts",
+      "sha256": "046227568b043bc28bfb0eebd83530f0ca27f18a24d2b103b345d2bc4651f989"
+    },
+    {
+      "path": "examples/feature-filter/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/feature-filter/src/index.ts",
+      "sha256": "d8be43196b8d79531b4e45bd79d4622b4478f736da7b355213cc383946963a4c"
+    },
+    {
+      "path": "examples/feature-filter/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/feature-multichain/.env.example",
+      "sha256": "b7e63970cd52c7967e43222cac5a5b50bfa2a622251ae0cdceae1c45744c2642"
+    },
+    {
+      "path": "examples/feature-multichain/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/feature-multichain/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/feature-multichain/abis/weth9Abi.ts",
+      "sha256": "8c17517b0113f2c61a4703c5c26de5ac43d1a9ba05dc79d11ecf513b025cbce4"
+    },
+    {
+      "path": "examples/feature-multichain/package.json",
+      "sha256": "7299fb80372693189d1005976447b5e02fc7c4c2d31c8618b03ef3f29656feec"
+    },
+    {
+      "path": "examples/feature-multichain/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/feature-multichain/ponder.config.ts",
+      "sha256": "1d85d8ce2c5432e8b7a2019aa1442cfb2908567d5e1473b069a048d7dfc16ad4"
+    },
+    {
+      "path": "examples/feature-multichain/ponder.schema.ts",
+      "sha256": "55d58bff41458a38c9d9e4354c75c0cd47017ff192f5669428a3d67f8c1c9a20"
+    },
+    {
+      "path": "examples/feature-multichain/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/feature-multichain/src/index.ts",
+      "sha256": "53f293b1296bc9666c3cd73dd8dfc330c0af89591ab8e8485dc35075ed588d81"
+    },
+    {
+      "path": "examples/feature-multichain/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/feature-proxy/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/feature-proxy/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/feature-proxy/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/feature-proxy/abis/RouterImplAbi.ts",
+      "sha256": "1df61f1f5aa58831901cc69aed7d35045a366170b317b302febb6bc400a1c3f8"
+    },
+    {
+      "path": "examples/feature-proxy/abis/RouterProxyAbi.ts",
+      "sha256": "a4ee5899437b047ee946829844825926904a8c742d37d4d2ac8f05002d2b232d"
+    },
+    {
+      "path": "examples/feature-proxy/package.json",
+      "sha256": "e84bf0d036597d8f8514921b637971d3182f14121a727acb6cabd6dc42b08bc2"
+    },
+    {
+      "path": "examples/feature-proxy/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/feature-proxy/ponder.config.ts",
+      "sha256": "dfef2439d8247c180b2ccb78e9d1f97cac334316053418fd8b17dae910422145"
+    },
+    {
+      "path": "examples/feature-proxy/ponder.schema.ts",
+      "sha256": "494d478580f0b9cf68e7bf57c8bed21d8978ea48a22581136fe07c4ad809a7a8"
+    },
+    {
+      "path": "examples/feature-proxy/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/feature-proxy/src/index.ts",
+      "sha256": "9af3de0846a664aa93d360694df26ce42077ff75a0eb96aed0b8e23c7ede57ac"
+    },
+    {
+      "path": "examples/feature-proxy/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/feature-read-contract/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/feature-read-contract/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/feature-read-contract/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/feature-read-contract/abis/FileStoreAbi.ts",
+      "sha256": "2701775d2fd1a536f2a15eb40fbbe560a0865791557426210aebf4cb50696d84"
+    },
+    {
+      "path": "examples/feature-read-contract/abis/FileStoreFrontendAbi.ts",
+      "sha256": "43a491b5f2e428b7ca46dd9b5cc840365538a3dce367f9324b57fe234031dd94"
+    },
+    {
+      "path": "examples/feature-read-contract/package.json",
+      "sha256": "65edbb145081dcb73dc646d6b0b356caa4f269a11d5fbc1af8387856c6b04040"
+    },
+    {
+      "path": "examples/feature-read-contract/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/feature-read-contract/ponder.config.ts",
+      "sha256": "759334c8dd273eadffa301b4ccef75e239e688b67e4bcf6f3ad1de81713f1986"
+    },
+    {
+      "path": "examples/feature-read-contract/ponder.schema.ts",
+      "sha256": "0e0361d46209f2c225d7e5074668a5fa6d90069cadf74676beeea79d806e4e8d"
+    },
+    {
+      "path": "examples/feature-read-contract/src/FileStore.ts",
+      "sha256": "db4cf2095e1bc103227890079374f8f60bfc20ef70692f2c506db5db4cfc3882"
+    },
+    {
+      "path": "examples/feature-read-contract/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/feature-read-contract/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/project-friendtech/.env.example",
+      "sha256": "ffca87f1cdf3e42fbaac783bb0110813fe68a1f5ef838167d02ec11505607930"
+    },
+    {
+      "path": "examples/project-friendtech/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/project-friendtech/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/project-friendtech/abis/FriendtechSharesV1Abi.ts",
+      "sha256": "6fa8f6747eb5f4325f6bc6e4035f6b170c5106d430f6b3dafd9bc00470b38015"
+    },
+    {
+      "path": "examples/project-friendtech/package.json",
+      "sha256": "be7724a2d267968df399e119f0eee7fc0fae19a56c61e4c3c499cceb923115ef"
+    },
+    {
+      "path": "examples/project-friendtech/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/project-friendtech/ponder.config.ts",
+      "sha256": "68e88df6ec7f18cba40aa619f61b4b01d6dfc0abb772a1c4b0f46bc78047f952"
+    },
+    {
+      "path": "examples/project-friendtech/ponder.schema.ts",
+      "sha256": "d6b99026fbd25cc488daceef4460ccb1717d17722985bb782a373cd4476d520c"
+    },
+    {
+      "path": "examples/project-friendtech/src/FriendtechSharesV1.ts",
+      "sha256": "c3330b076c95ca4f78ee05d79441ac863727fe3a33e0685d3ecbe7cf36f2ed8f"
+    },
+    {
+      "path": "examples/project-friendtech/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/project-friendtech/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/project-uniswap-v3-flash/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/project-uniswap-v3-flash/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/project-uniswap-v3-flash/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/project-uniswap-v3-flash/abis/UniswapV3FactoryAbi.ts",
+      "sha256": "42503878fd5d0324b774615e175f9dd1b1c57af48bd57d00a37f199796177110"
+    },
+    {
+      "path": "examples/project-uniswap-v3-flash/abis/UniswapV3PoolAbi.ts",
+      "sha256": "a77ea269d222d9f73815815b09f3f0a97a0357cced01f3a84c704b071f84f24d"
+    },
+    {
+      "path": "examples/project-uniswap-v3-flash/package.json",
+      "sha256": "6848b0d29e1cca366d1c4a3318e53ba52fc732d1c17744c7b9759f388505d171"
+    },
+    {
+      "path": "examples/project-uniswap-v3-flash/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/project-uniswap-v3-flash/ponder.config.ts",
+      "sha256": "dd034c9421801a497ff85cf3ed16d61e1b0bbeded1510b0af2f3762c1d7b45ef"
+    },
+    {
+      "path": "examples/project-uniswap-v3-flash/ponder.schema.ts",
+      "sha256": "d4e1f7aaf50aae64f9fe6da14d5a405c1852151ee31b2b9f942d36d9e1a15f94"
+    },
+    {
+      "path": "examples/project-uniswap-v3-flash/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/project-uniswap-v3-flash/src/index.ts",
+      "sha256": "52430c3deabbf0005faa396b971e6f673a467f78ed6ceea36f2d7bce72abdc74"
+    },
+    {
+      "path": "examples/project-uniswap-v3-flash/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/reference-erc1155/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/reference-erc1155/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/reference-erc1155/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/reference-erc1155/README.md",
+      "sha256": "6637ca703758557fc09c48f35be52f4bef345885b76aa048bb6ae406406793bf"
+    },
+    {
+      "path": "examples/reference-erc1155/abis/erc1155Abi.ts",
+      "sha256": "afdd95042214422da9d181cdd378666f2461a3b6ed5662c09d3c77b4e0248ef6"
+    },
+    {
+      "path": "examples/reference-erc1155/package.json",
+      "sha256": "760d96dd5d15ab2590b097eb339045a72224aad07d28c58e615d2bd873687420"
+    },
+    {
+      "path": "examples/reference-erc1155/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/reference-erc1155/ponder.config.ts",
+      "sha256": "364562e8242381c72f8ea113dc28f474b86a3a3fff60a5013a7e5ca839ab92b2"
+    },
+    {
+      "path": "examples/reference-erc1155/ponder.schema.ts",
+      "sha256": "8d92e25abda1321ddb57887ea9552e026842b2c0b189465d05c82b4d372e3ed1"
+    },
+    {
+      "path": "examples/reference-erc1155/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/reference-erc1155/src/index.ts",
+      "sha256": "1b6970dc9794651d86fb25279706e78ff7463a0e6e5a2d123ee40a86cd6fb2b6"
+    },
+    {
+      "path": "examples/reference-erc1155/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/reference-erc20/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/reference-erc20/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/reference-erc20/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/reference-erc20/README.md",
+      "sha256": "e23a2045ed601c750bc3ab3a4945d5c114f2c20ab7d29b839ba6c504201a365d"
+    },
+    {
+      "path": "examples/reference-erc20/abis/erc20ABI.ts",
+      "sha256": "e069eb836560faea40f77e480ecf190535b35602e66907618cba7fbbbe565dae"
+    },
+    {
+      "path": "examples/reference-erc20/package.json",
+      "sha256": "03d669c227037acf66edc035bb29357474c89fa9545d610a56b5fd46f80162da"
+    },
+    {
+      "path": "examples/reference-erc20/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/reference-erc20/ponder.config.ts",
+      "sha256": "1a2968e36eb773e2933b36e53974718f9b8a6cb96715eb20ae306ccd3b1f2f11"
+    },
+    {
+      "path": "examples/reference-erc20/ponder.schema.ts",
+      "sha256": "8e8aec23be89e824db03c1a0e317737d83363ca5f9352bd9e7989d547e2409b2"
+    },
+    {
+      "path": "examples/reference-erc20/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/reference-erc20/src/index.ts",
+      "sha256": "ce523a0fac97c51a4bc7a7953dd43310f5893d8466b48778656d5535d5a4f228"
+    },
+    {
+      "path": "examples/reference-erc20/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/reference-erc4626/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/reference-erc4626/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/reference-erc4626/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/reference-erc4626/README.md",
+      "sha256": "b053e60445f2b16582c0a4c4b1aa228914e611caafe8edd994ef73de6e06cf4d"
+    },
+    {
+      "path": "examples/reference-erc4626/abis/erc4626ABI.ts",
+      "sha256": "0555c5c13cb411f5d4c173f76da096cf655377f8a0513b3136b12be142aa8f54"
+    },
+    {
+      "path": "examples/reference-erc4626/package.json",
+      "sha256": "eefdb093b2ee92e30fec27459261f6512e3257411fa7949802a74dbf72600ef5"
+    },
+    {
+      "path": "examples/reference-erc4626/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/reference-erc4626/ponder.config.ts",
+      "sha256": "cc839836aca729c7593d09b890bb056845143c9cea348bafbd06844018ee4dd3"
+    },
+    {
+      "path": "examples/reference-erc4626/ponder.schema.ts",
+      "sha256": "035b07551f88b42bd94af6467f2a6a7fd0b0bf302cd09886dcc9ae5e6c7070d7"
+    },
+    {
+      "path": "examples/reference-erc4626/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/reference-erc4626/src/index.ts",
+      "sha256": "981ea0cbfc2b6eb6f5cb0a57c41d84f771e7acfe2a1687ff709688cc1be33640"
+    },
+    {
+      "path": "examples/reference-erc4626/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/reference-erc721/.env.example",
+      "sha256": "06ce573283ae387f592395bdd854514c0db823764590555f61782b86057792df"
+    },
+    {
+      "path": "examples/reference-erc721/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/reference-erc721/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/reference-erc721/README.md",
+      "sha256": "ce5e14d921a43b19a0d35481d87b763435bf2d8dc179c854de55a44ed237f652"
+    },
+    {
+      "path": "examples/reference-erc721/abis/erc721ABI.ts",
+      "sha256": "8626f3c0beba88408b63e5604ace77425b73712a5026b38dcf30eab19283e53a"
+    },
+    {
+      "path": "examples/reference-erc721/package.json",
+      "sha256": "bb6cb5d4db663bf649f4255cf277ae9a33e466348e31ed90a46bdd9cb8460538"
+    },
+    {
+      "path": "examples/reference-erc721/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/reference-erc721/ponder.config.ts",
+      "sha256": "b277d6fafb75140a4483fc148898248d8ec4f662ad3a4b543d957969a27da6c2"
+    },
+    {
+      "path": "examples/reference-erc721/ponder.schema.ts",
+      "sha256": "602465a2f5892339297a250f571f5cb6fc9c0d1008ef91d8c4bb07dad35ca28a"
+    },
+    {
+      "path": "examples/reference-erc721/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/reference-erc721/src/index.ts",
+      "sha256": "f547fae4ad5b8fd5423208ee58ab12a22d559b5a6524da672372f1e04c6d6162"
+    },
+    {
+      "path": "examples/reference-erc721/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/with-client/client/.env.example",
+      "sha256": "23b900f80e9cb45d94a9dbc5c1e2bedb604255d3359d49555c4ad6f7c3d9aeb8"
+    },
+    {
+      "path": "examples/with-client/client/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/with-client/client/package.json",
+      "sha256": "0d174ae35225a799e851cf8c7bb031e94c894974c0acd723496cdc9c4f2026a3"
+    },
+    {
+      "path": "examples/with-client/client/src/index.ts",
+      "sha256": "fa00b5cada7bb6c859914b31bc71f21833db07bb303e8c3a0d24ebee7dd4195d"
+    },
+    {
+      "path": "examples/with-client/package.json",
+      "sha256": "e9568d4989515d3fada64a0604375911304cdc240a83f014bb19c5bc01e8fe1d"
+    },
+    {
+      "path": "examples/with-client/ponder/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/with-client/ponder/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/with-client/ponder/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/with-client/ponder/abis/weth9Abi.ts",
+      "sha256": "8c17517b0113f2c61a4703c5c26de5ac43d1a9ba05dc79d11ecf513b025cbce4"
+    },
+    {
+      "path": "examples/with-client/ponder/package.json",
+      "sha256": "f15e0c1796933b7a35424aeec52cb331a39028ed9db79d52e136e23b853160c3"
+    },
+    {
+      "path": "examples/with-client/ponder/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/with-client/ponder/ponder.config.ts",
+      "sha256": "85a06e19c0f35501b8241b349b9dad8dac9be24f1271a59ff686fd45761b45c6"
+    },
+    {
+      "path": "examples/with-client/ponder/ponder.schema.ts",
+      "sha256": "68f82da2fe6eaafee3eb03dbdcb2e3c4585adc58c803c8242c47c5623909084a"
+    },
+    {
+      "path": "examples/with-client/ponder/src/api/index.ts",
+      "sha256": "9b48e1f74f6eb041d74858146644349df71e5dc05d22cf0af91a09ce71e59faf"
+    },
+    {
+      "path": "examples/with-client/ponder/src/index.ts",
+      "sha256": "0d77e3dfc932df3b870db92b123b8710da3ae2babbfbf35e21278b76bfa22e15"
+    },
+    {
+      "path": "examples/with-client/ponder/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/with-foundry/README.md",
+      "sha256": "c6dc6ad584df91f9be33047e9786e744049a598276cdfc2fae4d9bcc34f06e14"
+    },
+    {
+      "path": "examples/with-foundry/abis/CounterAbi.ts",
+      "sha256": "2f0137ddefa05456881fa7ddff24be75f06e979b0737f6c84bf38995bf706452"
+    },
+    {
+      "path": "examples/with-foundry/foundry/.gitignore",
+      "sha256": "a4802a7ec7f0df6445885f2db66770921693728575ea0d50d0fd58014dc56dc7"
+    },
+    {
+      "path": "examples/with-foundry/foundry/README.md",
+      "sha256": "c2ba1f61c178eb435a19c5c14921af62ff38ee28cb90a1788c4392596dcf378c"
+    },
+    {
+      "path": "examples/with-foundry/foundry/broadcast/Deploy.s.sol/31337/run-latest.json",
+      "sha256": "ac1b39534f93b2b9d7dd8f8386b60117d3fc5c3b2d795bd035abfe4330bcb60e"
+    },
+    {
+      "path": "examples/with-foundry/foundry/foundry.toml",
+      "sha256": "a7adf1e3168b73a9105a0b70731ad92d3acac76b9b1654309334c2dbbc126317"
+    },
+    {
+      "path": "examples/with-foundry/foundry/package.json",
+      "sha256": "9297ce40895f33e9e6c759c010399585fb805542b3ce04c79023777d095d33ba"
+    },
+    {
+      "path": "examples/with-foundry/foundry/remappings.txt",
+      "sha256": "0ab1273beee237b892c389a1fefec23c0cac10255b6b2fdcff885f41bc72e6a8"
+    },
+    {
+      "path": "examples/with-foundry/foundry/script/Deploy.s.sol",
+      "sha256": "12b05c51d9cb999b93d82c56ad754b2e0f4c592fe62f9b234ad60ad783215d51"
+    },
+    {
+      "path": "examples/with-foundry/foundry/src/Counter.sol",
+      "sha256": "f2679f03daf991093fd451aeb1b13d0d68acc5a228f69c6c028c461be0577bbf"
+    },
+    {
+      "path": "examples/with-foundry/package.json",
+      "sha256": "755402b35b920b1e3688d7e47359507e264f12763bd3e6126e77cf880a7c6f85"
+    },
+    {
+      "path": "examples/with-foundry/ponder/.env.example",
+      "sha256": "b9bde4117b5b878b674906301ff347a99c34ce56f32cf827c959497c27f2796f"
+    },
+    {
+      "path": "examples/with-foundry/ponder/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/with-foundry/ponder/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/with-foundry/ponder/package.json",
+      "sha256": "56aba92b80ca76414e4f2a94bda0124bd5dc8074bd5c6ffe3435ca1731188b68"
+    },
+    {
+      "path": "examples/with-foundry/ponder/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/with-foundry/ponder/ponder.config.ts",
+      "sha256": "8bbe87489c2fca837443a0b20927eb5cdf1aa1e56672eea0889eb62811e7d9b7"
+    },
+    {
+      "path": "examples/with-foundry/ponder/ponder.schema.ts",
+      "sha256": "f4c3f8c394eb6e137f05f9532fcc7a3c5ace396d0da4623e41e8ab7627aa02af"
+    },
+    {
+      "path": "examples/with-foundry/ponder/src/Counter.ts",
+      "sha256": "0080ec0b7bb951aef00430b6d96dc215dcf519cc6c647755202a80615590e66b"
+    },
+    {
+      "path": "examples/with-foundry/ponder/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "examples/with-foundry/ponder/tsconfig.json",
+      "sha256": "aa46474389a7aea26bbfda55125adff1c580b6df990b3b025577a20b8c19eef8"
+    },
+    {
+      "path": "examples/with-foundry/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/with-foundry/wagmi.config.ts",
+      "sha256": "f7fac4062258182c3cd7a2b08f1b85aff1958659a32948076a4aa748e4a54591"
+    },
+    {
+      "path": "examples/with-nextjs/README.md",
+      "sha256": "e1e001ab48428f419132c46364cef822492b4075db613ba5174998fdeb949790"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/.gitignore",
+      "sha256": "f37e7e1b90353a16ba7bec8979585311ee6d00311209391e5ab47162df4ca922"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/app/globals.css",
+      "sha256": "19da668d8f98e0f7bd219aeb518f4d98ac452d07bd69de05366686c88c04fe90"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/app/layout.tsx",
+      "sha256": "719d6ea555e9855b55bfd1b264678d0bbd34ae8998bc680b05353b786d73c55e"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/app/page.tsx",
+      "sha256": "3d80d97823c1751a7eeab5b842cef9d9519c8fc6d33c956418e00ee0d53f4a10"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/app/providers.tsx",
+      "sha256": "74db6fd81c80338de6cf38afaf2cc50bb495bc55be6660c51886f79eb9f918b1"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/components/deposits-table.tsx",
+      "sha256": "075e6ede27d5e2f58b53f9a3eef244fba79f958fbd8d5d18e469bb174349ac3b"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/lib/ponder.ts",
+      "sha256": "ed178dce58cbb54d0836b15c312eb44aba7e342f664f0ed9a2d3d3440d8472e3"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/next.config.js",
+      "sha256": "7f4973378c898b3cbf0d98607cfd19397dced16d595aa726842026c100ced2ec"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/package.json",
+      "sha256": "3d347570af7e85b7de4ecf6f616213eb73e09e42e0e0782b43ed09d5ae4eef53"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/postcss.config.js",
+      "sha256": "fa650b380adfabb151a0b352f7135e107e6352345f899060f1c5c231228f94bf"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/public/demo.png",
+      "sha256": "7e06278df43079a6b99b8408f8fbfe10ecf89c7d876244f49fcaca5f65c9d2ae"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/public/favicon.ico",
+      "sha256": "2b8ad2d33455a8f736fc3a8ebf8f0bdea8848ad4c0db48a2833bd0f9cd775932"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/tailwind.config.ts",
+      "sha256": "6d77cc451e9e38006050e4c2e2507dff71fd6c378657b6574316429af19bb149"
+    },
+    {
+      "path": "examples/with-nextjs/frontend/tsconfig.json",
+      "sha256": "73229f3ab1a7b150f54e34711761dc10b7d72c8f58a9318c96823f54cd304bbf"
+    },
+    {
+      "path": "examples/with-nextjs/package.json",
+      "sha256": "4e4accd587b4b0f426553fa99d8b833aed5ae08754ca5a208296401e0896b0e5"
+    },
+    {
+      "path": "examples/with-nextjs/ponder/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/with-nextjs/ponder/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/with-nextjs/ponder/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/with-nextjs/ponder/abis/Weth9Abi.ts",
+      "sha256": "fcacf01da9deb7ec7fe5cf9828a78d434d1fe9383f82a66d80143039aec23518"
+    },
+    {
+      "path": "examples/with-nextjs/ponder/package.json",
+      "sha256": "0f7562dfb5dade75dc83cb7494fe88d296c79dea249dbe96c2da00151320a8bf"
+    },
+    {
+      "path": "examples/with-nextjs/ponder/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/with-nextjs/ponder/ponder.config.ts",
+      "sha256": "dd8e0a4cf3672b3a07493019fd2ad4eeeab750d4e09c41841fd59f25ec189024"
+    },
+    {
+      "path": "examples/with-nextjs/ponder/ponder.schema.ts",
+      "sha256": "5c2033ca618384733530c52d58cbd174b7404dc59d062267d22dd210ae21541b"
+    },
+    {
+      "path": "examples/with-nextjs/ponder/src/api/index.ts",
+      "sha256": "cbd867534a0d7b9fea711822f1407703d09f64a09714075d1a4493b306ed8715"
+    },
+    {
+      "path": "examples/with-nextjs/ponder/src/index.ts",
+      "sha256": "9cb94145f396a37f7c5e8451d2c0e18541ce349712cd0db4124a563afd118537"
+    },
+    {
+      "path": "examples/with-nextjs/ponder/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/with-offchain/offchain/.env.example",
+      "sha256": "09e2bbd2839b66f89da54ba624c4b73e062c54b8e7acfb8549946e9d6ccdc563"
+    },
+    {
+      "path": "examples/with-offchain/offchain/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/with-offchain/offchain/drizzle.config.ts",
+      "sha256": "fbe4e201d8e707166604ff2194e1084e1629145968b3d8bbad035bbd4874c2c6"
+    },
+    {
+      "path": "examples/with-offchain/offchain/migrations/0000_nervous_rick_jones.sql",
+      "sha256": "b99f9784e1176b5c3da733e931cb3c6237b14ab3114a9b96313f88cc25505e31"
+    },
+    {
+      "path": "examples/with-offchain/offchain/migrations/meta/0000_snapshot.json",
+      "sha256": "ebb5ab4f0b3f27f0b22018e1d152bf21a6cd426be2eda43d77f5be999f87fc60"
+    },
+    {
+      "path": "examples/with-offchain/offchain/migrations/meta/_journal.json",
+      "sha256": "0212d99e679b024582812eaa982df3fcdb1f3457393def7b0fa75e059534cd79"
+    },
+    {
+      "path": "examples/with-offchain/offchain/package.json",
+      "sha256": "7f0f25f8d696535b22622301d85572c09a0798e20e88f75f84bf1f37bdbbe70d"
+    },
+    {
+      "path": "examples/with-offchain/offchain/src/index.ts",
+      "sha256": "df94bf3929621df58118398914f893e18d5ba23425c8c90e126bee51a892be07"
+    },
+    {
+      "path": "examples/with-offchain/offchain/src/offchain.ts",
+      "sha256": "e3a384d7181604c082bcec4d26c3cbf45d9c88805cbcd083165ce49d3c2b3b11"
+    },
+    {
+      "path": "examples/with-offchain/offchain/src/schema.ts",
+      "sha256": "934da7f7fb426832d65eec320d372769d42d6f0fcaca449c765c08628147df6d"
+    },
+    {
+      "path": "examples/with-offchain/package.json",
+      "sha256": "615021f63c905cbb22ec1621f248b525881618992a693061fc12f5ba00953540"
+    },
+    {
+      "path": "examples/with-offchain/ponder/.env.example",
+      "sha256": "06ce573283ae387f592395bdd854514c0db823764590555f61782b86057792df"
+    },
+    {
+      "path": "examples/with-offchain/ponder/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/with-offchain/ponder/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/with-offchain/ponder/package.json",
+      "sha256": "4d3c61c40c9cf2307943e7fa202b4942a8889df0abb0f644388953b9718bdbae"
+    },
+    {
+      "path": "examples/with-offchain/ponder/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/with-offchain/ponder/ponder.config.ts",
+      "sha256": "008a0d730848e8f22271435da8899a7cbd8b0a5768a3bb2b39d9c68eeecb0431"
+    },
+    {
+      "path": "examples/with-offchain/ponder/ponder.schema.ts",
+      "sha256": "602465a2f5892339297a250f571f5cb6fc9c0d1008ef91d8c4bb07dad35ca28a"
+    },
+    {
+      "path": "examples/with-offchain/ponder/src/api/index.ts",
+      "sha256": "f365e6f69139d2be483efecd12ff45cb56ddd84316d4198ba98a9aaadd5f88b8"
+    },
+    {
+      "path": "examples/with-offchain/ponder/src/index.ts",
+      "sha256": "091af342305efd7a29c9389e6724dc5d83a8d89f2a7f2e325f37b90c1eaf496f"
+    },
+    {
+      "path": "examples/with-offchain/ponder/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/with-trpc/client/env.d.ts",
+      "sha256": "10723d53b90f31caeb5e692e913d3a37fc3ef9d93058ae555651ffb328e783aa"
+    },
+    {
+      "path": "examples/with-trpc/client/index.ts",
+      "sha256": "5d767a9faba723d23f79e6abb4b2c208ab1d82721499cd990dcb4cf3ef5dde99"
+    },
+    {
+      "path": "examples/with-trpc/client/package.json",
+      "sha256": "a41ed1cdec5111d33f53c8b5ca95e9a46cdb0a70a194d1663625ad833f4d72d0"
+    },
+    {
+      "path": "examples/with-trpc/client/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "examples/with-trpc/package.json",
+      "sha256": "cc68d3d8c3e9532ca99889a2b9380b5397ac0a89404280f2ad53a8876db0ad48"
+    },
+    {
+      "path": "examples/with-trpc/ponder/.env.example",
+      "sha256": "46bfc7e5bdea709426b0bf773e9626cb4552c6a2b6aa6ff29275611a20634122"
+    },
+    {
+      "path": "examples/with-trpc/ponder/.eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "examples/with-trpc/ponder/.gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "examples/with-trpc/ponder/abis/erc20ABI.ts",
+      "sha256": "e069eb836560faea40f77e480ecf190535b35602e66907618cba7fbbbe565dae"
+    },
+    {
+      "path": "examples/with-trpc/ponder/package.json",
+      "sha256": "89771b09a24690498bef38fa31b21048ee9f06cfcd8ed509695778bc696bafab"
+    },
+    {
+      "path": "examples/with-trpc/ponder/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "examples/with-trpc/ponder/ponder.config.ts",
+      "sha256": "1a2968e36eb773e2933b36e53974718f9b8a6cb96715eb20ae306ccd3b1f2f11"
+    },
+    {
+      "path": "examples/with-trpc/ponder/ponder.schema.ts",
+      "sha256": "f64a29d4e3792572b1c8970392df4275d524a1996d33e5178346a4396fac0e63"
+    },
+    {
+      "path": "examples/with-trpc/ponder/src/api/index.ts",
+      "sha256": "3c61b76318557ab3b8deeb090076dcb75af3d6a27dd76c6f4c601dcfe1dcea92"
+    },
+    {
+      "path": "examples/with-trpc/ponder/src/index.ts",
+      "sha256": "87ee4ccf561df39cb173174bcf63a534e855a5da10f56091d0e6d93191aacb64"
+    },
+    {
+      "path": "examples/with-trpc/ponder/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    },
+    {
+      "path": "packages/create-ponder/templates/empty/_dot_env.local",
+      "sha256": "f88cc8eb931851ea596db3e0f87e14df3f138c47a6d8fb9a33b1657a2988000d"
+    },
+    {
+      "path": "packages/create-ponder/templates/empty/_dot_eslintrc.json",
+      "sha256": "29361074ccaa47a4cc68c1f045e896b6948610a93e02f7b075835c684677a62f"
+    },
+    {
+      "path": "packages/create-ponder/templates/empty/_dot_gitignore",
+      "sha256": "f2bf0e4623253583e99ab85e707311f7ea399b05bfbdda020419b7a765d10fc6"
+    },
+    {
+      "path": "packages/create-ponder/templates/empty/abis/ExampleContractAbi.ts",
+      "sha256": "ed4e1ff63e0a39e3ad9b003996ad8b8ffc0c7eefb17f2653db97424cdfc2b839"
+    },
+    {
+      "path": "packages/create-ponder/templates/empty/package.json",
+      "sha256": "b2bf4ca0fc9553bada232d545aeea2fde33e4eaa6d9f93533f54e34091ee9d08"
+    },
+    {
+      "path": "packages/create-ponder/templates/empty/ponder-env.d.ts",
+      "sha256": "d7b73775bb827aabd6e69bf4e88187c76dc377d812520528f9a1beaad686548b"
+    },
+    {
+      "path": "packages/create-ponder/templates/empty/ponder.config.ts",
+      "sha256": "f23ff6f97b31836ab715ee129d310081931447ead59a9125e2776c77e7220aec"
+    },
+    {
+      "path": "packages/create-ponder/templates/empty/ponder.schema.ts",
+      "sha256": "86c861d3f424b49ddecd7d005dcc4d4ad8f7a5d660496859032badba592562fb"
+    },
+    {
+      "path": "packages/create-ponder/templates/empty/src/api/index.ts",
+      "sha256": "d486f15a6c9dbbade300277721c8692c2e33bb2c11e9d8fe5d5fead59650f897"
+    },
+    {
+      "path": "packages/create-ponder/templates/empty/src/index.ts",
+      "sha256": "e80345f8bb2c58961585c98a49a8199799f023c7bd1e092a03cfa3c11ebb92b0"
+    },
+    {
+      "path": "packages/create-ponder/templates/empty/tsconfig.json",
+      "sha256": "018623e6170959ff0be2fa20323ebc197d6ef30498af6ddc730019203f71faaa"
+    }
+  ],
+  "docs": [
+    "docs/pages/docs/advanced/observability.mdx",
+    "docs/pages/docs/api-reference/create-ponder.mdx",
+    "docs/pages/docs/api-reference/ponder-client.mdx",
+    "docs/pages/docs/api-reference/ponder-react.mdx",
+    "docs/pages/docs/api-reference/ponder-utils.mdx",
+    "docs/pages/docs/api-reference/ponder/api-endpoints.mdx",
+    "docs/pages/docs/api-reference/ponder/cli.mdx",
+    "docs/pages/docs/api-reference/ponder/config.mdx",
+    "docs/pages/docs/api-reference/ponder/database.mdx",
+    "docs/pages/docs/api-reference/ponder/indexing-functions.mdx",
+    "docs/pages/docs/api-reference/ponder/schema.mdx",
+    "docs/pages/docs/config/accounts.mdx",
+    "docs/pages/docs/config/block-intervals.mdx",
+    "docs/pages/docs/config/chains.mdx",
+    "docs/pages/docs/config/contracts.mdx",
+    "docs/pages/docs/database.mdx",
+    "docs/pages/docs/get-started.mdx",
+    "docs/pages/docs/guides/bun.mdx",
+    "docs/pages/docs/guides/call-traces.mdx",
+    "docs/pages/docs/guides/factory.mdx",
+    "docs/pages/docs/guides/foundry.mdx",
+    "docs/pages/docs/guides/isolated-indexing.mdx",
+    "docs/pages/docs/guides/offchain-data.mdx",
+    "docs/pages/docs/guides/receipts.mdx",
+    "docs/pages/docs/guides/time-series.mdx",
+    "docs/pages/docs/indexing/overview.mdx",
+    "docs/pages/docs/indexing/read-contracts.mdx",
+    "docs/pages/docs/indexing/write.mdx",
+    "docs/pages/docs/migration-guide.mdx",
+    "docs/pages/docs/production/railway.mdx",
+    "docs/pages/docs/production/self-hosting.mdx",
+    "docs/pages/docs/query/api-endpoints.mdx",
+    "docs/pages/docs/query/direct-sql.mdx",
+    "docs/pages/docs/query/graphql.mdx",
+    "docs/pages/docs/query/sql-over-http.mdx",
+    "docs/pages/docs/requirements.mdx",
+    "docs/pages/docs/schema/relations.mdx",
+    "docs/pages/docs/schema/tables.mdx",
+    "docs/pages/docs/schema/views.mdx",
+    "docs/pages/docs/why-ponder.mdx"
+  ]
+}

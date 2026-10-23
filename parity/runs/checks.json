@@ -1,0 +1,33 @@
+{
+  "go_test": {
+    "command": "go test -count=1 -json ./...",
+    "status": "passed",
+    "evidence": "go-test.jsonl"
+  },
+  "go_race": {
+    "command": "go test -count=1 -race -json ./...",
+    "status": "passed",
+    "evidence": "go-race.jsonl"
+  },
+  "go_vet": {
+    "command": "go vet ./...",
+    "status": "passed",
+    "evidence": "go-vet.txt"
+  },
+  "build": {
+    "commands": [
+      "go build -o bin/ponder ./cmd/ponder",
+      "go build -o bin/erc20 ./examples/erc20"
+    ],
+    "status": "passed"
+  },
+  "whitespace_owned": {
+    "command": "git diff --cached --check -- abi checkpoint config interval schema store runtime query rpc cmd examples tools docs README.md AGENTS.md go.mod go.sum .gitignore package.json",
+    "status": "passed"
+  },
+  "whitespace_verbatim": {
+    "command": "git diff --cached --check",
+    "status": "reported_upstream_whitespace",
+    "reason": "Original fixtures and vendored dependency whitespace preserved byte-for-byte; not reformatted to keep source evidence exact."
+  }
+}
