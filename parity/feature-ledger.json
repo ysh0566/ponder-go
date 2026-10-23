@@ -895,7 +895,30 @@
         "parity/runs/lifecycle-boundaries-race.jsonl",
         "parity/runs/lifecycle-crash-race.jsonl"
       ],
-      "remaining": "First eight source startup/lock/heartbeat/index-recovery records mapped; full oracle still blocked. Native leases fence business/sync/factory/RPC-cache writes. Dev reset, source historical baseline/recovery row fixture, all migrateSync latest/legacy/snapshot tests, views-schema aliases, roles and automatic staged runtime/reorg scheduler remain incomplete."
+      "remaining": "16/18 database/index.test.ts source records mapped after versioned-sync migration. Historical-baseline recovery row fixture, camelCase/views-schema lifecycle, dev reset, permission roles and automatic staged runtime/reorg scheduler remain incomplete; full original oracle still blocked."
+    },
+    {
+      "id": "versioned-sync-migration",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/sync_migration.go",
+        "store/syncsql/create.sql",
+        "store/syncsql/copy.sql",
+        "store/values.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/index.ts:migrateSync",
+        "packages/core/src/sync-store/schema.ts",
+        "packages/core/src/sync-store/sql/ponder_rpc_cache_1/create.sql",
+        "packages/core/src/sync-store/sql/ponder_rpc_cache_1/copy.sql"
+      ],
+      "evidence": [
+        "parity/sync-migration-source-cases.json",
+        "parity/sync-migration-assets.json",
+        "parity/runs/sync-migration-boundaries-race.jsonl",
+        "parity/runs/sync-migration-crash-race.jsonl"
+      ],
+      "remaining": "Eight migrateSync source records mapped through owned shadows using unchanged SQL. Real old database/global-schema adoption, full sync-store event CRUD and automatic runtime integration remain unimplemented. Nullable/int64 RPC row API and decimal scalar transport verified; permission roles and remaining source features still pending."
     }
   ]
 }

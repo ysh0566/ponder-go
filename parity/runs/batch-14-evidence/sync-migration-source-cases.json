@@ -1,0 +1,354 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "Eight source records, 13 assertions, 15 applicable backend source leaves. Native ownership/complete-column/retry/concurrency/process tests and the SQL-asset hash test add no source credit.",
+  "assets": "parity/sync-migration-assets.json",
+  "cases": [
+    {
+      "source_id": "d1f4b9b1b221583e3b9f",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrateSync() creates only the latest sync schema",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "tables = await database.adminQB.wrap((db) =>\n    db\n      .select()\n      .from(TABLES)\n      .where(eq(TABLES.table_schema, \"ponder_rpc_cache_1\")),\n  )",
+        "{ rows } = await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`SELECT 1 FROM information_schema.schemata WHERE schema_name = 'ponder_sync'`,\n    ),\n  )"
+      ],
+      "test_source": "test(\"migrateSync() creates only the latest sync schema\", async () => {\n  const database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await database.migrateSync();\n\n  const tables = await database.adminQB.wrap((db) =>\n    db\n      .select()\n      .from(TABLES)\n      .where(eq(TABLES.table_schema, \"ponder_rpc_cache_1\")),\n  );\n  expect(tables.map((table) => table.table_name).sort()).toEqual([\n    \"blocks\",\n    \"factories\",\n    \"factory_addresses\",\n    \"intervals\",\n    \"logs\",\n    \"rpc_request_results\",\n    \"traces\",\n    \"transaction_receipts\",\n    \"transactions\",\n  ]);\n\n  const { rows } = await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`SELECT 1 FROM information_schema.schemata WHERE schema_name = 'ponder_sync'`,\n    ),\n  );\n  expect(rows).toEqual([]);\n\n  // Skip the metadata unlock because these tests only initialize the sync schema.\n  context.common.options.command = \"list\";\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 461,
+          "text": "expect(tables.map((table) => table.table_name).sort()).toEqual([\n    \"blocks\",\n    \"factories\",\n    \"factory_addresses\",\n    \"intervals\",\n    \"logs\",\n    \"rpc_request_results\",\n    \"traces\",\n    \"transaction_receipts\",\n    \"transactions\",\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 478,
+          "text": "expect(rows).toEqual([])"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrateSync() creates only the latest sync schema",
+        "source_id": "d1f4b9b1b221583e3b9f",
+        "source_line": 436,
+        "assertions_sha256": "8530cf8623b3703329da70849e08c9120e42ed774d76cec79724da97d641774f",
+        "original_assertions": 2,
+        "target_file": "store/sync_migration_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_creates_only_the_latest_sync_schema",
+        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
+          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "5e9195e3768f6718a932",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrateSync() no-ops on repeated startup",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "cachedResult = {\n    chainId: 1n,\n    requestHash: \"cached-request\",\n    blockNumber: 123n,\n    result: \"0x1234\",\n  }"
+      ],
+      "test_source": "test(\"migrateSync() no-ops on repeated startup\", async () => {\n  const database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n  const cachedResult = {\n    chainId: 1n,\n    requestHash: \"cached-request\",\n    blockNumber: 123n,\n    result: \"0x1234\",\n  };\n  await database.migrateSync();\n  await database.syncQB.wrap((db) =>\n    db.insert(rpcRequestResults).values(cachedResult),\n  );\n\n  await database.migrateSync();\n\n  expect(\n    await database.syncQB.wrap((db) => db.select().from(rpcRequestResults)),\n  ).toEqual([cachedResult]);\n\n  // Skip the metadata unlock because these tests only initialize the sync schema.\n  context.common.options.command = \"list\";\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 514,
+          "text": "expect(\n    await database.syncQB.wrap((db) => db.select().from(rpcRequestResults)),\n  ).toEqual([cachedResult])"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrateSync() no-ops on repeated startup",
+        "source_id": "5e9195e3768f6718a932",
+        "source_line": 485,
+        "assertions_sha256": "a5319631d822c45cfc8f257f5831755ad8a60df35fa0e132cc3b45f76b754df7",
+        "original_assertions": 1,
+        "target_file": "store/sync_migration_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_no-ops_on_repeated_startup",
+        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
+          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "98c0b79c36296529001b",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrateSync() accepts the latest legacy migration",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "cachedResult = {\n    chainId: 1n,\n    requestHash: \"cached-request\",\n    blockNumber: 123n,\n    result: \"0x1234\",\n  }",
+        "previousHistory = await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`SELECT name, timestamp FROM ponder_sync.kysely_migration ORDER BY name`,\n    ),\n  )",
+        "{ rows } = await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`SELECT name, timestamp FROM ponder_sync.kysely_migration ORDER BY name`,\n    ),\n  )"
+      ],
+      "test_source": "test(\"migrateSync() accepts the latest legacy migration\", async () => {\n  const database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n  const cachedResult = {\n    chainId: 1n,\n    requestHash: \"cached-request\",\n    blockNumber: 123n,\n    result: \"0x1234\",\n  };\n  await createLegacySyncSchema(database);\n  await database.migrateSync();\n  await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`UPDATE ponder_sync.kysely_migration SET timestamp = '2025-02-26T00:00:00.000Z'`,\n    ),\n  );\n  const previousHistory = await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`SELECT name, timestamp FROM ponder_sync.kysely_migration ORDER BY name`,\n    ),\n  );\n  await database.syncQB.wrap((db) =>\n    db.insert(rpcRequestResults).values(cachedResult),\n  );\n\n  await database.migrateSync();\n\n  expect(\n    await database.syncQB.wrap((db) => db.select().from(rpcRequestResults)),\n  ).toEqual([cachedResult]);\n  const { rows } = await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`SELECT name, timestamp FROM ponder_sync.kysely_migration ORDER BY name`,\n    ),\n  );\n  expect(rows).toEqual(previousHistory.rows);\n\n  // Skip the metadata unlock because these tests only initialize the sync schema.\n  context.common.options.command = \"list\";\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 563,
+          "text": "expect(\n    await database.syncQB.wrap((db) => db.select().from(rpcRequestResults)),\n  ).toEqual([cachedResult])"
+        },
+        {
+          "kind": "runtime",
+          "line": 571,
+          "text": "expect(rows).toEqual(previousHistory.rows)"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrateSync() accepts the latest legacy migration",
+        "source_id": "98c0b79c36296529001b",
+        "source_line": 523,
+        "assertions_sha256": "d2089fa10ed7e44ffee84c930e93403d817ccf46a42b5ad1bac8dd0d31edd266",
+        "original_assertions": 2,
+        "target_file": "store/sync_migration_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_accepts_the_latest_legacy_migration",
+        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
+          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "a7a38ea6cc600d52a23c",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrateSync() excludes trace and transfer intervals from ponder_sync",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "{ rows } = await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`SELECT fragment_id FROM ponder_rpc_cache_1.intervals ORDER BY fragment_id`,\n    ),\n  )"
+      ],
+      "test_source": "test(\"migrateSync() excludes trace and transfer intervals from ponder_sync\", async () => {\n  const database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await createLegacySyncSchema(database);\n  await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`INSERT INTO ponder_sync.intervals (fragment_id, chain_id, blocks) VALUES\n        ('log_1_null_null_null_null_null_0', 1, '{[1,10]}'),\n        ('transaction_1_null_null', 1, '{[1,10]}'),\n        ('trace_1_null_null_null_0', 1, '{[1,10]}'),\n        ('transfer_1_null_null_0', 1, '{[1,10]}')`,\n    ),\n  );\n\n  await database.migrateSync();\n\n  const { rows } = await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`SELECT fragment_id FROM ponder_rpc_cache_1.intervals ORDER BY fragment_id`,\n    ),\n  );\n  expect(rows).toEqual([\n    { fragment_id: \"log_1_null_null_null_null_null_0\" },\n    { fragment_id: \"transaction_1_null_null\" },\n  ]);\n\n  // Skip the metadata unlock because these tests only initialize the sync schema.\n  context.common.options.command = \"list\";\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 613,
+          "text": "expect(rows).toEqual([\n    { fragment_id: \"log_1_null_null_null_null_null_0\" },\n    { fragment_id: \"transaction_1_null_null\" },\n  ])"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrateSync() excludes trace and transfer intervals from ponder_sync",
+        "source_id": "a7a38ea6cc600d52a23c",
+        "source_line": 578,
+        "assertions_sha256": "03016b0ea70bbb02f424edb4fddb9eec31054d1391aa7c29b0fbf6155919dcfa",
+        "original_assertions": 1,
+        "target_file": "store/sync_migration_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_excludes_trace_and_transfer_intervals_from_ponder_sync",
+        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
+          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "65d565b7c92dadc9b178",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrateSync() excludes factories, child addresses, and factory intervals from ponder_sync",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "{ rows: intervals } = await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`SELECT fragment_id FROM ponder_rpc_cache_1.intervals ORDER BY fragment_id`,\n    ),\n  )",
+        "{ rows: factories } = await database.adminQB.wrap((db) =>\n    db.execute(sql`SELECT id FROM ponder_rpc_cache_1.factories`),\n  )",
+        "{ rows: childAddresses } = await database.adminQB.wrap((db) =>\n    db.execute(sql`SELECT address FROM ponder_rpc_cache_1.factory_addresses`),\n  )"
+      ],
+      "test_source": "test(\"migrateSync() excludes factories, child addresses, and factory intervals from ponder_sync\", async () => {\n  const database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await createLegacySyncSchema(database);\n  await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`INSERT INTO ponder_sync.factories (id, factory) OVERRIDING SYSTEM VALUE VALUES\n        (1, '{\"type\":\"log\",\"chainId\":1,\"address\":\"0xa\",\"eventSelector\":\"0xe\",\"childAddressLocation\":\"topic1\"}')`,\n    ),\n  );\n  await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`INSERT INTO ponder_sync.factory_addresses (factory_id, chain_id, block_number, address) VALUES\n        (1, 1, 6, '0x1')`,\n    ),\n  );\n  await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`INSERT INTO ponder_sync.intervals (fragment_id, chain_id, blocks) VALUES\n        ('factory_log_1_0xa_0xe_topic1_null_null', 1, '{[5,10]}'),\n        ('log_1_0xa_0xe_topic1_0xf_null_null_null_0', 1, '{[5,10]}'),\n        ('log_1_null_0xe_offset0_0xf_null_null_null_0', 1, '{[5,10]}'),\n        ('transaction_1_0xa_0xe_topic1_null', 1, '{[5,10]}'),\n        ('transaction_1_0xb_0xa_0xe_topic1', 1, '{[5,10]}'),\n        ('log_1_0xa_0xf_null_null_null_0', 1, '{[0,10]}'),\n        ('transaction_1_0xa_0xb', 1, '{[0,10]}')`,\n    ),\n  );\n\n  await database.migrateSync();\n\n  const { rows: intervals } = await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`SELECT fragment_id FROM ponder_rpc_cache_1.intervals ORDER BY fragment_id`,\n    ),\n  );\n  expect(intervals).toEqual([\n    { fragment_id: \"log_1_0xa_0xf_null_null_null_0\" },\n    { fragment_id: \"transaction_1_0xa_0xb\" },\n  ]);\n\n  const { rows: factories } = await database.adminQB.wrap((db) =>\n    db.execute(sql`SELECT id FROM ponder_rpc_cache_1.factories`),\n  );\n  expect(factories).toEqual([]);\n\n  const { rows: childAddresses } = await database.adminQB.wrap((db) =>\n    db.execute(sql`SELECT address FROM ponder_rpc_cache_1.factory_addresses`),\n  );\n  expect(childAddresses).toEqual([]);\n\n  // Skip the metadata unlock because these tests only initialize the sync schema.\n  context.common.options.command = \"list\";\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 673,
+          "text": "expect(intervals).toEqual([\n    { fragment_id: \"log_1_0xa_0xf_null_null_null_0\" },\n    { fragment_id: \"transaction_1_0xa_0xb\" },\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 681,
+          "text": "expect(factories).toEqual([])"
+        },
+        {
+          "kind": "runtime",
+          "line": 686,
+          "text": "expect(childAddresses).toEqual([])"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrateSync() excludes factories, child addresses, and factory intervals from ponder_sync",
+        "source_id": "65d565b7c92dadc9b178",
+        "source_line": 623,
+        "assertions_sha256": "2f97d28e54c31154535993c7c1559ccdc19bf2152fbd01605aa94a2829c993e5",
+        "original_assertions": 3,
+        "target_file": "store/sync_migration_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_excludes_factories,_child_addresses,_and_factory_intervals_from_ponder_sync",
+        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
+          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "e9b7f486851526c0b13b",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrateSync() rejects outdated legacy migrations",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "{ rows } = await database.adminQB.wrap((db) =>\n    db.execute(sql`SELECT name FROM ponder_sync.kysely_migration`),\n  )"
+      ],
+      "test_source": "test(\"migrateSync() rejects outdated legacy migrations\", async () => {\n  const database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n  await database.adminQB.wrap((db) =>\n    db.execute(sql`CREATE SCHEMA ponder_sync`),\n  );\n  await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`CREATE TABLE ponder_sync.kysely_migration (name text PRIMARY KEY)`,\n    ),\n  );\n\n  await database.adminQB.wrap((db) =>\n    db.execute(\n      sql`INSERT INTO ponder_sync.kysely_migration VALUES ('2025_02_26_0_factories')`,\n    ),\n  );\n\n  await expect(database.migrateSync()).rejects.toThrow(\n    new MigrationError(\n      '\"ponder_sync\" migration failed. Please first update to v0.10 or \"DROP SCHEMA ponder_sync CASCADE\".',\n    ),\n  );\n\n  const { rows } = await database.adminQB.wrap((db) =>\n    db.execute(sql`SELECT name FROM ponder_sync.kysely_migration`),\n  );\n  expect(rows).toEqual([{ name: \"2025_02_26_0_factories\" }]);\n\n  // Skip the metadata unlock because these tests only initialize the sync schema.\n  context.common.options.command = \"list\";\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 724,
+          "text": "expect(database.migrateSync()).rejects.toThrow(\n    new MigrationError(\n      '\"ponder_sync\" migration failed. Please first update to v0.10 or \"DROP SCHEMA ponder_sync CASCADE\".',\n    ),\n  )"
+        },
+        {
+          "kind": "runtime",
+          "line": 733,
+          "text": "expect(rows).toEqual([{ name: \"2025_02_26_0_factories\" }])"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrateSync() rejects outdated legacy migrations",
+        "source_id": "e9b7f486851526c0b13b",
+        "source_line": 693,
+        "assertions_sha256": "57f27edd07e24cf93765f1136513ab05a4dac68e665c66632d02dfc51a3120b7",
+        "original_assertions": 2,
+        "target_file": "store/sync_migration_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_rejects_outdated_legacy_migrations",
+        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
+          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "cc383fdf74c284fe3850",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrateSync() handles concurrent migrations",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "cachedResult = {\n    chainId: 1n,\n    requestHash: \"cached-request\",\n    blockNumber: 123n,\n    result: \"0x1234\",\n  }"
+      ],
+      "test_source": "test(\"migrateSync() handles concurrent migrations\", async () => {\n  const database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n  const cachedResult = {\n    chainId: 1n,\n    requestHash: \"cached-request\",\n    blockNumber: 123n,\n    result: \"0x1234\",\n  };\n\n  await Promise.all([database.migrateSync(), database.migrateSync()]);\n\n  await database.syncQB.wrap((db) =>\n    db.insert(rpcRequestResults).values(cachedResult),\n  );\n  expect(\n    await database.syncQB.wrap((db) => db.select().from(rpcRequestResults)),\n  ).toEqual([cachedResult]);\n\n  // Skip the metadata unlock because these tests only initialize the sync schema.\n  context.common.options.command = \"list\";\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 768,
+          "text": "expect(\n    await database.syncQB.wrap((db) => db.select().from(rpcRequestResults)),\n  ).toEqual([cachedResult])"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrateSync() handles concurrent migrations",
+        "source_id": "cc383fdf74c284fe3850",
+        "source_line": 740,
+        "assertions_sha256": "a5319631d822c45cfc8f257f5831755ad8a60df35fa0e132cc3b45f76b754df7",
+        "original_assertions": 1,
+        "target_file": "store/sync_migration_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_handles_concurrent_migrations",
+        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
+          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "5f831a3f919a8144afa1",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrateSync() copies ponder_sync from one snapshot",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "client = new pg.Client(context.databaseConfig.poolConfig)",
+        "migration = database.migrateSync()",
+        "{ rows } = await client.query(\n      `SELECT 1 FROM pg_locks\n      WHERE relation = 'ponder_sync.intervals'::regclass AND NOT granted`,\n    )",
+        "{ rows } = await database.adminQB.wrap((db) =>\n    db.execute(sql`SELECT fragment_id FROM ponder_rpc_cache_1.intervals`),\n  )"
+      ],
+      "test_source": "test(\"migrateSync() copies ponder_sync from one snapshot\", async () => {\n  if (context.databaseConfig.kind !== \"postgres\") return;\n\n  const database = createDatabase({\n    common: context.common,\n    namespace: { schema: \"public\", viewsSchema: undefined },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: {},\n      statements: buildSchema({\n        schema: {},\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await createLegacySyncSchema(database);\n\n  // A `0.17` app commits an interval while the migration waits to copy \"intervals\".\n  const client = new pg.Client(context.databaseConfig.poolConfig);\n  await client.connect();\n  await client.query(\"BEGIN\");\n  await client.query(\n    \"LOCK TABLE ponder_sync.intervals IN ACCESS EXCLUSIVE MODE\",\n  );\n  await client.query(\n    `INSERT INTO ponder_sync.intervals (fragment_id, chain_id, blocks)\n    VALUES ('log_1_null_null_null_null_null_0', 1, '{[1,10]}')`,\n  );\n\n  const migration = database.migrateSync();\n\n  while (true) {\n    const { rows } = await client.query(\n      `SELECT 1 FROM pg_locks\n      WHERE relation = 'ponder_sync.intervals'::regclass AND NOT granted`,\n    );\n    if (rows.length > 0) break;\n    await wait(10);\n  }\n\n  await client.query(\"COMMIT\");\n  await client.end();\n  await migration;\n\n  // Note: The interval is not copied, because it was committed after the migration\n  // snapshot. The copied tables are consistent with each other.\n  const { rows } = await database.adminQB.wrap((db) =>\n    db.execute(sql`SELECT fragment_id FROM ponder_rpc_cache_1.intervals`),\n  );\n  expect(rows).toEqual([]);\n\n  // Skip the metadata unlock because these tests only initialize the sync schema.\n  context.common.options.command = \"list\";\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 830,
+          "text": "expect(rows).toEqual([])"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrateSync() copies ponder_sync from one snapshot",
+        "source_id": "5f831a3f919a8144afa1",
+        "source_line": 777,
+        "assertions_sha256": "6dbdb98f42286e0ba8c96cb6063ec5cb4cb4fc2416f53a120001f03938258773",
+        "original_assertions": 1,
+        "target_file": "store/sync_migration_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_copies_ponder_sync_from_one_snapshot",
+        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
+          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Only task-owned versioned shadow scopes are created or read; no real global legacy schema takeover or in-place migration.",
+    "Full fixed-source latest schema and SQL copy are implemented; existing minimal native runtime sync store is still separate and has not been replaced automatically.",
+    "PG-only copy-snapshot test uses real ACCESS EXCLUSIVE locking and observes the migration waiting in pg_locks; PGlite branch returns in the source.",
+    "Full original database test collection still blocked by missing generated contract fixture.",
+    "Process exits test application termination only, not server/host power failure."
+  ],
+  "oracle_attempt": {
+    "exit_code": 1,
+    "executed_tests": 0,
+    "failed_suites": 1,
+    "error": "Cannot find module './generated.js' imported from packages/core/src/_test/utils.ts",
+    "evidence": "parity/runs/sync-migration-oracle-blocked.json"
+  }
+}

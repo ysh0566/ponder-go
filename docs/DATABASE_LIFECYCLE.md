@@ -65,7 +65,9 @@ namespaces need explicit checkpoint initialization. API steps are:
 5. Mark ready and eventually close the lifecycle before its backend.
 
 This API is not yet connected to the automatic runtime/migration scheduler.
-Full historical-baseline semantics, dev reset, legacy/latest sync migrations,
+Versioned sync migration is available separately through `MigrateSync`, using
+owned shadows and exact source SQL; see [SYNC_MIGRATIONS.md](SYNC_MIGRATIONS.md).
+Full historical-baseline semantics, dev reset, real legacy DB takeover,
 views-schema aliases, permissions and complete original lifecycle tests remain.
 
 ## Verification

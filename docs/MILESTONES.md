@@ -121,3 +121,11 @@ RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋check
 补充12个后端边界、8个真实进程退出叶子验证token fencing、旧close不解锁新owner、同步/factory/RPC写、失败恢复DDL+数据原子回滚、初始化清理、finalized时间、取消等待和慢启动。旧SaveBlock绕过fence的PG/PGlite红灯保留并修复。恢复撤销assigned/MAX保留journal，返回safe而不改latest；自动runtime接续仍待实现。没有服务端/宿主断电或并发多进程PGlite保证。
 
 完整verify退出0：Go/race各449/449，PG126/PGlite124各通过，无skip；vet/build、所选core167活动oracle（原skip2）、SDK4、ABI/ORM编译义务和2466差分向量通过。累计237/905（233 Go+4 SDK），Go原版oracle167通过、66fixture阻塞，668静态记录未实现。未改原版database/index测试的实际oracle尝试为收集前缺generated.js：0测试、1失败suite，不记oracle通过。精确命令和不可变证据hash见batch-13.json。Foundry仍未获安装许可。
+
+## M16：版本化sync缓存、迁移快照和整数传输
+
+新增8个migrateSync源例，保留13条断言和完整fixture/数据/异常/并发时序，PG8/PGlite7个适用源叶子通过。create.sql、copy.sql、legacy fixture三份资产与上游字节/hash相同；只将schema标识符重映射为任务拥有shadow。最新9表列/PK/identity/索引/范围类型完整保留。repeatable-read一事务复制源允许6表，按原SQL排除trace/transfer/factory数据；legacy行和Kysely history不变。PG真实锁等待证明late commit不进入迁移快照。并发命名冲突仅在核验已提交完整owner后恢复。
+
+补充10个后端边界、4个真实应用退出及SQL资产校验，覆盖完整列值、NULL/大整数/opaque文本、部分copy回滚、提交确认丢失重试、16实例并发、未拥有/不完整schema拒绝和磁盘重开。原生补充fixture最初误用最新版trace_address，改为原legacy trace_index/subcalls，未改原SQL资产；失败记录保留。真实PGlite红灯暴露JSON number舍入int64最大值，store/values.go现统一以十进制字符串绑定Go整数；PG/PGlite完整回归均通过。
+
+完整verify退出0：Go/race各479/479，无skip；PG141/PGlite138分别通过；vet/build、core167活动原oracle（另原skip2）、SDK4、编译义务与2466差分向量通过。累计245/905（241 Go+4 SDK），Go oracle167通过、74fixture阻塞，660静态记录未实现。原数据库oracle再次收集前缺generated.js（0测试/1失败suite），不能算原版通过；Foundry未安装。原runtime最小sync store与新9表协议cache仍分开，完整事件CRUD/自动runtime/真实旧DB接管未完成。见batch-14.json与SYNC_MIGRATIONS.md。
