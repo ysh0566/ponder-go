@@ -13,8 +13,8 @@
 
 ## 下一可执行批次
 
-1. 从最新提交和 summary.json 恢复。本批新增缓冲 ORM/cache/normalization 28 条源映射，累计 204（200 Go + 4 SDK）；Go oracle 167 通过、33 DB oracle 阻塞，701 静态记录未实现。不要重做已通过源例；精确结果以 summary.json 为准。
-2. store/indexing.go 已新增 Writer.Indexing 原生缓冲 API、返回值副本、insert/update/upsert/delete、显式 NULL/Undefined、defaults、typed Select 和 Cache.Flush/Clear/Invalidate。继续 missing rows、notNull、PK 更改、onchain table、完整 SQL 等含类型错误指令的原例，必须连同 Go 编译失败 fixture 一起移植。Promise thenable 是独立语言适配，尚未映射；cache profile/prefetch/eviction 和跨事件生命周期未实现。完整 Drizzle ORM、关系 DSL、actions commitBlock/trigger 原内部布局、空 schema finalization 和大通知 payload 仍待完成。
+1. 从最新提交和 summary.json 恢复。M9/10 完成缓冲 ORM 和无损 undo，M11 再移植 profile 13 例：累计 217（213 Go + 4 SDK）；Go oracle 167 通过、46 fixture oracle 阻塞，688 静态记录未实现。不要重做已通过源例；精确结果以 summary.json 为准。
+2. store/indexing.go 已新增 Writer.Indexing 原生缓冲 API、返回值副本、insert/update/upsert/delete、显式 NULL/Undefined、defaults、typed Select 和 Cache.Flush/Clear/Invalidate。继续 missing rows、notNull、PK 更改、onchain table、完整 SQL 等含类型错误指令的原例，必须连同 Go 编译失败 fixture 一起移植。Promise thenable 是独立语言适配，尚未映射；profile 的 record/recover/key 纯函数已在 store/profile.go，13 原例映射；cache prefetch/eviction、跨事件 profile 集成和生命周期仍未实现。完整 Drizzle ORM、关系 DSL、actions commitBlock/trigger 原内部布局、空 schema finalization 和大通知 payload 仍待完成。
 3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments、sync-store 原事件和 factory 原 E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
 4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。自动 finalize 和无表 finalization 边界也待实现。
 5. 完整关系/查询/GraphQL、SQL/SuperJSON 全类型、全部 CLI/模板/热重载/观测/示例，以及严格源码兼容和旧 DB 接管的独立轨，仍按 feature-ledger 推进。默认新影子 schema，不访问业务数据。
@@ -124,3 +124,17 @@ SELECT INTO（含 TEMP）、多语句写入显式拒绝；双后端另验证 CTE
 先通过定向 8 个后端叶子，再运行完整 verify；最终结果读取 batch-8.json 与 summary.json。下一步仍按上方完整未实现范围，尤其原生类型编译 fixture 和剩余原版 ORM/actions/cache profile/source/trace/多链/查询工具链。Foundry 许可未收到，不得安装。
 
 M10 最终完整 verify 退出 0：Go/race 各 314/314；明确 PostgreSQL 69、PGlite 68，分别全部通过，vet/build/oracle/SDK/2466 差分向量通过。源映射/原版 oracle 计数不变。batch-7/8-evidence 为不可变证据副本。
+
+## M11：profile pattern 原例
+
+store/profile.go 新增 RecordProfilePattern / RecoverProfilePattern / ProfilePatternKey，包括 chainId/id、log/trace args/result、block 时间分组、transfer/transaction/receipt、分隔符及 hint。store/profile_upstream_test.go 逐例保留 13 个原名、全部 19 个 pattern/recovery 断言和键/事件/schema 输入；schema/chain helpers 的 callback 元数据仅保留在源 ledger，因为 profiler 不读取它们。7 个其他原生分支测试分开统计。parity/profile-source-cases.json 保存源 ID/hash/输入/断言与适配说明。
+
+独立原版 Vitest 实际尝试：profile-oracle-blocked.json 报告收集前缺少 _test/generated.js，0 个测试执行、1 个 suite 失败，不算原例通过。Foundry 仍 pending；没有改源断言或替换 import。FieldOrder 用于保留有相等值的 args/result 的原 JS 顺序；native 缺少该元数据时按 key 排序，这不是任意原 JS object 的无修改兼容。运行时 ABI 事件还须携带顺序并接 profile/prefetch，不把纯函数移植说成完整缓存。
+
+下一安全批次：
+1. 先按 summary/batch-9.json 核实全量结果和最后提交；PG 容器继续复用 localhost:53398。
+2. 将 profile 元数据接入跨事件 cache 与 prefetch/eviction，继续 cache.test.ts 2 原例；其中 prefetch profile 含类型错误指令，必须连同 Go 编译失败 fixture 移植。
+3. 剩余 index 原例 missing rows/notNull/PK 更新/onchain table/完整 SQL 也含类型义务，不能用仅 runtime 通过抢先给 credit。需要可检查的原生 typed table/key/update API 或生成器；原动态 Row API 不能假称编译约束已覆盖。
+4. database/actions 原例继续 commitBlock/完整 trigger 布局、empty schema finalize、通知大 payload；之后 source/filter/fragments/raw event store/trace/多链/GraphQL/CLI 仍为完整目标。
+
+M11 最终完整 verify 退出 0：Go/race 各 334/334，PG 69/69、PGlite 68/68；完整构建和既有可运行 oracle/SDK/type/differential 均通过。累计 217 映射，213 Go 通过、167 Go 原版 oracle 也通过、46 原版 fixture 阻塞，SDK4通过，688未实现。阶段结束时无正在等待的测试；下一轮先确认 git diff/status 与 batch-9.json。

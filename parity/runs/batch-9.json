@@ -1,0 +1,192 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "from_commit": "766bceb",
+  "commands": [
+    "PONDER_TEST_POSTGRES=<task-only localhost:53398> ./tools/verify.sh",
+    "go test -count=1 -json ./store -run ^(TestUpstreamProfile|TestProfileNativeBranches)$",
+    "CI=1 ../ponder-upstream/packages/core/node_modules/.bin/vitest run --config tools/oracle.config.mjs --configLoader native src/indexing-store/profile.test.ts --reporter=json --outputFile=<task>/parity/runs/profile-oracle-blocked.json"
+  ],
+  "verification_exit_code": 0,
+  "profile_original_oracle": {
+    "exit_code": 1,
+    "executed_tests": 0,
+    "failed_suites": 1,
+    "reason": "Cannot find module ./generated.js imported from packages/core/src/_test/utils.ts",
+    "status": "blocked_before_collection"
+  },
+  "new_source_mappings": 13,
+  "new_source_assertions": 19,
+  "supplemental_native_profile_branches": 7,
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 334,
+    "pass": 334,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 334,
+    "pass": 334,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 69,
+        "pass": 69,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 69,
+        "pass": 69,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 68,
+        "pass": 68,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 68,
+        "pass": 68,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 217,
+    "unimplemented": 688,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 213,
+    "passed_with_required_type_checks": 213,
+    "original_oracle_also_passed": 167,
+    "original_oracle_blocked": 46
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 171,
+    "mapped_blocked": 46,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 169,
+    "passed": 167,
+    "failed": 0
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "typed_runtime": {
+    "file": "parity/runs/abi-typed-go.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0,
+    "counting": "Supplementary typed decoder execution; not additional source test records."
+  },
+  "typed_race": {
+    "file": "parity/runs/abi-typed-race.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0
+  },
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.27.1 darwin/arm64",
+    "node": "v25.2.1",
+    "differences": []
+  },
+  "foundry": {
+    "required": "1.8.5",
+    "status": "pending_approval",
+    "installation_executed": false
+  },
+  "limitations": [
+    "Profile pure functions are not cache prefetch/eviction or runtime integration.",
+    "Native FieldOrder must preserve original ABI/object argument ordering; absent metadata uses sorted names.",
+    "Original profile oracle failed import before executing tests; only target pass credit.",
+    "688 static records and runtime discovery audit remain; dynamic/simulation seeds are not proven exhausted.",
+    "All existing ORM/type/query/runtime/CLI gaps remain in feature-ledger and CONTINUATION.md."
+  ],
+  "evidence": {
+    "parity/runs/batch-9-evidence/batch-9-verify.txt": {
+      "original_path": "parity/runs/batch-9-verify.txt",
+      "sha256": "7cceb66a721330aebb4f00036fd7585cb3a0ce861fb7625e81dce89678c606e0"
+    },
+    "parity/runs/batch-9-evidence/go-test.jsonl": {
+      "original_path": "parity/runs/go-test.jsonl",
+      "sha256": "d680990b5896cad673c0b2386f3e00def6251b63efd63c69bb36ae5bf775a32c"
+    },
+    "parity/runs/batch-9-evidence/go-race.jsonl": {
+      "original_path": "parity/runs/go-race.jsonl",
+      "sha256": "2469b73c9bb24136d6088eb3b5883303e1fb98555d7135d4dede4e27ccb673d4"
+    },
+    "parity/runs/batch-9-evidence/core-oracle.json": {
+      "original_path": "parity/runs/core-oracle.json",
+      "sha256": "84892a9ea9b3189c1537cd7136ec7b44231003d8b1e5fe83aabb18ace41b2dba"
+    },
+    "parity/runs/batch-9-evidence/compile-fixtures.json": {
+      "original_path": "parity/runs/compile-fixtures.json",
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    },
+    "parity/runs/batch-9-evidence/profile-red.jsonl": {
+      "original_path": "parity/runs/profile-red.jsonl",
+      "sha256": "1b983726f19f80a7ddfd0b4a5936f37f5733634a1af2fdb0e0ca4b9f10c43aaa"
+    },
+    "parity/runs/batch-9-evidence/profile-go-final.jsonl": {
+      "original_path": "parity/runs/profile-go-final.jsonl",
+      "sha256": "b9827e2108bd80daf6705df853f625658dc1623d4b6c7eb297b649496c1707aa"
+    },
+    "parity/runs/batch-9-evidence/profile-oracle-blocked.json": {
+      "original_path": "parity/runs/profile-oracle-blocked.json",
+      "sha256": "810109ed533085af2ca78cc42ebeda4e5a8200e5ade4cca05caa804eb59cc58e"
+    },
+    "parity/runs/batch-9-evidence/profile-source-cases.json": {
+      "original_path": "parity/profile-source-cases.json",
+      "sha256": "648a37883ac54ed1bc41838d313c05a861d370215cc4a92d98d88fe60f3a274c"
+    }
+  }
+}
