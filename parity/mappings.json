@@ -3302,5 +3302,22 @@
       "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
       "evidence": "parity/foundry-generation-dependencies.json"
     }
+  },
+  {
+    "source_file": "packages/core/src/database/actions.test.ts",
+    "source_name": "live query notify trigger batches large payloads",
+    "source_id": "62ab7283dd1c52844624",
+    "source_line": 185,
+    "assertions_sha256": "9eb1188d9d898ec5c5c777d07a625a1e76a6038a377947fd3b013970978e36bb",
+    "original_assertions": 3,
+    "target_file": "store/notify_upstream_test.go",
+    "go_package": "ponder.local/ponder-go/store",
+    "go_test": "TestUpstreamLiveQueryNotify/postgres/live_query_notify_trigger_batches_large_payloads",
+    "assertion_policy": "Exact account schema; mainnet chainId 1, safe/finalized/latest block 0; empty business-trigger selection; 160 table_000_ through table_159_ names each with 48 x characters; real dialect-specific temp table and LISTEN/NOTIFY; checkpoint advanced to block 1 in the same database transaction. All 3 original assertions retained. Native owned namespace replaces public and progress relation represents latest checkpoint; PostgreSQL primary/PGlite companion. Native lifetime cancellation is added; no in-process notification substitute. Other lifecycle/UTF-8 regressions do not add source credit.",
+    "oracle_blocker": {
+      "status": "blocked",
+      "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+      "evidence": "parity/foundry-generation-dependencies.json"
+    }
   }
 ]

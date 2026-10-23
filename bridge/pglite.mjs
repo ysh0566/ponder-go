@@ -17,6 +17,11 @@ const output = (x) =>
 		JSON.stringify(x, (_, v) => (typeof v === "bigint" ? v.toString() : v)) +
 			"\n",
 	);
+// Keep notifications in distinct frames. Go owns the stdout reader and routes
+// them independently of the request/response sequence, including during COMMIT.
+db.onNotification((channel, payload) =>
+	output({ notification: { channel, payload } }),
+);
 output({ ready: true, version: "0.2.13" });
 for await (const line of readline.createInterface({ input: process.stdin })) {
 	try {

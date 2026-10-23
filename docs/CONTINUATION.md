@@ -6,19 +6,22 @@
 
 - 工作目录 `/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-go`。
 - 完整上游 `/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-upstream`，固定 `17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`。
-- 已创建独立 Go Git 仓库。用户后续明确授权创建 `ysh0566` 名下私有仓库并推送经验证阶段；每次确认账号、远端与 SHA，不开 PR、不部署。Foundry 安装仍待批准。
+- 已创建独立 Go Git 仓库并发布到私有 `https://github.com/ysh0566/ponder-go`。用户后续明确授权推送经验证阶段；每次确认账号、远端与 SHA，不开 PR、不部署。Foundry 安装仍待批准。首次发布凭据不落盘、不切全局账号；receipt 在 `parity/runs/publication-receipt.json`。
+- **发布暂缓**：用户要求历史作者为 ysh0566。已推送至 e9747c7 的13个提交原为 plato9966/Codex；项目 local user.name/email 已修正。备份引用 `refs/backup/author-before-ysh0566` 保留；未改写历史、未强推。等待用户确认已发布历史改写后才可继续发布。准确远端/协作者/身份审计见 `parity/runs/author-identity-audit.json`，不要把 Foundry 或历史改写的沉默当授权。
 - 已启动现有 Docker Desktop，并创建 `ponder-go-task-20261023` / `ponder_go_task_20261023`。先 `docker inspect` 核对存在和 `127.0.0.1:53398`，直接复用；不要操作其他容器。
 - Go 缓存位于 `.toolcache/`，基线 npm 依赖已按冻结 lockfile 安装。所有 SDK 源码原样保留在 `sdk/typescript/`。
 - 计划 PDF `libfile_90c2e75070c481918ecace631e841e0f` 下载失败，没有本地副本；完整需求已经在初始委托中给出，无需等待它。
 
 ## 下一可执行批次
 
-1. 从最新提交和 summary.json 恢复。M13 后累计 228 条映射（224 Go + 4 SDK），Go oracle 167 通过、57 fixture oracle 阻塞，677 静态记录未实现；精确执行结果看 batch-11.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
-2. 缓冲 ORM、scalar typed codegen、对应5个源类型错误要求、profile纯函数及eviction已移植。完整SQL的类型义务、Promise thenable、真实deploy/mint/readonly metadata prefetch原例仍未映射；typed JSON/bytes/array/custom codec、强枚举/Hex类型、关系DSL和自动profile/指标接入仍待完成。Database actions现有staged API的MAX/commit/empty finalize/恢复已验证，剩余large-payload notify原例及database/index迁移/自动runtime接入继续按M13末尾推进。
+1. 从最新提交和 summary.json 恢复。M14 后累计 229 条映射（225 Go + 4 SDK），Go oracle 167 通过、58 fixture oracle 阻塞，676 静态记录未实现；精确执行结果看 batch-12.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
+2. 缓冲 ORM、scalar typed codegen、对应5个源类型错误要求、profile纯函数及eviction已移植。完整SQL的类型义务、Promise thenable、真实deploy/mint/readonly metadata prefetch原例仍未映射；typed JSON/bytes/array/custom codec、强枚举/Hex类型、关系DSL和自动profile/指标接入仍待完成。Database actions.test.ts 的11个源例现已全部映射，含真实 LISTEN/NOTIFY 大载荷；其原版 oracle 仍全部受 fixture 阻塞。继续 database/index 迁移、剩余 store 原例、自动 staged runtime/重组通知调度，不能把11条 actions 的覆盖扩成整个数据库完成。
 3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments、sync-store 原事件和 factory 原 E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
 4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。自动 finalize 和无表 finalization 边界也待实现。
 5. 完整关系/查询/GraphQL、SQL/SuperJSON 全类型、全部 CLI/模板/热重载/观测/示例，以及严格源码兼容和旧 DB 接管的独立轨，仍按 feature-ledger 推进。默认新影子 schema，不访问业务数据。
 6. ABI 原生类型生成和 53 个内联成功 fixture 已建立，另有 53 额外负向控制、1 个源 null-topic 错误 fixture；原两份 ABI 文件 tsc 通过。剩余 10 个内联类型断言、72 条专门 native 类型记录及绝大部分类型错误指令尚待移植。Simulation 的 8 个应用、无限 seed 空间尚未执行。
+
+本批M14已完成完整verify，当前无运行中的测试。Go/race414/414，PG108/PGlite107分别通过。新增通知API在store/live_query.go、store/notifications.go、bridge/pglite.mjs，测试与逐例审计在notify-source-cases.json。SQL/SSE仍订阅旧Store内部bus，尚未接入外部数据库通知。下一轮可继续database/index生命周期和完整store原例、source/filter/fragments/trace；Foundry受限的原fixture继续标blocked。发布身份修复等待用户确认，不妨碍本地实现和普通验证。
 
 
 `parity/public-manifest.json` 包含各包 exports、CLI 命令与选项、配置属性、模板/示例文件 hash 与当前文档路径。`parity/discovery-audit.json` 描述发现范围和静态限制。全套 Vitest 的 runtime collection 尚未完成，905 不是已证明穷尽的动态执行总数。

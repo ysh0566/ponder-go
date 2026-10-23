@@ -35,6 +35,9 @@ func (a *Actions) transaction(ctx context.Context, fn func(Transaction) error) e
 	if e = a.s.lock(ctx, tx); e != nil {
 		return e
 	}
+	if e = prepareLiveQueryChanges(ctx, tx, a.s.Backend.Dialect()); e != nil {
+		return e
+	}
 	if e = fn(tx); e != nil {
 		return e
 	}

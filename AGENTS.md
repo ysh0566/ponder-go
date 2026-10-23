@@ -3,6 +3,7 @@
 - This repository is a local Go port of ponder-sh/ponder at 17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334 (0.18.2).
 - Scope is this repository and the sibling, pinned `../ponder-upstream` oracle. Do not modify other business repositories, create PRs, deploy, or connect business databases.
 - The user's later explicit authorization permits a private GitHub repository owned by `ysh0566` and pushing verified milestones there. Verify the existing credential's identity; do not use other accounts, create tokens, force-push, or publish unverified work as complete.
+- Published main at e9747c7 contains 13 incorrect author/committer identities. Repo-local identity is now ysh0566 with the verified account's official noreply address. Further pushes are paused pending the user's confirmation of published-history repair. Keep refs/backup/author-before-ysh0566; do not rewrite or force-push before that confirmation.
 - Use new task-owned schemas/data directories only. PostgreSQL and PGlite remain distinct supported backends; never substitute SQLite.
 - Treat `parity/test-ledger.json` discovery, porting, execution, pass/fail, and blockers independently. No fake skips or claims of full parity.
 - Preserve original test source, nested names, parameters, inputs, assertions, skip/todo/fails states. Add exact mappings before marking a port complete.

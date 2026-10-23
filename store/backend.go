@@ -36,7 +36,13 @@ type Backend interface {
 	Close() error
 	Dialect() string
 }
-type pgBackend struct{ db *sql.DB }
+type pgBackend struct {
+	db        *sql.DB
+	url       string
+	notifyMu  sync.Mutex
+	listeners map[*pgNotifications]struct{}
+	closed    bool
+}
 type pgTx struct{ tx *sql.Tx }
 
 func OpenPostgres(ctx context.Context, url string) (Backend, error) {
@@ -49,10 +55,22 @@ func OpenPostgres(ctx context.Context, url string) (Backend, error) {
 		db.Close()
 		return nil, e
 	}
-	return &pgBackend{db}, nil
+	return &pgBackend{db: db, url: url, listeners: map[*pgNotifications]struct{}{}}, nil
 }
 func (p *pgBackend) Dialect() string { return "postgres" }
-func (p *pgBackend) Close() error    { return p.db.Close() }
+func (p *pgBackend) Close() error {
+	p.notifyMu.Lock()
+	p.closed = true
+	listeners := make([]*pgNotifications, 0, len(p.listeners))
+	for listener := range p.listeners {
+		listeners = append(listeners, listener)
+	}
+	p.notifyMu.Unlock()
+	for _, listener := range listeners {
+		listener.Close()
+	}
+	return p.db.Close()
+}
 func (p *pgBackend) Begin(ctx context.Context) (Transaction, error) {
 	tx, e := p.db.BeginTx(ctx, nil)
 	return &pgTx{tx}, e
@@ -122,11 +140,15 @@ func pgQuery(ctx context.Context, q sqlQuerier, s string, args ...any) (Result, 
 }
 
 type pgliteBackend struct {
-	mu     sync.Mutex
-	cmd    *exec.Cmd
-	in     io.WriteCloser
-	lines  *bufio.Scanner
-	closed bool
+	mu        sync.Mutex
+	cmd       *exec.Cmd
+	in        io.WriteCloser
+	closed    bool
+	responses chan []byte
+	scanDone  chan struct{}
+	scanError error
+	notifyMu  sync.Mutex
+	listeners map[string]map[*notificationQueue]struct{}
 }
 type pgliteTx struct {
 	p      *pgliteBackend
@@ -153,17 +175,21 @@ func OpenPGlite(ctx context.Context, directory string) (Backend, error) {
 	if e = cmd.Start(); e != nil {
 		return nil, e
 	}
-	p := &pgliteBackend{cmd: cmd, in: in, lines: bufio.NewScanner(out)}
-	p.lines.Buffer(make([]byte, 64*1024), 32*1024*1024)
-	if !p.lines.Scan() {
-		p.Close()
-		return nil, fmt.Errorf("PGlite did not become ready: %v", p.lines.Err())
+	lines := bufio.NewScanner(out)
+	lines.Buffer(make([]byte, 64*1024), 32*1024*1024)
+	if !lines.Scan() {
+		in.Close()
+		cmd.Wait()
+		return nil, fmt.Errorf("PGlite did not become ready: %v", lines.Err())
 	}
 	var ready struct{ Ready bool }
-	if e = json.Unmarshal(p.lines.Bytes(), &ready); e != nil || !ready.Ready {
-		p.Close()
+	if e = json.Unmarshal(lines.Bytes(), &ready); e != nil || !ready.Ready {
+		in.Close()
+		cmd.Wait()
 		return nil, fmt.Errorf("invalid PGlite handshake")
 	}
+	p := &pgliteBackend{cmd: cmd, in: in, responses: make(chan []byte, 1), scanDone: make(chan struct{}), listeners: map[string]map[*notificationQueue]struct{}{}}
+	go p.readResponses(lines)
 	return p, nil
 }
 func (p *pgliteBackend) Dialect() string { return "pglite" }
@@ -175,7 +201,9 @@ func (p *pgliteBackend) Close() error {
 	}
 	p.closed = true
 	p.in.Close()
-	return p.cmd.Wait()
+	e := p.cmd.Wait()
+	<-p.scanDone
+	return e
 }
 func (p *pgliteBackend) roundtrip(ctx context.Context, action, sql string, args ...any) (Result, error) {
 	out := Result{Rows: []map[string]any{}}
@@ -198,8 +226,9 @@ func (p *pgliteBackend) roundtrip(ctx context.Context, action, sql string, args 
 	if _, e = p.in.Write(append(request, '\n')); e != nil {
 		return out, e
 	}
-	if !p.lines.Scan() {
-		return out, fmt.Errorf("PGlite transport ended: %v", p.lines.Err())
+	responseData, ok := <-p.responses
+	if !ok {
+		return out, fmt.Errorf("PGlite transport ended: %v", p.scanError)
 	}
 	var response struct {
 		Result
@@ -208,7 +237,7 @@ func (p *pgliteBackend) roundtrip(ctx context.Context, action, sql string, args 
 			Code    string
 		}
 	}
-	d := json.NewDecoder(strings.NewReader(p.lines.Text()))
+	d := json.NewDecoder(strings.NewReader(string(responseData)))
 	d.UseNumber()
 	if e = d.Decode(&response); e != nil {
 		return out, e

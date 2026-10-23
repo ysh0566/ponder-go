@@ -1,0 +1,199 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "from_commit": "e9747c7aeefc3b294345e2fc500f58294c565b01",
+  "commands": [
+    "PONDER_TEST_POSTGRES=<task-only localhost:53398> ./tools/verify.sh",
+    "go test -count=1 -race -json ./store -run ^(TestLiveQueryCommitBoundary|TestLiveQueryUTF8Payload|TestDatabaseNotifications|TestUpstreamLiveQueryNotify)$"
+  ],
+  "verification_exit_code": 0,
+  "new_source_mappings": 1,
+  "new_source_assertions": 3,
+  "supplementary_backend_leaves": 14,
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 414,
+    "pass": 414,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 414,
+    "pass": 414,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 108,
+        "pass": 108,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 108,
+        "pass": 108,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 107,
+        "pass": 107,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 107,
+        "pass": 107,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 229,
+    "unimplemented": 676,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 225,
+    "passed_with_required_type_checks": 225,
+    "original_oracle_also_passed": 167,
+    "original_oracle_blocked": 58
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 171,
+    "mapped_blocked": 58,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 169,
+    "passed": 167,
+    "failed": 0
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "orm_type_fixtures": {
+    "source_error_directives": 5,
+    "source_error_directives_passed": 5,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  },
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.27.1 darwin/arm64",
+    "node": "v25.2.1",
+    "differences": []
+  },
+  "publication": {
+    "url": "https://github.com/ysh0566/ponder-go",
+    "private": true,
+    "published_sha": "e9747c7aeefc3b294345e2fc500f58294c565b01",
+    "published_author_problem_commits": 13,
+    "local_identity_corrected": true,
+    "new_pushes_paused": true,
+    "history_rewrite": "pending_user_confirmation",
+    "force_push_performed": false
+  },
+  "foundry": {
+    "required": "1.8.5",
+    "status": "pending_approval",
+    "installation_executed": false
+  },
+  "limitations": [
+    "Full database action oracle still blocked by generated contract fixture; mapping and native pass do not imply original pass.",
+    "All 11 actions.test.ts source records mapped, not all database lifecycle/store tests.",
+    "Automatic staged runtime/reorg checkpoint notification scheduler, views-schema channels, reconnect/replay and permission roles remain incomplete.",
+    "External database notifications not yet wired into existing SQL/SSE server.",
+    "Discovery is statically expanded, not proven dynamic exhaustive.",
+    "Published metadata repair requires user confirmation; no rewrite or force push executed."
+  ],
+  "evidence": {
+    "parity/runs/batch-12-evidence/batch-12-verify.txt": {
+      "original_path": "parity/runs/batch-12-verify.txt",
+      "sha256": "4e6e9ec552451cd027c6c656fc35910cb4a2a706d5caa9ad35fc798ecf493209"
+    },
+    "parity/runs/batch-12-evidence/go-test.jsonl": {
+      "original_path": "parity/runs/go-test.jsonl",
+      "sha256": "84158d6516135a14883cb049971f992043274bcbeea58b15be2880e3c2a6b89e"
+    },
+    "parity/runs/batch-12-evidence/go-race.jsonl": {
+      "original_path": "parity/runs/go-race.jsonl",
+      "sha256": "ced941ade599f0bb5e4e16991565ff21f6001cb17424ed633000f80b741fde4a"
+    },
+    "parity/runs/batch-12-evidence/core-oracle.json": {
+      "original_path": "parity/runs/core-oracle.json",
+      "sha256": "9d2f9b50e16e8983bdc5c823c46f5f7afaef5b3145789bbd1f3a4a44c80d3bc3"
+    },
+    "parity/runs/batch-12-evidence/compile-fixtures.json": {
+      "original_path": "parity/runs/compile-fixtures.json",
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    },
+    "parity/runs/batch-12-evidence/orm-compile-fixtures.json": {
+      "original_path": "parity/runs/orm-compile-fixtures.json",
+      "sha256": "5a8edc343cbda0d2749e9ef9cd06d121bf87a24952b7ab9c24981286c569224c"
+    },
+    "parity/runs/batch-12-evidence/notify-red.jsonl": {
+      "original_path": "parity/runs/notify-red.jsonl",
+      "sha256": "c3fbf2814ea73ca609a0dbe14858f06609a3b39dfeaa40cda3bee8cbc681221f"
+    },
+    "parity/runs/batch-12-evidence/notify-boundaries-behavior-red.jsonl": {
+      "original_path": "parity/runs/notify-boundaries-behavior-red.jsonl",
+      "sha256": "f0ade8b4360f12c3e1c57314b6db3a8a706ec16d0d71ccc2b80031b67dae1aaa"
+    },
+    "parity/runs/batch-12-evidence/notify-final-race.jsonl": {
+      "original_path": "parity/runs/notify-final-race.jsonl",
+      "sha256": "5a9b1a6b8635382cd71b45da11167f979f2ec987fce4c2135271d28e7102c47c"
+    },
+    "parity/runs/batch-12-evidence/notify-source-cases.json": {
+      "original_path": "parity/notify-source-cases.json",
+      "sha256": "449cc86c07f1e38ad85981dfb25a3fa2fe3c850882f5411e30fd8f63d71ab6d1"
+    },
+    "parity/runs/batch-12-evidence/author-identity-audit.json": {
+      "original_path": "parity/runs/author-identity-audit.json",
+      "sha256": "8089ca539ff76124c71c2c7017d481d2020d1e887c0a37708d3852e829c94477"
+    },
+    "parity/runs/batch-12-evidence/publication-receipt.json": {
+      "original_path": "parity/runs/publication-receipt.json",
+      "sha256": "2988be78e9a766ece8b6b70f4e370f341b23745f3e88c98096e359797b69c8b4"
+    }
+  }
+}

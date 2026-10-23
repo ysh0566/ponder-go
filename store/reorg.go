@@ -40,6 +40,9 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 		return e
 	}
 	if s.staged {
+		if e = prepareLiveQueryChanges(ctx, tx, s.Backend.Dialect()); e != nil {
+			return e
+		}
 		if e = s.requireCommitted(ctx, tx, target.ChainID); e != nil {
 			return e
 		}
@@ -131,6 +134,9 @@ func (s *Store) Finalize(ctx context.Context, target checkpoint.Checkpoint) erro
 		return e
 	}
 	if s.staged {
+		if e = prepareLiveQueryChanges(ctx, tx, s.Backend.Dialect()); e != nil {
+			return e
+		}
 		if e = s.requireCommitted(ctx, tx, target.ChainID); e != nil {
 			return e
 		}

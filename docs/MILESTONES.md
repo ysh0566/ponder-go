@@ -103,3 +103,11 @@ Scalar typed CRUD、nullable/unchanged、JSON往返与CLI codegen --typed 已实
 RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋checkpoint；AdvanceLatest单独更新metadata，也支持Writer作用域共事务执行。CrashRecovery撤销全部保留journal并保留metadata，调用方再复位latest=safe。空schema finalize保留latest/其他链；非空未初始化metadata和pending边界拒绝丢弃undo。永久guard防止drop capture后绕过journal。json-v3持久row_data/operation并隔离staged/atomic模式，新影子升级不接管旧DB。
 
 14个新应用进程退出叶子与6个guard/ordering补充叶子通过；最终Go/race各398/398，PG100/100、PGlite99/99，无skip。vet/build、可运行oracle/SDK、ABI/ORM编译fixture及2466差分向量通过。Foundry未安装。精确命令、限制和不可变证据hash见batch-11.json；自动staged runtime/migration和所有剩余功能继续。
+
+## M14：真实数据库通知与发布身份审计
+
+新增1条原版 large-payload notification 映射，保留160表名输入、两种临时表生命周期和全部3条断言。actions.test.ts 的11条源记录均已有映射，完整原版 oracle 仍受生成合约fixture阻塞；不能视为整个数据库测试已完成。原生LISTEN/NOTIFY、7900字节JSON分片、表集合收集、ORM/视图写入和checkpoint同事务提交已实现。PGlite响应与异步通知分流，PG专用连接；另14个后端叶子验证回滚不发通知、订阅/取消/关闭、多消费者、慢消费者不丢300消息、UTF-8转义和撤销/finalize的collector边界。PG撤销缺临时表的实际红灯已修复，保留失败和通过记录。
+
+完整verify退出0：Go/race各414/414，无skip；PG108/108、PGlite107/107。vet/build、原版所选core167活动通过（另2个原skip）、SDK4、ABI/ORM编译义务、2466差分向量通过。累计229/905映射（225 Go +4 SDK），Go oracle167通过、58 fixture阻塞，676静态记录未实现。证据及hash见batch-12.json。自动staged runtime/重组通知调度、外部通知接入SQL/SSE、views-schema通道、角色权限与重连/重放均未完成。
+
+用户授权后创建私有 https://github.com/ysh0566/ponder-go 并推送至e9747c7；远端owner/private/SHA核验记录在publication-receipt.json。随后用户指出作者应为ysh0566，审计发现13个已发布提交使用plato9966/Codex。项目local身份已修正为ysh0566及API确认账户ID对应的官方noreply地址；全局不变。备份引用refs/backup/author-before-ysh0566保留，未改写/强推，后续推送等待用户确认历史修复。当前GitHub协作者API仅列owner，不能由此断言无人clone。Foundry安装仍待批准。
