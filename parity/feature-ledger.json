@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "249 mapped: 245 native Go passed (167 original oracle also passed, 78 fixture oracle blocked) +4 retained SDK passed; 656 static records remain unimplemented. Full runtime discovery still incomplete."
+      "remaining": "250 mapped: 246 native Go passed (167 original oracle also passed, 79 fixture oracle blocked) +4 retained SDK passed; 655 static records unimplemented. Dynamic exhaustive discovery still pending."
     },
     {
       "id": "differential-harness",
@@ -939,7 +939,28 @@
         "docs/PROTOCOL_CACHE.md",
         "parity/runs/batch-16.json"
       ],
-      "remaining": "Full original CRUD fixtures, source request hash/block cache metadata, full filter/include/pagination, automatic traces, staged/multichain scheduling and history/live handoff remain incomplete. Twenty generated codec vectors are extra evidence, not source credit. Cold re-enable does not backfill logs/receipts for the uncached period; complete missing-interval fetch remains."
+      "remaining": "Full original CRUD fixtures, source request hash/block cache metadata, full filter/include/pagination, automatic traces, multichain scheduling and history/live handoff remain incomplete. Twenty generated codec vectors are extra evidence, not source credit. Cold re-enable does not backfill logs/receipts for the uncached period; complete missing-interval fetch remains."
+    },
+    {
+      "id": "staged-runtime-single-chain",
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/staged.go",
+        "runtime/events.go",
+        "store/runtime_actions.go",
+        "store/event_rpc_cache.go",
+        "rpc/client.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/multichain.ts",
+        "packages/core/src/runtime/events.ts"
+      ],
+      "evidence": [
+        "parity/runs/batch-17.json",
+        "parity/runtime-source-cases.json",
+        "docs/STAGED_RUNTIME.md"
+      ],
+      "remaining": "Single-chain native per-block history/live scheduling only. Full original runtime/Foundry fixtures, source range batching/concurrent fetch/profile/metrics, multichain, trace/account/native-transfer and full query/SSE/CLI integration remain unimplemented. NOTIFY reconnect reads current state and later commits; it is not durable message replay."
     }
   ]
 }

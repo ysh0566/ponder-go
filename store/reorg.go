@@ -11,18 +11,18 @@ import (
 // Revert uses the first affected operation ID to undo the complete global suffix
 // in multichain mode. Isolated mode only undoes writes belonging to that chain.
 func (s *Store) Revert(ctx context.Context, target checkpoint.Checkpoint) error {
-	return s.revert(ctx, target, false)
+	return s.revert(ctx, target, false, false)
 }
 
 // RevertAndRewind commits indexing undo and sync provenance rewind together.
 // The schemas stay separate; this native backend stores both in one PostgreSQL
 // database, so a process exit cannot leave completed intervals on an orphan fork.
 func (s *Store) RevertAndRewind(ctx context.Context, target checkpoint.Checkpoint) error {
-	return s.revert(ctx, target, true)
+	return s.revert(ctx, target, true, false)
 }
 
-func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind bool) error {
-	if s.staged && len(s.Schema.Tables) == 0 {
+func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind, runtimeResume bool) error {
+	if s.staged && len(s.Schema.Tables) == 0 && !runtimeResume {
 		return nil
 	}
 	encoded, e := checkpoint.Encode(target)
@@ -48,6 +48,14 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 		}
 		if e = s.requireCommitted(ctx, tx, target.ChainID); e != nil {
 			return e
+		}
+		if runtimeResume {
+			if e = (&Actions{s}).singleRuntimeChain(ctx, tx, target.ChainID); e != nil {
+				return e
+			}
+			if e = tx.Exec(ctx, `SET LOCAL "ponder_go.suppress_notify"='1'`); e != nil {
+				return e
+			}
 		}
 	}
 	if e = s.eventContext(ctx, tx, encoded, target.ChainID, true); e != nil {
@@ -108,6 +116,11 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 			return e
 		}
 	}
+	if runtimeResume {
+		if e = s.runtimeCursor(ctx, tx, target); e != nil {
+			return e
+		}
+	}
 	if e = tx.Commit(ctx); e != nil {
 		return e
 	}
@@ -115,7 +128,9 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 	for name := range changed {
 		tables = append(tables, name)
 	}
-	s.notify(tables)
+	if !runtimeResume {
+		s.notify(tables)
+	}
 	return nil
 }
 

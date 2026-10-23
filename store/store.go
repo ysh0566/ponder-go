@@ -156,6 +156,7 @@ func (s *Store) initializeInternal(ctx context.Context, tx Transaction) error {
 		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_chains") + " (chain_id numeric PRIMARY KEY,chain_name text NOT NULL UNIQUE)",
 		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_events") + " (event_id text PRIMARY KEY, checkpoint char(75) NOT NULL, chain_id numeric NOT NULL, operation_boundary bigint NOT NULL, operation_end bigint NOT NULL)",
 		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_progress") + " (chain_id numeric PRIMARY KEY, checkpoint char(75) NOT NULL)",
+		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_runtime_cursor") + " (chain_id numeric PRIMARY KEY, checkpoint char(75) NOT NULL)",
 		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_finalized") + " (chain_id numeric PRIMARY KEY, checkpoint char(75) NOT NULL, safe_checkpoint char(75) NOT NULL)",
 		"CREATE TABLE IF NOT EXISTS " + s.syncTable("blocks") + " (chain_id numeric NOT NULL,number numeric NOT NULL,hash text NOT NULL,parent_hash text NOT NULL,timestamp numeric NOT NULL,payload jsonb NOT NULL,PRIMARY KEY(chain_id,number))",
 		"CREATE TABLE IF NOT EXISTS " + s.syncTable("intervals") + " (chain_id numeric NOT NULL,filter text NOT NULL,start_block numeric NOT NULL,end_block numeric NOT NULL,PRIMARY KEY(chain_id,filter,start_block,end_block))",

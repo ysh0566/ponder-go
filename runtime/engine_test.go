@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/config"
 	"ponder.local/ponder-go/rpc"
 	"ponder.local/ponder-go/schema"
@@ -58,7 +59,14 @@ func TestAnvilPostgresVertical(t *testing.T) {
 func TestAnvilPGliteVertical(t *testing.T) {
 	testAnvilVertical(t, "pglite")
 }
-func testAnvilVertical(t *testing.T, dialect string) {
+func TestStagedAnvilVertical(t *testing.T) {
+	for _, dialect := range []string{"pglite", "postgres"} {
+		for _, disabled := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/cache_disabled_%t", dialect, disabled), func(t *testing.T) { testAnvilVertical(t, dialect, Options{DisableCache: disabled}) })
+		}
+	}
+}
+func testAnvilVertical(t *testing.T, dialect string, stagedOptions ...Options) {
 	url := os.Getenv("PONDER_TEST_POSTGRES")
 	if dialect == "postgres" && url == "" {
 		t.Skip("explicit task PostgreSQL URL required; no parity pass")
@@ -77,7 +85,18 @@ func testAnvilVertical(t *testing.T, dialect string) {
 	}
 	defer backend.Close()
 	model := schema.Schema{Tables: []schema.Table{{Name: "account", Columns: []schema.Column{{Name: "id", Type: "text", Primary: true}, {Name: "balance", Type: "bigint", NotNull: true}}}}}
-	s, e := store.New(ctx, backend, model, fmt.Sprintf("ponder_go_chain_%x", time.Now().UnixNano()), schema.Multichain)
+	var s *store.Store
+	var lifecycle *store.Lifecycle
+	ns := fmt.Sprintf("ponder_go_chain_%x", time.Now().UnixNano())
+	if len(stagedOptions) > 0 {
+		lifecycle, e = store.NewLifecycle(backend, model, ns, schema.Multichain, store.LifecycleOptions{})
+		if e == nil {
+			s = lifecycle.RuntimeStore()
+			defer lifecycle.Close()
+		}
+	} else {
+		s, e = store.New(ctx, backend, model, ns, schema.Multichain)
+	}
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -153,11 +172,49 @@ func testAnvilVertical(t *testing.T, dialect string) {
 		},
 		"heads:block": func(context.Context, *Context) error { blockCalls++; return nil },
 	}
-	engine, e := New(config.Config{Chains: []config.Chain{{Name: "local", ID: 1, RPC: []string{rpcURL}}}, Contracts: []config.Contract{{Name: "Token", Chain: "local", ABI: []byte(transferABI), Address: []string{address}, StartBlock: 0, IncludeTransactionReceipts: true}}, Blocks: []config.BlockSource{{Name: "heads", Chain: "local", Interval: 1}}}, s, handlers)
+	cfg := config.Config{Chains: []config.Chain{{Name: "local", ID: 1, RPC: []string{rpcURL}}}, Contracts: []config.Contract{{Name: "Token", Chain: "local", ABI: []byte(transferABI), Address: []string{address}, StartBlock: 0, IncludeTransactionReceipts: true}}, Blocks: []config.BlockSource{{Name: "heads", Chain: "local", Interval: 1}}}
+	var engine *Engine
+	if lifecycle != nil {
+		engine, e = NewStaged(cfg, lifecycle, handlers, StagedOptions{Options: stagedOptions[0], BuildID: "native-e2e"})
+	} else {
+		engine, e = New(cfg, s, handlers)
+	}
 	if e != nil {
 		t.Fatal(e)
 	}
 	engine.Client.RequestsPerSecond = 0
+	var notifications store.NotificationListener
+	if lifecycle != nil {
+		notifications, e = store.Listen(ctx, backend, lifecycle.Actions().LiveQueryChannel())
+		if e != nil {
+			t.Fatal(e)
+		}
+		defer notifications.Close()
+	}
+	waitChange := func() {
+		t.Helper()
+		if notifications == nil {
+			return
+		}
+		c, cancel := context.WithTimeout(ctx, time.Second)
+		defer cancel()
+		n, e := notifications.Wait(c)
+		if e != nil || n.Payload != `["account"]` {
+			t.Fatal("realtime notification", n, e)
+		}
+	}
+	noChange := func() {
+		t.Helper()
+		if notifications == nil {
+			return
+		}
+		c, cancel := context.WithTimeout(ctx, 30*time.Millisecond)
+		defer cancel()
+		n, e := notifications.Wait(c)
+		if e != context.DeadlineExceeded {
+			t.Fatal("unexpected duplicate/intermediate notification", n, e)
+		}
+	}
 	read := func() string {
 		t.Helper()
 		r, e := s.Read(ctx, "account")
@@ -172,14 +229,36 @@ func testAnvilVertical(t *testing.T, dialect string) {
 	if read() != "8" || setupCalls != 1 || logCalls != 1 || blockCalls != 2 {
 		t.Fatalf("balance %s setup/log/block %d/%d/%d", read(), setupCalls, logCalls, blockCalls)
 	}
+	waitChange()
+	noChange()
+	if lifecycle != nil {
+		if engine.Phase() != "realtime" {
+			t.Fatal("handoff not complete")
+		}
+		states, e := lifecycle.Actions().Checkpoints(ctx)
+		if e != nil || len(states) != 1 {
+			t.Fatal(states, e)
+		}
+		cp, e := checkpoint.Decode(states[0].SafeCheckpoint)
+		if e != nil || cp.BlockNumber != 0 {
+			t.Fatal("history safe did not remain before live", states, e)
+		}
+	}
 	if e = engine.Sync(ctx); e != nil {
 		t.Fatal(e)
 	}
 	if logCalls != 1 {
 		t.Fatal("replay executed duplicate handler")
 	}
+	noChange()
 	checkProtocol := func() string {
 		t.Helper()
+		if lifecycle != nil && stagedOptions[0].DisableCache {
+			if engine.cache != nil {
+				t.Fatal("disabled cache attached")
+			}
+			return "uncached"
+		}
 		for table, want := range map[string]int{"blocks": 2, "logs": 1, "transactions": 1, "transaction_receipts": 1} {
 			rows, err := engine.cache.Rows(ctx, table, 1, 0, 1)
 			if err != nil || len(rows.Rows) != want {
@@ -204,7 +283,9 @@ func testAnvilVertical(t *testing.T, dialect string) {
 	if read() != "5" || logCalls != 2 || setupCalls != 1 {
 		t.Fatalf("reorg balance %s calls %d/%d", read(), logCalls, setupCalls)
 	}
-	if newHash := checkProtocol(); newHash == oldHash {
+	waitChange()
+	noChange()
+	if newHash := checkProtocol(); newHash == oldHash && oldHash != "uncached" {
 		t.Fatal("protocol cache retained orphaned log")
 	}
 	// The same JSON-RPC client also supports WebSocket requests and head subscriptions.

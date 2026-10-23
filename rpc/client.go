@@ -38,6 +38,17 @@ type Client struct {
 	next              atomic.Uint64
 	mu                sync.Mutex
 	nextTime          time.Time
+	transport         *Client
+}
+
+// WithCache scopes cache access to an indexing transaction while sharing the
+// original transport's request IDs, retry settings and global rate limiter.
+func (c *Client) WithCache(cache Cache) *Client {
+	base := c
+	for base.transport != nil {
+		base = base.transport
+	}
+	return &Client{URLs: base.URLs, HTTP: base.HTTP, Retries: base.Retries, RequestsPerSecond: base.RequestsPerSecond, ChainID: base.ChainID, Cache: cache, transport: base}
 }
 
 func New(urls ...string) *Client {
@@ -75,10 +86,14 @@ func (c *Client) CallCached(ctx context.Context, method string, params any, out 
 	return c.call(ctx, true, method, params, out)
 }
 func (c *Client) call(ctx context.Context, cached bool, method string, params any, out any) error {
-	if len(c.URLs) == 0 {
+	base := c
+	for base.transport != nil {
+		base = base.transport
+	}
+	if len(base.URLs) == 0 {
 		return fmt.Errorf("RPC endpoint is required")
 	}
-	key, _ := json.Marshal([]any{c.ChainID, method, params})
+	key, _ := json.Marshal([]any{base.ChainID, method, params})
 	if cached && c.Cache != nil {
 		raw, ok, e := c.Cache.CacheGet(ctx, string(key))
 		if e != nil {
@@ -89,15 +104,15 @@ func (c *Client) call(ctx context.Context, cached bool, method string, params an
 		}
 	}
 	var last error
-	for attempt := 0; attempt <= c.Retries; attempt++ {
-		if e := c.wait(ctx); e != nil {
+	for attempt := 0; attempt <= base.Retries; attempt++ {
+		if e := base.wait(ctx); e != nil {
 			return e
 		}
-		id := c.next.Add(1)
-		url := c.URLs[(id-1)%uint64(len(c.URLs))]
+		id := base.next.Add(1)
+		url := base.URLs[(id-1)%uint64(len(base.URLs))]
 		request := map[string]any{"jsonrpc": "2.0", "id": id, "method": method, "params": params}
 		data, _ := json.Marshal(request)
-		raw, e := c.request(ctx, url, data)
+		raw, e := base.request(ctx, url, data)
 		if e == nil {
 			var response struct {
 				ID     uint64          `json:"id"`
@@ -127,7 +142,7 @@ func (c *Client) call(ctx context.Context, cached bool, method string, params an
 		if errors.As(e, &rpcError) && (rpcError.Code == -32601 || rpcError.Code == -32602) {
 			return e
 		}
-		if attempt < c.Retries {
+		if attempt < base.Retries {
 			timer := time.NewTimer(time.Duration(1<<min(attempt, 6)) * 25 * time.Millisecond)
 			select {
 			case <-ctx.Done():

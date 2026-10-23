@@ -8,11 +8,11 @@
 
 ## 当前验证与计数
 
-权威结果是 [parity/runs/summary.json](parity/runs/summary.json)，本批冻结结果见 [M17](parity/runs/batch-15.json) 与 [M18](parity/runs/batch-16.json)。用例发现、移植、执行、通过分别登记，不合并计数。
+权威结果是 [parity/runs/summary.json](parity/runs/summary.json)，本批冻结结果见 [M17](parity/runs/batch-15.json) 、[M18](parity/runs/batch-16.json) 与 [M19](parity/runs/batch-17.json)。用例发现、移植、执行、通过分别登记，不合并计数。
 
 - 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条专门类型测试、63 个运行时文件内联类型断言、84 条类型错误指令，以及客户端/React/E2E。
-- 已逐例映射 249 条：245 条 Go + 原样保留的 4 条 SDK。Go 映射 245 条均通过，其中 167 条原版 oracle 也通过、78 条 fixture oracle 阻塞（数据库 65、profile 13）；SDK 4 条通过。另有 **656 条未实现**。
-- 全套原生 Go/race 各 539/539；真实 PostgreSQL 161/161、PGlite 158/158。53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。ORM 6 条源类型错误义务及 6 条额外负向控制也分别验证真实编译拒绝。
+- 已逐例映射 250 条：246 条 Go + 原样保留的 4 条 SDK。Go 映射 246 条均通过，其中 167 条原版 oracle 也通过、79 条 fixture oracle 阻塞（数据库 65、profile 13、runtime 1）；SDK 4 条通过。另有 **655 条未实现**。
+- 全套原生 Go/race 各 570/570；真实 PostgreSQL 175/175、PGlite 172/172。53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。ORM 6 条源类型错误义务及 6 条额外负向控制也分别验证真实编译拒绝。
 - 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
 - 2,466 个确定性差分向量（基础 2,400 + factory 66），另有 20 个来自未改动 source encode/lowercase 的协议编码向量，分别计数。
 - 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
@@ -85,4 +85,4 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 
 当前 journal 存储格式为 `json-v3`，默认新建 `ponder_go_shadow_v3_<hash>`；staged Actions 默认 `ponder_go_actions_v3_<hash>`，模式不可混开。显式旧格式 schema 会要求新影子重建，当前没有原地迁移或接管旧数据库。JSON `U+0000` 与 raw SQL 大数字的 undo 保留原值；PGlite bytes 参数采用明确二进制位置标记。
 
-生命周期/ORM then/SQL 的逐例边界见 [LIFECYCLE_COMPLETION.md](docs/LIFECYCLE_COMPLETION.md)，版本化缓存接入及未实现协议见 [PROTOCOL_CACHE.md](docs/PROTOCOL_CACHE.md)。自动 staged runtime、历史/实时交接、多链和完整查询/工具链仍待实现；继续入口见 [CONTINUATION.md](docs/CONTINUATION.md)。
+生命周期/ORM then/SQL 的逐例边界见 [LIFECYCLE_COMPLETION.md](docs/LIFECYCLE_COMPLETION.md)，版本化缓存接入及未实现协议见 [PROTOCOL_CACHE.md](docs/PROTOCOL_CACHE.md)。`runtime.NewStaged` 已接入单链自动生命周期、setup、历史/实时交接、重组与通知，边界见 [STAGED_RUNTIME.md](docs/STAGED_RUNTIME.md)。多链、source 完整范围批处理/并发 pipeline、trace 和完整查询/工具链仍待实现；继续入口见 [CONTINUATION.md](docs/CONTINUATION.md)。

@@ -14,7 +14,7 @@
 
 ## 下一可执行批次
 
-1. 从最新提交和 summary.json 恢复。M17 后累计 249 条映射（245 Go + 4 SDK），Go oracle 167 通过、78 fixture oracle 阻塞，656 静态记录未实现；精确执行结果看 batch-15.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
+1. 从最新提交和 summary.json 恢复。M19 后累计 250 条映射（246 Go + 4 SDK），Go oracle 167 通过、79 fixture oracle 阻塞，655 静态记录未实现；精确执行结果看 batch-17.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
 2. Database actions.test.ts 的11个源例及 database/index.test.ts 的16个生命周期源例已映射；M17已补齐剩余2个database/index记录（historical-baseline recovery rows和camelCase/views-schema），以及 ORM insert-then/full SQL 原例和 SQL 真编译错误义务。M16 sync迁移完整保留原SQL，但仅接受已拥有shadow，不代表真实旧DB布局接管；M17已将9表协议缓存接入默认单链runtime。M18已验证冷重开禁用缓存/重启启用的失效边界，继续自动staged runtime/重组通知、真实deploy/mint/readonly prefetch原例、typed JSON/bytes/array/custom codec/强枚举/Hex、关系DSL和自动profile/指标；随后接自动staged runtime及跨链重组通知调度。
 3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments、sync-store 原事件和 factory 原 E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
 4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。staged runtime 和自动 finalize 仍待接入；无 journal/无 checkpoint finalize 空操作已对应源 camelCase 验证，不能外推未初始化且有 journal 的情况。
@@ -193,3 +193,17 @@ M17当时记录的冷reopen禁用缓存后rewind再启用缺口已由下方M18�
 M18完整verify退出0：Go/race539/539；PG161/PGlite158均通过，无skip/fail。vet/build、ABI53编译/运行/race、ORM6源错误+6额外控制、core167活动/2原skip、SDK4和2466差分均通过。源映射249，原版Go oracle167通过/78阻塞，SDK4，656未实现。batch-16-evidence冻结16份日志/hash，batch-15-evidence保留M17原始结果。当前下一实现入口仍为自动staged runtime/重组通知；保留M17发布SHA和所有历史身份修复备份。
 
 M17已发布3c35307eab6eb8ec874bb5551cab88cefb77a465，M18已发布803995d04df55eab905b524c191ee095d14896cc；均核验private owner、remote SHA/tree和作者/提交者。发布证明见parity/runs/milestone-m17-m18-publication.json。本次后续文档提交只更新摘要与证明，不改变已验证代码。接续先git status/log确认最新head，不重复启动任务容器。
+
+## M19：自动 single-chain staged runtime
+
+新增 runtime.NewStaged/StagedOptions/Phase，store/runtime_actions.go 接入未迁移Lifecycle：setup与初始状态同事务、historical逐块safe/finalized、live整块MAX/commitBlock/latest事务、handoff索引/触发器/views/ready、自动finality。公开latest在reorg/recovery期间保持原值，私有_ponder_go_runtime_cursor用于durable resume，防止替换块失败后的跳过/重复；checkpoint通知在replacement commit后发。atomic构造器仍保留。
+
+真实PG/PGlite+现有Anvil覆盖cache开/关、handler/metadata失败、提交确认失败、backfill中链头前进、实际LISTEN/NOTIFY去重/断开重连、六个真实进程退出、setup失败回滚、公开/私有cursor分离和empty schema。子进程退出后默认租约25秒等待属于测试的一部分。NOTIFY非durable队列，重连读取当前数据后接后续通知；完整SSE恢复尚未完成。query.Server.Ready仍需应用显式接线，DB app ready不等于HTTPReady自动完成。
+
+handler内缓存RPC原先会嵌套获取store/PGlite事务锁。现改为EventProtocolCache复用事件事务，RPC Client.WithCache共享root请求ID、重试、全局限流；真实每块hash RPC miss与回滚已验证。未知block request metadata仍NULL并按链保守失效，不能冒称source MD5/参数解析协议完成。
+
+新增一个确切源映射 runtime/events.test.ts splitEvents()，保留全部双事件输入与完整75位inline snapshot，Go事件字段使用原生RPC hex；原源码/contexts/断言在parity/runtime-source-cases.json。其余本轮native故障/进程/端到端/客户端测试不增加源credit。原版events suite实际执行结果0测试/1收集失败suite，缺generated.js，Foundry仍pending未安装。
+
+最终证据入口为batch-17.json，最终完整验收退出0：Go/race570/570，PG175/PGlite172，零skip/fail；vet/build、编译、适用oracle/SDK/differential均通过。不要把staged-before-cursor-finalization中的中间版本日志当最终结果。继续时先读最终summary及HEAD。下一批按依赖推进原版filter/fragments/events及source/trace，随后多链完整调度和查询/工具链。当前NewStaged明确仅单链，historical为native逐块事务而非source范围批处理；concurrent fetch/profile/prefetch/metrics、全部Foundry源例仍未覆盖。
+
+M19冻结batch-17-evidence共24份日志/源码审计快照及hash，implementation字段记录9个实现文件hash。唯一新增源credit是splitEvents()完整快照；本批30额外native叶子（含6真实进程退出）不加源credit。当前下一阶段继续原版runtime filter/fragments/events与source/trace，并推进多链、完整缓存查询和API/CLI，不能以570 native通过代替655未实现源码例。自动HTTPReady、完整SSE断线恢复仍没有接线，不外推LISTEN重连测试。

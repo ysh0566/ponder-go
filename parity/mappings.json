@@ -3679,5 +3679,23 @@
       "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
       "dependency_evidence": "parity/foundry-generation-dependencies.json"
     }
+  },
+  {
+    "source_file": "packages/core/src/runtime/events.test.ts",
+    "source_name": "splitEvents()",
+    "source_id": "a196548313391b06c82d",
+    "source_line": 40,
+    "assertions_sha256": "a35a4b5f9c8e3f87feb4afc7b0d7f640c1c2648c8cbbefbf68645ec6d2f26d06",
+    "original_assertions": 1,
+    "target_file": "runtime/events_upstream_test.go",
+    "go_package": "ponder.local/ponder-go/runtime",
+    "go_test": "TestUpstreamSplitEvents",
+    "assertion_policy": "Original two events, chain1, checkpoint0, hashes1/2 and all inline-snapshot fields/full75digit checkpoint literals retained. Native Event.Block uses RPC hex strings: source numeric timestamp1/2 and bigint number1n/2n become exact0x1/0x2; source raw test/context remains in audit. Full typed native result is deep-equal asserted, not only partition lengths. No Foundry fixture or source assertion/import substituted.",
+    "oracle_blocker": {
+      "status": "blocked",
+      "reason": "Unchanged runtime/events.test.ts cannot collect: missing _test/generated.js. Foundry1.8.5 installation remains pending approval.",
+      "evidence": "parity/runs/runtime-events-oracle-blocked.json",
+      "dependency_evidence": "parity/foundry-generation-dependencies.json"
+    }
   }
 ]
