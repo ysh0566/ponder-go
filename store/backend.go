@@ -185,7 +185,13 @@ func (p *pgliteBackend) roundtrip(ctx context.Context, action, sql string, args 
 	if e := ctx.Err(); e != nil {
 		return out, e
 	}
-	request, e := json.Marshal(map[string]any{"action": action, "sql": sql, "params": databaseArgs(args)})
+	binaryParams := []int{}
+	for i, arg := range args {
+		if _, ok := arg.([]byte); ok {
+			binaryParams = append(binaryParams, i)
+		}
+	}
+	request, e := json.Marshal(map[string]any{"action": action, "sql": sql, "params": databaseArgs(args), "binaryParams": binaryParams})
 	if e != nil {
 		return out, e
 	}

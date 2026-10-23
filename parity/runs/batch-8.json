@@ -1,0 +1,182 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "from_commit": "eb51ae4",
+  "commands": [
+    "PONDER_TEST_POSTGRES=<task-only localhost:53398> ./tools/verify.sh",
+    "go test -count=1 -json ./store -run ^(TestORMBatchChunks|TestORMJSONNullCharacterUndo|TestORMBytesPrimaryKey|TestStorageVersionRejectsOldJournal)$",
+    "docker exec -i ponder-go-task-20261023 psql -U ponder -d ponder_test < temporary JSON probe (BEGIN/CREATE TEMP TABLE/ROLLBACK only)"
+  ],
+  "verification_exit_code": 0,
+  "new_source_mappings": 0,
+  "new_native_backend_regressions": 8,
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 314,
+    "pass": 314,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 314,
+    "pass": 314,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 69,
+        "pass": 69,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 69,
+        "pass": 69,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 68,
+        "pass": 68,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 68,
+        "pass": 68,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 204,
+    "unimplemented": 701,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 200,
+    "passed_with_required_type_checks": 200,
+    "original_oracle_also_passed": 167,
+    "original_oracle_blocked": 33
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 171,
+    "mapped_blocked": 33,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 169,
+    "passed": 167,
+    "failed": 0
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.27.1 darwin/arm64",
+    "node": "v25.2.1",
+    "differences": []
+  },
+  "storage_format": {
+    "version": "json-v2",
+    "default_namespace": "ponder_go_shadow_v2_<schema hash>",
+    "old_format_action": "Reject explicit old fingerprint; require a new shadow. No in-place migration or old database takeover."
+  },
+  "fixed": [
+    "Actual JSON U+0000 persistence, ORM/raw SQL update/delete and undo",
+    "Exact raw SQL large numeric JSON undo without JS-number rounding",
+    "PGlite bytea parameters and byte primary-key find/delete/undo",
+    "Old journal format rejection without ALTER or migration",
+    "1001-row second-chunk failure rolls back all chunks and journal; corrected retry produces exactly 1001 operations",
+    "Delete/reinsert buffered order emits each key once"
+  ],
+  "foundry": {
+    "required": "1.8.5",
+    "status": "pending_approval",
+    "installation_executed": false
+  },
+  "limitations": [
+    "No complete ORM/profile/prefetch/relations/type fixture/source/trace/multichain/GraphQL/CLI parity claim.",
+    "Original database fixture oracle remains blocked; new regressions do not earn source parity credit.",
+    "PGlite binary parameter metadata currently handles top-level []byte; full custom codecs and array modes still need more tests.",
+    "PostgreSQL jsonb native U+0000 rejection is retained; only json values use the lossless route.",
+    "Application process termination tests passed in the full suite; no server/host power-loss testing."
+  ],
+  "evidence": {
+    "parity/runs/batch-8-evidence/batch-8-verify.txt": {
+      "original_path": "parity/runs/batch-8-verify.txt",
+      "sha256": "be70b144bf701995e0e359efbe9035fb77caab5bd18f311caeff7cceee0f6cfa"
+    },
+    "parity/runs/batch-8-evidence/go-test.jsonl": {
+      "original_path": "parity/runs/go-test.jsonl",
+      "sha256": "59952647ceb2525554f96d0a1cdba4294416b00994fa77a97197fa1b97960310"
+    },
+    "parity/runs/batch-8-evidence/go-race.jsonl": {
+      "original_path": "parity/runs/go-race.jsonl",
+      "sha256": "a92df4ac51d609e01dabaf332fbba3b4cf173940f7ed00a7995aec4281d8db16"
+    },
+    "parity/runs/batch-8-evidence/core-oracle.json": {
+      "original_path": "parity/runs/core-oracle.json",
+      "sha256": "f61e1b165f0d8438153691fb57c978798c7b702276d5bbb21948fd78c3167aab"
+    },
+    "parity/runs/batch-8-evidence/compile-fixtures.json": {
+      "original_path": "parity/runs/compile-fixtures.json",
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    },
+    "parity/runs/batch-8-evidence/orm-codec-red.jsonl": {
+      "original_path": "parity/runs/orm-codec-red.jsonl",
+      "sha256": "c24b0bd33cd1a6ed4369a6f37c7d715c09a927060db41335f1dede1e795d1a5d"
+    },
+    "parity/runs/batch-8-evidence/orm-json-number-red.jsonl": {
+      "original_path": "parity/runs/orm-json-number-red.jsonl",
+      "sha256": "f0f064dc0750c28bded0a68ac9a5893ba24ae00c97ef19829c16a05cdbc35dfe"
+    },
+    "parity/runs/batch-8-evidence/orm-chunks-red.jsonl": {
+      "original_path": "parity/runs/orm-chunks-red.jsonl",
+      "sha256": "dfc386b5f1ef1d80d5680068386d4109cdc0522962d95107387b90a5fdcc294a"
+    },
+    "parity/runs/batch-8-evidence/orm-codec-batch-final.jsonl": {
+      "original_path": "parity/runs/orm-codec-batch-final.jsonl",
+      "sha256": "db6a7c1c0f7180671a374784d47ab1e0e8f0e38705632cfb393074b7d39e9954"
+    }
+  }
+}

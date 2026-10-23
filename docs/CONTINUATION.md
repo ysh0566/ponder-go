@@ -109,8 +109,18 @@ SELECT INTO（含 TEMP）、多语句写入显式拒绝；双后端另验证 CTE
 完整 verify 的实际数量和证据见 parity/runs/batch-7.json 与 summary.json。Foundry 安装仍 pending_approval，未执行安装；数据库源 oracle 不冒称通过。normalization 两条原版测试已实际运行。
 
 紧接着补以下已知边界（不要扩大解释本批通过范围）：
-- JSON 中实际 U+0000 可由 PostgreSQL json 存储，但当前 jsonb_populate_recordset / trigger to_jsonb / journal before_row jsonb 路线会拒绝；需无损 JSON snapshot/undo 编码，版本化影子标记并双后端回归。不得借此静默删 JSON NUL。
-- bytes 主键经 PGlite JSON 参数桥仍需独立验证与修正；复合键已测整数+hex，不能据此宣称全部键类型完成。
+- 上述 JSON U+0000 边界在 M10 已补：journal before_row 为 json，trigger 直接读取主键字段，普通快照用 row_to_json，写入/undo 按列绑定。undo JSON 使用 RawMessage 保留 raw SQL 大数字。jsonb 的 PostgreSQL 原生限制不被绕过；不删除 JSON NUL。继续验证全部 JSON/数组/自定义 codec 组合。
+- bytes 主键与 undo 在 M10 双后端已验证；PGlite 仅按明确 binaryParams 位置将 Go base64 还原 Uint8Array，普通文本不作猜测转换。复合键已测整数+hex，仍不能宣称全部键类型完成。
 - 自定义列 mapper 已有接口，完整 codec、默认函数返回不同 Go 类型、xy/abc geometry modes、nested arrays 和自定义指针副本仍需验证。
-- InsertMany 部分失败缓存状态、取消/SQL 错误传播、跨事件缓存 profile 和 eviction 仍需更多源例；不将目前 cache 完全性提示当成数据库已完整预取。
+- 已补 1001 行第二批错误 -> 整个 flush savepoint 回滚 -> 删除非法 pending 行 -> 重插重试，验证无重复 journal；已修复删除后重插留下重复顺序条目。InsertMany API 输入归一化中途失败、取消/SQL 错误传播、跨事件缓存 profile 和 eviction 仍需更多源例。
 - 缓存与 raw/direct SQL 混合操作必须继续通过 base trigger journal；savepoint 恢复失败会标记 Writer error 以禁止提交进度。
+
+## M10：无损 JSON undo 与版本化影子
+
+修复原生实现额外暴露的边界，不增加源移植 credit。PostgreSQL json 能存储实际 U+0000，但 json ->/populate_record 与 to_jsonb 都会解码整行而拒绝；因此当前 flush 不再用 recordset。store/row_sql.go 使用受控参数绑定到每列，最大 1000 行/60000 参数一批，所有批次受原 cache savepoint 保护。trigger 直接访问 NEW/OLD 的主键字段构造 jsonb row_key，before_row 为 json；undo 在 Go 中按列恢复，JSON 字段用 RawMessage 保留超出 JS number 精度的大数字和转义。用户读值保持原 JS number 语义，恢复路径独立保留数据库原值。
+
+存储格式为 json-v2；默认 schema 名改为 ponder_go_shadow_v2_<hash>，fingerprint 含格式版本。显式旧 schema 会报 storage format changed 并要求新影子，不在本任务中原地改 journal 或接管旧数据。PGlite binaryParams 传输标记修复 bytes 主键直接查找/删除和撤销。测试含真实 NUL/字面量反斜杠 u0000 的区分、raw JSON 大数、ORM/raw SQL update/delete、abort、重开、逐块 undo、旧格式拒绝、1001 行第二批失败后的全回滚与缓存修正重试。
+
+先通过定向 8 个后端叶子，再运行完整 verify；最终结果读取 batch-8.json 与 summary.json。下一步仍按上方完整未实现范围，尤其原生类型编译 fixture 和剩余原版 ORM/actions/cache profile/source/trace/多链/查询工具链。Foundry 许可未收到，不得安装。
+
+M10 最终完整 verify 退出 0：Go/race 各 314/314；明确 PostgreSQL 69、PGlite 68，分别全部通过，vet/build/oracle/SDK/2466 差分向量通过。源映射/原版 oracle 计数不变。batch-7/8-evidence 为不可变证据副本。

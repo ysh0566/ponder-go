@@ -346,7 +346,8 @@
         "store/backend.go",
         "store/indexing.go",
         "store/column_values.go",
-        "store/copy_text.go"
+        "store/copy_text.go",
+        "store/row_sql.go"
       ],
       "upstream_sources": [
         "packages/core/src/indexing-store/index.ts"
@@ -355,9 +356,10 @@
         "parity/orm-source-cases.json",
         "parity/runs/batch-7.json",
         "parity/runs/go-test.jsonl",
-        "parity/runs/go-race.jsonl"
+        "parity/runs/go-race.jsonl",
+        "parity/runs/batch-8.json"
       ],
-      "remaining": "Buffered native ORM tested on PG/PGlite: returned row copies, conflict operations, defaults/NULL/Undefined, explicit cache invalidation/flush, typed columns and single-table Select; 28 new exact source mappings. Full native typed/relational query DSL, cache profile/prefetch/eviction, Promise adaptation and source cases with compile-error obligations remain. JSON U+0000 snapshots, byte PK bridge and complete custom codecs require follow-up; no full ORM claim."
+      "remaining": "Buffered native ORM tested on PG/PGlite: returned row copies, conflict operations, defaults/NULL/Undefined, explicit cache invalidation/flush, typed columns and single-table Select; 28 new exact source mappings. Full native typed/relational query DSL, cache profile/prefetch/eviction, Promise adaptation and source cases with compile-error obligations remain. JSON U+0000/raw JSON large numeric undo and byte PK bridge now verified on both backends. Complete custom codecs, callback value types and array combinations require follow-up; no full ORM claim."
     },
     {
       "id": "pglite",
@@ -379,13 +381,16 @@
         "store/triggers.go",
         "store/sql.go",
         "store/sql_test.go",
-        "store/sql_boundaries_test.go"
+        "store/sql_boundaries_test.go",
+        "store/row_sql.go"
       ],
       "upstream_sources": [
         "packages/core/src/indexing-store/index.ts"
       ],
-      "evidence": [],
-      "remaining": "Declared one-statement SELECT/INSERT/UPDATE/DELETE with savepoint recovery; API, bulk DML, CTE mutations and updatable-view writes/deletes use base triggers. SELECT INTO, multi-statements, DDL/internal settings rejected. Full Drizzle and additional source cases remain."
+      "evidence": [
+        "parity/runs/batch-8.json"
+      ],
+      "remaining": "Declared one-statement SELECT/INSERT/UPDATE/DELETE with savepoint recovery; API, bulk DML, CTE mutations and updatable-view writes/deletes use base triggers. SELECT INTO, multi-statements, DDL/internal settings rejected. Full Drizzle and additional source cases remain. json-v2 before-images use json with raw JSON numeric/escape-preserving restore; trigger keys are read directly from OLD/NEW. New default shadow format; old explicit formats rejected without migration. Multi-batch savepoint rollback/retry verified. Server/host crash and remaining source cases still pending."
     },
     {
       "id": "relations",
@@ -416,13 +421,16 @@
       "implementation_files": [
         "store/triggers.go",
         "store/store.go",
-        "store/reorg.go"
+        "store/reorg.go",
+        "store/row_sql.go"
       ],
       "upstream_sources": [
         "packages/core/src/database/actions.ts"
       ],
-      "evidence": [],
-      "remaining": "A single database trigger captures declared business-table DML; manual Go capture removed. Statement failure and four process boundaries verified on both backends. All source action/store tests and server/host crash cases remain."
+      "evidence": [
+        "parity/runs/batch-8.json"
+      ],
+      "remaining": "A single database trigger captures declared business-table DML; manual Go capture removed. Statement failure and four process boundaries verified on both backends. All source action/store tests and server/host crash cases remain. json-v2 before-images use json with raw JSON numeric/escape-preserving restore; trigger keys are read directly from OLD/NEW. New default shadow format; old explicit formats rejected without migration. Multi-batch savepoint rollback/retry verified. Server/host crash and remaining source cases still pending."
     },
     {
       "id": "reorg",

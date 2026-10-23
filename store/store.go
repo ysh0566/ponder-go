@@ -46,6 +46,10 @@ type Writer struct {
 type Row map[string]any
 type WriteMode int
 
+// Storage changes use a fresh default shadow. Explicit older namespaces are
+// rejected by the fingerprint instead of silently rewriting an undo journal.
+const storageVersion = "json-v2"
+
 const (
 	Insert WriteMode = iota
 	Upsert
@@ -63,7 +67,7 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 	encoded, _ := json.Marshal(model)
 	hash := sha256.Sum256(encoded)
 	if namespace == "" {
-		namespace = fmt.Sprintf("ponder_go_shadow_%x", hash[:6])
+		namespace = fmt.Sprintf("ponder_go_shadow_v2_%x", hash[:6])
 	}
 	if !schema.Identifier(namespace) || len(namespace) > 45 || !strings.HasPrefix(namespace, "ponder_go_") {
 		return nil, fmt.Errorf("task schemas must start with ponder_go_ and contain at most 45 identifier characters")
@@ -106,7 +110,7 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 	statements := []string{
 		"CREATE TABLE IF NOT EXISTS " + s.syncTable("_ponder_go_meta") + " (key text PRIMARY KEY,value text NOT NULL)",
 		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_meta") + " (key text PRIMARY KEY,value text NOT NULL)",
-		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_journal") + " (operation_id bigserial PRIMARY KEY, table_name text NOT NULL, row_key jsonb NOT NULL, before_row jsonb, checkpoint char(75) NOT NULL, chain_id numeric NOT NULL)",
+		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_journal") + " (operation_id bigserial PRIMARY KEY, table_name text NOT NULL, row_key jsonb NOT NULL, before_row json, checkpoint char(75) NOT NULL, chain_id numeric NOT NULL)",
 		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_events") + " (event_id text PRIMARY KEY, checkpoint char(75) NOT NULL, chain_id numeric NOT NULL, operation_boundary bigint NOT NULL, operation_end bigint NOT NULL)",
 		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_progress") + " (chain_id numeric PRIMARY KEY, checkpoint char(75) NOT NULL)",
 		"CREATE TABLE IF NOT EXISTS " + s.internal("_ponder_go_finalized") + " (chain_id numeric PRIMARY KEY, checkpoint char(75) NOT NULL, safe_checkpoint char(75) NOT NULL)",
@@ -120,7 +124,7 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 			return nil, e
 		}
 	}
-	fingerprint := fmt.Sprintf("%x:%s", hash, ordering)
+	fingerprint := fmt.Sprintf("%s:%x:%s", storageVersion, hash, ordering)
 	if e = tx.Exec(ctx, "INSERT INTO "+s.syncTable("_ponder_go_meta")+" VALUES ('owner',$1) ON CONFLICT(key) DO NOTHING", namespace); e != nil {
 		return nil, e
 	}
@@ -129,7 +133,7 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 		return nil, e
 	}
 	if len(old.Rows) > 0 && old.Rows[0]["value"] != fingerprint {
-		return nil, fmt.Errorf("schema or ordering changed; rebuild into a new shadow schema")
+		return nil, fmt.Errorf("schema, ordering, or storage format changed; rebuild into a new shadow schema")
 	}
 	if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_meta")+" VALUES ('fingerprint',$1) ON CONFLICT (key) DO NOTHING", fingerprint); e != nil {
 		return nil, e
@@ -293,7 +297,7 @@ func snapshot(ctx context.Context, q Querier, table string, t schema.Table, key 
 	if e != nil {
 		return nil, e
 	}
-	r, e := q.Query(ctx, "SELECT to_jsonb(t)::text AS snapshot FROM "+table+" AS t WHERE "+where, values...)
+	r, e := q.Query(ctx, "SELECT row_to_json(t)::text AS snapshot FROM "+table+" AS t WHERE "+where, values...)
 	if e != nil {
 		return nil, e
 	}
