@@ -7,7 +7,7 @@
 - 工作目录 `/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-go`。
 - 完整上游 `/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-upstream`，固定 `17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`。
 - 已创建独立 Go Git 仓库并发布到私有 `https://github.com/ysh0566/ponder-go`。用户后续明确授权推送经验证阶段；每次确认账号、远端与 SHA，不开 PR、不部署。Foundry 安装仍待批准。首次发布凭据不落盘、不切全局账号；receipt 在 `parity/runs/publication-receipt.json`。
-- **发布暂缓**：用户要求历史作者为 ysh0566。已推送至 e9747c7 的13个提交原为 plato9966/Codex；项目 local user.name/email 已修正。备份引用 `refs/backup/author-before-ysh0566` 保留；未改写历史、未强推。等待用户确认已发布历史改写后才可继续发布。准确远端/协作者/身份审计见 `parity/runs/author-identity-audit.json`，不要把 Foundry 或历史改写的沉默当授权。
+- 用户已明确批准一次历史身份修正并已执行：13个错误author/committer全部改为ysh0566，旧e9747c7对应新a7a1f30；原M14提交6c9b2f1安全重接为8dc922b。14个提交的tree逐一相同，日期/消息不变。旧新SHA映射在 `parity/runs/author-repair.json`；保留 `refs/backup/author-before-ysh0566`、`refs/backup/before-author-repair-20261023` 和忽略的 `.local/author-repair-20261023/` 工作区备份。修正后恢复普通阶段推送，不再强推。Foundry许可仍未收到。
 - 已启动现有 Docker Desktop，并创建 `ponder-go-task-20261023` / `ponder_go_task_20261023`。先 `docker inspect` 核对存在和 `127.0.0.1:53398`，直接复用；不要操作其他容器。
 - Go 缓存位于 `.toolcache/`，基线 npm 依赖已按冻结 lockfile 安装。所有 SDK 源码原样保留在 `sdk/typescript/`。
 - 计划 PDF `libfile_90c2e75070c481918ecace631e841e0f` 下载失败，没有本地副本；完整需求已经在初始委托中给出，无需等待它。
@@ -21,7 +21,7 @@
 5. 完整关系/查询/GraphQL、SQL/SuperJSON 全类型、全部 CLI/模板/热重载/观测/示例，以及严格源码兼容和旧 DB 接管的独立轨，仍按 feature-ledger 推进。默认新影子 schema，不访问业务数据。
 6. ABI 原生类型生成和 53 个内联成功 fixture 已建立，另有 53 额外负向控制、1 个源 null-topic 错误 fixture；原两份 ABI 文件 tsc 通过。剩余 10 个内联类型断言、72 条专门 native 类型记录及绝大部分类型错误指令尚待移植。Simulation 的 8 个应用、无限 seed 空间尚未执行。
 
-本批M14已完成完整verify，当前无运行中的测试。Go/race414/414，PG108/PGlite107分别通过。新增通知API在store/live_query.go、store/notifications.go、bridge/pglite.mjs，测试与逐例审计在notify-source-cases.json。SQL/SSE仍订阅旧Store内部bus，尚未接入外部数据库通知。下一轮可继续database/index生命周期和完整store原例、source/filter/fragments/trace；Foundry受限的原fixture继续标blocked。发布身份修复等待用户确认，不妨碍本地实现和普通验证。
+M14完整verify已通过：Go/race414/414，PG108/PGlite107分别通过。新增通知API在store/live_query.go、store/notifications.go、bridge/pglite.mjs，测试与逐例审计在notify-source-cases.json。SQL/SSE仍订阅旧Store内部bus，尚未接入外部数据库通知。当前下一批在实现store/lifecycle.go：8条源例的15个适用后端叶子首轮通过，但尚未加入映射或做完整回归，代码仍未提交/发布。继续旧租约fencing、恢复原子性与真实进程退出，再更新台账。Foundry受限的原fixture继续标blocked。
 
 
 `parity/public-manifest.json` 包含各包 exports、CLI 命令与选项、配置属性、模板/示例文件 hash 与当前文档路径。`parity/discovery-audit.json` 描述发现范围和静态限制。全套 Vitest 的 runtime collection 尚未完成，905 不是已证明穷尽的动态执行总数。
