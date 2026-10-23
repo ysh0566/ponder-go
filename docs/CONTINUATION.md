@@ -4,7 +4,7 @@
 
 ## 当前交接入口：M22，Mac 暂停以切换云端
 
-用户已创建专用云环境；本端完成当前回归与发布后暂停，不开启下一批。最新实现提交以 Git HEAD、远端 main 和 `parity/runs/cloud-handoff.json` 为准（实现提交不在自己的树内循环引用 SHA）；上一发布基线为 `8965d61031f85c4a9d3e43fa541a0f662b5106ca`。当前正式证据为 `parity/runs/batch-21.json` 和 `batch-21-evidence/`，此前各批只作历史证据，下面早期“下一批”或计数不得覆盖本节。
+用户已创建专用云环境；本端完成当前回归与发布后暂停，不开启下一批。已验证且已发布实现提交 `5a3886dfcf30d2b2debd61090fe24adf8513497a`，tree `718d6a61cf0d26d45afacf26c78e88e45ee5fdca`。之后仅有本节 SHA 与 `parity/runs/cloud-handoff.json` 的纯文档交接提交，最终 main 以 Git/远端核验和执行线程报告为准；上一发布基线为 `8965d61031f85c4a9d3e43fa541a0f662b5106ca`。当前正式证据为 `parity/runs/batch-21.json` 和 `batch-21-evidence/`，此前各批只作历史证据，下面早期“下一批”或计数不得覆盖本节。
 
 - 固定源 `17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334` /0.18.2；905条静态记录并非动态穷尽。292映射=288 Go通过+4 SDK；Go oracle210通过/78阻塞（DB65、profile13），SDK4通过，613未实现。
 - 最终 `PONDER_TEST_POSTGRES=<task-only> ./tools/verify.sh` 退出0；Go/race各1634/1634，PG183/183、PGlite180/180，无skip/fail；vet、CLI/示例build通过。core201活动通过/2源skip；选择性原声明4+15通过；ABI53成功/53额外负控制/1源错误、ORM6源错误/6额外负控制、原参数tsc与SDK均通过。
