@@ -18,6 +18,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -66,6 +67,7 @@ type Event struct {
 	Log         *Log
 	Transaction map[string]any
 	Receipt     map[string]any
+	SetupBlock  uint64
 }
 type Context struct {
 	Event  Event
@@ -85,6 +87,8 @@ type Engine struct {
 	chain     config.Chain
 	options   Options
 	cache     *store.ProtocolCache
+	syncMu    sync.Mutex
+	staged    *stagedState
 }
 type Options struct{ DisableCache bool }
 
@@ -150,7 +154,9 @@ func (e *Engine) block(ctx context.Context, number any) (Block, error) {
 	return *b, nil
 }
 func (e *Engine) Sync(ctx context.Context) error {
-	if !e.options.DisableCache {
+	e.syncMu.Lock()
+	defer e.syncMu.Unlock()
+	if e.staged == nil && !e.options.DisableCache {
 		cache, err := e.Store.EnableProtocolCache(ctx)
 		if err != nil {
 			return err
@@ -174,10 +180,22 @@ func (e *Engine) Sync(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	if e.staged != nil {
+		if err = e.initializeStaged(ctx, latest); err != nil {
+			return err
+		}
+		if !e.options.DisableCache {
+			e.cache, err = e.Store.EnableProtocolCache(ctx)
+			if err != nil {
+				return err
+			}
+			e.Client.Cache = e.cache
+		}
+	}
 	if err = e.checkReorg(ctx, head); err != nil {
 		return err
 	}
-	start := head
+	start := ^uint64(0)
 	hasSource := false
 	for _, c := range e.Config.Contracts {
 		start = min(start, c.StartBlock)
@@ -193,6 +211,12 @@ func (e *Engine) Sync(ctx context.Context) error {
 	if !hasSource {
 		return fmt.Errorf("no indexing sources configured")
 	}
+	if start > head {
+		if e.staged != nil {
+			return e.startRealtime(ctx)
+		}
+		return nil
+	}
 	missing, err := e.Store.Missing(ctx, e.chain.ID, e.filter, interval.Interval{int64(start), int64(head)})
 	if err != nil {
 		return err
@@ -206,10 +230,21 @@ func (e *Engine) Sync(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
+			if e.staged != nil && n > e.staged.historyEnd {
+				if err = e.startRealtime(ctx); err != nil {
+					return err
+				}
+			}
 			if err = e.process(ctx, b); err != nil {
 				return err
 			}
 		}
+	}
+	if e.staged != nil {
+		if err = e.startRealtime(ctx); err != nil {
+			return err
+		}
+		return e.finalizeStaged(ctx, latest)
 	}
 	return nil
 }
@@ -220,6 +255,12 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 		return err
 	}
 	cursor := progress[strconv.FormatUint(e.chain.ID, 10)]
+	if e.staged != nil {
+		cursor, err = e.staged.db.Actions().RuntimeCheckpoint(ctx, e.chain.ID)
+		if err != nil {
+			return err
+		}
+	}
 	if cursor == "" {
 		return nil
 	}
@@ -256,7 +297,11 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 			if err != nil {
 				return err
 			}
-			return e.Store.RevertAndRewind(ctx, checkpoint.Block(timestamp, e.chain.ID, n, true))
+			target := checkpoint.Block(timestamp, e.chain.ID, n, true)
+			if e.staged != nil {
+				return e.staged.db.Actions().RevertRuntime(ctx, target)
+			}
+			return e.Store.RevertAndRewind(ctx, target)
 		}
 		if n == 0 {
 			return fmt.Errorf("no common persisted ancestor; shadow rebuild required")
@@ -297,7 +342,7 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 		if number < contract.StartBlock || contract.EndBlock != nil && number > *contract.EndBlock {
 			continue
 		}
-		if number == contract.StartBlock {
+		if e.staged == nil && number == contract.StartBlock {
 			events = append(events, pending{cursor: base, id: fmt.Sprintf("setup:%d:%s:%s", e.chain.ID, contract.Name, b.Hash), event: Event{Name: contract.Name + ":setup", Block: b}})
 		}
 		filter := map[string]any{"blockHash": b.Hash}
@@ -394,13 +439,50 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 	sort.SliceStable(events, func(i, j int) bool {
 		return checkpoint.MustEncode(events[i].cursor) < checkpoint.MustEncode(events[j].cursor)
 	})
+	if e.staged != nil {
+		ordered := make([]OrderedEvent, len(events))
+		for i, event := range events {
+			ordered[i] = OrderedEvent{ChainID: e.chain.ID, Checkpoint: checkpoint.MustEncode(event.cursor), Event: event.event}
+		}
+		groups, splitErr := SplitEvents(ordered)
+		if splitErr != nil {
+			return splitErr
+		}
+		target := checkpoint.Block(timestamp, e.chain.ID, number, true)
+		if len(groups) > 0 {
+			if len(groups) != 1 {
+				return fmt.Errorf("single block dispatch produced multiple hash groups")
+			}
+			target, err = checkpoint.Decode(groups[0].Checkpoint)
+			if err != nil {
+				return err
+			}
+		}
+		_, err = e.staged.db.Actions().ProcessRuntimeBlock(ctx, target, !e.staged.realtime.Load(), func(w *store.Writer) error {
+			client := e.eventClient(w)
+			for _, event := range events {
+				handler := e.Handlers[event.event.Name]
+				if handler == nil {
+					continue
+				}
+				if err := handler(ctx, &Context{Event: event.event, DB: w, Client: client, Chain: e.chain}); err != nil {
+					return fmt.Errorf("%s: %w", event.event.Name, err)
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		return e.Store.CompleteBlock(ctx, store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}, e.filter)
+	}
 	for _, event := range events {
 		handler := e.Handlers[event.event.Name]
 		if handler == nil {
 			continue
 		}
 		if err = e.Store.Apply(ctx, store.Event{ID: event.id, Checkpoint: event.cursor, Name: event.event.Name}, func(w *store.Writer) error {
-			return handler(ctx, &Context{Event: event.event, DB: w, Client: e.Client, Chain: e.chain})
+			return handler(ctx, &Context{Event: event.event, DB: w, Client: e.eventClient(w), Chain: e.chain})
 		}); err != nil {
 			return fmt.Errorf("%s: %w", event.event.Name, err)
 		}

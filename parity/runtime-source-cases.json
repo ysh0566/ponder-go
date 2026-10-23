@@ -1,0 +1,48 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "One source record/one full inline-snapshot assertion. Native Anvil, transaction, handoff, process and notification tests are supplementary and give no source credit.",
+  "cases": [
+    {
+      "id": "a196548313391b06c82d",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "contexts": [],
+      "test_source": "test(\"splitEvents()\", async () => {\n  const events = [\n    {\n      chain: { id: 1 },\n      checkpoint: \"0\",\n      event: {\n        block: {\n          hash: \"0x1\",\n          timestamp: 1,\n          number: 1n,\n        },\n      },\n    },\n    {\n      chain: { id: 1 },\n      checkpoint: \"0\",\n      event: {\n        block: {\n          hash: \"0x2\",\n          timestamp: 2,\n          number: 2n,\n        },\n      },\n    },\n  ] as unknown as Event[];\n\n  const result = splitEvents(events);\n\n  expect(result).toMatchInlineSnapshot(`\n    [\n      {\n        \"chainId\": 1,\n        \"checkpoint\": \"000000000100000000000000010000000000000001999999999999999999999999999999999\",\n        \"events\": [\n          {\n            \"chain\": {\n              \"id\": 1,\n            },\n            \"checkpoint\": \"0\",\n            \"event\": {\n              \"block\": {\n                \"hash\": \"0x1\",\n                \"number\": 1n,\n                \"timestamp\": 1,\n              },\n            },\n          },\n        ],\n      },\n      {\n        \"chainId\": 1,\n        \"checkpoint\": \"000000000200000000000000010000000000000002999999999999999999999999999999999\",\n        \"events\": [\n          {\n            \"chain\": {\n              \"id\": 1,\n            },\n            \"checkpoint\": \"0\",\n            \"event\": {\n              \"block\": {\n                \"hash\": \"0x2\",\n                \"number\": 2n,\n                \"timestamp\": 2,\n              },\n            },\n          },\n        ],\n      },\n    ]\n  `);\n})",
+      "inputs": [
+        "events = [\n    {\n      chain: { id: 1 },\n      checkpoint: \"0\",\n      event: {\n        block: {\n          hash: \"0x1\",\n          timestamp: 1,\n          number: 1n,\n        },\n      },\n    },\n    {\n      chain: { id: 1 },\n      checkpoint: \"0\",\n      event: {\n        block: {\n          hash: \"0x2\",\n          timestamp: 2,\n          number: 2n,\n        },\n      },\n    },\n  ] as unknown as Event[]",
+        "result = splitEvents(events)"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 68,
+          "text": "expect(result).toMatchInlineSnapshot(`\n    [\n      {\n        \"chainId\": 1,\n        \"checkpoint\": \"000000000100000000000000010000000000000001999999999999999999999999999999999\",\n        \"events\": [\n          {\n            \"chain\": {\n              \"id\": 1,\n            },\n            \"checkpoint\": \"0\",\n            \"event\": {\n              \"block\": {\n                \"hash\": \"0x1\",\n                \"number\": 1n,\n                \"timestamp\": 1,\n              },\n            },\n          },\n        ],\n      },\n      {\n        \"chainId\": 1,\n        \"checkpoint\": \"000000000200000000000000010000000000000002999999999999999999999999999999999\",\n        \"events\": [\n          {\n            \"chain\": {\n              \"id\": 1,\n            },\n            \"checkpoint\": \"0\",\n            \"event\": {\n              \"block\": {\n                \"hash\": \"0x2\",\n                \"number\": 2n,\n                \"timestamp\": 2,\n              },\n            },\n          },\n        ],\n      },\n    ]\n  `)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "splitEvents()",
+        "source_id": "a196548313391b06c82d",
+        "source_line": 40,
+        "assertions_sha256": "a35a4b5f9c8e3f87feb4afc7b0d7f640c1c2648c8cbbefbf68645ec6d2f26d06",
+        "original_assertions": 1,
+        "target_file": "runtime/events_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSplitEvents",
+        "assertion_policy": "Original two events, chain1, checkpoint0, hashes1/2 and all inline-snapshot fields/full75digit checkpoint literals retained. Native Event.Block uses RPC hex strings: source numeric timestamp1/2 and bigint number1n/2n become exact0x1/0x2; source raw test/context remains in audit. Full typed native result is deep-equal asserted, not only partition lengths. No Foundry fixture or source assertion/import substituted.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged runtime/events.test.ts cannot collect: missing _test/generated.js. Foundry1.8.5 installation remains pending approval.",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    }
+  ]
+}

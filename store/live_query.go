@@ -50,6 +50,7 @@ DECLARE
  entry text;
  entry_json text;
 BEGIN
+ IF current_setting('ponder_go.suppress_notify',true) = '1' THEN RETURN NULL; END IF;
  IF to_regclass('pg_temp.live_query_tables') IS NULL THEN RETURN NULL; END IF;
  FOR entry IN SELECT table_name FROM pg_temp.live_query_tables ORDER BY table_name LOOP
   entry_json := to_json(entry)::text;

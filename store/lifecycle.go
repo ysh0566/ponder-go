@@ -62,7 +62,8 @@ type AppMetadataRow struct {
 // Lifecycle owns startup, a fenced writer lease, recovery and shutdown for a
 // new native staged namespace. It never adopts an upstream or unmanaged schema.
 // Call Close before closing the caller-owned Backend. Dev rebuild/legacy sync
-// migration and the automatic runtime scheduler are separate unfinished paths.
+// migration use owned shadows. The automatic single-chain staged scheduler is
+// in runtime.NewStaged; dev rebuild and multichain scheduling remain unfinished.
 type Lifecycle struct {
 	s               *Store
 	opts            LifecycleOptions
