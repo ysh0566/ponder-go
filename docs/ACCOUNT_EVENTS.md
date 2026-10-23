@@ -63,7 +63,7 @@ full-suite collection or Foundry1.8.5 verification.
 The complete original rpc/actions.test.ts runs unchanged:16 tests passed. Two
 call-tree records are ported here using the same constants/frame trees/request
 method/params and every path assertion through a native local HTTP mock. The
-other14 original records are not counted as Go ports.115 source-generated event
+other14 original records are not counted as Go ports.119 source-generated event
 vectors and four real-EVM backend leaves are additional evidence with zero
 source-test credit. The native backend tests cover zero value, root and child
 revert, nested CALL sibling positions, DELEGATECALL/CALLCODE exclusion, matched
@@ -76,3 +76,9 @@ Native runtime scheduling remains single-chain and per-block. Full trace
 contract sources, factory account/trace targets, complete include/projection,
 source history batching/profile/metrics, multichain and query/CLI work remain in
 the feature ledger.
+
+A follow-up four-vector regression covers deposit optional fees as undefined,
+null, empty string and0x0. The source treats the first three as undefined;0x0
+remains bigint zero. The first run exposed two native mismatches, then the fix
+and full regression passed. See parity/runs/batch-20.json; source credit stays
+unchanged.
