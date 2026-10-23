@@ -191,3 +191,5 @@ M17当时记录的冷reopen禁用缓存后rewind再启用缺口已由下方M18�
 下一项以自动staged runtime为先：Engine.Store当前只接受atomic Store.Apply，而Lifecycle/Actions的原版granular MAX/commitBlock/latest路径尚未接入Engine。接入前须决定并验证启动migrate返回safe与持久latest的协调、历史到实时切换、handler逐事务journal、MAX暂态进程退出、commitBlock+latest/通知边界、revert/finalize后的事件去重与cache失效。当前source原例cache/history/runtime/filter/trace仍未移植，不可拿原生Anvil回归代替。
 
 M18完整verify退出0：Go/race539/539；PG161/PGlite158均通过，无skip/fail。vet/build、ABI53编译/运行/race、ORM6源错误+6额外控制、core167活动/2原skip、SDK4和2466差分均通过。源映射249，原版Go oracle167通过/78阻塞，SDK4，656未实现。batch-16-evidence冻结16份日志/hash，batch-15-evidence保留M17原始结果。当前下一实现入口仍为自动staged runtime/重组通知；保留M17发布SHA和所有历史身份修复备份。
+
+M17已发布3c35307eab6eb8ec874bb5551cab88cefb77a465，M18已发布803995d04df55eab905b524c191ee095d14896cc；均核验private owner、remote SHA/tree和作者/提交者。发布证明见parity/runs/milestone-m17-m18-publication.json。本次后续文档提交只更新摘要与证明，不改变已验证代码。接续先git status/log确认最新head，不重复启动任务容器。

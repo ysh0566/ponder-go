@@ -4,17 +4,17 @@
 
 完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。经验证的阶段提交发布到私有仓库 [ysh0566/ponder-go](https://github.com/ysh0566/ponder-go)；整体复刻仍未完成，没有部署或 PR。
 
-目前已有可运行的单链路径：本地 Ethereum RPC → 静态或 factory 动态合约日志/receipt → Go handler → PostgreSQL 事务写入、journal、checkpoint → SQL HTTP/SSE。Anvil 重组后可以撤销并重新索引。PostgreSQL 与真实 PGlite 分别验证；没有 SQLite 替代实现。
+目前已有可运行的单链路径：本地 Ethereum RPC → 静态或 factory 动态合约日志/receipt → Go handler → PostgreSQL 事务写入、journal、checkpoint → SQL HTTP/SSE。Anvil 重组后可以撤销并重新索引。默认单链 runtime 已写入版本化规范化缓存的 block/transaction/log/receipt；冷重开禁用缓存的重组也清理已归属缓存。PostgreSQL 与真实 PGlite 分别验证；没有 SQLite 替代实现。
 
 ## 当前验证与计数
 
-权威结果是 [parity/runs/summary.json](parity/runs/summary.json)。用例发现、移植、执行、通过分别登记，不合并计数。
+权威结果是 [parity/runs/summary.json](parity/runs/summary.json)，本批冻结结果见 [M17](parity/runs/batch-15.json) 与 [M18](parity/runs/batch-16.json)。用例发现、移植、执行、通过分别登记，不合并计数。
 
 - 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条专门类型测试、63 个运行时文件内联类型断言、84 条类型错误指令，以及客户端/React/E2E。
-- 已逐例映射 245 条：241 条 Go + 原样保留的 4 条 SDK。Go 映射 241 条均通过，其中 167 条原版 oracle 也通过、74 条 fixture oracle 阻塞（数据库 61、profile 13）；SDK 4 条通过。另有 **660 条未实现**。
-- 全套原生 Go/race 各 479/479；真实 PostgreSQL 141/141、PGlite 138/138。53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。
+- 已逐例映射 249 条：245 条 Go + 原样保留的 4 条 SDK。Go 映射 245 条均通过，其中 167 条原版 oracle 也通过、78 条 fixture oracle 阻塞（数据库 65、profile 13）；SDK 4 条通过。另有 **656 条未实现**。
+- 全套原生 Go/race 各 539/539；真实 PostgreSQL 161/161、PGlite 158/158。53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。ORM 6 条源类型错误义务及 6 条额外负向控制也分别验证真实编译拒绝。
 - 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
-- 2,466 个确定性差分向量（基础 2,400 + factory 66）独立计数。
+- 2,466 个确定性差分向量（基础 2,400 + factory 66），另有 20 个来自未改动 source encode/lowercase 的协议编码向量，分别计数。
 - 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
 
 静态发现不能证明任意 JavaScript 动态执行的全部实例均已收集。4 个 literal `test.each` 声明已展开；本基线未发现动态测试生成、别名测试遗漏、`describe.each` 或 `only`。Simulation 的 8 个应用和无限 seed 空间单列。详见 [discovery-audit.json](parity/discovery-audit.json)，完整测试源码和 247 个依赖/fixture 模块分别保存在 `parity/source-tests/`、`parity/source-support/`。早期 1,957 个断言表达式计数重复计算了链式 `expect().rejects`，已修正为 1,905；905 条测试记录不变。
@@ -61,7 +61,7 @@ bin/ponder codegen --schema examples/erc20/schema.json --out examples/erc20/pond
 - `reorgWindow` 按时间戳秒计算。调度器目前明确限制单链；多链调度尚未实现，存储层的多链回滚已经有真实验证。
 - 当前原生 schema/ABI 已补齐 build/schema、event-log 和 finality 所选源测试，并在两个后端执行枚举及视图；业务 raw SQL 已统一经过数据库 trigger journal 并验证 savepoint 错误恢复；完整参数/类型测试、关系、factory、trace、GraphQL 等尚待实现。
 
-Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地接管，是不同工作轨道。后两项均未实现，也未进行数据迁移。当前模型 hash 不包含 handler/config 内容，修改这些内容时必须选择新的影子 schema；自动开发重建尚待实现。
+Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地接管，是不同工作轨道。后两项均未实现。已实现的 sync migration 仅操作任务所属影子 schema，不代表真实旧库原地接管。当前模型 hash 不包含 handler/config 内容，修改这些内容时必须选择新的影子 schema；自动开发重建尚待实现。
 
 ## 来源与许可
 
@@ -84,3 +84,5 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 原子 rewind 与未完成 block 的恢复也已验证：业务 undo、进度及同步区间/factory 地址一起提交；handler 提交前先保留 block header，支持提交确认丢失后的重开/换链。两个后端另有 6 条进程退出恢复验证，见 `parity/runs/batch-6.json`。
 
 当前 journal 存储格式为 `json-v3`，默认新建 `ponder_go_shadow_v3_<hash>`；staged Actions 默认 `ponder_go_actions_v3_<hash>`，模式不可混开。显式旧格式 schema 会要求新影子重建，当前没有原地迁移或接管旧数据库。JSON `U+0000` 与 raw SQL 大数字的 undo 保留原值；PGlite bytes 参数采用明确二进制位置标记。
+
+生命周期/ORM then/SQL 的逐例边界见 [LIFECYCLE_COMPLETION.md](docs/LIFECYCLE_COMPLETION.md)，版本化缓存接入及未实现协议见 [PROTOCOL_CACHE.md](docs/PROTOCOL_CACHE.md)。自动 staged runtime、历史/实时交接、多链和完整查询/工具链仍待实现；继续入口见 [CONTINUATION.md](docs/CONTINUATION.md)。
