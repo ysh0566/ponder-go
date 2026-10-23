@@ -1,0 +1,59 @@
+import { numberToHex, RpcRequestError } from "viem";
+import { expect, test } from "vitest";
+import { getLogsRetryHelper } from "../getLogsRetryHelper.js";
+import { fromBlock, getRequest, type Params, UNI } from "./utils.js";
+
+const request = getRequest("https://cloudflare-eth.com");
+const maxBlockRange = 799n;
+
+test.skip("cloudflare success", async () => {
+  const logs = await request({
+    method: "eth_getLogs",
+    params: [
+      {
+        address: UNI,
+        fromBlock: numberToHex(fromBlock),
+        toBlock: numberToHex(fromBlock + maxBlockRange),
+      },
+    ],
+  });
+
+  expect(logs).toHaveLength(7);
+});
+
+test("cloudflare block range", async () => {
+  const params: Params = [
+    {
+      fromBlock: numberToHex(fromBlock),
+      toBlock: numberToHex(fromBlock + maxBlockRange + 1n),
+    },
+  ];
+
+  const error = await request({
+    method: "eth_getLogs",
+    params,
+  }).catch((error) => error);
+
+  expect(error).toBeInstanceOf(RpcRequestError);
+  expect(JSON.stringify(error)).includes("Max range: 800");
+
+  const retry = getLogsRetryHelper({
+    params,
+    error,
+  });
+
+  expect(retry).toStrictEqual({
+    shouldRetry: true,
+    isSuggestedRange: true,
+    ranges: [
+      {
+        fromBlock: numberToHex(fromBlock),
+        toBlock: numberToHex(fromBlock + maxBlockRange),
+      },
+      {
+        fromBlock: numberToHex(fromBlock + maxBlockRange + 1n),
+        toBlock: numberToHex(fromBlock + maxBlockRange + 1n),
+      },
+    ],
+  });
+});

@@ -1,0 +1,213 @@
+import util from "node:util";
+import { toBytes, zeroAddress } from "viem";
+import { expect, test } from "vitest";
+import { copy, copyOnWrite } from "./copy.js";
+
+test("copyOnWrite", () => {
+  const obj = { a: 1, b: 2 };
+  const copiedObj = copyOnWrite(obj);
+
+  expect(obj.a).toBe(1);
+  expect(obj.b).toBe(2);
+
+  expect(copiedObj.a).toBe(1);
+  expect(copiedObj.b).toBe(2);
+
+  copiedObj.a = 3;
+
+  expect(obj.a).toBe(1);
+  expect(obj.b).toBe(2);
+
+  expect(copiedObj.a).toBe(3);
+  expect(copiedObj.b).toBe(2);
+
+  // @ts-expect-error
+  copiedObj.c = 10;
+
+  // @ts-expect-error
+  expect(obj.c).toBeUndefined();
+
+  // @ts-expect-error
+  expect(copiedObj.c).toBe(10);
+});
+
+test("copyOnWrite nested", () => {
+  const obj = { a: { c: 1 }, b: 2 };
+  const copiedObj = copyOnWrite(obj);
+
+  expect(obj.a.c).toBe(1);
+  expect(obj.b).toBe(2);
+
+  expect(copiedObj.a.c).toBe(1);
+  expect(copiedObj.b).toBe(2);
+
+  copiedObj.a.c = 2;
+
+  expect(obj.a.c).toBe(1);
+
+  expect(copiedObj.a.c).toBe(2);
+});
+
+test("copyOnWrite nested array", () => {
+  const obj = { a: [] as number[] };
+  const copiedObj = copyOnWrite(obj);
+
+  copiedObj.a.push(1);
+
+  expect(obj.a).toEqual([]);
+  expect(copiedObj.a).toEqual([1]);
+});
+
+test("copy", () => {
+  const obj = { a: 1, b: 2 };
+  const copiedObj = copyOnWrite(obj);
+  const copiedObj2 = copy(copiedObj, false);
+
+  expect(copiedObj.a).toBe(1);
+  expect(copiedObj.b).toBe(2);
+
+  expect(copiedObj2.a).toBe(1);
+  expect(copiedObj2.b).toBe(2);
+
+  copiedObj.a = 3;
+
+  expect(obj.a).toBe(1);
+  expect(obj.b).toBe(2);
+
+  expect(copiedObj.a).toBe(3);
+  expect(copiedObj.b).toBe(2);
+
+  copy([copiedObj], false);
+});
+
+test("copy shallow", () => {
+  const obj = { a: 1, b: "value", c: 2n, d: true };
+  const copiedObj = copy(obj, true);
+
+  expect(copiedObj).toEqual(obj);
+  expect(copiedObj).not.toBe(obj);
+});
+
+test("copy bytes", () => {
+  const obj = {
+    address: zeroAddress,
+    calldata: toBytes(zeroAddress),
+  };
+  const copiedObj = copyOnWrite(obj);
+  const copiedObj2 = copy(copiedObj, false);
+
+  expect(copiedObj.calldata).toMatchInlineSnapshot(`
+    Uint8Array [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+    ]
+  `);
+
+  expect(copiedObj2.calldata).toMatchInlineSnapshot(`
+    Uint8Array [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+    ]
+  `);
+
+  expect(copiedObj.calldata).toBeInstanceOf(Uint8Array);
+  expect(copiedObj2.calldata).toBeInstanceOf(Uint8Array);
+});
+
+test("copy timestamp", () => {
+  const obj = {
+    address: zeroAddress,
+    timestamp: new Date(1742925862000),
+  };
+
+  const copiedObj = copy(obj, false);
+
+  expect(copiedObj.timestamp).toBeInstanceOf(Date);
+});
+
+test("copy keeps writes made through copyOnWrite", () => {
+  const obj = { a: 1, b: 2 };
+  const copiedObj = copyOnWrite(obj);
+
+  copiedObj.a = 3;
+
+  const fast = copy(copiedObj, true);
+  const slow = copy(copiedObj, false);
+
+  expect(fast).toStrictEqual({ a: 3, b: 2 });
+  expect(slow).toStrictEqual({ a: 3, b: 2 });
+  expect(copy([copiedObj], false)).toStrictEqual([{ a: 3, b: 2 }]);
+  expect(copy({ nested: copiedObj }, false)).toStrictEqual({
+    nested: { a: 3, b: 2 },
+  });
+  expect(obj).toStrictEqual({ a: 1, b: 2 });
+});
+
+test("copy does not alias the copyOnWrite target", () => {
+  const obj = { a: 1, b: 2 };
+  const copiedObj = copyOnWrite(obj);
+
+  const result = copy(copiedObj, true);
+  result.a = 5;
+
+  expect(result).not.toBe(obj);
+  expect(obj.a).toBe(1);
+  expect(copiedObj.a).toBe(1);
+});
+
+test("copyOnWrite behaves like a plain object", () => {
+  const obj = { a: 1n, b: "0x1" };
+  const copiedObj = copyOnWrite(obj);
+
+  expect(Object.getPrototypeOf(copiedObj)).toBe(Object.prototype);
+  expect(Object.keys(copiedObj)).toStrictEqual(["a", "b"]);
+  expect({ ...copiedObj }).toStrictEqual({ a: 1n, b: "0x1" });
+  expect("a" in copiedObj).toBe(true);
+  expect(util.inspect(copiedObj)).toBe(util.inspect(obj));
+
+  copiedObj.a = 2n;
+
+  expect(util.inspect(copiedObj)).toBe(util.inspect({ a: 2n, b: "0x1" }));
+  expect(obj).toStrictEqual({ a: 1n, b: "0x1" });
+});
+
+test("copyOnWrite rejects arrays at the type level", () => {
+  // @ts-expect-error arrays are not supported, see `copyOnWrite()`
+  copyOnWrite([1, 2]);
+});

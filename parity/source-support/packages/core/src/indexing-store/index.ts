@@ -1,0 +1,671 @@
+import {
+  type Column,
+  getTableColumns,
+  getTableName,
+  getViewName,
+  isTable,
+  isView,
+  type QueryWithTypings,
+  type Table,
+} from "drizzle-orm";
+import { getTableConfig } from "drizzle-orm/pg-core";
+import { drizzle } from "drizzle-orm/pg-proxy";
+import type { QB } from "@/database/queryBuilder.js";
+import { onchain } from "@/drizzle/onchain.js";
+import type { Common } from "@/internal/common.js";
+import {
+  DbConnectionError,
+  InvalidStoreAccessError,
+  InvalidStoreMethodError,
+  NonRetryableUserError,
+  RawSqlError,
+  RecordNotFoundError,
+  RetryableError,
+  UndefinedTableError,
+  UniqueConstraintError,
+} from "@/internal/errors.js";
+import type {
+  IndexingErrorHandler,
+  Schema,
+  SchemaBuild,
+} from "@/internal/types.js";
+import type { Db } from "@/types/db.js";
+import { copy, copyOnWrite } from "@/utils/copy.js";
+import { createLock } from "@/utils/mutex.js";
+import { prettyPrint } from "@/utils/print.js";
+import { getSQLQueryRelations, isReadonlySQLQuery } from "@/utils/sql-parse.js";
+import { startClock } from "@/utils/timer.js";
+import type { IndexingCache, Row } from "./cache.js";
+import { getPrimaryKeyCache, normalizeUpdateSet } from "./utils.js";
+
+export type IndexingStore = {
+  db: Db<Schema>;
+  qb: QB;
+  isProcessingEvents: boolean;
+};
+
+export const validateUpdateSet = (
+  table: Table,
+  set: Object,
+  prev: Row,
+  cache: Map<Table, [string, Column][]>,
+) => {
+  const primaryKeys = cache.get(table)!;
+
+  for (let i = 0; i < primaryKeys.length; i++) {
+    const [js] = primaryKeys[i]!;
+    if (js in set) {
+      // Note: Noop on the primary keys if they are identical, otherwise throw an error.
+      if ((set as Row)[js] !== prev[js]) {
+        throw new NonRetryableUserError(
+          `Primary key column '${js}' cannot be updated`,
+        );
+      }
+    }
+  }
+};
+
+/** Throw an error if `table` is not an `onchainTable`. */
+export const checkOnchainTable = (
+  table: Table,
+  method: "find" | "insert" | "update" | "delete",
+) => {
+  if (table === undefined)
+    throw new UndefinedTableError(
+      `Table object passed to db.${method}() is undefined`,
+    );
+
+  if (onchain in table) return;
+
+  throw new InvalidStoreMethodError(
+    method === "find"
+      ? `db.find() can only be used with onchain tables, and '${getTableConfig(table).name}' is an offchain table or a view.`
+      : `Indexing functions can only write to onchain tables, and '${getTableConfig(table).name}' is an offchain table or a view.`,
+  );
+};
+
+export const checkTableAccess = (
+  table: Table,
+  method: "find" | "insert" | "update" | "delete",
+  key: object,
+  chainId?: number,
+) => {
+  if (chainId === undefined) return;
+  if ("chainId" in key && String(key.chainId) === String(chainId)) return;
+  throw new InvalidStoreAccessError(
+    "chainId" in key
+      ? `db.${method}(${getTableConfig(table).name}) cannot access rows on different chains when ordering is 'isolated'.`
+      : `db.${method}(${getTableConfig(table).name}) must specify 'chainId' when ordering is 'isolated'.`,
+  );
+};
+
+export const createIndexingStore = ({
+  common,
+  schemaBuild: { schema },
+  indexingCache,
+  indexingErrorHandler,
+  chainId,
+}: {
+  common: Common;
+  schemaBuild: Pick<SchemaBuild, "schema">;
+  indexingCache: IndexingCache;
+  indexingErrorHandler: IndexingErrorHandler;
+  chainId?: number;
+}): IndexingStore => {
+  let qb: QB = undefined!;
+  let isProcessingEvents = true;
+
+  const tables = Object.values(schema).filter(isTable);
+  const views = Object.values(schema).filter(isView);
+  const primaryKeyCache = getPrimaryKeyCache(tables);
+  const isCopyFast = new Map(
+    tables.map((table) => [
+      table,
+      Object.values(getTableColumns(table)).every((column) =>
+        ["string", "number", "boolean", "bigint"].includes(column.dataType),
+      ),
+    ]),
+  );
+
+  const lock = createLock();
+
+  const storeMethodWrapper = (fn: (...args: any[]) => Promise<any>) => {
+    return async (...args: any[]) => {
+      try {
+        if (isProcessingEvents === false) {
+          throw new NonRetryableUserError(
+            "A store API method (find, update, insert, delete) was called after the indexing function returned. Hint: Did you forget to await the store API method call (an unawaited promise)?",
+          );
+        }
+        await lock.lock();
+        const result = await fn(...args);
+        // @ts-expect-error typescript bug lol
+        if (isProcessingEvents === false) {
+          throw new NonRetryableUserError(
+            "A store API method (find, update, insert, delete) was called after the indexing function returned. Hint: Did you forget to await the store API method call (an unawaited promise)?",
+          );
+        }
+        return result;
+      } catch (error) {
+        if (isProcessingEvents === false) {
+          throw new NonRetryableUserError(
+            "A store API method (find, update, insert, delete) was called after the indexing function returned. Hint: Did you forget to await the store API method call (an unawaited promise)?",
+          );
+        }
+
+        if (error instanceof RetryableError) {
+          indexingErrorHandler.setRetryableError(error);
+        }
+
+        throw error;
+      } finally {
+        lock.unlock();
+      }
+    };
+  };
+
+  // Note: the naming convention is used to separate user space from ponder space.
+  // "user" prefix is user space, "ponder" prefix is ponder space.
+
+  return {
+    db: {
+      find: storeMethodWrapper(async (table: Table, key) => {
+        common.metrics.incrementIndexingStoreQueries(
+          getTableName(table),
+          "find",
+        );
+        checkOnchainTable(table, "find");
+        checkTableAccess(table, "find", key, chainId);
+        const ponderRow = await indexingCache.get({ table, key });
+        const userRow = ponderRow === null ? null : copyOnWrite(ponderRow);
+        return userRow;
+      }),
+      // @ts-expect-error
+      insert(table: Table) {
+        return {
+          values: (userValues: any) => {
+            const inner = {
+              onConflictDoNothing: storeMethodWrapper(async () => {
+                common.metrics.incrementIndexingStoreQueries(
+                  getTableName(table),
+                  "insert",
+                );
+                checkOnchainTable(table, "insert");
+
+                const ponderValues = Array.isArray(userValues)
+                  ? userValues.map((value) =>
+                      copy(value, isCopyFast.get(table)!),
+                    )
+                  : copy(userValues, isCopyFast.get(table)!);
+
+                if (Array.isArray(ponderValues)) {
+                  const ponderRows = [];
+                  for (const value of ponderValues) {
+                    checkTableAccess(table, "insert", value, chainId);
+                    const row = await indexingCache.get({ table, key: value });
+
+                    if (row) {
+                      ponderRows.push(null);
+                    } else {
+                      ponderRows.push(
+                        indexingCache.set({
+                          table,
+                          key: value,
+                          row: value,
+                          isUpdate: false,
+                        }),
+                      );
+                    }
+                  }
+                  const userRows = ponderRows.map((row) =>
+                    row === null ? row : copyOnWrite(row),
+                  );
+                  return userRows;
+                } else {
+                  checkTableAccess(table, "insert", ponderValues, chainId);
+                  const row = await indexingCache.get({
+                    table,
+                    key: ponderValues,
+                  });
+
+                  if (row) {
+                    return null;
+                  }
+
+                  const ponderRow = indexingCache.set({
+                    table,
+                    key: ponderValues,
+                    row: ponderValues,
+                    isUpdate: false,
+                  });
+
+                  const userRow = copyOnWrite(ponderRow);
+                  return userRow;
+                }
+              }),
+              onConflictDoUpdate: storeMethodWrapper(
+                async (userUpdateValues: any) => {
+                  common.metrics.incrementIndexingStoreQueries(
+                    getTableName(table),
+                    "insert",
+                  );
+                  checkOnchainTable(table, "insert");
+
+                  if (Array.isArray(userValues)) {
+                    const ponderRows: Row[] = [];
+                    for (const value of userValues) {
+                      checkTableAccess(table, "insert", value, chainId);
+                      let ponderRowUpdate = await indexingCache.get({
+                        table,
+                        key: value,
+                      });
+
+                      if (ponderRowUpdate) {
+                        ponderRowUpdate = copy(
+                          ponderRowUpdate,
+                          isCopyFast.get(table)!,
+                        );
+                        if (typeof userUpdateValues === "function") {
+                          const userRowUpdate = copyOnWrite(ponderRowUpdate);
+                          const userSet = userUpdateValues(userRowUpdate);
+                          const ponderSet = copy(
+                            userSet,
+                            isCopyFast.get(table)!,
+                          );
+                          validateUpdateSet(
+                            table,
+                            ponderSet,
+                            ponderRowUpdate,
+                            primaryKeyCache,
+                          );
+                          normalizeUpdateSet(table, ponderSet);
+                          for (const [key, value] of Object.entries(
+                            ponderSet,
+                          )) {
+                            if (value === undefined) continue;
+                            ponderRowUpdate[key] = value;
+                          }
+                        } else {
+                          const userSet = userUpdateValues;
+                          const ponderSet = copy(
+                            userSet,
+                            isCopyFast.get(table)!,
+                          );
+                          validateUpdateSet(
+                            table,
+                            ponderSet,
+                            ponderRowUpdate,
+                            primaryKeyCache,
+                          );
+                          normalizeUpdateSet(table, ponderSet);
+                          for (const [key, value] of Object.entries(
+                            ponderSet,
+                          )) {
+                            if (value === undefined) continue;
+                            ponderRowUpdate[key] = value;
+                          }
+                        }
+                        ponderRows.push(
+                          indexingCache.set({
+                            table,
+                            key: ponderRowUpdate,
+                            row: ponderRowUpdate,
+                            isUpdate: true,
+                          }),
+                        );
+                      } else {
+                        const ponderValue = copy(value, isCopyFast.get(table)!);
+                        ponderRows.push(
+                          indexingCache.set({
+                            table,
+                            key: ponderValue,
+                            row: ponderValue,
+                            isUpdate: false,
+                          }),
+                        );
+                      }
+                    }
+                    const userRows = ponderRows.map((row) =>
+                      row === null ? row : copyOnWrite(row),
+                    );
+                    return userRows;
+                  } else {
+                    checkTableAccess(table, "insert", userValues, chainId);
+                    let ponderRowUpdate = await indexingCache.get({
+                      table,
+                      key: userValues,
+                    });
+
+                    if (ponderRowUpdate) {
+                      ponderRowUpdate = copy(
+                        ponderRowUpdate,
+                        isCopyFast.get(table)!,
+                      );
+                      if (typeof userUpdateValues === "function") {
+                        const userRowUpdate = copyOnWrite(ponderRowUpdate);
+                        const userSet = userUpdateValues(userRowUpdate);
+                        const ponderSet = copy(userSet, isCopyFast.get(table)!);
+                        validateUpdateSet(
+                          table,
+                          ponderSet,
+                          ponderRowUpdate,
+                          primaryKeyCache,
+                        );
+                        normalizeUpdateSet(table, ponderSet);
+                        for (const key in ponderSet) {
+                          const value = ponderSet[key];
+                          if (value === undefined) continue;
+                          ponderRowUpdate[key] = value;
+                        }
+                      } else {
+                        const userSet = userUpdateValues;
+                        const ponderSet = copy(userSet, isCopyFast.get(table)!);
+                        validateUpdateSet(
+                          table,
+                          ponderSet,
+                          ponderRowUpdate,
+                          primaryKeyCache,
+                        );
+                        normalizeUpdateSet(table, ponderSet);
+                        for (const key in ponderSet) {
+                          const value = ponderSet[key];
+                          if (value === undefined) continue;
+                          ponderRowUpdate[key] = value;
+                        }
+                      }
+                      const ponderRow = indexingCache.set({
+                        table,
+                        key: ponderRowUpdate,
+                        row: ponderRowUpdate,
+                        isUpdate: true,
+                      });
+                      const userRow = copyOnWrite(ponderRow);
+                      return userRow;
+                    }
+
+                    const ponderValues = copy(
+                      userValues,
+                      isCopyFast.get(table)!,
+                    );
+
+                    const ponderRowInsert = indexingCache.set({
+                      table,
+                      key: ponderValues,
+                      row: ponderValues,
+                      isUpdate: false,
+                    });
+
+                    const userRow = copyOnWrite(ponderRowInsert);
+                    return userRow;
+                  }
+                },
+              ),
+              // biome-ignore lint/suspicious/noThenProperty: The returned object is intentionally thenable for the query API.
+              then: (onFulfilled, onRejected) =>
+                storeMethodWrapper(async () => {
+                  common.metrics.incrementIndexingStoreQueries(
+                    getTableName(table),
+                    "insert",
+                  );
+                  checkOnchainTable(table, "insert");
+                  const ponderValues = Array.isArray(userValues)
+                    ? userValues.map((value) =>
+                        copy(value, isCopyFast.get(table)!),
+                      )
+                    : copy(userValues, isCopyFast.get(table)!);
+
+                  if (Array.isArray(ponderValues)) {
+                    const ponderRows = [];
+                    for (const value of ponderValues) {
+                      checkTableAccess(table, "insert", value, chainId);
+
+                      if (qb.$dialect === "pglite") {
+                        const row = await indexingCache.get({
+                          table,
+                          key: value,
+                        });
+
+                        if (row) {
+                          throw new UniqueConstraintError(
+                            `Primary key conflict in table '${getTableName(table)}'`,
+                          );
+                        } else {
+                          ponderRows.push(
+                            indexingCache.set({
+                              table,
+                              key: value,
+                              row: value,
+                              isUpdate: false,
+                            }),
+                          );
+                        }
+                      } else {
+                        // Note: optimistic assumption that no conflict exists
+                        // because error is recovered at flush time
+
+                        ponderRows.push(
+                          indexingCache.set({
+                            table,
+                            key: value,
+                            row: value,
+                            isUpdate: false,
+                          }),
+                        );
+                      }
+                    }
+                    const userRows = ponderRows.map((row) =>
+                      row === null ? row : copyOnWrite(row),
+                    );
+                    return userRows;
+                  } else {
+                    checkTableAccess(table, "insert", ponderValues, chainId);
+
+                    let ponderRow: Row;
+                    if (qb.$dialect === "pglite") {
+                      const row = await indexingCache.get({
+                        table,
+                        key: ponderValues,
+                      });
+
+                      if (row) {
+                        throw new UniqueConstraintError(
+                          `Primary key conflict in table '${getTableName(table)}'`,
+                        );
+                      } else {
+                        ponderRow = indexingCache.set({
+                          table,
+                          key: ponderValues,
+                          row: ponderValues,
+                          isUpdate: false,
+                        });
+                      }
+                    } else {
+                      // Note: optimistic assumption that no conflict exists
+                      // because error is recovered at flush time
+
+                      ponderRow = indexingCache.set({
+                        table,
+                        key: ponderValues,
+                        row: ponderValues,
+                        isUpdate: false,
+                      });
+                    }
+                    const userRow = copyOnWrite(ponderRow);
+                    return userRow;
+                  }
+                })().then(onFulfilled, onRejected),
+              catch: (onRejected): Promise<any> =>
+                inner.then(undefined, onRejected),
+              finally: (onFinally): Promise<any> =>
+                inner.then(
+                  (value: any) => {
+                    onFinally?.();
+                    return value;
+                  },
+                  (reason: any) => {
+                    onFinally?.();
+                    throw reason;
+                  },
+                ),
+              // @ts-expect-error
+            } satisfies ReturnType<
+              ReturnType<IndexingStore["db"]["insert"]>["values"]
+            >;
+
+            return inner;
+          },
+        };
+      },
+      // @ts-expect-error
+      update(table: Table, key) {
+        return {
+          set: storeMethodWrapper(async (userValues: any) => {
+            common.metrics.incrementIndexingStoreQueries(
+              getTableName(table),
+              "update",
+            );
+            checkOnchainTable(table, "update");
+            checkTableAccess(table, "update", key, chainId);
+
+            let ponderRowUpdate = await indexingCache.get({ table, key });
+
+            if (ponderRowUpdate === null) {
+              const error = new RecordNotFoundError(
+                `No existing record found in table '${getTableName(table)}'`,
+              );
+              error.meta.push(
+                `db.update arguments:\n${prettyPrint(key, { truncate: false })}`,
+              );
+              throw error;
+            }
+
+            ponderRowUpdate = copy(ponderRowUpdate, isCopyFast.get(table)!);
+
+            if (typeof userValues === "function") {
+              const userRow = copyOnWrite(ponderRowUpdate);
+              const userSet = userValues(userRow);
+              const ponderSet = copy(userSet, isCopyFast.get(table)!);
+              validateUpdateSet(
+                table,
+                ponderSet,
+                ponderRowUpdate,
+                primaryKeyCache,
+              );
+              normalizeUpdateSet(table, ponderSet);
+              for (const key in ponderSet) {
+                const value = ponderSet[key];
+                if (value === undefined) continue;
+                ponderRowUpdate[key] = value;
+              }
+            } else {
+              const userSet = userValues;
+              const ponderSet = copy(userSet, isCopyFast.get(table)!);
+              validateUpdateSet(
+                table,
+                ponderSet,
+                ponderRowUpdate,
+                primaryKeyCache,
+              );
+              normalizeUpdateSet(table, ponderSet);
+              for (const key in ponderSet) {
+                const value = ponderSet[key];
+                if (value === undefined) continue;
+                ponderRowUpdate[key] = value;
+              }
+            }
+
+            const ponderRow = indexingCache.set({
+              table,
+              key: ponderRowUpdate,
+              row: ponderRowUpdate,
+              isUpdate: true,
+            });
+            const userRow = copyOnWrite(ponderRow);
+            return userRow;
+          }),
+        };
+      },
+      delete: storeMethodWrapper(async (table: Table, key) => {
+        common.metrics.incrementIndexingStoreQueries(
+          getTableName(table),
+          "delete",
+        );
+        checkOnchainTable(table, "delete");
+        checkTableAccess(table, "delete", key, chainId);
+        return indexingCache.delete({ table, key });
+      }),
+      // @ts-expect-error
+      sql: drizzle(
+        storeMethodWrapper(async (_sql, params, method, typings) => {
+          const isSelectOnly = await isReadonlySQLQuery(_sql);
+
+          if (isSelectOnly === false) {
+            await indexingCache.flush();
+            indexingCache.invalidate();
+            indexingCache.clear();
+          } else {
+            // Note: Not all nodes are implemented in the parser,
+            // so we need to try/catch to avoid throwing an error.
+            let relations: Set<string> | undefined;
+            try {
+              relations = await getSQLQueryRelations(_sql);
+            } catch {}
+
+            if (
+              Array.from(relations ?? []).some((refName) =>
+                views.some((view) => getViewName(view) === refName),
+              )
+            ) {
+              await indexingCache.flush();
+            } else {
+              await indexingCache.flush({ tableNames: relations });
+            }
+          }
+
+          const query: QueryWithTypings = { sql: _sql, params, typings };
+          const endClock = startClock();
+
+          try {
+            // Note: Use transaction so that user-land queries don't affect the
+            // in-progress transaction.
+            return await qb.transaction(async (tx) => {
+              const result = await tx.wrap((tx) =>
+                tx._.session
+                  .prepareQuery(query, undefined, undefined, method === "all")
+                  .execute(),
+              );
+
+              if (method === "all") {
+                return {
+                  // @ts-expect-error
+                  ...result,
+                  // @ts-expect-error
+                  rows: result.rows.map((row) => Object.values(row)),
+                };
+              }
+
+              return result;
+            });
+          } catch (error) {
+            if (error instanceof DbConnectionError) {
+              throw error;
+            }
+
+            throw new RawSqlError((error as Error).message);
+          } finally {
+            common.metrics.ponder_indexing_store_raw_sql_duration.observe(
+              endClock(),
+            );
+          }
+        }),
+        { schema, casing: "snake_case" },
+      ),
+    },
+    set qb(_qb: QB) {
+      qb = _qb;
+    },
+    set isProcessingEvents(_isProcessingEvents: boolean) {
+      isProcessingEvents = _isProcessingEvents;
+    },
+  };
+};

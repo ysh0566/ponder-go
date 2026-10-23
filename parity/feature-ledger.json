@@ -1,0 +1,727 @@
+{
+  "format_version": 1,
+  "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "policy": "verified_subset never means full upstream functionality or complete exact test coverage. Source manifests and test ledger are authoritative for remaining work.",
+  "features": [
+    {
+      "id": "baseline",
+      "status": "verified",
+      "implementation_files": [
+        "tools/manifest.mjs",
+        "tools/discovery-audit.mjs"
+      ],
+      "upstream_sources": [
+        "AGENTS.md",
+        "package.json",
+        "packages/core/package.json"
+      ],
+      "evidence": [
+        "parity/public-manifest.json",
+        "parity/discovery-audit.json"
+      ],
+      "remaining": "Full runtime collection still pending; static finite records are not proof of dynamic exhaustiveness."
+    },
+    {
+      "id": "test-parity",
+      "status": "in_progress",
+      "implementation_files": [
+        "parity/test-ledger.json",
+        "parity/mappings.json",
+        "tools/record-results.mjs"
+      ],
+      "upstream_sources": [],
+      "evidence": [
+        "parity/runs/summary.json"
+      ],
+      "remaining": "38 mapped records (34 Go + 4 retained SDK); 867 unimplemented. Preserve fixtures, all assertions, error/skip/todo states."
+    },
+    {
+      "id": "differential-harness",
+      "status": "verified_subset",
+      "implementation_files": [
+        "cmd/parity-probe/main.go",
+        "bridge/oracle-probe.ts",
+        "tools/differential.mjs"
+      ],
+      "upstream_sources": [
+        "packages/core/src/utils/checkpoint.ts",
+        "packages/core/src/utils/interval.ts"
+      ],
+      "evidence": [
+        "parity/runs/differential.json"
+      ],
+      "remaining": "Expand beyond checkpoint/interval and add exceptional inputs."
+    },
+    {
+      "id": "native-config",
+      "status": "partial",
+      "implementation_files": [
+        "config/config.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/config/index.ts",
+        "packages/core/src/build/config.ts"
+      ],
+      "evidence": [],
+      "remaining": "All configuration validators, latest bounds, account/factory/filter/trace options and exact cases remain."
+    },
+    {
+      "id": "schema",
+      "status": "partial",
+      "implementation_files": [
+        "schema/schema.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/build/schema.ts",
+        "packages/core/src/drizzle/onchain.ts"
+      ],
+      "evidence": [],
+      "remaining": "Current table/column/key/index types and common rejections only. Full types, enums, SQL defaults, relationships, views and exact source error fixtures remain."
+    },
+    {
+      "id": "abi",
+      "status": "partial",
+      "implementation_files": [
+        "abi/abi.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/utils/decodeAbiParameters.ts",
+        "packages/core/src/utils/decodeEventLog.ts"
+      ],
+      "evidence": [],
+      "remaining": "Transfer paths verified; tuple/bytes/array formatting, numeric widths, overload names and all ABI source tests/errors remain."
+    },
+    {
+      "id": "checkpoint",
+      "status": "verified_subset",
+      "implementation_files": [
+        "checkpoint/checkpoint.go",
+        "checkpoint/checkpoint_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/utils/checkpoint.ts",
+        "packages/core/src/utils/checkpoint.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/foundation-oracle.json"
+      ],
+      "remaining": "All 15 source cases mapped; strict Go invalid-input representation differs from arbitrary TS bigint input. String min/max and full invalid-input behavior audit remain."
+    },
+    {
+      "id": "interval-utils",
+      "status": "verified_subset",
+      "implementation_files": [
+        "interval/interval.go",
+        "interval/interval_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/utils/interval.ts",
+        "packages/core/src/utils/interval.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/differential.json"
+      ],
+      "remaining": "All 19 source cases mapped; remaining untested exports and empty bounds adaptation audit."
+    },
+    {
+      "id": "event-log-runtime",
+      "status": "partial",
+      "implementation_files": [
+        "runtime/engine.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts"
+      ],
+      "evidence": [
+        "runtime/engine_test.go"
+      ],
+      "remaining": "Single-chain ABI logs/setup/block/receipts verified with Anvil. Full filters, other sources, error and retry semantics remain."
+    },
+    {
+      "id": "transactions",
+      "status": "unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts"
+      ],
+      "evidence": [],
+      "remaining": "Native implementation and all exact tests required."
+    },
+    {
+      "id": "native-transfers",
+      "status": "unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts"
+      ],
+      "evidence": [],
+      "remaining": "Native implementation and all exact tests required."
+    },
+    {
+      "id": "call-traces",
+      "status": "unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts"
+      ],
+      "evidence": [],
+      "remaining": "Native implementation and all exact tests required."
+    },
+    {
+      "id": "factory-dynamic-addresses",
+      "status": "unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "packages/core/src/build/factory.ts"
+      ],
+      "evidence": [],
+      "remaining": "Native implementation and all exact tests required."
+    },
+    {
+      "id": "receipt",
+      "status": "partial",
+      "implementation_files": [
+        "runtime/engine.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/rpc/actions.ts"
+      ],
+      "evidence": [],
+      "remaining": "Log-handler optional receipt fetching verified; account/trace paths and async-execution-chain behavior remain."
+    },
+    {
+      "id": "block-setup",
+      "status": "partial",
+      "implementation_files": [
+        "runtime/engine.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts"
+      ],
+      "evidence": [],
+      "remaining": "Single-chain source start, interval and setup subset; full checkpoint/filter semantics need source test mapping."
+    },
+    {
+      "id": "rpc-http",
+      "status": "partial",
+      "implementation_files": [
+        "rpc/client.go",
+        "rpc/client_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/rpc/http.ts"
+      ],
+      "evidence": [],
+      "remaining": "Basic HTTP errors/retry/limits/failover implemented; source request scheduling, retry policies, cache protocol and all exact tests remain."
+    },
+    {
+      "id": "rpc-websocket",
+      "status": "partial",
+      "implementation_files": [
+        "rpc/client.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/rpc/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "Requests/head subscription verified; reconnect/resubscribe and provider-specific behavior remain."
+    },
+    {
+      "id": "rpc-rate-retry-cache",
+      "status": "partial",
+      "implementation_files": [
+        "rpc/client.go",
+        "store/sync.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/rpc/index.ts",
+        "packages/core/src/sync-store/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "Cache explicitly immutable requests only; full shared concurrency, pruning, fragment cache semantics and source tests remain."
+    },
+    {
+      "id": "sync-store-separation",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/sync.go",
+        "store/store.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/sync-store/schema.ts"
+      ],
+      "evidence": [],
+      "remaining": "Separate schema for headers/intervals/cache exists; full raw log/trace/transaction/factory persistence remains."
+    },
+    {
+      "id": "historical-gaps",
+      "status": "partial",
+      "implementation_files": [
+        "interval/interval.go",
+        "store/sync.go",
+        "runtime/engine.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/sync-historical/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "Missing intervals supported per config hash; block-at-a-time scheduling only, full batched fragment sync remains."
+    },
+    {
+      "id": "realtime",
+      "status": "partial",
+      "implementation_files": [
+        "runtime/engine.go",
+        "rpc/client.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/sync-realtime/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "Polling/head subscriptions and reorg replay demonstrated; complete reconnect/stall/finality pipeline remains."
+    },
+    {
+      "id": "ordering-multichain",
+      "status": "storage_verified_runtime_pending",
+      "implementation_files": [
+        "store/reorg.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/actions.ts"
+      ],
+      "evidence": [],
+      "remaining": "Default rollback uses target-chain min operation_id then global suffix. Native multichain scheduler intentionally rejects until implemented."
+    },
+    {
+      "id": "ordering-omnichain",
+      "status": "partial",
+      "implementation_files": [
+        "store/reorg.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/actions.ts"
+      ],
+      "evidence": [],
+      "remaining": "Checkpoint rollback predicate exists; full global timestamp scheduling and oracle mapping remain."
+    },
+    {
+      "id": "ordering-isolated",
+      "status": "storage_verified_runtime_pending",
+      "implementation_files": [
+        "schema/schema.go",
+        "store/reorg.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/actions.ts"
+      ],
+      "evidence": [],
+      "remaining": "Chain-key validation and isolated rollback verified; parallel isolated scheduling and full source tests remain."
+    },
+    {
+      "id": "postgres-crud-upsert",
+      "status": "partial",
+      "implementation_files": [
+        "store/store.go",
+        "store/backend.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing-store/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "Real PostgreSQL typed tables, CRUD/upsert, snapshots and literal defaults. Full functions/types/errors/batching/raw SQL remain."
+    },
+    {
+      "id": "pglite",
+      "status": "verified_subset",
+      "implementation_files": [
+        "bridge/pglite.mjs",
+        "store/backend.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/utils/pglite.ts"
+      ],
+      "evidence": [],
+      "remaining": "Actual PGlite 0.2.13 bridge; no SQLite. Immediate cancellation of running SQL and all adapter semantics remain."
+    },
+    {
+      "id": "business-raw-sql-journal",
+      "status": "unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "packages/core/src/indexing-store/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "Native API, rollback integration, queries and all exact source tests remain."
+    },
+    {
+      "id": "relations",
+      "status": "unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "packages/core/src/drizzle/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "Native API, rollback integration, queries and all exact source tests remain."
+    },
+    {
+      "id": "enums-views",
+      "status": "unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "packages/core/src/drizzle/onchain.ts"
+      ],
+      "evidence": [],
+      "remaining": "Native API, rollback integration, queries and all exact source tests remain."
+    },
+    {
+      "id": "journal",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/store.go",
+        "store/reorg.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/actions.ts"
+      ],
+      "evidence": [],
+      "remaining": "Row-level operations journaled atomically. Arbitrary business raw SQL and exact original action/store tests remain."
+    },
+    {
+      "id": "reorg",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/reorg.go",
+        "runtime/engine.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/actions.ts"
+      ],
+      "evidence": [],
+      "remaining": "Global suffix, isolated, numeric restoration and real-chain replay verified; deep reorg/rebuild and all source fixtures remain."
+    },
+    {
+      "id": "crash-recovery",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/store_test.go",
+        "store/backend.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/actions.ts"
+      ],
+      "evidence": [
+        "parity/runs/store-crash-boundaries.jsonl"
+      ],
+      "remaining": "Four application-process SQL boundaries on each backend; server/host power loss and original checkpoint safety migration remain."
+    },
+    {
+      "id": "finalize",
+      "status": "partial",
+      "implementation_files": [
+        "store/reorg.go",
+        "runtime/engine.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/actions.ts",
+        "packages/core/src/utils/finality.ts"
+      ],
+      "evidence": [],
+      "remaining": "Global safe-prefix retention verified. LowerBound/blockTime exact search, automatic finalization wiring and full cases remain."
+    },
+    {
+      "id": "graphql",
+      "status": "unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "packages/core/src/graphql/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "Schema generation, filters, pagination, relationships, limits and exact test mapping required."
+    },
+    {
+      "id": "sql-http",
+      "status": "partial",
+      "implementation_files": [
+        "query/http.go",
+        "sqlquery/sql.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/client/index.ts",
+        "packages/core/src/utils/sql-parse.ts"
+      ],
+      "evidence": [],
+      "remaining": "Original client query protocol and SQL column order verified. Full SuperJSON nested types, all SQL/schema semantics and source tests remain."
+    },
+    {
+      "id": "sse",
+      "status": "partial",
+      "implementation_files": [
+        "query/http.go",
+        "store/store.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/client/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "Initial hash/no initial message and result-change gating verified with original client. View dependencies, external SQL notifications, full load/error cases remain."
+    },
+    {
+      "id": "custom-api",
+      "status": "partial",
+      "implementation_files": [
+        "query/http.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/server/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "Native net/http handler hook exists; Hono source execution is a separate unimplemented compatibility track."
+    },
+    {
+      "id": "direct-sql",
+      "status": "partial",
+      "implementation_files": [
+        "store/reorg.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/queryBuilder.ts"
+      ],
+      "evidence": [],
+      "remaining": "Read-only local transaction/query available. Role grants/public views and full direct-query lifecycle remain."
+    },
+    {
+      "id": "typescript-client",
+      "status": "retained_verified_subset",
+      "implementation_files": [
+        "sdk/typescript/client",
+        "bridge/client-compat.ts"
+      ],
+      "upstream_sources": [
+        "packages/client/src/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "Source unchanged and 3 source unit tests passed. Go integration covers 7 assertions per backend; full protocol combinations remain."
+    },
+    {
+      "id": "react-client",
+      "status": "retained_type_verified",
+      "implementation_files": [
+        "sdk/typescript/react",
+        "sdk/tsconfig.base.json"
+      ],
+      "upstream_sources": [
+        "packages/react/src/hook.test-d.ts"
+      ],
+      "evidence": [],
+      "remaining": "Original type fixture passed; browser/hook lifecycle integration against Go remains."
+    },
+    {
+      "id": "go-sdk",
+      "status": "partial",
+      "implementation_files": [
+        "query/http.go"
+      ],
+      "upstream_sources": [
+        "packages/client/src/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "SQL query helper exists; live subscription, typed schema relationships, status/error parity remain."
+    },
+    {
+      "id": "other-utils",
+      "status": "unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "packages/utils/src/index.ts",
+        "packages/core/src/utils"
+      ],
+      "evidence": [],
+      "remaining": "All remaining public utility functions and exact tests remain."
+    },
+    {
+      "id": "cli-start-serve",
+      "status": "partial",
+      "implementation_files": [
+        "cmd/ponder/main.go",
+        "examples/erc20/main.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/bin/ponder.ts"
+      ],
+      "evidence": [],
+      "remaining": "Build/launch native apps and example serve branch implemented; full flags/lifecycle/native app config loading remain."
+    },
+    {
+      "id": "cli-codegen",
+      "status": "partial",
+      "implementation_files": [
+        "cmd/ponder/main.go",
+        "examples/erc20/ponder_generated.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/bin/commands/codegen.ts"
+      ],
+      "evidence": [],
+      "remaining": "Native JSON schema to Go model generator builds; ABI event types, nullable types and complete source CLI mapping remain."
+    },
+    {
+      "id": "cli-db-list",
+      "status": "partial",
+      "implementation_files": [
+        "cmd/ponder/main.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/bin/commands/list.ts"
+      ],
+      "evidence": [],
+      "remaining": "Explicit-URL task-owned schema listing implemented; complete deployment metadata/liveness compatibility remains."
+    },
+    {
+      "id": "cli-dev",
+      "status": "unimplemented",
+      "implementation_files": [
+        "cmd/ponder/main.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/bin/commands/dev.ts"
+      ],
+      "evidence": [],
+      "remaining": "CLI currently returns an explicit unimplemented error. Native implementation and exact cases remain."
+    },
+    {
+      "id": "cli-db-prune",
+      "status": "unimplemented",
+      "implementation_files": [
+        "cmd/ponder/main.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/bin/commands/prune.ts"
+      ],
+      "evidence": [],
+      "remaining": "CLI currently returns an explicit unimplemented error. Native implementation and exact cases remain."
+    },
+    {
+      "id": "cli-db-create-views",
+      "status": "unimplemented",
+      "implementation_files": [
+        "cmd/ponder/main.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/bin/commands/createViews.ts"
+      ],
+      "evidence": [],
+      "remaining": "CLI currently returns an explicit unimplemented error. Native implementation and exact cases remain."
+    },
+    {
+      "id": "scaffolding-templates",
+      "status": "unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "packages/create-ponder/src/index.ts",
+        "packages/create-ponder/templates"
+      ],
+      "evidence": [],
+      "remaining": "All templates/examples inventoried by hash; Go scaffolder and exact create-ponder cases remain."
+    },
+    {
+      "id": "development-reload",
+      "status": "unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "packages/core/src/build/index.ts"
+      ],
+      "evidence": [],
+      "remaining": "Go watcher, process lifecycle, config/handler hash, shadow rebuild and dev UI remain."
+    },
+    {
+      "id": "observability",
+      "status": "partial",
+      "implementation_files": [
+        "query/http.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/internal/metrics.ts"
+      ],
+      "evidence": [],
+      "remaining": "Minimal health/ready/status/request/live gauges only; complete Prometheus registry/logging/profiling remains."
+    },
+    {
+      "id": "deployment-guides-examples",
+      "status": "partial",
+      "implementation_files": [
+        "examples/erc20/main.go"
+      ],
+      "upstream_sources": [
+        "examples",
+        "docs/pages/docs"
+      ],
+      "evidence": [],
+      "remaining": "Local example builds; full examples and deployment docs remain. No deployment authorized or performed."
+    },
+    {
+      "id": "type-fixtures",
+      "status": "partial",
+      "implementation_files": [
+        "sdk/typescript/react/src/hook.test-d.ts"
+      ],
+      "upstream_sources": [
+        "packages/core/src/types",
+        "packages/core/src/config",
+        "packages/react/src/hook.test-d.ts"
+      ],
+      "evidence": [],
+      "remaining": "React retained fixture passed; all native Go compile success/failure fixture mappings remain."
+    },
+    {
+      "id": "simulation-e2e",
+      "status": "inventoried_unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "simulation-test",
+        "packages/core/src/_test/e2e"
+      ],
+      "evidence": [],
+      "remaining": "8 simulation apps, unbounded seeds and 2 E2E tests retained; full Go harness/datasets and exact E2E ports remain."
+    },
+    {
+      "id": "strict-ts-source-compatibility",
+      "status": "separate_unimplemented_track",
+      "implementation_files": [],
+      "upstream_sources": [],
+      "evidence": [],
+      "remaining": "No arbitrary TS/Hono/Drizzle zero-change source execution claim."
+    },
+    {
+      "id": "old-db-in-place-takeover",
+      "status": "separate_unimplemented_track",
+      "implementation_files": [],
+      "upstream_sources": [],
+      "evidence": [],
+      "remaining": "No old-database adoption or migration. Default new shadow schema; unowned schemas refused."
+    },
+    {
+      "id": "licenses",
+      "status": "preserved",
+      "implementation_files": [
+        "LICENSE",
+        "licenses/manifest.json",
+        "sdk/typescript/client/LICENSE",
+        "sdk/typescript/react/LICENSE",
+        "third_party/pg_query_go/LICENSE"
+      ],
+      "upstream_sources": [],
+      "evidence": [],
+      "remaining": "13 used Go module license records, SDK/root originals preserved. Refresh notices when dependencies change."
+    },
+    {
+      "id": "benchmarks",
+      "status": "inventoried_unimplemented",
+      "implementation_files": [],
+      "upstream_sources": [
+        "benchmark",
+        "packages/core/src/utils/checkpoint.bench.ts"
+      ],
+      "remaining": "Preserve benchmark definitions separately from functional test counts; no performance parity claim."
+    }
+  ]
+}
