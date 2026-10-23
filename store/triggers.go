@@ -13,12 +13,14 @@ func (s *Store) createJournalTriggers(ctx context.Context, tx Transaction) error
 	function := s.internal("_ponder_go_capture")
 	modeCheck := ""
 	if s.Ordering == schema.Isolated {
-		modeCheck = `IF (row_value->>'chain_id')::numeric IS DISTINCT FROM chain_value::numeric THEN RAISE EXCEPTION 'isolated write must match event chain'; END IF;`
+		modeCheck = `IF TG_OP = 'DELETE' THEN chain_row := OLD.chain_id::text; ELSE chain_row := NEW.chain_id::text; END IF; IF chain_row::numeric IS DISTINCT FROM chain_value::numeric THEN RAISE EXCEPTION 'isolated write must match event chain'; END IF;`
 	}
 	definition := `CREATE OR REPLACE FUNCTION ` + function + `() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
- row_value jsonb;
  row_key_value jsonb := '{}'::jsonb;
+ old_key jsonb;
+ new_key jsonb;
+ chain_row text;
  checkpoint_value text;
  chain_value text;
  i integer;
@@ -31,14 +33,15 @@ BEGIN
  checkpoint_value := NULLIF(current_setting('ponder_go.checkpoint',true),'');
  chain_value := NULLIF(current_setting('ponder_go.chain_id',true),'');
  IF checkpoint_value IS NULL OR chain_value IS NULL THEN RAISE EXCEPTION 'business writes require checkpoint and chain context'; END IF;
- IF TG_OP = 'DELETE' THEN row_value := to_jsonb(OLD); ELSE row_value := to_jsonb(NEW); END IF;
- ` + modeCheck + `
  FOR i IN 0..TG_NARGS-1 LOOP
-  IF TG_OP = 'UPDATE' AND (to_jsonb(OLD)->TG_ARGV[i]) IS DISTINCT FROM (to_jsonb(NEW)->TG_ARGV[i]) THEN RAISE EXCEPTION 'primary key updates are unsupported'; END IF;
-  row_key_value := row_key_value || jsonb_build_object(TG_ARGV[i],row_value->TG_ARGV[i]);
+  IF TG_OP <> 'INSERT' THEN EXECUTE format('SELECT to_jsonb(($1).%I)',TG_ARGV[i]) INTO old_key USING OLD; END IF;
+  IF TG_OP <> 'DELETE' THEN EXECUTE format('SELECT to_jsonb(($1).%I)',TG_ARGV[i]) INTO new_key USING NEW; END IF;
+  IF TG_OP = 'UPDATE' AND old_key IS DISTINCT FROM new_key THEN RAISE EXCEPTION 'primary key updates are unsupported'; END IF;
+  row_key_value := row_key_value || jsonb_build_object(TG_ARGV[i],CASE WHEN TG_OP='DELETE' THEN old_key ELSE new_key END);
  END LOOP;
+ ` + modeCheck + `
  INSERT INTO ` + s.internal("_ponder_go_journal") + ` (table_name,row_key,before_row,checkpoint,chain_id)
- VALUES (TG_TABLE_NAME,row_key_value,CASE WHEN TG_OP='INSERT' THEN NULL ELSE to_jsonb(OLD) END,checkpoint_value,chain_value::numeric);
+ VALUES (TG_TABLE_NAME,row_key_value,CASE WHEN TG_OP='INSERT' THEN NULL ELSE row_to_json(OLD) END,checkpoint_value,chain_value::numeric);
  RETURN NULL;
 END;
 $$`

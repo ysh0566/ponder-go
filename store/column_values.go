@@ -398,23 +398,6 @@ func geometryValues(column schema.Column, value any) ([]float64, error) {
 	return values, nil
 }
 
-func encodeRows(table schema.Table, rows []Row) (string, error) {
-	physical := make([]map[string]any, 0, len(rows))
-	for _, row := range rows {
-		encoded := map[string]any{}
-		for _, column := range table.Columns {
-			value, e := driverJSON(column, row[property(column)])
-			if e != nil {
-				return "", e
-			}
-			encoded[column.Name] = value
-		}
-		physical = append(physical, encoded)
-	}
-	raw, e := json.Marshal(physical)
-	return string(raw), e
-}
-
 func decodeSnapshot(table schema.Table, data string) (Row, error) {
 	var row Row
 	decoder := json.NewDecoder(bytes.NewBufferString(data))

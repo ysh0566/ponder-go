@@ -8,7 +8,6 @@ import (
 	"math/big"
 	"ponder.local/ponder-go/schema"
 	"reflect"
-	"strings"
 	"sync"
 	"time"
 )
@@ -524,6 +523,19 @@ func (db *IndexingStore) Delete(ctx context.Context, name string, key Row) (bool
 	delete(cache.inserts, ck)
 	delete(cache.updates, ck)
 	delete(cache.rows, ck)
+	// A later reinsert must have one new position, like Map.delete()/set() in
+	// the original buffers. Stale order entries would emit the row twice.
+	remove := func(order []string) []string {
+		out := order[:0]
+		for _, key := range order {
+			if key != ck {
+				out = append(out, key)
+			}
+		}
+		return out
+	}
+	cache.insertOrder = remove(cache.insertOrder)
+	cache.updateOrder = remove(cache.updateOrder)
 	return inserted || updated || len(result.Rows) > 0, nil
 }
 func (cache *IndexingCache) Clear() {
@@ -599,23 +611,7 @@ func (cache *IndexingCache) flush(ctx context.Context, checkActive bool, tables 
 			if len(rows) == 0 {
 				continue
 			}
-			encoded, e := encodeRows(t, rows)
-			if e != nil {
-				return e
-			}
-			query := "INSERT INTO " + w.s.table(t.Name) + " SELECT * FROM jsonb_populate_recordset(NULL::" + w.s.table(t.Name) + ",$1::jsonb)"
-			if buffer.mode == Upsert {
-				keys := []string{}
-				sets := []string{}
-				for _, key := range t.Keys() {
-					keys = append(keys, schema.Quote(key))
-				}
-				for _, column := range t.Columns {
-					sets = append(sets, schema.Quote(column.Name)+"=excluded."+schema.Quote(column.Name))
-				}
-				query += " ON CONFLICT (" + strings.Join(keys, ",") + ") DO UPDATE SET " + strings.Join(sets, ",")
-			}
-			if e = w.tx.Exec(ctx, query, encoded); e != nil {
+			if e := w.s.writeRows(ctx, w.tx, t, rows, buffer.mode); e != nil {
 				return e
 			}
 		}

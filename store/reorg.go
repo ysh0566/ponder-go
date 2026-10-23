@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/schema"
@@ -79,11 +78,9 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 		if e != nil {
 			return e
 		}
-		var key Row
-		d := json.NewDecoder(strings.NewReader(fmt.Sprint(row["key"])))
-		d.UseNumber()
-		if e = d.Decode(&key); e != nil {
-			return e
+		key, decodeErr := decodeSnapshot(model, fmt.Sprint(row["key"]))
+		if decodeErr != nil {
+			return decodeErr
 		}
 		where, values, e := keyWhere(model, key, 1)
 		if e != nil {
@@ -93,7 +90,11 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 			return e
 		}
 		if row["before"] != nil {
-			if e = tx.Exec(ctx, "INSERT INTO "+s.table(name)+" SELECT * FROM jsonb_populate_record(NULL::"+s.table(name)+",$1::jsonb)", row["before"]); e != nil {
+			before, decodeErr := decodeUndoRow(model, fmt.Sprint(row["before"]))
+			if decodeErr != nil {
+				return decodeErr
+			}
+			if e = s.writeRows(ctx, tx, model, []Row{before}, Insert); e != nil {
 				return e
 			}
 		}
