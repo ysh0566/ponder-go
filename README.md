@@ -8,13 +8,13 @@
 
 ## 当前验证与计数
 
-权威结果是 [parity/runs/summary.json](parity/runs/summary.json)，本批冻结结果见 [M17](parity/runs/batch-15.json) 、[M18](parity/runs/batch-16.json) 、[M19](parity/runs/batch-17.json) 、[M20](parity/runs/batch-18.json) 与 [M21](parity/runs/batch-19.json)。用例发现、移植、执行、通过分别登记，不合并计数。
+权威结果是 [parity/runs/summary.json](parity/runs/summary.json)，本批冻结结果见 [M17](parity/runs/batch-15.json) 、[M18](parity/runs/batch-16.json) 、[M19](parity/runs/batch-17.json) 、[M20](parity/runs/batch-18.json) 、[M21](parity/runs/batch-19.json) 与 [deposit修正](parity/runs/batch-20.json)。用例发现、移植、执行、通过分别登记，不合并计数。
 
 - 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条专门类型测试、63 个运行时文件内联类型断言、84 条类型错误指令，以及客户端/React/E2E。
 - 已逐例映射 288 条：284 条 Go + 原样保留的 4 条 SDK。Go 映射 284 条均通过，其中 191 条原版 oracle 也通过、93 条 fixture oracle 阻塞（数据库 65、profile 13、runtime 15）；SDK 4 条通过。另有 **617 条未实现**。
-- 全套原生 Go/race 各 1602/1602（含867个filter/fragments及115个events额外向量）；真实 PostgreSQL 181/181、PGlite 178/178。53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。ORM 6 条源类型错误义务及 6 条额外负向控制也分别验证真实编译拒绝。
+- 全套原生 Go/race 各 1606/1606（含867个filter/fragments及119个events额外向量）；真实 PostgreSQL 181/181、PGlite 178/178。53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。ORM 6 条源类型错误义务及 6 条额外负向控制也分别验证真实编译拒绝。
 - 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
-- 2,466 个基础/factory差分向量，另有867个filter/fragments、115个events向量及20个协议编码向量，分别计数。
+- 2,466 个基础/factory差分向量，另有867个filter/fragments、119个events向量及20个协议编码向量，分别计数。
 - 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
 
 静态发现不能证明任意 JavaScript 动态执行的全部实例均已收集。4 个 literal `test.each` 声明已展开；本基线未发现动态测试生成、别名测试遗漏、`describe.each` 或 `only`。Simulation 的 8 个应用和无限 seed 空间单列。详见 [discovery-audit.json](parity/discovery-audit.json)，完整测试源码和 247 个依赖/fixture 模块分别保存在 `parity/source-tests/`、`parity/source-support/`。早期 1,957 个断言表达式计数重复计算了链式 `expect().rejects`，已修正为 1,905；905 条测试记录不变。

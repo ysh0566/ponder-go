@@ -1,5 +1,7 @@
 package events
 
+import "ponder.local/ponder-go/filter"
+
 func SyncBlockToInternal(block Object) (Object, error) {
 	o := copyFields(block, "extraData", "hash", "logsBloom", "mixHash", "nonce", "parentHash", "receiptsRoot", "sha3Uncles", "stateRoot", "transactionsRoot")
 	o["miner"] = lower(get(block, "miner"))
@@ -55,10 +57,7 @@ func SyncTransactionToInternal(tx Object) (Object, error) {
 	case "0x7e":
 		for _, k := range []string{"maxFeePerGas", "maxPriorityFeePerGas"} {
 			if nullish(get(tx, k)) || get(tx, k) == "" {
-				o[k] = get(tx, k)
-				if o[k] == nil {
-					o[k] = nil
-				}
+				o[k] = filter.Undefined
 			} else {
 				o[k], e = integer(get(tx, k))
 				if e != nil {

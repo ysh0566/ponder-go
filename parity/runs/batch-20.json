@@ -1,0 +1,228 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 288,
+    "unimplemented": 617,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 284,
+    "passed_with_required_type_checks": 284,
+    "original_oracle_also_passed": 191,
+    "original_oracle_blocked": 93
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 195,
+    "mapped_blocked": 93,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 1606,
+    "pass": 1606,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 1606,
+    "pass": 1606,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 181,
+        "pass": 181,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 181,
+        "pass": 181,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 178,
+        "pass": 178,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 178,
+        "pass": 178,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 203,
+    "passed": 201,
+    "failed": 0
+  },
+  "selected_source_oracle": {
+    "evidence": "parity/runs/selected-runtime-oracle.json",
+    "mode": "unchanged_selected_declarations_with_actual_source_dependencies",
+    "total": 4,
+    "passed": 4,
+    "success": true
+  },
+  "event_build_differential": {
+    "counting": "Supplemental vectors from actual pinned selected declarations; not original source test credit.",
+    "vectors": 119,
+    "source_expected_errors": 8,
+    "go": {
+      "pass": 119,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 119,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/runtime/event-build-differential.json"
+  },
+  "milestone": "M21-deposit-correction",
+  "status": "verified_subset_project_incomplete",
+  "based_on": "7690565b6dbab47e513bf2fbb023964a2ff1ef1b",
+  "new_original_source_credit": 0,
+  "new_extra_vectors": 4,
+  "red": {
+    "failed_leaf_cases": 2,
+    "cause": "deposit optional maxFee/maxPriority null/empty string must become undefined; original source assertions untouched."
+  },
+  "fix": "normalize source-falsy optional deposit fee inputs to Undefined; preserve0x0 as bigint zero.",
+  "commands": [
+    {
+      "command": "go test -count=1 -race -json ./events -run ^TestEventBuildDifferential$",
+      "exit_code": 1,
+      "evidence": "parity/runs/deposit-red-race.jsonl"
+    },
+    {
+      "command": "go test -count=1 -race -json ./events",
+      "exit_code": 0,
+      "evidence": "parity/runs/deposit-fixed-race.jsonl"
+    },
+    {
+      "command": "PONDER_TEST_POSTGRES=<task-only127.0.0.1:53398> ./tools/verify.sh",
+      "exit_code": 0,
+      "evidence": "parity/runs/batch-20-verify.txt"
+    }
+  ],
+  "blockers": [
+    {
+      "action": "Install project-local official Foundry1.8.5",
+      "status": "pending_approval",
+      "executed": false
+    }
+  ],
+  "remaining": "617 static source records unimplemented; see CONTINUATION and feature ledger. Selective oracles can expand further without ABI generation; do not classify all remaining work as blocked.",
+  "implementation": [
+    {
+      "path": "events/convert.go",
+      "sha256": "5353779f3a59ef394580d399defe5ef335814d2d37c969d42ed7fa69e3710fac"
+    },
+    {
+      "path": "tools/event-build-fixtures.mjs",
+      "sha256": "8b168e819efce6858f14cfa6681eba65f2cd7d843cdfe6c61ae698c5ff8b7eb6"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "parity/runs/batch-20-evidence/go-test.jsonl",
+      "sha256": "db77955b4690f71ac871efd08f855a5e86379b0f7c81b36b8fed0dfb95f19f47"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/go-race.jsonl",
+      "sha256": "5ec0722d804f1cd512f993856e83368134ff792cc810c7c7d25ec45e997f00f5"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/go-vet.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/summary.json",
+      "sha256": "c1933b159248a17eb905bac4acd410064feaff7c87d6d109f31ce7fbfcf8736a"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/tool-versions.txt",
+      "sha256": "4b91ecd59a944510c8acc3e68e9b233347188b51f182bce2d0ee00d88e2524ba"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/batch-20-verify.txt",
+      "sha256": "b10b60ecc61b21b52d476e7377249ab253fd7ad43a2021b6a44171038165b866"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/core-oracle.json",
+      "sha256": "cbc31166e2b2d15db2ef4737f8bfab389188bd91bc95401fbb0b8278cb58ea40"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/foundation-oracle.json",
+      "sha256": "5d43a645e80c114dbd33d5a196f71bd74cd58089816ff555d66bf69a161f677f"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/orm-compile-fixtures.json",
+      "sha256": "406811fc58e8a77c089dc06b8825664dc690be8656315ab4ed12c5f30f06011b"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/compile-fixtures.json",
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/abi-typed-go.jsonl",
+      "sha256": "b681de8602d5ce36b12d362a9322ca255d35feb502286bab2709ce8d8f3b1f17"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/abi-typed-race.jsonl",
+      "sha256": "f5e90127affa10e0b6555d8d4219416858e398f94d80f063582069b7ff897262"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/parameters-typecheck.json",
+      "sha256": "92c5c2a30ff31db3f5dea19de6564d9ca1ea58336682f70137a6be4443157bcb"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/differential.json",
+      "sha256": "88787f0cf3676c14d06ab381bfba412823a6c4815779fc6453ba4cdfd4efacf9"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/selected-runtime-oracle.json",
+      "sha256": "0ea6431654defd7a962930ad374505bbfc546d710d27395a4db5243b364534c8"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/deposit-red-race.jsonl",
+      "sha256": "4da920cffd58980966aac1e6c9f597d78d3d8e7d02a500bb37de3b500f1dcf46"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/deposit-fixed-race.jsonl",
+      "sha256": "50ce16951ed82641c0a8e35eae692602ca20f1a07e81d04e5f8234ef935dc545"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/deposit-fixtures.txt",
+      "sha256": "08cd3d9732a9b27321244a28e304dcc1c81a0288942d823f65d7daba778ab14f"
+    },
+    {
+      "path": "parity/runs/batch-20-evidence/event-build-differential.json",
+      "sha256": "3970fdc2f77fd2e5ea537474ed87ee6c24521b150f8db9a2b72d4f658e5d241a"
+    }
+  ]
+}

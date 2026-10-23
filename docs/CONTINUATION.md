@@ -14,7 +14,7 @@
 
 ## 下一可执行批次
 
-1. 从最新提交和 summary.json 恢复。M21 后累计 288 条映射（284 Go + 4 SDK），Go oracle 191 通过（含4条选择性未改动声明）、93 fixture oracle 阻塞，617 静态记录未实现；精确执行结果看 batch-19.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
+1. 从最新提交和 summary.json 恢复。M21 后累计 288 条映射（284 Go + 4 SDK），Go oracle 191 通过（含4条选择性未改动声明）、93 fixture oracle 阻塞，617 静态记录未实现；最新deposit补充修正及执行结果看 batch-20.json，M21完整冻结结果保留batch-19.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
 2. Database actions.test.ts 的11个源例及 database/index.test.ts 的16个生命周期源例已映射；M17已补齐剩余2个database/index记录（historical-baseline recovery rows和camelCase/views-schema），以及 ORM insert-then/full SQL 原例和 SQL 真编译错误义务。M16 sync迁移完整保留原SQL，但仅接受已拥有shadow，不代表真实旧DB布局接管；M17已将9表协议缓存接入默认单链runtime。M18已验证冷缓存重组，M19已接入自动单链staged runtime，M20已补32条filter/fragments；继续真实deploy/mint/readonly prefetch原例、typed JSON/bytes/array/custom codec/强枚举/Hex、关系DSL和自动profile/指标；随后接自动staged runtime及跨链重组通知调度。
 3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments剩余Foundry源例、events构建/转换、sync-store原事件和factory原E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
 4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。自动单链staged runtime和自动finalize已接入，多链尚未实现；无 journal/无 checkpoint finalize 空操作已对应源 camelCase 验证，不能外推未初始化且有 journal 的情况。
@@ -233,3 +233,10 @@ filter包有ID/adjacency/recovery、地址/topic/factory/区间谓词、80% over
 最终完整verify退出0：Go/race1602/1602，PG181/PGlite178，零skip/fail；vet/build、ABI/ORM既有编译正反例、SDK、core201活动/2源skip、选择性源码4、2466基础/factory+867filter+115events+20协议向量独立通过。batch-19.json冻结证据。执行服务中断曾发生在采集器修正前，恢复后先核实无遗留进程和未落地命令再继续；当前运行结束，不重复旧命令。
 
 下一批：完整contract decodeEvents（source日志与trace失败统计/日志去重、w/o output、native ABI args/result）和contract trace source接入，继续rpc.actions其余14已取得oracle但未移植源例；完整source event转换/筛选原例、factory account/trace、多链与query/CLI。原ETH三条fixture的blockHash方法仍真实阻塞，不把native fallback算一比一通过。原schema/full filtering DSL、完整include/projection/history/planner/profile/metrics、GraphQL/API/SSE/CLI/templates/dev、严格源码兼容和旧DB接管继续在feature ledger内。保留所有作者修复备份，仅正常快进发布经验证阶段。
+
+
+## M21补充：deposit optional fee语义修正
+
+复核发现SyncTransactionToInternal(type0x7e)把maxFee/maxPriority为null或空串时保留输入，而源码返回undefined。先增加4个实际source-generated控制（undefined/null/空串/0x0），真实红灯2leaf，再修正转换为filter.Undefined；0x0仍是*big.Int零。source credit不变，288映射/617未实现，Go284（oracle191含4选择性，93完整suite受限）+SDK4。events差分119（8预期错误）分别全部通过。最后完整verify退出0：Go/race1606/1606、PG181/PGlite178，vet/build/type/core201活动/2skip/选择性4/SDK及各差分都通过；33份M21旧冻结证据未改，补充证据batch-20.json。当前无在途命令。
+
+下一步除前节contract decoder/trace/rpc.actions剩余14源例，还可扩展选择性oracle至已移植的14个filter静态/Genesis例及splitEvents：它们原full suite缺generated.js，但不是都需要生成ABI。明确保留whole-suite收集状态与selective source结果，不能把所有93受限项笼统称不可执行。ETH transferEth三例则已经实际确认旧Anvil缺blockHash trace方法，native每tx回退不加这些source credit。Foundry安装仍pending未执行。
