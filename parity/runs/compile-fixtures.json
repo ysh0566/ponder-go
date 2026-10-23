@@ -1,0 +1,1339 @@
+{
+  "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "tool": "go version go1.27.1 darwin/arm64",
+  "method": "ABI inputs generate decoder signatures; independent source expectTypeOf AST generates positive assignments. Each obligation also has an intentionally incompatible leaf assignment as a negative control. Native fixed arrays/structs replace TS tuples; readonly has no Go equivalent, and template-literal Address/Hex are strings. These adaptations are explicit, not strict TS source compatibility.",
+  "obligations": [
+    {
+      "source_id": "8ad359bee40bcf976fd7",
+      "source_line": 18,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly []",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case8ad359bee40bcf976fd7Type0.go",
+        "sha256": "d262e3684a5e5c1fa5621c14dce42d6d9d53ac1131c877321d958330820112d8",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case8ad359bee40bcf976fd7Type0.go",
+        "sha256": "8e22b17013d97804ac0fb89621b643c3050817aaaebb08efddd6342c59a09a49",
+        "exit_code": 2,
+        "expected_diagnostic": "has no field",
+        "diagnostics": "abi/testdata/compile/fail/Case8ad359bee40bcf976fd7Type0.go:2:113: out.Missing undefined (type Case8ad359bee40bcf976fd7Type0Result has no field or method Missing)\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case8ad359bee40bcf976fd7Type0.go",
+        "sha256": "7e774973441cd97ed5a77ab622500d67fc33bbb22dd5ffe832179416b359c91e"
+      }
+    },
+    {
+      "source_id": "470436eac4c5bbd4f1a8",
+      "source_line": 27,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [bigint]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case470436eac4c5bbd4f1a8Type0.go",
+        "sha256": "2923112e107a49564ca545ba5e6566b54568ba1a52bc10418979fe3d362f18a3",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case470436eac4c5bbd4f1a8Type0.go",
+        "sha256": "df86c338d3f7dde27afca1a6d0b3aefdcdfe303699ab202bae5a43e6887edb61",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case470436eac4c5bbd4f1a8Type0.go:2:111: cannot use out.Value0 (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case470436eac4c5bbd4f1a8Type0.go",
+        "sha256": "921994a42de2b82ceacb1615eeb97d74bf87fef0fc1f7d3c4d962cb59f03e460"
+      }
+    },
+    {
+      "source_id": "3d49c9dc56b20f66117f",
+      "source_line": 36,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [number]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case3d49c9dc56b20f66117fType0.go",
+        "sha256": "38e081f9bb16b7a412d8feb2d4f51cf9b067d5c3866b8f1e4e264548e4637b3d",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case3d49c9dc56b20f66117fType0.go",
+        "sha256": "bc983624fe191507bd0e42c7409194adf03e5280f903d1fa736b79c87e05b826",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case3d49c9dc56b20f66117fType0.go:2:111: cannot use out.Value0 (variable of type int64) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case3d49c9dc56b20f66117fType0.go",
+        "sha256": "77795e0d6c5ae18b8af2582ca490b96d3a1bf243459c1f3cd8304cbcdbe5b2af"
+      }
+    },
+    {
+      "source_id": "de789447ee5e838c4dce",
+      "source_line": 45,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [number]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Casede789447ee5e838c4dceType0.go",
+        "sha256": "8b4a8335d963f85a50784b8cbfe67ef8c137fbdcb15de66edc69816f9aee1c75",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Casede789447ee5e838c4dceType0.go",
+        "sha256": "8c0ad7c5d8b5c8b02431db5ac90084bcce0b868a2bf39bc35b9e6013fac1c276",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Casede789447ee5e838c4dceType0.go:2:111: cannot use out.Value0 (variable of type int64) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Casede789447ee5e838c4dceType0.go",
+        "sha256": "896efabd7b1e38efbaf18fb8526fe1220769bfe4087d36f4bc3e1a53e2bac1e6"
+      }
+    },
+    {
+      "source_id": "95ea385dede724f83db0",
+      "source_line": 55,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [bigint]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case95ea385dede724f83db0Type0.go",
+        "sha256": "0ec3b085e606b8146d42120b906b3f2a5e6b51f91f9389ef44d96421e2780fc6",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case95ea385dede724f83db0Type0.go",
+        "sha256": "37bf2f7162a194b445a005ba66e5559e25518a86e1a8b279c55d6745755fce6f",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case95ea385dede724f83db0Type0.go:2:111: cannot use out.Value0 (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case95ea385dede724f83db0Type0.go",
+        "sha256": "8f1506d22c7f990936c72007c69be3215c21e072311a14a8ae00a15197bcf79b"
+      }
+    },
+    {
+      "source_id": "a0a2618f17195277a919",
+      "source_line": 64,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [bigint]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Casea0a2618f17195277a919Type0.go",
+        "sha256": "6dc29afd040ece984b4f6449969600116fd979140c115b81f9ebf9a2d328811d",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Casea0a2618f17195277a919Type0.go",
+        "sha256": "083904eb22643f58b8c3a69f07c58f2f9ec3aafe43b40b87c11c6fc4a50d9789",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Casea0a2618f17195277a919Type0.go:2:111: cannot use out.Value0 (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Casea0a2618f17195277a919Type0.go",
+        "sha256": "11cca542479d623f1e1701e49218b6d1b7691df1cf558e3b4e945dc3a41b9aad"
+      }
+    },
+    {
+      "source_id": "c7d99984aa5f2449fd96",
+      "source_line": 75,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [number]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Casec7d99984aa5f2449fd96Type0.go",
+        "sha256": "9152c1a72f0c2e266eb85e58d0d8d4a3e2df56988c2886343efece26202db27c",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Casec7d99984aa5f2449fd96Type0.go",
+        "sha256": "0a7d74d00734fec8c08e17f9b713f1df49181f67a0bd33377dfd2b428f886a6c",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Casec7d99984aa5f2449fd96Type0.go:2:111: cannot use out.Value0 (variable of type int64) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Casec7d99984aa5f2449fd96Type0.go",
+        "sha256": "3eaa4dffe0d07a1060aa7b93773990e5af6b3e3e2e913f74f15c6f10eb1c1a8c"
+      }
+    },
+    {
+      "source_id": "db5dee21f0a2d2ffba3f",
+      "source_line": 84,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [number]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Casedb5dee21f0a2d2ffba3fType0.go",
+        "sha256": "4c0f42c7dd30e9a960333f65069e2158b8dea3f5bbbb800520b776617029766e",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Casedb5dee21f0a2d2ffba3fType0.go",
+        "sha256": "050bd09a5f373c1b6cfd86d3a29f91bf640a9b5567c44ff4b4864f27a68fae69",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Casedb5dee21f0a2d2ffba3fType0.go:2:111: cannot use out.Value0 (variable of type int64) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Casedb5dee21f0a2d2ffba3fType0.go",
+        "sha256": "b61a0500695659e0fdf45e7aebcd2715722e8117c77791de771a0080fe704eaf"
+      }
+    },
+    {
+      "source_id": "d0600cf3b14e5672d63c",
+      "source_line": 95,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [number]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Cased0600cf3b14e5672d63cType0.go",
+        "sha256": "4e7a1269aa32ad893bf38ae504f49c775261b636b6a308b3cf34d86bb94cedea",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Cased0600cf3b14e5672d63cType0.go",
+        "sha256": "1df8376d374b04c81efb3b218abdca420525fbe28c550916fa403aa971ebaac5",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Cased0600cf3b14e5672d63cType0.go:2:111: cannot use out.Value0 (variable of type int64) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Cased0600cf3b14e5672d63cType0.go",
+        "sha256": "aa20eccb0ea6f9feec5f54bb0f435a73751954f9f8e64773c64606ced5786bdc"
+      }
+    },
+    {
+      "source_id": "5b9d02575395ceaf3de8",
+      "source_line": 104,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [number]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case5b9d02575395ceaf3de8Type0.go",
+        "sha256": "a18d98e2602168343934b186c9c07ce71d50064d59bf40aedf402ba967e59f07",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case5b9d02575395ceaf3de8Type0.go",
+        "sha256": "d41ac946ccc79bf66f123ab5a598f2b4858aee68568c63565b387d95e0829fcf",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case5b9d02575395ceaf3de8Type0.go:2:111: cannot use out.Value0 (variable of type int64) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case5b9d02575395ceaf3de8Type0.go",
+        "sha256": "3ed79eaeaca7e111554b4b18d942a8c4655837349d39c48762ac21ddec165812"
+      }
+    },
+    {
+      "source_id": "512cde5bd6d7fa68b44e",
+      "source_line": 116,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [Address]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case512cde5bd6d7fa68b44eType0.go",
+        "sha256": "833cf4794e9f4bfa9ad200837f216231b88210929809f58c0f1508711ad78f3f",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case512cde5bd6d7fa68b44eType0.go",
+        "sha256": "8875673018549104594bb84c77a5c658c93d94fcdb0b164b07beaa20648354cb",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case512cde5bd6d7fa68b44eType0.go:2:109: cannot use out.Value0 (variable of type string) as bool value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case512cde5bd6d7fa68b44eType0.go",
+        "sha256": "0340b5a43afd22bcad750ec90876dfd9e3d96f09e4a08d1ef68aed7888cd404b"
+      }
+    },
+    {
+      "source_id": "3deab8c852703d5268cd",
+      "source_line": 137,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [Hex]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case3deab8c852703d5268cdType0.go",
+        "sha256": "bccf6a54960030b31a8f552861c1c251d13cb5c2a6eff2dc1918fad9fe1114cd",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case3deab8c852703d5268cdType0.go",
+        "sha256": "1b350b9742e44a0799251bf3d61c9d90bc23ad3376dca8ef5a08128e7b689d4d",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case3deab8c852703d5268cdType0.go:2:109: cannot use out.Value0 (variable of type string) as bool value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case3deab8c852703d5268cdType0.go",
+        "sha256": "a05fd4fcd2a01e106e4f4a5bf5065eac36936d433f503ba50da21253ffa1c338"
+      }
+    },
+    {
+      "source_id": "6520fa0520dbfec2d915",
+      "source_line": 148,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [Hex]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case6520fa0520dbfec2d915Type0.go",
+        "sha256": "791ced5109b0bdc39b54c442ec5968525256bc9c680c346635fe797f02e51b48",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case6520fa0520dbfec2d915Type0.go",
+        "sha256": "65b49aca39f68ab103789ad2958e8c1591327f6a3982fcad172744f1dd05ce23",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case6520fa0520dbfec2d915Type0.go:2:109: cannot use out.Value0 (variable of type string) as bool value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case6520fa0520dbfec2d915Type0.go",
+        "sha256": "b3ced79a61b8e9e689b9398cca69b39e194155b7b1a5215063130113087ad7b2"
+      }
+    },
+    {
+      "source_id": "935e7e9609005b9a0d60",
+      "source_line": 159,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly [bigint, bigint, bigint]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case935e7e9609005b9a0d60Type0.go",
+        "sha256": "a15235630c08ea4809a2c9835041cd22a85810d72a338ee680db1f4093eab70f",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case935e7e9609005b9a0d60Type0.go",
+        "sha256": "1bd13c4eb21de6e5d152b3e9f3eb86171ff9b32bff92324859066d5dcd3d95c6",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case935e7e9609005b9a0d60Type0.go:2:111: cannot use out.Value0[0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case935e7e9609005b9a0d60Type0.go",
+        "sha256": "9a87f5a1cf7847cef6fe1a25f92170a3372e68f4a5038605c9265bc24de82dcb"
+      }
+    },
+    {
+      "source_id": "f5ce34fe16051ba13702",
+      "source_line": 170,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly [bigint, bigint, bigint]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Casef5ce34fe16051ba13702Type0.go",
+        "sha256": "8f358ef3d82c0c51185afb5f752ac8027cee0cf5f41b356e523818e81d9e73ae",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Casef5ce34fe16051ba13702Type0.go",
+        "sha256": "3920958d554a913bb2c3f990e17763126e1962a7c98e1582c4d398561b37ffb9",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Casef5ce34fe16051ba13702Type0.go:2:111: cannot use out.Value0[0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Casef5ce34fe16051ba13702Type0.go",
+        "sha256": "509553d82d900c6aa6fa842ea1a99195e5870bc027741e0583ffdf0f110976b1"
+      }
+    },
+    {
+      "source_id": "881168a14feab2948f6f",
+      "source_line": 182,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly [Address, Address]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case881168a14feab2948f6fType0.go",
+        "sha256": "33927529b34f887c983274a5f5acceb468b33f7329ea080190da813240b037db",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case881168a14feab2948f6fType0.go",
+        "sha256": "20b1539c19764f7b4b8daade4530fc642d27fae2eb9c0df903d6d2d2eea94e7a",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case881168a14feab2948f6fType0.go:2:109: cannot use out.Value0[0] (variable of type string) as bool value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case881168a14feab2948f6fType0.go",
+        "sha256": "fa2c5c1821efb2d80a079a312ad64bd7af65dcce91921d63754462ab62c726c9"
+      }
+    },
+    {
+      "source_id": "d55b107cdcc41e8bb926",
+      "source_line": 200,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly [boolean, boolean]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Cased55b107cdcc41e8bb926Type0.go",
+        "sha256": "6686472fa0184de8d54bfa3b16770f7face3e7c20f17c3ab89651d1fcd813ef1",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Cased55b107cdcc41e8bb926Type0.go",
+        "sha256": "6e03a314e4332cf0de5695011da44b1d4c5e1f150a82c8fbf2ec56d82049df2d",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Cased55b107cdcc41e8bb926Type0.go:2:111: cannot use out.Value0[0] (variable of type bool) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Cased55b107cdcc41e8bb926Type0.go",
+        "sha256": "617b8ab9c55d02a62a481275eb6079c291158feb06fb7a820d942ce4557db1c9"
+      }
+    },
+    {
+      "source_id": "ef726d156d37a69ddb31",
+      "source_line": 211,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          readonly [\n            readonly [bigint, bigint, bigint],\n            readonly [bigint, bigint, bigint],\n          ],\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Caseef726d156d37a69ddb31Type0.go",
+        "sha256": "07c7b22e54bbf59e0231915032ab4c92b0739813954f2ed165aad16ad0668018",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Caseef726d156d37a69ddb31Type0.go",
+        "sha256": "8e8c3e24d7930af0b53f061a436705277aaff26b5c6b2fe7d12bd5c9057a53de",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Caseef726d156d37a69ddb31Type0.go:2:111: cannot use out.Value0[0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Caseef726d156d37a69ddb31Type0.go",
+        "sha256": "c6656dc3b02bfa7d042527c361b618b5d50732221ba82662637d95f6c7932950"
+      }
+    },
+    {
+      "source_id": "39dc506677e67091b07e",
+      "source_line": 234,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          readonly [\n            readonly [\n              readonly [bigint, bigint, bigint],\n              readonly [bigint, bigint, bigint],\n            ],\n            readonly [\n              readonly [bigint, bigint, bigint],\n              readonly [bigint, bigint, bigint],\n            ],\n            readonly [\n              readonly [bigint, bigint, bigint],\n              readonly [bigint, bigint, bigint],\n            ],\n            readonly [\n              readonly [bigint, bigint, bigint],\n              readonly [bigint, bigint, bigint],\n            ],\n          ],\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case39dc506677e67091b07eType0.go",
+        "sha256": "fd7c3ce664f52abea9bd8276ed82c16304d9ddd4798c07bc0d2e1842006ae2f4",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case39dc506677e67091b07eType0.go",
+        "sha256": "08f2c33dfe68e82b6e181e86583fd0537793ec602b1ddc293e19cc538562dda4",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case39dc506677e67091b07eType0.go:2:111: cannot use out.Value0[0][0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case39dc506677e67091b07eType0.go",
+        "sha256": "2659085a6046bbfe5574267759ba5ae02571ca38d8081a89271ef16f51742652"
+      }
+    },
+    {
+      "source_id": "ac479b4cee02ae72be35",
+      "source_line": 286,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          {\n            x: bigint;\n            y: boolean;\n            z: Hex;\n          },\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Caseac479b4cee02ae72be35Type0.go",
+        "sha256": "f7e69d186afb37b4a43da7bfe9c17abcdbe14e6d675af5401ee9a1cc917adbda",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Caseac479b4cee02ae72be35Type0.go",
+        "sha256": "a2fbf76c4c3cc4b9615b53365824335ecb7cdbb0524bf319dd9fd49b7da0104b",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Caseac479b4cee02ae72be35Type0.go:2:111: cannot use out.Value0.X (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Caseac479b4cee02ae72be35Type0.go",
+        "sha256": "8313ac7435168c0eb85ac3e988ca0fde1882a820c88fd03b57483d0454573e3b"
+      }
+    },
+    {
+      "source_id": "9579b3e230a0cdf585ab",
+      "source_line": 314,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly [bigint, boolean, Hex]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case9579b3e230a0cdf585abType0.go",
+        "sha256": "e02675cf730c09f7a95a6d3485a79bc9a8ce431f49b49f91f2143006b184d291",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case9579b3e230a0cdf585abType0.go",
+        "sha256": "fbd5bbbb13c295729cacfc86ec154227e69951b55a6474dd9c41a95a175a28bf",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case9579b3e230a0cdf585abType0.go:2:111: cannot use out.Value0.Value0 (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case9579b3e230a0cdf585abType0.go",
+        "sha256": "2c396a00464af5d8fd54cf5a7ba0ab9a8b832339c336f3b50fd73835ff3fb4b3"
+      }
+    },
+    {
+      "source_id": "755c1148990d79e5b9ef",
+      "source_line": 334,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly [bigint, boolean, Hex]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case755c1148990d79e5b9efType0.go",
+        "sha256": "d9c1aa38daa88939588128fd4df051bfa16b4bd7eba964c864dc8ed322bdc06e",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case755c1148990d79e5b9efType0.go",
+        "sha256": "e3e2c7d90979d40f7b4b4bf1f05b7ddfc875fbb2c0196f8820e2119e793d9dff",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case755c1148990d79e5b9efType0.go:2:111: cannot use out.Value0.Value0 (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case755c1148990d79e5b9efType0.go",
+        "sha256": "da5bd6ebb73f4679ef5ee63debf2840499a9ed656c6fed6815172c25d221051d"
+      }
+    },
+    {
+      "source_id": "83bf31f48fd187979db0",
+      "source_line": 353,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly []]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case83bf31f48fd187979db0Type0.go",
+        "sha256": "684c62b339e61f0b3d34fb9f92c6671953f330925cfb45e869fb003e67e84b87",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case83bf31f48fd187979db0Type0.go",
+        "sha256": "f6cdebedcf3339fc891ed5cc0d59c86cf9b16e40a5e8fd061ec287e3d65c88dd",
+        "exit_code": 2,
+        "expected_diagnostic": "has no field",
+        "diagnostics": "abi/testdata/compile/fail/Case83bf31f48fd187979db0Type0.go:2:120: out.Value0.Missing undefined (type struct{} has no field or method Missing)\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case83bf31f48fd187979db0Type0.go",
+        "sha256": "a56212ea60c932ce52c72b30ee5ff86900051c308a83b4c24e7c87a369f867cc"
+      }
+    },
+    {
+      "source_id": "88595b4ac49168378d69",
+      "source_line": 367,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          {\n            foo: {\n              x: bigint;\n              y: boolean;\n              z: Hex;\n            };\n            baz: {\n              x: bigint;\n              y: boolean;\n              z: Hex;\n            };\n            x: readonly [number, number];\n          },\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case88595b4ac49168378d69Type0.go",
+        "sha256": "73cde77bfb5e6a9531a5e741954532e676a749e2650a9a6b18fb8ad131cafcf9",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case88595b4ac49168378d69Type0.go",
+        "sha256": "830baf7ab98c4e242259c97290a1188c76261a4c9a5b8db852912d8863ec552e",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case88595b4ac49168378d69Type0.go:2:111: cannot use out.Value0.Foo.X (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case88595b4ac49168378d69Type0.go",
+        "sha256": "35027dbe768f52f69110c71d2c6c6793ab5406bda3d154f70b70f883f973cc73"
+      }
+    },
+    {
+      "source_id": "976e89684bc6313d1977",
+      "source_line": 413,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          readonly [bigint, bigint],\n          boolean,\n          readonly [string, string, string],\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case976e89684bc6313d1977Type0.go",
+        "sha256": "bd473ce1b9bcf19438aaf205f3b21f225382814c3be52dfaf7ce81dc1b34b98c",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case976e89684bc6313d1977Type0.go",
+        "sha256": "e715b8ba74a074d41f78bbef7a1d86c0e1283af948d61180b0f5501261d84423",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case976e89684bc6313d1977Type0.go:2:111: cannot use out.Value0[0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case976e89684bc6313d1977Type0.go",
+        "sha256": "58bc1fda5a3d7bbe3f51c30fcbc9935f738cf7ee5f01218b145b457533feff71"
+      }
+    },
+    {
+      "source_id": "2fdcc340dd5255e87b54",
+      "source_line": 430,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          readonly [bigint, bigint],\n          boolean,\n          readonly [string, string, string],\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case2fdcc340dd5255e87b54Type0.go",
+        "sha256": "333f253311317f599208ea07e468e59ab814c831e87fe31b1987e6048aca9b95",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case2fdcc340dd5255e87b54Type0.go",
+        "sha256": "aadd3aeea5a81a9cf95f789f78a7d62e6a0c600c12787765791452e98b47d06a",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case2fdcc340dd5255e87b54Type0.go:2:111: cannot use out.Value0[0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case2fdcc340dd5255e87b54Type0.go",
+        "sha256": "2a2c8170eac20a719a54a2860290b76444ba93a257ba1d3fd37a90e17c96f3b0"
+      }
+    },
+    {
+      "source_id": "41683a102607face766c",
+      "source_line": 448,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [bigint, boolean, string]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case41683a102607face766cType0.go",
+        "sha256": "f353b270ced2fbab00a5c9b606cf5a813046512cb01efab1948b99d87da42956",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case41683a102607face766cType0.go",
+        "sha256": "51083df9990bd0f880c96e6922dde73cc3c755857a01200a2cae454aacb31ee7",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case41683a102607face766cType0.go:2:111: cannot use out.Value0 (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case41683a102607face766cType0.go",
+        "sha256": "12ce86d97dd743dcd919e765e094208b5fc31cceea9d58214c2ed9205256d0bd"
+      }
+    },
+    {
+      "source_id": "4ff9338c33eaad7b6014",
+      "source_line": 467,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [string]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case4ff9338c33eaad7b6014Type0.go",
+        "sha256": "bbd3a34326ba2c2b021f72918bef0232d0f9980d0e9719a3bd8ca10cd0350804",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case4ff9338c33eaad7b6014Type0.go",
+        "sha256": "4be2f3107747e892db90eb332f96afd20b13877468347c0b01a03c596a6d2a41",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case4ff9338c33eaad7b6014Type0.go:2:109: cannot use out.Value0 (variable of type string) as bool value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case4ff9338c33eaad7b6014Type0.go",
+        "sha256": "5b4ed0ddd7b2f36b5938922b6a6e262f9cf8683c6cb93aecee7feb08dc3e35ab"
+      }
+    },
+    {
+      "source_id": "d0c462057a7a71b88704",
+      "source_line": 476,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [string]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Cased0c462057a7a71b88704Type0.go",
+        "sha256": "9c55702b9aa35d9f3696a3d514c539915cce98956009fa5cf23671be6b371312",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Cased0c462057a7a71b88704Type0.go",
+        "sha256": "7c72c3c5c9d89f133a4004dbbf383f90ffb69bbb0eca9fe4963fa1305ea89ff6",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Cased0c462057a7a71b88704Type0.go:2:109: cannot use out.Value0 (variable of type string) as bool value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Cased0c462057a7a71b88704Type0.go",
+        "sha256": "5b3681be47fbfa65e4f0090ed7ab0be600cf2906ac82c04c44fc7af4b3f70690"
+      }
+    },
+    {
+      "source_id": "182c3c9da545d525c3fc",
+      "source_line": 517,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [string, bigint, boolean]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case182c3c9da545d525c3fcType0.go",
+        "sha256": "07286ec773bac121273b6fab09822f98abd73934b01e6f5f768e099a47a55f00",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case182c3c9da545d525c3fcType0.go",
+        "sha256": "f25fb6a25e32df023067ba2dd41b49e0df1488bb2b8d63f9fefd64f77cc451ea",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case182c3c9da545d525c3fcType0.go:2:109: cannot use out.Value0 (variable of type string) as bool value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case182c3c9da545d525c3fcType0.go",
+        "sha256": "06da6200a6c0505bc0b0464040b3c4408604ce5d454ef3344e94822e1e172709"
+      }
+    },
+    {
+      "source_id": "a929381399b9e678c013",
+      "source_line": 528,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly [bigint, bigint], boolean, string]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Casea929381399b9e678c013Type0.go",
+        "sha256": "8c9834f8b454689c4b73e9097cc790f83de10f2c38a06ad896c2294df3bc3a1e",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Casea929381399b9e678c013Type0.go",
+        "sha256": "b8e783e834110c2ada644214387d27603afe7e01f351d3c36ba60ddb8b410449",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Casea929381399b9e678c013Type0.go:2:111: cannot use out.Value0[0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Casea929381399b9e678c013Type0.go",
+        "sha256": "9e8bc1c0b042f69ca86c86d875b4bc3e072fbb6817b33ae763d158b667680da4"
+      }
+    },
+    {
+      "source_id": "3083ffb42fe65d997132",
+      "source_line": 541,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [Hex]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case3083ffb42fe65d997132Type0.go",
+        "sha256": "97fb47812ddd16d96a2e90050ddc6af0707642c10768c3fa76829d842fb7041b",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case3083ffb42fe65d997132Type0.go",
+        "sha256": "34334086ad115383aee5bf829bb3e05deca334806d91d48e69cdd953c2a0c3a7",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case3083ffb42fe65d997132Type0.go:2:109: cannot use out.Value0 (variable of type string) as bool value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case3083ffb42fe65d997132Type0.go",
+        "sha256": "a989af7223d44551ea6c7f7d32e6ae846c919c432d67c26348a9b3a8bf4ff891"
+      }
+    },
+    {
+      "source_id": "60a1a28ba3db233f1f98",
+      "source_line": 552,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly [readonly bigint[], readonly bigint[]]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case60a1a28ba3db233f1f98Type0.go",
+        "sha256": "3c01471221ec14e460172e1c766a2909dc7354dde3f3d418a4b7e8ee92abfbb5",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case60a1a28ba3db233f1f98Type0.go",
+        "sha256": "e4826083d4958c2cf6f9d285a7507777f1d72cd40129283665fac3da739d0630",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case60a1a28ba3db233f1f98Type0.go:2:111: cannot use out.Value0[0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case60a1a28ba3db233f1f98Type0.go",
+        "sha256": "fd8235f32a90edcd06b85fc9181c5f4f616220ee3f4ef1aecddbb13eeca95c38"
+      }
+    },
+    {
+      "source_id": "6ba7a52afe86a3f60e23",
+      "source_line": 570,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          readonly [\n            readonly (readonly [bigint, bigint])[],\n            readonly (readonly [bigint, bigint])[],\n          ],\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case6ba7a52afe86a3f60e23Type0.go",
+        "sha256": "97530a05a040b1dd1f9c156cde3bb4de97da6d8cc297e65412669c5a28aaad0e",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case6ba7a52afe86a3f60e23Type0.go",
+        "sha256": "edb19e7be4bbb719821eb2ec4997a7042d7a764a72a9543f5e6e626671b664c1",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case6ba7a52afe86a3f60e23Type0.go:2:111: cannot use out.Value0[0][0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case6ba7a52afe86a3f60e23Type0.go",
+        "sha256": "0543809d4dbd2d12fd3891de2a8ed15387b1511eab8cc6fbf18f6fe1404d6f1f"
+      }
+    },
+    {
+      "source_id": "29bcdf0a32dcb053e74a",
+      "source_line": 599,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          readonly [\n            readonly (readonly bigint[])[],\n            readonly (readonly bigint[])[],\n          ],\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case29bcdf0a32dcb053e74aType0.go",
+        "sha256": "5cc94dd6a9ca0e66060dc8ac24ae643ed3846f4dc22ea864b904b9e344ba7e16",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case29bcdf0a32dcb053e74aType0.go",
+        "sha256": "893a46c8aa4541ec1054414b15e15d7ae6a702eff475a66c0cce9ea9822ea71b",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case29bcdf0a32dcb053e74aType0.go:2:111: cannot use out.Value0[0][0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case29bcdf0a32dcb053e74aType0.go",
+        "sha256": "352dc35ba91d5514879e532817aef60531765fd3914693e08a0343f551dfe008"
+      }
+    },
+    {
+      "source_id": "7df0fe8b30f94f76d07e",
+      "source_line": 625,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly [readonly [readonly bigint[]]]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case7df0fe8b30f94f76d07eType0.go",
+        "sha256": "838c191086e3f4c6492d4f7a2936a2d80b77f570cd2dad1d5d81e441d03682ff",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case7df0fe8b30f94f76d07eType0.go",
+        "sha256": "d256f8399e0e3c0824501987e5a830e567391c6bc36792a566cb48136773427d",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case7df0fe8b30f94f76d07eType0.go:2:111: cannot use out.Value0[0][0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case7df0fe8b30f94f76d07eType0.go",
+        "sha256": "cb0b30b4ebf517beb9faabc36a1e9ad25fb17b789ed7e447e5a58a931cc39c1a"
+      }
+    },
+    {
+      "source_id": "3ca5d0c4118f62848110",
+      "source_line": 636,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          readonly [\n            readonly [readonly bigint[], readonly bigint[]],\n            readonly [readonly bigint[], readonly bigint[]],\n          ],\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case3ca5d0c4118f62848110Type0.go",
+        "sha256": "f50af6bcd46880bf2d5514aa40f5e646abfad956eec6034a151746e393ca00b3",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case3ca5d0c4118f62848110Type0.go",
+        "sha256": "7bccb6d491852d176219d84843e06e47259106c0babd21ff2ee96b5240c98996",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case3ca5d0c4118f62848110Type0.go:2:111: cannot use out.Value0[0][0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case3ca5d0c4118f62848110Type0.go",
+        "sha256": "8bc7053d25fc2037e6b494c6df4a33bb39ca5a8110c6266f563199391d145c36"
+      }
+    },
+    {
+      "source_id": "b6d33616c8823618ed0a",
+      "source_line": 662,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          readonly [\n            readonly [readonly bigint[], readonly bigint[], readonly bigint[]],\n            readonly [readonly bigint[], readonly bigint[], readonly bigint[]],\n          ],\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Caseb6d33616c8823618ed0aType0.go",
+        "sha256": "f5194778c9da8d09ae8d9e86a3fcab432397f92c708dab7baba991ed5b38fdfb",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Caseb6d33616c8823618ed0aType0.go",
+        "sha256": "ccf29feb272b6061bc18a94cea44e3f1482a25f4adaf94e3197f6b7e3e8343cf",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Caseb6d33616c8823618ed0aType0.go:2:111: cannot use out.Value0[0][0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Caseb6d33616c8823618ed0aType0.go",
+        "sha256": "662a5fd5979aea5f76a399dd8c66fc5c2d323577b9f12a3717d7335bb891eb40"
+      }
+    },
+    {
+      "source_id": "d53f80c25b38e2fcd79d",
+      "source_line": 689,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          readonly [\n            readonly [readonly bigint[], readonly bigint[]],\n            readonly [readonly bigint[], readonly bigint[]],\n            readonly [readonly bigint[], readonly bigint[]],\n          ],\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Cased53f80c25b38e2fcd79dType0.go",
+        "sha256": "a19c0b1165cc391121cde806ff4e587567e92b9bf2222c73b823bbe8960a4c9b",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Cased53f80c25b38e2fcd79dType0.go",
+        "sha256": "a9bb84d2dd9c7abf594c055f72e42c8c917a69ff662ff94df195542355700b23",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Cased53f80c25b38e2fcd79dType0.go:2:111: cannot use out.Value0[0][0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Cased53f80c25b38e2fcd79dType0.go",
+        "sha256": "91275dc0afe25527fefa6530d09405016d92961fb90f4569a35bce3e03f0741b"
+      }
+    },
+    {
+      "source_id": "5364e9de4c98cd8b41ed",
+      "source_line": 723,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          readonly [\n            readonly [\n              readonly [readonly bigint[], readonly bigint[]],\n              readonly [readonly bigint[], readonly bigint[]],\n              readonly [readonly bigint[], readonly bigint[]],\n            ],\n            readonly [\n              readonly [readonly bigint[], readonly bigint[]],\n              readonly [readonly bigint[], readonly bigint[]],\n              readonly [readonly bigint[], readonly bigint[]],\n            ],\n            readonly [\n              readonly [readonly bigint[], readonly bigint[]],\n              readonly [readonly bigint[], readonly bigint[]],\n              readonly [readonly bigint[], readonly bigint[]],\n            ],\n            readonly [\n              readonly [readonly bigint[], readonly bigint[]],\n              readonly [readonly bigint[], readonly bigint[]],\n              readonly [readonly bigint[], readonly bigint[]],\n            ],\n          ],\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case5364e9de4c98cd8b41edType0.go",
+        "sha256": "4eaa3d269982fbfdf0412781298251d32d1e50ce465717a3b7364fdd790b7a17",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case5364e9de4c98cd8b41edType0.go",
+        "sha256": "0bcb3a9dd298aba66e111d08dbd48797ecf8e377aba77aec294448868899d4c9",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case5364e9de4c98cd8b41edType0.go:2:111: cannot use out.Value0[0][0][0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case5364e9de4c98cd8b41edType0.go",
+        "sha256": "60158326a8d70f6202a02d1c19c2a5419c7cf85b8201fa077f7ffe626c63ce28"
+      }
+    },
+    {
+      "source_id": "24d46f1e8871b629d5f1",
+      "source_line": 905,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          readonly [\n            readonly (readonly [bigint, bigint])[],\n            readonly (readonly [bigint, bigint])[],\n          ],\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case24d46f1e8871b629d5f1Type0.go",
+        "sha256": "ba3c9d26a0358034551ad4282fd062501f346ec9d99e9ac5dad3a9f596a84b9f",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case24d46f1e8871b629d5f1Type0.go",
+        "sha256": "7d58a80c1e772120e6609d2ac85c4526f86d9c2dfd1ca8386c5296ae1c963e06",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case24d46f1e8871b629d5f1Type0.go:2:111: cannot use out.Value0[0][0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case24d46f1e8871b629d5f1Type0.go",
+        "sha256": "8c57f68c7416652ed2f4d88047aa2425aed2fc5dfc21007ece3111a651ba7949"
+      }
+    },
+    {
+      "source_id": "f11414f5251a991ade51",
+      "source_line": 935,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly bigint[]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Casef11414f5251a991ade51Type0.go",
+        "sha256": "30dd6ee90d8de5daa0f237a03798f6bbb16a00b32e69d600a2704b3264d9f972",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Casef11414f5251a991ade51Type0.go",
+        "sha256": "db66a64c072f2d7c644008821054d71140b82c9202be6abc9ca288d7525e8ce4",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Casef11414f5251a991ade51Type0.go:2:111: cannot use out.Value0[0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Casef11414f5251a991ade51Type0.go",
+        "sha256": "b0f883308abda5bd412ca169fb329b9297d5fa8da5d6b4d44b3f71117f817b89"
+      }
+    },
+    {
+      "source_id": "9811efe4eeffc350bf56",
+      "source_line": 944,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly bigint[]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case9811efe4eeffc350bf56Type0.go",
+        "sha256": "de59bdb49426d4990841435bce41c7a2b33f33b711c5411194e30cdd49a8c9d0",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case9811efe4eeffc350bf56Type0.go",
+        "sha256": "bc8b3492b40990451db60e2bfcdd533d234a688ab5730f697989ef114a79394e",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case9811efe4eeffc350bf56Type0.go:2:111: cannot use out.Value0[0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case9811efe4eeffc350bf56Type0.go",
+        "sha256": "bab17e9b21289c0608896db805a07473b3fda9cd91a7025a091d70136d42147a"
+      }
+    },
+    {
+      "source_id": "f0ff56ecdda9a42c9e5f",
+      "source_line": 955,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly (readonly bigint[])[]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Casef0ff56ecdda9a42c9e5fType0.go",
+        "sha256": "d343c37e235fe8ec9a6f1a3312c5c01d835c7ff3bfa1767a5e2728678df7097d",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Casef0ff56ecdda9a42c9e5fType0.go",
+        "sha256": "721218906722a932fadf0d81d90f00c51c05cdb01b6ee5279b3f0846823c2360",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Casef0ff56ecdda9a42c9e5fType0.go:2:111: cannot use out.Value0[0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Casef0ff56ecdda9a42c9e5fType0.go",
+        "sha256": "847a90b0ec17ddb652500c61d9b48de5a70c3f34f607a82e78a3fe33363b60ec"
+      }
+    },
+    {
+      "source_id": "28071f179558edb88a95",
+      "source_line": 964,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly (readonly bigint[])[]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case28071f179558edb88a95Type0.go",
+        "sha256": "a066cf31762d8c3c88defe9db71e529ea3e264137742e1e26376aed5ebddc32f",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case28071f179558edb88a95Type0.go",
+        "sha256": "eca3ef098701fb043b3652c713868497d664507d99227e51ff69ae0aa6af4231",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case28071f179558edb88a95Type0.go:2:111: cannot use out.Value0[0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case28071f179558edb88a95Type0.go",
+        "sha256": "35b4a06ffdfac480673b620d0463bc33b31244d85cda16d3fc3b2880dbe9a818"
+      }
+    },
+    {
+      "source_id": "eb2fd1d24782c565e24e",
+      "source_line": 974,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly (readonly bigint[])[]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Caseeb2fd1d24782c565e24eType0.go",
+        "sha256": "c689fe3d17cbad95dedc11789cdd0ff48459013e3452b19ffd1812646461b71d",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Caseeb2fd1d24782c565e24eType0.go",
+        "sha256": "f7cc2014b9d344ef88748ecd25702040940b97f8b5c443e39891d87cba026d2c",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Caseeb2fd1d24782c565e24eType0.go:2:111: cannot use out.Value0[0][0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Caseeb2fd1d24782c565e24eType0.go",
+        "sha256": "8dfcebbf58893e3772afcd4bb3f7720ee8bd05c0a911290a52d82eb8e64ee2d2"
+      }
+    },
+    {
+      "source_id": "c7be673b2727ad9cb3e5",
+      "source_line": 991,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly [string, string]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Casec7be673b2727ad9cb3e5Type0.go",
+        "sha256": "982b6987f48003e84b348f39993f2bb2258872a2e5df080d1dbbd66d667640e9",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Casec7be673b2727ad9cb3e5Type0.go",
+        "sha256": "7f37eaf59de5a753fa39700f13d1316290532c8af4d36ddcb36e0fb643381657",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Casec7be673b2727ad9cb3e5Type0.go:2:109: cannot use out.Value0[0] (variable of type string) as bool value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Casec7be673b2727ad9cb3e5Type0.go",
+        "sha256": "2be0598b28ac81882ece1de8d8dc8cef98ee39a73f04e95bac7ba1056bf5aa84"
+      }
+    },
+    {
+      "source_id": "e17c4ad2407a05c65347",
+      "source_line": 1002,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly (readonly [string, string])[]]",
+      "adaptation": "Explicit fixed-array to slice widening matching TypeScript readonly tuple assignability",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Casee17c4ad2407a05c65347Type0.go",
+        "sha256": "86a6aaa75371c10193f16c0b87c9aebe99ddf84c235d29bd900048018ff70b42",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Casee17c4ad2407a05c65347Type0.go",
+        "sha256": "8a33c37d28c26a626d3f1785ab3803b1d3a547457ddc316083612cc194e2039c",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Casee17c4ad2407a05c65347Type0.go:2:109: cannot use out.Value0[0][0] (variable of type string) as bool value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Casee17c4ad2407a05c65347Type0.go",
+        "sha256": "432d2243ba7f8f522cbe94709fe8b15ec8bcf027843da9a54c9c4af65d889308"
+      }
+    },
+    {
+      "source_id": "83a56e02f48879eaa4a3",
+      "source_line": 1019,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [readonly [Hex, Hex]]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case83a56e02f48879eaa4a3Type0.go",
+        "sha256": "5f59d21962c88ed9e4a99b88b43d1a4e2a3b59c022725e58e3a82e9a9b8e76a9",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case83a56e02f48879eaa4a3Type0.go",
+        "sha256": "d4717c6fa1aee1319e4e5ffc306020d95f12cf7986494f8cb8148a800e4f7f3d",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case83a56e02f48879eaa4a3Type0.go:2:109: cannot use out.Value0[0] (variable of type string) as bool value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case83a56e02f48879eaa4a3Type0.go",
+        "sha256": "3ff6f2175c86f53ce68baf2d49fb97a0aa366f72ece59bc9bb3bcd48ad9bec4f"
+      }
+    },
+    {
+      "source_id": "d5f64bd1f57a851d8b7f",
+      "source_line": 1061,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          {\n            x: readonly bigint[];\n            y: boolean;\n            z: readonly string[];\n          },\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Cased5f64bd1f57a851d8b7fType0.go",
+        "sha256": "6a14f420ad3e2bb86ca677bbfcb974ef2873aa3e8dbcbd6e0d58004a9c180cdd",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Cased5f64bd1f57a851d8b7fType0.go",
+        "sha256": "9bb256434ae134d47d2e489cb2599785ac827544f9421f13d315e5e4728b73dc",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Cased5f64bd1f57a851d8b7fType0.go:2:111: cannot use out.Value0.X[0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Cased5f64bd1f57a851d8b7fType0.go",
+        "sha256": "ad829447183deaa84a3c0c89b6464410bd493b09227c35b21a68b8e9210d7213"
+      }
+    },
+    {
+      "source_id": "b62e36148a9d0a274652",
+      "source_line": 1088,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          {\n            foo: {\n              x: readonly bigint[];\n              y: boolean;\n              z: readonly string[];\n            };\n            a: bigint;\n            b: readonly string[];\n          },\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Caseb62e36148a9d0a274652Type0.go",
+        "sha256": "b824b7087a95051ee301ab678db658d8f79759ae067818e08ee41fc7ed5a5235",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Caseb62e36148a9d0a274652Type0.go",
+        "sha256": "c2b46e1a30be8a0a3d6e8a98131f8be0efe6a37041e2dcb4ad33e00bbd5baf01",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Caseb62e36148a9d0a274652Type0.go:2:111: cannot use out.Value0.Foo.X[0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Caseb62e36148a9d0a274652Type0.go",
+        "sha256": "e1147baf56aef7a9a00b779ba2f126c38ec381c3f24fa81ceb991743bbfa082a"
+      }
+    },
+    {
+      "source_id": "25c0abf0b6ab3b18ddec",
+      "source_line": 1121,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          readonly [\n            readonly [readonly bigint[], boolean, readonly string[]],\n            bigint,\n            readonly string[],\n          ],\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Case25c0abf0b6ab3b18ddecType0.go",
+        "sha256": "c981f08447be82975946f4aceef9e455bc61861b7119caeb3be9d17d50c14891",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Case25c0abf0b6ab3b18ddecType0.go",
+        "sha256": "f687cc90c2169e888af7a9165710e9f326a0a4ca0070730c43d27009d3928106",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Case25c0abf0b6ab3b18ddecType0.go:2:111: cannot use out.Value0.Value0.Value0[0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Case25c0abf0b6ab3b18ddecType0.go",
+        "sha256": "55a38a931c53ebca840f27e852ff3f70c91936e67e324b1d3ae73a88bb3bf3cf"
+      }
+    },
+    {
+      "source_id": "f5a1b4bba32267f23015",
+      "source_line": 1144,
+      "source_sha256": "9ae4af1bd05c7badc64844acf0163a0e4f0456f43aa6b197db149b4f1da57635",
+      "original_type": "readonly [\n          {\n            x: readonly bigint[];\n            y: boolean;\n            z: readonly string[];\n          },\n          {\n            foo: {\n              foo: {\n                x: readonly bigint[];\n                y: boolean;\n                z: readonly string[];\n              };\n              a: bigint;\n              b: readonly string[];\n            };\n            bar: {\n              foo: {\n                x: readonly bigint[];\n                y: boolean;\n                z: readonly string[];\n              };\n              a: bigint;\n              b: readonly string[];\n            };\n            c: bigint;\n            d: readonly string[];\n          },\n        ]",
+      "adaptation": "Direct assignment of ABI-generated return type to independently translated source type",
+      "status": "passed",
+      "positive": {
+        "file": "abi/testdata/compile/pass/Casef5a1b4bba32267f23015Type0.go",
+        "sha256": "993722396ab7339bc641378e3cac93d29bc1a39b7bad2afed8e479a0df3b5af2",
+        "exit_code": 0,
+        "diagnostics": ""
+      },
+      "negative_control": {
+        "file": "abi/testdata/compile/fail/Casef5a1b4bba32267f23015Type0.go",
+        "sha256": "c73038133d3d0358fe9cb85463b679cfeb48cda4ae40c87b91291455d3fbafca",
+        "exit_code": 2,
+        "expected_diagnostic": "cannot use",
+        "diagnostics": "abi/testdata/compile/fail/Casef5a1b4bba32267f23015Type0.go:2:111: cannot use out.Value0.X[0] (variable of type *big.Int) as string value in variable declaration\n"
+      },
+      "generated": {
+        "file": "abi/testdata/compile/generated/Casef5a1b4bba32267f23015Type0.go",
+        "sha256": "f1d5e7613f1f3a1af1a248eec25940c78dd5ff70c3bf94b51eca21991aae4570"
+      }
+    }
+  ],
+  "supplementary_negative_controls": 53,
+  "summary": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0
+  }
+}

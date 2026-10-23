@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"ponder.local/ponder-go/abi"
 	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/schema"
 	"ponder.local/ponder-go/store"
@@ -104,11 +105,28 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		input := flags.String("schema", "ponder.schema.json", "Native Go schema JSON")
 		output := flags.String("out", "ponder_generated.go", "Output Go model file")
 		packageName := flags.String("package", "main", "Go package")
+		parameters := flags.String("abi-parameters", "", "ABI parameter JSON for a typed decoder")
+		decoderName := flags.String("decoder", "Parameters", "Exported ABI decoder name")
 		if e := flags.Parse(args[1:]); e != nil {
 			return e
 		}
 		if !schema.Identifier(*packageName) {
 			return fmt.Errorf("invalid package name")
+		}
+		if *parameters != "" {
+			raw, e := os.ReadFile(*parameters)
+			if e != nil {
+				return e
+			}
+			var params []abi.Parameter
+			if e = json.Unmarshal(raw, &params); e != nil {
+				return e
+			}
+			source, e := abi.GenerateParameters(*packageName, *decoderName, params)
+			if e != nil {
+				return e
+			}
+			return os.WriteFile(*output, source, 0644)
 		}
 		raw, e := os.ReadFile(*input)
 		if e != nil {

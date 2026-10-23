@@ -10,8 +10,9 @@
 
 权威结果是 [parity/runs/summary.json](parity/runs/summary.json)。用例发现、移植、执行、通过分别登记，不合并计数。
 
-- 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条类型测试、客户端/React/E2E。
-- 已逐例映射 89 条：85 条 Go checkpoint/interval/finality/schema/event/SQL 测试，加原样保留的 3 条 TS 客户端测试、1 条 React 类型测试。另有 **816 条未实现**。
+- 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条专门类型测试、63 个运行时文件内联类型断言、84 条类型错误指令，以及客户端/React/E2E。
+- 已逐例映射 163 条：159 条 Go + 原样保留的 4 条 SDK。Go 映射 159 条均通过，其中 152 条原版 oracle 也通过、7 条数据库 oracle 阻塞；SDK 4 条通过。另有 **742 条未实现**。
+- 全套原生 Go/race 各 221/221；53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制均按预期编译失败；原 ABI 文件 tsc 通过。
 - 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
 - 2,400 个确定性差分向量独立计数。
 - 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
@@ -69,3 +70,7 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 未取得计划 PDF 的本地可读副本：Library 已解析给定文件，但所提供下载经指定 helper 两次失败；未伪造本地文件。实现以完整委托范围和固定源码为依据。
 
 当前 89 条映射中，87 条也取得原版 oracle 通过，2 条 SQL 用例已在 Go 双后端执行，其完整原版 setup 因待批准的 Foundry 1.8.5 安装仍阻塞。见台账 `oracle_passed` / `oracle_blocked`，不将 Go 通过冒充 oracle 通过。
+
+## ABI 原生类型适配
+
+`ponder codegen --abi-parameters params.json --decoder Transfer --package main --out transfer_generated.go` 从 ABI 参数生成有返回类型的解码器；位置 tuple 为 `Value0` 等字段，命名 tuple 保留 `abi` 字段标签，固定数组保留长度，较大整数为 `*big.Int`。Go 没有 TypeScript readonly tuple 或 Hex 模板字符串类型；这些差异在 `parity/runs/compile-fixtures.json` 注明。53 条编译 fixture 的预期类型独立来自原断言，未从 Go 签名反向生成。

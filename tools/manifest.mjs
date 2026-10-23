@@ -182,6 +182,7 @@ for (const file of files.filter((x) =>
 								outer === n
 							)
 								assertions.push({
+									kind: ["expectTypeOf", "assertType"].includes(target.text) ? "type" : "runtime",
 									line:
 										sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1,
 									text: n.getText(sf),
@@ -411,6 +412,8 @@ const summary = {
 	unresolved_expansion_records: unresolved.length,
 	assertion_expressions: tests.reduce((n, x) => n + x.assertions.length, 0),
 	type_records: tests.filter((x) => x.kind === "type").length,
+	inline_type_assertions: tests.filter(x => x.kind !== "type").reduce((n, x) => n + x.assertions.filter(a => a.kind === "type").length, 0),
+	type_error_directives: tests.reduce((n, x) => n + x.type_error_directives.length, 0),
 	source_states: Object.fromEntries(
 		["active", "skip", "todo", "expected_failure"].map((x) => [
 			x,

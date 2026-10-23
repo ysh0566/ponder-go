@@ -21,6 +21,17 @@ type Parameter struct {
 	HasName    bool        `json:"-"`
 }
 
+func (p Parameter) MarshalJSON() ([]byte, error) {
+	type plain Parameter
+	if p.HasName || p.Name != "" {
+		return json.Marshal(struct {
+			Name string `json:"name"`
+			plain
+		}{Name: p.Name, plain: plain(p)})
+	}
+	return json.Marshal(plain(p))
+}
+
 func (p *Parameter) UnmarshalJSON(data []byte) error {
 	type plain Parameter
 	var value plain
@@ -36,7 +47,12 @@ func (p *Parameter) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type DecodeOptions struct{ FormatAddress func(string) string }
+type DecodeOptions struct {
+	FormatAddress func(string) string
+	// Out appends decoded parameters to an existing output slice, preserving
+	// the source's reusable out buffer (including successful prefix on error).
+	Out *[]any
+}
 type decoder struct {
 	data          string
 	index, offset int64
@@ -114,6 +130,9 @@ func DecodeParameters(params []Parameter, data string, options ...DecodeOptions)
 	}
 	d := decoder{data: data, index: 2, offset: 2, limit: len(data)/64 + 8192, formatAddress: format}
 	out := []any{}
+	if len(options) > 0 && options[0].Out != nil {
+		out = *options[0].Out
+	}
 	for _, p := range params {
 		if int64(len(data))-d.index < 64 {
 			return nil, fmt.Errorf("Invalid data length.")
@@ -123,6 +142,9 @@ func DecodeParameters(params []Parameter, data string, options ...DecodeOptions)
 			return nil, e
 		}
 		out = append(out, v)
+		if len(options) > 0 && options[0].Out != nil {
+			*options[0].Out = out
+		}
 	}
 	return out, nil
 }
