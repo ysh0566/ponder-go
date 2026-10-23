@@ -46,6 +46,7 @@ const oracleReports = [
 		"parity/runs/parameters-oracle.json",
 		"parity/runs/factory-offset-oracle.json",
 		"parity/runs/indexing-store-oracle.json",
+		"parity/runs/normalize-oracle.json",
 		coreOraclePath,
 	]
 		.filter((x) => x && exists(x))

@@ -67,3 +67,11 @@ SELECT INTO（含 TEMP）、多语句写入显式拒绝；双后端另验证 CTE
 最终全套 Go/race 各 244/244，PostgreSQL/PGlite 明确后端叶子各 35/35；typed ABI runtime/race 各 53/53，vet/build、选定原版 oracle/SDK 和 2466 差分向量通过。源映射仍 176（172 Go + 4 SDK），其中 Go oracle 165 通过、7 DB oracle 待 Foundry 授权，729 条未实现。具体命令、hash 和限制见 parity/runs/batch-6.json。
 
 下一步仍为完整 ORM/cache/defaults/actions 源例、source/filter/fragments、账户/转账/trace、raw event 持久化与多链调度、完整查询/CLI/类型/simulation。当前 source startBlock 之前没有持久共同祖先等恢复边界会明确报错要求重建；不得把现有单链测试扩大解释为完整 multichain/crash parity。
+
+## M9：缓冲 ORM 与 cache/defaults 源例
+
+新增 28 条源映射，旧 delete 映射升级为缓冲 ORM；累计 204/905（200 Go + 4 SDK），701 未实现。200 条 Go 映射通过，167 条原版 oracle 也通过、33 条 DB oracle 因待批准 Foundry fixture 阻塞。保留 SDK 4 条通过。新增 mapping 的 fixture/断言审计见 parity/orm-source-cases.json；没有用 native 边界测试扩增源数量。
+
+实现事件内读写缓存、返回值深副本、insert/update/upsert/delete、默认值/NULL/Undefined、数组/bytes/JSON/timestamp/point/line 映射、批量 recordset flush 与 savepoint 恢复、typed table Select、raw/direct SQL 可见性、事件结束后 guard。通过双后端批量失败回滚、global suffix undo 后重放、isolated 复合键隔离、视图读取刷新和 SQL 错误后恢复。完整 Drizzle 关系 DSL、profile/prefetch/eviction、COPY 性能和剩余含类型错误指令的原例仍未实现。
+
+全套 Go/race 各 306/306，明确 PostgreSQL 65/65、PGlite 64/64；原 recovers-error 用例仅在 PG 运行。所选原版 core oracle 活动 167 通过、原 skip 2，SDK 4/4，vet/build 和 2466 差分向量通过。53 typed ABI runtime/race 与编译 fixture 另计。Foundry 未安装。准确命令、hash 和已知 JSON NUL/bytes PK/custom codec 边界见 batch-7.json 与 CONTINUATION.md，整体复刻仍未完成。

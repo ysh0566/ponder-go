@@ -1,0 +1,172 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "from_commit": "70d002f",
+  "commands": [
+    "PONDER_TEST_POSTGRES=<task-only localhost:53398> ./tools/verify.sh",
+    "go test -count=1 -json ./store -run ^(TestORM|TestUpstreamORM|TestUpstreamCache|TestUpstreamCopyText|TestUpstreamNormalize)"
+  ],
+  "verification_exit_code": 0,
+  "source_new_mappings": 28,
+  "upgraded_existing_mapping": "indexing-store delete switched to buffered ORM; old eager test supplementary",
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 306,
+    "pass": 306,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 306,
+    "pass": 306,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 65,
+        "pass": 65,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 65,
+        "pass": 65,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 64,
+        "pass": 64,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 64,
+        "pass": 64,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 204,
+    "unimplemented": 701,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 200,
+    "passed_with_required_type_checks": 200,
+    "original_oracle_also_passed": 167,
+    "original_oracle_blocked": 33
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 171,
+    "mapped_blocked": 33,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 169,
+    "passed": 167,
+    "failed": 0
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "typed_runtime": {
+    "file": "parity/runs/abi-typed-go.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0,
+    "counting": "Supplementary typed decoder execution; not additional source test records."
+  },
+  "typed_race": {
+    "file": "parity/runs/abi-typed-race.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0
+  },
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.27.1 darwin/arm64",
+    "node": "v25.2.1",
+    "differences": []
+  },
+  "foundry": {
+    "required": "1.8.5",
+    "status": "pending_approval",
+    "installation_executed": false
+  },
+  "limitations": [
+    "Partial ORM, no full Drizzle or source syntax compatibility.",
+    "Original database oracle hooks still require unavailable generated Solidity fixtures and pending Foundry approval; not treated as passes.",
+    "Source active records without native compile-error fixture remain unimplemented; original time/date/interval skips retained.",
+    "New native supplemental boundaries do not add source test credit.",
+    "Failed red/early green-named logs are preserved; authoritative current results are summary.json and final full verify logs.",
+    "Full JSON U+0000/byte PK/custom codec/cache profile behavior remains in CONTINUATION.md."
+  ],
+  "evidence": {
+    "parity/runs/batch-7-verify.txt": {
+      "sha256": "4c9a58004995c89cf083e5e31ca0cf137fd36fc8a311b062e8380b3e83d193bc"
+    },
+    "parity/runs/go-test.jsonl": {
+      "sha256": "5827036866e9901a0647f393ac4b46c276b5b7ae9d47938f2815de50b6634634"
+    },
+    "parity/runs/go-race.jsonl": {
+      "sha256": "a38968555df42589363e7d5a4d11b9bbce69732e24cf9e13bae5bd18424c1d2f"
+    },
+    "parity/runs/core-oracle.json": {
+      "sha256": "b7a5d712f6bc95bdad6a0e9ee03c03c68b5b652ce14d2ea38aeaacab9ef60d7d"
+    },
+    "parity/runs/compile-fixtures.json": {
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    },
+    "parity/runs/orm-mixed-red.jsonl": {
+      "sha256": "aa94a9249e0bfd2c8f3c41dd62b675382ecfa6fbdb785bc6c3e052bec9ee5bc8"
+    },
+    "parity/runs/orm-batch-green.jsonl": {
+      "sha256": "a73940b3a6bc154f01227460cf6be1c74d274a1163614398ac5a2acc2973c28a"
+    },
+    "parity/orm-source-cases.json": {
+      "sha256": "a39422f745991bb4f217c8487288c68d8295ab186713bf5743137786c618b8a8"
+    }
+  }
+}

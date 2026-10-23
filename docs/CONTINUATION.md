@@ -13,8 +13,8 @@
 
 ## 下一可执行批次
 
-1. 从最新提交和 summary.json 恢复，保留已通过 176 条映射（172 Go + 4 SDK）；其中 165 Go 原版 oracle 通过，7 DB oracle 阻塞。不要重做已完成的 ABI 参数 69、event 19、schema 24、finality 6、factory 6、offset 7。
-2. 继续 indexing-store/index.test.ts 的 find/insert/update 返回值、缓存副本、mutable values、missing rows、default/$default/$onUpdateFn 等原例。当前 Writer.Write 只返回 error，不能把现有简化 CRUD 当成完整 ORM；尤其 find 源例的 clear/invalidate 后可见性不同。actions 的 commitBlock、trigger 原内部布局、空 schema finalization 和通知大 payload 原例仍待完成。
+1. 从最新提交和 summary.json 恢复。本批新增缓冲 ORM/cache/normalization 28 条源映射，累计 204（200 Go + 4 SDK）；Go oracle 167 通过、33 DB oracle 阻塞，701 静态记录未实现。不要重做已通过源例；精确结果以 summary.json 为准。
+2. store/indexing.go 已新增 Writer.Indexing 原生缓冲 API、返回值副本、insert/update/upsert/delete、显式 NULL/Undefined、defaults、typed Select 和 Cache.Flush/Clear/Invalidate。继续 missing rows、notNull、PK 更改、onchain table、完整 SQL 等含类型错误指令的原例，必须连同 Go 编译失败 fixture 一起移植。Promise thenable 是独立语言适配，尚未映射；cache profile/prefetch/eviction 和跨事件生命周期未实现。完整 Drizzle ORM、关系 DSL、actions commitBlock/trigger 原内部布局、空 schema finalization 和大通知 payload 仍待完成。
 3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments、sync-store 原事件和 factory 原 E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
 4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。自动 finalize 和无表 finalization 边界也待实现。
 5. 完整关系/查询/GraphQL、SQL/SuperJSON 全类型、全部 CLI/模板/热重载/观测/示例，以及严格源码兼容和旧 DB 接管的独立轨，仍按 feature-ledger 推进。默认新影子 schema，不访问业务数据。
@@ -99,3 +99,18 @@ SELECT INTO（含 TEMP）、多语句写入显式拒绝；双后端另验证 CTE
 最终全套 Go/race 各 244/244，PostgreSQL/PGlite 明确后端叶子各 35/35；typed ABI runtime/race 各 53/53，vet/build、选定原版 oracle/SDK 和 2466 差分向量通过。源映射仍 176（172 Go + 4 SDK），其中 Go oracle 165 通过、7 DB oracle 待 Foundry 授权，729 条未实现。具体命令、hash 和限制见 parity/runs/batch-6.json。
 
 下一步仍为完整 ORM/cache/defaults/actions 源例、source/filter/fragments、账户/转账/trace、raw event 持久化与多链调度、完整查询/CLI/类型/simulation。当前 source startBlock 之前没有持久共同祖先等恢复边界会明确报错要求重建；不得把现有单链测试扩大解释为完整 multichain/crash parity。
+
+## M9：缓冲 ORM、列映射与 cache 源例
+
+本批新移植 28 条源记录，并将旧 delete 映射升级为实际缓冲 ORM；原 eager Writer delete 保留为额外回归，不再加一份源 credit。29 条审计记录见 parity/orm-source-cases.json，每条关联源 ID/hash、所有断言、fixture 边界和语言适配。所有原始输入、操作顺序、断言源码在主 ledger 保留。sourceORMTransaction 采用原版直接事务边界，不做 runtime 自动 flush；无物理 schema 的源例在专用影子中移除表。
+
+新功能由 store/indexing.go、column_values.go、copy_text.go 和 schema.Column 承载：缓冲读写、冲突分支、copy-on-write 语义（原生深副本）、logical/physical 列名、数组/bytes/JSON/timestamp/point/line、默认值和 NULL、精确大整数 recordset 批量写、savepoint 恢复、事件返回后 guard。原生 flush 当前用 recordset 而非 COPY，不声称 COPY 性能等价。raw SQL 只读查询刷新涉及表，视图刷新全部，DML 刷新并使缓存失效；trigger journal 保持唯一写入来源。直接 Writer API 与缓冲 API 混用已增加实测可见性修复。失败回滚、批量 undo 后重放、isolated 复合键/跨链拒绝单独作为原生回归。
+
+完整 verify 的实际数量和证据见 parity/runs/batch-7.json 与 summary.json。Foundry 安装仍 pending_approval，未执行安装；数据库源 oracle 不冒称通过。normalization 两条原版测试已实际运行。
+
+紧接着补以下已知边界（不要扩大解释本批通过范围）：
+- JSON 中实际 U+0000 可由 PostgreSQL json 存储，但当前 jsonb_populate_recordset / trigger to_jsonb / journal before_row jsonb 路线会拒绝；需无损 JSON snapshot/undo 编码，版本化影子标记并双后端回归。不得借此静默删 JSON NUL。
+- bytes 主键经 PGlite JSON 参数桥仍需独立验证与修正；复合键已测整数+hex，不能据此宣称全部键类型完成。
+- 自定义列 mapper 已有接口，完整 codec、默认函数返回不同 Go 类型、xy/abc geometry modes、nested arrays 和自定义指针副本仍需验证。
+- InsertMany 部分失败缓存状态、取消/SQL 错误传播、跨事件缓存 profile 和 eviction 仍需更多源例；不将目前 cache 完全性提示当成数据库已完整预取。
+- 缓存与 raw/direct SQL 混合操作必须继续通过 base trigger journal；savepoint 恢复失败会标记 Writer error 以禁止提交进度。

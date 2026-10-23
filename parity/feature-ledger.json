@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "176 mapped: 172 native Go passed (165 original oracle passed, 7 database oracle blocked) + 4 retained SDK passed; 729 static records remain unimplemented. Runtime collection still incomplete."
+      "remaining": "204 mapped: 200 native Go passed (167 original oracle also passed, 33 database oracle blocked) + 4 retained SDK passed; 701 static records remain unimplemented. Full runtime discovery remains incomplete."
     },
     {
       "id": "differential-harness",
@@ -343,13 +343,21 @@
       "status": "partial",
       "implementation_files": [
         "store/store.go",
-        "store/backend.go"
+        "store/backend.go",
+        "store/indexing.go",
+        "store/column_values.go",
+        "store/copy_text.go"
       ],
       "upstream_sources": [
         "packages/core/src/indexing-store/index.ts"
       ],
-      "evidence": [],
-      "remaining": "Real PostgreSQL typed tables, CRUD/upsert, snapshots and literal defaults. Full functions/types/errors/batching/raw SQL remain."
+      "evidence": [
+        "parity/orm-source-cases.json",
+        "parity/runs/batch-7.json",
+        "parity/runs/go-test.jsonl",
+        "parity/runs/go-race.jsonl"
+      ],
+      "remaining": "Buffered native ORM tested on PG/PGlite: returned row copies, conflict operations, defaults/NULL/Undefined, explicit cache invalidation/flush, typed columns and single-table Select; 28 new exact source mappings. Full native typed/relational query DSL, cache profile/prefetch/eviction, Promise adaptation and source cases with compile-error obligations remain. JSON U+0000 snapshots, byte PK bridge and complete custom codecs require follow-up; no full ORM claim."
     },
     {
       "id": "pglite",
@@ -773,6 +781,25 @@
         "packages/core/src/utils/checkpoint.bench.ts"
       ],
       "remaining": "Preserve benchmark definitions separately from functional test counts; no performance parity claim."
+    },
+    {
+      "id": "indexing-cache",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/indexing.go",
+        "store/column_values.go",
+        "store/cache_upstream_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing-store/index.ts",
+        "packages/core/src/indexing-store/cache.ts",
+        "packages/core/src/indexing-store/utils.ts"
+      ],
+      "evidence": [
+        "parity/orm-source-cases.json",
+        "parity/runs/batch-7.json"
+      ],
+      "remaining": "Event-local buffering, copies, explicit flush recovery, SQL/direct API visibility and event auto-flush verified. Profile patterns, prefetch, eviction, full cross-event cache metadata, COPY performance and remaining exact tests not implemented."
     }
   ]
 }

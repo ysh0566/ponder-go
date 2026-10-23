@@ -7,13 +7,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
 	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/schema"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 )
 
 type Store struct {
@@ -39,6 +39,9 @@ type Writer struct {
 	encoded string
 	changed map[string]bool
 	err     error
+	ormMu   sync.Mutex
+	orm     *IndexingStore
+	closed  atomic.Bool
 }
 type Row map[string]any
 type WriteMode int
@@ -231,8 +234,16 @@ func (s *Store) Apply(ctx context.Context, event Event, handler func(*Writer) er
 		return e
 	}
 	w := &Writer{s: s, tx: tx, event: event, encoded: encoded, changed: map[string]bool{}}
-	if e = handler(w); e != nil {
+	defer w.closed.Store(true)
+	e = handler(w)
+	w.closed.Store(true)
+	if e != nil {
 		return e
+	}
+	if orm := w.indexingSession(); orm != nil {
+		if e = orm.Cache.flush(ctx, false); e != nil {
+			return e
+		}
 	}
 	if w.err != nil {
 		return w.err
@@ -293,6 +304,20 @@ func snapshot(ctx context.Context, q Querier, table string, t schema.Table, key 
 	return &s, nil
 }
 func (w *Writer) Find(ctx context.Context, name string, key Row) (Row, error) {
+	if w.closed.Load() {
+		return nil, &NonRetryableUserError{Message: "A store API method was called after the indexing function returned."}
+	}
+	if orm := w.indexingSession(); orm != nil {
+		if e := orm.Cache.Flush(ctx, name); e != nil {
+			return nil, e
+		}
+	}
+	return w.findPhysical(ctx, name, key)
+}
+
+// findPhysical is used for cache misses while the cache lock is held. The
+// public Find boundary first makes pending writes visible to direct callers.
+func (w *Writer) findPhysical(ctx context.Context, name string, key Row) (Row, error) {
 	t, e := w.s.model(name)
 	if e != nil {
 		return nil, e
@@ -301,29 +326,24 @@ func (w *Writer) Find(ctx context.Context, name string, key Row) (Row, error) {
 	if before == nil || e != nil {
 		return nil, e
 	}
-	var out Row
-	d := json.NewDecoder(strings.NewReader(*before))
-	d.UseNumber()
-	e = d.Decode(&out)
-	if e == nil {
-		for _, column := range t.Columns {
-			if column.Type == "bigint" && out[column.Name] != nil {
-				value, ok := new(big.Int).SetString(fmt.Sprint(out[column.Name]), 10)
-				if !ok {
-					return nil, fmt.Errorf("invalid stored bigint %s.%s", name, column.Name)
-				}
-				out[column.Name] = value
-			}
-		}
-	}
-	return out, e
+	return decodeSnapshot(t, *before)
 }
 func (w *Writer) Write(ctx context.Context, name string, row Row, mode WriteMode) (err error) {
+	if w.closed.Load() {
+		return &NonRetryableUserError{Message: "A store API method was called after the indexing function returned."}
+	}
 	defer func() {
 		if err != nil {
 			w.err = errors.Join(w.err, err)
 		}
 	}()
+	if orm := w.indexingSession(); orm != nil {
+		if e := orm.Cache.Flush(ctx); e != nil {
+			return e
+		}
+		orm.Cache.Invalidate()
+		orm.Cache.Clear()
+	}
 	t, e := w.s.model(name)
 	if e != nil {
 		return e
