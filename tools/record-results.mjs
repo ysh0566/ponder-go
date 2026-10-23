@@ -29,19 +29,39 @@ const oraclePath = exists("parity/runs/foundation-oracle.json")
 	? "parity/runs/foundation-oracle.json"
 	: "parity/foundation-oracle-focused.json";
 const oracle = read(oraclePath);
+const coreOraclePath = exists("parity/runs/core-oracle.json")
+	? "parity/runs/core-oracle.json"
+	: null;
+const oracleReports = [
+	{ path: oraclePath, report: oracle },
+	...[
+		"parity/runs/finality-oracle.json",
+		"parity/runs/schema-oracle.json",
+		"parity/runs/event-oracle.json",
+		coreOraclePath,
+	]
+		.filter((x) => x && exists(x))
+		.map((path) => ({ path, report: read(path) })),
+];
 function sdkResult(file, title) {
 	if (!exists(file)) return;
 	for (const f of read(file).testResults ?? [])
 		for (const t of f.assertionResults ?? []) if (t.title === title) return t;
 }
 for (const test of ledger.tests) {
-	const original = (oracle.testResults ?? [])
-		.filter((x) =>
-			x.name.endsWith(test.source_file.replace("packages/core/", "")),
-		)
-		.flatMap((x) => x.assertionResults ?? [])
-		.find((x) => x.title === test.title);
-	if (original) test.oracle = { status: original.status, evidence: oraclePath };
+	for (const selected of oracleReports) {
+		const original = (selected.report.testResults ?? [])
+			.filter((x) =>
+				x.name.endsWith(test.source_file.replace("packages/core/", "")),
+			)
+			.flatMap((x) => x.assertionResults ?? [])
+			.find(
+				(x) =>
+					[...(x.ancestorTitles ?? []), x.title].join(" > ") === test.full_name,
+			);
+		if (original)
+			test.oracle = { status: original.status, evidence: selected.path };
+	}
 	if (!test.mapping) continue;
 	let status, evidence;
 	if (test.mapping.target_kind === "retained_sdk") {
@@ -129,6 +149,14 @@ const summary = {
 		passed: oracle.numPassedTests,
 		failed: oracle.numFailedTests,
 	},
+	core_oracle: coreOraclePath
+		? {
+				file: coreOraclePath,
+				total: read(coreOraclePath).numTotalTests,
+				passed: read(coreOraclePath).numPassedTests,
+				failed: read(coreOraclePath).numFailedTests,
+			}
+		: null,
 	client: sdkResult("parity/client-original.json", "setDatabaseSchema table")
 		? {
 				file: "parity/client-original.json",

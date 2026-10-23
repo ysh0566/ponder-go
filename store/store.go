@@ -70,6 +70,9 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 		return nil, e
 	}
 	defer tx.Rollback(context.Background())
+	if e = s.lock(ctx, tx); e != nil {
+		return nil, e
+	}
 	found, e := tx.Query(ctx, "SELECT nspname FROM pg_namespace WHERE nspname=$1", namespace)
 	if e != nil {
 		return nil, e
@@ -126,8 +129,11 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 	if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_meta")+" VALUES ('fingerprint',$1) ON CONFLICT (key) DO NOTHING", fingerprint); e != nil {
 		return nil, e
 	}
+	if e = s.createSchemaObjects(ctx, tx); e != nil {
+		return nil, e
+	}
 	for _, t := range model.Tables {
-		if e = tx.Exec(ctx, t.DDL(namespace)); e != nil {
+		if e = tx.Exec(ctx, model.TableDDL(t, namespace)); e != nil {
 			return nil, e
 		}
 		for _, idx := range t.Indexes {
@@ -143,6 +149,9 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 				return nil, e
 			}
 		}
+	}
+	if e = s.createViews(ctx, tx); e != nil {
+		return nil, e
 	}
 	if e = tx.Commit(ctx); e != nil {
 		return nil, e
