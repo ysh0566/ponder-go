@@ -12,7 +12,7 @@
 
 - 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条专门类型测试、63 个运行时文件内联类型断言、84 条类型错误指令，以及客户端/React/E2E。
 - 已逐例映射 176 条：172 条 Go + 原样保留的 4 条 SDK。Go 映射 172 条均通过，其中 165 条原版 oracle 也通过、7 条数据库 oracle 阻塞；SDK 4 条通过。另有 **729 条未实现**。
-- 全套原生 Go/race 各 238/238；53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。
+- 全套原生 Go/race 各 244/244；53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。
 - 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
 - 2,466 个确定性差分向量（基础 2,400 + factory 66）独立计数。
 - 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
@@ -76,3 +76,5 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 `ponder codegen --abi-parameters params.json --decoder Transfer --package main --out transfer_generated.go` 从 ABI 参数生成有返回类型的解码器；位置 tuple 为 `Value0` 等字段，命名 tuple 保留 `abi` 字段标签，固定数组保留长度，较大整数为 `*big.Int`。Go 没有 TypeScript readonly tuple 或 Hex 模板字符串类型；这些差异在 `parity/runs/compile-fixtures.json` 注明。53 条编译 fixture 的预期类型独立来自原断言，未从 Go 签名反向生成。
 
 动态地址的参数/offset 构建、发现持久化、失败重试、磁盘重开和重组回收已有双后端验证，见 [docs/FACTORY.md](docs/FACTORY.md)。完整 factory E2E、trace/account sources 与多链 runtime 仍未完成。
+
+原子 rewind 与未完成 block 的恢复也已验证：业务 undo、进度及同步区间/factory 地址一起提交；handler 提交前先保留 block header，支持提交确认丢失后的重开/换链。两个后端另有 6 条进程退出恢复验证，见 `parity/runs/batch-6.json`。

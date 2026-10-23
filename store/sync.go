@@ -41,7 +41,7 @@ func (s *Store) CompleteBlock(ctx context.Context, b SyncBlock, filter string) e
 	if e = s.lock(ctx, tx); e != nil {
 		return e
 	}
-	if e = tx.Exec(ctx, "INSERT INTO "+s.syncTable("blocks")+" VALUES ($1,$2,$3,$4,$5,$6::jsonb) ON CONFLICT(chain_id,number) DO UPDATE SET hash=excluded.hash,parent_hash=excluded.parent_hash,timestamp=excluded.timestamp,payload=excluded.payload", b.ChainID, b.Number, b.Hash, b.ParentHash, b.Timestamp, string(b.Payload)); e != nil {
+	if e = s.saveBlock(ctx, tx, b); e != nil {
 		return e
 	}
 	r, e := tx.Query(ctx, "SELECT start_block::text AS start,end_block::text AS end FROM "+s.syncTable("intervals")+" WHERE chain_id=$1 AND filter=$2", b.ChainID, filter)
@@ -63,6 +63,28 @@ func (s *Store) CompleteBlock(ctx context.Context, b SyncBlock, filter string) e
 		}
 	}
 	return tx.Commit(ctx)
+}
+
+// SaveBlock persists provenance before indexing commits, without marking a
+// history interval complete. A restart can then recognize an orphaned handler
+// commit even if the process exited before CompleteBlock.
+func (s *Store) SaveBlock(ctx context.Context, b SyncBlock) error {
+	tx, e := s.Backend.Begin(ctx)
+	if e != nil {
+		return e
+	}
+	defer tx.Rollback(context.Background())
+	if e = s.lock(ctx, tx); e != nil {
+		return e
+	}
+	if e = s.saveBlock(ctx, tx, b); e != nil {
+		return e
+	}
+	return tx.Commit(ctx)
+}
+
+func (s *Store) saveBlock(ctx context.Context, tx Transaction, b SyncBlock) error {
+	return tx.Exec(ctx, "INSERT INTO "+s.syncTable("blocks")+" VALUES ($1,$2,$3,$4,$5,$6::jsonb) ON CONFLICT(chain_id,number) DO UPDATE SET hash=excluded.hash,parent_hash=excluded.parent_hash,timestamp=excluded.timestamp,payload=excluded.payload", b.ChainID, b.Number, b.Hash, b.ParentHash, b.Timestamp, string(b.Payload))
 }
 func (s *Store) Missing(ctx context.Context, chain uint64, filter string, wanted interval.Interval) ([]interval.Interval, error) {
 	r, e := s.Backend.Query(ctx, "SELECT start_block::text AS start,end_block::text AS end FROM "+s.syncTable("intervals")+" WHERE chain_id=$1 AND filter=$2 ORDER BY start_block", chain, filter)
@@ -86,6 +108,14 @@ func (s *Store) RewindSync(ctx context.Context, chain, number uint64) error {
 	if e = s.lock(ctx, tx); e != nil {
 		return e
 	}
+	if e = s.rewindSync(ctx, tx, chain, number); e != nil {
+		return e
+	}
+	return tx.Commit(ctx)
+}
+
+func (s *Store) rewindSync(ctx context.Context, tx Transaction, chain, number uint64) error {
+	var e error
 	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number>$2", chain, number); e != nil {
 		return e
 	}
@@ -98,7 +128,7 @@ func (s *Store) RewindSync(ctx context.Context, chain, number uint64) error {
 	if e = tx.Exec(ctx, "UPDATE "+s.syncTable("intervals")+" SET end_block=LEAST(end_block,$2) WHERE chain_id=$1", chain, number); e != nil {
 		return e
 	}
-	return tx.Commit(ctx)
+	return nil
 }
 
 type FactoryChild struct {

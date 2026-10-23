@@ -12,6 +12,17 @@ import (
 // Revert uses the first affected operation ID to undo the complete global suffix
 // in multichain mode. Isolated mode only undoes writes belonging to that chain.
 func (s *Store) Revert(ctx context.Context, target checkpoint.Checkpoint) error {
+	return s.revert(ctx, target, false)
+}
+
+// RevertAndRewind commits indexing undo and sync provenance rewind together.
+// The schemas stay separate; this native backend stores both in one PostgreSQL
+// database, so a process exit cannot leave completed intervals on an orphan fork.
+func (s *Store) RevertAndRewind(ctx context.Context, target checkpoint.Checkpoint) error {
+	return s.revert(ctx, target, true)
+}
+
+func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind bool) error {
 	encoded, e := checkpoint.Encode(target)
 	if e != nil {
 		return e
@@ -99,6 +110,11 @@ func (s *Store) Revert(ctx context.Context, target checkpoint.Checkpoint) error 
 	}
 	if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_progress")+" SELECT chain_id,MAX(checkpoint) FROM (SELECT chain_id,checkpoint FROM "+s.internal("_ponder_go_events")+" UNION ALL SELECT chain_id,safe_checkpoint AS checkpoint FROM "+s.internal("_ponder_go_finalized")+") AS progress GROUP BY chain_id"); e != nil {
 		return e
+	}
+	if rewind {
+		if e = s.rewindSync(ctx, tx, target.ChainID, target.BlockNumber); e != nil {
+			return e
+		}
 	}
 	if e = tx.Commit(ctx); e != nil {
 		return e

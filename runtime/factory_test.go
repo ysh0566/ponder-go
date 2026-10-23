@@ -249,6 +249,69 @@ func TestFactoryRuntime(t *testing.T) {
 				t.Fatal(e)
 			}
 			check(childB, "3")
+			// Simulate a handler commit whose acknowledgement is lost before the
+			// block-complete marker. Restart onto a fork and recover the durable
+			// orphan write using the header saved before that handler.
+			mu.Lock()
+			head = 2
+			mu.Unlock()
+			s.Backend = &lostCommitAckBackend{Backend: backend, armed: true}
+			if e = engine.Sync(ctx); e == nil || !strings.Contains(e.Error(), "injected lost commit acknowledgement") {
+				t.Fatalf("missing commit failure %v", e)
+			}
+			check(childB, "6")
+			block, e := s.SyncedBlock(ctx, 1, 2)
+			if e != nil || block == nil {
+				t.Fatalf("committed handler lost its block provenance: %v %v", block, e)
+			}
+			if e = backend.Close(); e != nil {
+				t.Fatal(e)
+			}
+			backend = open()
+			s = newStore()
+			engine = newEngine()
+			mu.Lock()
+			fork = false
+			mu.Unlock()
+			if e = engine.Sync(ctx); e != nil {
+				t.Fatal(e)
+			}
+			check(childA, "12")
 		})
 	}
+}
+
+type lostCommitAckBackend struct {
+	store.Backend
+	armed bool
+}
+
+func (b *lostCommitAckBackend) Begin(ctx context.Context) (store.Transaction, error) {
+	tx, e := b.Backend.Begin(ctx)
+	if e != nil {
+		return nil, e
+	}
+	return &lostCommitAckTransaction{Transaction: tx, backend: b}, nil
+}
+
+type lostCommitAckTransaction struct {
+	store.Transaction
+	backend  *lostCommitAckBackend
+	business bool
+}
+
+func (tx *lostCommitAckTransaction) Exec(ctx context.Context, sql string, args ...any) error {
+	e := tx.Transaction.Exec(ctx, sql, args...)
+	if e == nil && strings.Contains(sql, `."account" `) && (strings.HasPrefix(sql, "INSERT INTO ") || strings.HasPrefix(sql, "UPDATE ")) {
+		tx.business = true
+	}
+	return e
+}
+func (tx *lostCommitAckTransaction) Commit(ctx context.Context) error {
+	e := tx.Transaction.Commit(ctx)
+	if e == nil && tx.business && tx.backend.armed {
+		tx.backend.armed = false
+		return fmt.Errorf("injected lost commit acknowledgement")
+	}
+	return e
 }
