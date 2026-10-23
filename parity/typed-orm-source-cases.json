@@ -1,0 +1,204 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "5 new source records, 14 runtime assertions and 5 source compile-error directives. Supplemental typed runtime, profile prefetch, concurrency, rollback/reorg and memory tests earn no source credit.",
+  "limitations": [
+    "Go zero values remain syntactically legal and receive runtime constructor guards. Required public constructor calls, model identities, update column sets and scalar value types have real compiler checks.",
+    "Typed generator currently handles scalar columns. JSON/bytes/array/custom-codec model generation is explicitly unsupported, not replaced by any.",
+    "Native row caches are event-local. Shared cross-event data is profile metadata only; runtime must supply ProfileEvent callback/count/data/order. Default budget is explicit native 128MiB, not a V8 heap query.",
+    "Original prefetch() uses profile metadata remains unmapped: exact deploy/mint and readonly event type obligation pending."
+  ],
+  "cases": [
+    {
+      "source_id": "19c28b58a5d4976ff693",
+      "source_file": "packages/core/src/indexing-store/index.test.ts",
+      "source_name": "update throw error when primary key is updated",
+      "source_sha256": "1492da684b496f1871472a7097f5f482e8ebb890a3a902e9964330eb1081271a",
+      "source_state": "active",
+      "source_line": 695,
+      "source_inputs": [
+        "{ database } = await setupDatabaseServices()",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "indexingCache = createIndexingCache({\n    common: context.common,\n    schemaBuild: { schema },\n    crashRecoveryCheckpoint: undefined,\n    eventCount: {},\n  })",
+        "indexingStore = createIndexingStore({\n    common: context.common,\n    schemaBuild: { schema },\n    indexingCache,\n    indexingErrorHandler,\n  })",
+        "error: any = await indexingStore.db\n      .update(schema.account, { address: zeroAddress })\n      // @ts-expect-error\n      .set({ address: ALICE })\n      .catch((error) => error)",
+        "row: any = await indexingStore.db\n      .update(schema.account, { address: zeroAddress })\n      // @ts-expect-error\n      .set({ address: zeroAddress, balance: 20n })\n      .catch((error) => error)"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 737,
+          "text": "expect(error).toBeInstanceOf(NonRetryableUserError)"
+        },
+        {
+          "kind": "runtime",
+          "line": 746,
+          "text": "expect(error).toBeInstanceOf(NonRetryableUserError)"
+        },
+        {
+          "kind": "runtime",
+          "line": 755,
+          "text": "expect(row.address).toBe(zeroAddress)"
+        },
+        {
+          "kind": "runtime",
+          "line": 756,
+          "text": "expect(row.balance).toBe(20n)"
+        },
+        {
+          "kind": "runtime",
+          "line": 764,
+          "text": "expect(row.address).toBe(zeroAddress)"
+        },
+        {
+          "kind": "runtime",
+          "line": 765,
+          "text": "expect(row.balance).toBe(30n)"
+        }
+      ],
+      "type_error_directives": [
+        "// @ts-expect-error",
+        "// @ts-expect-error"
+      ],
+      "target_file": "store/orm_errors_upstream_test.go",
+      "target_test": "TestUpstreamORMErrors/postgres/update_throw_error_when_primary_key_is_updated",
+      "adaptation": "All original schema/zero address/ALICE/10n/20n/30n/NULL/omission inputs and runtime assertions retained in direct transaction fixtures without auto-flush. Dynamic Row calls intentionally exercise source suppressed type-error behavior; real generated public model APIs reject corresponding calls in independent Go compile fixtures. Plain offchain SQL descriptor is retained locally and excluded from native onchain registry. notNull swaps only cache/store schema in the same transaction, with no SQL DDL or data adoption.",
+      "type_evidence": "parity/runs/orm-compile-fixtures.json"
+    },
+    {
+      "source_id": "ca075d5ea2ea15828484",
+      "source_file": "packages/core/src/indexing-store/index.test.ts",
+      "source_name": "onchain table",
+      "source_sha256": "1492da684b496f1871472a7097f5f482e8ebb890a3a902e9964330eb1081271a",
+      "source_state": "active",
+      "source_line": 1008,
+      "source_inputs": [
+        "{ database } = await setupDatabaseServices()",
+        "schema = {\n    account: pgTable(\"account\", (p) => ({\n      address: p.text().primaryKey(),\n      balance: p.integer().notNull(),\n    })),\n  }",
+        "indexingCache = createIndexingCache({\n    common: context.common,\n    schemaBuild: { schema },\n    crashRecoveryCheckpoint: undefined,\n    eventCount: {},\n  })",
+        "indexingStore = createIndexingStore({\n    common: context.common,\n    schemaBuild: { schema },\n    indexingCache,\n    indexingErrorHandler,\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 1038,
+          "text": "expect(\n      await getRejectionValue(\n        async () =>\n          await indexingStore.db\n            // @ts-expect-error\n            .find(schema.account, { address: zeroAddress }),\n      ),\n    ).toBeTruthy()"
+        }
+      ],
+      "type_error_directives": [
+        "// @ts-expect-error"
+      ],
+      "target_file": "store/orm_errors_upstream_test.go",
+      "target_test": "TestUpstreamORMErrors/postgres/onchain_table",
+      "adaptation": "All original schema/zero address/ALICE/10n/20n/30n/NULL/omission inputs and runtime assertions retained in direct transaction fixtures without auto-flush. Dynamic Row calls intentionally exercise source suppressed type-error behavior; real generated public model APIs reject corresponding calls in independent Go compile fixtures. Plain offchain SQL descriptor is retained locally and excluded from native onchain registry. notNull swaps only cache/store schema in the same transaction, with no SQL DDL or data adoption.",
+      "type_evidence": "parity/runs/orm-compile-fixtures.json"
+    },
+    {
+      "source_id": "894c1374d9edc072edb1",
+      "source_file": "packages/core/src/indexing-store/index.test.ts",
+      "source_name": "missing rows",
+      "source_sha256": "1492da684b496f1871472a7097f5f482e8ebb890a3a902e9964330eb1081271a",
+      "source_state": "active",
+      "source_line": 1049,
+      "source_inputs": [
+        "{ database } = await setupDatabaseServices()",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "indexingCache = createIndexingCache({\n    common: context.common,\n    schemaBuild: { schema },\n    crashRecoveryCheckpoint: undefined,\n    eventCount: {},\n  })",
+        "indexingStore = createIndexingStore({\n    common: context.common,\n    schemaBuild: { schema },\n    indexingCache,\n    indexingErrorHandler,\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 1079,
+          "text": "expect(\n      await getRejectionValue(\n        async () =>\n          await indexingStore.db\n            .insert(schema.account)\n            // @ts-expect-error\n            .values({ address: zeroAddress }),\n      ),\n    ).toBeTruthy()"
+        }
+      ],
+      "type_error_directives": [
+        "// @ts-expect-error"
+      ],
+      "target_file": "store/orm_errors_upstream_test.go",
+      "target_test": "TestUpstreamORMErrors/postgres/missing_rows",
+      "adaptation": "All original schema/zero address/ALICE/10n/20n/30n/NULL/omission inputs and runtime assertions retained in direct transaction fixtures without auto-flush. Dynamic Row calls intentionally exercise source suppressed type-error behavior; real generated public model APIs reject corresponding calls in independent Go compile fixtures. Plain offchain SQL descriptor is retained locally and excluded from native onchain registry. notNull swaps only cache/store schema in the same transaction, with no SQL DDL or data adoption.",
+      "type_evidence": "parity/runs/orm-compile-fixtures.json"
+    },
+    {
+      "source_id": "75798852a81ed6440af4",
+      "source_file": "packages/core/src/indexing-store/index.test.ts",
+      "source_name": "notNull",
+      "source_sha256": "1492da684b496f1871472a7097f5f482e8ebb890a3a902e9964330eb1081271a",
+      "source_state": "active",
+      "source_line": 1133,
+      "source_inputs": [
+        "{ database } = await setupDatabaseServices()",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint(),\n    })),\n  }",
+        "indexingCache = createIndexingCache({\n    common: context.common,\n    schemaBuild: { schema },\n    crashRecoveryCheckpoint: undefined,\n    eventCount: {},\n  })",
+        "indexingStore = createIndexingStore({\n    common: context.common,\n    schemaBuild: { schema },\n    indexingCache,\n    indexingErrorHandler,\n  })",
+        "result = await indexingStore.db\n      .insert(schema.account)\n      .values({ address: zeroAddress })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 1167,
+          "text": "expect(result).toMatchObject({\n      address: \"0x0000000000000000000000000000000000000000\",\n      balance: null,\n    })"
+        },
+        {
+          "kind": "runtime",
+          "line": 1178,
+          "text": "expect(result).toMatchObject({\n      address: \"0x0000000000000000000000000000000000000000\",\n      balance: null,\n    })"
+        },
+        {
+          "kind": "runtime",
+          "line": 1189,
+          "text": "expect(result).toMatchObject({\n      address: \"0x0000000000000000000000000000000000000000\",\n      balance: null,\n    })"
+        },
+        {
+          "kind": "runtime",
+          "line": 1221,
+          "text": "expect(\n      await getRejectionValue(\n        async () =>\n          await indexingStore.db\n            .insert(schema.account)\n            .values({ address: zeroAddress }),\n      ),\n    ).toBeTruthy()"
+        },
+        {
+          "kind": "runtime",
+          "line": 1230,
+          "text": "expect(\n      await getRejectionValue(\n        async () =>\n          await indexingStore.db\n            .insert(schema.account)\n            .values({ address: zeroAddress, balance: null }),\n      ),\n    ).toBeTruthy()"
+        }
+      ],
+      "type_error_directives": [
+        "// @ts-expect-error"
+      ],
+      "target_file": "store/orm_errors_upstream_test.go",
+      "target_test": "TestUpstreamORMErrors/postgres/notNull",
+      "adaptation": "All original schema/zero address/ALICE/10n/20n/30n/NULL/omission inputs and runtime assertions retained in direct transaction fixtures without auto-flush. Dynamic Row calls intentionally exercise source suppressed type-error behavior; real generated public model APIs reject corresponding calls in independent Go compile fixtures. Plain offchain SQL descriptor is retained locally and excluded from native onchain registry. notNull swaps only cache/store schema in the same transaction, with no SQL DDL or data adoption.",
+      "type_evidence": "parity/runs/orm-compile-fixtures.json"
+    },
+    {
+      "source_id": "b72e780e1464ae3d8223",
+      "source_file": "packages/core/src/indexing-store/cache.test.ts",
+      "source_name": "prefetch() evicts rows",
+      "source_sha256": "da3732a385c67be485a7d7e5de8937987fa3a4087c6b8c34181d8ba555edd7a2",
+      "source_state": "active",
+      "source_line": 518,
+      "source_inputs": [
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "{ database } = await setupDatabaseServices({\n    schemaBuild: { schema },\n  })",
+        "indexingCache = createIndexingCache({\n    common: context.common,\n    schemaBuild: { schema },\n    crashRecoveryCheckpoint: undefined,\n    eventCount: {},\n  })",
+        "indexingStore = createIndexingStore({\n    common: context.common,\n    schemaBuild: { schema },\n    indexingCache,\n    indexingErrorHandler,\n  })",
+        "result = indexingCache.has({\n      table: schema.account,\n      key: { address: zeroAddress },\n    })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 566,
+          "text": "expect(result).toBe(false)"
+        }
+      ],
+      "type_error_directives": [],
+      "target_file": "store/prefetch_upstream_test.go",
+      "target_test": "TestUpstreamCacheEviction/postgres",
+      "adaptation": "Exact original account schema, zero address/10n, invalidate before insert, explicit flush, two empty prefetch calls, and false has assertion. PostgreSQL primary mapping/PGlite companion. Source unused Anvil setup hook is not substituted for original oracle execution.",
+      "type_evidence": null
+    }
+  ]
+}

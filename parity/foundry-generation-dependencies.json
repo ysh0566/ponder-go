@@ -1,0 +1,42 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "entry": "packages/core/wagmi.config.ts",
+  "output": "packages/core/src/_test/generated.ts",
+  "runtime_import": "./generated.js from packages/core/src/_test/utils.ts (TS module resolution)",
+  "plugin": "@wagmi/cli foundry plugin, installed fixed lockfile",
+  "default_commands": [
+    "forge config --json --root packages/core/src/_test/contracts",
+    "forge build --root packages/core/src/_test/contracts"
+  ],
+  "input_contracts": [
+    "ERC20.sol",
+    "Factory.sol",
+    "Pair.sol",
+    "Revert.sol"
+  ],
+  "artifact_directory": "packages/core/src/_test/contracts/out",
+  "artifact_directory_present": false,
+  "upstream_required_foundry": "1.8.5",
+  "installed_foundry": "0.2.0",
+  "status": "blocked_pending_approval",
+  "install_executed": false,
+  "reason": "No built contract artifacts exist. Parent explicitly forbids installing required version until human approval. No replacement fixture or modified import is used.",
+  "sources": [
+    {
+      "file": "packages/core/wagmi.config.ts",
+      "sha256": "ebd7e3562fe377683aa17ee2243af30b5260fc1cea27c1d1de5edd5517964d40"
+    },
+    {
+      "file": "packages/core/src/_test/utils.ts",
+      "sha256": "c82853764e17721ff80d6a669362ac6b6f6a17cfe634dd33fbac4fc97bff4d23"
+    },
+    {
+      "file": ".github/actions/setup/action.yml",
+      "sha256": "c14eb91d127011c524f8404bed276ea67f99d1f55402c8ef336bc76709b555ad"
+    }
+  ]
+}

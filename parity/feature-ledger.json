@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "217 mapped: 213 native Go passed (167 original oracle also passed, 46 fixture oracle blocked: 33 database +13 profile) +4 retained SDK passed; 688 static records remain unimplemented. Full runtime discovery remains incomplete."
+      "remaining": "222 mapped: 218 native Go passed (167 original oracle also passed, 51 fixture oracle blocked) +4 retained SDK passed; 683 static records remain unimplemented. Full runtime discovery still incomplete."
     },
     {
       "id": "differential-harness",
@@ -616,13 +616,16 @@
       "status": "partial",
       "implementation_files": [
         "cmd/ponder/main.go",
-        "examples/erc20/ponder_generated.go"
+        "examples/erc20/ponder_generated.go",
+        "orm/generate.go"
       ],
       "upstream_sources": [
         "packages/core/src/bin/commands/codegen.ts"
       ],
-      "evidence": [],
-      "remaining": "Native JSON schema to Go model generator builds; ABI event types, nullable types and complete source CLI mapping remain."
+      "evidence": [
+        "parity/runs/orm-compile-fixtures.json"
+      ],
+      "remaining": "Native scalar typed key/insert/update/row generator exposed via codegen --typed, with required constructors, nullable values and JSON roundtrip; simple legacy model generator retained. Typed JSON/bytes/array/custom codec generation, strict enum/Hex compile domains and full source CLI parity remain."
     },
     {
       "id": "cli-db-list",
@@ -725,7 +728,11 @@
         "abi/generated.go",
         "tools/compile-fixtures.mjs",
         "abi/testdata/compile",
-        "sdk/typescript/react/src/hook.test-d.ts"
+        "sdk/typescript/react/src/hook.test-d.ts",
+        "orm/orm.go",
+        "orm/generate.go",
+        "tools/orm-compile-fixtures.mjs",
+        "orm/testdata/compile"
       ],
       "upstream_sources": [
         "packages/core/src/types",
@@ -735,9 +742,11 @@
       "evidence": [
         "parity/runs/compile-fixtures.json",
         "parity/runs/parameters-typecheck.json",
-        "parity/runs/abi-typed-go.jsonl"
+        "parity/runs/abi-typed-go.jsonl",
+        "parity/runs/orm-compile-fixtures.json",
+        "parity/runs/batch-10.json"
       ],
-      "remaining": "53 source inline type obligations +1 source null-topic error directive verified natively; 53 extra negative controls separate. React retained type record passes. 10 other inline assertions, 72 dedicated native type records and most source error directives remain."
+      "remaining": "53 source inline ABI obligations and 6 source error directives verified natively (1 ABI +5 ORM). 53 ABI and 6 ORM additional negative controls separate. React retained type record passes. 10 inline assertions, 72 dedicated native type records and most source error directives remain. Native typed constructors/nominal models/update columns/scalar values are checked by real Go compilation; Go zero values, same-package dynamic Row escape, string Hex/enum domain types and container/custom codegen are not strict TS type/source compatibility."
     },
     {
       "id": "simulation-e2e",
@@ -798,7 +807,8 @@
         "store/column_values.go",
         "store/cache_upstream_test.go",
         "store/profile.go",
-        "store/profile_upstream_test.go"
+        "store/profile_upstream_test.go",
+        "store/prefetch.go"
       ],
       "upstream_sources": [
         "packages/core/src/indexing-store/index.ts",
@@ -809,9 +819,11 @@
         "parity/orm-source-cases.json",
         "parity/runs/batch-7.json",
         "parity/profile-source-cases.json",
-        "parity/runs/batch-9.json"
+        "parity/runs/batch-9.json",
+        "parity/typed-orm-source-cases.json",
+        "parity/runs/batch-10.json"
       ],
-      "remaining": "13 original record/recover profile cases (19 assertions) now pass natively; original fixture oracle blocked before collection. Standalone profile functions cover paths/hints/delimiters, native FieldOrder metadata required for JS argument insertion order. Cache prefetch/eviction, cross-event profile integration, lifecycle/metrics, COPY performance and remaining exact source cases unimplemented."
+      "remaining": "Event-local prefetch/negative cache, spillover eviction, memory budget and shared cross-event profile metadata implemented and tested on both backends. One original eviction case mapped. Exact original deploy/mint+readonly metadata prefetch case remains unmapped; automatic runtime event/count/FieldOrder wiring, full metrics/lifecycle, V8 heap budget equivalence and performance parity remain."
     }
   ]
 }

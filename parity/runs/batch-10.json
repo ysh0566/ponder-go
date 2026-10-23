@@ -1,0 +1,214 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "from_commit": "76f125d",
+  "commands": [
+    "PONDER_TEST_POSTGRES=<task-only localhost:53398> ./tools/verify.sh",
+    "node tools/orm-compile-fixtures.mjs (real go build positive/negative fixtures)",
+    "go test -count=1 -json ./orm",
+    "go test -count=1 -json ./store -run ^TestUpstreamORMErrors$",
+    "go test -count=1 -json ./store -run ^(TestUpstreamCacheEviction|TestNativeProfilePrefetch|TestCacheConcurrentReadModifyWrite|TestProfileAcrossRollbackAndReorg|TestCacheMemoryBudget)$"
+  ],
+  "verification_exit_code": 0,
+  "new_source_records": 5,
+  "new_source_runtime_assertions": 14,
+  "new_source_error_directives": 5,
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 360,
+    "pass": 360,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 360,
+    "pass": 360,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 81,
+        "pass": 81,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 81,
+        "pass": 81,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 80,
+        "pass": 80,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 80,
+        "pass": 80,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 222,
+    "unimplemented": 683,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 218,
+    "passed_with_required_type_checks": 218,
+    "original_oracle_also_passed": 167,
+    "original_oracle_blocked": 51
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 171,
+    "mapped_blocked": 51,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 169,
+    "passed": 167,
+    "failed": 0
+  },
+  "abi_type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "orm_type_fixtures": {
+    "source_error_directives": 5,
+    "source_error_directives_passed": 5,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  },
+  "type_scope": {
+    "dedicated_source_records": 73,
+    "dedicated_retained_sdk_passed": 1,
+    "inline_assertions_discovered": 63,
+    "inline_assertions_native_compiled": 53,
+    "error_directives_discovered": 84,
+    "error_directives_native_verified": 6,
+    "error_directives_retained_sdk_verified": 1
+  },
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.27.1 darwin/arm64",
+    "node": "v25.2.1",
+    "differences": []
+  },
+  "foundry": {
+    "required": "1.8.5",
+    "installed": "0.2.0",
+    "status": "pending_approval",
+    "installation_executed": false,
+    "dependency_evidence": "parity/foundry-generation-dependencies.json"
+  },
+  "implemented": [
+    "Native scalar typed model/key/insert/update API, codegen --typed and bigint/nullable JSON roundtrip",
+    "Real compiler rejection of missing required constructor inputs, wrong model/column/value/NULL/key and primary-key update fields",
+    "Original PK error/missing rows/offchain/notNull/eviction cases with source assertions and associated compiler requirements",
+    "Profile sampling/threshold prediction, batched prefetch, negative cache, spillover and budget eviction",
+    "Shared event profile metadata with transaction-local business rows; concurrent updates and rollback/reorg cache recovery"
+  ],
+  "limitations": [
+    "Typed generator scalar subset: JSON/bytes/arrays/custom codecs rejected explicitly; no any fallback.",
+    "Required constructor calls are compiler-enforced; Go zero-value syntax is legal and guarded at runtime. Dynamic Row remains explicit escape, including code generated into the calling package.",
+    "Native string Hex/enum domains do not reproduce TS template-literal/union type constraints.",
+    "Native budget defaults to 128MiB with Node-style size estimate; no V8 heap/performance equivalence claim.",
+    "Runtime still must supply ProfileEvent callback/count/data/FieldOrder; source metadata prefetch deploy/mint+readonly fixture remains unmapped.",
+    "Remaining database actions, empty-schema finalization semantics, full source/trace/multichain/query/CLI and all remaining tests are unfinished."
+  ],
+  "evidence": {
+    "parity/runs/batch-10-evidence/batch-10-verify.txt": {
+      "original_path": "parity/runs/batch-10-verify.txt",
+      "sha256": "1f5c5a1d32675e8e8bbe216870884ad74a8810eff59c72a05c41dff637075efe"
+    },
+    "parity/runs/batch-10-evidence/go-test.jsonl": {
+      "original_path": "parity/runs/go-test.jsonl",
+      "sha256": "28b261ee3553c5ffbec651c4fcab676cba94f54e588b27cb083b726a2d862c3e"
+    },
+    "parity/runs/batch-10-evidence/go-race.jsonl": {
+      "original_path": "parity/runs/go-race.jsonl",
+      "sha256": "92ce5d7ea68d0c5e8e9859e5de1258fffe06ce38392d9511e6d99973c6728904"
+    },
+    "parity/runs/batch-10-evidence/core-oracle.json": {
+      "original_path": "parity/runs/core-oracle.json",
+      "sha256": "35265a8a6c0f6d4b88f24561ebcc0966be8bda7f42edcaaef6221198af94404d"
+    },
+    "parity/runs/batch-10-evidence/compile-fixtures.json": {
+      "original_path": "parity/runs/compile-fixtures.json",
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    },
+    "parity/runs/batch-10-evidence/orm-compile-fixtures.json": {
+      "original_path": "parity/runs/orm-compile-fixtures.json",
+      "sha256": "5a8edc343cbda0d2749e9ef9cd06d121bf87a24952b7ab9c24981286c569224c"
+    },
+    "parity/runs/batch-10-evidence/orm-errors-go.jsonl": {
+      "original_path": "parity/runs/orm-errors-go.jsonl",
+      "sha256": "6ee4032ba13150023c7732d0c8172544bab5909181ea153fc20b564785b9ab68"
+    },
+    "parity/runs/batch-10-evidence/prefetch-green.jsonl": {
+      "original_path": "parity/runs/prefetch-green.jsonl",
+      "sha256": "c4468d091fe5f670afd00ac5d0a3216572ea54f9690401f991b9dc7f0abeaac1"
+    },
+    "parity/runs/batch-10-evidence/prefetch-recovery-go.jsonl": {
+      "original_path": "parity/runs/prefetch-recovery-go.jsonl",
+      "sha256": "a4d7bdcd4e1d610f13216d35b3789182dfcd1764d6a0cb4dac6feb87db9c52bf"
+    },
+    "parity/runs/batch-10-evidence/typed-json-red.jsonl": {
+      "original_path": "parity/runs/typed-json-red.jsonl",
+      "sha256": "92eec32af645fdd3c9a27e125a7770f962eb32f2be5d4a8e18fa237961d35532"
+    },
+    "parity/runs/batch-10-evidence/typed-json-green.jsonl": {
+      "original_path": "parity/runs/typed-json-green.jsonl",
+      "sha256": "a7dc28f6a4e91b08dbb72b350c72a8099ada09978f479231c3e93c6877fde49b"
+    },
+    "parity/runs/batch-10-evidence/typed-orm-source-cases.json": {
+      "original_path": "parity/typed-orm-source-cases.json",
+      "sha256": "c9f0d6e730fd27f496414bbc7e0c6232cb06bb943a47bfd7858184d1e1f42b0f"
+    },
+    "parity/runs/batch-10-evidence/foundry-generation-dependencies.json": {
+      "original_path": "parity/foundry-generation-dependencies.json",
+      "sha256": "35b8710e1572f9af711a50ddbb88ac5d630440a0930d3708be928b0c99e15013"
+    }
+  }
+}

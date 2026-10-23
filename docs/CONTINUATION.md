@@ -13,7 +13,7 @@
 
 ## 下一可执行批次
 
-1. 从最新提交和 summary.json 恢复。M9/10 完成缓冲 ORM 和无损 undo，M11 再移植 profile 13 例：累计 217（213 Go + 4 SDK）；Go oracle 167 通过、46 fixture oracle 阻塞，688 静态记录未实现。不要重做已通过源例；精确结果以 summary.json 为准。
+1. 从最新提交和 summary.json 恢复。M9/10 完成缓冲 ORM 和无损 undo，M11 再移植 profile 13 例：M12 新增 typed ORM/error/eviction 5 条映射后累计 222（218 Go + 4 SDK）；Go oracle 167 通过、51 fixture oracle 阻塞，683 静态记录未实现。不要重做已通过源例；精确结果以 summary.json 为准。
 2. store/indexing.go 已新增 Writer.Indexing 原生缓冲 API、返回值副本、insert/update/upsert/delete、显式 NULL/Undefined、defaults、typed Select 和 Cache.Flush/Clear/Invalidate。继续 missing rows、notNull、PK 更改、onchain table、完整 SQL 等含类型错误指令的原例，必须连同 Go 编译失败 fixture 一起移植。Promise thenable 是独立语言适配，尚未映射；profile 的 record/recover/key 纯函数已在 store/profile.go，13 原例映射；cache prefetch/eviction、跨事件 profile 集成和生命周期仍未实现。完整 Drizzle ORM、关系 DSL、actions commitBlock/trigger 原内部布局、空 schema finalization 和大通知 payload 仍待完成。
 3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments、sync-store 原事件和 factory 原 E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
 4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。自动 finalize 和无表 finalization 边界也待实现。
@@ -138,3 +138,19 @@ store/profile.go 新增 RecordProfilePattern / RecoverProfilePattern / ProfilePa
 4. database/actions 原例继续 commitBlock/完整 trigger 布局、empty schema finalize、通知大 payload；之后 source/filter/fragments/raw event store/trace/多链/GraphQL/CLI 仍为完整目标。
 
 M11 最终完整 verify 退出 0：Go/race 各 334/334，PG 69/69、PGlite 68/68；完整构建和既有可运行 oracle/SDK/type/differential 均通过。累计 217 映射，213 Go 通过、167 Go 原版 oracle 也通过、46 原版 fixture 阻塞，SDK4通过，688未实现。阶段结束时无正在等待的测试；下一轮先确认 git diff/status 与 batch-9.json。
+
+## M12：typed ORM、真实编译 fixture 与 cache 预取
+
+新增 orm/orm.go、orm/generate.go 与 CLI codegen --typed。当前生成器支持 scalar 模型，提供模型专属 Key/Insert/Update/Row、必填参数构造器、nullable/unchanged patch、排除主键的 update、typed CRUD/Select、标准 JSON 往返。big.Int 用值类型拒绝隐式 nil，编码时深拷贝到原生 *big.Int。生成 row 的 MarshalJSON 避免按值编码 big.Int 得到 {}，Nullable 区分 null 与零值。JSON/bytes/array/custom column 的 typed 生成暂明确报不支持，不降为 any。Go 的零值语法不可禁止，零值 Key/Insert 在运行时由构造器守卫拒绝；不能宣传缺字段 struct literal 会像 TS 一样编译失败。
+
+编译证据：tools/orm-compile-fixtures.mjs 真正 go build 成功/失败文件。5 条源错误义务对应 PK 更新两条、missing rows、offchain 绑定和 nullable/strict 模型重赋值；另有 6 个补充负向检查（错误列/值/模型/NULL/key）。每项要求正例编译成功、负例因预期诊断失败，并保存文件 hash、生成模型和 API/tool 输入 hash。record-results 合并 ABI/ORM 编译义务，未满足就阻塞源用例，不靠运行时返回 error 给类型 credit。5 个新增源记录与 14 条 runtime 断言在 parity/typed-orm-source-cases.json。
+
+store/prefetch.go 已有 callback profile 采样、阈值预测、批量 SELECT、缺失行负缓存、spillover 一轮保留、两轮无预测淘汰和内存预算淘汰。profile 通过 Store 在事件间共享，业务行与未提交 buffer 始终留在事件事务作用域，防止回滚/reorg 后脏缓存。默认 native 预算 128MiB，可 CacheOptions.MaxBytes 指定；字节计数是 Node 风格估计、native 安全复合键编码会与原 key 长度不同，不声称精确 V8 heap 行为。runtime 仍须提供 Cache.SetProfileEvent(callback/count/data/FieldOrder)，完整自动接入及指标还未完成。
+
+原版 eviction 原例逐例移植（invalidate、0 地址/10n、flush、两次空 prefetch、has=false）。原版 uses profile metadata 保持未实现：真实 deploy/mint fixture 与 readonly event 类型义务不能用本轮合成 native 事件替代。补充验证覆盖两个后端的存在/缺失预测、32 goroutine 更新与副本隔离、跨事件 profile、事务失败后的预取、reorg 后负缓存、内存预算、typed CRUD/nullable/JSON。它们不增加源数量。
+
+生成依赖审计在 parity/foundry-generation-dependencies.json：packages/core/wagmi.config.ts Foundry plugin 默认运行 forge config + forge build --root src/_test/contracts，然后读 out artifacts 生成 _test/generated.ts；当前 out 不存在，CI 要求1.8.5，本机0.2.0。许可仍 pending，未安装/未重写 import/未提供替代 fixture。
+
+本轮下一步先读 batch-10.json、summary 和最终提交。原版 database/actions 的 commitBlock/isolated 仍需显式覆盖 MAX checkpoint 暂态、对应 chain commit 和所有 journal 断言，不能用现有 Apply 的最终结果冒充；empty schema finalize 原例允许更新 finalized/safe 而保留 latest，当前 native Finalize 仍要求 indexed progress，此处尚未实现。live query 大 payload、完整 source/trace/multichain/GraphQL/CLI/typed容器/全部其余测试仍按 feature ledger 继续。
+
+M12 最终完整 verify 退出0：Go/race各360/360，PG81/PGlite80分别全通过；source222（Go218+SDK4），Go oracle167通过、51阻塞，683未实现。ABI源类型错误1+ORM5共6条natively verified，额外ABI53/ORM6负向控制分开。原profiles/fixture oracle限制不变。无正在等待的测试；先核对最后提交及batch-10.json，再推进剩余database actions。

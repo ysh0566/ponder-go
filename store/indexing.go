@@ -29,7 +29,11 @@ type NotNullConstraintError struct{ NonRetryableUserError }
 type BigIntSerializationError struct{ NonRetryableUserError }
 type InvalidStoreAccessError struct{ NonRetryableUserError }
 
-type CacheOptions struct{ Complete bool }
+type CacheOptions struct {
+	Complete bool
+	MaxBytes int64
+	Profile  *CacheProfile
+}
 type ConflictAction int
 
 const (
@@ -54,6 +58,9 @@ type IndexingStore struct {
 func (db *IndexingStore) Close() { db.writer.closed.Store(true) }
 
 type tableCache struct {
+	prefetched, spillover    map[string]bool
+	diskReads                uint64
+	bytes                    int64
 	rows                     map[string]Row
 	inserts                  map[string]Row
 	updates                  map[string]Row
@@ -61,9 +68,12 @@ type tableCache struct {
 	complete                 bool
 }
 type IndexingCache struct {
-	mu     sync.Mutex
-	db     *IndexingStore
-	tables map[string]*tableCache
+	profileState *CacheProfile
+	profileEvent *ProfileEvent
+	maxBytes     int64
+	mu           sync.Mutex
+	db           *IndexingStore
+	tables       map[string]*tableCache
 }
 
 func (w *Writer) indexingSession() *IndexingStore {
@@ -82,9 +92,22 @@ func (w *Writer) Indexing(options ...CacheOptions) *IndexingStore {
 	}
 	complete := len(options) > 0 && options[0].Complete
 	db := &IndexingStore{writer: w}
-	db.Cache = &IndexingCache{db: db, tables: map[string]*tableCache{}}
+	profile := w.s.profileState
+	maxBytes := int64(128 << 20)
+	if len(options) > 0 {
+		if options[0].Profile != nil {
+			profile = options[0].Profile
+		}
+		if options[0].MaxBytes > 0 {
+			maxBytes = options[0].MaxBytes
+		}
+	}
+	if profile == nil {
+		profile = NewCacheProfile()
+	}
+	db.Cache = &IndexingCache{db: db, tables: map[string]*tableCache{}, profileState: profile, maxBytes: maxBytes}
 	for _, table := range w.s.Schema.Tables {
-		db.Cache.tables[table.Name] = &tableCache{rows: map[string]Row{}, inserts: map[string]Row{}, updates: map[string]Row{}, complete: complete}
+		db.Cache.tables[table.Name] = &tableCache{rows: map[string]Row{}, inserts: map[string]Row{}, updates: map[string]Row{}, complete: complete, prefetched: map[string]bool{}, spillover: map[string]bool{}}
 	}
 	w.orm = db
 	return db
@@ -209,6 +232,9 @@ func cacheKey(t schema.Table, key Row) (string, error) {
 	return string(raw), e
 }
 func (db *IndexingStore) get(ctx context.Context, t schema.Table, cache *tableCache, key Row) (Row, error) {
+	if e := db.Cache.recordProfile(t, key); e != nil {
+		return nil, e
+	}
 	ck, e := cacheKey(t, key)
 	if e != nil {
 		return nil, e
@@ -220,11 +246,16 @@ func (db *IndexingStore) get(ctx context.Context, t schema.Table, cache *tableCa
 		return row, nil
 	}
 	if row, ok := cache.rows[ck]; ok {
+		if !cache.complete && !cache.prefetched[ck] {
+			cache.spillover[ck] = true
+		}
 		return row, nil
 	}
+	cache.diskReads++
 	if cache.complete {
 		return nil, nil
 	}
+	cache.spillover[ck] = true
 	physical := Row{}
 	for _, c := range t.Columns {
 		if v, ok := key[property(c)]; ok {
@@ -550,6 +581,7 @@ func (cache *IndexingCache) Clear() {
 		c.updates = map[string]Row{}
 		c.insertOrder = nil
 		c.updateOrder = nil
+		c.spillover = map[string]bool{}
 	}
 }
 func (cache *IndexingCache) Invalidate() {
@@ -626,9 +658,15 @@ func (cache *IndexingCache) flush(ctx context.Context, checkActive bool, tables 
 		}
 		c := cache.tables[t.Name]
 		for key, row := range c.inserts {
+			if _, exists := c.rows[key]; c.complete && !exists {
+				c.bytes += cacheValueBytes(row) + cacheValueBytes(key)
+			}
 			c.rows[key] = row
 		}
 		for key, row := range c.updates {
+			if _, exists := c.rows[key]; c.complete && !exists {
+				c.bytes += cacheValueBytes(row) + cacheValueBytes(key)
+			}
 			c.rows[key] = row
 		}
 		c.inserts = map[string]Row{}
