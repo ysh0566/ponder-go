@@ -6,7 +6,7 @@
 
 - 工作目录 `/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-go`。
 - 完整上游 `/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-upstream`，固定 `17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`。
-- 已创建本地 Go Git 仓库；不添加远端，不推送、开 PR 或部署。
+- 已创建独立 Go Git 仓库。用户后续明确授权创建 `ysh0566` 名下私有仓库并推送经验证阶段；每次确认账号、远端与 SHA，不开 PR、不部署。Foundry 安装仍待批准。
 - 已启动现有 Docker Desktop，并创建 `ponder-go-task-20261023` / `ponder_go_task_20261023`。先 `docker inspect` 核对存在和 `127.0.0.1:53398`，直接复用；不要操作其他容器。
 - Go 缓存位于 `.toolcache/`，基线 npm 依赖已按冻结 lockfile 安装。所有 SDK 源码原样保留在 `sdk/typescript/`。
 - 计划 PDF `libfile_90c2e75070c481918ecace631e841e0f` 下载失败，没有本地副本；完整需求已经在初始委托中给出，无需等待它。
