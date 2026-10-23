@@ -876,6 +876,26 @@
         "parity/runs/notify-final-race.jsonl"
       ],
       "remaining": "Native PostgreSQL dedicated LISTEN connection and PGlite async notification framing verified. No automatic reconnection/replay, views-schema channels, database role setup or external SSE integration yet. Staged primitive Revert/CrashRecovery preserve source metadata semantics; full runtime notification scheduler remains."
+    },
+    {
+      "id": "database-lifecycle",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/lifecycle.go",
+        "store/store.go",
+        "store/actions.go",
+        "store/sync.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/index.ts",
+        "packages/core/src/database/index.test.ts"
+      ],
+      "evidence": [
+        "parity/lifecycle-source-cases.json",
+        "parity/runs/lifecycle-boundaries-race.jsonl",
+        "parity/runs/lifecycle-crash-race.jsonl"
+      ],
+      "remaining": "First eight source startup/lock/heartbeat/index-recovery records mapped; full oracle still blocked. Native leases fence business/sync/factory/RPC-cache writes. Dev reset, source historical baseline/recovery row fixture, all migrateSync latest/legacy/snapshot tests, views-schema aliases, roles and automatic staged runtime/reorg scheduler remain incomplete."
     }
   ]
 }

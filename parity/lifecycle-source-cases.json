@@ -1,0 +1,400 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "Eight source records, 21 assertions, 15 applicable backend source leaves. Native fencing/failure/process-exit tests do not add source credit.",
+  "native_metadata_version": "6, with a separate persisted fencing token; not an old Ponder DB adoption",
+  "cases": [
+    {
+      "source_id": "ff74c6c71a871121c108",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrate() succeeds with empty schema",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      ordering: \"multichain\",\n      databaseConfig: context.databaseConfig,\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "tableNames = await getUserTableNames(database, \"public\")",
+        "metadata = await database.userQB.wrap((db) =>\n    db.select().from(sql`_ponder_meta`),\n  )"
+      ],
+      "test_source": "test(\"migrate() succeeds with empty schema\", async () => {\n  const database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      ordering: \"multichain\",\n      databaseConfig: context.databaseConfig,\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await database.migrate({\n    buildId: \"abc\",\n    chains: [],\n    finalizedBlocks: [],\n  });\n\n  const tableNames = await getUserTableNames(database, \"public\");\n  expect(tableNames).toContain(\"account\");\n  expect(tableNames).toContain(\"_reorg__account\");\n  expect(tableNames).toContain(\"_ponder_meta\");\n\n  const metadata = await database.userQB.wrap((db) =>\n    db.select().from(sql`_ponder_meta`),\n  );\n\n  expect(metadata).toHaveLength(1);\n\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 112,
+          "text": "expect(tableNames).toContain(\"account\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 113,
+          "text": "expect(tableNames).toContain(\"_reorg__account\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 114,
+          "text": "expect(tableNames).toContain(\"_ponder_meta\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 120,
+          "text": "expect(metadata).toHaveLength(1)"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrate() succeeds with empty schema",
+        "source_id": "ff74c6c71a871121c108",
+        "source_line": 85,
+        "assertions_sha256": "0c6447877b0f2e4731f23ba70c5f75288d7ff1c39886b406d4ec35c80a9436ff",
+        "original_assertions": 4,
+        "target_file": "store/lifecycle_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamDatabaseLifecycle/postgres/migrate()_succeeds_with_empty_schema",
+        "assertion_policy": "All original inputs, schema/enum/view definitions, duplicate kyle containment assertions, abc/def build IDs, shutdown/reopen order, heartbeat milliseconds and error/metadata/catalog assertions preserved. Native owned namespace replaces public; _ponder_meta maps to the real singleton _ponder_go_app table, _ponder_checkpoint latest to _ponder_go_progress, and each per-table reorg containment assertion checks the real persisted native global journal. This is an explicit physical-storage adaptation, not source raw-layout compatibility. Native startup does not adopt unmanaged or upstream databases. PostgreSQL is the primary source mapping; PGlite companion runs only source-applicable branches. Original waiting-for-active-lock failure returns before its assertion on PGlite and receives no companion credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database lifecycle fixture imports generated contracts. Foundry 1.8.5 remains pending approval; no generated replacement or modified source assertions.",
+          "evidence": "parity/runs/lifecycle-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "2cc3017d73cff9f004eb",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrate() with empty schema creates tables, views, and enums",
+      "source_state": "active",
+      "source_inputs": [
+        "mood = onchainEnum(\"mood\", [\"sad\", \"happy\"])",
+        "kyle = onchainTable(\"kyle\", (p) => ({\n    age: p.integer().primaryKey(),\n    mood: mood().notNull(),\n  }))",
+        "user = onchainTable(\n    \"table\",\n    (p) => ({\n      name: p.text(),\n      age: p.integer(),\n      address: p.hex(),\n    }),\n    (table) => ({\n      primaryKeys: primaryKey({ columns: [table.name, table.address] }),\n    }),\n  )",
+        "userView = onchainView(\"user_view\").as((qb) => qb.select().from(user))",
+        "database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account, kyle, mood, user, userView },\n      statements: buildSchema({\n        schema: { account, kyle, mood, user, userView },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "tableNames = await getUserTableNames(database, \"public\")",
+        "viewNames = await getUserViewNames(database, \"public\")"
+      ],
+      "test_source": "test(\"migrate() with empty schema creates tables, views, and enums\", async () => {\n  const mood = onchainEnum(\"mood\", [\"sad\", \"happy\"]);\n\n  const kyle = onchainTable(\"kyle\", (p) => ({\n    age: p.integer().primaryKey(),\n    mood: mood().notNull(),\n  }));\n\n  const user = onchainTable(\n    \"table\",\n    (p) => ({\n      name: p.text(),\n      age: p.integer(),\n      address: p.hex(),\n    }),\n    (table) => ({\n      primaryKeys: primaryKey({ columns: [table.name, table.address] }),\n    }),\n  );\n\n  const userView = onchainView(\"user_view\").as((qb) => qb.select().from(user));\n\n  const database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account, kyle, mood, user, userView },\n      statements: buildSchema({\n        schema: { account, kyle, mood, user, userView },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await database.migrate({\n    buildId: \"abc\",\n    chains: [],\n    finalizedBlocks: [],\n  });\n\n  const tableNames = await getUserTableNames(database, \"public\");\n  expect(tableNames).toContain(\"account\");\n  expect(tableNames).toContain(\"_reorg__account\");\n  expect(tableNames).toContain(\"kyle\");\n  expect(tableNames).toContain(\"_reorg__kyle\");\n  expect(tableNames).toContain(\"kyle\");\n  expect(tableNames).toContain(\"_reorg__kyle\");\n  expect(tableNames).toContain(\"_ponder_meta\");\n  expect(tableNames).toContain(\"_ponder_checkpoint\");\n\n  const viewNames = await getUserViewNames(database, \"public\");\n  expect(viewNames).toContain(\"user_view\");\n\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 173,
+          "text": "expect(tableNames).toContain(\"account\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 174,
+          "text": "expect(tableNames).toContain(\"_reorg__account\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 175,
+          "text": "expect(tableNames).toContain(\"kyle\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 176,
+          "text": "expect(tableNames).toContain(\"_reorg__kyle\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 177,
+          "text": "expect(tableNames).toContain(\"kyle\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 178,
+          "text": "expect(tableNames).toContain(\"_reorg__kyle\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 179,
+          "text": "expect(tableNames).toContain(\"_ponder_meta\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 180,
+          "text": "expect(tableNames).toContain(\"_ponder_checkpoint\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 183,
+          "text": "expect(viewNames).toContain(\"user_view\")"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrate() with empty schema creates tables, views, and enums",
+        "source_id": "2cc3017d73cff9f004eb",
+        "source_line": 125,
+        "assertions_sha256": "acb326153e8ad199e5df905f7d030e4af88fa8c015ecdd248218e690b4cbcbd8",
+        "original_assertions": 9,
+        "target_file": "store/lifecycle_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamDatabaseLifecycle/postgres/migrate()_with_empty_schema_creates_tables,_views,_and_enums",
+        "assertion_policy": "All original inputs, schema/enum/view definitions, duplicate kyle containment assertions, abc/def build IDs, shutdown/reopen order, heartbeat milliseconds and error/metadata/catalog assertions preserved. Native owned namespace replaces public; _ponder_meta maps to the real singleton _ponder_go_app table, _ponder_checkpoint latest to _ponder_go_progress, and each per-table reorg containment assertion checks the real persisted native global journal. This is an explicit physical-storage adaptation, not source raw-layout compatibility. Native startup does not adopt unmanaged or upstream databases. PostgreSQL is the primary source mapping; PGlite companion runs only source-applicable branches. Original waiting-for-active-lock failure returns before its assertion on PGlite and receives no companion credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database lifecycle fixture imports generated contracts. Foundry 1.8.5 remains pending approval; no generated replacement or modified source assertions.",
+          "evidence": "parity/runs/lifecycle-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "5fdc659a3cd7dea27764",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrate() throws with schema used",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "databaseTwo = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "error = await databaseTwo\n    .migrate({\n      buildId: \"def\",\n      chains: [],\n      finalizedBlocks: [],\n    })\n    .catch((err) => err)"
+      ],
+      "test_source": "test(\"migrate() throws with schema used\", async () => {\n  const database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n  await database.migrate({\n    buildId: \"abc\",\n    chains: [],\n    finalizedBlocks: [],\n  });\n  await context.common.shutdown.kill();\n\n  context.common.shutdown = createShutdown();\n\n  const databaseTwo = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  const error = await databaseTwo\n    .migrate({\n      buildId: \"def\",\n      chains: [],\n      finalizedBlocks: [],\n    })\n    .catch((err) => err);\n\n  expect(error).toBeDefined();\n\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 243,
+          "text": "expect(error).toBeDefined()"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrate() throws with schema used",
+        "source_id": "5fdc659a3cd7dea27764",
+        "source_line": 188,
+        "assertions_sha256": "f0efd4bc59809072d33032adcf5e0021b16cb1bbcfbb7db22a93ccb48160ad81",
+        "original_assertions": 1,
+        "target_file": "store/lifecycle_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamDatabaseLifecycle/postgres/migrate()_throws_with_schema_used",
+        "assertion_policy": "All original inputs, schema/enum/view definitions, duplicate kyle containment assertions, abc/def build IDs, shutdown/reopen order, heartbeat milliseconds and error/metadata/catalog assertions preserved. Native owned namespace replaces public; _ponder_meta maps to the real singleton _ponder_go_app table, _ponder_checkpoint latest to _ponder_go_progress, and each per-table reorg containment assertion checks the real persisted native global journal. This is an explicit physical-storage adaptation, not source raw-layout compatibility. Native startup does not adopt unmanaged or upstream databases. PostgreSQL is the primary source mapping; PGlite companion runs only source-applicable branches. Original waiting-for-active-lock failure returns before its assertion on PGlite and receives no companion credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database lifecycle fixture imports generated contracts. Foundry 1.8.5 remains pending approval; no generated replacement or modified source assertions.",
+          "evidence": "parity/runs/lifecycle-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "a83c51b68d89c75c9095",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrate() throws with schema used after waiting for lock",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "databaseTwo = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "error = await databaseTwo\n    .migrate({\n      buildId: \"abc\",\n      chains: [],\n      finalizedBlocks: [],\n    })\n    .catch((err) => err)"
+      ],
+      "test_source": "test(\"migrate() throws with schema used after waiting for lock\", async () => {\n  if (context.databaseConfig.kind !== \"postgres\") return;\n\n  context.common.options.databaseHeartbeatInterval = 250;\n  context.common.options.databaseHeartbeatTimeout = 1000;\n\n  const database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n  await database.migrate({\n    buildId: \"abc\",\n    chains: [],\n    finalizedBlocks: [],\n  });\n\n  const databaseTwo = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  const error = await databaseTwo\n    .migrate({\n      buildId: \"abc\",\n      chains: [],\n      finalizedBlocks: [],\n    })\n    .catch((err) => err);\n\n  expect(error).toBeDefined();\n\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 307,
+          "text": "expect(error).toBeDefined()"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrate() throws with schema used after waiting for lock",
+        "source_id": "a83c51b68d89c75c9095",
+        "source_line": 250,
+        "assertions_sha256": "f0efd4bc59809072d33032adcf5e0021b16cb1bbcfbb7db22a93ccb48160ad81",
+        "original_assertions": 1,
+        "target_file": "store/lifecycle_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamDatabaseLifecycle/postgres/migrate()_throws_with_schema_used_after_waiting_for_lock",
+        "assertion_policy": "All original inputs, schema/enum/view definitions, duplicate kyle containment assertions, abc/def build IDs, shutdown/reopen order, heartbeat milliseconds and error/metadata/catalog assertions preserved. Native owned namespace replaces public; _ponder_meta maps to the real singleton _ponder_go_app table, _ponder_checkpoint latest to _ponder_go_progress, and each per-table reorg containment assertion checks the real persisted native global journal. This is an explicit physical-storage adaptation, not source raw-layout compatibility. Native startup does not adopt unmanaged or upstream databases. PostgreSQL is the primary source mapping; PGlite companion runs only source-applicable branches. Original waiting-for-active-lock failure returns before its assertion on PGlite and receives no companion credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database lifecycle fixture imports generated contracts. Foundry 1.8.5 remains pending approval; no generated replacement or modified source assertions.",
+          "evidence": "parity/runs/lifecycle-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "7960354f5e463685b86f",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrate() succeeds with crash recovery",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "databaseTwo = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "metadata = await databaseTwo.userQB.wrap((db) =>\n    db.select().from(getPonderMetaTable(\"public\")),\n  )",
+        "tableNames = await getUserTableNames(databaseTwo, \"public\")"
+      ],
+      "test_source": "test(\"migrate() succeeds with crash recovery\", async () => {\n  const database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await database.migrate({\n    buildId: \"abc\",\n    chains: [],\n    finalizedBlocks: [],\n  });\n  await context.common.shutdown.kill();\n\n  context.common.shutdown = createShutdown();\n\n  const databaseTwo = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await databaseTwo.migrate({\n    buildId: \"abc\",\n    chains: [],\n    finalizedBlocks: [],\n  });\n\n  const metadata = await databaseTwo.userQB.wrap((db) =>\n    db.select().from(getPonderMetaTable(\"public\")),\n  );\n\n  expect(metadata).toHaveLength(1);\n\n  const tableNames = await getUserTableNames(databaseTwo, \"public\");\n  expect(tableNames).toContain(\"account\");\n  expect(tableNames).toContain(\"_reorg__account\");\n  expect(tableNames).toContain(\"_ponder_meta\");\n\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 370,
+          "text": "expect(metadata).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 373,
+          "text": "expect(tableNames).toContain(\"account\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 374,
+          "text": "expect(tableNames).toContain(\"_reorg__account\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 375,
+          "text": "expect(tableNames).toContain(\"_ponder_meta\")"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrate() succeeds with crash recovery",
+        "source_id": "7960354f5e463685b86f",
+        "source_line": 312,
+        "assertions_sha256": "f8309772feac78899220b8a8bd3cc1ff7ea51e19726c665cea684bc7769e036d",
+        "original_assertions": 4,
+        "target_file": "store/lifecycle_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamDatabaseLifecycle/postgres/migrate()_succeeds_with_crash_recovery",
+        "assertion_policy": "All original inputs, schema/enum/view definitions, duplicate kyle containment assertions, abc/def build IDs, shutdown/reopen order, heartbeat milliseconds and error/metadata/catalog assertions preserved. Native owned namespace replaces public; _ponder_meta maps to the real singleton _ponder_go_app table, _ponder_checkpoint latest to _ponder_go_progress, and each per-table reorg containment assertion checks the real persisted native global journal. This is an explicit physical-storage adaptation, not source raw-layout compatibility. Native startup does not adopt unmanaged or upstream databases. PostgreSQL is the primary source mapping; PGlite companion runs only source-applicable branches. Original waiting-for-active-lock failure returns before its assertion on PGlite and receives no companion credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database lifecycle fixture imports generated contracts. Foundry 1.8.5 remains pending approval; no generated replacement or modified source assertions.",
+          "evidence": "parity/runs/lifecycle-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "27e6122359c0c7dc5ab0",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrate() succeeds with crash recovery after waiting for lock",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "databaseTwo = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })"
+      ],
+      "test_source": "test(\"migrate() succeeds with crash recovery after waiting for lock\", async () => {\n  context.common.options.databaseHeartbeatInterval = 750;\n  context.common.options.databaseHeartbeatTimeout = 500;\n\n  const database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n  await database.migrate({\n    buildId: \"abc\",\n    chains: [],\n    finalizedBlocks: [],\n  });\n\n  const databaseTwo = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await databaseTwo.migrate({\n    buildId: \"abc\",\n    chains: [],\n    finalizedBlocks: [],\n  });\n\n  await context.common.shutdown.kill();\n})",
+      "assertions": [],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrate() succeeds with crash recovery after waiting for lock",
+        "source_id": "27e6122359c0c7dc5ab0",
+        "source_line": 380,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original_assertions": 0,
+        "target_file": "store/lifecycle_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamDatabaseLifecycle/postgres/migrate()_succeeds_with_crash_recovery_after_waiting_for_lock",
+        "assertion_policy": "All original inputs, schema/enum/view definitions, duplicate kyle containment assertions, abc/def build IDs, shutdown/reopen order, heartbeat milliseconds and error/metadata/catalog assertions preserved. Native owned namespace replaces public; _ponder_meta maps to the real singleton _ponder_go_app table, _ponder_checkpoint latest to _ponder_go_progress, and each per-table reorg containment assertion checks the real persisted native global journal. This is an explicit physical-storage adaptation, not source raw-layout compatibility. Native startup does not adopt unmanaged or upstream databases. PostgreSQL is the primary source mapping; PGlite companion runs only source-applicable branches. Original waiting-for-active-lock failure returns before its assertion on PGlite and receives no companion credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database lifecycle fixture imports generated contracts. Foundry 1.8.5 remains pending approval; no generated replacement or modified source assertions.",
+          "evidence": "parity/runs/lifecycle-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "688108a7658e1ae083e3",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "migrate() with crash recovery drops indexes and triggers",
+      "source_state": "active",
+      "source_inputs": [
+        "account = onchainTable(\n    \"account\",\n    (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint(),\n    }),\n    (table) => ({\n      balanceIdx: index().on(table.balance),\n    }),\n  )",
+        "database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "databaseTwo = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "indexNames = await getUserIndexNames(databaseTwo, \"public\", \"account\")"
+      ],
+      "test_source": "test(\"migrate() with crash recovery drops indexes and triggers\", async () => {\n  const account = onchainTable(\n    \"account\",\n    (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint(),\n    }),\n    (table) => ({\n      balanceIdx: index().on(table.balance),\n    }),\n  );\n\n  const database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await database.migrate({\n    buildId: \"abc\",\n    chains: [],\n    finalizedBlocks: [],\n  });\n\n  await createIndexes(database.userQB, {\n    statements: buildSchema({\n      schema: { account },\n      preBuild: { ordering: \"multichain\" },\n    }).statements,\n  });\n\n  await database.userQB.wrap((db) =>\n    db.insert(getPonderCheckpointTable()).values({\n      chainId: 1,\n      chainName: \"mainnet\",\n      latestCheckpoint: createCheckpoint({ chainId: 1n, blockNumber: 10n }),\n      finalizedCheckpoint: createCheckpoint({ chainId: 1n, blockNumber: 10n }),\n      safeCheckpoint: createCheckpoint({ chainId: 1n, blockNumber: 10n }),\n    }),\n  );\n\n  await database.userQB.wrap((db) =>\n    db.update(getPonderMetaTable(\"public\")).set({\n      value: sql`jsonb_set(value, '{is_ready}', to_jsonb(1))`,\n    }),\n  );\n\n  await context.common.shutdown.kill();\n\n  context.common.shutdown = createShutdown();\n\n  const databaseTwo = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await databaseTwo.migrate({\n    buildId: \"abc\",\n    chains: [getChain()],\n    finalizedBlocks: [\n      {\n        timestamp: \"0x1\",\n        number: \"0xa\",\n        hash: \"0x\",\n        parentHash: \"0x\",\n      },\n    ],\n  });\n\n  const indexNames = await getUserIndexNames(databaseTwo, \"public\", \"account\");\n\n  expect(indexNames).toHaveLength(1);\n\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 1062,
+          "text": "expect(indexNames).toHaveLength(1)"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrate() with crash recovery drops indexes and triggers",
+        "source_id": "688108a7658e1ae083e3",
+        "source_line": 964,
+        "assertions_sha256": "fc12e13655109dbdf7b94462aeb84acdbb6cced592d3733f3e30879c2889f624",
+        "original_assertions": 1,
+        "target_file": "store/lifecycle_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamDatabaseLifecycle/postgres/migrate()_with_crash_recovery_drops_indexes_and_triggers",
+        "assertion_policy": "All original inputs, schema/enum/view definitions, duplicate kyle containment assertions, abc/def build IDs, shutdown/reopen order, heartbeat milliseconds and error/metadata/catalog assertions preserved. Native owned namespace replaces public; _ponder_meta maps to the real singleton _ponder_go_app table, _ponder_checkpoint latest to _ponder_go_progress, and each per-table reorg containment assertion checks the real persisted native global journal. This is an explicit physical-storage adaptation, not source raw-layout compatibility. Native startup does not adopt unmanaged or upstream databases. PostgreSQL is the primary source mapping; PGlite companion runs only source-applicable branches. Original waiting-for-active-lock failure returns before its assertion on PGlite and receives no companion credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database lifecycle fixture imports generated contracts. Foundry 1.8.5 remains pending approval; no generated replacement or modified source assertions.",
+          "evidence": "parity/runs/lifecycle-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "source_id": "dc7f1dcc697fcad856a8",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "source_name": "heartbeat updates the heartbeat_at value",
+      "source_state": "active",
+      "source_inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "row = await database.userQB.wrap((db) =>\n    db\n      .select()\n      .from(getPonderMetaTable(\"public\"))\n      .then((result) => result[0]!.value),\n  )",
+        "rowAfterHeartbeat = await database.userQB.wrap((db) =>\n    db\n      .select()\n      .from(getPonderMetaTable(\"public\"))\n      .then((result) => result[0]!.value),\n  )"
+      ],
+      "test_source": "test(\"heartbeat updates the heartbeat_at value\", async () => {\n  context.common.options.databaseHeartbeatInterval = 250;\n  context.common.options.databaseHeartbeatTimeout = 625;\n\n  const database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await database.migrate({\n    buildId: \"abc\",\n    chains: [],\n    finalizedBlocks: [],\n  });\n\n  const row = await database.userQB.wrap((db) =>\n    db\n      .select()\n      .from(getPonderMetaTable(\"public\"))\n      .then((result) => result[0]!.value),\n  );\n\n  await wait(500);\n\n  const rowAfterHeartbeat = await database.userQB.wrap((db) =>\n    db\n      .select()\n      .from(getPonderMetaTable(\"public\"))\n      .then((result) => result[0]!.value),\n  );\n\n  expect(BigInt(rowAfterHeartbeat!.heartbeat_at)).toBeGreaterThan(\n    row!.heartbeat_at,\n  );\n\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 1112,
+          "text": "expect(BigInt(rowAfterHeartbeat!.heartbeat_at)).toBeGreaterThan(\n    row!.heartbeat_at,\n  )"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "heartbeat updates the heartbeat_at value",
+        "source_id": "dc7f1dcc697fcad856a8",
+        "source_line": 1067,
+        "assertions_sha256": "a0eeb7efc6fcd269857a46a0a9149004802845e2b42859723b785f09ddc29ea6",
+        "original_assertions": 1,
+        "target_file": "store/lifecycle_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamDatabaseLifecycle/postgres/heartbeat_updates_the_heartbeat_at_value",
+        "assertion_policy": "All original inputs, schema/enum/view definitions, duplicate kyle containment assertions, abc/def build IDs, shutdown/reopen order, heartbeat milliseconds and error/metadata/catalog assertions preserved. Native owned namespace replaces public; _ponder_meta maps to the real singleton _ponder_go_app table, _ponder_checkpoint latest to _ponder_go_progress, and each per-table reorg containment assertion checks the real persisted native global journal. This is an explicit physical-storage adaptation, not source raw-layout compatibility. Native startup does not adopt unmanaged or upstream databases. PostgreSQL is the primary source mapping; PGlite companion runs only source-applicable branches. Original waiting-for-active-lock failure returns before its assertion on PGlite and receives no companion credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database lifecycle fixture imports generated contracts. Foundry 1.8.5 remains pending approval; no generated replacement or modified source assertions.",
+          "evidence": "parity/runs/lifecycle-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "All original lifecycle oracles remain blocked by the unchanged generated Foundry fixture.",
+    "Physical source reorg relations are represented by a native global journal; all corresponding real-catalog assertions remain explicit.",
+    "migrateSync latest/legacy/snapshot semantics, dev schema reset, views-schema aliases and source recovery row fixture remain unimplemented.",
+    "Default native heartbeat timing matches source 10s/25s. Fenced lease tokens and failed-startup cleanup are native additional safety checks.",
+    "Migrate returns source safe recovery checkpoints and leaves latest unchanged for the subsequent runtime step; automatic staged runtime integration still pending.",
+    "Process exits are application termination, not PostgreSQL server or host power-loss tests."
+  ],
+  "oracle_attempt": {
+    "command": "CI=1 vitest run --config tools/oracle.config.mjs --configLoader native src/database/index.test.ts --reporter=json",
+    "exit_code": 1,
+    "executed_tests": 0,
+    "failed_suites": 1,
+    "error": "Cannot find module './generated.js' imported from packages/core/src/_test/utils.ts",
+    "evidence": "parity/runs/lifecycle-oracle-blocked.json"
+  }
+}

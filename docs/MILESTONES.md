@@ -111,3 +111,13 @@ RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋check
 完整verify退出0：Go/race各414/414，无skip；PG108/108、PGlite107/107。vet/build、原版所选core167活动通过（另2个原skip）、SDK4、ABI/ORM编译义务、2466差分向量通过。累计229/905映射（225 Go +4 SDK），Go oracle167通过、58 fixture阻塞，676静态记录未实现。证据及hash见batch-12.json。自动staged runtime/重组通知调度、外部通知接入SQL/SSE、views-schema通道、角色权限与重连/重放均未完成。
 
 用户授权后创建私有 https://github.com/ysh0566/ponder-go 并推送至e9747c7；远端owner/private/SHA核验记录在publication-receipt.json。随后用户指出作者应为ysh0566，审计发现13个已发布提交使用plato9966/Codex。项目local身份已修正为ysh0566及API确认账户ID对应的官方noreply地址；全局不变。备份引用refs/backup/author-before-ysh0566保留，未改写/强推，后续推送等待用户确认历史修复。当前GitHub协作者API仅列owner，不能由此断言无人clone。Foundry安装仍待批准。
+
+## M15：启动租约、失败迁移和恢复事务
+
+历史身份修复获得用户明确批准后完成：13条错误身份改为ysh0566，旧e9747c7对应a7a1f30，原M14的6c9b2f1重接为8dc922b。14棵tree逐一相同，日期/消息保留，旧引用和工作区备份保留；之后仅普通快进发布，修复审计提交b478a1a。见author-repair.json。该一次强推许可已使用完，不扩展到后续历史修改。
+
+新增8条database/index源映射，保留21条断言及所有fixture、abc/def、heartbeat时间、重复kyle断言和原PGlite条件分支；PG8/PGlite7个源叶子通过。原物理meta/checkpoint/per-table reorg分别适配实际native app/progress/global journal，绝不声称原始布局兼容。NewLifecycle延迟到Migrate才做DDL；新影子创建、build/version/fingerprint检查、租约一次等待重试、heartbeat、条件unlock、same-build恢复和drop secondary index/trigger已实现。
+
+补充12个后端边界、8个真实进程退出叶子验证token fencing、旧close不解锁新owner、同步/factory/RPC写、失败恢复DDL+数据原子回滚、初始化清理、finalized时间、取消等待和慢启动。旧SaveBlock绕过fence的PG/PGlite红灯保留并修复。恢复撤销assigned/MAX保留journal，返回safe而不改latest；自动runtime接续仍待实现。没有服务端/宿主断电或并发多进程PGlite保证。
+
+完整verify退出0：Go/race各449/449，PG126/PGlite124各通过，无skip；vet/build、所选core167活动oracle（原skip2）、SDK4、ABI/ORM编译义务和2466差分向量通过。累计237/905（233 Go+4 SDK），Go原版oracle167通过、66fixture阻塞，668静态记录未实现。未改原版database/index测试的实际oracle尝试为收集前缺generated.js：0测试、1失败suite，不记oracle通过。精确命令和不可变证据hash见batch-13.json。Foundry仍未获安装许可。
