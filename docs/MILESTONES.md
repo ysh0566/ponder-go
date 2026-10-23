@@ -37,3 +37,13 @@ PostgreSQL 16.15 和 PGlite 0.2.13 均验证 CRUD/upsert、精确大整数 snaps
 ## M5：统一 trigger journal 与 raw SQL
 
 删除 Go 手动 journal，所有 business table DML 通过同一数据库 trigger 捕获。双后端验证批量 SQL、可更新视图、事件外写拒绝、savepoint 错误恢复、全局后缀回滚、PK/DDL/内部设置保护、journal CHECK 故障原子性。原客户端分别在 base/nested view、PG/PGlite 四种组合执行，每种 7 条协议断言通过。新增 2 个源 SQL case，Go 双后端通过；原版 oracle 因待批准的 Foundry 1.8.5 setup 阻塞，单独列出。当前整套 Go/race 各 138/138、无 skip；整体复刻仍未完成。
+
+## M6：ABI 参数、类型 fixture 与数据库 actions
+
+从 e6d0a4d 新增 74 条精确映射：ABI 参数 69 条活动 case（78 条 runtime 断言、53 条内联类型要求），database actions 4 条，indexing-store delete 1 条。ABI 的 2 条原版 skip 保留、不运行、不计通过。累计 163/905（159 Go + 4 SDK），742 未实现。原版 oracle 156 映射通过（152 Go + 4 SDK），7 条数据库 oracle 阻塞，不能称全部差分验证通过。
+
+真实 PostgreSQL/PGlite 本批各新增 5 条源 case 验证（计入单一 PG 映射，PGlite 为伴随验证），保留原 schema、NULL、10n/12n/88n、checkpoint 和全部断言。原 raw write + commitBlock 映射为原生原子 Apply。全套 Go/race 各 221/221；ABI typed runtime/race 各 53/53 另计。成功编译 fixture 53/53；额外负向控制 53/53 按预期拒绝，未充作源测试。所选 core oracle 活动 152 通过、原版 skip 2；原 ABI tsc 通过。vet/build/保留 SDK/2400 差分向量均通过，详见 batch-4-verification.txt 和 summary.json。
+
+台账独立列 source_records / mapped_go / retained_sdk / original_oracle / type_fixtures / simulation。63 个内联类型断言与 84 条错误指令现在显式发现，不能用 73 个专门类型记录代表全部类型义务；尚余 10 个内联义务、绝大部分专门类型测试和错误指令待移植。静态发现仍非动态穷尽证明。
+
+下一批继续 factory/offset 原测试与动态地址持久化、更多 DB cache/CRUD/actions。raw SQL 审计还发现 SELECT INTO 可能创建非声明表，下一步补显式拒绝与回归；完整 Drizzle、自动 finalize、无表 finalization 和多链 runtime 仍待实现。Foundry 安装仍待批准，不安装。

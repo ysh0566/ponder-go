@@ -436,6 +436,19 @@ func (w *Writer) Write(ctx context.Context, name string, row Row, mode WriteMode
 	w.changed[name] = true
 	return nil
 }
+
+// DeleteRow returns whether a row existed, matching the indexing-store delete
+// result. It uses the same transaction and trigger journal as all other writes.
+func (w *Writer) DeleteRow(ctx context.Context, name string, key Row) (bool, error) {
+	row, e := w.Find(ctx, name, key)
+	if e != nil || row == nil {
+		return false, e
+	}
+	if e = w.Write(ctx, name, key, Delete); e != nil {
+		return false, e
+	}
+	return true, nil
+}
 func (s *Store) Read(ctx context.Context, name string) (Result, error) {
 	if _, e := s.model(name); e != nil {
 		return Result{}, e

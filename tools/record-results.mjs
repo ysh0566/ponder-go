@@ -25,6 +25,10 @@ const goFile = exists("parity/runs/go-test.jsonl")
 	: "parity/foundation-go.jsonl";
 const go = goResults(goFile);
 const race = goResults("parity/runs/go-race.jsonl");
+const typedGo = goResults("parity/runs/abi-typed-go.jsonl");
+const compile = exists("parity/runs/compile-fixtures.json") ? read("parity/runs/compile-fixtures.json") : null;
+const parameterTypes = exists("parity/runs/parameters-typecheck.json") ? read("parity/runs/parameters-typecheck.json") : null;
+const fileHash = file => crypto.createHash("sha256").update(fs.readFileSync(path.join(root,file))).digest("hex");
 const oraclePath = exists("parity/runs/foundation-oracle.json")
 	? "parity/runs/foundation-oracle.json"
 	: "parity/foundation-oracle-focused.json";
@@ -38,6 +42,7 @@ const oracleReports = [
 		"parity/runs/finality-oracle.json",
 		"parity/runs/schema-oracle.json",
 		"parity/runs/event-oracle.json",
+		"parity/runs/parameters-oracle.json",
 		"parity/runs/indexing-store-oracle.json",
 		coreOraclePath,
 	]
@@ -51,18 +56,24 @@ function sdkResult(file, title) {
 }
 for (const test of ledger.tests) {
 	for (const selected of oracleReports) {
-		const original = (selected.report.testResults ?? [])
+		const originals = (selected.report.testResults ?? [])
 			.filter((x) =>
 				x.name.endsWith(test.source_file.replace("packages/core/", "")),
 			)
 			.flatMap((x) => x.assertionResults ?? [])
-			.find(
+			.filter(
 				(x) =>
 					[...(x.ancestorTitles ?? []), x.title].join(" > ") === test.full_name,
 			);
+		// The source contains duplicate suite/title paths. Match their occurrence
+		// order, never reuse the first test result for every matching record.
+		const occurrence = ledger.tests.filter(x => x.source_file === test.source_file && x.full_name === test.full_name && x.start < test.start).length;
+		const original = originals[occurrence];
 		if (original)
 			test.oracle = { status: original.status, evidence: selected.path };
 	}
+	if (test.source_file.endsWith("/decodeAbiParameters.test.ts") && parameterTypes?.source_sha256 === test.source_sha256)
+		test.oracle_types = {status: parameterTypes.exit_code === 0 ? "passed" : "failed", evidence:"parity/runs/parameters-typecheck.json"};
 	if (!test.mapping) continue;
 	if (!test.oracle && test.mapping.oracle_blocker)
 		test.oracle = { ...test.mapping.oracle_blocker };
@@ -87,6 +98,15 @@ for (const test of ledger.tests) {
 				status: race.get(key).Action,
 				evidence: "parity/runs/go-race.jsonl",
 			};
+		if (test.mapping.required_compile_source_id) {
+			const obligations = compile?.obligations.filter(x => x.source_id === test.id && x.source_sha256 === test.source_sha256) ?? [];
+			const expected = test.assertions.filter(x => x.kind === "type").length;
+			const typedKey = `ponder.local/ponder-go/abi/testdata/compile/generated:TestGeneratedTypedParameters/${test.id}`;
+			const valid = obligations.length === expected && expected > 0 && obligations.every(x => x.status === "passed" && [x.positive,x.negative_control,x.generated].every(f => exists(f.file) && fileHash(f.file) === f.sha256)) && typedGo.get(typedKey)?.Action === "pass";
+			test.type_verification = {status:valid?"passed":"blocked", obligations:expected, compile_evidence:"parity/runs/compile-fixtures.json", typed_runtime_evidence:"parity/runs/abi-typed-go.jsonl"};
+			test.runtime_status = status;
+			if (!valid) {status="skip";test.blockers.push("Native runtime alone is insufficient: inline type compilation/typed output evidence is incomplete.");}
+		}
 	}
 	if (status) {
 		if (test.mapping.target_kind === "retained_sdk")
@@ -104,6 +124,7 @@ for (const test of ledger.tests) {
 		if (status === "skip")
 			test.blockers.push("Execution reported skipped; no parity credit.");
 	}
+	test.parity_status = test.pass_status === "passed" ? test.oracle?.status === "passed" ? "target_and_original_oracle_passed" : test.oracle?.status === "blocked" ? "target_passed_original_oracle_blocked" : "target_passed_original_oracle_not_passed" : "mapped_target_not_passed";
 }
 ledger.summary = {
 	...ledger.summary,
@@ -126,6 +147,10 @@ ledger.summary = {
 	oracle_blocked: ledger.tests.filter(
 		(x) => x.mapping && x.oracle?.status === "blocked",
 	).length,
+	go_passed: ledger.tests.filter(x => x.mapping && x.mapping.target_kind !== "retained_sdk" && x.pass_status === "passed").length,
+	sdk_passed: ledger.tests.filter(x => x.mapping?.target_kind === "retained_sdk" && x.pass_status === "passed").length,
+	go_and_original_oracle_passed: ledger.tests.filter(x => x.mapping && x.mapping.target_kind !== "retained_sdk" && x.pass_status === "passed" && x.oracle?.status === "passed").length,
+	target_and_original_oracle_passed: ledger.tests.filter(x => x.mapping && x.pass_status === "passed" && x.oracle?.status === "passed").length,
 };
 fs.writeFileSync(
 	path.join(root, "parity/test-ledger.json"),
@@ -151,6 +176,13 @@ const summary = {
 	counting:
 		"Only exact source mappings count toward upstream parity. Native regression cases and generated differential vectors are separate evidence.",
 	parity: ledger.summary,
+	source_records: {statically_discovered:ledger.tests.length,mapped:ledger.summary.ported,unimplemented:ledger.summary.unimplemented,discovery_is_not_proven_runtime_exhaustive:true},
+	mapped_go: {mapped:ledger.summary.go_ports,passed_with_required_type_checks:ledger.summary.go_passed,original_oracle_also_passed:ledger.summary.go_and_original_oracle_passed,original_oracle_blocked:ledger.tests.filter(x=>x.mapping&&x.mapping.target_kind!=="retained_sdk"&&x.oracle?.status==="blocked").length},
+	retained_sdk: {mapped:ledger.summary.retained_sdk,passed:ledger.summary.sdk_passed},
+	original_oracle: {mapped_passed:ledger.summary.oracle_passed,mapped_blocked:ledger.summary.oracle_blocked,meaning:"Original tests executed separately; only explicit differential vectors are labelled differential verification."},
+	type_fixtures: compile?.summary ?? null,
+	typed_abi_runtime: {file:"parity/runs/abi-typed-go.jsonl",leaf_cases:leaves(typedGo).length,...count(leaves(typedGo)),counting:"Supplementary typed decoder execution; not additional source test records."},
+	simulation: {seed_space:"unbounded",status:"unimplemented",executed_seeds:0},
 	native_go: { file: goFile, leaf_cases: native.length, ...count(native) },
 	race: {
 		file: "parity/runs/go-race.jsonl",

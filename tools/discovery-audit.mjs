@@ -258,6 +258,8 @@ audit.counts = {
 	test_files: ledger.files.length,
 	static_records: ledger.tests.length,
 	type_records: ledger.tests.filter((x) => x.kind === "type").length,
+	inline_type_assertions: ledger.tests.filter(x=>x.kind!=="type").reduce((n,x)=>n+x.assertions.filter(a=>a.kind==="type").length,0),
+	type_error_directives: ledger.tests.reduce((n,x)=>n+x.type_error_directives.length,0),
 	client_records: ledger.tests.filter((x) =>
 		x.source_file.startsWith("packages/client/"),
 	).length,

@@ -1,0 +1,77 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "from_commit": "e6d0a4d",
+  "commands": [
+    "PONDER_TEST_POSTGRES=<task-only localhost:53398> ./tools/verify.sh",
+    "go test -count=1 -json ./store -run TestUpstreamDatabaseActions|TestUpstreamIndexingDelete"
+  ],
+  "versions": "go version go1.27.1 darwin/arm64\nv25.2.1\nvitest/5.0.2 darwin-arm64 node-v25.2.1\nanvil 0.2.0 (96105b4 2024-09-09T00:25:09.332232000Z)\n",
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 221,
+    "pass": 221,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 221,
+    "pass": 221,
+    "fail": 0,
+    "skip": 0
+  },
+  "typed_runtime": {
+    "file": "parity/runs/abi-typed-go.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0,
+    "counting": "Supplementary typed decoder execution; not additional source test records."
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 163,
+    "unimplemented": 742,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 159,
+    "passed_with_required_type_checks": 159,
+    "original_oracle_also_passed": 152,
+    "original_oracle_blocked": 7
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 156,
+    "mapped_blocked": 7,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "postgresql": {
+    "version": "16.15",
+    "container": "ponder-go-task-20261023",
+    "binding": "127.0.0.1:53398",
+    "new_source_cases_passed": 5
+  },
+  "pglite": {
+    "version": "0.2.13",
+    "new_source_companion_cases_passed": 5
+  },
+  "foundry": {
+    "installed": "0.2.0",
+    "required": "1.8.5",
+    "installation": "pending authorization; not attempted"
+  }
+}

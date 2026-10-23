@@ -1,0 +1,13 @@
+import fs from "node:fs";
+import crypto from "node:crypto";
+import path from "node:path";
+import {spawnSync} from "node:child_process";
+const root=path.resolve(import.meta.dirname,"..");
+const args=["--project","tools/parameters-typecheck.json"];
+const command="../ponder-upstream/node_modules/.bin/tsc";
+const r=spawnSync(command,args,{cwd:root,encoding:"utf8",timeout:45000});
+const source=fs.readFileSync(path.join(root,"../ponder-upstream/packages/core/src/utils/decodeAbiParameters.test.ts"));
+const report={command:[command,...args],exit_code:r.status,source_sha256:crypto.createHash("sha256").update(source).digest("hex"),diagnostics:r.stdout+r.stderr,error:r.error?.message??null,scope:"Complete unmodified source file, including all 53 inline expectTypeOf assertions and original skipped callbacks; skip callbacks are not runtime passes."};
+fs.writeFileSync(path.join(root,"parity/runs/parameters-typecheck.json"),JSON.stringify(report,null,2)+"\n");
+console.log({original_parameter_types:r.status===0?"passed":"failed",diagnostics:report.diagnostics});
+process.exitCode=r.status??1;

@@ -1,0 +1,57 @@
+package generated
+
+import (
+  "encoding/json"
+  "fmt"
+  "math/big"
+  "os"
+  "reflect"
+  "strings"
+  "testing"
+  "ponder.local/ponder-go/abi"
+)
+
+func normalized(v reflect.Value) any {
+  if v.Kind() == reflect.Interface { return normalized(v.Elem()) }
+  if n, ok := v.Interface().(*big.Int); ok { return map[string]any{"$bigint":n.String()} }
+  switch v.Kind() {
+  case reflect.Struct:
+    if v.NumField()>0 {
+      if _, ok := v.Type().Field(0).Tag.Lookup("abi"); ok {
+        out:=map[string]any{}
+        for i:=0;i<v.NumField();i++ { out[v.Type().Field(i).Tag.Get("abi")]=normalized(v.Field(i)) }
+        return out
+      }
+    }
+    out:=make([]any,v.NumField())
+    for i:=range out { out[i]=normalized(v.Field(i)) };return out
+  case reflect.Slice,reflect.Array:
+    out:=make([]any,v.Len())
+    for i:=range out { out[i]=normalized(v.Index(i)) };return out
+  case reflect.Int64:return json.Number(fmt.Sprint(v.Int()))
+  }
+  return v.Interface()
+}
+
+func TestGeneratedTypedParameters(t *testing.T) {
+  raw,e:=os.ReadFile("../../../../testdata/abi/parameter-cases.json");if e!=nil {t.Fatal(e)}
+  var cases []struct {ID string;Assertions []struct {Matcher string;Expected any}}
+  dec:=json.NewDecoder(strings.NewReader(string(raw)));dec.UseNumber();if e=dec.Decode(&cases);e!=nil {t.Fatal(e)}
+  decoders:=map[string]func()(any,error){
+// INSERT_DECODERS
+  }
+  for _,tc:=range cases {
+    decode,ok:=decoders[tc.ID];if !ok {continue}
+    t.Run(tc.ID,func(t *testing.T){
+      actual,e:=decode();if e!=nil {t.Fatal(e)}
+      assertions:=0
+      for _,a:=range tc.Assertions {
+        if a.Matcher=="expectTypeOf" {continue}
+        if a.Matcher!="toEqual"&&a.Matcher!="toMatchInlineSnapshot" {t.Fatalf("unexpected matcher %s",a.Matcher)}
+        assertions++
+        if !reflect.DeepEqual(normalized(reflect.ValueOf(actual)),a.Expected) {t.Fatalf("typed result %#v; want %#v",normalized(reflect.ValueOf(actual)),a.Expected)}
+      }
+      if assertions==0 {t.Fatal("missing source runtime assertion")}
+    })
+  }
+}
