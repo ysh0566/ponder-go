@@ -351,6 +351,11 @@ func (tx *crashTransaction) Exec(ctx context.Context, sql string, args ...any) e
 	business := strings.HasPrefix(sql, "INSERT INTO ") && strings.Contains(sql, `."account" `)
 	journal := strings.HasPrefix(sql, "INSERT INTO ") && strings.Contains(sql, `"_ponder_go_journal"`)
 	progress := strings.HasPrefix(sql, "INSERT INTO ") && strings.Contains(sql, `"_ponder_go_progress"`)
+	undo := strings.HasPrefix(sql, "DELETE FROM ") && strings.Contains(sql, `."account" WHERE`)
+	rewind := strings.HasPrefix(sql, "UPDATE ") && strings.Contains(sql, `."intervals" SET end_block=`)
+	if tx.stage == "after_undo" && undo || tx.stage == "after_sync_rewind" && rewind {
+		os.Exit(73)
+	}
 	if tx.stage == "after_business" && business || tx.stage == "after_journal" && journal || tx.stage == "after_progress" && progress {
 		os.Exit(73)
 	}

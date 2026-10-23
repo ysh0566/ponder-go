@@ -421,28 +421,41 @@
       "status": "verified_subset",
       "implementation_files": [
         "store/reorg.go",
-        "runtime/engine.go"
+        "runtime/engine.go",
+        "store/sync.go",
+        "store/reorg_crash_test.go",
+        "runtime/factory_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/database/actions.ts"
       ],
-      "evidence": [],
-      "remaining": "Global suffix, isolated, numeric restoration and real-chain replay verified; deep reorg/rebuild and all source fixtures remain."
+      "evidence": [
+        "parity/runs/batch-6.json",
+        "parity/runs/reorg-provenance-go.jsonl"
+      ],
+      "remaining": "Native single-database indexing/sync rewind is atomic; block headers precede handler commits. 6 additional process-exit boundaries and lost-commit-ack fork recovery pass on PG/PGlite. Original full reorg/crash source parity, multichain runtime and separate physical-database coordination pending; server/host power-loss not tested."
     },
     {
       "id": "crash-recovery",
       "status": "verified_subset",
       "implementation_files": [
         "store/store_test.go",
-        "store/backend.go"
+        "store/backend.go",
+        "store/reorg.go",
+        "store/sync.go",
+        "store/reorg_crash_test.go",
+        "runtime/engine.go",
+        "runtime/factory_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/database/actions.ts"
       ],
       "evidence": [
-        "parity/runs/store-crash-boundaries.jsonl"
+        "parity/runs/store-crash-boundaries.jsonl",
+        "parity/runs/batch-6.json",
+        "parity/runs/reorg-provenance-go.jsonl"
       ],
-      "remaining": "Four application-process boundaries tested per backend. Business mutation and journal capture now share one database statement; journal constraint failure proves that statement rolls back atomically. Server/host power loss and complete source checkpoint action mapping remain."
+      "remaining": "Native single-database indexing/sync rewind is atomic; block headers precede handler commits. 6 additional process-exit boundaries and lost-commit-ack fork recovery pass on PG/PGlite. Original full reorg/crash source parity, multichain runtime and separate physical-database coordination pending; server/host power-loss not tested."
     },
     {
       "id": "finalize",

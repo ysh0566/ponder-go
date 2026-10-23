@@ -28,3 +28,5 @@ The sync discovery transaction can commit before a handler fails. Retrying the h
 Native extraction rejects malformed/truncated child-address words. It preserves hex case in the extraction helper; persisted addresses use lowercase. This explicit validation is additional native behavior for malformed RPC input.
 
 The six original builder tests and seven offset tests are exact source mappings. The two backend integration tests and 66 synthetic builder differential vectors are separate evidence. Original full factory E2E, all runtime filter/fragments cases, account/trace factory sources and multichain scheduling remain pending. See `parity/test-ledger.json` and `parity/feature-ledger.json`.
+
+`Store.RevertAndRewind` combines indexing undo and sync rewind in one transaction on the current shared native backend. A block header is saved before its first handler commit, while its completed interval is saved only after successful processing. Tests also cover a lost handler commit acknowledgement followed by database reopen and a fork before block completion. Distinct physical sync/indexing databases would need a separate durable coordinator and are not implemented.

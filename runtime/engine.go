@@ -195,8 +195,11 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 	}
 	n := min(cp.BlockNumber, head)
 	stored, err := e.Store.SyncedBlock(ctx, e.chain.ID, n)
-	if err != nil || stored == nil {
+	if err != nil {
 		return err
+	}
+	if stored == nil {
+		return fmt.Errorf("indexed progress is missing its persisted block header; shadow rebuild required")
 	}
 	canonical, err := e.block(ctx, Hex(n))
 	if err != nil {
@@ -219,10 +222,7 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 			if err != nil {
 				return err
 			}
-			if err = e.Store.Revert(ctx, checkpoint.Block(timestamp, e.chain.ID, n, true)); err != nil {
-				return err
-			}
-			return e.Store.RewindSync(ctx, e.chain.ID, n)
+			return e.Store.RevertAndRewind(ctx, checkpoint.Block(timestamp, e.chain.ID, n, true))
 		}
 		if n == 0 {
 			return fmt.Errorf("no common persisted ancestor; shadow rebuild required")
@@ -244,6 +244,13 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 	}
 	timestamp, err := Number(b.Timestamp)
 	if err != nil {
+		return err
+	}
+	payload, err := json.Marshal(b)
+	if err != nil {
+		return err
+	}
+	if err = e.Store.SaveBlock(ctx, store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}); err != nil {
 		return err
 	}
 	base := checkpoint.Block(timestamp, e.chain.ID, number, false)
@@ -360,8 +367,7 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 	if err = e.Store.Apply(ctx, store.Event{ID: fmt.Sprintf("complete:%d:%s", e.chain.ID, b.Hash), Checkpoint: checkpoint.Block(timestamp, e.chain.ID, number, true)}, func(*store.Writer) error { return nil }); err != nil {
 		return err
 	}
-	raw, _ := json.Marshal(b)
-	return e.Store.CompleteBlock(ctx, store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: raw}, e.filter)
+	return e.Store.CompleteBlock(ctx, store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}, e.filter)
 }
 func (e *Engine) Run(ctx context.Context) error {
 	delay := time.Duration(e.chain.PollingIntervalMS) * time.Millisecond

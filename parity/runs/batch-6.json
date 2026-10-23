@@ -1,0 +1,169 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "from_commit": "f7d9ba1",
+  "commands": [
+    "PONDER_TEST_POSTGRES=<task-only localhost:53398> ./tools/verify.sh",
+    "go test -count=1 -json ./runtime ./store -run TestFactoryRuntime|TestReorgCrashRecovery|TestAnvilPostgresVertical"
+  ],
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 244,
+    "pass": 244,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 244,
+    "pass": 244,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 35,
+        "pass": 35,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 35,
+        "pass": 35,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 35,
+        "pass": 35,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 35,
+        "pass": 35,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 176,
+    "unimplemented": 729,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 172,
+    "passed_with_required_type_checks": 172,
+    "original_oracle_also_passed": 165,
+    "original_oracle_blocked": 7
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 169,
+    "mapped_blocked": 7,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "typed_runtime": {
+    "file": "parity/runs/abi-typed-go.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0,
+    "counting": "Supplementary typed decoder execution; not additional source test records."
+  },
+  "typed_race": {
+    "file": "parity/runs/abi-typed-race.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.27.1 darwin/arm64",
+    "node": "v25.2.1",
+    "differences": []
+  },
+  "new_regressions": {
+    "source_parity_credit": 0,
+    "process_exit_cases": 6,
+    "backends": [
+      "postgresql16.15",
+      "pglite0.2.13"
+    ],
+    "exit_code": 73,
+    "stages": [
+      "after business undo before sync rewind",
+      "after sync rewind before commit",
+      "after commit"
+    ],
+    "durable_commit_lost_ack": "FactoryRuntime on both backends, close/reopen and fork before CompleteBlock"
+  },
+  "limitations": [
+    "Process termination and uncertain commit acknowledgement tested; no PostgreSQL server or host power-loss test.",
+    "Multichain runtime scheduler, source event persistence/replay and most original tests remain.",
+    "Malformed/truncated factory RPC extraction currently has explicit additional native validation; complete source filter compatibility pending."
+  ],
+  "foundry": {
+    "required": "1.8.5",
+    "status": "pending_approval",
+    "installation_executed": false
+  },
+  "evidence": {
+    "parity/runs/go-test.jsonl": {
+      "sha256": "0b7a7ff1c8d508f41f54f449d9d8df5975dd50adf437d66e3f76c92fa4613b29"
+    },
+    "parity/runs/go-race.jsonl": {
+      "sha256": "b8f005a747597ce42be5d94297d4485b9c723822a4b44446ec1a732829a8a733"
+    },
+    "parity/runs/core-oracle.json": {
+      "sha256": "106fc4267c9e3c75462a4f3638e1126cdf7278726f8cc5b9635272af5affb1c8"
+    },
+    "parity/runs/reorg-atomic-go.jsonl": {
+      "sha256": "22764a8377b9d6b48993d556beeab5ad2d81cf3fa12a1c58fdec970f3c3546dd"
+    },
+    "parity/runs/reorg-provenance-go.jsonl": {
+      "sha256": "86e1fb7bc17375a5632e9317173e03a740bbbce3ad96eadf05fe79368269bd68"
+    },
+    "parity/runs/compile-fixtures.json": {
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    }
+  }
+}
