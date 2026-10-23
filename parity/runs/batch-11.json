@@ -1,0 +1,212 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "from_commit": "da69612",
+  "commands": [
+    "PONDER_TEST_POSTGRES=<task-only localhost:53398> ./tools/verify.sh",
+    "go test -count=1 -json ./store -run ^(TestUpstreamStagedActions|TestUpstreamStagedDataActions)$",
+    "go test -count=1 -json ./store -run ^TestStagedActionCrashRecovery$",
+    "go test -count=1 -json ./store -run ^(TestStagedActionGuards|TestStagedGlobalSuffixAndIsolated)$"
+  ],
+  "verification_exit_code": 0,
+  "new_source_mappings": 6,
+  "upgraded_source_mappings": 3,
+  "new_source_assertions": 5,
+  "audited_original_assertions_including_upgrades": 10,
+  "new_application_process_exit_leaves": 14,
+  "new_supplementary_guard_ordering_leaves": 6,
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 398,
+    "pass": 398,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 398,
+    "pass": 398,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 100,
+        "pass": 100,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 100,
+        "pass": 100,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 99,
+        "pass": 99,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 99,
+        "pass": 99,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 228,
+    "unimplemented": 677,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 224,
+    "passed_with_required_type_checks": 224,
+    "original_oracle_also_passed": 167,
+    "original_oracle_blocked": 57
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 171,
+    "mapped_blocked": 57,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 169,
+    "passed": 167,
+    "failed": 0
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "orm_type_fixtures": {
+    "source_error_directives": 5,
+    "source_error_directives_passed": 5,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  },
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.27.1 darwin/arm64",
+    "node": "v25.2.1",
+    "differences": []
+  },
+  "storage": {
+    "version": "json-v3",
+    "atomic_default": "ponder_go_shadow_v3_<hash>",
+    "staged_default": "ponder_go_actions_v3_<hash>",
+    "mode_in_fingerprint": true,
+    "old_format_behavior": "Reject explicit old namespace; no in-place migration or old database takeover."
+  },
+  "source_action_semantics": {
+    "raw": "Durable business+MAX journal, no latest update",
+    "commit": "Table checkpoint assignment, chain filtering in isolated mode",
+    "transactional": "Writer CommitBlock/AdvanceLatest inside RawBatch share the business transaction",
+    "empty_finalize": "Only matching existing chain safe/finalized updated, latest preserved",
+    "recovery": "Undo all retained assigned+pending records, preserve checkpoint metadata, then explicit runtime latest-to-safe reset"
+  },
+  "foundry": {
+    "required": "1.8.5",
+    "status": "pending_approval",
+    "installation_executed": false
+  },
+  "limitations": [
+    "Physical single native journal is a functional row-image adaptation, not raw old reorg-table compatibility.",
+    "Automatic staged runtime/migration scheduler, source physical partitions and all remaining native features not complete.",
+    "Live-query 160-table large-payload LISTEN/NOTIFY source action case remains unimplemented.",
+    "Pending and initialization safety guards make source internal invariants explicit; empty-schema no-metadata operation still succeeds.",
+    "Application-process termination only; no PostgreSQL server/host power-loss experiment.",
+    "57 original fixture oracle records remain blocked and do not count as original passes; 677 static records unimplemented."
+  ],
+  "evidence": {
+    "parity/runs/batch-11-evidence/batch-11-verify.txt": {
+      "original_path": "parity/runs/batch-11-verify.txt",
+      "sha256": "0661d13597914df51342e6bfc81bb309ba6b7b5fd1445e6d244415e6584a1304"
+    },
+    "parity/runs/batch-11-evidence/go-test.jsonl": {
+      "original_path": "parity/runs/go-test.jsonl",
+      "sha256": "1b6ca063e81be9765d7e1559ba25c93ec7f5710078d1f8ee8b8100b15539921e"
+    },
+    "parity/runs/batch-11-evidence/go-race.jsonl": {
+      "original_path": "parity/runs/go-race.jsonl",
+      "sha256": "dfe8dba0620831c047616dd8b1ce050e52694ffe83ff26ef26a274bb35e51bbc"
+    },
+    "parity/runs/batch-11-evidence/core-oracle.json": {
+      "original_path": "parity/runs/core-oracle.json",
+      "sha256": "496b7ebab008297936f761e41d1b37c937878314edeb46dd1e735d653b3caed6"
+    },
+    "parity/runs/batch-11-evidence/compile-fixtures.json": {
+      "original_path": "parity/runs/compile-fixtures.json",
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    },
+    "parity/runs/batch-11-evidence/orm-compile-fixtures.json": {
+      "original_path": "parity/runs/orm-compile-fixtures.json",
+      "sha256": "5a8edc343cbda0d2749e9ef9cd06d121bf87a24952b7ab9c24981286c569224c"
+    },
+    "parity/runs/batch-11-evidence/actions-stage-red.jsonl": {
+      "original_path": "parity/runs/actions-stage-red.jsonl",
+      "sha256": "a016cc481857992150d7935f8593510a332a29f83a7aa95807225fb9c5a2dae2"
+    },
+    "parity/runs/batch-11-evidence/actions-stage-data-go.jsonl": {
+      "original_path": "parity/runs/actions-stage-data-go.jsonl",
+      "sha256": "f18c02b4c4652b96b30a8019fe9e7d5dffa020931aab736bb05590fb229b7308"
+    },
+    "parity/runs/batch-11-evidence/actions-crash-go.jsonl": {
+      "original_path": "parity/runs/actions-crash-go.jsonl",
+      "sha256": "0e83ba39f74008679fe1360aaf506326413e73a084c5504bb312d5e3fe078671"
+    },
+    "parity/runs/batch-11-evidence/actions-boundaries-go.jsonl": {
+      "original_path": "parity/runs/actions-boundaries-go.jsonl",
+      "sha256": "2f5e1d0c4284aafcc672c4ac52fb0bdc17b3234d058cffbcb11b5ff95ca95cfb"
+    },
+    "parity/runs/batch-11-evidence/actions-uninitialized-red.jsonl": {
+      "original_path": "parity/runs/actions-uninitialized-red.jsonl",
+      "sha256": "f80fd618c52b9f012ee708baa16fb6177f5a944f61fa9e3f5876c76816f3535a"
+    },
+    "parity/runs/batch-11-evidence/actions-final-guard-go.jsonl": {
+      "original_path": "parity/runs/actions-final-guard-go.jsonl",
+      "sha256": "5a06357e793e2962a66b6b0e60218f47f81d6672f1553f5278c49c213e4b7e4c"
+    },
+    "parity/runs/batch-11-evidence/staged-actions-source-cases.json": {
+      "original_path": "parity/staged-actions-source-cases.json",
+      "sha256": "9f6e877fab4ebb6024a0ef0e3c95e62af9a653ce7be384487aae37c24e8c5170"
+    }
+  }
+}

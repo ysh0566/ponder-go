@@ -11,8 +11,8 @@
 权威结果是 [parity/runs/summary.json](parity/runs/summary.json)。用例发现、移植、执行、通过分别登记，不合并计数。
 
 - 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条专门类型测试、63 个运行时文件内联类型断言、84 条类型错误指令，以及客户端/React/E2E。
-- 已逐例映射 222 条：218 条 Go + 原样保留的 4 条 SDK。Go 映射 218 条均通过，其中 167 条原版 oracle 也通过、51 条 fixture oracle 阻塞（数据库 38、profile 13）；SDK 4 条通过。另有 **683 条未实现**。
-- 全套原生 Go/race 各 360/360；53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。
+- 已逐例映射 228 条：224 条 Go + 原样保留的 4 条 SDK。Go 映射 224 条均通过，其中 167 条原版 oracle 也通过、57 条 fixture oracle 阻塞（数据库 44、profile 13）；SDK 4 条通过。另有 **677 条未实现**。
+- 全套原生 Go/race 各 398/398；53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。
 - 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
 - 2,466 个确定性差分向量（基础 2,400 + factory 66）独立计数。
 - 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
@@ -79,4 +79,4 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 
 原子 rewind 与未完成 block 的恢复也已验证：业务 undo、进度及同步区间/factory 地址一起提交；handler 提交前先保留 block header，支持提交确认丢失后的重开/换链。两个后端另有 6 条进程退出恢复验证，见 `parity/runs/batch-6.json`。
 
-当前 journal 存储格式为 `json-v2`，默认新建 `ponder_go_shadow_v2_<hash>`。显式旧格式 schema 会要求新影子重建，当前没有原地迁移或接管旧数据库。JSON `U+0000` 与 raw SQL 大数字的 undo 保留原值；PGlite bytes 参数采用明确二进制位置标记。
+当前 journal 存储格式为 `json-v3`，默认新建 `ponder_go_shadow_v3_<hash>`；staged Actions 默认 `ponder_go_actions_v3_<hash>`，模式不可混开。显式旧格式 schema 会要求新影子重建，当前没有原地迁移或接管旧数据库。JSON `U+0000` 与 raw SQL 大数字的 undo 保留原值；PGlite bytes 参数采用明确二进制位置标记。

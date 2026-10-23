@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "222 mapped: 218 native Go passed (167 original oracle also passed, 51 fixture oracle blocked) +4 retained SDK passed; 683 static records remain unimplemented. Full runtime discovery still incomplete."
+      "remaining": "228 mapped: 224 native Go passed (167 original oracle also passed, 57 fixture oracle blocked) +4 retained SDK passed; 677 static records remain unimplemented. Full runtime discovery still incomplete."
     },
     {
       "id": "differential-harness",
@@ -335,8 +335,10 @@
       "upstream_sources": [
         "packages/core/src/database/actions.ts"
       ],
-      "evidence": [],
-      "remaining": "Chain-key validation and isolated rollback verified; parallel isolated scheduling and full source tests remain."
+      "evidence": [
+        "parity/runs/batch-11.json"
+      ],
+      "remaining": "Chain-key validation and isolated rollback verified; parallel isolated scheduling and full source tests remain. Staged CommitBlock chain filtering, unchanged MAX on other-chain commit, and rollback with another chain pending verified; full partitioned parallel scheduler remains."
     },
     {
       "id": "postgres-crud-upsert",
@@ -422,15 +424,17 @@
         "store/triggers.go",
         "store/store.go",
         "store/reorg.go",
-        "store/row_sql.go"
+        "store/row_sql.go",
+        "store/actions.go"
       ],
       "upstream_sources": [
         "packages/core/src/database/actions.ts"
       ],
       "evidence": [
-        "parity/runs/batch-8.json"
+        "parity/runs/batch-8.json",
+        "parity/runs/batch-11.json"
       ],
-      "remaining": "A single database trigger captures declared business-table DML; manual Go capture removed. Statement failure and four process boundaries verified on both backends. All source action/store tests and server/host crash cases remain. json-v2 before-images use json with raw JSON numeric/escape-preserving restore; trigger keys are read directly from OLD/NEW. New default shadow format; old explicit formats rejected without migration. Multi-batch savepoint rollback/retry verified. Server/host crash and remaining source cases still pending."
+      "remaining": "A single database trigger captures declared business-table DML; manual Go capture removed. Statement failure and four process boundaries verified on both backends. All source action/store tests and server/host crash cases remain. json-v2 before-images use json with raw JSON numeric/escape-preserving restore; trigger keys are read directly from OLD/NEW. New default shadow format; old explicit formats rejected without migration. Multi-batch savepoint rollback/retry verified. Server/host crash and remaining source cases still pending. json-v3 adds persisted operation/row_data and a mode fingerprint. Separate staged source actions now expose MAX/assigned/latest/finalized durability; 14 process-exit tests and 6 guard/ordering leaves pass on PG/PGlite. CrashRecovery leaves metadata unchanged until caller resets latest to safe. No automatic staged runtime/migration or server/host crash claim."
     },
     {
       "id": "reorg",
@@ -440,16 +444,18 @@
         "runtime/engine.go",
         "store/sync.go",
         "store/reorg_crash_test.go",
-        "runtime/factory_test.go"
+        "runtime/factory_test.go",
+        "store/actions.go"
       ],
       "upstream_sources": [
         "packages/core/src/database/actions.ts"
       ],
       "evidence": [
         "parity/runs/batch-6.json",
-        "parity/runs/reorg-provenance-go.jsonl"
+        "parity/runs/reorg-provenance-go.jsonl",
+        "parity/runs/batch-11.json"
       ],
-      "remaining": "Native single-database indexing/sync rewind is atomic; block headers precede handler commits. 6 additional process-exit boundaries and lost-commit-ack fork recovery pass on PG/PGlite. Original full reorg/crash source parity, multichain runtime and separate physical-database coordination pending; server/host power-loss not tested."
+      "remaining": "Native single-database indexing/sync rewind is atomic; block headers precede handler commits. 6 additional process-exit boundaries and lost-commit-ack fork recovery pass on PG/PGlite. Original full reorg/crash source parity, multichain runtime and separate physical-database coordination pending; server/host power-loss not tested. json-v3 adds persisted operation/row_data and a mode fingerprint. Separate staged source actions now expose MAX/assigned/latest/finalized durability; 14 process-exit tests and 6 guard/ordering leaves pass on PG/PGlite. CrashRecovery leaves metadata unchanged until caller resets latest to safe. No automatic staged runtime/migration or server/host crash claim."
     },
     {
       "id": "crash-recovery",
@@ -461,7 +467,8 @@
         "store/sync.go",
         "store/reorg_crash_test.go",
         "runtime/engine.go",
-        "runtime/factory_test.go"
+        "runtime/factory_test.go",
+        "store/actions.go"
       ],
       "upstream_sources": [
         "packages/core/src/database/actions.ts"
@@ -469,9 +476,10 @@
       "evidence": [
         "parity/runs/store-crash-boundaries.jsonl",
         "parity/runs/batch-6.json",
-        "parity/runs/reorg-provenance-go.jsonl"
+        "parity/runs/reorg-provenance-go.jsonl",
+        "parity/runs/batch-11.json"
       ],
-      "remaining": "Native single-database indexing/sync rewind is atomic; block headers precede handler commits. 6 additional process-exit boundaries and lost-commit-ack fork recovery pass on PG/PGlite. Original full reorg/crash source parity, multichain runtime and separate physical-database coordination pending; server/host power-loss not tested."
+      "remaining": "Native single-database indexing/sync rewind is atomic; block headers precede handler commits. 6 additional process-exit boundaries and lost-commit-ack fork recovery pass on PG/PGlite. Original full reorg/crash source parity, multichain runtime and separate physical-database coordination pending; server/host power-loss not tested. json-v3 adds persisted operation/row_data and a mode fingerprint. Separate staged source actions now expose MAX/assigned/latest/finalized durability; 14 process-exit tests and 6 guard/ordering leaves pass on PG/PGlite. CrashRecovery leaves metadata unchanged until caller resets latest to safe. No automatic staged runtime/migration or server/host crash claim."
     },
     {
       "id": "finalize",
@@ -485,8 +493,10 @@
         "packages/core/src/database/actions.ts",
         "packages/core/src/utils/finality.ts"
       ],
-      "evidence": [],
-      "remaining": "All 6 finality source cases mapped, including lowerBound identity and initial blockTime request. Automatic finalize scheduling, complete database action cases and deep-reorg behavior remain."
+      "evidence": [
+        "parity/runs/batch-11.json"
+      ],
+      "remaining": "Source utility finality 6 cases already oracle-verified. Granular staged finalize/revert fixtures now upgraded; empty-schema finalize updates only matching safe/finalized and preserves latest. Nonempty staged initialization and pending guards under namespace lock are verified. Automatic scheduling, remaining migration cases and deep-reorg/runtime behavior still pending."
     },
     {
       "id": "graphql",
@@ -824,6 +834,27 @@
         "parity/runs/batch-10.json"
       ],
       "remaining": "Event-local prefetch/negative cache, spillover eviction, memory budget and shared cross-event profile metadata implemented and tested on both backends. One original eviction case mapped. Exact original deploy/mint+readonly metadata prefetch case remains unmapped; automatic runtime event/count/FieldOrder wiring, full metrics/lifecycle, V8 heap budget equivalence and performance parity remain."
+    },
+    {
+      "id": "database-staged-actions",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/actions.go",
+        "store/actions_stage_upstream_test.go",
+        "store/actions_data_upstream_test.go",
+        "store/actions_crash_test.go",
+        "store/actions_boundaries_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/actions.ts",
+        "packages/core/src/database/index.ts"
+      ],
+      "evidence": [
+        "parity/staged-actions-source-cases.json",
+        "parity/runs/batch-11.json",
+        "docs/DATABASE_ACTIONS.md"
+      ],
+      "remaining": "Source durable MAX/raw/commit/isolated/empty finalize primitives implemented in separately fingerprinted Actions mode. 6 new original mappings and 3 upgraded source mappings; actions.test.ts 10/11 source records mapped, large-payload LISTEN/NOTIFY remains. Automatic migration/staged runtime integration, physical partitions/full lifecycle and original oracle blocked by Foundry still pending. Native global journal persists source row images/operation but does not adopt original per-table physical layout."
     }
   ]
 }

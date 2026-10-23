@@ -22,6 +22,9 @@ func (s *Store) RevertAndRewind(ctx context.Context, target checkpoint.Checkpoin
 }
 
 func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind bool) error {
+	if s.staged && len(s.Schema.Tables) == 0 {
+		return nil
+	}
 	encoded, e := checkpoint.Encode(target)
 	if e != nil {
 		return e
@@ -35,6 +38,11 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 	defer tx.Rollback(context.Background())
 	if e = s.lock(ctx, tx); e != nil {
 		return e
+	}
+	if s.staged {
+		if e = s.requireCommitted(ctx, tx, target.ChainID); e != nil {
+			return e
+		}
 	}
 	if e = s.eventContext(ctx, tx, encoded, target.ChainID, true); e != nil {
 		return e
@@ -71,46 +79,23 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 	if e != nil {
 		return e
 	}
-	changed := map[string]bool{}
-	for _, row := range rows.Rows {
-		name := fmt.Sprint(row["table_name"])
-		model, e := s.model(name)
-		if e != nil {
-			return e
-		}
-		key, decodeErr := decodeSnapshot(model, fmt.Sprint(row["key"]))
-		if decodeErr != nil {
-			return decodeErr
-		}
-		where, values, e := keyWhere(model, key, 1)
-		if e != nil {
-			return e
-		}
-		if e = tx.Exec(ctx, "DELETE FROM "+s.table(name)+" WHERE "+where, values...); e != nil {
-			return e
-		}
-		if row["before"] != nil {
-			before, decodeErr := decodeUndoRow(model, fmt.Sprint(row["before"]))
-			if decodeErr != nil {
-				return decodeErr
-			}
-			if e = s.writeRows(ctx, tx, model, []Row{before}, Insert); e != nil {
-				return e
-			}
-		}
-		changed[name] = true
+	changed, e := s.undoJournal(ctx, tx, rows)
+	if e != nil {
+		return e
 	}
 	if e = tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_journal")+" WHERE "+predicate, args...); e != nil {
 		return e
 	}
-	if e = tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_events")+" WHERE "+eventPredicate, eventArgs...); e != nil {
-		return e
-	}
-	if e = tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_progress")); e != nil {
-		return e
-	}
-	if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_progress")+" SELECT chain_id,MAX(checkpoint) FROM (SELECT chain_id,checkpoint FROM "+s.internal("_ponder_go_events")+" UNION ALL SELECT chain_id,safe_checkpoint AS checkpoint FROM "+s.internal("_ponder_go_finalized")+") AS progress GROUP BY chain_id"); e != nil {
-		return e
+	if !s.staged {
+		if e = tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_events")+" WHERE "+eventPredicate, eventArgs...); e != nil {
+			return e
+		}
+		if e = tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_progress")); e != nil {
+			return e
+		}
+		if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_progress")+" SELECT chain_id,MAX(checkpoint) FROM (SELECT chain_id,checkpoint FROM "+s.internal("_ponder_go_events")+" UNION ALL SELECT chain_id,safe_checkpoint AS checkpoint FROM "+s.internal("_ponder_go_finalized")+") AS progress GROUP BY chain_id"); e != nil {
+			return e
+		}
 	}
 	if rewind {
 		if e = s.rewindSync(ctx, tx, target.ChainID, target.BlockNumber); e != nil {
@@ -145,16 +130,32 @@ func (s *Store) Finalize(ctx context.Context, target checkpoint.Checkpoint) erro
 	if e = s.lock(ctx, tx); e != nil {
 		return e
 	}
-	r, e := tx.Query(ctx, "SELECT checkpoint FROM "+s.internal("_ponder_go_progress")+" WHERE chain_id=$1", target.ChainID)
+	if s.staged {
+		if e = s.requireCommitted(ctx, tx, target.ChainID); e != nil {
+			return e
+		}
+	}
+	if len(s.Schema.Tables) == 0 {
+		if e = tx.Exec(ctx, "UPDATE "+s.internal("_ponder_go_finalized")+" SET checkpoint=$1,safe_checkpoint=$1 WHERE chain_id=$2", encoded, target.ChainID); e != nil {
+			return e
+		}
+		return tx.Commit(ctx)
+	}
+	if !s.staged {
+		r, e := tx.Query(ctx, "SELECT checkpoint FROM "+s.internal("_ponder_go_progress")+" WHERE chain_id=$1", target.ChainID)
+		if e != nil {
+			return e
+		}
+		if len(r.Rows) == 0 || encoded > fmt.Sprint(r.Rows[0]["checkpoint"]) {
+			return fmt.Errorf("cannot finalize beyond indexed progress")
+		}
+	}
+	r, e := tx.Query(ctx, "SELECT checkpoint FROM "+s.internal("_ponder_go_finalized")+" WHERE chain_id=$1", target.ChainID)
 	if e != nil {
 		return e
 	}
-	if len(r.Rows) == 0 || encoded > fmt.Sprint(r.Rows[0]["checkpoint"]) {
-		return fmt.Errorf("cannot finalize beyond indexed progress")
-	}
-	r, e = tx.Query(ctx, "SELECT checkpoint FROM "+s.internal("_ponder_go_finalized")+" WHERE chain_id=$1", target.ChainID)
-	if e != nil {
-		return e
+	if s.staged && len(r.Rows) == 0 {
+		return fmt.Errorf("chain checkpoint state must be initialized before finalization")
 	}
 	if len(r.Rows) > 0 && encoded < fmt.Sprint(r.Rows[0]["checkpoint"]) {
 		return fmt.Errorf("finality regressed")

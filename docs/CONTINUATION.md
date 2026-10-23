@@ -13,8 +13,8 @@
 
 ## 下一可执行批次
 
-1. 从最新提交和 summary.json 恢复。M9/10 完成缓冲 ORM 和无损 undo，M11 再移植 profile 13 例：M12 新增 typed ORM/error/eviction 5 条映射后累计 222（218 Go + 4 SDK）；Go oracle 167 通过、51 fixture oracle 阻塞，683 静态记录未实现。不要重做已通过源例；精确结果以 summary.json 为准。
-2. store/indexing.go 已新增 Writer.Indexing 原生缓冲 API、返回值副本、insert/update/upsert/delete、显式 NULL/Undefined、defaults、typed Select 和 Cache.Flush/Clear/Invalidate。继续 missing rows、notNull、PK 更改、onchain table、完整 SQL 等含类型错误指令的原例，必须连同 Go 编译失败 fixture 一起移植。Promise thenable 是独立语言适配，尚未映射；profile 的 record/recover/key 纯函数已在 store/profile.go，13 原例映射；cache prefetch/eviction、跨事件 profile 集成和生命周期仍未实现。完整 Drizzle ORM、关系 DSL、actions commitBlock/trigger 原内部布局、空 schema finalization 和大通知 payload 仍待完成。
+1. 从最新提交和 summary.json 恢复。M13 后累计 228 条映射（224 Go + 4 SDK），Go oracle 167 通过、57 fixture oracle 阻塞，677 静态记录未实现；精确执行结果看 batch-11.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
+2. 缓冲 ORM、scalar typed codegen、对应5个源类型错误要求、profile纯函数及eviction已移植。完整SQL的类型义务、Promise thenable、真实deploy/mint/readonly metadata prefetch原例仍未映射；typed JSON/bytes/array/custom codec、强枚举/Hex类型、关系DSL和自动profile/指标接入仍待完成。Database actions现有staged API的MAX/commit/empty finalize/恢复已验证，剩余large-payload notify原例及database/index迁移/自动runtime接入继续按M13末尾推进。
 3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments、sync-store 原事件和 factory 原 E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
 4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。自动 finalize 和无表 finalization 边界也待实现。
 5. 完整关系/查询/GraphQL、SQL/SuperJSON 全类型、全部 CLI/模板/热重载/观测/示例，以及严格源码兼容和旧 DB 接管的独立轨，仍按 feature-ledger 推进。默认新影子 schema，不访问业务数据。
@@ -154,3 +154,19 @@ store/prefetch.go 已有 callback profile 采样、阈值预测、批量 SELECT�
 本轮下一步先读 batch-10.json、summary 和最终提交。原版 database/actions 的 commitBlock/isolated 仍需显式覆盖 MAX checkpoint 暂态、对应 chain commit 和所有 journal 断言，不能用现有 Apply 的最终结果冒充；empty schema finalize 原例允许更新 finalized/safe 而保留 latest，当前 native Finalize 仍要求 indexed progress，此处尚未实现。live query 大 payload、完整 source/trace/multichain/GraphQL/CLI/typed容器/全部其余测试仍按 feature ledger 继续。
 
 M12 最终完整 verify 退出0：Go/race各360/360，PG81/PGlite80分别全通过；source222（Go218+SDK4），Go oracle167通过、51阻塞，683未实现。ABI源类型错误1+ORM5共6条natively verified，额外ABI53/ORM6负向控制分开。原profiles/fixture oracle限制不变。无正在等待的测试；先核对最后提交及batch-10.json，再推进剩余database actions。
+
+## M13：staged actions 与真实 durable checkpoint 边界
+
+新增 store/actions.go。NewActions 使用与原子 Store.New/Apply 分离的 fingerprint/mode；互相打开同一 namespace 会拒绝。RawBatch 业务+journal 同事务提交，checkpoint 为75位MAX sentinel；外部 Actions.CommitBlock 是独立提交，按表（isolated还按chain）赋值；AdvanceLatest 又是独立metadata步骤。Writer.CommitBlock/AdvanceLatest可置于RawBatch内，共享同一事务；赋latest后再出现pending写会拒绝提交。public Actions 方法开自己的事务，不能从RawBatch callback嵌套调用。
+
+Journal 升级 json-v3，增加持久 row_data 和 operation：insert存NEW，update/delete存OLD；before_row仍为无损json。Actions.Journal投影读取真实历史记录全部列+operation/id/checkpoint，不从当前业务表伪造。全局journal不是源每表_reorg布局，不声称旧数据库原位兼容。默认新namespace为ponder_go_shadow_v3_<hash>/ponder_go_actions_v3_<hash>，旧v2显式namespace拒绝、不做原地ALTER。
+
+新增6条源映射：createTriggers、duplicate、commitBlock、isolated、empty schema、empty-schema matching-chain finalize。原 finalize/revert/composite 3映射改为完整staged原fixture，保留旧Apply测试作补充，不重复credit。9条审计记录共10条原runtime断言在parity/staged-actions-source-cases.json；actions.test.ts除large notify外10/11已映射。createIndexes仍保留此前真实数据库原例。
+
+Empty-schema finalize只更新已有目标链safe/finalized，不碰latest或其他链；无metadata仍按源成功。非空staged finalization要求初始化链metadata，防止无state时清除undo。pending检查在同一namespace事务锁内进行，isolated只检查目标链，默认ordering的global operation suffix回滚保留。Create/Drop capture之外有永久BEFORE guard：drop后不允许public无journal业务写，只有controlled undo可用reverting context。
+
+CrashRecovery按源primitive撤销全部保留journal（assigned和MAX），不改checkpoint metadata；runtime随后须AdvanceLatest(safe)。不能把它说成仅撤销MAX，也不能冒称自动runtime已接入。14个新增进程exit叶子覆盖两后端：raw事务commit前、同事务赋cp/latest后commit前、raw durable、block assigned、latest、finalized、undo中断；另6个后端native guard/global suffix/isolated用例。进程退出不是PG服务端/宿主断电。完整边界说明见docs/DATABASE_ACTIONS.md。
+
+下一步：先核对batch-11.json、summary和最后提交。继续剩余live query大payload原例（真实LISTEN/NOTIFY、160长表名、UTF-8 payload<8000），再database/index migration/cache/crash源例与staged scheduler自动集成。Current runtime仍是atomic Apply路径，迁移/重启需explicit staged CrashRecovery+latest复位，尚未统一接入。全部source/filter/fragments/raw事件/trace/多链/GraphQL/CLI与剩余类型/SDK/simulation范围仍在feature ledger。Foundry1.8.5仍pending且未安装；DB oracle不算通过。
+
+M13最终verify退出0：Go/race各398/398，PG100/100、PGlite99/99；source228（Go224+SDK4），Go oracle167通过、57阻塞，677未实现。M13未改变类型/differential计数。结束时无挂起测试，先读最后提交、batch-11.json及DATABASE_ACTIONS.md，再继续通知/migration/source/trace等范围。

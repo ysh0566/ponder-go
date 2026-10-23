@@ -40,8 +40,8 @@ BEGIN
   row_key_value := row_key_value || jsonb_build_object(TG_ARGV[i],CASE WHEN TG_OP='DELETE' THEN old_key ELSE new_key END);
  END LOOP;
  ` + modeCheck + `
- INSERT INTO ` + s.internal("_ponder_go_journal") + ` (table_name,row_key,before_row,checkpoint,chain_id)
- VALUES (TG_TABLE_NAME,row_key_value,CASE WHEN TG_OP='INSERT' THEN NULL ELSE row_to_json(OLD) END,checkpoint_value,chain_value::numeric);
+ INSERT INTO ` + s.internal("_ponder_go_journal") + ` (table_name,row_key,before_row,row_data,operation,checkpoint,chain_id)
+ VALUES (TG_TABLE_NAME,row_key_value,CASE WHEN TG_OP='INSERT' THEN NULL ELSE row_to_json(OLD) END,CASE WHEN TG_OP='INSERT' THEN row_to_json(NEW) ELSE row_to_json(OLD) END,CASE WHEN TG_OP='INSERT' THEN 0 WHEN TG_OP='UPDATE' THEN 1 ELSE 2 END,checkpoint_value,chain_value::numeric);
  RETURN NULL;
 END;
 $$`
@@ -55,6 +55,31 @@ $$`
 		}
 		for _, trigger := range []struct{ name, event, level string }{{"_ponder_go_capture", "INSERT OR UPDATE OR DELETE", "ROW"}, {"_ponder_go_no_truncate", "TRUNCATE", "STATEMENT"}} {
 			if e := tx.Exec(ctx, "CREATE OR REPLACE TRIGGER "+schema.Quote(trigger.name)+" AFTER "+trigger.event+" ON "+s.table(table.Name)+" FOR EACH "+trigger.level+" EXECUTE FUNCTION "+function+"("+strings.Join(keys, ",")+")"); e != nil {
+				return e
+			}
+		}
+	}
+	return nil
+}
+
+// This guard survives dropping capture triggers for maintenance. All public
+// business DML still requires a journal, unless executing the controlled undo.
+func (s *Store) createWriteGuards(ctx context.Context, tx Transaction) error {
+	function := s.internal("_ponder_go_guard")
+	definition := `CREATE OR REPLACE FUNCTION ` + function + `() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF TG_OP='TRUNCATE' THEN RAISE EXCEPTION 'TRUNCATE is unsupported for onchain tables'; END IF;
+ IF current_setting('ponder_go.namespace',true) IS DISTINCT FROM TG_TABLE_SCHEMA THEN RAISE EXCEPTION 'business writes require an active indexing event'; END IF;
+ IF current_setting('ponder_go.reverting',true) IS DISTINCT FROM '1' AND NOT EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid=TG_RELID AND tgname='_ponder_go_capture' AND tgenabled<>'D') THEN RAISE EXCEPTION 'business writes require active journal triggers'; END IF;
+ IF TG_OP='DELETE' THEN RETURN OLD; END IF;
+ RETURN NEW;
+END; $$`
+	if e := tx.Exec(ctx, definition); e != nil {
+		return e
+	}
+	for _, table := range s.Schema.Tables {
+		for _, trigger := range []struct{ name, event, level string }{{"_ponder_go_guard_row", "INSERT OR UPDATE OR DELETE", "ROW"}, {"_ponder_go_guard_truncate", "TRUNCATE", "STATEMENT"}} {
+			if e := tx.Exec(ctx, "CREATE OR REPLACE TRIGGER "+schema.Quote(trigger.name)+" BEFORE "+trigger.event+" ON "+s.table(table.Name)+" FOR EACH "+trigger.level+" EXECUTE FUNCTION "+function+"()"); e != nil {
 				return e
 			}
 		}
