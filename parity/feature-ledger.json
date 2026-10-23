@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "282 mapped:278 native Go passed (185 original oracle also passed,93 fixture oracle blocked)+4 retained SDK passed;623 static records unimplemented. Dynamic exhaustive discovery still pending."
+      "remaining": "288 mapped:284 native Go passed (191 source oracle also passed including4 selective unchanged declarations,93 fixture oracle blocked)+4 retained SDK;617 static records unimplemented. Dynamic exhaustiveness unproven."
     },
     {
       "id": "differential-harness",
@@ -150,33 +150,55 @@
     },
     {
       "id": "transactions",
-      "status": "unimplemented",
-      "implementation_files": [],
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/accounts.go",
+        "events/build.go",
+        "events/convert.go",
+        "rpc/traces.go"
+      ],
       "upstream_sources": [
         "packages/core/src/runtime/events.ts"
       ],
-      "evidence": [],
-      "remaining": "Native implementation and all exact tests required."
+      "evidence": [
+        "parity/runs/batch-19.json",
+        "docs/ACCOUNT_EVENTS.md"
+      ],
+      "remaining": "Native static/wildcard single-chain account paths and normalized event construction verified; original ETH filter declarations still block on missing debug_traceBlockByHash in installed Anvil0.2. Factory targets/full config/include/history and multichain remain incomplete."
     },
     {
       "id": "native-transfers",
-      "status": "unimplemented",
-      "implementation_files": [],
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/accounts.go",
+        "events/build.go",
+        "events/convert.go",
+        "rpc/traces.go"
+      ],
       "upstream_sources": [
         "packages/core/src/runtime/events.ts"
       ],
-      "evidence": [],
-      "remaining": "Native implementation and all exact tests required."
+      "evidence": [
+        "parity/runs/batch-19.json",
+        "docs/ACCOUNT_EVENTS.md"
+      ],
+      "remaining": "Native static/wildcard single-chain account paths and normalized event construction verified; original ETH filter declarations still block on missing debug_traceBlockByHash in installed Anvil0.2. Factory targets/full config/include/history and multichain remain incomplete."
     },
     {
       "id": "call-traces",
-      "status": "unimplemented",
-      "implementation_files": [],
+      "status": "partial",
+      "implementation_files": [
+        "rpc/traces.go",
+        "events/build.go",
+        "events/convert.go"
+      ],
       "upstream_sources": [
         "packages/core/src/runtime/events.ts"
       ],
-      "evidence": [],
-      "remaining": "Native implementation and all exact tests required."
+      "evidence": [
+        "parity/runs/batch-19.json"
+      ],
+      "remaining": "Actual callTracer flattening/native transfer frames and generic normalized trace matching implemented. Complete contract ABI trace decoding/config and original generated-ABI fixtures remain unfinished."
     },
     {
       "id": "factory-dynamic-addresses",
@@ -988,6 +1010,32 @@
         "docs/FILTER_FRAGMENTS.md"
       ],
       "remaining": "32 source records mapped; full original filter suite remains blocked before collection by missing generated.js/Foundry1.8.5 pending approval. Original deployment/mint/range-selector/trace records not replaced. Single-chain log predicate and >50-address widening connected; full config filter DSL, complete history planner, typed event projection, account/trace/multichain scheduling remain unfinished.867 generated vectors and8 real-backend leaves give no source credit."
+    },
+    {
+      "id": "account-event-construction",
+      "status": "verified_subset",
+      "implementation_files": [
+        "events/build.go",
+        "events/convert.go",
+        "events/decode.go",
+        "events/values.go",
+        "rpc/traces.go",
+        "runtime/accounts.go",
+        "config/config.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts",
+        "packages/core/src/runtime/filter.ts",
+        "packages/core/src/rpc/actions.ts"
+      ],
+      "evidence": [
+        "parity/event-construction-source-cases.json",
+        "parity/selected-runtime-declarations.json",
+        "testdata/runtime/event-build-differential.json",
+        "parity/runs/accounts-cold-race.jsonl",
+        "docs/ACCOUNT_EVENTS.md"
+      ],
+      "remaining": "Six exact source records mapped independently of115 supplemental vectors/four real-backend leaves. Full original events suite remains generated-ABI blocked; selected4 actual source declarations pass separately. Three ETH filter declarations block on existing Anvil0.2 missing debug_traceBlockByHash. Native fallback is additional compatibility. Single-chain static/wildcard account transaction/transfer handlers connected; full contract trace decoder/config/include, factory account/trace targets, multichain/history/query/CLI remain incomplete."
     }
   ]
 }

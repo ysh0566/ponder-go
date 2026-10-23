@@ -44,11 +44,22 @@ type BlockSource struct {
 	EndBlock   *uint64 `json:"endBlock,omitempty"`
 	Interval   uint64  `json:"interval"`
 }
+
+// AccountSource is the native single-chain static address account source.
+// Factory targets and the complete source configuration DSL remain separate.
+type AccountSource struct {
+	Name       string   `json:"name"`
+	Chain      string   `json:"chain"`
+	Address    []string `json:"address"`
+	StartBlock uint64   `json:"startBlock"`
+	EndBlock   *uint64  `json:"endBlock,omitempty"`
+}
 type Config struct {
 	Ordering  schema.Ordering `json:"ordering"`
 	Chains    []Chain         `json:"chains"`
 	Contracts []Contract      `json:"contracts"`
 	Blocks    []BlockSource   `json:"blocks"`
+	Accounts  []AccountSource `json:"accounts,omitempty"`
 }
 
 var address = regexp.MustCompile(`^0x[0-9a-fA-F]{40}$`)
@@ -111,6 +122,20 @@ func (c Config) Validate() error {
 		}
 		if _, e := abi.Parse(string(contract.ABI)); e != nil {
 			return e
+		}
+	}
+	for _, account := range c.Accounts {
+		if !names[account.Chain] || account.Name == "" || sources[account.Name] {
+			return fmt.Errorf("invalid account source %q", account.Name)
+		}
+		sources[account.Name] = true
+		if account.EndBlock != nil && *account.EndBlock < account.StartBlock {
+			return fmt.Errorf("account end block precedes start")
+		}
+		for _, value := range account.Address {
+			if !address.MatchString(value) {
+				return fmt.Errorf("invalid account address %q", value)
+			}
 		}
 	}
 	for _, block := range c.Blocks {

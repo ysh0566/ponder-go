@@ -1,0 +1,44 @@
+{
+  "anvil": "existing0.2.0",
+  "task_only_loopback": true,
+  "probes": [
+    {
+      "method": "debug_traceBlockByHash",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "error": {
+          "code": -32601,
+          "message": "Method not found"
+        }
+      }
+    },
+    {
+      "method": "debug_traceBlockByNumber",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "error": {
+          "code": -32601,
+          "message": "Method not found"
+        }
+      }
+    },
+    {
+      "method": "debug_traceTransaction",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "result": {
+          "from": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "gas": "0x0",
+          "gasUsed": "0x5208",
+          "to": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "input": "0x",
+          "value": "0xde0b6b3a7640000",
+          "type": "CALL"
+        }
+      }
+    }
+  ]
+}
