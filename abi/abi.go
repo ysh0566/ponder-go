@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	ethabi "github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/crypto"
 	"strings"
 )
 
@@ -38,6 +39,9 @@ func signature(e Event) string {
 	}
 	return e.Name + "(" + strings.Join(parts, ",") + ")"
 }
+
+// EventSelector computes topic zero using canonical Solidity parameter types.
+func EventSelector(e Event) string { return crypto.Keccak256Hash([]byte(signature(e))).Hex() }
 func Parse(data string) (ABI, error) {
 	a, e := ethabi.JSON(strings.NewReader(data))
 	if e != nil {

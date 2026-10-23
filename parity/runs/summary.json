@@ -20,31 +20,31 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 163,
-    "executed": 163,
-    "passed": 163,
+    "ported": 176,
+    "executed": 176,
+    "passed": 176,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 742,
-    "go_ports": 159,
+    "unimplemented": 729,
+    "go_ports": 172,
     "retained_sdk": 4,
-    "oracle_passed": 156,
+    "oracle_passed": 169,
     "oracle_blocked": 7,
-    "go_passed": 159,
+    "go_passed": 172,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 152,
-    "target_and_original_oracle_passed": 156
+    "go_and_original_oracle_passed": 165,
+    "target_and_original_oracle_passed": 169
   },
   "source_records": {
     "statically_discovered": 905,
-    "mapped": 163,
-    "unimplemented": 742,
+    "mapped": 176,
+    "unimplemented": 729,
     "discovery_is_not_proven_runtime_exhaustive": true
   },
   "mapped_go": {
-    "mapped": 159,
-    "passed_with_required_type_checks": 159,
-    "original_oracle_also_passed": 152,
+    "mapped": 172,
+    "passed_with_required_type_checks": 172,
+    "original_oracle_also_passed": 165,
     "original_oracle_blocked": 7
   },
   "retained_sdk": {
@@ -52,7 +52,7 @@
     "passed": 4
   },
   "original_oracle": {
-    "mapped_passed": 156,
+    "mapped_passed": 169,
     "mapped_blocked": 7,
     "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
   },
@@ -60,7 +60,18 @@
     "inline_source_type_obligations": 53,
     "positive_passed": 53,
     "negative_controls_rejected": 53,
-    "failed": 0
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "type_scope": {
+    "dedicated_source_records": 73,
+    "dedicated_retained_sdk_passed": 1,
+    "inline_assertions_discovered": 63,
+    "inline_assertions_native_compiled": 53,
+    "error_directives_discovered": 84,
+    "error_directives_native_verified": 1,
+    "error_directives_retained_sdk_verified": 1
   },
   "typed_abi_runtime": {
     "file": "parity/runs/abi-typed-go.jsonl",
@@ -70,6 +81,47 @@
     "skip": 0,
     "counting": "Supplementary typed decoder execution; not additional source test records."
   },
+  "typed_abi_race": {
+    "file": "parity/runs/abi-typed-race.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 32,
+        "pass": 32,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 32,
+        "pass": 32,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 32,
+        "pass": 32,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 32,
+        "pass": 32,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
   "simulation": {
     "seed_space": "unbounded",
     "status": "unimplemented",
@@ -77,15 +129,15 @@
   },
   "native_go": {
     "file": "parity/runs/go-test.jsonl",
-    "leaf_cases": 221,
-    "pass": 221,
+    "leaf_cases": 238,
+    "pass": 238,
     "fail": 0,
     "skip": 0
   },
   "race": {
     "file": "parity/runs/go-race.jsonl",
-    "leaf_cases": 221,
-    "pass": 221,
+    "leaf_cases": 238,
+    "pass": 238,
     "fail": 0,
     "skip": 0
   },
@@ -97,8 +149,8 @@
   },
   "core_oracle": {
     "file": "parity/runs/core-oracle.json",
-    "total": 154,
-    "passed": 152,
+    "total": 167,
+    "passed": 165,
     "failed": 0
   },
   "client": {
@@ -112,8 +164,17 @@
     "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
     "seed": "0x17c6d5ba",
     "counting": "Generated differential vectors, not transplanted upstream tests.",
-    "vectors": 2400,
-    "passed": 2400,
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
     "failed": 0,
     "go": "go version go1.27.1 darwin/arm64",
     "node": "v25.2.1",

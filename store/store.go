@@ -110,6 +110,7 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 		"CREATE TABLE IF NOT EXISTS " + s.syncTable("blocks") + " (chain_id numeric NOT NULL,number numeric NOT NULL,hash text NOT NULL,parent_hash text NOT NULL,timestamp numeric NOT NULL,payload jsonb NOT NULL,PRIMARY KEY(chain_id,number))",
 		"CREATE TABLE IF NOT EXISTS " + s.syncTable("intervals") + " (chain_id numeric NOT NULL,filter text NOT NULL,start_block numeric NOT NULL,end_block numeric NOT NULL,PRIMARY KEY(chain_id,filter,start_block,end_block))",
 		"CREATE TABLE IF NOT EXISTS " + s.syncTable("rpc_cache") + " (key text PRIMARY KEY,value jsonb NOT NULL)",
+		"CREATE TABLE IF NOT EXISTS " + s.syncTable("factory_addresses") + " (factory_id text NOT NULL,chain_id numeric NOT NULL,address text NOT NULL,block_number numeric NOT NULL,block_hash text NOT NULL,log_index numeric NOT NULL,PRIMARY KEY(factory_id,chain_id,block_number,log_index,address))",
 	}
 	for _, sql := range statements {
 		if e = tx.Exec(ctx, sql); e != nil {

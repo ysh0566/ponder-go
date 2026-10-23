@@ -4,17 +4,17 @@
 
 项目：`/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-go`。完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。此项目没有远端、推送、PR 或部署。
 
-目前已有可运行的单链路径：本地 Ethereum RPC → 合约日志/receipt → Go handler → PostgreSQL 事务写入、journal、checkpoint → SQL HTTP/SSE。Anvil 重组后可以撤销并重新索引。PostgreSQL 与真实 PGlite 分别验证；没有 SQLite 替代实现。
+目前已有可运行的单链路径：本地 Ethereum RPC → 静态或 factory 动态合约日志/receipt → Go handler → PostgreSQL 事务写入、journal、checkpoint → SQL HTTP/SSE。Anvil 重组后可以撤销并重新索引。PostgreSQL 与真实 PGlite 分别验证；没有 SQLite 替代实现。
 
 ## 当前验证与计数
 
 权威结果是 [parity/runs/summary.json](parity/runs/summary.json)。用例发现、移植、执行、通过分别登记，不合并计数。
 
 - 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条专门类型测试、63 个运行时文件内联类型断言、84 条类型错误指令，以及客户端/React/E2E。
-- 已逐例映射 163 条：159 条 Go + 原样保留的 4 条 SDK。Go 映射 159 条均通过，其中 152 条原版 oracle 也通过、7 条数据库 oracle 阻塞；SDK 4 条通过。另有 **742 条未实现**。
-- 全套原生 Go/race 各 221/221；53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制均按预期编译失败；原 ABI 文件 tsc 通过。
+- 已逐例映射 176 条：172 条 Go + 原样保留的 4 条 SDK。Go 映射 172 条均通过，其中 165 条原版 oracle 也通过、7 条数据库 oracle 阻塞；SDK 4 条通过。另有 **729 条未实现**。
+- 全套原生 Go/race 各 238/238；53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。
 - 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
-- 2,400 个确定性差分向量独立计数。
+- 2,466 个确定性差分向量（基础 2,400 + factory 66）独立计数。
 - 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
 
 静态发现不能证明任意 JavaScript 动态执行的全部实例均已收集。4 个 literal `test.each` 声明已展开；本基线未发现动态测试生成、别名测试遗漏、`describe.each` 或 `only`。Simulation 的 8 个应用和无限 seed 空间单列。详见 [discovery-audit.json](parity/discovery-audit.json)，完整测试源码和 247 个依赖/fixture 模块分别保存在 `parity/source-tests/`、`parity/source-support/`。早期 1,957 个断言表达式计数重复计算了链式 `expect().rejects`，已修正为 1,905；905 条测试记录不变。
@@ -74,3 +74,5 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 ## ABI 原生类型适配
 
 `ponder codegen --abi-parameters params.json --decoder Transfer --package main --out transfer_generated.go` 从 ABI 参数生成有返回类型的解码器；位置 tuple 为 `Value0` 等字段，命名 tuple 保留 `abi` 字段标签，固定数组保留长度，较大整数为 `*big.Int`。Go 没有 TypeScript readonly tuple 或 Hex 模板字符串类型；这些差异在 `parity/runs/compile-fixtures.json` 注明。53 条编译 fixture 的预期类型独立来自原断言，未从 Go 签名反向生成。
+
+动态地址的参数/offset 构建、发现持久化、失败重试、磁盘重开和重组回收已有双后端验证，见 [docs/FACTORY.md](docs/FACTORY.md)。完整 factory E2E、trace/account sources 与多链 runtime 仍未完成。

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"ponder.local/ponder-go/abi"
+	"ponder.local/ponder-go/factory"
 	"ponder.local/ponder-go/schema"
 	"regexp"
 )
@@ -31,6 +32,7 @@ type Contract struct {
 	Chain                      string          `json:"chain"`
 	ABI                        json.RawMessage `json:"abi"`
 	Address                    []string        `json:"address"`
+	Factory                    *factory.Config `json:"factory,omitempty"`
 	StartBlock                 uint64          `json:"startBlock"`
 	EndBlock                   *uint64         `json:"endBlock,omitempty"`
 	IncludeTransactionReceipts bool            `json:"includeTransactionReceipts,omitempty"`
@@ -91,6 +93,20 @@ func (c Config) Validate() error {
 		for _, a := range contract.Address {
 			if !address.MatchString(a) {
 				return fmt.Errorf("invalid contract address %q", a)
+			}
+		}
+		if contract.Factory != nil {
+			if len(contract.Address) > 0 {
+				return fmt.Errorf("contract %s must choose static addresses or a factory", contract.Name)
+			}
+			if contract.Factory.Event.Name == "" || contract.Factory.Event.Type != "event" {
+				return fmt.Errorf("factory for %s requires an ABI event", contract.Name)
+			}
+			if contract.Factory.FromBlock != nil && contract.Factory.ToBlock != nil && *contract.Factory.ToBlock < *contract.Factory.FromBlock {
+				return fmt.Errorf("factory end block precedes start block")
+			}
+			if _, e := factory.Build(*contract.Factory); e != nil {
+				return e
 			}
 		}
 		if _, e := abi.Parse(string(contract.ABI)); e != nil {
