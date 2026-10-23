@@ -16,6 +16,8 @@ import (
 // preserves JS object insertion order for args/results with equal values. A
 // native caller without that metadata gets deterministic sorted field order.
 type ProfileEvent struct {
+	Callback   string
+	Count      uint64
 	Type       string
 	ChainID    uint64
 	Data       Row

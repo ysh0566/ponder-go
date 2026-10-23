@@ -87,3 +87,11 @@ SELECT INTO（含 TEMP）、多语句写入显式拒绝；双后端另验证 CTE
 新增 13 个 profile 源例，保留 19 个原始 pattern/recovery 断言、事件/schema/键/hint/分隔符输入；完整源/适配在 profile-source-cases.json 与 ledger。7 个额外原生分支用例单列。原版 profile Vitest 实际尝试，因 _test/generated.js 缺失在收集前失败：0 例执行、1 suite 失败，不算 oracle 通过。当前函数尚未接入完整 prefetch/eviction 或跨事件 cache，原生 FieldOrder 与 ABI 对象顺序接入待完成。
 
 完整 verify 退出 0：Go/race 各 334/334、无 skip；PG 69/69、PGlite 68/68；vet/build、167 个所选 core 活动原例（原 skip 2）、保留 SDK 4/4、53 typed ABI/runtime/compile fixture 和 2466 差分向量通过。累计 217/905（213 Go +4 SDK），213 Go 通过，其中167 原版 oracle 也通过、46 原版 fixture oracle 阻塞；688 静态记录未实现。Foundry 未安装。所有最终日志的不可变副本/hash 见 batch-9.json。
+
+## M12：typed ORM、编译义务与 cache 预取/淘汰
+
+新增5条源映射（14 runtime断言、5个编译错误义务），累计222/905：218 Go通过，167原版oracle也通过、51 fixture oracle阻塞；4 SDK通过，683未实现。5个源错误要求和6个额外负向控制都配有可编译正例及预期诊断的真实Go拒绝。生成模型/API/tool输入hash一并验证，编译结果不再由运行时error代替。
+
+Scalar typed CRUD、nullable/unchanged、JSON往返与CLI codegen --typed 已实现。缓存增加采样/预测/批量预取/负缓存/spillover淘汰/内存预算，共享profile元数据，业务行留在事件事务内。原 eviction逐例映射；合成事件预取、32并发更新、跨事件/rollback/reorg/内存等补充测试单独计数。原 deploy/mint/readonly metadata prefetch仍未映射。
+
+最终完整 verify退出0：Go/race各360/360，无skip；PG81/81、PGlite80/80；vet/build、所选core原oracle167活动通过（原skip2）、SDK4、ABI typed runtime/race各53、原类型检查及2466差分向量通过。所有边界、生成依赖、未实现项与不可变日志/hash见batch-10.json和CONTINUATION.md。Foundry1.8.5仍待批准，未安装。剩余database actions尚未完成，整体任务继续。

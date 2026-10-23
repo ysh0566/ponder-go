@@ -21,17 +21,17 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 217,
-    "executed": 217,
-    "passed": 217,
+    "ported": 222,
+    "executed": 222,
+    "passed": 222,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 688,
-    "go_ports": 213,
+    "unimplemented": 683,
+    "go_ports": 218,
     "retained_sdk": 4,
     "oracle_passed": 171,
-    "oracle_blocked": 46,
-    "go_passed": 213,
+    "oracle_blocked": 51,
+    "go_passed": 218,
     "sdk_passed": 4,
     "go_and_original_oracle_passed": 167,
     "target_and_original_oracle_passed": 171
@@ -12029,12 +12029,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/cache.test.ts",
+        "source_name": "prefetch() evicts rows",
+        "source_id": "b72e780e1464ae3d8223",
+        "source_line": 518,
+        "assertions_sha256": "96ae364eff4ddbf084a8fc033668c9c4c5448af4d4d3ebc8ea58650a4151268b",
+        "original_assertions": 1,
+        "target_file": "store/prefetch_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamCacheEviction/postgres",
+        "assertion_policy": "Exact original account schema, zero address/10n, invalidate before insert, explicit flush, two empty prefetch calls, and false has assertion. PostgreSQL primary mapping/PGlite companion. Source unused Anvil setup hook is not substituted for original oracle execution.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified original fixture imports generated contracts. wagmi Foundry plugin runs forge build; no artifacts and required Foundry 1.8.5 installation remains pending explicit approval.",
+          "evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified original fixture imports generated contracts. wagmi Foundry plugin runs forge build; no artifacts and required Foundry 1.8.5 installation remains pending explicit approval.",
+        "evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "7dbccfd6254c0561c3c0",
@@ -12701,12 +12728,46 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/index.test.ts",
+        "source_name": "update throw error when primary key is updated",
+        "source_id": "19c28b58a5d4976ff693",
+        "source_line": 695,
+        "assertions_sha256": "a5b327190b7009ed6b391c7ac53760d780c1376964e14cb847575434ef849586",
+        "original_assertions": 6,
+        "target_file": "store/orm_errors_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamORMErrors/postgres/update_throw_error_when_primary_key_is_updated",
+        "assertion_policy": "All original schema/zero address/ALICE/10n/20n/30n/NULL/omission inputs and runtime assertions retained in direct transaction fixtures without auto-flush. Dynamic Row calls intentionally exercise source suppressed type-error behavior; real generated public model APIs reject corresponding calls in independent Go compile fixtures. Plain offchain SQL descriptor is retained locally and excluded from native onchain registry. notNull swaps only cache/store schema in the same transaction, with no SQL DDL or data adoption.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified original fixture imports generated contracts. wagmi Foundry plugin runs forge build; no artifacts and required Foundry 1.8.5 installation remains pending explicit approval.",
+          "evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified original fixture imports generated contracts. wagmi Foundry plugin runs forge build; no artifacts and required Foundry 1.8.5 installation remains pending explicit approval.",
+        "evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/orm-compile-fixtures.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "c940c0967e51c61fc3b2",
@@ -13011,12 +13072,46 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/index.test.ts",
+        "source_name": "onchain table",
+        "source_id": "ca075d5ea2ea15828484",
+        "source_line": 1008,
+        "assertions_sha256": "651cc22df098c7db749081d6c2b670012199f2b732d91577fe10242be893771c",
+        "original_assertions": 1,
+        "target_file": "store/orm_errors_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamORMErrors/postgres/onchain_table",
+        "assertion_policy": "All original schema/zero address/ALICE/10n/20n/30n/NULL/omission inputs and runtime assertions retained in direct transaction fixtures without auto-flush. Dynamic Row calls intentionally exercise source suppressed type-error behavior; real generated public model APIs reject corresponding calls in independent Go compile fixtures. Plain offchain SQL descriptor is retained locally and excluded from native onchain registry. notNull swaps only cache/store schema in the same transaction, with no SQL DDL or data adoption.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified original fixture imports generated contracts. wagmi Foundry plugin runs forge build; no artifacts and required Foundry 1.8.5 installation remains pending explicit approval.",
+          "evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified original fixture imports generated contracts. wagmi Foundry plugin runs forge build; no artifacts and required Foundry 1.8.5 installation remains pending explicit approval.",
+        "evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/orm-compile-fixtures.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "894c1374d9edc072edb1",
@@ -13053,12 +13148,46 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/index.test.ts",
+        "source_name": "missing rows",
+        "source_id": "894c1374d9edc072edb1",
+        "source_line": 1049,
+        "assertions_sha256": "a4cc38a69d5a152d5cead6bc3d47c2c04aa91935440316075ba7962ee2aba501",
+        "original_assertions": 1,
+        "target_file": "store/orm_errors_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamORMErrors/postgres/missing_rows",
+        "assertion_policy": "All original schema/zero address/ALICE/10n/20n/30n/NULL/omission inputs and runtime assertions retained in direct transaction fixtures without auto-flush. Dynamic Row calls intentionally exercise source suppressed type-error behavior; real generated public model APIs reject corresponding calls in independent Go compile fixtures. Plain offchain SQL descriptor is retained locally and excluded from native onchain registry. notNull swaps only cache/store schema in the same transaction, with no SQL DDL or data adoption.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified original fixture imports generated contracts. wagmi Foundry plugin runs forge build; no artifacts and required Foundry 1.8.5 installation remains pending explicit approval.",
+          "evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified original fixture imports generated contracts. wagmi Foundry plugin runs forge build; no artifacts and required Foundry 1.8.5 installation remains pending explicit approval.",
+        "evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/orm-compile-fixtures.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "1812e055b6736df35a46",
@@ -13182,12 +13311,46 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/index.test.ts",
+        "source_name": "notNull",
+        "source_id": "75798852a81ed6440af4",
+        "source_line": 1133,
+        "assertions_sha256": "84f61f6ed66e8ab33f860ef762ab98dbf3620d362a49d5702d91ce35b7f9b88d",
+        "original_assertions": 5,
+        "target_file": "store/orm_errors_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamORMErrors/postgres/notNull",
+        "assertion_policy": "All original schema/zero address/ALICE/10n/20n/30n/NULL/omission inputs and runtime assertions retained in direct transaction fixtures without auto-flush. Dynamic Row calls intentionally exercise source suppressed type-error behavior; real generated public model APIs reject corresponding calls in independent Go compile fixtures. Plain offchain SQL descriptor is retained locally and excluded from native onchain registry. notNull swaps only cache/store schema in the same transaction, with no SQL DDL or data adoption.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified original fixture imports generated contracts. wagmi Foundry plugin runs forge build; no artifacts and required Foundry 1.8.5 installation remains pending explicit approval.",
+          "evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified original fixture imports generated contracts. wagmi Foundry plugin runs forge build; no artifacts and required Foundry 1.8.5 installation remains pending explicit approval.",
+        "evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/orm-compile-fixtures.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "085bbd10ade92a57854d",
@@ -39298,7 +39461,9 @@
       },
       "type_directives_verification": {
         "status": "passed",
-        "evidence": "parity/runs/compile-fixtures.json"
+        "evidence": [
+          "parity/runs/compile-fixtures.json"
+        ]
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
       "parity_status": "target_and_original_oracle_passed"

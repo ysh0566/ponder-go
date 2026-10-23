@@ -17,6 +17,7 @@ import (
 )
 
 type Store struct {
+	profileState             *CacheProfile
 	Backend                  Backend
 	Namespace, SyncNamespace string
 	Schema                   schema.Schema
@@ -72,7 +73,7 @@ func New(ctx context.Context, backend Backend, model schema.Schema, namespace st
 	if !schema.Identifier(namespace) || len(namespace) > 45 || !strings.HasPrefix(namespace, "ponder_go_") {
 		return nil, fmt.Errorf("task schemas must start with ponder_go_ and contain at most 45 identifier characters")
 	}
-	s := &Store{Backend: backend, Namespace: namespace, SyncNamespace: namespace + "_sync", Schema: model, Ordering: ordering, subscribers: map[chan Change]struct{}{}}
+	s := &Store{Backend: backend, Namespace: namespace, SyncNamespace: namespace + "_sync", Schema: model, Ordering: ordering, subscribers: map[chan Change]struct{}{}, profileState: NewCacheProfile()}
 	tx, e := backend.Begin(ctx)
 	if e != nil {
 		return nil, e

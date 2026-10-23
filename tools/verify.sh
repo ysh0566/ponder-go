@@ -15,6 +15,7 @@ node tools/event-fixtures.mjs
 node tools/parameter-fixtures.mjs
 node tools/factory-fixtures.mjs
 node tools/compile-fixtures.mjs
+node tools/orm-compile-fixtures.mjs
 go test -count=1 -json ./abi/testdata/compile/generated > parity/runs/abi-typed-go.jsonl
 go test -count=1 -race -json ./abi/testdata/compile/generated > parity/runs/abi-typed-race.jsonl
 go test -count=1 -json ./... > parity/runs/go-test.jsonl

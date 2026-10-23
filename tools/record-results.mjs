@@ -28,6 +28,7 @@ const race = goResults("parity/runs/go-race.jsonl");
 const typedGo = goResults("parity/runs/abi-typed-go.jsonl");
 const typedRace = goResults("parity/runs/abi-typed-race.jsonl");
 const compile = exists("parity/runs/compile-fixtures.json") ? read("parity/runs/compile-fixtures.json") : null;
+const ormCompile = exists("parity/runs/orm-compile-fixtures.json") ? read("parity/runs/orm-compile-fixtures.json") : null;
 const parameterTypes = exists("parity/runs/parameters-typecheck.json") ? read("parity/runs/parameters-typecheck.json") : null;
 const fileHash = file => crypto.createHash("sha256").update(fs.readFileSync(path.join(root,file))).digest("hex");
 const oraclePath = exists("parity/runs/foundation-oracle.json")
@@ -113,9 +114,10 @@ for (const test of ledger.tests) {
 			if (!valid) {status="skip";test.blockers.push("Native runtime alone is insufficient: inline type compilation/typed output evidence is incomplete.");}
 		}
 		if (test.type_error_directives.length) {
-			const directives=compile?.directives?.filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256)??[];
-			const valid=directives.length===test.type_error_directives.length&&directives.every(x=>x.status==="passed"&&[x.positive,x.negative].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
-			test.type_directives_verification={status:valid?"passed":"blocked",evidence:"parity/runs/compile-fixtures.json"};
+			const directives=[...(compile?.directives??[]),...(ormCompile?.directives??[])].filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256);
+			const generatedValid=!ormCompile?.directives.some(x=>x.source_id===test.id)||((ormCompile.inputs?.length??0)>=3&&[...ormCompile.generated,...ormCompile.inputs].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
+			const valid=generatedValid&&directives.length===test.type_error_directives.length&&directives.every(x=>x.status==="passed"&&[x.positive,x.negative].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
+			test.type_directives_verification={status:valid?"passed":"blocked",evidence:["parity/runs/compile-fixtures.json",...(ormCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/orm-compile-fixtures.json"]:[])]};
 			if(!valid){status="skip";test.blockers.push("Source type-error directive requires a verified native compile-failure fixture.");}
 		}
 	}
@@ -192,6 +194,7 @@ const summary = {
 	retained_sdk: {mapped:ledger.summary.retained_sdk,passed:ledger.summary.sdk_passed},
 	original_oracle: {mapped_passed:ledger.summary.oracle_passed,mapped_blocked:ledger.summary.oracle_blocked,meaning:"Original tests executed separately; only explicit differential vectors are labelled differential verification."},
 	type_fixtures: compile?.summary ?? null,
+	orm_type_fixtures: ormCompile?.summary ?? null,
 	type_scope: {
 		dedicated_source_records: ledger.summary.type_records,
 		dedicated_retained_sdk_passed: ledger.tests.filter(x=>x.kind==="type"&&x.mapping?.target_kind==="retained_sdk"&&x.pass_status==="passed").length,
