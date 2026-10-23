@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"ponder.local/ponder-go/abi"
 	"ponder.local/ponder-go/checkpoint"
 	protocol "ponder.local/ponder-go/events"
 	"ponder.local/ponder-go/filter"
@@ -14,6 +15,47 @@ import (
 func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]pending, error) {
 	callbacks := []protocol.Object{}
 	needsTrace := false
+
+	childrenByFactory := map[string][]filter.ChildAddress{}
+	for _, source := range e.Config.Contracts {
+		if !source.IncludeCallTraces || number < source.StartBlock || source.EndBlock != nil && number > *source.EndBlock {
+			continue
+		}
+		a := e.abis[source.Name]
+		functions := a.FunctionEntries()
+		counts := map[string]int{}
+		for _, item := range functions {
+			counts[item.Name]++
+		}
+		registered := map[string]bool{}
+		for _, item := range functions {
+			selector := abi.FunctionSelector(item)
+			name := source.Name + "." + item.SafeName(counts[item.Name] > 1)
+			if e.Handlers[name] == nil || registered[name] {
+				continue
+			}
+			registered[name] = true
+			address := nativeContractFilter(source, selector)["address"]
+			if factory, ok := e.factories[source.Name]; ok {
+				address = nativeFactory(factory)
+				children, err := e.Store.FactoryChildren(ctx, factory.ID, e.chain.ID, number)
+				if err != nil {
+					return nil, err
+				}
+				entries := []filter.ChildAddress{}
+				for child, birth := range children {
+					entries = append(entries, filter.ChildAddress{Address: child, Block: birth})
+				}
+				childrenByFactory[factory.ID] = entries
+			}
+			f := protocol.Object{"type": "trace", "chainId": e.chain.ID, "sourceId": source.Name, "fromAddress": filter.Undefined, "toAddress": address, "callType": "CALL", "functionSelector": selector, "fromBlock": source.StartBlock, "toBlock": filter.Undefined, "hasTransactionReceipt": source.IncludeTransactionReceipts}
+			if source.EndBlock != nil {
+				f["toBlock"] = *source.EndBlock
+			}
+			callbacks = append(callbacks, protocol.Object{"name": name, "type": "contract", "chain": protocol.Object{"id": e.chain.ID, "name": e.chain.Name}, "filter": f, "abiItem": item})
+			needsTrace = true
+		}
+	}
 	for _, source := range e.Config.Accounts {
 		if number < source.StartBlock || source.EndBlock != nil && number > *source.EndBlock {
 			continue
@@ -58,7 +100,7 @@ func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]p
 	if err != nil {
 		return nil, err
 	}
-	batch := protocol.Batch{EventCallbacks: callbacks, Blocks: []protocol.Object{block}, ChainID: e.chain.ID}
+	batch := protocol.Batch{EventCallbacks: callbacks, Blocks: []protocol.Object{block}, ChainID: e.chain.ID, ChildAddresses: childrenByFactory}
 	txByHash := map[string]map[string]any{}
 	receiptByIndex := map[string]map[string]any{}
 	for _, tx := range b.Transactions {
@@ -125,6 +167,18 @@ func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]p
 	if err != nil {
 		return nil, err
 	}
+
+	decoder := protocol.Decoder{Logger: e.options.Logger}
+	chain := protocol.Object{"id": e.chain.ID, "name": e.chain.Name}
+	decoded, err := decoder.DecodeEvents(chain, callbacks, built)
+	if err != nil {
+		return nil, err
+	}
+	public := map[string]protocol.Object{}
+	for _, value := range decoded {
+		callback := value["eventCallback"].(map[string]any)
+		public[fmt.Sprint(callback["name"])+":"+fmt.Sprint(value["checkpoint"])] = value["event"].(map[string]any)
+	}
 	for _, raw := range built {
 		callback := callbacks[raw.EventCallbackIndex]
 		name := callback["name"].(string)
@@ -134,7 +188,18 @@ func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]p
 		}
 		hash, _ := raw.Transaction["hash"].(string)
 		event := Event{Name: name, Block: b, Transaction: txByHash[hash], Receipt: receiptByIndex[fmt.Sprint(raw.Transaction["transactionIndex"])], Normalized: &raw}
-		if raw.Trace != nil {
+		body, ok := public[name+":"+raw.Checkpoint]
+		if !ok {
+			continue
+		}
+		if callback["type"] == "contract" {
+			event.Trace = raw.Trace
+			event.Args = body["args"]
+			event.Result = body["result"]
+			if callback["filter"].(map[string]any)["hasTransactionReceipt"] != true {
+				event.Receipt = nil
+			}
+		} else if raw.Trace != nil {
 			event.Trace = raw.Trace
 			event.Transfer = map[string]any{"from": raw.Trace["from"], "to": raw.Trace["to"], "value": raw.Trace["value"]}
 			event.Args = event.Transfer

@@ -73,6 +73,7 @@ type Event struct {
 	Trace       map[string]any
 	Transfer    map[string]any
 	Normalized  *protocol.RawEvent
+	Result      any
 }
 type Context struct {
 	Event  Event
@@ -95,7 +96,10 @@ type Engine struct {
 	syncMu    sync.Mutex
 	staged    *stagedState
 }
-type Options struct{ DisableCache bool }
+type Options struct {
+	DisableCache bool
+	Logger       protocol.DebugLogger
+}
 
 func New(c config.Config, s *store.Store, handlers map[string]Handler) (*Engine, error) {
 	return NewWithOptions(c, s, handlers, Options{})

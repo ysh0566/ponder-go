@@ -2,6 +2,20 @@
 
 任务没有完成。先读 `AGENTS.md`、本文件、`parity/runs/summary.json`、`parity/test-ledger.json` 和 `parity/feature-ledger.json`。不要把新增集成测试或差分向量算成上游逐例移植。
 
+## 当前交接入口：M22，Mac 暂停以切换云端
+
+用户已创建专用云环境；本端完成当前回归与发布后暂停，不开启下一批。最新实现提交以 Git HEAD、远端 main 和 `parity/runs/cloud-handoff.json` 为准（实现提交不在自己的树内循环引用 SHA）；上一发布基线为 `8965d61031f85c4a9d3e43fa541a0f662b5106ca`。当前正式证据为 `parity/runs/batch-21.json` 和 `batch-21-evidence/`，此前各批只作历史证据，下面早期“下一批”或计数不得覆盖本节。
+
+- 固定源 `17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334` /0.18.2；905条静态记录并非动态穷尽。292映射=288 Go通过+4 SDK；Go oracle210通过/78阻塞（DB65、profile13），SDK4通过，613未实现。
+- 最终 `PONDER_TEST_POSTGRES=<task-only> ./tools/verify.sh` 退出0；Go/race各1634/1634，PG183/183、PGlite180/180，无skip/fail；vet、CLI/示例build通过。core201活动通过/2源skip；选择性原声明4+15通过；ABI53成功/53额外负控制/1源错误、ORM6源错误/6额外负控制、原参数tsc与SDK均通过。
+- 补充差分：基础/factory2466，filter/fragments867，事件135（8预期异常），协议20。与源记录分开，不加源credit。M22只新增4条rpc.actions源记录/8断言；15条oracle是此前已映射记录，不能再加映射数。
+- 新实现：`abi/function.go`、`events/contract.go`、contract trace接入`runtime/accounts.go`、`rpc/logs.go`。ABI selector严格大小写；viem tuple空名和bytes小写适配仅在function边界，原参数helper不变。ABI顺序/重复项/selector碰撞保留。真实EVM同交易hash替代分支、缓存开关、handler失败回滚在两后端通过。
+- 原始失败与修正日志均保留：旧诊断Go源码曾被测试误收集导致构建失败，已改`.go.txt`并全套重跑；selector/空tuple名/bytes大小写/零参数附带数据差异先红后绿，不修改上游断言。最终只计最终成功运行。
+- `docs/CONTRACT_TRACE.md` 明确接入边界：旧contract log调度仍走ABI.DecodeEvent并传播错误，尚未统一batch decoder；新GetLogs未替换完整历史planner，chunks为顺序调用（source Promise.all）。原generated ABI contract测试未冒充通过。
+- Foundry1.8.5项目级安装仍待明确批准，未安装。旧Anvil0.2缺block-hash trace；3条原ETH fixture仍在断言前失败，native每tx回退仅额外验证。云端已有不同版本时先探测，不沿用Mac能力结论；安装/替换仍须遵守许可。
+
+云端依赖、隔离PG/PGlite/Anvil启动、权限边界和禁止迁移内容见 `docs/CLOUD_HANDOFF.md`。不传凭据或本机卷。优先核对main/tree/完整性，再新建测试库重跑；跨平台结果单独登记，保留Mac冻结证据。下一实现批次：统一contract log/trace decoder接入与原事件fixtures/断言，剩余10/16 rpc.actions原例、factory account targets/source/trace，随后多链排序与完整查询/CLI。关系、GraphQL、完整SQL/SSE、开发重载、模板/观测和类型/SDK/simulation剩余仍全部在范围内。
+
 ## 已保留的状态
 
 - 工作目录 `/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-go`。

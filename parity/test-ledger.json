@@ -21,20 +21,20 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 288,
-    "executed": 288,
-    "passed": 288,
+    "ported": 292,
+    "executed": 292,
+    "passed": 292,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 617,
-    "go_ports": 284,
+    "unimplemented": 613,
+    "go_ports": 288,
     "retained_sdk": 4,
-    "oracle_passed": 195,
-    "oracle_blocked": 93,
-    "go_passed": 284,
+    "oracle_passed": 214,
+    "oracle_blocked": 78,
+    "go_passed": 288,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 191,
-    "target_and_original_oracle_passed": 195
+    "go_and_original_oracle_passed": 210,
+    "target_and_original_oracle_passed": 214
   },
   "unresolved_expansion_ids": [],
   "files": [
@@ -18974,16 +18974,33 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getLogs chunks address arrays and merges responses in order",
+        "source_id": "5498a690d87fda2d2e79",
+        "source_line": 105,
+        "assertions_sha256": "d344fcf574eff8bf13850ce04d200357979e5a10540994dd6b4d6e8320681287",
+        "original_assertions": 4,
+        "target_file": "rpc/logs_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCLogs/eth_getLogs_chunks_address_arrays_and_merges_responses_in_order",
+        "assertion_policy": "Every original request chunk, result/order/length/params immutability/not-called assertion retained. Exact51addresses, globalhash/address/log/transaction fixture fields, no generated ABI dependency. Source vi.fn request adapted to task-local Go HTTP mock; full original rpc.actions test file runs unchanged separately. Chunks are sequential in the native action, rather than source Promise.all; output/request ordering and inputs preserved."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
         "evidence": "parity/runs/core-oracle.json"
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "9110e7f26aee7138dd26",
@@ -19017,16 +19034,33 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getLogs sorts logs by block number and log index",
+        "source_id": "9110e7f26aee7138dd26",
+        "source_line": 145,
+        "assertions_sha256": "24e75950fbc44eae9e17e4fe68e6c4b5ae66a34aab39384854561f20b1489be9",
+        "original_assertions": 1,
+        "target_file": "rpc/logs_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCLogs/eth_getLogs_sorts_logs_by_block_number_and_log_index",
+        "assertion_policy": "Every original request chunk, result/order/length/params immutability/not-called assertion retained. Exact51addresses, globalhash/address/log/transaction fixture fields, no generated ABI dependency. Source vi.fn request adapted to task-local Go HTTP mock; full original rpc.actions test file runs unchanged separately. Chunks are sequential in the native action, rather than source Promise.all; output/request ordering and inputs preserved."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
         "evidence": "parity/runs/core-oracle.json"
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "9b978d33ce2fa80c6b0f",
@@ -19059,16 +19093,33 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "standardizeTransactions() sorts transactions by transaction index",
+        "source_id": "9b978d33ce2fa80c6b0f",
+        "source_line": 163,
+        "assertions_sha256": "9cdddd1061d2c83e741ebd53ff7e1e36083fc5195468dccab1ef7e085d0d1f7c",
+        "original_assertions": 1,
+        "target_file": "rpc/logs_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCLogs/standardizeTransactions()_sorts_transactions_by_transaction_index",
+        "assertion_policy": "Every original request chunk, result/order/length/params immutability/not-called assertion retained. Exact51addresses, globalhash/address/log/transaction fixture fields, no generated ABI dependency. Source vi.fn request adapted to task-local Go HTTP mock; full original rpc.actions test file runs unchanged separately. Chunks are sequential in the native action, rather than source Promise.all; output/request ordering and inputs preserved."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
         "evidence": "parity/runs/core-oracle.json"
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "8eff803a0e6767e14afe",
@@ -19107,16 +19158,33 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getLogs skips empty address arrays",
+        "source_id": "8eff803a0e6767e14afe",
+        "source_line": 185,
+        "assertions_sha256": "c67792af83c94c56d2aab2e596dcd7d1dc99be18e3c923bf76a0cb48f24e9646",
+        "original_assertions": 2,
+        "target_file": "rpc/logs_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCLogs/eth_getLogs_skips_empty_address_arrays",
+        "assertion_policy": "Every original request chunk, result/order/length/params immutability/not-called assertion retained. Exact51addresses, globalhash/address/log/transaction fixture fields, no generated ABI dependency. Source vi.fn request adapted to task-local Go HTTP mock; full original rpc.actions test file runs unchanged separately. Chunks are sequential in the native action, rather than source Promise.all; output/request ordering and inputs preserved."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
         "evidence": "parity/runs/core-oracle.json"
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "4120b7179e34951a1d4b",
@@ -20040,17 +20108,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Unchanged runtime/events.test.ts cannot collect: missing _test/generated.js. Foundry1.8.5 installation remains pending approval.",
-        "evidence": "parity/runs/runtime-events-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "a79cdf7b715b85a9f407",
@@ -20209,7 +20282,7 @@
         "full_original_suite": {
           "status": "blocked_before_collection",
           "evidence": "parity/runs/runtime-events-oracle-blocked.json",
-          "reason": "Missing generated.js; independent selected declarations have no generated ABI dependency."
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
         }
       },
       "race": {
@@ -20288,7 +20361,7 @@
         "full_original_suite": {
           "status": "blocked_before_collection",
           "evidence": "parity/runs/runtime-events-oracle-blocked.json",
-          "reason": "Missing generated.js; independent selected declarations have no generated ABI dependency."
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
         }
       },
       "race": {
@@ -20362,7 +20435,7 @@
         "full_original_suite": {
           "status": "blocked_before_collection",
           "evidence": "parity/runs/runtime-events-oracle-blocked.json",
-          "reason": "Missing generated.js; independent selected declarations have no generated ABI dependency."
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
         }
       },
       "race": {
@@ -20601,7 +20674,7 @@
         "full_original_suite": {
           "status": "blocked_before_collection",
           "evidence": "parity/runs/runtime-events-oracle-blocked.json",
-          "reason": "Missing generated.js; independent selected declarations have no generated ABI dependency."
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
         }
       },
       "race": {
@@ -20726,17 +20799,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "8b843d8b055a534d8600",
@@ -20795,17 +20873,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "d4a44fd18de58d842e60",
@@ -20975,17 +21058,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "53007c4c2fcd23a21915",
@@ -21411,17 +21499,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "297ff86a54e9010cbb83",
@@ -21479,17 +21572,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "bc00255fef95d9272b16",
@@ -21548,17 +21646,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "3c2b8cc0a9fc66f15c4a",
@@ -21617,17 +21720,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "87aa9c053835c17a0bdf",
@@ -21685,17 +21793,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "063b2ef6ce1710b5e907",
@@ -21751,17 +21864,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "10f0068f97080c079808",
@@ -21819,17 +21937,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "60183027e2d8b2084d58",
@@ -21887,17 +22010,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "163687e53f937f38bdc3",
@@ -21955,17 +22083,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "2f13a001ab8416f18cce",
@@ -22029,17 +22162,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "68d640b52be58334d6d2",
@@ -22103,17 +22241,22 @@
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
-        "status": "blocked",
-        "reason": "Original filter suite cannot collect: missing _test/generated.js; Foundry1.8.5 installation pending. No generated ABI/import/assertion substituted.",
-        "evidence": "parity/runs/filter-oracle-blocked.json",
-        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        "status": "passed",
+        "evidence": "parity/runs/selected-mapped-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-mapped-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/filter-oracle-blocked.json",
+          "reason": "Missing generated.js; these selected original declarations have no generated ABI dependency."
+        }
       },
       "race": {
         "status": "pass",
         "evidence": "parity/runs/go-race.jsonl"
       },
       "execution_evidence": "parity/runs/go-test.jsonl",
-      "parity_status": "target_passed_original_oracle_blocked"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "f5648e97da46c3374944",

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"ponder.local/ponder-go/abi"
 	"testing"
 )
 
@@ -28,6 +29,20 @@ func TestEventBuildDifferential(t *testing.T) {
 			var got any
 			var e error
 			switch v.Operation {
+			case "decodeEvents":
+				collector := &decodeCollector{logs: []Object{}}
+				decoder := Decoder{Logger: collector}
+				rawEvents := []RawEvent{}
+				for _, value := range objects(a["rawEvents"]) {
+					rawEvents = append(rawEvents, rawObject(value))
+				}
+				decoded, err := decoder.DecodeEvents(object(a["chain"]), objects(a["callbacks"]), rawEvents)
+				e = err
+				got = Object{"events": decoded, "logs": collector.logs}
+			case "functionMetadata":
+				var item abi.Function
+				e = metadata(a["item"], &item)
+				got = Object{"selector": abi.FunctionSelector(item), "safeName": item.SafeName(a["overloaded"] == true)}
 			case "buildEvents":
 				got, e = BuildEvents(batch(a))
 			case "syncBlockToInternal":
@@ -69,3 +84,7 @@ func TestEventBuildDifferential(t *testing.T) {
 		})
 	}
 }
+
+type decodeCollector struct{ logs []Object }
+
+func (c *decodeCollector) Debug(fields Object) { c.logs = append(c.logs, fields) }
