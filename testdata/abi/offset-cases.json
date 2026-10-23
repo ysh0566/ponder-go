@@ -1,0 +1,426 @@
+[
+  {
+    "id": "46279041858eda4959eb",
+    "line": 9,
+    "full_name": "getBytesConsumedByParam returns 32 for static primitive types",
+    "source_file": "packages/core/src/utils/offset.test.ts",
+    "source_sha256": "0849693ddb5016e682b0ff38e9ab2b979028dc7401db4c30892ee6a98553eca8",
+    "assertions": [
+      {
+        "input": {
+          "operation": "getBytesConsumedByParam",
+          "args": [
+            {
+              "type": "uint"
+            }
+          ]
+        },
+        "matcher": "toBe",
+        "expected": 32
+      },
+      {
+        "input": {
+          "operation": "getBytesConsumedByParam",
+          "args": [
+            {
+              "type": "uint256"
+            }
+          ]
+        },
+        "matcher": "toBe",
+        "expected": 32
+      },
+      {
+        "input": {
+          "operation": "getBytesConsumedByParam",
+          "args": [
+            {
+              "type": "address"
+            }
+          ]
+        },
+        "matcher": "toBe",
+        "expected": 32
+      }
+    ]
+  },
+  {
+    "id": "8297fba56706cb980df0",
+    "line": 15,
+    "full_name": "getBytesConsumedByParam returns 32 for dynamic array types",
+    "source_file": "packages/core/src/utils/offset.test.ts",
+    "source_sha256": "0849693ddb5016e682b0ff38e9ab2b979028dc7401db4c30892ee6a98553eca8",
+    "assertions": [
+      {
+        "input": {
+          "operation": "getBytesConsumedByParam",
+          "args": [
+            {
+              "type": "int256[]"
+            }
+          ]
+        },
+        "matcher": "toBe",
+        "expected": 32
+      },
+      {
+        "input": {
+          "operation": "getBytesConsumedByParam",
+          "args": [
+            {
+              "type": "address[]"
+            }
+          ]
+        },
+        "matcher": "toBe",
+        "expected": 32
+      },
+      {
+        "input": {
+          "operation": "getBytesConsumedByParam",
+          "args": [
+            {
+              "type": "bytes[][4]"
+            }
+          ]
+        },
+        "matcher": "toBe",
+        "expected": 32
+      }
+    ]
+  },
+  {
+    "id": "8d090df888630341b62d",
+    "line": 21,
+    "full_name": "getBytesConsumedByParam returns 32 for array type containing nested dynamic type",
+    "source_file": "packages/core/src/utils/offset.test.ts",
+    "source_sha256": "0849693ddb5016e682b0ff38e9ab2b979028dc7401db4c30892ee6a98553eca8",
+    "assertions": [
+      {
+        "input": {
+          "operation": "getBytesConsumedByParam",
+          "args": [
+            {
+              "type": "bytes[][4]"
+            }
+          ]
+        },
+        "matcher": "toBe",
+        "expected": 32
+      }
+    ]
+  },
+  {
+    "id": "6d04db5dfd83a45a9649",
+    "line": 25,
+    "full_name": "getBytesConsumedByParam returns 32 for tuple type containing nested dynamic type",
+    "source_file": "packages/core/src/utils/offset.test.ts",
+    "source_sha256": "0849693ddb5016e682b0ff38e9ab2b979028dc7401db4c30892ee6a98553eca8",
+    "assertions": [
+      {
+        "input": {
+          "operation": "getBytesConsumedByParam",
+          "args": [
+            {
+              "components": [
+                {
+                  "name": "x",
+                  "type": "uint256[]"
+                },
+                {
+                  "name": "y",
+                  "type": "bool"
+                },
+                {
+                  "name": "z",
+                  "type": "address"
+                }
+              ],
+              "name": "fooOut",
+              "type": "tuple"
+            }
+          ]
+        },
+        "matcher": "toBe",
+        "expected": 32
+      }
+    ]
+  },
+  {
+    "id": "2c1174d835882d7d5632",
+    "line": 39,
+    "full_name": "getBytesConsumedByParam returns expanded byte amount for static array type",
+    "source_file": "packages/core/src/utils/offset.test.ts",
+    "source_sha256": "0849693ddb5016e682b0ff38e9ab2b979028dc7401db4c30892ee6a98553eca8",
+    "assertions": [
+      {
+        "input": {
+          "operation": "getBytesConsumedByParam",
+          "args": [
+            {
+              "type": "int256[3]"
+            }
+          ]
+        },
+        "matcher": "toBe",
+        "expected": 96
+      }
+    ]
+  },
+  {
+    "id": "0bdf2e971986fd32de92",
+    "line": 43,
+    "full_name": "getBytesConsumedByParam returns expanded byte amount for static tuple type",
+    "source_file": "packages/core/src/utils/offset.test.ts",
+    "source_sha256": "0849693ddb5016e682b0ff38e9ab2b979028dc7401db4c30892ee6a98553eca8",
+    "assertions": [
+      {
+        "input": {
+          "operation": "getBytesConsumedByParam",
+          "args": [
+            {
+              "components": [
+                {
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "name": "y",
+                  "type": "bool"
+                },
+                {
+                  "name": "z",
+                  "type": "address"
+                }
+              ],
+              "name": "fooOut",
+              "type": "tuple"
+            }
+          ]
+        },
+        "matcher": "toBe",
+        "expected": 96
+      }
+    ]
+  },
+  {
+    "id": "5e42fc882621cff5ecab",
+    "line": 57,
+    "full_name": "getNestedParamOffset",
+    "source_file": "packages/core/src/utils/offset.test.ts",
+    "source_sha256": "0849693ddb5016e682b0ff38e9ab2b979028dc7401db4c30892ee6a98553eca8",
+    "assertions": [
+      {
+        "input": {
+          "operation": "getNestedParamOffset",
+          "args": [
+            {
+              "type": "tuple",
+              "name": "foo",
+              "indexed": true,
+              "components": [
+                {
+                  "type": "address",
+                  "name": "bar"
+                },
+                {
+                  "type": "bool",
+                  "name": "v"
+                },
+                {
+                  "type": "int256",
+                  "name": "z"
+                },
+                {
+                  "type": "address",
+                  "name": "y"
+                }
+              ]
+            },
+            [
+              "y"
+            ]
+          ]
+        },
+        "matcher": "toEqual",
+        "expected": 96
+      },
+      {
+        "input": {
+          "operation": "getNestedParamOffset",
+          "args": [
+            {
+              "type": "tuple",
+              "name": "foo",
+              "indexed": true,
+              "components": [
+                {
+                  "type": "address",
+                  "name": "a"
+                },
+                {
+                  "type": "bool",
+                  "name": "b"
+                },
+                {
+                  "type": "int256",
+                  "name": "c"
+                },
+                {
+                  "type": "tuple",
+                  "name": "d",
+                  "components": [
+                    {
+                      "type": "address",
+                      "name": "x"
+                    },
+                    {
+                      "type": "address",
+                      "name": "y"
+                    },
+                    {
+                      "type": "address",
+                      "name": "z"
+                    }
+                  ]
+                },
+                {
+                  "type": "address",
+                  "name": "e"
+                }
+              ]
+            },
+            [
+              "d",
+              "y"
+            ]
+          ]
+        },
+        "matcher": "toEqual",
+        "expected": 128
+      },
+      {
+        "input": {
+          "operation": "getNestedParamOffset",
+          "args": [
+            {
+              "type": "tuple",
+              "name": "foo",
+              "indexed": true,
+              "components": [
+                {
+                  "type": "address",
+                  "name": "a"
+                },
+                {
+                  "type": "bool",
+                  "name": "b"
+                },
+                {
+                  "type": "int256",
+                  "name": "c"
+                },
+                {
+                  "type": "tuple",
+                  "name": "d",
+                  "components": [
+                    {
+                      "type": "address",
+                      "name": "x"
+                    },
+                    {
+                      "type": "address",
+                      "name": "y"
+                    },
+                    {
+                      "type": "address",
+                      "name": "z"
+                    }
+                  ]
+                },
+                {
+                  "type": "string",
+                  "name": "e"
+                }
+              ]
+            },
+            [
+              "d",
+              "y"
+            ]
+          ]
+        },
+        "matcher": "toEqual",
+        "expected": 128
+      },
+      {
+        "input": {
+          "operation": "getNestedParamOffset",
+          "args": [
+            {
+              "type": "tuple",
+              "name": "foo",
+              "indexed": true,
+              "components": [
+                {
+                  "type": "string",
+                  "name": "a"
+                },
+                {
+                  "type": "tuple",
+                  "name": "b",
+                  "components": [
+                    {
+                      "type": "address",
+                      "name": "x"
+                    },
+                    {
+                      "type": "address",
+                      "name": "y"
+                    },
+                    {
+                      "type": "address",
+                      "name": "z"
+                    }
+                  ]
+                },
+                {
+                  "type": "int256",
+                  "name": "c"
+                },
+                {
+                  "type": "tuple",
+                  "name": "d",
+                  "components": [
+                    {
+                      "type": "address",
+                      "name": "x"
+                    },
+                    {
+                      "type": "address",
+                      "name": "y"
+                    },
+                    {
+                      "type": "address",
+                      "name": "z"
+                    }
+                  ]
+                },
+                {
+                  "type": "address",
+                  "name": "e"
+                }
+              ]
+            },
+            [
+              "d",
+              "y"
+            ]
+          ]
+        },
+        "matcher": "toEqual",
+        "expected": 192
+      }
+    ]
+  }
+]
