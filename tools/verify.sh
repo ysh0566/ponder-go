@@ -23,7 +23,7 @@ go vet ./... > parity/runs/go-vet.txt 2>&1
 go build -o bin/ponder ./cmd/ponder
 go build -o bin/erc20 ./examples/erc20
 CI=1 ../ponder-upstream/packages/core/node_modules/.bin/vitest run --config tools/oracle.config.mjs --configLoader native src/utils/checkpoint.test.ts src/utils/interval.test.ts --reporter=json --outputFile="$PWD/parity/runs/foundation-oracle.json"
-CI=1 ../ponder-upstream/packages/core/node_modules/.bin/vitest run --config tools/oracle.config.mjs --configLoader native src/utils/checkpoint.test.ts src/utils/interval.test.ts src/utils/finality.test.ts src/build/schema.test.ts src/utils/decodeEventLog.test.ts src/utils/decodeAbiParameters.test.ts src/build/factory.test.ts src/utils/offset.test.ts --reporter=json --outputFile="$PWD/parity/runs/core-oracle.json"
+CI=1 ../ponder-upstream/packages/core/node_modules/.bin/vitest run --config tools/oracle.config.mjs --configLoader native src/utils/checkpoint.test.ts src/utils/interval.test.ts src/utils/finality.test.ts src/build/schema.test.ts src/utils/decodeEventLog.test.ts src/utils/decodeAbiParameters.test.ts src/build/factory.test.ts src/utils/offset.test.ts src/indexing-store/utils.test.ts --reporter=json --outputFile="$PWD/parity/runs/core-oracle.json"
 node tools/parameters-typecheck.mjs
 (cd sdk/typescript/client && CI=1 ./node_modules/.bin/vitest run --configLoader native --reporter=json --outputFile="$PWD/../../../parity/client-original.json")
 (cd sdk/typescript/react && CI=1 ./node_modules/.bin/vitest run --typecheck.only --configLoader native --reporter=json --outputFile="$PWD/../../../parity/react-original-typecheck-supported.json")

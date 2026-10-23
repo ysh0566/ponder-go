@@ -17,22 +17,44 @@ const (
 )
 
 type Column struct {
-	Name                string           `json:"name"`
-	Property            string           `json:"property,omitempty"`
-	Type                string           `json:"type"`
-	Primary             bool             `json:"primary,omitempty"`
-	NotNull             bool             `json:"notNull,omitempty"`
-	Unique              bool             `json:"unique,omitempty"`
-	Generated           bool             `json:"generated,omitempty"`
-	GeneratedExpression any              `json:"generatedExpression,omitempty"`
-	Identity            bool             `json:"identity,omitempty"`
-	IdentityOptions     *IdentityOptions `json:"identityOptions,omitempty"`
-	References          string           `json:"references,omitempty"`
-	Default             any              `json:"default,omitempty"`
-	RawDefault          bool             `json:"rawDefault,omitempty"`
-	DefaultFn           func() any       `json:"-"`
-	OnUpdateFn          func() any       `json:"-"`
+	Name                string                 `json:"name"`
+	Property            string                 `json:"property,omitempty"`
+	Type                string                 `json:"type"`
+	Mode                string                 `json:"mode,omitempty"`
+	Primary             bool                   `json:"primary,omitempty"`
+	NotNull             bool                   `json:"notNull,omitempty"`
+	Unique              bool                   `json:"unique,omitempty"`
+	Generated           bool                   `json:"generated,omitempty"`
+	GeneratedExpression any                    `json:"generatedExpression,omitempty"`
+	Identity            bool                   `json:"identity,omitempty"`
+	IdentityOptions     *IdentityOptions       `json:"identityOptions,omitempty"`
+	References          string                 `json:"references,omitempty"`
+	Default             any                    `json:"default,omitempty"`
+	HasDefault          bool                   `json:"hasDefault,omitempty"`
+	RawDefault          bool                   `json:"rawDefault,omitempty"`
+	DefaultFn           func() any             `json:"-"`
+	OnUpdateFn          func() any             `json:"-"`
+	MapToDriverValue    func(any) (any, error) `json:"-"`
+	MapFromDriverValue  func(any) (any, error) `json:"-"`
 }
+
+func (c *Column) UnmarshalJSON(data []byte) error {
+	type plain Column
+	var value plain
+	if e := json.Unmarshal(data, &value); e != nil {
+		return e
+	}
+	var fields map[string]json.RawMessage
+	if e := json.Unmarshal(data, &fields); e != nil {
+		return e
+	}
+	*c = Column(value)
+	if _, present := fields["default"]; present && c.Default == nil {
+		c.HasDefault = true
+	}
+	return nil
+}
+
 type Index struct {
 	Name    string   `json:"name"`
 	Columns []string `json:"columns"`
@@ -100,7 +122,7 @@ func (t Table) Keys() []string {
 	return nil
 }
 func SQLType(t string) (string, error) {
-	types := map[string]string{"text": "text", "hex": "text", "address": "text", "bigint": "numeric(78,0)", "int8": "bigint", "integer": "integer", "smallint": "smallint", "boolean": "boolean", "json": "json", "jsonb": "jsonb", "bytes": "bytea", "timestamp": "timestamp", "date": "date", "numeric": "numeric", "real": "real", "doublePrecision": "double precision", "uuid": "uuid"}
+	types := map[string]string{"text": "text", "varchar": "varchar", "char": "char", "hex": "text", "address": "text", "bigint": "numeric(78,0)", "int8": "bigint", "integer": "integer", "smallint": "smallint", "boolean": "boolean", "json": "json", "jsonb": "jsonb", "bytes": "bytea", "timestamp": "timestamp", "date": "date", "numeric": "numeric", "real": "real", "doublePrecision": "double precision", "uuid": "uuid", "point": "point", "line": "line"}
 	base := strings.TrimSuffix(t, "[]")
 	s, ok := types[base]
 	if !ok {
@@ -307,7 +329,9 @@ func (s Schema) TableDDL(t Table, namespace string) string {
 		if c.NotNull {
 			col += " NOT NULL"
 		}
-		if c.Default != nil {
+		if c.HasDefault && c.Default == nil {
+			col += " DEFAULT NULL"
+		} else if c.Default != nil {
 			value := fmt.Sprint(c.Default)
 			if c.Type == "json" || c.Type == "jsonb" {
 				raw, _ := json.Marshal(c.Default)

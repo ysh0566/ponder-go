@@ -16,6 +16,9 @@ func (e *RawSQLError) Unwrap() error { return e.Cause }
 // SQL executes one SQL statement inside the event transaction. A savepoint
 // isolates recoverable statement errors, matching the original SQL API.
 func (w *Writer) SQL(ctx context.Context, query string, args ...any) (Result, error) {
+	if w.closed.Load() {
+		return Result{}, &NonRetryableUserError{Message: "A store API method was called after the indexing function returned."}
+	}
 	tree, e := sqlquery.ParseStatement(query)
 	if e != nil {
 		return Result{}, &RawSQLError{e}
@@ -27,6 +30,51 @@ func (w *Writer) SQL(ctx context.Context, query string, args ...any) (Result, er
 	}
 	if e = w.validateSQLScope(tree); e != nil {
 		return Result{}, &RawSQLError{e}
+	}
+	if orm := w.indexingSession(); orm != nil {
+		readonly := true
+		var inspect func(any)
+		inspect = func(value any) {
+			switch n := value.(type) {
+			case map[string]any:
+				for kind, child := range n {
+					if kind == "InsertStmt" || kind == "UpdateStmt" || kind == "DeleteStmt" || kind == "lockingClause" {
+						readonly = false
+					}
+					inspect(child)
+				}
+			case []any:
+				for _, child := range n {
+					inspect(child)
+				}
+			}
+		}
+		inspect(tree)
+		if !readonly {
+			if e = orm.Cache.Flush(ctx); e != nil {
+				return Result{}, e
+			}
+			orm.Cache.Invalidate()
+			orm.Cache.Clear()
+		} else {
+			relations, parseError := sqlquery.Relations(query)
+			all := parseError != nil
+			for _, view := range w.s.Schema.Views {
+				for _, relation := range relations {
+					if view.Name == relation {
+						all = true
+					}
+				}
+			}
+			if all {
+				e = orm.Cache.Flush(ctx)
+			} else if len(relations) > 0 {
+				e = orm.Cache.Flush(ctx, relations...)
+			}
+			if e != nil {
+				return Result{}, e
+			}
+		}
 	}
 	if e = w.tx.Exec(ctx, "SAVEPOINT ponder_go_sql"); e != nil {
 		w.err = e
