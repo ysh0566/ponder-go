@@ -1,0 +1,163 @@
+{
+  "format_version": 1,
+  "status": "mac_verified_published_paused_for_cloud_migration",
+  "recorded_utc": "2026-10-23T17:26:51.136826+00:00",
+  "repository": "https://github.com/ysh0566/ponder-go",
+  "private": true,
+  "owner": "ysh0566",
+  "published_implementation_commit": "5a3886dfcf30d2b2debd61090fe24adf8513497a",
+  "published_implementation_tree": "718d6a61cf0d26d45afacf26c78e88e45ee5fdca",
+  "observed_remote_main_at_record_creation": "5a3886dfcf30d2b2debd61090fe24adf8513497a",
+  "publication_mode": "normal_fast_forward",
+  "receipt_commit_policy": "This file and the CONTINUATION SHA update are a later docs-only descendant of the implementation. Obtain final handoff commit from Git main/final execution report; no self-referential SHA.",
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 292,
+    "unimplemented": 613,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 288,
+    "passed_with_required_type_checks": 288,
+    "original_oracle_also_passed": 210,
+    "original_oracle_blocked": 78
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 214,
+    "mapped_blocked": 78,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 1634,
+    "pass": 1634,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 1634,
+    "pass": 1634,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 183,
+        "pass": 183,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 183,
+        "pass": 183,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 180,
+        "pass": 180,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 180,
+        "pass": 180,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "supplemental_vectors": {
+    "foundation_factory": 2466,
+    "filter_fragments": 867,
+    "event_build": 135,
+    "event_expected_exceptions": 8,
+    "protocol": 20,
+    "count_as_source_records": false
+  },
+  "type_checks": {
+    "abi_inline_success": 53,
+    "abi_extra_negative_controls": 53,
+    "abi_source_error_directives": 1,
+    "orm_source_error_directives": 6,
+    "orm_extra_negative_controls": 6,
+    "original_TS_parameter_files_passed": 2
+  },
+  "tool_versions": {
+    "go": "go1.27.1 darwin/arm64",
+    "module_min_go": "1.25.0",
+    "node": "25.2.1",
+    "pnpm": "12.10.1",
+    "vitest": "5.0.2",
+    "postgres": "16.15 aarch64-linux",
+    "pglite": "0.2.13",
+    "anvil": "0.2.0 (96105b4)"
+  },
+  "mac": {
+    "workspace": "/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-go",
+    "upstream": "/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-upstream",
+    "working_tree_clean_at_implementation_publish": true,
+    "unverified_code_or_patch": false,
+    "in_flight_test_or_write_commands": false,
+    "task_anvil_or_pglite_children": 0,
+    "postgres_container": "ponder-go-task-20261023",
+    "postgres_volume": "ponder_go_task_20261023",
+    "postgres_state": "running_idle_no_task_tests",
+    "postgres_bind": "127.0.0.1:53398",
+    "postgres_volume_preserved": true,
+    "other_user_services_untouched": true,
+    "future_code_writes": "paused until migration coordinator resumes this execution end"
+  },
+  "cloud": {
+    "started_by_this_thread": false,
+    "next_owner": "User-created dedicated cloud environment once repository connection works",
+    "connection_status": "parent_reported_repository_not_found_or_connected_identity_lacks_access",
+    "connection_action": "Parent asked user to correct the environment repository connection; not an implementation test failure.",
+    "no_credentials_or_volumes_transferred": true,
+    "setup_instructions": "docs/CLOUD_HANDOFF.md"
+  },
+  "foundry": {
+    "action": "Official project-local1.8.5 install",
+    "status": "pending_user_approval",
+    "executed": false
+  },
+  "remaining": {
+    "static_unimplemented_records": 613,
+    "mapped_Go_source_oracle_blocked": 78,
+    "unchanged_ETH_fixture_blocked_unmapped": 3,
+    "notes": [
+      "Legacy contract log scheduler not yet routed through unified Decoder.",
+      "Original generated-ABI contract test fixtures remain unported; additional EVM tests give no source credit.",
+      "GetLogs uses sequential chunk calls; full planner and10remaining rpc.actions records pending.",
+      "Multi-chain ordering, full queries/GraphQL/SQL/SSE/API, tooling/dev/templates and remaining type/SDK/simulation still in scope."
+    ]
+  },
+  "continuation": "docs/CONTINUATION.md",
+  "evidence": [
+    {
+      "path": "parity/runs/batch-21.json",
+      "sha256": "7c1c36d4d22e58e8d0258931b9f9a48495bd168765245322f5d91274ff1ffeeb"
+    },
+    {
+      "path": "parity/runs/summary.json",
+      "sha256": "8590804608f1a5d2d5ac7ca9152996734f3a6d284e9b5aad590d4855feffeba2"
+    }
+  ]
+}
