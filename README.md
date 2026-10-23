@@ -8,13 +8,13 @@
 
 ## 当前验证与计数
 
-权威结果是 [parity/runs/summary.json](parity/runs/summary.json)，本批冻结结果见 [M17](parity/runs/batch-15.json) 、[M18](parity/runs/batch-16.json) 与 [M19](parity/runs/batch-17.json)。用例发现、移植、执行、通过分别登记，不合并计数。
+权威结果是 [parity/runs/summary.json](parity/runs/summary.json)，本批冻结结果见 [M17](parity/runs/batch-15.json) 、[M18](parity/runs/batch-16.json) 、[M19](parity/runs/batch-17.json) 与 [M20](parity/runs/batch-18.json)。用例发现、移植、执行、通过分别登记，不合并计数。
 
 - 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条专门类型测试、63 个运行时文件内联类型断言、84 条类型错误指令，以及客户端/React/E2E。
-- 已逐例映射 250 条：246 条 Go + 原样保留的 4 条 SDK。Go 映射 246 条均通过，其中 167 条原版 oracle 也通过、79 条 fixture oracle 阻塞（数据库 65、profile 13、runtime 1）；SDK 4 条通过。另有 **655 条未实现**。
-- 全套原生 Go/race 各 570/570；真实 PostgreSQL 175/175、PGlite 172/172。53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。ORM 6 条源类型错误义务及 6 条额外负向控制也分别验证真实编译拒绝。
+- 已逐例映射 282 条：278 条 Go + 原样保留的 4 条 SDK。Go 映射 278 条均通过，其中 185 条原版 oracle 也通过、93 条 fixture oracle 阻塞（数据库 65、profile 13、runtime 15）；SDK 4 条通过。另有 **623 条未实现**。
+- 全套原生 Go/race 各 1477/1477（含本批867个额外filter/fragments向量）；真实 PostgreSQL 179/179、PGlite 176/176。53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。ORM 6 条源类型错误义务及 6 条额外负向控制也分别验证真实编译拒绝。
 - 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
-- 2,466 个确定性差分向量（基础 2,400 + factory 66），另有 20 个来自未改动 source encode/lowercase 的协议编码向量，分别计数。
+- 2,466 个基础/factory差分向量，另有867个filter/fragments向量及20个协议编码向量，分别计数。
 - 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
 
 静态发现不能证明任意 JavaScript 动态执行的全部实例均已收集。4 个 literal `test.each` 声明已展开；本基线未发现动态测试生成、别名测试遗漏、`describe.each` 或 `only`。Simulation 的 8 个应用和无限 seed 空间单列。详见 [discovery-audit.json](parity/discovery-audit.json)，完整测试源码和 247 个依赖/fixture 模块分别保存在 `parity/source-tests/`、`parity/source-support/`。早期 1,957 个断言表达式计数重复计算了链式 `expect().rejects`，已修正为 1,905；905 条测试记录不变。
@@ -30,7 +30,7 @@ export PONDER_TEST_POSTGRES='postgres://ponder:ponder-local-test@127.0.0.1:53398
 ./tools/verify.sh
 ```
 
-该脚本执行 `go test -count=1 -json ./...`、`go test -count=1 -race -json ./...`、`go vet ./...`、CLI/示例编译、原版 167 条活动 core 测试（另保留 2 条原 skip）及差分 harness。本环境的沙箱限制本地 TCP/IPC，执行数据库、HTTP 和 Anvil 测试需要已授权的工具网络能力。缺少 PostgreSQL 环境变量的单独 `go test` 会明确报告相关集成测试未运行；完整验收脚本直接要求该变量。
+该脚本执行 `go test -count=1 -json ./...`、`go test -count=1 -race -json ./...`、`go vet ./...`、CLI/示例编译、原版 185 条活动 core 测试（另保留 2 条原 skip）及差分 harness。本环境的沙箱限制本地 TCP/IPC，执行数据库、HTTP 和 Anvil 测试需要已授权的工具网络能力。缺少 PostgreSQL 环境变量的单独 `go test` 会明确报告相关集成测试未运行；完整验收脚本直接要求该变量。
 
 SDK 测试单独运行，保留原断言与 inline snapshots：
 
@@ -69,11 +69,11 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 
 未取得计划 PDF 的本地可读副本：Library 已解析给定文件，但所提供下载经指定 helper 两次失败；未伪造本地文件。实现以完整委托范围和固定源码为依据。
 
-当前 245 条映射中，171 条也取得原版 oracle 通过（167 Go + 4 SDK），74 条数据库/profile oracle 因待批准的 Foundry 1.8.5 及其生成 fixture 仍阻塞。见台账 `oracle_passed` / `oracle_blocked`，不将 Go 通过冒充 oracle 通过。
+当前 282 条映射中，189 条也取得原版 oracle 通过（185 Go + 4 SDK），93 条数据库/profile/runtime oracle 因待批准的 Foundry 1.8.5 及其生成 fixture 仍阻塞。见台账 `oracle_passed` / `oracle_blocked`，不将 Go 通过冒充 oracle 通过。
 
-原生 `NewLifecycle` 已实现新影子启动、build ID 校验、heartbeat 租约、带 fencing 的业务/同步写入和事务恢复；新增8条生命周期源例及真实进程退出验证。恢复返回 safe checkpoint 并保留 latest，调用方显式复位和安装 capture。完整自动 staged runtime、真实旧版接管、dev reset 和角色权限仍待实现。接口与边界见 [DATABASE_LIFECYCLE.md](docs/DATABASE_LIFECYCLE.md)。
+原生 `NewLifecycle` 已实现新影子启动、build ID 校验、heartbeat 租约、带 fencing 的业务/同步写入和事务恢复；新增8条生命周期源例及真实进程退出验证。恢复返回 safe checkpoint 并保留 latest，NewStaged 自动协调私有恢复游标及安装 capture。自动单链 staged runtime 已接入生命周期和实时事务；完整多链调度、真实旧版接管、dev reset 和角色权限仍待实现。接口与边界见 [DATABASE_LIFECYCLE.md](docs/DATABASE_LIFECYCLE.md)。
 
-`NewSyncMigrator` / `Lifecycle.MigrateSync` 已逐例实现8条版本化 sync 迁移测试：在任务拥有的 shadow 内创建完整9表协议缓存、以repeatable-read复制允许数据并保留旧shadow/history、并发/失败重试及真实进程恢复。原版SQL三份资产完整保留并核对hash；Go整数参数改为十进制传输，修复PGlite对大int64的舍入。完整runtime仍使用原来的最小sync store，新的协议缓存尚未自动接入事件CRUD；没有真实旧DB原地接管。见 [SYNC_MIGRATIONS.md](docs/SYNC_MIGRATIONS.md)。
+`NewSyncMigrator` / `Lifecycle.MigrateSync` 已逐例实现8条版本化 sync 迁移测试：在任务拥有的 shadow 内创建完整9表协议缓存、以repeatable-read复制允许数据并保留旧shadow/history、并发/失败重试及真实进程恢复。原版SQL三份资产完整保留并核对hash；Go整数参数改为十进制传输，修复PGlite对大int64的舍入。默认单链 runtime 已将协议缓存接入事件 CRUD，并验证冷重组和启停缓存；完整缓存查询/分页、trace 和多链仍缺，没有真实旧DB原地接管。见 [SYNC_MIGRATIONS.md](docs/SYNC_MIGRATIONS.md)。
 
 ## ABI 原生类型适配
 
@@ -86,3 +86,5 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 当前 journal 存储格式为 `json-v3`，默认新建 `ponder_go_shadow_v3_<hash>`；staged Actions 默认 `ponder_go_actions_v3_<hash>`，模式不可混开。显式旧格式 schema 会要求新影子重建，当前没有原地迁移或接管旧数据库。JSON `U+0000` 与 raw SQL 大数字的 undo 保留原值；PGlite bytes 参数采用明确二进制位置标记。
 
 生命周期/ORM then/SQL 的逐例边界见 [LIFECYCLE_COMPLETION.md](docs/LIFECYCLE_COMPLETION.md)，版本化缓存接入及未实现协议见 [PROTOCOL_CACHE.md](docs/PROTOCOL_CACHE.md)。`runtime.NewStaged` 已接入单链自动生命周期、setup、历史/实时交接、重组与通知，边界见 [STAGED_RUNTIME.md](docs/STAGED_RUNTIME.md)。多链、source 完整范围批处理/并发 pipeline、trace 和完整查询/工具链仍待实现；继续入口见 [CONTINUATION.md](docs/CONTINUATION.md)。
+
+M20已逐例映射18条fragments和14条filter源记录（38个静态断言、75次运行时断言），保持全部输入、循环、快照和setup上下文。单链日志已接入predicate和超过50地址的请求放宽后本地再过滤；真实EVM验证factory同交易发现/调用、发现前排除与重组/cache开关。原版filter完整suite仍收集前阻塞，没有用native结果冒充oracle通过。见 [FILTER_FRAGMENTS.md](docs/FILTER_FRAGMENTS.md)。
