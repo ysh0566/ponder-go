@@ -243,6 +243,9 @@ func (t *pgliteTx) Query(c context.Context, s string, a ...any) (Result, error) 
 	if e != nil {
 		t.failed = true
 	}
+	if e == nil && strings.HasPrefix(strings.ToUpper(strings.TrimSpace(s)), "ROLLBACK TO ") {
+		t.failed = false
+	}
 	return r, e
 }
 func (t *pgliteTx) Exec(c context.Context, s string, a ...any) error {

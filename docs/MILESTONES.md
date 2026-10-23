@@ -22,7 +22,7 @@ PostgreSQL 16.15 和 PGlite 0.2.13 均验证 CRUD/upsert、精确大整数 snaps
 
 原 TS 客户端源代码连接 Go SQL/SSE 服务，在两个后端各验证 7 条协议断言：大整数参数/结果、SQL 列顺序、status、初始 hash 不推送、同结果不推送、变化结果推送、取消订阅。保留 SDK 自身的 3 条原 unit tests 和 React 1 条原 type fixture，共 4/4。
 
-当前 ledger 为 **87 条已映射、执行并通过，818 条未实现**。当前全部 Go 与 race 的确切叶子用例数量、实际版本和原始日志读取 `parity/runs/summary.json`，避免文档与新一轮结果计数漂移。
+当前 ledger 为 **89 条已映射、执行并通过，816 条未实现**；其中 2 条原版 SQL oracle 尚阻塞。当前全部 Go 与 race 的确切叶子用例数量、实际版本和原始日志读取 `parity/runs/summary.json`，避免文档与新一轮结果计数漂移。
 
 ## 当前批次后的工作
 
@@ -33,3 +33,7 @@ PostgreSQL 16.15 和 PGlite 0.2.13 均验证 CRUD/upsert、精确大整数 snaps
 ## M4：schema / event / finality 精确移植
 
 新增 24 条 build/schema、19 条 decodeEventLog（21 条原断言）、6 条 finality，均分别在 Go 与未修改的原测试通过。事件 fixture 从源断言提取预期，保留完整 snapshot 字符串与错误匹配；没有使用被测实现生成预期。类型化 enum 和五种 view 在 PG/PGlite 执行、回滚、重开验证通过。当前 Go/race 各 118/118，所选 core oracle 83/83；参数解码器内联类型断言与完整 ORM/SQL journal 仍需继续。
+
+## M5：统一 trigger journal 与 raw SQL
+
+删除 Go 手动 journal，所有 business table DML 通过同一数据库 trigger 捕获。双后端验证批量 SQL、可更新视图、事件外写拒绝、savepoint 错误恢复、全局后缀回滚、PK/DDL/内部设置保护、journal CHECK 故障原子性。原客户端分别在 base/nested view、PG/PGlite 四种组合执行，每种 7 条协议断言通过。新增 2 个源 SQL case，Go 双后端通过；原版 oracle 因待批准的 Foundry 1.8.5 setup 阻塞，单独列出。当前整套 Go/race 各 138/138、无 skip；整体复刻仍未完成。

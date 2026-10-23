@@ -26,6 +26,9 @@ func (s *Store) Revert(ctx context.Context, target checkpoint.Checkpoint) error 
 	if e = s.lock(ctx, tx); e != nil {
 		return e
 	}
+	if e = s.eventContext(ctx, tx, encoded, target.ChainID, true); e != nil {
+		return e
+	}
 	final, e := tx.Query(ctx, "SELECT safe_checkpoint FROM "+s.internal("_ponder_go_finalized")+" WHERE chain_id=$1", target.ChainID)
 	if e != nil {
 		return e
