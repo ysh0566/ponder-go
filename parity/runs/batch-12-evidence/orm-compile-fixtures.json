@@ -1,0 +1,271 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "tool": "go version go1.27.1 darwin/arm64",
+  "inputs": [
+    {
+      "file": "orm/orm.go",
+      "sha256": "f1a44ec99ffc05a5ed3a614037cbb6fa7699b0b5a73cb339aa4c313cb95e6504"
+    },
+    {
+      "file": "orm/generate.go",
+      "sha256": "8beb2b9971ad1365ec6bc65f3749322dacd132623b218da5770e60bff75aaafc"
+    },
+    {
+      "file": "cmd/ponder/main.go",
+      "sha256": "fa75547b0f476be1553641e85b12232cdc6cd620208fc77152c13b9ee6857fcb"
+    },
+    {
+      "file": "tools/orm-compile-fixtures.mjs",
+      "sha256": "b19cb51dd4e027700c741470478840d1d8ba955681249759b523fa3751b0d75c"
+    }
+  ],
+  "method": "Real Go build of independent public typed model API calls. Required constructor arity, nominal model identity, update column sets and value types are compiler-enforced; no runtime error counts as compilation rejection. Go zero-value syntax is explicitly runtime guarded.",
+  "directives": [
+    {
+      "name": "19c28b58a5d4976ff693_0",
+      "source_id": "19c28b58a5d4976ff693",
+      "source_sha256": "1492da684b496f1871472a7097f5f482e8ebb890a3a902e9964330eb1081271a",
+      "directive_index": 0,
+      "source_name": "update throw error when primary key is updated",
+      "status": "passed",
+      "adaptation": "Generated update omits primary keys. Runtime intentionally invalid Row calls retain both original error assertions separately.",
+      "positive": {
+        "file": "orm/testdata/compile/pass/19c28b58a5d4976ff693_0.go",
+        "sha256": "9fcdbc050d41f139e9971b6bdf91f717fb558bfed1a31d9b4cf1107586c7e57b",
+        "exit_code": 0,
+        "expected": true,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "orm/testdata/compile/fail/19c28b58a5d4976ff693_0.go",
+        "sha256": "8a9c2fa3e96f4647e8cc6c1554dec5a3d5e2ef32dc0799f69e0727a50889d89c",
+        "exit_code": 1,
+        "expected": true,
+        "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/19c28b58a5d4976ff693_0.go:3:42: unknown field Address in struct literal of type strict.AccountUpdate"
+      }
+    },
+    {
+      "name": "19c28b58a5d4976ff693_1",
+      "source_id": "19c28b58a5d4976ff693",
+      "source_sha256": "1492da684b496f1871472a7097f5f482e8ebb890a3a902e9964330eb1081271a",
+      "directive_index": 1,
+      "source_name": "update throw error when primary key is updated",
+      "status": "passed",
+      "adaptation": "Even assigning the unchanged PK is a type error, matching the second source directive. Dynamic runtime case still permits same-PK values.",
+      "positive": {
+        "file": "orm/testdata/compile/pass/19c28b58a5d4976ff693_1.go",
+        "sha256": "3a97f177c2200cd3107c4cc7b234bf599f47ff37c97856cc0014372a2c1e8925",
+        "exit_code": 0,
+        "expected": true,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "orm/testdata/compile/fail/19c28b58a5d4976ff693_1.go",
+        "sha256": "880b7166fbe796d7b6e614d80b68de14f2fd01c5f14765455761ded9dbf31319",
+        "exit_code": 1,
+        "expected": true,
+        "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/19c28b58a5d4976ff693_1.go:3:42: unknown field Address in struct literal of type strict.AccountUpdate"
+      }
+    },
+    {
+      "name": "894c1374d9edc072edb1_0",
+      "source_id": "894c1374d9edc072edb1",
+      "source_sha256": "1492da684b496f1871472a7097f5f482e8ebb890a3a902e9964330eb1081271a",
+      "directive_index": 0,
+      "source_name": "missing rows",
+      "status": "passed",
+      "adaptation": "Required insert constructor rejects omitted balance. Go zero values cannot be forbidden syntactically and are runtime-guarded; no struct field-presence claim.",
+      "positive": {
+        "file": "orm/testdata/compile/pass/894c1374d9edc072edb1_0.go",
+        "sha256": "76b0ad1ab99ec95115c63c37a6450a20f280612f625c5bedbe36c585764ca0de",
+        "exit_code": 0,
+        "expected": true,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "orm/testdata/compile/fail/894c1374d9edc072edb1_0.go",
+        "sha256": "e696bb066b20da232b22338366c47af4b481f7142790f83210e51ac8050c21e6",
+        "exit_code": 1,
+        "expected": true,
+        "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/894c1374d9edc072edb1_0.go:3:63: not enough arguments in call to strict.NewAccountInsert\n\thave (string)\n\twant (string, big.Int)"
+      }
+    },
+    {
+      "name": "ca075d5ea2ea15828484_0",
+      "source_id": "ca075d5ea2ea15828484",
+      "source_sha256": "1492da684b496f1871472a7097f5f482e8ebb890a3a902e9964330eb1081271a",
+      "directive_index": 0,
+      "source_name": "onchain table",
+      "status": "passed",
+      "adaptation": "Plain SQL schema descriptors have no typed onchain binding method.",
+      "positive": {
+        "file": "orm/testdata/compile/pass/ca075d5ea2ea15828484_0.go",
+        "sha256": "e77903a1648f2350f78d960033fe0f93d1ac7f8bf375d1fe3457f20662d731ed",
+        "exit_code": 0,
+        "expected": true,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "orm/testdata/compile/fail/ca075d5ea2ea15828484_0.go",
+        "sha256": "565c2bbf6cb894f9ffe85cb7c6cb18089ec40fa4a69bcd0bb7fbc17506c099c7",
+        "exit_code": 1,
+        "expected": true,
+        "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/ca075d5ea2ea15828484_0.go:3:207: table.Bind undefined (type schema.Table has no field or method Bind)"
+      }
+    },
+    {
+      "name": "75798852a81ed6440af4_0",
+      "source_id": "75798852a81ed6440af4",
+      "source_sha256": "1492da684b496f1871472a7097f5f482e8ebb890a3a902e9964330eb1081271a",
+      "directive_index": 0,
+      "source_name": "notNull",
+      "status": "passed",
+      "adaptation": "Nullable and non-null generated model definitions have different key/insert/update/row types, rejecting source model reassignment.",
+      "positive": {
+        "file": "orm/testdata/compile/pass/75798852a81ed6440af4_0.go",
+        "sha256": "9c86b8533a2561838152a204ceb9f7b46a3f86743a23a7ec02c1c7505aa1aefa",
+        "exit_code": 0,
+        "expected": true,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "orm/testdata/compile/fail/75798852a81ed6440af4_0.go",
+        "sha256": "8ce28c23923f0a57f98ecde94098fed157174a4ff6841bff71f536137519b490",
+        "exit_code": 1,
+        "expected": true,
+        "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/75798852a81ed6440af4_0.go:3:81: cannot use strict.Account (variable of struct type orm.Definition[strict.AccountKey, strict.AccountInsert, strict.AccountUpdate, strict.AccountRow]) as orm.Definition[nullable.AccountKey, nullable.AccountInsert, nullable.AccountUpdate, nullable.AccountRow] value in assignment"
+      }
+    }
+  ],
+  "supplementary": [
+    {
+      "name": "wrong_balance_type",
+      "status": "passed",
+      "positive": {
+        "file": "orm/testdata/compile/pass/wrong_balance_type.go",
+        "sha256": "1aee793eea16ec9e3fa4510b0759434998b0f27e96d0cd82b7fcfc39b2f9d4d5",
+        "exit_code": 0,
+        "expected": true,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "orm/testdata/compile/fail/wrong_balance_type.go",
+        "sha256": "1eee0307833513c84cf39eebe453037d65ae1bd5a328fd7ba5bf32f064d6fdcc",
+        "exit_code": 1,
+        "expected": true,
+        "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/wrong_balance_type.go:3:64: cannot use orm.Set(\"20\") (value of struct type orm.Change[string]) as orm.Change[big.Int] value in struct literal"
+      }
+    },
+    {
+      "name": "unknown_update_column",
+      "status": "passed",
+      "positive": {
+        "file": "orm/testdata/compile/pass/unknown_update_column.go",
+        "sha256": "9fcdbc050d41f139e9971b6bdf91f717fb558bfed1a31d9b4cf1107586c7e57b",
+        "exit_code": 0,
+        "expected": true,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "orm/testdata/compile/fail/unknown_update_column.go",
+        "sha256": "48e8902f410ff14af1a07fe08e938ff438775e18f1d8a8a53363af4bdf5ec8b7",
+        "exit_code": 1,
+        "expected": true,
+        "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/unknown_update_column.go:3:42: unknown field Unknown in struct literal of type strict.AccountUpdate"
+      }
+    },
+    {
+      "name": "wrong_insert_model",
+      "status": "passed",
+      "positive": {
+        "file": "orm/testdata/compile/pass/wrong_insert_model.go",
+        "sha256": "286e1e03b4dd1469dc2cf8de705611f4b2d30949830b4e988cfa62c546a8d9e0",
+        "exit_code": 0,
+        "expected": true,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "orm/testdata/compile/fail/wrong_insert_model.go",
+        "sha256": "80fcf6a90c4345e4d6297cd028238e643c28fb9a6ffcaa48ce286a59526f94a4",
+        "exit_code": 1,
+        "expected": true,
+        "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/wrong_insert_model.go:3:116: cannot use nullable.NewAccountInsert(\"0x0000000000000000000000000000000000000000\") (value of struct type nullable.AccountInsert) as strict.AccountInsert value in argument to strict.Account.Bind(nil).Insert"
+      }
+    },
+    {
+      "name": "null_not_null_value",
+      "status": "passed",
+      "positive": {
+        "file": "orm/testdata/compile/pass/null_not_null_value.go",
+        "sha256": "76b0ad1ab99ec95115c63c37a6450a20f280612f625c5bedbe36c585764ca0de",
+        "exit_code": 0,
+        "expected": true,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "orm/testdata/compile/fail/null_not_null_value.go",
+        "sha256": "b54a9ee6c766a8c8f443f49354a23a64f2a2ef7ceb483b8555ae47d09d9f2c9b",
+        "exit_code": 1,
+        "expected": true,
+        "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/null_not_null_value.go:3:108: cannot use nil as big.Int value in argument to strict.NewAccountInsert"
+      }
+    },
+    {
+      "name": "wrong_key_value",
+      "status": "passed",
+      "positive": {
+        "file": "orm/testdata/compile/pass/wrong_key_value.go",
+        "sha256": "9e69cae79e1ea83f332688aa5f7a84fe047b23df9e384cd4abfdffa0c5748aa8",
+        "exit_code": 0,
+        "expected": true,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "orm/testdata/compile/fail/wrong_key_value.go",
+        "sha256": "68c35625d1ef1af23377d545a6ba46137b961e40d02ffc9888afa0f343bd2a1d",
+        "exit_code": 1,
+        "expected": true,
+        "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/wrong_key_value.go:3:42: cannot use 123 (untyped int constant) as string value in argument to strict.NewAccountKey"
+      }
+    },
+    {
+      "name": "missing_key",
+      "status": "passed",
+      "positive": {
+        "file": "orm/testdata/compile/pass/missing_key.go",
+        "sha256": "9e69cae79e1ea83f332688aa5f7a84fe047b23df9e384cd4abfdffa0c5748aa8",
+        "exit_code": 0,
+        "expected": true,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "orm/testdata/compile/fail/missing_key.go",
+        "sha256": "9382614671016326ca7bbb5301871301c23ea3750b52131776f9d4a4817d4634",
+        "exit_code": 1,
+        "expected": true,
+        "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/missing_key.go:3:21: not enough arguments in call to strict.NewAccountKey\n\thave ()\n\twant (string)"
+      }
+    }
+  ],
+  "generated": [
+    {
+      "file": "orm/testdata/strict/models.go",
+      "sha256": "6a1b2ebe8999bd46381dfd6aa79b99e2af2937f7b45c486f64f1c72d684ce00b"
+    },
+    {
+      "file": "orm/testdata/nullable/models.go",
+      "sha256": "a8a2831bd690ccdb0bdf9f88446ed256cc1492cfd2e14202498359aa4739018f"
+    }
+  ],
+  "summary": {
+    "source_error_directives": 5,
+    "source_error_directives_passed": 5,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "One original source record with three assertions. PGlite is a backend companion, and 14 native lifecycle/business/UTF-8 leaves add no source credit.",
+  "source_implementation": [
+    "packages/core/src/database/actions.ts:createLiveQueryProcedures/createLiveQueryTriggers",
+    "packages/core/src/drizzle/onchain.ts:getLiveQueryNotifyProcedureSql"
+  ],
+  "implementation": [
+    "store/live_query.go",
+    "store/notifications.go",
+    "bridge/pglite.mjs"
+  ],
+  "cases": [
+    {
+      "source_id": "62ab7283dd1c52844624",
+      "source_file": "packages/core/src/database/actions.test.ts",
+      "source_sha256": "e3c440dee93316c3156eaf41b6eef92c317510b5d0e37f8d2ef1a3d2f5364cde",
+      "source_name": "live query notify trigger batches large payloads",
+      "source_state": "active",
+      "source_inputs": [
+        "{ database } = await setupDatabaseServices({\n    schemaBuild: { schema: { account } },\n  })",
+        "channel = getLiveQueryChannelName(\"public\")",
+        "notifications: string[] = []",
+        "unsubscribe: (() => void) | undefined",
+        "resolve!: () => void",
+        "done = new Promise<void>((_resolve) => {\n    resolve = _resolve;\n  })",
+        "onNotification = (payload: string | undefined) => {\n    if (payload === undefined) return;\n    notifications.push(payload);\n    if (notifications.length >= 2) resolve();\n  }",
+        "client =\n    database.driver.dialect === \"postgres\"\n      ? await database.driver.admin.connect()\n      : undefined",
+        "tableNames = Array.from(\n        { length: 160 },\n        (_, i) => `table_${i.toString().padStart(3, \"0\")}_${\"x\".repeat(48)}`,\n      )"
+      ],
+      "test_source": "test(\"live query notify trigger batches large payloads\", async () => {\n  const { database } = await setupDatabaseServices({\n    schemaBuild: { schema: { account } },\n  });\n\n  await database.userQB.wrap((tx) =>\n    tx.insert(getPonderCheckpointTable()).values({\n      chainName: \"mainnet\",\n      chainId: 1,\n      safeCheckpoint: createCheckpoint({ chainId: 1n, blockNumber: 0n }),\n      finalizedCheckpoint: createCheckpoint({ chainId: 1n, blockNumber: 0n }),\n      latestCheckpoint: createCheckpoint({ chainId: 1n, blockNumber: 0n }),\n    }),\n  );\n\n  await createLiveQueryTriggers(database.userQB, {\n    tables: [],\n    namespaceBuild: { schema: \"public\", viewsSchema: undefined },\n  });\n\n  const channel = getLiveQueryChannelName(\"public\");\n  const notifications: string[] = [];\n  let unsubscribe: (() => void) | undefined;\n  let resolve!: () => void;\n  const done = new Promise<void>((_resolve) => {\n    resolve = _resolve;\n  });\n  const onNotification = (payload: string | undefined) => {\n    if (payload === undefined) return;\n    notifications.push(payload);\n    if (notifications.length >= 2) resolve();\n  };\n\n  if (database.driver.dialect === \"pglite\") {\n    await database.driver.instance.query(`LISTEN \"${channel}\"`);\n    unsubscribe = database.driver.instance.onNotification((_, payload) =>\n      onNotification(payload),\n    );\n  }\n\n  const client =\n    database.driver.dialect === \"postgres\"\n      ? await database.driver.admin.connect()\n      : undefined;\n\n  try {\n    if (client) {\n      client.on(\"notification\", (notification) =>\n        onNotification(notification.payload),\n      );\n      await client.query(`LISTEN \"${channel}\"`);\n    }\n\n    await database.userQB.transaction(async (tx) => {\n      if (database.userQB.$dialect === \"postgres\") {\n        await tx.wrap((tx) =>\n          tx.execute(`DROP TABLE IF EXISTS ${getLiveQueryTempTableName()}`),\n        );\n        await tx.wrap((tx) =>\n          tx.execute(\n            `CREATE TEMP TABLE ${getLiveQueryTempTableName()} (table_name TEXT PRIMARY KEY) ON COMMIT DROP`,\n          ),\n        );\n      } else {\n        await tx.wrap((tx) =>\n          tx.execute(\n            `CREATE TEMP TABLE IF NOT EXISTS ${getLiveQueryTempTableName()} (table_name TEXT PRIMARY KEY)`,\n          ),\n        );\n        await tx.wrap((tx) =>\n          tx.execute(`TRUNCATE TABLE ${getLiveQueryTempTableName()}`),\n        );\n      }\n\n      const tableNames = Array.from(\n        { length: 160 },\n        (_, i) => `table_${i.toString().padStart(3, \"0\")}_${\"x\".repeat(48)}`,\n      );\n\n      await tx.wrap((tx) =>\n        tx.execute(\n          `INSERT INTO ${getLiveQueryTempTableName()} (table_name) VALUES ${tableNames\n            .map((tableName) => `('${tableName}')`)\n            .join(\",\")}`,\n        ),\n      );\n\n      await tx.wrap((tx) =>\n        tx\n          .update(getPonderCheckpointTable())\n          .set({\n            latestCheckpoint: createCheckpoint({\n              chainId: 1n,\n              blockNumber: 1n,\n            }),\n          })\n          .where(eq(getPonderCheckpointTable().chainName, \"mainnet\")),\n      );\n    });\n\n    await done;\n  } finally {\n    if (database.driver.dialect === \"pglite\") {\n      unsubscribe?.();\n      await database.driver.instance.query(`UNLISTEN \"${channel}\"`);\n    } else if (client) {\n      await client.query(`UNLISTEN \"${channel}\"`);\n      client.release();\n    }\n  }\n\n  expect(notifications.length).toBeGreaterThan(1);\n  expect(notifications.flatMap((payload) => JSON.parse(payload))).toHaveLength(\n    160,\n  );\n  expect(\n    notifications.every((payload) => Buffer.byteLength(payload) < 8000),\n  ).toBe(true);\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 296,
+          "text": "expect(notifications.length).toBeGreaterThan(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 297,
+          "text": "expect(notifications.flatMap((payload) => JSON.parse(payload))).toHaveLength(\n    160,\n  )"
+        },
+        {
+          "kind": "runtime",
+          "line": 300,
+          "text": "expect(\n    notifications.every((payload) => Buffer.byteLength(payload) < 8000),\n  ).toBe(true)"
+        }
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/database/actions.test.ts",
+        "source_name": "live query notify trigger batches large payloads",
+        "source_id": "62ab7283dd1c52844624",
+        "source_line": 185,
+        "assertions_sha256": "9eb1188d9d898ec5c5c777d07a625a1e76a6038a377947fd3b013970978e36bb",
+        "original_assertions": 3,
+        "target_file": "store/notify_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamLiveQueryNotify/postgres/live_query_notify_trigger_batches_large_payloads",
+        "assertion_policy": "Exact account schema; mainnet chainId 1, safe/finalized/latest block 0; empty business-trigger selection; 160 table_000_ through table_159_ names each with 48 x characters; real dialect-specific temp table and LISTEN/NOTIFY; checkpoint advanced to block 1 in the same database transaction. All 3 original assertions retained. Native owned namespace replaces public and progress relation represents latest checkpoint; PostgreSQL primary/PGlite companion. Native lifetime cancellation is added; no in-process notification substitute. Other lifecycle/UTF-8 regressions do not add source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Original database fixture imports generated contracts. Foundry 1.8.5 installation remains pending approval; no replacement fixture or modified assertions.",
+          "evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    }
+  ],
+  "limits": [
+    "Original full database oracle remains blocked by generated Foundry contract fixture; not counted as an original pass.",
+    "Actions callers control granular transaction phases. Bare Revert/CrashRecovery intentionally leave checkpoint metadata unchanged; complete automatic reorg notification scheduling is not implemented.",
+    "SQL/SSE server still uses existing in-process Store changes; new external database notification transport is not yet wired to it.",
+    "Automatic reconnect/replay, views-schema channels and DB permission roles remain unimplemented."
+  ]
+}

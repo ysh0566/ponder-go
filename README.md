@@ -2,7 +2,7 @@
 
 固定 `ponder-sh/ponder@17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`（核心 `0.18.2`）的本地 Go 复刻，**仍在实现，不是全功能完成版**。
 
-完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。用户已授权将经验证的阶段提交发布到 `ysh0566` 名下的私有仓库；整体复刻仍未完成，没有部署或 PR。
+完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。经验证的阶段提交发布到私有仓库 [ysh0566/ponder-go](https://github.com/ysh0566/ponder-go)；整体复刻仍未完成，没有部署或 PR。
 
 目前已有可运行的单链路径：本地 Ethereum RPC → 静态或 factory 动态合约日志/receipt → Go handler → PostgreSQL 事务写入、journal、checkpoint → SQL HTTP/SSE。Anvil 重组后可以撤销并重新索引。PostgreSQL 与真实 PGlite 分别验证；没有 SQLite 替代实现。
 
@@ -11,8 +11,8 @@
 权威结果是 [parity/runs/summary.json](parity/runs/summary.json)。用例发现、移植、执行、通过分别登记，不合并计数。
 
 - 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条专门类型测试、63 个运行时文件内联类型断言、84 条类型错误指令，以及客户端/React/E2E。
-- 已逐例映射 228 条：224 条 Go + 原样保留的 4 条 SDK。Go 映射 224 条均通过，其中 167 条原版 oracle 也通过、57 条 fixture oracle 阻塞（数据库 44、profile 13）；SDK 4 条通过。另有 **677 条未实现**。
-- 全套原生 Go/race 各 398/398；53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。
+- 已逐例映射 229 条：225 条 Go + 原样保留的 4 条 SDK。Go 映射 225 条均通过，其中 167 条原版 oracle 也通过、58 条 fixture oracle 阻塞（数据库 45、profile 13）；SDK 4 条通过。另有 **676 条未实现**。
+- 全套原生 Go/race 各 414/414；真实 PostgreSQL 108/108、PGlite 107/107。53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。
 - 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
 - 2,466 个确定性差分向量（基础 2,400 + factory 66）独立计数。
 - 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
@@ -69,7 +69,7 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 
 未取得计划 PDF 的本地可读副本：Library 已解析给定文件，但所提供下载经指定 helper 两次失败；未伪造本地文件。实现以完整委托范围和固定源码为依据。
 
-当前 228 条映射中，171 条也取得原版 oracle 通过（167 Go + 4 SDK），57 条数据库/profile oracle 因待批准的 Foundry 1.8.5 及其生成 fixture 仍阻塞。见台账 `oracle_passed` / `oracle_blocked`，不将 Go 通过冒充 oracle 通过。
+当前 229 条映射中，171 条也取得原版 oracle 通过（167 Go + 4 SDK），58 条数据库/profile oracle 因待批准的 Foundry 1.8.5 及其生成 fixture 仍阻塞。见台账 `oracle_passed` / `oracle_blocked`，不将 Go 通过冒充 oracle 通过。
 
 ## ABI 原生类型适配
 

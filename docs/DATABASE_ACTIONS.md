@@ -61,6 +61,33 @@ assignment rollback, durable MAX, assigned block, latest, finalization and an
 interrupted undo on PostgreSQL and PGlite. These are application-process tests;
 they do not establish server/host power-loss behavior.
 
-The automatic runtime/migration scheduler still uses the atomic path. Full staged
-runtime wiring and the source's large-payload LISTEN/NOTIFY action case remain
-unfinished. See the source test ledger and continuation document for exact scope.
+`CreateLiveQueryProcedures` and `CreateLiveQueryTriggers` install the source's
+database collection/notification path. Triggers collect changed base-table names
+in a transaction-local temp table. A checkpoint statement sends sorted JSON arrays
+on `<namespace>_live_query`, split below the source's 7900-byte UTF-8 boundary.
+PostgreSQL uses `ON COMMIT DROP`; PGlite reuses and clears its session temp table.
+RawBatch, revert and finalize prepare collectors for their own transactions.
+Buffered ORM, raw SQL and updatable views all retain the base journal triggers.
+
+`Listen(ctx, backend, channel)` receives real database notifications. PostgreSQL
+owns a dedicated LISTEN connection; PGlite routes asynchronous notification frames
+separately from ordered SQL responses. Call Close to release a subscription.
+Canceling a Wait does not cancel the subscription. The Listen context or backend
+close ends the subscription. Messages are queued without silently dropping them;
+consumers must keep up. There is no automatic reconnect or durable message replay.
+
+Business writes, Writer.CommitBlock and Writer.AdvanceLatest inside one RawBatch
+publish changed tables only when that transaction commits. Aborting after the
+checkpoint statement sends no message. Separate granular actions retain their
+source boundaries: bare Revert/CrashRecovery do not update metadata or publish a
+checkpoint notification, and a later separate AdvanceLatest has a new, empty
+collector. The automatic runtime must group its phases appropriately; it has not
+yet been migrated to staged actions. Do not infer complete reorg notification
+scheduling from the granular primitives.
+
+All eleven source actions.test.ts records now have native mappings, including the
+160-table large-payload notification case with all three original assertions.
+Their original full oracle still requires the pending Foundry fixture. Complete
+staged runtime/migration wiring, views-schema notification channels, permission
+roles and external database notifications feeding SQL/SSE remain unfinished.
+See the source test ledger and continuation document for exact scope.

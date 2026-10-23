@@ -843,7 +843,10 @@
         "store/actions_stage_upstream_test.go",
         "store/actions_data_upstream_test.go",
         "store/actions_crash_test.go",
-        "store/actions_boundaries_test.go"
+        "store/actions_boundaries_test.go",
+        "store/live_query.go",
+        "store/notifications.go",
+        "bridge/pglite.mjs"
       ],
       "upstream_sources": [
         "packages/core/src/database/actions.ts",
@@ -854,7 +857,25 @@
         "parity/runs/batch-11.json",
         "docs/DATABASE_ACTIONS.md"
       ],
-      "remaining": "Source durable MAX/raw/commit/isolated/empty finalize primitives implemented in separately fingerprinted Actions mode. 6 new original mappings and 3 upgraded source mappings; actions.test.ts 10/11 source records mapped, large-payload LISTEN/NOTIFY remains. Automatic migration/staged runtime integration, physical partitions/full lifecycle and original oracle blocked by Foundry still pending. Native global journal persists source row images/operation but does not adopt original per-table physical layout."
+      "remaining": "All 11 actions.test.ts records mapped after the real 160-table notification source port; full original oracle remains blocked by Foundry fixture. Native staged procedures collect declared base tables, send JSON arrays on checkpoint changes, and split by 7900 UTF-8 bytes. Automatic staged runtime/migration and reorg notification scheduling, source physical partitions, views-schema channels and original DB lifecycle/store records remain incomplete."
+    },
+    {
+      "id": "database-notifications",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/notifications.go",
+        "store/live_query.go",
+        "bridge/pglite.mjs"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/actions.ts",
+        "packages/core/src/drizzle/onchain.ts"
+      ],
+      "evidence": [
+        "parity/notify-source-cases.json",
+        "parity/runs/notify-final-race.jsonl"
+      ],
+      "remaining": "Native PostgreSQL dedicated LISTEN connection and PGlite async notification framing verified. No automatic reconnection/replay, views-schema channels, database role setup or external SSE integration yet. Staged primitive Revert/CrashRecovery preserve source metadata semantics; full runtime notification scheduler remains."
     }
   ]
 }
