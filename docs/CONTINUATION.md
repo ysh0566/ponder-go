@@ -14,14 +14,14 @@
 
 ## 下一可执行批次
 
-1. 从最新提交和 summary.json 恢复。M15 后累计 237 条映射（233 Go + 4 SDK），Go oracle 167 通过、66 fixture oracle 阻塞，668 静态记录未实现；精确执行结果看 batch-13.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
-2. Database actions.test.ts 的11个源例及 database/index.test.ts 的8个生命周期源例已映射。继续剩余10个database/index记录：8个migrateSync最新/legacy/并发/snapshot、historical-baseline recovery rows、camelCase/views-schema。当前 lifecycle 使用独立 app row 和 global journal，不代表旧DB布局接管。剩余 ORM insert-then/full SQL 类型义务、真实deploy/mint/readonly prefetch原例、typed JSON/bytes/array/custom codec/强枚举/Hex、关系DSL和自动profile/指标仍待完成。随后接自动staged runtime及跨链重组通知调度，不能把当前源例覆盖扩成整个数据库完成。
+1. 从最新提交和 summary.json 恢复。M16 后累计 245 条映射（241 Go + 4 SDK），Go oracle 167 通过、74 fixture oracle 阻塞，660 静态记录未实现；精确执行结果看 batch-14.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
+2. Database actions.test.ts 的11个源例及 database/index.test.ts 的16个生命周期源例已映射；剩余2个database/index记录为historical-baseline recovery rows和camelCase/views-schema。M16 sync迁移完整保留原SQL，但仅接受已拥有shadow，不代表真实旧DB布局接管；新9表协议缓存尚未自动接入原来最小runtime sync store。继续 ORM insert-then/full SQL 类型义务、真实deploy/mint/readonly prefetch原例、typed JSON/bytes/array/custom codec/强枚举/Hex、关系DSL和自动profile/指标；随后接自动staged runtime及跨链重组通知调度。
 3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments、sync-store 原事件和 factory 原 E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
 4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。自动 finalize 和无表 finalization 边界也待实现。
 5. 完整关系/查询/GraphQL、SQL/SuperJSON 全类型、全部 CLI/模板/热重载/观测/示例，以及严格源码兼容和旧 DB 接管的独立轨，仍按 feature-ledger 推进。默认新影子 schema，不访问业务数据。
 6. ABI 原生类型生成和 53 个内联成功 fixture 已建立，另有 53 额外负向控制、1 个源 null-topic 错误 fixture；原两份 ABI 文件 tsc 通过。剩余 10 个内联类型断言、72 条专门 native 类型记录及绝大部分类型错误指令尚待移植。Simulation 的 8 个应用、无限 seed 空间尚未执行。
 
-M15完整verify退出0：Go/race449/449，PG126/PGlite124分别通过，无skip。8个生命周期源例共21断言，15个适用后端源叶子；12个native边界和8个真实进程退出叶子不加源credit。旧租约SaveBlock的实际红灯已修复，同步/factory/RPC缓存写均纳入fencing。恢复失败包括业务、journal、metadata、index、trigger全部回滚；慢DDL后刷新发布租约。源码oracle实际执行尝试在收集前缺generated.js，0测试/1失败suite，保留阻塞。代码/API详见DATABASE_LIFECYCLE.md，证据及不可变hash见batch-13.json。SQL/SSE仍用旧Store内部bus、自动staged runtime未接入。当前无运行中测试。
+M16完整verify退出0：Go/race479/479，PG141/PGlite138分别通过，无skip。新增8个migrateSync源例共13断言、15个适用后端源叶子；10个native边界、4个真实进程退出和1个SQL资产校验不加源credit。store/values.go修复int/uint/int64/uint64在JSON桥接上的舍入（真实红灯int64最大值变为9223372036854776000）。sourceSQL三份字节/hash与固定上游相同，schema名执行时才重映射。PG真实ACCESS EXCLUSIVE竞争验证同一copy快照。原版数据库oracle再次收集前缺generated.js，0测试/1失败suite。完整证据/hash见batch-14.json和SYNC_MIGRATIONS.md；自动runtime和SQL/SSE外部通知仍待接入。当前无运行中测试。
 
 
 `parity/public-manifest.json` 包含各包 exports、CLI 命令与选项、配置属性、模板/示例文件 hash 与当前文档路径。`parity/discovery-audit.json` 描述发现范围和静态限制。全套 Vitest 的 runtime collection 尚未完成，905 不是已证明穷尽的动态执行总数。

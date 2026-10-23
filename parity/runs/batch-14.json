@@ -1,0 +1,228 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "from_commit": "cc2fc14dcf4281bfec48d3289b4c12e1ee95018e",
+  "commands": [
+    "PONDER_TEST_POSTGRES=<task-only localhost:53398> ./tools/verify.sh",
+    "go test -count=1 -race -json ./store -run ^(TestSyncMigrationBoundaries|TestSyncMigrationSQLAssets)$",
+    "go test -count=1 -race -json ./store -run ^TestSyncMigrationProcessCrash$",
+    "CI=1 vitest run --config tools/oracle.config.mjs --configLoader native src/database/index.test.ts --reporter=json",
+    "node tools/manifest.mjs; node tools/discovery-audit.mjs; node tools/record-results.mjs (fresh blocker evidence only; no code changes)"
+  ],
+  "verification_exit_code": 0,
+  "new_source_mappings": 8,
+  "new_source_assertions": 13,
+  "source_backend_leaves": 15,
+  "supplementary_backend_boundary_leaves": 10,
+  "supplementary_application_process_exit_leaves": 4,
+  "supplementary_sql_asset_test": 1,
+  "source_sql_assets_verified_equal_to_pinned_upstream": 3,
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 479,
+    "pass": 479,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 479,
+    "pass": 479,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 141,
+        "pass": 141,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 141,
+        "pass": 141,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 138,
+        "pass": 138,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 138,
+        "pass": 138,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 245,
+    "unimplemented": 660,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 241,
+    "passed_with_required_type_checks": 241,
+    "original_oracle_also_passed": 167,
+    "original_oracle_blocked": 74
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 171,
+    "mapped_blocked": 74,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 169,
+    "passed": 167,
+    "failed": 0
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "orm_type_fixtures": {
+    "source_error_directives": 5,
+    "source_error_directives_passed": 5,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  },
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.27.1 darwin/arm64",
+    "node": "v25.2.1",
+    "differences": []
+  },
+  "original_database_oracle": {
+    "exit_code": 1,
+    "tests_executed": 0,
+    "failed_suites": 1,
+    "status": "blocked",
+    "reason": "missing generated.js; no modified assertions or replacement Foundry fixture"
+  },
+  "native_int64_regression": {
+    "backend": "pglite",
+    "observed": "9223372036854775807 rounded to 9223372036854776000 by JSON/JS number",
+    "fix": "All Go int/uint/int64/uint64 scalar DB parameters use exact decimal strings; typed JSON column handling remains separate.",
+    "evidence": "parity/runs/sync-migration-int64-red.jsonl"
+  },
+  "publication": {
+    "owner": "ysh0566",
+    "repository": "ponder-go",
+    "private": true,
+    "method": "normal_fast_forward_only"
+  },
+  "foundry": {
+    "required": "1.8.5",
+    "status": "pending_approval",
+    "installation_executed": false
+  },
+  "limitations": [
+    "Only explicit owned shadows are accepted; no real legacy/global-schema takeover or in-place migration.",
+    "Full nine-table source sync schema and original copy SQL are available, while existing native runtime sync-store event persistence is still separate and incomplete.",
+    "PGlite concurrency uses one instance, and the source PG-only snapshot test has no PGlite companion credit.",
+    "All copied relation values and legacy history/rows are verified across failures and retries; legacy trace rows are deliberately not copied by original SQL.",
+    "Supplementary fixture initially used the latest trace_address instead of actual legacy trace_index/subcalls; corrected without changing original fixture assets, and the failure log is retained.",
+    "Real application process exits do not establish server/host power-loss behavior.",
+    "660 static records remain unimplemented; discovery not proven dynamically exhaustive."
+  ],
+  "evidence": {
+    "parity/runs/batch-14-evidence/batch-14-verify.txt": {
+      "original_path": "parity/runs/batch-14-verify.txt",
+      "sha256": "050577bd675c4a37a8fa167bfb1bed743a1eeec1d8096d5c0fc967625967f80d"
+    },
+    "parity/runs/batch-14-evidence/go-test.jsonl": {
+      "original_path": "parity/runs/go-test.jsonl",
+      "sha256": "3c1227f577882f81051be41a3f5692e9180c9253ab72c56228f369abdc8c18aa"
+    },
+    "parity/runs/batch-14-evidence/go-race.jsonl": {
+      "original_path": "parity/runs/go-race.jsonl",
+      "sha256": "be71f8ef3996ddcfd9f1ca77a214a543ff24482f0edaf2ecb5c36c5fac889a43"
+    },
+    "parity/runs/batch-14-evidence/core-oracle.json": {
+      "original_path": "parity/runs/core-oracle.json",
+      "sha256": "452f4cd6fbeed7f6a25795941cbe3a2c4c13237d09b60b5110fb446a3ed1d8c3"
+    },
+    "parity/runs/batch-14-evidence/compile-fixtures.json": {
+      "original_path": "parity/runs/compile-fixtures.json",
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    },
+    "parity/runs/batch-14-evidence/orm-compile-fixtures.json": {
+      "original_path": "parity/runs/orm-compile-fixtures.json",
+      "sha256": "5a8edc343cbda0d2749e9ef9cd06d121bf87a24952b7ab9c24981286c569224c"
+    },
+    "parity/runs/batch-14-evidence/sync-migration-red.jsonl": {
+      "original_path": "parity/runs/sync-migration-red.jsonl",
+      "sha256": "e56e8004e6b6b559a474470eaffc8a9a82dce13f570b850ca6e666f5944a9388"
+    },
+    "parity/runs/batch-14-evidence/sync-migration-first-go.jsonl": {
+      "original_path": "parity/runs/sync-migration-first-go.jsonl",
+      "sha256": "7b4ed58a48cb32d6261fd6cac8449c1daafcbb612fca38a12b7a18d5cb2fe3d0"
+    },
+    "parity/runs/batch-14-evidence/sync-migration-boundaries-race.jsonl": {
+      "original_path": "parity/runs/sync-migration-boundaries-race.jsonl",
+      "sha256": "90a062f4a2af86be674c68d205d95a103a25f149071cfe752488651d8e5908f5"
+    },
+    "parity/runs/batch-14-evidence/sync-migration-crash-race.jsonl": {
+      "original_path": "parity/runs/sync-migration-crash-race.jsonl",
+      "sha256": "a2f9b230d4a2ac455d5962da36321127180f9305cfb33c7d264833fe5491bfce"
+    },
+    "parity/runs/batch-14-evidence/sync-migration-native-fixture-red.jsonl": {
+      "original_path": "parity/runs/sync-migration-native-fixture-red.jsonl",
+      "sha256": "46e7ab5a814447a692cefc924b72db68359dcd65e31fc92e50705b4fb999028d"
+    },
+    "parity/runs/batch-14-evidence/sync-migration-int64-red.jsonl": {
+      "original_path": "parity/runs/sync-migration-int64-red.jsonl",
+      "sha256": "5123fb5d12893b8a4914c1f3a41e6a9101c35b8b2f846ce77838702e7b1d6e09"
+    },
+    "parity/runs/batch-14-evidence/sync-migration-oracle-blocked.json": {
+      "original_path": "parity/runs/sync-migration-oracle-blocked.json",
+      "sha256": "b719905b55fc2fe8eee82d1e7dec3b7cc7b645c32a6ef6d2e0ea20cb56cbc158"
+    },
+    "parity/runs/batch-14-evidence/sync-migration-source-cases.json": {
+      "original_path": "parity/sync-migration-source-cases.json",
+      "sha256": "58ce3754452b01d2fd90573c5e813800d90836365649220a5a719bed545890e0"
+    },
+    "parity/runs/batch-14-evidence/sync-migration-assets.json": {
+      "original_path": "parity/sync-migration-assets.json",
+      "sha256": "d0545ce16e940937f62684e2ee2f5270235933e7b4c556acad788ccfee095759"
+    }
+  }
+}

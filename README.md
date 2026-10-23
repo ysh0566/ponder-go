@@ -11,8 +11,8 @@
 权威结果是 [parity/runs/summary.json](parity/runs/summary.json)。用例发现、移植、执行、通过分别登记，不合并计数。
 
 - 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条专门类型测试、63 个运行时文件内联类型断言、84 条类型错误指令，以及客户端/React/E2E。
-- 已逐例映射 237 条：233 条 Go + 原样保留的 4 条 SDK。Go 映射 233 条均通过，其中 167 条原版 oracle 也通过、66 条 fixture oracle 阻塞（数据库 53、profile 13）；SDK 4 条通过。另有 **668 条未实现**。
-- 全套原生 Go/race 各 449/449；真实 PostgreSQL 126/126、PGlite 124/124。53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。
+- 已逐例映射 245 条：241 条 Go + 原样保留的 4 条 SDK。Go 映射 241 条均通过，其中 167 条原版 oracle 也通过、74 条 fixture oracle 阻塞（数据库 61、profile 13）；SDK 4 条通过。另有 **660 条未实现**。
+- 全套原生 Go/race 各 479/479；真实 PostgreSQL 141/141、PGlite 138/138。53 条生成 ABI 解码器的伴随 runtime/race 另计。53 条源内联类型要求的成功 fixture 全通过，53 条额外负向控制及 1 条源 null-topic 错误要求均按预期编译失败；两份原 ABI 文件 tsc 通过。
 - 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
 - 2,466 个确定性差分向量（基础 2,400 + factory 66）独立计数。
 - 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
@@ -69,9 +69,11 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 
 未取得计划 PDF 的本地可读副本：Library 已解析给定文件，但所提供下载经指定 helper 两次失败；未伪造本地文件。实现以完整委托范围和固定源码为依据。
 
-当前 237 条映射中，171 条也取得原版 oracle 通过（167 Go + 4 SDK），66 条数据库/profile oracle 因待批准的 Foundry 1.8.5 及其生成 fixture 仍阻塞。见台账 `oracle_passed` / `oracle_blocked`，不将 Go 通过冒充 oracle 通过。
+当前 245 条映射中，171 条也取得原版 oracle 通过（167 Go + 4 SDK），74 条数据库/profile oracle 因待批准的 Foundry 1.8.5 及其生成 fixture 仍阻塞。见台账 `oracle_passed` / `oracle_blocked`，不将 Go 通过冒充 oracle 通过。
 
-原生 `NewLifecycle` 已实现新影子启动、build ID 校验、heartbeat 租约、带 fencing 的业务/同步写入和事务恢复；新增8条生命周期源例及真实进程退出验证。恢复返回 safe checkpoint 并保留 latest，调用方显式复位和安装 capture。完整自动 staged runtime、migrateSync/旧版接管、dev reset 和角色权限仍待实现。接口与边界见 [DATABASE_LIFECYCLE.md](docs/DATABASE_LIFECYCLE.md)。
+原生 `NewLifecycle` 已实现新影子启动、build ID 校验、heartbeat 租约、带 fencing 的业务/同步写入和事务恢复；新增8条生命周期源例及真实进程退出验证。恢复返回 safe checkpoint 并保留 latest，调用方显式复位和安装 capture。完整自动 staged runtime、真实旧版接管、dev reset 和角色权限仍待实现。接口与边界见 [DATABASE_LIFECYCLE.md](docs/DATABASE_LIFECYCLE.md)。
+
+`NewSyncMigrator` / `Lifecycle.MigrateSync` 已逐例实现8条版本化 sync 迁移测试：在任务拥有的 shadow 内创建完整9表协议缓存、以repeatable-read复制允许数据并保留旧shadow/history、并发/失败重试及真实进程恢复。原版SQL三份资产完整保留并核对hash；Go整数参数改为十进制传输，修复PGlite对大int64的舍入。完整runtime仍使用原来的最小sync store，新的协议缓存尚未自动接入事件CRUD；没有真实旧DB原地接管。见 [SYNC_MIGRATIONS.md](docs/SYNC_MIGRATIONS.md)。
 
 ## ABI 原生类型适配
 
