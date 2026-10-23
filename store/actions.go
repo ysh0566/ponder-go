@@ -35,6 +35,9 @@ func (a *Actions) transaction(ctx context.Context, fn func(Transaction) error) e
 	if e = a.s.lock(ctx, tx); e != nil {
 		return e
 	}
+	if e = a.s.requireLease(ctx, tx); e != nil {
+		return e
+	}
 	if e = prepareLiveQueryChanges(ctx, tx, a.s.Backend.Dialect()); e != nil {
 		return e
 	}
@@ -60,6 +63,9 @@ func (a *Actions) DropTriggers(ctx context.Context) error {
 }
 func (a *Actions) CreateViews(ctx context.Context) error {
 	return a.transaction(ctx, func(tx Transaction) error { return a.s.createViews(ctx, tx) })
+}
+func (a *Actions) CreateIndexes(ctx context.Context) error {
+	return a.transaction(ctx, func(tx Transaction) error { return a.s.createIndexes(ctx, tx) })
 }
 func (a *Actions) RawBatch(ctx context.Context, chain uint64, handler func(*Writer) error) error {
 	return a.transaction(ctx, func(tx Transaction) error {
@@ -238,7 +244,10 @@ func (a *Actions) InitializeCheckpoints(ctx context.Context, states []Checkpoint
 	})
 }
 func (a *Actions) Checkpoints(ctx context.Context) ([]CheckpointState, error) {
-	result, e := a.s.Backend.Query(ctx, "SELECT c.chain_name,c.chain_id::text AS chain_id,p.checkpoint AS latest,f.checkpoint AS finalized,f.safe_checkpoint AS safe FROM "+a.s.internal("_ponder_go_chains")+" c JOIN "+a.s.internal("_ponder_go_progress")+" p USING(chain_id) JOIN "+a.s.internal("_ponder_go_finalized")+" f USING(chain_id) ORDER BY c.chain_id")
+	return checkpointStates(ctx, a.s.Backend, a.s)
+}
+func checkpointStates(ctx context.Context, q Querier, s *Store) ([]CheckpointState, error) {
+	result, e := q.Query(ctx, "SELECT c.chain_name,c.chain_id::text AS chain_id,p.checkpoint AS latest,f.checkpoint AS finalized,f.safe_checkpoint AS safe FROM "+s.internal("_ponder_go_chains")+" c JOIN "+s.internal("_ponder_go_progress")+" p USING(chain_id) JOIN "+s.internal("_ponder_go_finalized")+" f USING(chain_id) ORDER BY c.chain_id")
 	if e != nil {
 		return nil, e
 	}

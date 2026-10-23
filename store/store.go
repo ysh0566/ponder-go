@@ -18,6 +18,8 @@ import (
 
 type Store struct {
 	staged                   bool
+	leaseToken               string
+	leaseTimeout             int64
 	profileState             *CacheProfile
 	Backend                  Backend
 	Namespace, SyncNamespace string
@@ -63,7 +65,7 @@ const (
 func New(ctx context.Context, backend Backend, model schema.Schema, namespace string, ordering schema.Ordering) (*Store, error) {
 	return newStore(ctx, backend, model, namespace, ordering, false)
 }
-func newStore(ctx context.Context, backend Backend, model schema.Schema, namespace string, ordering schema.Ordering, staged bool) (*Store, error) {
+func describeStore(backend Backend, model schema.Schema, namespace string, ordering schema.Ordering, staged bool) (*Store, error) {
 	if ordering == "" {
 		ordering = schema.Multichain
 	}
@@ -82,7 +84,14 @@ func newStore(ctx context.Context, backend Backend, model schema.Schema, namespa
 	if !schema.Identifier(namespace) || len(namespace) > 45 || !strings.HasPrefix(namespace, "ponder_go_") {
 		return nil, fmt.Errorf("task schemas must start with ponder_go_ and contain at most 45 identifier characters")
 	}
-	s := &Store{Backend: backend, Namespace: namespace, SyncNamespace: namespace + "_sync", Schema: model, Ordering: ordering, subscribers: map[chan Change]struct{}{}, profileState: NewCacheProfile(), staged: staged}
+	return &Store{Backend: backend, Namespace: namespace, SyncNamespace: namespace + "_sync", Schema: model, Ordering: ordering, subscribers: map[chan Change]struct{}{}, profileState: NewCacheProfile(), staged: staged}, nil
+}
+
+func newStore(ctx context.Context, backend Backend, model schema.Schema, namespace string, ordering schema.Ordering, staged bool) (*Store, error) {
+	s, e := describeStore(backend, model, namespace, ordering, staged)
+	if e != nil {
+		return nil, e
+	}
 	tx, e := backend.Begin(ctx)
 	if e != nil {
 		return nil, e
@@ -91,31 +100,52 @@ func newStore(ctx context.Context, backend Backend, model schema.Schema, namespa
 	if e = s.lock(ctx, tx); e != nil {
 		return nil, e
 	}
-	found, e := tx.Query(ctx, "SELECT nspname FROM pg_namespace WHERE nspname=$1", namespace)
+	if e = s.initializeInternal(ctx, tx); e != nil {
+		return nil, e
+	}
+	managed, e := tx.Query(ctx, "SELECT to_regclass($1)::text AS name", s.internal("_ponder_go_app"))
 	if e != nil {
 		return nil, e
+	}
+	if len(managed.Rows) > 0 && managed.Rows[0]["name"] != nil {
+		return nil, fmt.Errorf("managed namespace requires the database lifecycle")
+	}
+	if e = s.createUserObjects(ctx, tx, true); e != nil {
+		return nil, e
+	}
+	if e = tx.Commit(ctx); e != nil {
+		return nil, e
+	}
+	return s, nil
+}
+
+func (s *Store) initializeInternal(ctx context.Context, tx Transaction) error {
+	namespace := s.Namespace
+	found, e := tx.Query(ctx, "SELECT nspname FROM pg_namespace WHERE nspname=$1", namespace)
+	if e != nil {
+		return e
 	}
 	if len(found.Rows) > 0 {
 		meta, e := tx.Query(ctx, "SELECT to_regclass($1)::text AS name", schema.Quote(namespace)+"._ponder_go_meta")
 		if e != nil || len(meta.Rows) == 0 || meta.Rows[0]["name"] == nil {
-			return nil, fmt.Errorf("refusing to adopt an existing unowned schema %s", namespace)
+			return fmt.Errorf("refusing to adopt an existing unowned schema %s", namespace)
 		}
 	}
 	syncFound, e := tx.Query(ctx, "SELECT nspname FROM pg_namespace WHERE nspname=$1", s.SyncNamespace)
 	if e != nil {
-		return nil, e
+		return e
 	}
 	if len(syncFound.Rows) > 0 {
 		meta, e := tx.Query(ctx, "SELECT to_regclass($1)::text AS name", schema.Quote(s.SyncNamespace)+"._ponder_go_meta")
 		if e != nil || len(meta.Rows) == 0 || meta.Rows[0]["name"] == nil {
-			return nil, fmt.Errorf("refusing to adopt an existing unowned sync schema %s", s.SyncNamespace)
+			return fmt.Errorf("refusing to adopt an existing unowned sync schema %s", s.SyncNamespace)
 		}
 	}
 	if e = tx.Exec(ctx, "CREATE SCHEMA IF NOT EXISTS "+schema.Quote(namespace)); e != nil {
-		return nil, e
+		return e
 	}
 	if e = tx.Exec(ctx, "CREATE SCHEMA IF NOT EXISTS "+schema.Quote(s.SyncNamespace)); e != nil {
-		return nil, e
+		return e
 	}
 	statements := []string{
 		"CREATE TABLE IF NOT EXISTS " + s.syncTable("_ponder_go_meta") + " (key text PRIMARY KEY,value text NOT NULL)",
@@ -132,30 +162,58 @@ func newStore(ctx context.Context, backend Backend, model schema.Schema, namespa
 	}
 	for _, sql := range statements {
 		if e = tx.Exec(ctx, sql); e != nil {
-			return nil, e
+			return e
 		}
 	}
-	fingerprint := fmt.Sprintf("%s:%x:%s:staged=%t", storageVersion, hash, ordering, staged)
+	encoded, _ := json.Marshal(s.Schema)
+	hash := sha256.Sum256(encoded)
+	fingerprint := fmt.Sprintf("%s:%x:%s:staged=%t", storageVersion, hash, s.Ordering, s.staged)
 	if e = tx.Exec(ctx, "INSERT INTO "+s.syncTable("_ponder_go_meta")+" VALUES ('owner',$1) ON CONFLICT(key) DO NOTHING", namespace); e != nil {
-		return nil, e
+		return e
 	}
 	old, e := tx.Query(ctx, "SELECT value FROM "+s.internal("_ponder_go_meta")+" WHERE key='fingerprint'")
 	if e != nil {
-		return nil, e
+		return e
 	}
 	if len(old.Rows) > 0 && old.Rows[0]["value"] != fingerprint {
-		return nil, fmt.Errorf("schema, ordering, or storage format changed; rebuild into a new shadow schema")
+		return fmt.Errorf("schema, ordering, or storage format changed; rebuild into a new shadow schema")
 	}
 	if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_meta")+" VALUES ('fingerprint',$1) ON CONFLICT (key) DO NOTHING", fingerprint); e != nil {
-		return nil, e
+		return e
 	}
-	if e = s.createSchemaObjects(ctx, tx); e != nil {
-		return nil, e
+	return nil
+}
+
+func (s *Store) createUserObjects(ctx context.Context, tx Transaction, indexes bool) error {
+	if e := s.createSchemaObjects(ctx, tx); e != nil {
+		return e
 	}
-	for _, t := range model.Tables {
-		if e = tx.Exec(ctx, model.TableDDL(t, namespace)); e != nil {
-			return nil, e
+	for _, t := range s.Schema.Tables {
+		if e := tx.Exec(ctx, s.Schema.TableDDL(t, s.Namespace)); e != nil {
+			return e
 		}
+	}
+	if indexes {
+		if e := s.createIndexes(ctx, tx); e != nil {
+			return e
+		}
+	}
+	if e := s.createViews(ctx, tx); e != nil {
+		return e
+	}
+	if e := s.createWriteGuards(ctx, tx); e != nil {
+		return e
+	}
+	if !s.staged {
+		if e := s.createJournalTriggers(ctx, tx); e != nil {
+			return e
+		}
+	}
+	return nil
+}
+
+func (s *Store) createIndexes(ctx context.Context, tx Transaction) error {
+	for _, t := range s.Schema.Tables {
 		for _, idx := range t.Indexes {
 			cols := []string{}
 			for _, c := range idx.Columns {
@@ -165,27 +223,14 @@ func newStore(ctx context.Context, backend Backend, model schema.Schema, namespa
 			if idx.Unique {
 				unique = "UNIQUE "
 			}
-			if e = tx.Exec(ctx, "CREATE "+unique+"INDEX IF NOT EXISTS "+schema.Quote(idx.Name)+" ON "+s.table(t.Name)+" ("+strings.Join(cols, ",")+")"); e != nil {
-				return nil, e
+			if e := tx.Exec(ctx, "CREATE "+unique+"INDEX IF NOT EXISTS "+schema.Quote(idx.Name)+" ON "+s.table(t.Name)+" ("+strings.Join(cols, ",")+")"); e != nil {
+				return e
 			}
 		}
 	}
-	if e = s.createViews(ctx, tx); e != nil {
-		return nil, e
-	}
-	if e = s.createWriteGuards(ctx, tx); e != nil {
-		return nil, e
-	}
-	if !staged {
-		if e = s.createJournalTriggers(ctx, tx); e != nil {
-			return nil, e
-		}
-	}
-	if e = tx.Commit(ctx); e != nil {
-		return nil, e
-	}
-	return s, nil
+	return nil
 }
+
 func (s *Store) internal(name string) string {
 	return schema.Quote(s.Namespace) + "." + schema.Quote(name)
 }

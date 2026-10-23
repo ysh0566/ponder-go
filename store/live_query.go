@@ -27,18 +27,20 @@ func prepareLiveQueryChanges(ctx context.Context, tx Transaction, dialect string
 // Installs actual database procedures; no in-process notification substitute.
 // This is explicit setup, like the source database setup service's procedures.
 func (a *Actions) CreateLiveQueryProcedures(ctx context.Context) error {
-	return a.transaction(ctx, func(tx Transaction) error {
-		if e := tx.Exec(ctx, `CREATE OR REPLACE FUNCTION `+a.s.internal("live_query")+`() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+	return a.transaction(ctx, func(tx Transaction) error { return a.createLiveQueryProcedures(ctx, tx) })
+}
+func (a *Actions) createLiveQueryProcedures(ctx context.Context, tx Transaction) error {
+	if e := tx.Exec(ctx, `CREATE OR REPLACE FUNCTION `+a.s.internal("live_query")+`() RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
  INSERT INTO pg_temp.live_query_tables (table_name) VALUES (TG_TABLE_NAME)
  ON CONFLICT (table_name) DO NOTHING;
  RETURN NULL;
 END; $$`); e != nil {
-			return e
-		}
-		// The 7900-byte boundary, JSON escaping, sorted iteration and final empty
-		// array follow getLiveQueryNotifyProcedureSql at the pinned revision.
-		return tx.Exec(ctx, `CREATE OR REPLACE FUNCTION `+a.s.internal("live_query_notify")+`() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+		return e
+	}
+	// The 7900-byte boundary, JSON escaping, sorted iteration and final empty
+	// array follow getLiveQueryNotifyProcedureSql at the pinned revision.
+	return tx.Exec(ctx, `CREATE OR REPLACE FUNCTION `+a.s.internal("live_query_notify")+`() RETURNS TRIGGER LANGUAGE plpgsql AS $$
 DECLARE
  current_payload text := '[';
  separator text := '';
@@ -64,7 +66,6 @@ BEGIN
  END IF;
  RETURN NULL;
 END; $$`)
-	})
 }
 
 // tables selects declared business tables, including the empty selection used

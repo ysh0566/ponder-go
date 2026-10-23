@@ -41,6 +41,9 @@ func (s *Store) CompleteBlock(ctx context.Context, b SyncBlock, filter string) e
 	if e = s.lock(ctx, tx); e != nil {
 		return e
 	}
+	if e = s.requireLease(ctx, tx); e != nil {
+		return e
+	}
 	if e = s.saveBlock(ctx, tx, b); e != nil {
 		return e
 	}
@@ -77,6 +80,9 @@ func (s *Store) SaveBlock(ctx context.Context, b SyncBlock) error {
 	if e = s.lock(ctx, tx); e != nil {
 		return e
 	}
+	if e = s.requireLease(ctx, tx); e != nil {
+		return e
+	}
 	if e = s.saveBlock(ctx, tx, b); e != nil {
 		return e
 	}
@@ -106,6 +112,9 @@ func (s *Store) RewindSync(ctx context.Context, chain, number uint64) error {
 	}
 	defer tx.Rollback(context.Background())
 	if e = s.lock(ctx, tx); e != nil {
+		return e
+	}
+	if e = s.requireLease(ctx, tx); e != nil {
 		return e
 	}
 	if e = s.rewindSync(ctx, tx, chain, number); e != nil {
@@ -148,6 +157,9 @@ func (s *Store) RecordFactoryChildren(ctx context.Context, id string, chain, blo
 	if e = s.lock(ctx, tx); e != nil {
 		return e
 	}
+	if e = s.requireLease(ctx, tx); e != nil {
+		return e
+	}
 	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("factory_addresses")+" WHERE factory_id=$1 AND chain_id=$2 AND block_number=$3", id, chain, block); e != nil {
 		return e
 	}
@@ -182,5 +194,22 @@ func (s *Store) CacheGet(ctx context.Context, key string) (json.RawMessage, bool
 	return json.RawMessage(fmt.Sprint(r.Rows[0]["value"])), true, nil
 }
 func (s *Store) CachePut(ctx context.Context, key string, value json.RawMessage) error {
+	if s.leaseToken != "" {
+		tx, e := s.Backend.Begin(ctx)
+		if e != nil {
+			return e
+		}
+		defer tx.Rollback(context.Background())
+		if e = s.lock(ctx, tx); e != nil {
+			return e
+		}
+		if e = s.requireLease(ctx, tx); e != nil {
+			return e
+		}
+		if e = tx.Exec(ctx, "INSERT INTO "+s.syncTable("rpc_cache")+" VALUES ($1,$2::jsonb) ON CONFLICT(key) DO UPDATE SET value=excluded.value", key, string(value)); e != nil {
+			return e
+		}
+		return tx.Commit(ctx)
+	}
 	return s.Backend.Exec(ctx, "INSERT INTO "+s.syncTable("rpc_cache")+" VALUES ($1,$2::jsonb) ON CONFLICT(key) DO UPDATE SET value=excluded.value", key, string(value))
 }

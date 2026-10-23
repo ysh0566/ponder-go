@@ -1,0 +1,213 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "from_commit": "b478a1a700149ccd9145524e7a588c9f54beaae9",
+  "commands": [
+    "PONDER_TEST_POSTGRES=<task-only localhost:53398> ./tools/verify.sh",
+    "go test -count=1 -race -json ./store -run ^(TestLifecycleBoundaries|TestUpstreamDatabaseLifecycle)$",
+    "go test -count=1 -race -json ./store -run ^TestLifecycleProcessCrash$",
+    "CI=1 vitest run --config tools/oracle.config.mjs --configLoader native src/database/index.test.ts --reporter=json",
+    "node tools/manifest.mjs && node tools/discovery-audit.mjs && node tools/record-results.mjs (merge fresh oracle-blocker evidence; no code changes)"
+  ],
+  "verification_exit_code": 0,
+  "new_source_mappings": 8,
+  "new_source_assertions": 21,
+  "applicable_source_backend_leaves": 15,
+  "supplementary_native_boundary_leaves": 12,
+  "supplementary_application_process_exit_leaves": 8,
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 449,
+    "pass": 449,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 449,
+    "pass": 449,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 126,
+        "pass": 126,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 126,
+        "pass": 126,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 124,
+        "pass": 124,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 124,
+        "pass": 124,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 237,
+    "unimplemented": 668,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 233,
+    "passed_with_required_type_checks": 233,
+    "original_oracle_also_passed": 167,
+    "original_oracle_blocked": 66
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 171,
+    "mapped_blocked": 66,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 169,
+    "passed": 167,
+    "failed": 0
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "orm_type_fixtures": {
+    "source_error_directives": 5,
+    "source_error_directives_passed": 5,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  },
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.27.1 darwin/arm64",
+    "node": "v25.2.1",
+    "differences": []
+  },
+  "lifecycle_oracle": {
+    "exit_code": 1,
+    "tests_executed": 0,
+    "failed_suites": 1,
+    "status": "blocked",
+    "reason": "Unchanged original fixture cannot import ./generated.js; Foundry 1.8.5 installation pending."
+  },
+  "publication": {
+    "owner": "ysh0566",
+    "repository": "ponder-go",
+    "private": true,
+    "method": "normal fast-forward only; author repair authorization already consumed",
+    "expected_author_and_committer": "ysh0566 <19503475+ysh0566@users.noreply.github.com>"
+  },
+  "foundry": {
+    "required": "1.8.5",
+    "status": "pending_approval",
+    "installation_executed": false
+  },
+  "limitations": [
+    "Native global journal/metadata/progress relations are explicit storage adaptations, not old-layout compatibility.",
+    "Default source 10s/25s heartbeat timing is preserved. Persisted fencing tokens are a native safety addition.",
+    "PGlite lease contention tests share one instance; no simultaneous multi-process PGlite data-dir access.",
+    "Migrate returns safe checkpoints and preserves latest until caller resets it; automatic staged runtime/reorg scheduler is not integrated.",
+    "Eight migrateSync source cases, historical-baseline recovery row fixture, camelCase views-schema lifecycle, dev reset and permission roles remain incomplete.",
+    "Process exits do not establish server/host power-loss behavior.",
+    "668 static records remain unimplemented; discovery still not proven runtime exhaustive."
+  ],
+  "evidence": {
+    "parity/runs/batch-13-evidence/batch-13-verify.txt": {
+      "original_path": "parity/runs/batch-13-verify.txt",
+      "sha256": "ebf5172a58a1c639ecf17c37e86e9a8290df53ecd56b721cfe481da8ce62834e"
+    },
+    "parity/runs/batch-13-evidence/go-test.jsonl": {
+      "original_path": "parity/runs/go-test.jsonl",
+      "sha256": "a5eb38167d5076228886c6bb098d389779f133bd880e88711bb73f2259a7b580"
+    },
+    "parity/runs/batch-13-evidence/go-race.jsonl": {
+      "original_path": "parity/runs/go-race.jsonl",
+      "sha256": "d9f69b8344ed3b72fb7547e1bf6d76d05347e5486ae69bb4ab90179e2c4c63f6"
+    },
+    "parity/runs/batch-13-evidence/core-oracle.json": {
+      "original_path": "parity/runs/core-oracle.json",
+      "sha256": "3fe77c9263aa812edb4ade3d18ea5519364e39c40a5294f279b82ed61dcce8a7"
+    },
+    "parity/runs/batch-13-evidence/compile-fixtures.json": {
+      "original_path": "parity/runs/compile-fixtures.json",
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    },
+    "parity/runs/batch-13-evidence/orm-compile-fixtures.json": {
+      "original_path": "parity/runs/orm-compile-fixtures.json",
+      "sha256": "5a8edc343cbda0d2749e9ef9cd06d121bf87a24952b7ab9c24981286c569224c"
+    },
+    "parity/runs/batch-13-evidence/lifecycle-red.jsonl": {
+      "original_path": "parity/runs/lifecycle-red.jsonl",
+      "sha256": "27b2016d73853d2da1d9efe003063868a72b7572788d26884d5d4187cde30242"
+    },
+    "parity/runs/batch-13-evidence/lifecycle-first-go.jsonl": {
+      "original_path": "parity/runs/lifecycle-first-go.jsonl",
+      "sha256": "35757d785e100e0554013a9ec032dd77df3204abc60c4aadee07d3ba64a86941"
+    },
+    "parity/runs/batch-13-evidence/lifecycle-boundaries-red.jsonl": {
+      "original_path": "parity/runs/lifecycle-boundaries-red.jsonl",
+      "sha256": "c3f10a325968949be33a5fd30227ffa13b4cc2283390b01df4f7defc4e5fd7cf"
+    },
+    "parity/runs/batch-13-evidence/lifecycle-boundaries-race.jsonl": {
+      "original_path": "parity/runs/lifecycle-boundaries-race.jsonl",
+      "sha256": "a32a444f1af0bf6fc8613f9566992e3a621e99fa7100b94fac59a7bad0bd1950"
+    },
+    "parity/runs/batch-13-evidence/lifecycle-crash-race.jsonl": {
+      "original_path": "parity/runs/lifecycle-crash-race.jsonl",
+      "sha256": "4847de3b93c396b55eed22fffb64afaa8136d6ce76773a56eb1661280e9e2ed9"
+    },
+    "parity/runs/batch-13-evidence/lifecycle-oracle-blocked.json": {
+      "original_path": "parity/runs/lifecycle-oracle-blocked.json",
+      "sha256": "3e1b73af8008421557ef1dd33b229aaf86d353aa050247f92b277497c363cc33"
+    },
+    "parity/runs/batch-13-evidence/lifecycle-source-cases.json": {
+      "original_path": "parity/lifecycle-source-cases.json",
+      "sha256": "2f078fe2c7ff31801610a55b081990585c26819368709c804063a5de293213c1"
+    }
+  }
+}

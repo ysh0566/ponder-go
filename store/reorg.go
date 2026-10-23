@@ -39,6 +39,9 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 	if e = s.lock(ctx, tx); e != nil {
 		return e
 	}
+	if e = s.requireLease(ctx, tx); e != nil {
+		return e
+	}
 	if s.staged {
 		if e = prepareLiveQueryChanges(ctx, tx, s.Backend.Dialect()); e != nil {
 			return e
@@ -131,6 +134,9 @@ func (s *Store) Finalize(ctx context.Context, target checkpoint.Checkpoint) erro
 	}
 	defer tx.Rollback(context.Background())
 	if e = s.lock(ctx, tx); e != nil {
+		return e
+	}
+	if e = s.requireLease(ctx, tx); e != nil {
 		return e
 	}
 	if s.staged {
