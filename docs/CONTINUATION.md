@@ -13,8 +13,8 @@
 
 ## 下一可执行批次
 
-1. 审阅 `schema/schema.go`、`abi/abi.go` 的现有子集，对照 `build/schema.test.ts`、`decodeAbiParameters.test.ts`、`decodeEventLog.test.ts` 逐例移植。不能只补测试标题：保留同一 setup、输入、每条断言、异常消息、skip/todo，并在 `parity/mappings.json` 登记准确目标。目前 ABI 的 tuple/bytes/整数宽度格式化和错误兼容尚不完整。
-2. 将上游 finality 的 lowerBound、blockTime 初始猜测、时间戳相等边界逐例移植。当前 `Engine.FinalizedBlock` 只提供基础时间戳搜索，没有映射上游 finality 测试，也未接入自动 finalize 调度。
+1. 审阅 `schema/schema.go`、`abi/abi.go` 的现有子集，对照 `build/schema.test.ts`、`decodeAbiParameters.test.ts`、`decodeEventLog.test.ts` 逐例移植。不能只补测试标题：保留同一 setup、输入、每条断言、异常消息、skip/todo，并在 `parity/mappings.json` 登记准确目标。本批 24 条 schema、19 条 event-log 已逐例通过。ABI 参数解码算法已移植，但 decodeAbiParameters.test.ts 的 runtime 与内联类型断言尚未完成映射；先补这些测试，不能把已实现函数等同于测试通过。
+2. 将上游 finality 的 lowerBound、blockTime 初始猜测、时间戳相等边界逐例移植。本批 6 条 finality 原测试已完成映射并通过，Engine 已委托相同算法；自动 finalize 调度与数据库 actions 原测试仍待接入。
 3. 扩展 runtime 到账户交易、原生转账、trace、factory 持久动态地址与 receipt 语义，再逐项补 sync-store 原始事件持久化、过滤片段、历史缺口与实时故障恢复。
 4. 加入跨链事件调度，验证 omnichain/multichain/experimental_isolated 的完整处理顺序。当前 `runtime.New` 对多链配置明确报未实现；存储层已经支持并验证全局后缀和 isolated 回滚。
 5. 逐例补齐 PG CRUD 细节、函数默认值、raw SQL journal、关系、enum、view，再实现 GraphQL/完整 SQL 类型协议、所有 CLI/模板/热重载与观测。
@@ -52,3 +52,9 @@ node tools/sdk-bootstrap.mjs
 - PGlite SQL 正在执行时的即时取消、通用 SuperJSON 嵌套类型、外部 SQL 写导致的 SSE 通知和视图依赖尚未完成。
 - 严格源码兼容与旧 DB 接管没有实现。新配置/handler 应使用新的影子 schema，不能复用旧数据并假定已重建。
 - SDK React 浏览器验证、外部 provider 测试、simulation 与 benchmark 未执行。
+
+## 第二批检查点
+
+在 dcab6c7 后新增 49 条精确映射，累计 87/905（83 Go + 4 SDK）；本批整套 Go/race 各 118/118，无 skip，core oracle 83/83。见 `parity/runs/core-oracle.json`。枚举、raw/aggregate/aliased/nested view 的真实 PG/PGlite 回滚与重开通过。
+
+Foundry v1.8.5 项目级安装批准正在由父会话向用户请求，尚未收到授权，不得先安装。已有 Foundry 0.2.0 不能充当该版本。下一批优先处理 raw SQL 写入与统一数据库 trigger journal，再补 ABI 参数的 runtime 和类型 fixture。

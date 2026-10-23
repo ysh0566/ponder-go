@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "38 mapped records (34 Go + 4 retained SDK); 867 unimplemented. Preserve fixtures, all assertions, error/skip/todo states."
+      "remaining": "87 mapped records (83 Go + 4 retained SDK); 818 unimplemented. Exact source assertions and fixtures remain authoritative."
     },
     {
       "id": "differential-harness",
@@ -67,7 +67,7 @@
     },
     {
       "id": "schema",
-      "status": "partial",
+      "status": "verified_subset",
       "implementation_files": [
         "schema/schema.go"
       ],
@@ -76,20 +76,23 @@
         "packages/core/src/drizzle/onchain.ts"
       ],
       "evidence": [],
-      "remaining": "Current table/column/key/index types and common rejections only. Full types, enums, SQL defaults, relationships, views and exact source error fixtures remain."
+      "remaining": "All 24 build/schema source cases mapped and oracle-verified. Complete public type/default/constraint semantics and compile fixtures remain."
     },
     {
       "id": "abi",
-      "status": "partial",
+      "status": "verified_subset",
       "implementation_files": [
-        "abi/abi.go"
+        "abi/abi.go",
+        "abi/parameters.go",
+        "abi/event_test.go",
+        "testdata/abi/event-cases.json"
       ],
       "upstream_sources": [
         "packages/core/src/utils/decodeAbiParameters.ts",
         "packages/core/src/utils/decodeEventLog.ts"
       ],
       "evidence": [],
-      "remaining": "Transfer paths verified; tuple/bytes/array formatting, numeric widths, overload names and all ABI source tests/errors remain."
+      "remaining": "All 19 event-log source cases/21 assertions mapped and oracle-verified. Parameter decoder translated but its source runtime/type assertions and pathological-input differential coverage remain unported."
     },
     {
       "id": "checkpoint",
@@ -365,13 +368,16 @@
     },
     {
       "id": "enums-views",
-      "status": "unimplemented",
-      "implementation_files": [],
+      "status": "verified_subset",
+      "implementation_files": [
+        "schema/schema.go",
+        "store/schema_objects.go"
+      ],
       "upstream_sources": [
         "packages/core/src/drizzle/onchain.ts"
       ],
       "evidence": [],
-      "remaining": "Native API, rollback integration, queries and all exact source tests remain."
+      "remaining": "Typed enums plus raw/aggregate/aliased/nested views execute on both backends with rollback and resume. Complete view/schema errors, relationship API and source ORM store tests remain."
     },
     {
       "id": "journal",
@@ -419,6 +425,7 @@
       "status": "partial",
       "implementation_files": [
         "store/reorg.go",
+        "finality/finality.go",
         "runtime/engine.go"
       ],
       "upstream_sources": [
@@ -426,7 +433,7 @@
         "packages/core/src/utils/finality.ts"
       ],
       "evidence": [],
-      "remaining": "Global safe-prefix retention verified. LowerBound/blockTime exact search, automatic finalization wiring and full cases remain."
+      "remaining": "All 6 finality source cases mapped, including lowerBound identity and initial blockTime request. Automatic finalize scheduling, complete database action cases and deep-reorg behavior remain."
     },
     {
       "id": "graphql",

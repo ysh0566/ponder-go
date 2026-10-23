@@ -11,7 +11,7 @@
 权威结果是 [parity/runs/summary.json](parity/runs/summary.json)。用例发现、移植、执行、通过分别登记，不合并计数。
 
 - 104 个原测试文件、897 个测试声明，905 条静态展开记录；包含 73 条类型测试、客户端/React/E2E。
-- 已逐例映射 38 条：34 条 Go checkpoint/interval 测试，加原样保留的 3 条 TS 客户端测试、1 条 React 类型测试。另有 **867 条未实现**。
+- 已逐例映射 87 条：83 条 Go checkpoint/interval/finality/schema/event 测试，加原样保留的 3 条 TS 客户端测试、1 条 React 类型测试。另有 **818 条未实现**。
 - 新增 Go 存储、SQL/SSE、RPC、Anvil 和崩溃测试独立计数；不冒充原版测试移植。
 - 2,400 个确定性差分向量独立计数。
 - 原版 10 个 skip、2 个 todo 的状态保留，不计作本移植通过。
@@ -29,7 +29,7 @@ export PONDER_TEST_POSTGRES='postgres://ponder:ponder-local-test@127.0.0.1:53398
 ./tools/verify.sh
 ```
 
-该脚本执行 `go test -count=1 -json ./...`、`go test -count=1 -race -json ./...`、`go vet ./...`、CLI/示例编译、原版 34 条纯函数测试及差分 harness。本环境的沙箱限制本地 TCP/IPC，执行数据库、HTTP 和 Anvil 测试需要已授权的工具网络能力。缺少 PostgreSQL 环境变量的单独 `go test` 会明确报告相关集成测试未运行；完整验收脚本直接要求该变量。
+该脚本执行 `go test -count=1 -json ./...`、`go test -count=1 -race -json ./...`、`go vet ./...`、CLI/示例编译、原版 83 条所选 core 测试及差分 harness。本环境的沙箱限制本地 TCP/IPC，执行数据库、HTTP 和 Anvil 测试需要已授权的工具网络能力。缺少 PostgreSQL 环境变量的单独 `go test` 会明确报告相关集成测试未运行；完整验收脚本直接要求该变量。
 
 SDK 测试单独运行，保留原断言与 inline snapshots：
 
@@ -58,7 +58,7 @@ bin/ponder codegen --schema examples/erc20/schema.json --out examples/erc20/pond
 - 业务写、undo journal、事件去重、checkpoint 进度在同一数据库事务内提交。默认 multichain 回滚从目标链边界后的最小 operation_id 撤销全局后缀；isolated 只回滚目标链。
 - 四个进程崩溃边界（业务写后、journal 后、进度后、commit 后）在两个后端分别测试。没有测试数据库服务端断电或磁盘损坏，不外推这些保证。
 - `reorgWindow` 按时间戳秒计算。调度器目前明确限制单链；多链调度尚未实现，存储层的多链回滚已经有真实验证。
-- 当前原生 schema/ABI 只覆盖部分类型、默认值和约束；业务 raw SQL 的 journal、关系/视图、factory、trace、GraphQL 等尚待实现。
+- 当前原生 schema/ABI 已补齐 build/schema、event-log 和 finality 所选源测试，并在两个后端执行枚举及视图；完整参数/类型测试、业务 raw SQL journal、关系、factory、trace、GraphQL 等尚待实现。
 
 Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地接管，是不同工作轨道。后两项均未实现，也未进行数据迁移。当前模型 hash 不包含 handler/config 内容，修改这些内容时必须选择新的影子 schema；自动开发重建尚待实现。
 

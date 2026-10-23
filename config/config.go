@@ -14,6 +14,7 @@ type Chain struct {
 	Name              string   `json:"name"`
 	ID                uint64   `json:"id"`
 	RPC               []string `json:"rpc"`
+	BlockTimeMS       *float64 `json:"blockTime,omitempty"`
 	ReorgWindow       *int     `json:"reorgWindow,omitempty"`
 	PollingIntervalMS int      `json:"pollingInterval,omitempty"`
 }

@@ -61,14 +61,14 @@ func (p *pgBackend) Query(c context.Context, s string, a ...any) (Result, error)
 	return pgQuery(c, p.db, s, a...)
 }
 func (p *pgBackend) Exec(c context.Context, s string, a ...any) error {
-	_, e := p.db.ExecContext(c, s, a...)
+	_, e := p.db.ExecContext(c, s, databaseArgs(a)...)
 	return e
 }
 func (p *pgTx) Query(c context.Context, s string, a ...any) (Result, error) {
 	return pgQuery(c, p.tx, s, a...)
 }
 func (p *pgTx) Exec(c context.Context, s string, a ...any) error {
-	_, e := p.tx.ExecContext(c, s, a...)
+	_, e := p.tx.ExecContext(c, s, databaseArgs(a)...)
 	return e
 }
 func (p *pgTx) Commit(context.Context) error   { return p.tx.Commit() }
@@ -80,7 +80,7 @@ type sqlQuerier interface {
 
 func pgQuery(ctx context.Context, q sqlQuerier, s string, args ...any) (Result, error) {
 	out := Result{Rows: []map[string]any{}}
-	rows, e := q.QueryContext(ctx, s, args...)
+	rows, e := q.QueryContext(ctx, s, databaseArgs(args)...)
 	if e != nil {
 		return out, e
 	}
@@ -185,7 +185,7 @@ func (p *pgliteBackend) roundtrip(ctx context.Context, action, sql string, args 
 	if e := ctx.Err(); e != nil {
 		return out, e
 	}
-	request, e := json.Marshal(map[string]any{"action": action, "sql": sql, "params": args})
+	request, e := json.Marshal(map[string]any{"action": action, "sql": sql, "params": databaseArgs(args)})
 	if e != nil {
 		return out, e
 	}

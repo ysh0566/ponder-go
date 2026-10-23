@@ -9,6 +9,7 @@ import (
 	"ponder.local/ponder-go/abi"
 	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/config"
+	"ponder.local/ponder-go/finality"
 	"ponder.local/ponder-go/interval"
 	"ponder.local/ponder-go/rpc"
 	"ponder.local/ponder-go/schema"
@@ -345,48 +346,36 @@ func (e *Engine) Run(ctx context.Context) error {
 	}
 }
 
-// FinalizedBlock performs timestamp-based binary search; reorgWindow is seconds.
+// FinalizedBlock delegates to the source-equivalent timestamp search.
 func (e *Engine) FinalizedBlock(ctx context.Context, latest Block) (Block, error) {
-	if e.chain.Window() == 0 {
+	light := &finality.Block{Hash: latest.Hash, ParentHash: latest.ParentHash, Number: latest.Number, Timestamp: latest.Timestamp}
+	found, err := finality.GetFinalizedBlock(ctx, finality.Chain{ReorgWindow: e.chain.Window(), BlockTimeMS: e.chain.BlockTimeMS}, func(ctx context.Context, r finality.Request) (*finality.Block, error) {
+		var b *finality.Block
+		// The search requests headers (false), and retries null results at the RPC boundary.
+		for attempt := 0; ; attempt++ {
+			if err := e.Client.Call(ctx, "eth_getBlockByNumber", []any{Hex(r.Number), r.IncludeTransactions}, &b); err != nil {
+				return nil, err
+			}
+			if b != nil {
+				return b, nil
+			}
+			if !r.RetryNullBlockRequest || attempt >= e.Client.Retries {
+				return nil, fmt.Errorf("block %d is unavailable", r.Number)
+			}
+			timer := time.NewTimer(25 * time.Millisecond)
+			select {
+			case <-ctx.Done():
+				timer.Stop()
+				return nil, ctx.Err()
+			case <-timer.C:
+			}
+		}
+	}, light, nil)
+	if err != nil {
+		return Block{}, err
+	}
+	if found.Number == latest.Number && found.Hash == latest.Hash {
 		return latest, nil
 	}
-	head, err := Number(latest.Number)
-	if err != nil {
-		return Block{}, err
-	}
-	timestamp, err := Number(latest.Timestamp)
-	if err != nil {
-		return Block{}, err
-	}
-	target := uint64(0)
-	if timestamp > uint64(e.chain.Window()) {
-		target = timestamp - uint64(e.chain.Window())
-	}
-	low, high := uint64(0), head
-	var finalized *Block
-	for low <= high {
-		mid := low + (high-low)/2
-		b, err := e.block(ctx, Hex(mid))
-		if err != nil {
-			return Block{}, err
-		}
-		t, err := Number(b.Timestamp)
-		if err != nil {
-			return Block{}, err
-		}
-		if t <= target {
-			copy := b
-			finalized = &copy
-			low = mid + 1
-		} else {
-			if mid == 0 {
-				break
-			}
-			high = mid - 1
-		}
-	}
-	if finalized == nil {
-		return e.block(ctx, "0x0")
-	}
-	return *finalized, nil
+	return Block{Hash: found.Hash, ParentHash: found.ParentHash, Number: found.Number, Timestamp: found.Timestamp}, nil
 }

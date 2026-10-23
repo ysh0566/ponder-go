@@ -1,0 +1,27 @@
+ok  	ponder.local/ponder-go/schema	0.298s
+ok  	ponder.local/ponder-go/store	10.540s
+--- FAIL: TestOriginalClientCompatibility (0.77s)
+    --- FAIL: TestOriginalClientCompatibility/pglite (0.77s)
+panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: bind: operation not permitted [recovered, repanicked]
+
+goroutine 7 [running]:
+testing.tRunner.func1.2({0x101682ab8, 0x7072c82ea0e0})
+	/usr/local/go/src/testing/testing.go:2123 +0x1a0
+testing.tRunner.func1()
+	/usr/local/go/src/testing/testing.go:2126 +0x2c8
+panic({0x101682ab8?, 0x7072c82ea0e0?})
+	/usr/local/go/src/runtime/panic.go:859 +0x120
+net/http/httptest.newLocalListener()
+	/usr/local/go/src/net/http/httptest/server.go:226 +0xd4
+net/http/httptest.NewUnstartedServer(...)
+	/usr/local/go/src/net/http/httptest/server.go:284
+net/http/httptest.NewServer({0x101764038, 0x7072c82ab180})
+	/usr/local/go/src/net/http/httptest/server.go:267 +0x28
+ponder.local/ponder-go/query.TestOriginalClientCompatibility.func1(0x7072c824ed88)
+	/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-go/query/http_test.go:66 +0x5b8
+testing.tRunner(0x7072c824ed88, 0x7072c804e498)
+	/usr/local/go/src/testing/testing.go:2193 +0xc4
+created by testing.(*T).Run in goroutine 6
+	/usr/local/go/src/testing/testing.go:2258 +0x3b8
+FAIL	ponder.local/ponder-go/query	1.242s
+FAIL

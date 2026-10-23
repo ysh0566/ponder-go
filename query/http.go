@@ -93,6 +93,9 @@ func (s *Server) validate(q request) ([]string, error) {
 	for _, t := range s.Store.Schema.Tables {
 		allowed[t.Name] = true
 	}
+	for _, v := range s.Store.Schema.Views {
+		allowed[v.Name] = true
+	}
 	for _, name := range ctes {
 		allowed[name] = true
 	}
@@ -101,7 +104,7 @@ func (s *Server) validate(q request) ([]string, error) {
 			return nil, fmt.Errorf("unknown query relation %q", r)
 		}
 	}
-	return relations, nil
+	return s.Store.QueryDependencies(relations)
 }
 func writeJSON(w http.ResponseWriter, status int, value any) {
 	w.Header().Set("Content-Type", "application/json")
