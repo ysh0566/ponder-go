@@ -53,13 +53,25 @@ func localChain(t *testing.T) (*rpc.Client, string) {
 	return client, url
 }
 func TestAnvilPostgresVertical(t *testing.T) {
+	testAnvilVertical(t, "postgres")
+}
+func TestAnvilPGliteVertical(t *testing.T) {
+	testAnvilVertical(t, "pglite")
+}
+func testAnvilVertical(t *testing.T, dialect string) {
 	url := os.Getenv("PONDER_TEST_POSTGRES")
-	if url == "" {
+	if dialect == "postgres" && url == "" {
 		t.Skip("explicit task PostgreSQL URL required; no parity pass")
 	}
 	ctx := context.Background()
 	client, rpcURL := localChain(t)
-	backend, e := store.OpenPostgres(ctx, url)
+	var backend store.Backend
+	var e error
+	if dialect == "postgres" {
+		backend, e = store.OpenPostgres(ctx, url)
+	} else {
+		backend, e = store.OpenPGlite(ctx, "memory://")
+	}
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -166,6 +178,21 @@ func TestAnvilPostgresVertical(t *testing.T) {
 	if logCalls != 1 {
 		t.Fatal("replay executed duplicate handler")
 	}
+	checkProtocol := func() string {
+		t.Helper()
+		for table, want := range map[string]int{"blocks": 2, "logs": 1, "transactions": 1, "transaction_receipts": 1} {
+			rows, err := engine.cache.Rows(ctx, table, 1, 0, 1)
+			if err != nil || len(rows.Rows) != want {
+				t.Fatalf("actual RPC protocol %s: %#v %v", table, rows, err)
+			}
+		}
+		row, err := backend.Query(ctx, "SELECT block_hash FROM "+schema.Quote(engine.cache.Namespace())+".logs WHERE chain_id=1 AND block_number=1")
+		if err != nil || len(row.Rows) != 1 {
+			t.Fatal(row, err)
+		}
+		return fmt.Sprint(row.Rows[0]["block_hash"])
+	}
+	oldHash := checkProtocol()
 	var reverted bool
 	if e = client.Call(ctx, "evm_revert", []any{snapshot}, &reverted); e != nil || !reverted {
 		t.Fatalf("%v %v", reverted, e)
@@ -176,6 +203,9 @@ func TestAnvilPostgresVertical(t *testing.T) {
 	}
 	if read() != "5" || logCalls != 2 || setupCalls != 1 {
 		t.Fatalf("reorg balance %s calls %d/%d", read(), logCalls, setupCalls)
+	}
+	if newHash := checkProtocol(); newHash == oldHash {
+		t.Fatal("protocol cache retained orphaned log")
 	}
 	// The same JSON-RPC client also supports WebSocket requests and head subscriptions.
 	ws := rpc.New(strings.Replace(rpcURL, "http://", "ws://", 1))

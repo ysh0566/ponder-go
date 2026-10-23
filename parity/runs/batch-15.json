@@ -1,0 +1,274 @@
+{
+  "milestone": "M17",
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "base_commit": "3ec3940bcfa8352726c1c2de5384b9fa8b4f7a44",
+  "overall_complete": false,
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 249,
+    "unimplemented": 656,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 245,
+    "passed_with_required_type_checks": 245,
+    "original_oracle_also_passed": 167,
+    "original_oracle_blocked": 78
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 171,
+    "mapped_blocked": 78,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "new_exact_source_records": 4,
+  "new_original_assertion_expressions": 14,
+  "new_original_compiler_error_obligations": 1,
+  "new_source_backend_leaves": {
+    "postgres": 4,
+    "pglite": 3
+  },
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 531,
+    "pass": 531,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 531,
+    "pass": 531,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 157,
+        "pass": 157,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 157,
+        "pass": 157,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 154,
+        "pass": 154,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 154,
+        "pass": 154,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "orm_type_fixtures": {
+    "source_error_directives": 6,
+    "source_error_directives_passed": 6,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  },
+  "original_core": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 169,
+    "passed": 167,
+    "failed": 0
+  },
+  "supplemental_protocol_differential": {
+    "vectors": 20,
+    "passed_go": 20,
+    "passed_race": 20,
+    "source_credit": 0,
+    "method": "Evaluate unmodified pinned source encode.ts/lowercase.ts functions; compare exact native encodings."
+  },
+  "other_differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.27.1 darwin/arm64",
+    "node": "v25.2.1",
+    "differences": []
+  },
+  "commands": [
+    {
+      "command": "PONDER_TEST_POSTGRES=<task-only127.0.0.1:53398> ./tools/verify.sh",
+      "exit_code": 0,
+      "evidence": "parity/runs/batch-15-verify.txt"
+    },
+    {
+      "command": "CI=1 vitest run --config tools/oracle.config.mjs --configLoader native src/database/index.test.ts src/indexing-store/index.test.ts --reporter=json",
+      "exit_code": 1,
+      "executed_tests": 0,
+      "failed_suites": 2,
+      "reason": "Missing _test/generated.js before collection; Foundry1.8.5 remains pending approval. No replacement fixture."
+    }
+  ],
+  "execution_environment": {
+    "transient_failure": "Mac exec-server transport closed during final cache extension patch; read-only reconnection proved that patch had not executed, then applied once. Full final validation completed after recovery.",
+    "postgres": "task-owned PostgreSQL16.15,127.0.0.1:53398",
+    "pglite": "0.2.13 actual PostgreSQL WASM",
+    "no_foundry_install": true
+  },
+  "boundaries": [
+    "Historical writes remain journaled; initial safe metadata+prefix prune atomic; global suffix and isolated semantics tested.",
+    "Alias ownership/comments, camelCase, independent actual notifications, no lease token in public views.",
+    "Typed eager SQL compile constraints and actual raw/savepoint/trigger/cache/undo.",
+    "Default native single-chain runtime normalized CRUD plus attached-cache rewind, real Anvil on PG/PGlite.",
+    "All source runtime/fixture/skip/type status remains distinct from additional regressions and vectors."
+  ],
+  "remaining": [
+    "656 static source records unimplemented; runtime discovery not proven exhaustive.",
+    "Cold disabled-cache re-enable invalidation",
+    "Full original cache CRUD/filter/fragment/query/hash/block metadata protocol",
+    "Automatic staged runtime, history/live transition, trace/account/native-transfer sources and multichain",
+    "Full query/API/CLI/templates/hot reload/observability and separate TS-source/old-DB adoption tracks"
+  ],
+  "evidence": [
+    {
+      "path": "parity/runs/batch-15-evidence/go-test.jsonl",
+      "sha256": "488e04dfc513ea28c87d95e97c95caf1c10aab6cddf73ed33890b07ed4d9aaa2"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/go-race.jsonl",
+      "sha256": "f34f3a4ca8c5d9f629d49df550c1ac7dd64071c2f10ad303d05d1858a949c931"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/go-vet.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/summary.json",
+      "sha256": "aa2c6da39f3dc0325caf2f116e911be0c7115b98e0cd668913dcfb9d29b25ee8"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/tool-versions.txt",
+      "sha256": "4b91ecd59a944510c8acc3e68e9b233347188b51f182bce2d0ee00d88e2524ba"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/batch-15-verify.txt",
+      "sha256": "318a180052f51af5fe316fe28006f7267a1f89b7f650a369662f44bd8636dbd5"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/batch-15-final-ledger.txt",
+      "sha256": "3c721cf6c3e27392dac0adf798045b0602eaa19422889abaa504546180a4ce5b"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/orm-compile-fixtures.json",
+      "sha256": "406811fc58e8a77c089dc06b8825664dc690be8656315ab4ed12c5f30f06011b"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/compile-fixtures.json",
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/abi-typed-go.jsonl",
+      "sha256": "79f58a5272d4d1b4db20b5b451c79022c3902b61f59b7bb780ec7ae06f0deff2"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/abi-typed-race.jsonl",
+      "sha256": "ca645d6fcc6b0cec2aac473922a0fa5a073dbf12b3fc2edafee3ee85cbb6146e"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/core-oracle.json",
+      "sha256": "3b56911200341b37a0015a7ca77dd2e6a019766fcd2ae92c1efbf2bd0d100803"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/foundation-oracle.json",
+      "sha256": "17e283fa133e3b0c5ce5444f9a5e013f94daf0fee7d3c950bdabc90f42295edb"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/parameters-typecheck.json",
+      "sha256": "92c5c2a30ff31db3f5dea19de6564d9ca1ea58336682f70137a6be4443157bcb"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/differential.json",
+      "sha256": "88787f0cf3676c14d06ab381bfba412823a6c4815779fc6453ba4cdfd4efacf9"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/lifecycle-orm-oracle-blocked.json",
+      "sha256": "e90c2d2f1a7480f1e42626460d8c945e7e9728c5f3b5d2b756977fd9534056af"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/lifecycle-orm-oracle-blocked.txt",
+      "sha256": "fa8609cb1d9752a3312a7e50d61226428ad662dda0c3dac5c1f5fc5d1bfb7808"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/protocol-boundaries-first-race.jsonl",
+      "sha256": "11f0d8f645ba9f80801bd887e4c8ae2a36d712e6ae1cede8127950a3ed288f94"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/protocol-boundaries-fixed-race.jsonl",
+      "sha256": "5a0675131f07b16c7319777e60e168b4905c5c63136bf0240dba8b410c65e03a"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/protocol-runtime-full-race.jsonl",
+      "sha256": "e8e88e7371596db56a7df67ab16451ca375b98ffb7e1733be0ebc26d80c6eefc"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/orm-sealing-first-race.jsonl",
+      "sha256": "f922e02ed95c1c3cbb6c2d7ec5a85597a1073186644084669cdd91c4ce5367e2"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/lifecycle-sealing-alias-race.jsonl",
+      "sha256": "aa28a35b8a0487c94f9101f906939f251dddb41c883775008b2c12fa1710e650"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/lifecycle-sealing-alias-fixed-race.jsonl",
+      "sha256": "94c68278d033360a890a4a8809a34c157c915fb81eb7af73f972d848e67bd2aa"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/lifecycle-sealing-final-race.jsonl",
+      "sha256": "6a82f30fb56399590015702b4fea8b71b92e1bcd4df1d463dd3177e634ffcab3"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/lifecycle-orm-completion-source-cases.json",
+      "sha256": "088fba7cde9e2088263cc21a3c795ea00682315b537c4965f8733fbc421d6efa"
+    },
+    {
+      "path": "parity/runs/batch-15-evidence/encoding.json",
+      "sha256": "e0694599f53b2b7802e99f515996812d6bbd919874c8ec3cc96c2fdc5828a6c9"
+    }
+  ]
+}

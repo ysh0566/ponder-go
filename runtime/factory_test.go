@@ -170,7 +170,10 @@ func TestFactoryRuntime(t *testing.T) {
 			}}
 			newEngine := func() *Engine {
 				t.Helper()
-				e, err := New(cfg, s, handlers)
+				// This pre-existing factory fixture deliberately supplies only
+				// event fields. The full normalized cache has separate real-RPC
+				// coverage; exercise the explicit uncached path here.
+				e, err := NewWithOptions(cfg, s, handlers, Options{DisableCache: true})
 				if err != nil {
 					t.Fatal(err)
 				}

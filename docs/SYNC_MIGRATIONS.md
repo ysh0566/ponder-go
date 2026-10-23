@@ -51,12 +51,13 @@ JSON document values retain their separate column codec behavior.
 
 ## Current integration boundary
 
-The versioned nine-table schema is separate from the existing minimal native
-runtime sync store. Full source sync-store event CRUD, filter fragments, source
-trace/transaction scheduling, shared-cache configuration and automatic runtime
-integration still require implementation. Creating the full schema does not
-establish those capabilities. Source raw-layout compatibility and real old DB
-takeover remain separate unfinished tracks.
+The versioned nine-table schema remains separate from indexing data. The native
+single-chain event path now attaches it for normalized block/transaction/log/receipt
+writes, RPC results, intervals, factory discoveries and attached-cache reorg cleanup.
+See PROTOCOL_CACHE.md for tested boundaries and remaining gaps. Full source CRUD
+tests, fragment/query planning, automatic traces, staged/multichain scheduling and
+shared-cache options remain unfinished. Source raw-layout compatibility and real
+old DB takeover remain separate tracks.
 
 The eight source migration cases retain all 13 original assertions and their
 fixtures. PostgreSQL runs eight primary mappings; PGlite runs seven applicable

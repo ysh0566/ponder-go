@@ -27,8 +27,29 @@ type Block struct {
 	ParentHash   string           `json:"parentHash"`
 	Timestamp    string           `json:"timestamp"`
 	Transactions []map[string]any `json:"transactions"`
+	raw          json.RawMessage
 }
+
+func (b *Block) UnmarshalJSON(data []byte) error {
+	type blockAlias Block
+	var value blockAlias
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*b = Block(value)
+	b.raw = append(json.RawMessage{}, data...)
+	return nil
+}
+func (b Block) MarshalJSON() ([]byte, error) {
+	if len(b.raw) > 0 {
+		return append([]byte{}, b.raw...), nil
+	}
+	type blockAlias Block
+	return json.Marshal(blockAlias(b))
+}
+
 type Log struct {
+	BlockNumber      string   `json:"blockNumber"`
 	Address          string   `json:"address"`
 	Topics           []string `json:"topics"`
 	Data             string   `json:"data"`
@@ -62,9 +83,15 @@ type Engine struct {
 	factories map[string]factory.LogFactory
 	filter    string
 	chain     config.Chain
+	options   Options
+	cache     *store.ProtocolCache
 }
+type Options struct{ DisableCache bool }
 
 func New(c config.Config, s *store.Store, handlers map[string]Handler) (*Engine, error) {
+	return NewWithOptions(c, s, handlers, Options{})
+}
+func NewWithOptions(c config.Config, s *store.Store, handlers map[string]Handler, options Options) (*Engine, error) {
 	if e := c.Validate(); e != nil {
 		return nil, e
 	}
@@ -78,7 +105,7 @@ func New(c config.Config, s *store.Store, handlers map[string]Handler) (*Engine,
 	if len(c.Chains) != 1 {
 		return nil, fmt.Errorf("multi-chain runtime scheduling is not implemented yet; storage rollback modes are implemented")
 	}
-	engine := &Engine{Config: c, Store: s, Handlers: handlers, chain: c.Chains[0], abis: map[string]abi.ABI{}, factories: map[string]factory.LogFactory{}}
+	engine := &Engine{Config: c, Store: s, Handlers: handlers, chain: c.Chains[0], abis: map[string]abi.ABI{}, factories: map[string]factory.LogFactory{}, options: options}
 	for _, contract := range c.Contracts {
 		a, e := abi.Parse(string(contract.ABI))
 		if e != nil {
@@ -105,7 +132,6 @@ func New(c config.Config, s *store.Store, handlers map[string]Handler) (*Engine,
 	engine.filter = fmt.Sprintf("runtime:%x", hash)
 	engine.Client = rpc.New(engine.chain.RPC...)
 	engine.Client.ChainID = engine.chain.ID
-	engine.Client.Cache = s
 	return engine, nil
 }
 func Number(hex string) (uint64, error) {
@@ -124,6 +150,14 @@ func (e *Engine) block(ctx context.Context, number any) (Block, error) {
 	return *b, nil
 }
 func (e *Engine) Sync(ctx context.Context) error {
+	if !e.options.DisableCache {
+		cache, err := e.Store.EnableProtocolCache(ctx)
+		if err != nil {
+			return err
+		}
+		e.cache = cache
+		e.Client.Cache = cache
+	}
 	var chainID string
 	if err := e.Client.Call(ctx, "eth_chainId", []any{}, &chainID); err != nil {
 		return err
@@ -288,6 +322,9 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 		if err = e.Client.CallCached(ctx, "eth_getLogs", []any{filter}, &logs); err != nil {
 			return err
 		}
+		if err = e.cacheLogs(ctx, logs); err != nil {
+			return err
+		}
 		a := e.abis[contract.Name]
 		for _, log := range logs {
 			if log.Removed || len(log.Topics) == 0 {
@@ -332,6 +369,11 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 							return err
 						}
 						receipts[log.TransactionHash] = receipt
+						if e.cache != nil {
+							if err = e.cache.Insert(ctx, "transaction_receipts", e.chain.ID, []map[string]any{receipt}); err != nil {
+								return err
+							}
+						}
 					}
 				}
 				copyLog := log

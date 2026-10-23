@@ -20,7 +20,9 @@ type Store struct {
 	staged                   bool
 	leaseToken               string
 	leaseTimeout             int64
+	viewsSchema              string
 	profileState             *CacheProfile
+	protocol                 atomic.Pointer[ProtocolCache]
 	Backend                  Backend
 	Namespace, SyncNamespace string
 	Schema                   schema.Schema

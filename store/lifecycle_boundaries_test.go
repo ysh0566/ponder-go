@@ -191,6 +191,10 @@ func TestLifecycleBoundaries(t *testing.T) {
 						if _, e := d.Migrate(ctx, Migration{BuildID: "abc"}); e != nil {
 							t.Fatal(e)
 						}
+						protocol, e := d.s.EnableProtocolCache(ctx)
+						if e != nil {
+							t.Fatal(e)
+						}
 						second := newTestLifecycle(t, b, ns, LifecycleOptions{HeartbeatInterval: 25 * time.Millisecond, HeartbeatTimeout: opts.HeartbeatTimeout})
 						// Acquisition compares the new owner's configured timeout, as the
 						// source does, so both contenders use the same expiration window.
@@ -201,6 +205,8 @@ func TestLifecycleBoundaries(t *testing.T) {
 						}
 						entered := false
 						checks := []func() error{
+							func() error { return protocol.Insert(ctx, "logs", 1, nil) },
+							func() error { return protocol.CachePut(ctx, `[1,"eth_getLogs",[]]`, json.RawMessage(`[]`)) },
 							func() error { return d.Actions().RawBatch(ctx, 1, func(*Writer) error { entered = true; return nil }) },
 							func() error { return d.Actions().CreateTriggers(ctx) }, func() error { return d.Actions().DropTriggers(ctx) },
 							func() error { return d.Actions().CreateIndexes(ctx) }, func() error { return d.Actions().CreateViews(ctx) },

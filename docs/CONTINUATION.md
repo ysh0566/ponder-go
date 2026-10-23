@@ -14,10 +14,10 @@
 
 ## 下一可执行批次
 
-1. 从最新提交和 summary.json 恢复。M16 后累计 245 条映射（241 Go + 4 SDK），Go oracle 167 通过、74 fixture oracle 阻塞，660 静态记录未实现；精确执行结果看 batch-14.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
-2. Database actions.test.ts 的11个源例及 database/index.test.ts 的16个生命周期源例已映射；剩余2个database/index记录为historical-baseline recovery rows和camelCase/views-schema。M16 sync迁移完整保留原SQL，但仅接受已拥有shadow，不代表真实旧DB布局接管；新9表协议缓存尚未自动接入原来最小runtime sync store。继续 ORM insert-then/full SQL 类型义务、真实deploy/mint/readonly prefetch原例、typed JSON/bytes/array/custom codec/强枚举/Hex、关系DSL和自动profile/指标；随后接自动staged runtime及跨链重组通知调度。
+1. 从最新提交和 summary.json 恢复。M17 后累计 249 条映射（245 Go + 4 SDK），Go oracle 167 通过、78 fixture oracle 阻塞，656 静态记录未实现；精确执行结果看 batch-15.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
+2. Database actions.test.ts 的11个源例及 database/index.test.ts 的16个生命周期源例已映射；M17已补齐剩余2个database/index记录（historical-baseline recovery rows和camelCase/views-schema），以及 ORM insert-then/full SQL 原例和 SQL 真编译错误义务。M16 sync迁移完整保留原SQL，但仅接受已拥有shadow，不代表真实旧DB布局接管；M17已将9表协议缓存接入默认单链runtime。继续冷重开禁用缓存/重启启用的失效边界、真实deploy/mint/readonly prefetch原例、typed JSON/bytes/array/custom codec/强枚举/Hex、关系DSL和自动profile/指标；随后接自动staged runtime及跨链重组通知调度。
 3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments、sync-store 原事件和 factory 原 E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
-4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。自动 finalize 和无表 finalization 边界也待实现。
+4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。staged runtime 和自动 finalize 仍待接入；无 journal/无 checkpoint finalize 空操作已对应源 camelCase 验证，不能外推未初始化且有 journal 的情况。
 5. 完整关系/查询/GraphQL、SQL/SuperJSON 全类型、全部 CLI/模板/热重载/观测/示例，以及严格源码兼容和旧 DB 接管的独立轨，仍按 feature-ledger 推进。默认新影子 schema，不访问业务数据。
 6. ABI 原生类型生成和 53 个内联成功 fixture 已建立，另有 53 额外负向控制、1 个源 null-topic 错误 fixture；原两份 ABI 文件 tsc 通过。剩余 10 个内联类型断言、72 条专门 native 类型记录及绝大部分类型错误指令尚待移植。Simulation 的 8 个应用、无限 seed 空间尚未执行。
 
@@ -173,3 +173,13 @@ CrashRecovery按源primitive撤销全部保留journal（assigned和MAX），不�
 下一步：先核对batch-11.json、summary和最后提交。继续剩余live query大payload原例（真实LISTEN/NOTIFY、160长表名、UTF-8 payload<8000），再database/index migration/cache/crash源例与staged scheduler自动集成。Current runtime仍是atomic Apply路径，迁移/重启需explicit staged CrashRecovery+latest复位，尚未统一接入。全部source/filter/fragments/raw事件/trace/多链/GraphQL/CLI与剩余类型/SDK/simulation范围仍在feature ledger。Foundry1.8.5仍pending且未安装；DB oracle不算通过。
 
 M13最终verify退出0：Go/race各398/398，PG100/100、PGlite99/99；source228（Go224+SDK4），Go oracle167通过、57阻塞，677未实现。M13未改变类型/differential计数。结束时无挂起测试，先读最后提交、batch-11.json及DATABASE_ACTIONS.md，再继续通知/migration/source/trace等范围。
+
+## M17：生命周期剩余源例、ORM then/SQL、规范化缓存事件接入
+
+本批4条源记录14个原断言、1个原SQL编译错误义务；原输入/fixture/动作顺序与适配在 `parity/lifecycle-orm-completion-source-cases.json`。PG4/PGlite3源后端叶子（SQL原例在PGlite fixture前返回）。累计249/905，Go245通过其中oracle167通过/78阻塞，SDK4，656未实现。Go/race531/531、PG157/PGlite154，零skip/fail；编译ORM6源错误/6额外控制按预期，ABI53运行/类型不变；原版core167活动通过/2源skip、SDK4和2466旧差分通过。新增20个protocol编码向量由未改动source encode/lowercase执行产生，20Go/race通过且不加源credit。完整数据库/ORM oracle再次实际尝试为0测试/2收集失败suite，缺generated.js，Foundry仍pending。
+
+HistoricalBatch仍逐写journal，初始safe metadata与安全前缀清理同事务；默认全局后缀拒绝越过未知链，isolated分链。双后端metadata失败、四个真实进程退出、别名schema归属、通知与重开均通过。typed SQL走已有raw/savepoint/trigger/cache边界，正反编译fixture均实际build。
+
+Store.EnableProtocolCache + runtime默认路径已接入完整RPC block/transactions/logs/receipt，区间/factory镜像与attached-cache重组删除同事务；PG/PGlite真实已有Anvil分别验证写入、重放、fork与旧日志删除。原native factory简略RPC fixture明确使用DisableCache，未冒充完整RPC oracle。source完整CRUD fixtures、过滤分页、source MD5请求哈希、自动trace、冷disable/re-enable失效、自动staged runtime/多链仍缺。详见PROTOCOL_CACHE.md。
+
+下一步先处理冷reopen禁用缓存后rewind再启用的缓存失效：当前 Store.rewindSync 仅清已attach的protocol pointer，重启后未attach但磁盘已有owned schema的情况仍需补；不要假定本批覆盖它。然后把Lifecycle/Actions真实接入staged事件调度与重组/通知，保持MAX暂态、逐事件业务/journal和最终latest原子性，接续source/trace/多链及查询工具链。

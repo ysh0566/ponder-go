@@ -1,0 +1,234 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "4 source records /14 runtime assertion expressions /1 source compiler-error obligation. Source backend leaves: PostgreSQL4 + PGlite3. Native faults, process exits, typed companions and20 generated encoding differential vectors add no source credit.",
+  "cases": [
+    {
+      "id": "3813ee03d59e149c556f",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "suite_path": [],
+      "full_name": "migrate() with crash recovery reverts rows",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "databaseTwo = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "checkpoint = await databaseTwo.migrate({\n    buildId: \"abc\",\n    chains: [getChain()],\n    finalizedBlocks: [\n      {\n        timestamp: \"0x1\",\n        number: \"0xa\",\n        hash: \"0x\",\n        parentHash: \"0x\",\n      },\n    ],\n  })",
+        "rows = await databaseTwo.userQB.wrap((db) =>\n    db.execute(sql`SELECT * from \"account\"`).then((result) => result.rows),\n  )",
+        "metadata = await databaseTwo.userQB.wrap((db) =>\n    db.select().from(getPonderMetaTable(\"public\")),\n  )"
+      ],
+      "test_source": "test(\"migrate() with crash recovery reverts rows\", async () => {\n  const database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await database.migrate({\n    buildId: \"abc\",\n    chains: [],\n    finalizedBlocks: [],\n  });\n\n  // setup tables, reorg tables, and metadata checkpoint\n\n  await database.userQB.wrap((db) =>\n    db.update(getPonderMetaTable(\"public\")).set({\n      value: sql`jsonb_set(value, '{is_ready}', to_jsonb(1))`,\n    }),\n  );\n\n  await database.userQB.raw\n    .insert(account)\n    .values({ address: zeroAddress, balance: 10n });\n\n  await commitBlock(database.userQB, {\n    checkpoint: createCheckpoint({ chainId: 1n, blockNumber: 9n }),\n    table: account,\n    preBuild: { ordering: \"multichain\" },\n  });\n\n  await createTriggers(database.userQB, { tables: [account] });\n\n  await database.userQB.raw\n    .insert(account)\n    .values({ address: \"0x0000000000000000000000000000000000000001\" });\n\n  await commitBlock(database.userQB, {\n    checkpoint: createCheckpoint({ chainId: 1n, blockNumber: 11n }),\n    table: account,\n    preBuild: { ordering: \"multichain\" },\n  });\n\n  await database.userQB.wrap((db) =>\n    db.insert(getPonderCheckpointTable()).values({\n      chainId: 1,\n      chainName: \"mainnet\",\n      latestCheckpoint: createCheckpoint({ chainId: 1n, blockNumber: 10n }),\n      finalizedCheckpoint: createCheckpoint({ chainId: 1n, blockNumber: 10n }),\n      safeCheckpoint: createCheckpoint({ chainId: 1n, blockNumber: 10n }),\n    }),\n  );\n\n  await context.common.shutdown.kill();\n\n  context.common.shutdown = createShutdown();\n\n  const databaseTwo = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: undefined,\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { account },\n      statements: buildSchema({\n        schema: { account },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  const checkpoint = await databaseTwo.migrate({\n    buildId: \"abc\",\n    chains: [getChain()],\n    finalizedBlocks: [\n      {\n        timestamp: \"0x1\",\n        number: \"0xa\",\n        hash: \"0x\",\n        parentHash: \"0x\",\n      },\n    ],\n  });\n\n  expect(checkpoint).toMatchInlineSnapshot(`\n    [\n      {\n        \"chainId\": 1,\n        \"checkpoint\": \"000000000000000000000000010000000000000010000000000000000000000000000000000\",\n      },\n    ]\n  `);\n\n  const rows = await databaseTwo.userQB.wrap((db) =>\n    db.execute(sql`SELECT * from \"account\"`).then((result) => result.rows),\n  );\n\n  expect(rows).toHaveLength(1);\n  expect(rows[0]!.address).toBe(zeroAddress);\n\n  const metadata = await databaseTwo.userQB.wrap((db) =>\n    db.select().from(getPonderMetaTable(\"public\")),\n  );\n\n  expect(metadata).toHaveLength(1);\n\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 939,
+          "text": "expect(checkpoint).toMatchInlineSnapshot(`\n    [\n      {\n        \"chainId\": 1,\n        \"checkpoint\": \"000000000000000000000000010000000000000010000000000000000000000000000000000\",\n      },\n    ]\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 952,
+          "text": "expect(rows).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 953,
+          "text": "expect(rows[0]!.address).toBe(zeroAddress)"
+        },
+        {
+          "kind": "runtime",
+          "line": 959,
+          "text": "expect(metadata).toHaveLength(1)"
+        }
+      ],
+      "type_error_directives": [],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrate() with crash recovery reverts rows",
+        "source_id": "3813ee03d59e149c556f",
+        "source_line": 837,
+        "assertions_sha256": "bbd635c8f282f5e3c1a9aeb82b51d787e1af6b227fda9f715da3cb2f12e4a908",
+        "original_assertions": 4,
+        "target_file": "store/lifecycle_remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamRemainingLifecycle/postgres/migrate()_with_crash_recovery_reverts_rows",
+        "assertion_policy": "Historical baseline insert, separate block9 commit, later nullable live row/block11, initial safe10, ready flag, shutdown/reopen and full75digit checkpoint snapshot are retained. Native HistoricalBatch captures every write; safe metadata atomically seals only a globally safe journal prefix, preserving the historical baseline without a journal bypass.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/indexing fixture imports missing _test/generated.js. Foundry 1.8.5 installation remains pending; no source assertion/import or generated fixture was replaced.",
+          "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "id": "a8e07ec7cc849e360caf",
+      "source_file": "packages/core/src/database/index.test.ts",
+      "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+      "suite_path": [],
+      "full_name": "camelCase",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "accountCC = onchainTable(\"accountCc\", (p) => ({\n    address: p.hex(\"addressCc\").primaryKey(),\n    balance: p.bigint(),\n  }))",
+        "accountViewCC = onchainView(\"accountViewCc\").as((qb) =>\n    qb.select().from(accountCC),\n  )",
+        "database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: \"viewCc\",\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { accountCC, accountViewCC },\n      statements: buildSchema({\n        schema: { accountCC, accountViewCC },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  })",
+        "tableNames = await getUserTableNames(database, \"public\")",
+        "metadata = await database.userQB.wrap((db) =>\n    db.select().from(sql`_ponder_meta`),\n  )"
+      ],
+      "test_source": "test(\"camelCase\", async () => {\n  const accountCC = onchainTable(\"accountCc\", (p) => ({\n    address: p.hex(\"addressCc\").primaryKey(),\n    balance: p.bigint(),\n  }));\n\n  const accountViewCC = onchainView(\"accountViewCc\").as((qb) =>\n    qb.select().from(accountCC),\n  );\n\n  const database = createDatabase({\n    common: context.common,\n    namespace: {\n      schema: \"public\",\n      viewsSchema: \"viewCc\",\n    },\n    preBuild: {\n      databaseConfig: context.databaseConfig,\n      ordering: \"multichain\",\n    },\n    schemaBuild: {\n      schema: { accountCC, accountViewCC },\n      statements: buildSchema({\n        schema: { accountCC, accountViewCC },\n        preBuild: { ordering: \"multichain\" },\n      }).statements,\n    },\n  });\n\n  await database.migrate({\n    buildId: \"abc\",\n    chains: [],\n    finalizedBlocks: [],\n  });\n\n  const tableNames = await getUserTableNames(database, \"public\");\n  expect(tableNames).toContain(\"accountCc\");\n  expect(tableNames).toContain(\"_reorg__accountCc\");\n  expect(tableNames).toContain(\"_ponder_meta\");\n\n  const metadata = await database.userQB.wrap((db) =>\n    db.select().from(sql`_ponder_meta`),\n  );\n\n  expect(metadata).toHaveLength(1);\n\n  await createTriggers(database.userQB, { tables: [accountCC] });\n\n  await createIndexes(database.userQB, {\n    statements: buildSchema({\n      schema: { accountCC },\n      preBuild: { ordering: \"multichain\" },\n    }).statements,\n  });\n\n  await createViews(database.userQB, {\n    tables: [accountCC],\n    views: [accountViewCC],\n    namespaceBuild: { schema: \"public\", viewsSchema: \"viewCc\" },\n  });\n\n  await commitBlock(database.userQB, {\n    checkpoint: createCheckpoint({ chainId: 1n, blockNumber: 10n }),\n    table: accountCC,\n    preBuild: { ordering: \"multichain\" },\n  });\n\n  await dropTriggers(database.userQB, { tables: [accountCC] });\n\n  await createLiveQueryProcedures(database.userQB, {\n    namespaceBuild: { schema: \"public\", viewsSchema: \"viewCc\" },\n  });\n  await createLiveQueryTriggers(database.userQB, {\n    tables: [accountCC],\n    namespaceBuild: { schema: \"public\", viewsSchema: \"viewCc\" },\n  });\n  await dropLiveQueryTriggers(database.userQB, {\n    tables: [accountCC],\n    namespaceBuild: { schema: \"public\", viewsSchema: \"viewCc\" },\n  });\n\n  await revertMultichain(database.userQB, {\n    tables: [accountCC],\n    checkpoint: createCheckpoint({ chainId: 1n, blockNumber: 10n }),\n  });\n  await finalizeMultichain(database.userQB, {\n    checkpoint: createCheckpoint({ chainId: 1n, blockNumber: 10n }),\n    tables: [accountCC],\n    namespaceBuild: { schema: \"public\", viewsSchema: \"viewCc\" },\n  });\n  await crashRecovery(database.userQB, {\n    table: accountCC,\n  });\n\n  await context.common.shutdown.kill();\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 1155,
+          "text": "expect(tableNames).toContain(\"accountCc\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 1156,
+          "text": "expect(tableNames).toContain(\"_reorg__accountCc\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 1157,
+          "text": "expect(tableNames).toContain(\"_ponder_meta\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 1163,
+          "text": "expect(metadata).toHaveLength(1)"
+        }
+      ],
+      "type_error_directives": [],
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "camelCase",
+        "source_id": "a8e07ec7cc849e360caf",
+        "source_line": 1119,
+        "assertions_sha256": "1bfee24129f2977e9ddadcd8dc7f3cacd2393fd15485bdb8b1a5eef30d867555",
+        "original_assertions": 4,
+        "target_file": "store/lifecycle_remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamRemainingLifecycle/postgres/camelCase",
+        "assertion_policy": "camelCase physical names and logical address property, nullable bigint and view definition retained; all original create/drop/commit/revert/finalize/recovery action sequence executes. Source public/viewCc namespaces map to owned task/child alias schemas; per-table reorg containment maps explicitly to the native global journal. Alias forwarding triggers and source-shaped public metadata views exclude fencing tokens. This is not raw source DB layout compatibility.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/indexing fixture imports missing _test/generated.js. Foundry 1.8.5 installation remains pending; no source assertion/import or generated fixture was replaced.",
+          "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "id": "b6760c6aa30d9b14cf06",
+      "source_file": "packages/core/src/indexing-store/index.test.ts",
+      "source_sha256": "1492da684b496f1871472a7097f5f482e8ebb890a3a902e9964330eb1081271a",
+      "suite_path": [],
+      "full_name": "insert then",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "{ database } = await setupDatabaseServices()",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "indexingCache = createIndexingCache({\n    common: context.common,\n    schemaBuild: { schema },\n    crashRecoveryCheckpoint: undefined,\n    eventCount: {},\n  })",
+        "indexingStore = createIndexingStore({\n    common: context.common,\n    schemaBuild: { schema },\n    indexingCache,\n    indexingErrorHandler,\n  })",
+        "results: unknown[] = []"
+      ],
+      "test_source": "test(\"insert then\", async () => {\n  const { database } = await setupDatabaseServices();\n\n  const schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  };\n\n  const indexingCache = createIndexingCache({\n    common: context.common,\n    schemaBuild: { schema },\n    crashRecoveryCheckpoint: undefined,\n    eventCount: {},\n  });\n\n  const indexingStore = createIndexingStore({\n    common: context.common,\n    schemaBuild: { schema },\n    indexingCache,\n    indexingErrorHandler,\n  });\n\n  await database.userQB.transaction(async (tx) => {\n    indexingCache.qb = tx;\n    indexingStore.qb = tx;\n\n    const results: unknown[] = [];\n\n    await indexingStore.db\n      .insert(schema.account)\n      .values({ address: zeroAddress, balance: 10n })\n      .then((result) => {\n        results.push(result);\n      });\n\n    expect(results).toHaveLength(1);\n    expect(results[0]).toMatchObject({\n      address: zeroAddress,\n      balance: 10n,\n    });\n\n    results.length = 0;\n\n    await indexingStore.db\n      .insert(schema.account)\n      .values([{ address: ALICE, balance: 10n }])\n      .then((result) => {\n        results.push(result);\n      });\n\n    expect(results).toHaveLength(1);\n  });\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 580,
+          "text": "expect(results).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 581,
+          "text": "expect(results[0]).toMatchObject({\n      address: zeroAddress,\n      balance: 10n,\n    })"
+        },
+        {
+          "kind": "runtime",
+          "line": 595,
+          "text": "expect(results).toHaveLength(1)"
+        }
+      ],
+      "type_error_directives": [],
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/index.test.ts",
+        "source_name": "insert then",
+        "source_id": "b6760c6aa30d9b14cf06",
+        "source_line": 543,
+        "assertions_sha256": "656284fbc68d5397e5a4bdabc92196445a883b99446f33606cdcbb6451626361",
+        "original_assertions": 3,
+        "target_file": "store/orm_completion_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamInsertThen/postgres",
+        "assertion_policy": "Original empty physical schema, complete cache and transaction without runtime auto-flush retained; zeroAddress/10n and ALICE/10n one-element array go through real InsertThen/InsertManyThen callbacks. Preserve all3 source assertions. Native callbacks are synchronous success continuations, not JS Promise scheduling or arbitrary thenable assimilation.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/indexing fixture imports missing _test/generated.js. Foundry 1.8.5 installation remains pending; no source assertion/import or generated fixture was replaced.",
+          "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    },
+    {
+      "id": "3c5e9101f97d02eeb949",
+      "source_file": "packages/core/src/indexing-store/index.test.ts",
+      "source_sha256": "1492da684b496f1871472a7097f5f482e8ebb890a3a902e9964330eb1081271a",
+      "suite_path": [],
+      "full_name": "sql",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "{ database } = await setupDatabaseServices({\n    schemaBuild: { schema },\n  })",
+        "indexingCache = createIndexingCache({\n    common: context.common,\n    schemaBuild: { schema },\n    crashRecoveryCheckpoint: undefined,\n    eventCount: {},\n  })",
+        "indexingStore = createIndexingStore({\n    common: context.common,\n    schemaBuild: { schema },\n    indexingCache,\n    indexingErrorHandler,\n  })",
+        "result = await indexingStore.db.sql\n      .select()\n      .from(schema.account)\n      .where(eq(schema.account.address, zeroAddress))"
+      ],
+      "test_source": "test(\"sql\", async () => {\n  if (context.databaseConfig.kind === \"pglite_test\") {\n    return;\n  }\n\n  const schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  };\n\n  const { database } = await setupDatabaseServices({\n    schemaBuild: { schema },\n  });\n\n  const indexingCache = createIndexingCache({\n    common: context.common,\n    schemaBuild: { schema },\n    crashRecoveryCheckpoint: undefined,\n    eventCount: {},\n  });\n\n  const indexingStore = createIndexingStore({\n    common: context.common,\n    schemaBuild: { schema },\n    indexingCache,\n    indexingErrorHandler,\n  });\n\n  await database.userQB.transaction(async (tx) => {\n    indexingCache.qb = tx;\n    indexingStore.qb = tx;\n\n    // setup\n\n    await indexingStore.db.insert(schema.account).values({\n      address: zeroAddress,\n      balance: 10n,\n    });\n\n    // select\n\n    const result = await indexingStore.db.sql\n      .select()\n      .from(schema.account)\n      .where(eq(schema.account.address, zeroAddress));\n\n    expect(result).toMatchObject([\n      {\n        address: \"0x0000000000000000000000000000000000000000\",\n        balance: 10n,\n      },\n    ]);\n\n    // non-null constraint\n\n    await tx.wrap((db) => db.execute(\"SAVEPOINT test\"));\n\n    expect(\n      await getRejectionValue(\n        async () =>\n          // @ts-expect-error\n          await indexingStore.db.sql.insert(schema.account).values({\n            address: \"0x0000000000000000000000000000000000000001\",\n            balance: undefined,\n          }),\n      ),\n    ).toBeInstanceOf(RawSqlError);\n\n    // TODO(kyle) check constraint\n\n    // unique constraint\n\n    await tx.wrap((db) => db.execute(\"ROLLBACK TO test\"));\n\n    expect(\n      await getRejectionValue(\n        async () =>\n          await indexingStore.db.sql\n            .insert(schema.account)\n            .values({ address: zeroAddress, balance: 10n }),\n      ),\n    ).toBeInstanceOf(RawSqlError);\n  });\n})",
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 877,
+          "text": "expect(result).toMatchObject([\n      {\n        address: \"0x0000000000000000000000000000000000000000\",\n        balance: 10n,\n      },\n    ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 888,
+          "text": "expect(\n      await getRejectionValue(\n        async () =>\n          // @ts-expect-error\n          await indexingStore.db.sql.insert(schema.account).values({\n            address: \"0x0000000000000000000000000000000000000001\",\n            balance: undefined,\n          }),\n      ),\n    ).toBeInstanceOf(RawSqlError)"
+        },
+        {
+          "kind": "runtime",
+          "line": 905,
+          "text": "expect(\n      await getRejectionValue(\n        async () =>\n          await indexingStore.db.sql\n            .insert(schema.account)\n            .values({ address: zeroAddress, balance: 10n }),\n      ),\n    ).toBeInstanceOf(RawSqlError)"
+        }
+      ],
+      "type_error_directives": [
+        "// @ts-expect-error"
+      ],
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/index.test.ts",
+        "source_name": "sql",
+        "source_id": "3c5e9101f97d02eeb949",
+        "source_line": 829,
+        "assertions_sha256": "63c78b813ad7c069ab94294020c626a4f57ed0a631dabd02c977e905ab4e6d9f",
+        "original_assertions": 3,
+        "target_file": "store/orm_completion_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamFullSQL/postgres",
+        "assertion_policy": "Original buffered zeroAddress/10n insert then eager SELECT/WHERE; SAVEPOINT test, address1/undefined NOT NULL RawSqlError, ROLLBACK TO test, duplicate zeroAddress/10n RawSqlError retained in order. Source returns before fixture on PGlite so only PostgreSQL source credit. Native typed SQL().Insert uses the real generated required big.Int constructor; positive and source undefined-to-nil negative compilation fixture required. Companion typed PG/PGlite tests are extra, not source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/indexing fixture imports missing _test/generated.js. Foundry 1.8.5 installation remains pending; no source assertion/import or generated fixture was replaced.",
+          "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      }
+    }
+  ]
+}
