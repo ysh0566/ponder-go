@@ -14,7 +14,7 @@
 
 ## 下一可执行批次
 
-1. 从最新提交和 summary.json 恢复。M20 后累计 282 条映射（278 Go + 4 SDK），Go oracle 185 通过、93 fixture oracle 阻塞，623 静态记录未实现；精确执行结果看 batch-18.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
+1. 从最新提交和 summary.json 恢复。M21 后累计 288 条映射（284 Go + 4 SDK），Go oracle 191 通过（含4条选择性未改动声明）、93 fixture oracle 阻塞，617 静态记录未实现；精确执行结果看 batch-19.json。不要重做已通过源例，也不要把静态发现当成动态穷尽证明。
 2. Database actions.test.ts 的11个源例及 database/index.test.ts 的16个生命周期源例已映射；M17已补齐剩余2个database/index记录（historical-baseline recovery rows和camelCase/views-schema），以及 ORM insert-then/full SQL 原例和 SQL 真编译错误义务。M16 sync迁移完整保留原SQL，但仅接受已拥有shadow，不代表真实旧DB布局接管；M17已将9表协议缓存接入默认单链runtime。M18已验证冷缓存重组，M19已接入自动单链staged runtime，M20已补32条filter/fragments；继续真实deploy/mint/readonly prefetch原例、typed JSON/bytes/array/custom codec/强枚举/Hex、关系DSL和自动profile/指标；随后接自动staged runtime及跨链重组通知调度。
 3. runtime 已有 factory 动态地址单链路径（runtime/factory.go + store/sync.go），继续源 runtime/filter/fragments剩余Foundry源例、events构建/转换、sync-store原事件和factory原E2E；交易、原生转账、trace、完整 receipt/source 语义仍缺。66 个 factory 差分向量和双后端追加集成测试不能代替原 E2E。
 4. 加入跨链事件调度，覆盖 omnichain/multichain/experimental_isolated 顺序。runtime.New 仍明确拒绝多链；仅存储层全局后缀/isolated 回滚已验证。自动单链staged runtime和自动finalize已接入，多链尚未实现；无 journal/无 checkpoint finalize 空操作已对应源 camelCase 验证，不能外推未初始化且有 journal 的情况。
@@ -218,3 +218,18 @@ filter包有ID/adjacency/recovery、地址/topic/factory/区间谓词、80% over
 最终完整verify退出0：Go/race1477/1477，其中867额外filter差分向量各自通过；PG179/PGlite176，零skip/fail。vet/build、53ABI运行/race/编译和既有ORM类型正反例、core185活动/2原skip、SDK4、2466旧差分及20协议向量均通过。first差分红灯保留，修正undefined topic恢复与额外非法dynamic对象的JS coercion；wide first红灯是fixture无等待receipt，已改为有期限实际挖矿等待。当前完整证据/hash见batch-18.json。历史batch17证据未改动。
 
 下一可执行批次：先核验最新HEAD/summary与无挂起命令。原filter中的transaction/from、null transaction.to和transfer源例可沿_test/simulate.ts:transferEth与_test/utils.ts:getAccountsIndexingBuild检查真实ETH转账/trace fixture，不依赖forge生成合约ABI，保留原全部输入/断言/loop。其余range-selector/contract trace继续保留generated ABI阻塞。随后实现events.ts的sync-to-internal转换与buildEvents（receipt按transaction index、matched trace才增traceIndex、stable checkpoint排序/zkSync缺transaction），不以现有log路径代替。再接account/trace runtime、多链和查询/工具链。整体未完成，不将282映射当全量。
+
+
+## M21：account/transfer运行时、规范化events和call-tree源例
+
+本批6源记录12原断言：events的block/transfer/transaction解码与receipt索引/对象身份/两条缺失异常，以及rpc.actions的2个call-tree路径/失败子树。累计288/905（284Go通过，Go源码oracle191通过+93阻塞，SDK4）；617静态记录未实现。core原样201活动/2源skip，其中完整rpc/actions16/16通过但只2条已移植；选择性events4/4使用未改动声明/实际source Common/helper依赖，模式单列，不冒充整份events suite成功收集。声明、上下文、来源hash、endpoint适配和logger序列化opaque说明在parity/selected-runtime-declarations.json、parity/event-construction-source-cases.json。原full events依然缺generated.js。
+
+新events包：BuildEvents完整block/transaction/log/trace/transfer过滤、receipt按(block,index)关联、原对象保留、缺失异常、factory birth、zkSync缺transaction、matched trace才增index并按transaction重置、稳定75位排序；五个RPC→internal转换保留大整数/nullable/各tx类型。DecodePublicEvents仅支持block/account，contract分支明确报未实现，未吞掉异常或冒充ABI完整解码。115源码生成额外向量全部通过，不加sourcecredit。
+
+新config.AccountSource和runtime/accounts.go接staged/atomic单链handlers Name:transaction:{from,to}/Name:transfer:{from,to}。外层Block/Transaction/Receipt继续原生rawRPC API；Normalized提供source-shaped数据，Trace/Transfer额外字段。rpc.TraceBlock首选原blockHash方法，只有-32601才显式fallback每tx callTracer；TraceBlockByNumber不用不可变cache。DFS重建sibling位置并过滤失败父子树。真实已有Anvil0.2能力实测：两个block trace方法均缺，transaction tracer可用；三条原ETH filter/helper在断言前MethodNotFound失败，未映射/未伪造fixture/未替换method来换通过。Foundry仍pending未安装。见anvil-trace-capabilities、selected-with-eth-oracle报告。
+
+真实PG/PGlite/cache开关4个新增native叶子验证zero、root/child revert、嵌套CALL、DELEGATECALL/CALLCODE、receipt/checkpoint/matched trace顺序、handler全块回滚、实际fork、磁盘/连接cold reopen后反向cache设置和旧9→新11trace失效。它们不是源原例。首轮两项失败仅为测试把Rows的JSON envelope当平铺列，已修正并保留red日志；后续cold/full全部通过。没有新增服务端/宿主断电保证。
+
+最终完整verify退出0：Go/race1602/1602，PG181/PGlite178，零skip/fail；vet/build、ABI/ORM既有编译正反例、SDK、core201活动/2源skip、选择性源码4、2466基础/factory+867filter+115events+20协议向量独立通过。batch-19.json冻结证据。执行服务中断曾发生在采集器修正前，恢复后先核实无遗留进程和未落地命令再继续；当前运行结束，不重复旧命令。
+
+下一批：完整contract decodeEvents（source日志与trace失败统计/日志去重、w/o output、native ABI args/result）和contract trace source接入，继续rpc.actions其余14已取得oracle但未移植源例；完整source event转换/筛选原例、factory account/trace、多链与query/CLI。原ETH三条fixture的blockHash方法仍真实阻塞，不把native fallback算一比一通过。原schema/full filtering DSL、完整include/projection/history/planner/profile/metrics、GraphQL/API/SSE/CLI/templates/dev、严格源码兼容和旧DB接管继续在feature ledger内。保留所有作者修复备份，仅正常快进发布经验证阶段。

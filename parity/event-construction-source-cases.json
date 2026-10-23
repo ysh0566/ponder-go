@@ -1,0 +1,296 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "Six exact source records:four event construction/public decoder declarations and two RPC call-tree declarations.115 synthetic event vectors and four real-backend account leaves are supplementary.",
+  "source_records": 6,
+  "static_assertions": 12,
+  "cases": [
+    {
+      "id": "abe383471ecc34917d14",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "debug trace actions rebuild traceAddress from the call tree",
+      "contexts": [],
+      "test_source": "test(\"debug trace actions rebuild traceAddress from the call tree\", async () => {\n  const frame = (overrides: Record<string, unknown> = {}) => ({\n    type: \"CALL\",\n    from: address,\n    to: address,\n    gas: \"0x1\",\n    gasUsed: \"0x1\",\n    input: \"0x\",\n    ...overrides,\n  });\n  const rpc = {\n    request: vi.fn(async () => [\n      {\n        txHash: hash,\n        result: frame({ calls: [frame(), frame({ calls: [frame()] })] }),\n      },\n    ]),\n  } as unknown as Rpc;\n\n  await expect(\n    debug_traceBlockByNumber(rpc, [\"0x1\", { tracer: \"callTracer\" }]),\n  ).resolves.toMatchObject([\n    { trace: { traceAddress: [] } },\n    { trace: { traceAddress: [0] } },\n    { trace: { traceAddress: [1] } },\n    { trace: { traceAddress: [1, 0] } },\n  ]);\n})",
+      "inputs": [
+        "frame = (overrides: Record<string, unknown> = {}) => ({\n    type: \"CALL\",\n    from: address,\n    to: address,\n    gas: \"0x1\",\n    gasUsed: \"0x1\",\n    input: \"0x\",\n    ...overrides,\n  })",
+        "rpc = {\n    request: vi.fn(async () => [\n      {\n        txHash: hash,\n        result: frame({ calls: [frame(), frame({ calls: [frame()] })] }),\n      },\n    ]),\n  } as unknown as Rpc"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 35,
+          "text": "expect(\n    debug_traceBlockByNumber(rpc, [\"0x1\", { tracer: \"callTracer\" }]),\n  ).resolves.toMatchObject([\n    { trace: { traceAddress: [] } },\n    { trace: { traceAddress: [0] } },\n    { trace: { traceAddress: [1] } },\n    { trace: { traceAddress: [1, 0] } },\n  ])"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "debug trace actions rebuild traceAddress from the call tree",
+        "source_id": "abe383471ecc34917d14",
+        "source_line": 16,
+        "assertions_sha256": "bdb37585fcc82b2555da6d08e165028db9668f8f9e15b72b1f6890a7a2f3891d",
+        "original_assertions": 1,
+        "target_file": "rpc/traces_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamTraceActions/debug_trace_actions_rebuild_traceAddress_from_the_call_tree",
+        "assertion_policy": "All original input frames, callback filters, full source contexts/constants/assertions and missing-receipt errors preserved. Native receipt identity is separately asserted; complete captured source outputs additionally compared. Pure decoder scope is block/account; contract decoding remains explicit unsupported. RPC unit mock adapted to local Go mock server with identical method/params/results and every asserted trace path; no real-chain fixture replaced.",
+        "native_type_adaptation": "Go error and HTTP mock transport equivalents; original path assertions exact."
+      }
+    },
+    {
+      "id": "91dd1cfc90aae8977753",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "debug trace actions exclude reverted traces and their children",
+      "contexts": [],
+      "test_source": "test(\"debug trace actions exclude reverted traces and their children\", async () => {\n  const frame = (overrides: Record<string, unknown> = {}) => ({\n    type: \"CALL\",\n    from: address,\n    to: address,\n    gas: \"0x1\",\n    gasUsed: \"0x1\",\n    input: \"0x\",\n    ...overrides,\n  });\n  const rpc = {\n    request: vi.fn(async () => [\n      {\n        txHash: hash,\n        result: frame({\n          calls: [\n            frame({ error: \"execution reverted\", calls: [frame()] }),\n            frame({\n              calls: [\n                frame({ error: \"out of gas\", revertReason: \"reason\" }),\n                frame(),\n              ],\n            }),\n          ],\n        }),\n      },\n      {\n        txHash: hash,\n        result: frame({ error: \"execution reverted\", calls: [frame()] }),\n      },\n    ]),\n  } as unknown as Rpc;\n\n  const traces = await debug_traceBlockByNumber(rpc, [\n    \"0x1\",\n    { tracer: \"callTracer\" },\n  ]);\n\n  expect(traces.map((trace) => trace.trace.traceAddress)).toStrictEqual([\n    [],\n    [1],\n    [1, 1],\n  ]);\n})",
+      "inputs": [
+        "frame = (overrides: Record<string, unknown> = {}) => ({\n    type: \"CALL\",\n    from: address,\n    to: address,\n    gas: \"0x1\",\n    gasUsed: \"0x1\",\n    input: \"0x\",\n    ...overrides,\n  })",
+        "rpc = {\n    request: vi.fn(async () => [\n      {\n        txHash: hash,\n        result: frame({\n          calls: [\n            frame({ error: \"execution reverted\", calls: [frame()] }),\n            frame({\n              calls: [\n                frame({ error: \"out of gas\", revertReason: \"reason\" }),\n                frame(),\n              ],\n            }),\n          ],\n        }),\n      },\n      {\n        txHash: hash,\n        result: frame({ error: \"execution reverted\", calls: [frame()] }),\n      },\n    ]),\n  } as unknown as Rpc",
+        "traces = await debug_traceBlockByNumber(rpc, [\n    \"0x1\",\n    { tracer: \"callTracer\" },\n  ])"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 83,
+          "text": "expect(traces.map((trace) => trace.trace.traceAddress)).toStrictEqual([\n    [],\n    [1],\n    [1, 1],\n  ])"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "debug trace actions exclude reverted traces and their children",
+        "source_id": "91dd1cfc90aae8977753",
+        "source_line": 45,
+        "assertions_sha256": "32a4a4d44b3ac4e61ccf0968be8e4c370d364c9448e3fc3e86d5f3806660907d",
+        "original_assertions": 1,
+        "target_file": "rpc/traces_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamTraceActions/debug_trace_actions_exclude_reverted_traces_and_their_children",
+        "assertion_policy": "All original input frames, callback filters, full source contexts/constants/assertions and missing-receipt errors preserved. Native receipt identity is separately asserted; complete captured source outputs additionally compared. Pure decoder scope is block/account; contract decoding remains explicit unsupported. RPC unit mock adapted to local Go mock server with identical method/params/results and every asserted trace path; no real-chain fixture replaced.",
+        "native_type_adaptation": "Go error and HTTP mock transport equivalents; original path assertions exact."
+      }
+    },
+    {
+      "id": "671bbb20047840beee3c",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "full_name": "decodeEvents() block",
+      "contexts": [],
+      "test_source": "test(\"decodeEvents() block\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getBlocksIndexingBuild({\n    interval: 1,\n  });\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {\n      number: 1n,\n    } as RawEvent[\"block\"],\n    transaction: undefined,\n    log: undefined,\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [BlockEvent];\n\n  expect(events).toHaveLength(1);\n  expect(events[0].event.block).toMatchObject({\n    number: 1n,\n  });\n})",
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getBlocksIndexingBuild({\n    interval: 1,\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {\n      number: 1n,\n    } as RawEvent[\"block\"],\n    transaction: undefined,\n    log: undefined,\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [BlockEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 209,
+          "text": "expect(events).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 210,
+          "text": "expect(events[0].event.block).toMatchObject({\n    number: 1n,\n  })"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() block",
+        "source_id": "671bbb20047840beee3c",
+        "source_line": 187,
+        "assertions_sha256": "09a886c75f95f304e96f2fe7fe17fc5f5eefc674873791ad46c9bfcd5722a45c",
+        "original_assertions": 2,
+        "target_file": "events/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamEventConstruction/decodeEvents()_block",
+        "assertion_policy": "All original input frames, callback filters, full source contexts/constants/assertions and missing-receipt errors preserved. Native receipt identity is separately asserted; complete captured source outputs additionally compared. Pure decoder scope is block/account; contract decoding remains explicit unsupported. RPC unit mock adapted to local Go mock server with identical method/params/results and every asserted trace path; no real-chain fixture replaced.",
+        "native_type_adaptation": "Protocol bigint becomes *big.Int; undefined distinct from null. Common logger stays actual in source oracle and is opaque only in captured JSON; source common fixture code/hash retained. Native RawEvent retains receipt map identity.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Full events suite missing generated.js; only a successful separately validated selected-declaration oracle overrides this blocker.",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json"
+        }
+      }
+    },
+    {
+      "id": "f9af94ed6701e6a17149",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "full_name": "decodeEvents() transfer",
+      "contexts": [],
+      "test_source": "test(\"decodeEvents() transfer\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  });\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 3,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: {\n      type: \"CALL\",\n      from: ALICE,\n      to: BOB,\n      gas: 0n,\n      gasUsed: 0n,\n      input: \"0x0\",\n      output: \"0x0\",\n      value: parseEther(\"1\"),\n      traceAddress: [],\n      blockNumber: 0,\n      transactionIndex: 0,\n    },\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TransferEvent];\n\n  expect(events).toHaveLength(1);\n  expect(events[0].event.transfer).toMatchObject({\n    from: ALICE,\n    to: BOB,\n    value: parseEther(\"1\"),\n  });\n})",
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 3,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: {\n      type: \"CALL\",\n      from: ALICE,\n      to: BOB,\n      gas: 0n,\n      gasUsed: 0n,\n      input: \"0x0\",\n      output: \"0x0\",\n      value: parseEther(\"1\"),\n      traceAddress: [],\n      blockNumber: 0,\n      transactionIndex: 0,\n    },\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TransferEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 248,
+          "text": "expect(events).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 249,
+          "text": "expect(events[0].event.transfer).toMatchObject({\n    from: ALICE,\n    to: BOB,\n    value: parseEther(\"1\"),\n  })"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() transfer",
+        "source_id": "f9af94ed6701e6a17149",
+        "source_line": 215,
+        "assertions_sha256": "ec37d3160776195a7ba26919a0f43973a89dcb73ce4cbdc30cd67820bb3e6b9a",
+        "original_assertions": 2,
+        "target_file": "events/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamEventConstruction/decodeEvents()_transfer",
+        "assertion_policy": "All original input frames, callback filters, full source contexts/constants/assertions and missing-receipt errors preserved. Native receipt identity is separately asserted; complete captured source outputs additionally compared. Pure decoder scope is block/account; contract decoding remains explicit unsupported. RPC unit mock adapted to local Go mock server with identical method/params/results and every asserted trace path; no real-chain fixture replaced.",
+        "native_type_adaptation": "Protocol bigint becomes *big.Int; undefined distinct from null. Common logger stays actual in source oracle and is opaque only in captured JSON; source common fixture code/hash retained. Native RawEvent retains receipt map identity.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Full events suite missing generated.js; only a successful separately validated selected-declaration oracle overrides this blocker.",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json"
+        }
+      }
+    },
+    {
+      "id": "23f4c8c913fdb10d1f9f",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "full_name": "decodeEvents() transaction",
+      "contexts": [],
+      "test_source": "test(\"decodeEvents() transaction\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  });\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: undefined,\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TransferEvent];\n\n  expect(events).toHaveLength(1);\n})",
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: undefined,\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TransferEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 277,
+          "text": "expect(events).toHaveLength(1)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() transaction",
+        "source_id": "23f4c8c913fdb10d1f9f",
+        "source_line": 256,
+        "assertions_sha256": "d3c29367a96c68ee218004f66759004f4b61929deeae0c62a4f768956451eecb",
+        "original_assertions": 1,
+        "target_file": "events/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamEventConstruction/decodeEvents()_transaction",
+        "assertion_policy": "All original input frames, callback filters, full source contexts/constants/assertions and missing-receipt errors preserved. Native receipt identity is separately asserted; complete captured source outputs additionally compared. Pure decoder scope is block/account; contract decoding remains explicit unsupported. RPC unit mock adapted to local Go mock server with identical method/params/results and every asserted trace path; no real-chain fixture replaced.",
+        "native_type_adaptation": "Protocol bigint becomes *big.Int; undefined distinct from null. Common logger stays actual in source oracle and is opaque only in captured JSON; source common fixture code/hash retained. Native RawEvent retains receipt map identity.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Full events suite missing generated.js; only a successful separately validated selected-declaration oracle overrides this blocker.",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json"
+        }
+      }
+    },
+    {
+      "id": "51d9321079f0432f5258",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "full_name": "buildEvents() transaction matches receipt by transaction index",
+      "contexts": [],
+      "test_source": "test(\"buildEvents() transaction matches receipt by transaction index\", async () => {\n  const { eventCallbacks } = getAccountsIndexingBuild({ address: ALICE });\n\n  const block = {\n    number: 1n,\n    timestamp: 1n,\n    hash: toHex(1, { size: 32 }),\n  } as InternalBlock;\n  const transaction = (transactionIndex: number) =>\n    ({\n      blockNumber: 1,\n      transactionIndex,\n      hash: toHex(transactionIndex, { size: 32 }),\n      from: BOB,\n      to: ALICE.toLowerCase(),\n      type: \"legacy\",\n    }) as InternalTransaction;\n  const receipt = (\n    transactionIndex: number,\n    status: InternalTransactionReceipt[\"status\"],\n  ) =>\n    ({\n      blockNumber: 1,\n      transactionIndex,\n      from: BOB,\n      to: ALICE.toLowerCase(),\n      status,\n    }) as InternalTransactionReceipt;\n\n  const build = (transactionReceipts: InternalTransactionReceipt[]) =>\n    buildEvents({\n      eventCallbacks,\n      blocks: [block],\n      logs: [],\n      transactions: [transaction(0), transaction(1)],\n      transactionReceipts,\n      traces: [],\n      childAddresses: new Map(),\n      chainId: 1,\n    });\n\n  const receipts = [receipt(0, \"reverted\"), receipt(1, \"success\")];\n  const events = build(receipts);\n  expect(events).toHaveLength(1);\n  expect(events[0]!.transaction!.transactionIndex).toBe(1);\n  expect(events[0]!.transactionReceipt).toBe(receipts[1]);\n\n  expect(() => build([receipt(1, \"success\")])).toThrow(\n    \"Missing transaction receipt for block 1 and transaction index 0\",\n  );\n  expect(() => build([receipt(0, \"success\")])).toThrow(\n    \"Missing transaction receipt for block 1 and transaction index 1\",\n  );\n})",
+      "inputs": [
+        "{ eventCallbacks } = getAccountsIndexingBuild({ address: ALICE })",
+        "block = {\n    number: 1n,\n    timestamp: 1n,\n    hash: toHex(1, { size: 32 }),\n  } as InternalBlock",
+        "transaction = (transactionIndex: number) =>\n    ({\n      blockNumber: 1,\n      transactionIndex,\n      hash: toHex(transactionIndex, { size: 32 }),\n      from: BOB,\n      to: ALICE.toLowerCase(),\n      type: \"legacy\",\n    }) as InternalTransaction",
+        "receipt = (\n    transactionIndex: number,\n    status: InternalTransactionReceipt[\"status\"],\n  ) =>\n    ({\n      blockNumber: 1,\n      transactionIndex,\n      from: BOB,\n      to: ALICE.toLowerCase(),\n      status,\n    }) as InternalTransactionReceipt",
+        "build = (transactionReceipts: InternalTransactionReceipt[]) =>\n    buildEvents({\n      eventCallbacks,\n      blocks: [block],\n      logs: [],\n      transactions: [transaction(0), transaction(1)],\n      transactionReceipts,\n      traces: [],\n      childAddresses: new Map(),\n      chainId: 1,\n    })",
+        "receipts = [receipt(0, \"reverted\"), receipt(1, \"success\")]",
+        "events = build(receipts)"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 459,
+          "text": "expect(events).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 460,
+          "text": "expect(events[0]!.transaction!.transactionIndex).toBe(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 461,
+          "text": "expect(events[0]!.transactionReceipt).toBe(receipts[1])"
+        },
+        {
+          "kind": "runtime",
+          "line": 463,
+          "text": "expect(() => build([receipt(1, \"success\")])).toThrow(\n    \"Missing transaction receipt for block 1 and transaction index 0\",\n  )"
+        },
+        {
+          "kind": "runtime",
+          "line": 466,
+          "text": "expect(() => build([receipt(0, \"success\")])).toThrow(\n    \"Missing transaction receipt for block 1 and transaction index 1\",\n  )"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "buildEvents() transaction matches receipt by transaction index",
+        "source_id": "51d9321079f0432f5258",
+        "source_line": 416,
+        "assertions_sha256": "541a5b18cd27cc0cae5d673724c9ccca0057c3f99a38f029ea3b54f9d595f429",
+        "original_assertions": 5,
+        "target_file": "events/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamEventConstruction/buildEvents()_transaction_matches_receipt_by_transaction_index",
+        "assertion_policy": "All original input frames, callback filters, full source contexts/constants/assertions and missing-receipt errors preserved. Native receipt identity is separately asserted; complete captured source outputs additionally compared. Pure decoder scope is block/account; contract decoding remains explicit unsupported. RPC unit mock adapted to local Go mock server with identical method/params/results and every asserted trace path; no real-chain fixture replaced.",
+        "native_type_adaptation": "Protocol bigint becomes *big.Int; undefined distinct from null. Common logger stays actual in source oracle and is opaque only in captured JSON; source common fixture code/hash retained. Native RawEvent retains receipt map identity.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Full events suite missing generated.js; only a successful separately validated selected-declaration oracle overrides this blocker.",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json"
+        }
+      }
+    }
+  ]
+}

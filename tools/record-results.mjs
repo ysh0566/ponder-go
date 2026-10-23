@@ -48,6 +48,7 @@ const oracleReports = [
 		"parity/runs/factory-offset-oracle.json",
 		"parity/runs/indexing-store-oracle.json",
 		"parity/runs/normalize-oracle.json",
+		"parity/runs/rpc-actions-oracle.json",
 		coreOraclePath,
 	]
 		.filter((x) => x && exists(x))
@@ -80,6 +81,19 @@ for (const test of ledger.tests) {
 		test.oracle_types = {status: parameterTypes.exit_code === 0 ? "passed" : "failed", evidence:"parity/runs/parameters-typecheck.json"};
 	if (test.source_file.endsWith("/decodeEventLog.test.ts") && parameterTypes?.event_source_sha256 === test.source_sha256)
 		test.oracle_types = {status: parameterTypes.exit_code === 0 ? "passed" : "failed", evidence:"parity/runs/parameters-typecheck.json"};
+
+ if (exists("parity/selected-runtime-declarations.json") && exists("parity/runs/selected-runtime-oracle.json")) {
+  const selection=read("parity/selected-runtime-declarations.json"),report=read("parity/runs/selected-runtime-oracle.json"),source=selection.cases.find(c=>c.id===test.id&&c.source_sha256===test.source_sha256&&c.test_source===test.test_source);
+  if(source && report.success && fileHash("testdata/oracle/selected-runtime.test.ts")===selection.generated_sha256 && fs.readFileSync(path.join(root,"testdata/oracle/selected-runtime.test.ts"),"utf8").includes(source.test_source)) {
+   const result=report.testResults.flatMap(r=>r.assertionResults).find(r=>r.title===test.title);
+   if(result)test.oracle={status:result.status,evidence:"parity/runs/selected-runtime-oracle.json",mode:"selected_unchanged_source_declarations_actual_dependencies",source_selection:"parity/selected-runtime-declarations.json",full_original_suite:{status:"blocked_before_collection",evidence:"parity/runs/runtime-events-oracle-blocked.json",reason:"Missing generated.js; independent selected declarations have no generated ABI dependency."}};
+  }
+ }
+
+ if(!test.mapping&&test.source_file.endsWith("/runtime/filter.test.ts")&&["isTransactionFilterMatched()","isTransactionFilterMatched() with null transaction.to","isTransferFilterMatched()"].includes(test.title)&&exists("parity/runs/selected-with-eth-oracle.json")) {
+  const report=read("parity/runs/selected-with-eth-oracle.json"),result=report.testResults.flatMap(r=>r.assertionResults).find(r=>r.title===test.title);
+  if(result?.status==="failed"&&result.failureMessages.some(s=>s.includes("debug_traceBlockByHash")&&s.includes("MethodNotFound"))) {test.oracle={status:"blocked",actual_vitest_status:result.status,evidence:"parity/runs/selected-with-eth-oracle.json",reason:"Existing Anvil0.2.0 lacks debug_traceBlockByHash required by unchanged transferEth fixture; failure before assertions. Foundry1.8.5 installation remains pending.",capability_evidence:"parity/runs/anvil-trace-capabilities.json"};test.blockers.push(test.oracle.reason);}
+ }
 	if (!test.mapping) continue;
 	if (!test.oracle && test.mapping.oracle_blocker)
 		test.oracle = { ...test.mapping.oracle_blocker };
@@ -192,6 +206,9 @@ const summary = {
 	source_records: {statically_discovered:ledger.tests.length,mapped:ledger.summary.ported,unimplemented:ledger.summary.unimplemented,discovery_is_not_proven_runtime_exhaustive:true},
 	mapped_go: {mapped:ledger.summary.go_ports,passed_with_required_type_checks:ledger.summary.go_passed,original_oracle_also_passed:ledger.summary.go_and_original_oracle_passed,original_oracle_blocked:ledger.tests.filter(x=>x.mapping&&x.mapping.target_kind!=="retained_sdk"&&x.oracle?.status==="blocked").length},
 	retained_sdk: {mapped:ledger.summary.retained_sdk,passed:ledger.summary.sdk_passed},
+
+ event_build_differential: exists("testdata/runtime/event-build-differential.json") ? (()=>{const fixture=read("testdata/runtime/event-build-differential.json"),select=xs=>xs.filter(x=>x.Package==="ponder.local/ponder-go/events"&&x.Test.startsWith("TestEventBuildDifferential/"));return {counting:fixture.counting,vectors:fixture.vectors.length,source_expected_errors:fixture.vectors.filter(v=>v.error).length,go:count(select(native)),race:count(select(nativeRace)),evidence:"testdata/runtime/event-build-differential.json"};})():null,
+ selected_source_oracle: exists("parity/runs/selected-runtime-oracle.json")?{evidence:"parity/runs/selected-runtime-oracle.json",mode:"unchanged_selected_declarations_with_actual_source_dependencies",total:read("parity/runs/selected-runtime-oracle.json").numTotalTests,passed:read("parity/runs/selected-runtime-oracle.json").numPassedTests,success:read("parity/runs/selected-runtime-oracle.json").success}:null,
 	filter_fragment_differential: exists("testdata/runtime/filter-differential.json") ? (() => {
 		const fixture=read("testdata/runtime/filter-differential.json"),selected=native.filter(x=>x.Package==="ponder.local/ponder-go/filter"&&x.Test.startsWith("TestFilterDifferential/")),selectedRace=nativeRace.filter(x=>x.Package==="ponder.local/ponder-go/filter"&&x.Test.startsWith("TestFilterDifferential/"));
 		return {counting:fixture.counting,vectors:fixture.vectors.length,source_expected_exceptions:fixture.vectors.filter(x=>x.error).length,go:count(selected),race:count(selectedRace),evidence:"testdata/runtime/filter-differential.json"};

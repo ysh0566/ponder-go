@@ -9,6 +9,7 @@ import (
 	"ponder.local/ponder-go/abi"
 	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/config"
+	protocol "ponder.local/ponder-go/events"
 	"ponder.local/ponder-go/factory"
 	selection "ponder.local/ponder-go/filter"
 	"ponder.local/ponder-go/finality"
@@ -69,6 +70,9 @@ type Event struct {
 	Transaction map[string]any
 	Receipt     map[string]any
 	SetupBlock  uint64
+	Trace       map[string]any
+	Transfer    map[string]any
+	Normalized  *protocol.RawEvent
 }
 type Context struct {
 	Event  Event
@@ -203,6 +207,10 @@ func (e *Engine) Sync(ctx context.Context) error {
 		if f, ok := e.factories[c.Name]; ok && f.FromBlock != nil {
 			start = min(start, *f.FromBlock)
 		}
+		hasSource = true
+	}
+	for _, account := range e.Config.Accounts {
+		start = min(start, account.StartBlock)
 		hasSource = true
 	}
 	for _, b := range e.Config.Blocks {
@@ -442,6 +450,11 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 			}
 		}
 	}
+	accountEvents, accountErr := e.accountEvents(ctx, b, number)
+	if accountErr != nil {
+		return accountErr
+	}
+	events = append(events, accountEvents...)
 	for _, source := range e.Config.Blocks {
 		if number < source.StartBlock || source.EndBlock != nil && number > *source.EndBlock || (number-source.StartBlock)%source.Interval != 0 {
 			continue

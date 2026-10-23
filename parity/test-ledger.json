@@ -21,20 +21,20 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 282,
-    "executed": 282,
-    "passed": 282,
+    "ported": 288,
+    "executed": 288,
+    "passed": 288,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 623,
-    "go_ports": 278,
+    "unimplemented": 617,
+    "go_ports": 284,
     "retained_sdk": 4,
-    "oracle_passed": 189,
+    "oracle_passed": 195,
     "oracle_blocked": 93,
-    "go_passed": 278,
+    "go_passed": 284,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 185,
-    "target_and_original_oracle_passed": 189
+    "go_and_original_oracle_passed": 191,
+    "target_and_original_oracle_passed": 195
   },
   "unresolved_expansion_ids": [],
   "files": [
@@ -18832,12 +18832,34 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "debug trace actions rebuild traceAddress from the call tree",
+        "source_id": "abe383471ecc34917d14",
+        "source_line": 16,
+        "assertions_sha256": "bdb37585fcc82b2555da6d08e165028db9668f8f9e15b72b1f6890a7a2f3891d",
+        "original_assertions": 1,
+        "target_file": "rpc/traces_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamTraceActions/debug_trace_actions_rebuild_traceAddress_from_the_call_tree",
+        "assertion_policy": "All original input frames, callback filters, full source contexts/constants/assertions and missing-receipt errors preserved. Native receipt identity is separately asserted; complete captured source outputs additionally compared. Pure decoder scope is block/account; contract decoding remains explicit unsupported. RPC unit mock adapted to local Go mock server with identical method/params/results and every asserted trace path; no real-chain fixture replaced.",
+        "native_type_adaptation": "Go error and HTTP mock transport equivalents; original path assertions exact."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "91dd1cfc90aae8977753",
@@ -18871,12 +18893,34 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "debug trace actions exclude reverted traces and their children",
+        "source_id": "91dd1cfc90aae8977753",
+        "source_line": 45,
+        "assertions_sha256": "32a4a4d44b3ac4e61ccf0968be8e4c370d364c9448e3fc3e86d5f3806660907d",
+        "original_assertions": 1,
+        "target_file": "rpc/traces_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamTraceActions/debug_trace_actions_exclude_reverted_traces_and_their_children",
+        "assertion_policy": "All original input frames, callback filters, full source contexts/constants/assertions and missing-receipt errors preserved. Native receipt identity is separately asserted; complete captured source outputs additionally compared. Pure decoder scope is block/account; contract decoding remains explicit unsupported. RPC unit mock adapted to local Go mock server with identical method/params/results and every asserted trace path; no real-chain fixture replaced.",
+        "native_type_adaptation": "Go error and HTTP mock transport equivalents; original path assertions exact."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "5498a690d87fda2d2e79",
@@ -18935,7 +18979,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "9110e7f26aee7138dd26",
@@ -18974,7 +19022,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "9b978d33ce2fa80c6b0f",
@@ -19012,7 +19064,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "8eff803a0e6767e14afe",
@@ -19056,7 +19112,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "4120b7179e34951a1d4b",
@@ -19139,7 +19199,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "01d74addcc7fca2e9427",
@@ -19178,7 +19242,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "b3cd33d75b5410b432fa",
@@ -19228,7 +19296,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "d9a63902133792c2941c",
@@ -19284,7 +19356,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "e3382cf2680ca7e2a721",
@@ -19334,7 +19410,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "34f444b0ffd7c8c7f9fd",
@@ -19383,7 +19463,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "c1cbb442facf74990b4f",
@@ -19427,7 +19511,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "123fb596bdeaaf90029a",
@@ -19477,7 +19565,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "e190ca58c5727b94eec3",
@@ -19512,7 +19604,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "6842d7fd9935f727018e",
@@ -19547,7 +19643,11 @@
       "execution_status": "not_run",
       "pass_status": null,
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/core-oracle.json"
+      }
     },
     {
       "id": "f6d67972bceaf07faf09",
@@ -20078,12 +20178,46 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() block",
+        "source_id": "671bbb20047840beee3c",
+        "source_line": 187,
+        "assertions_sha256": "09a886c75f95f304e96f2fe7fe17fc5f5eefc674873791ad46c9bfcd5722a45c",
+        "original_assertions": 2,
+        "target_file": "events/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamEventConstruction/decodeEvents()_block",
+        "assertion_policy": "All original input frames, callback filters, full source contexts/constants/assertions and missing-receipt errors preserved. Native receipt identity is separately asserted; complete captured source outputs additionally compared. Pure decoder scope is block/account; contract decoding remains explicit unsupported. RPC unit mock adapted to local Go mock server with identical method/params/results and every asserted trace path; no real-chain fixture replaced.",
+        "native_type_adaptation": "Protocol bigint becomes *big.Int; undefined distinct from null. Common logger stays actual in source oracle and is opaque only in captured JSON; source common fixture code/hash retained. Native RawEvent retains receipt map identity.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Full events suite missing generated.js; only a successful separately validated selected-declaration oracle overrides this blocker.",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/selected-runtime-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-runtime-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json",
+          "reason": "Missing generated.js; independent selected declarations have no generated ABI dependency."
+        }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "f9af94ed6701e6a17149",
@@ -20123,12 +20257,46 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() transfer",
+        "source_id": "f9af94ed6701e6a17149",
+        "source_line": 215,
+        "assertions_sha256": "ec37d3160776195a7ba26919a0f43973a89dcb73ce4cbdc30cd67820bb3e6b9a",
+        "original_assertions": 2,
+        "target_file": "events/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamEventConstruction/decodeEvents()_transfer",
+        "assertion_policy": "All original input frames, callback filters, full source contexts/constants/assertions and missing-receipt errors preserved. Native receipt identity is separately asserted; complete captured source outputs additionally compared. Pure decoder scope is block/account; contract decoding remains explicit unsupported. RPC unit mock adapted to local Go mock server with identical method/params/results and every asserted trace path; no real-chain fixture replaced.",
+        "native_type_adaptation": "Protocol bigint becomes *big.Int; undefined distinct from null. Common logger stays actual in source oracle and is opaque only in captured JSON; source common fixture code/hash retained. Native RawEvent retains receipt map identity.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Full events suite missing generated.js; only a successful separately validated selected-declaration oracle overrides this blocker.",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/selected-runtime-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-runtime-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json",
+          "reason": "Missing generated.js; independent selected declarations have no generated ABI dependency."
+        }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "23f4c8c913fdb10d1f9f",
@@ -20163,12 +20331,46 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() transaction",
+        "source_id": "23f4c8c913fdb10d1f9f",
+        "source_line": 256,
+        "assertions_sha256": "d3c29367a96c68ee218004f66759004f4b61929deeae0c62a4f768956451eecb",
+        "original_assertions": 1,
+        "target_file": "events/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamEventConstruction/decodeEvents()_transaction",
+        "assertion_policy": "All original input frames, callback filters, full source contexts/constants/assertions and missing-receipt errors preserved. Native receipt identity is separately asserted; complete captured source outputs additionally compared. Pure decoder scope is block/account; contract decoding remains explicit unsupported. RPC unit mock adapted to local Go mock server with identical method/params/results and every asserted trace path; no real-chain fixture replaced.",
+        "native_type_adaptation": "Protocol bigint becomes *big.Int; undefined distinct from null. Common logger stays actual in source oracle and is opaque only in captured JSON; source common fixture code/hash retained. Native RawEvent retains receipt map identity.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Full events suite missing generated.js; only a successful separately validated selected-declaration oracle overrides this blocker.",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/selected-runtime-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-runtime-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json",
+          "reason": "Missing generated.js; independent selected declarations have no generated ABI dependency."
+        }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "1ec7507f442eaaf13b93",
@@ -20368,12 +20570,46 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "buildEvents() transaction matches receipt by transaction index",
+        "source_id": "51d9321079f0432f5258",
+        "source_line": 416,
+        "assertions_sha256": "541a5b18cd27cc0cae5d673724c9ccca0057c3f99a38f029ea3b54f9d595f429",
+        "original_assertions": 5,
+        "target_file": "events/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamEventConstruction/buildEvents()_transaction_matches_receipt_by_transaction_index",
+        "assertion_policy": "All original input frames, callback filters, full source contexts/constants/assertions and missing-receipt errors preserved. Native receipt identity is separately asserted; complete captured source outputs additionally compared. Pure decoder scope is block/account; contract decoding remains explicit unsupported. RPC unit mock adapted to local Go mock server with identical method/params/results and every asserted trace path; no real-chain fixture replaced.",
+        "native_type_adaptation": "Protocol bigint becomes *big.Int; undefined distinct from null. Common logger stays actual in source oracle and is opaque only in captured JSON; source common fixture code/hash retained. Native RawEvent retains receipt map identity.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Full events suite missing generated.js; only a successful separately validated selected-declaration oracle overrides this blocker.",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/selected-runtime-oracle.json",
+        "mode": "selected_unchanged_source_declarations_actual_dependencies",
+        "source_selection": "parity/selected-runtime-declarations.json",
+        "full_original_suite": {
+          "status": "blocked_before_collection",
+          "evidence": "parity/runs/runtime-events-oracle-blocked.json",
+          "reason": "Missing generated.js; independent selected declarations have no generated ABI dependency."
+        }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "65aa38de0638bd7a31c5",
@@ -20795,8 +21031,18 @@
       "mapping": null,
       "execution_status": "not_run",
       "pass_status": null,
-      "blockers": [],
-      "expansion_status": "statically_expanded"
+      "blockers": [
+        "Existing Anvil0.2.0 lacks debug_traceBlockByHash required by unchanged transferEth fixture; failure before assertions. Foundry1.8.5 installation remains pending.",
+        "Existing Anvil0.2.0 lacks debug_traceBlockByHash required by unchanged transferEth fixture; failure before assertions. Foundry1.8.5 installation remains pending."
+      ],
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "actual_vitest_status": "failed",
+        "evidence": "parity/runs/selected-with-eth-oracle.json",
+        "reason": "Existing Anvil0.2.0 lacks debug_traceBlockByHash required by unchanged transferEth fixture; failure before assertions. Foundry1.8.5 installation remains pending.",
+        "capability_evidence": "parity/runs/anvil-trace-capabilities.json"
+      }
     },
     {
       "id": "8aa0ec9cda98fa1dccb6",
@@ -20842,8 +21088,18 @@
       "mapping": null,
       "execution_status": "not_run",
       "pass_status": null,
-      "blockers": [],
-      "expansion_status": "statically_expanded"
+      "blockers": [
+        "Existing Anvil0.2.0 lacks debug_traceBlockByHash required by unchanged transferEth fixture; failure before assertions. Foundry1.8.5 installation remains pending.",
+        "Existing Anvil0.2.0 lacks debug_traceBlockByHash required by unchanged transferEth fixture; failure before assertions. Foundry1.8.5 installation remains pending."
+      ],
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "actual_vitest_status": "failed",
+        "evidence": "parity/runs/selected-with-eth-oracle.json",
+        "reason": "Existing Anvil0.2.0 lacks debug_traceBlockByHash required by unchanged transferEth fixture; failure before assertions. Foundry1.8.5 installation remains pending.",
+        "capability_evidence": "parity/runs/anvil-trace-capabilities.json"
+      }
     },
     {
       "id": "d36b571984e648e371c4",
@@ -20898,8 +21154,18 @@
       "mapping": null,
       "execution_status": "not_run",
       "pass_status": null,
-      "blockers": [],
-      "expansion_status": "statically_expanded"
+      "blockers": [
+        "Existing Anvil0.2.0 lacks debug_traceBlockByHash required by unchanged transferEth fixture; failure before assertions. Foundry1.8.5 installation remains pending.",
+        "Existing Anvil0.2.0 lacks debug_traceBlockByHash required by unchanged transferEth fixture; failure before assertions. Foundry1.8.5 installation remains pending."
+      ],
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "actual_vitest_status": "failed",
+        "evidence": "parity/runs/selected-with-eth-oracle.json",
+        "reason": "Existing Anvil0.2.0 lacks debug_traceBlockByHash required by unchanged transferEth fixture; failure before assertions. Foundry1.8.5 installation remains pending.",
+        "capability_evidence": "parity/runs/anvil-trace-capabilities.json"
+      }
     },
     {
       "id": "f07738a89b1c2efd1eb0",

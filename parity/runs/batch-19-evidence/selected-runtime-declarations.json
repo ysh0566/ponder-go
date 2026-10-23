@@ -1,0 +1,167 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "generated_file": "testdata/oracle/selected-runtime.test.ts",
+  "method": "Unchanged selected test declarations; actual imported source functions, actual setupCommon/setupAnvil/transferEth/getAccountsIndexingBuild, endpoint adapter only.",
+  "sources": [
+    {
+      "file": "packages/core/src/_test/setup.ts",
+      "sha256": "266fd6d21510c2f90ea7b47d2631c2218eafe149b1f680acbefd07b502932e2d"
+    },
+    {
+      "file": "packages/core/src/_test/utils.ts",
+      "sha256": "c82853764e17721ff80d6a669362ac6b6f6a17cfe634dd33fbac4fc97bff4d23"
+    },
+    {
+      "file": "packages/core/src/_test/simulate.ts",
+      "sha256": "12df0b2c2c3ddf8353bc4e193de9fe88803742f367469951c27dfda9316fd501"
+    },
+    {
+      "file": "packages/core/src/runtime/events.ts",
+      "sha256": "00c6728ed56c9f8a41bd427d5de4488d942e260558a4e4ce6eb98654946d7a8f"
+    },
+    {
+      "file": "packages/core/src/runtime/filter.ts",
+      "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+    },
+    {
+      "file": "packages/core/src/rpc/actions.ts",
+      "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+    },
+    {
+      "file": "packages/core/src/rpc/index.ts",
+      "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+    }
+  ],
+  "generated_sha256": "f975ddfe463b9ac6a45f18b1c34a765fa67460f4faa0fbd26522bf0b660aa183",
+  "cases": [
+    {
+      "id": "671bbb20047840beee3c",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "title": "decodeEvents() block",
+      "source_name": "decodeEvents() block",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getBlocksIndexingBuild({\n    interval: 1,\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {\n      number: 1n,\n    } as RawEvent[\"block\"],\n    transaction: undefined,\n    log: undefined,\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [BlockEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 209,
+          "text": "expect(events).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 210,
+          "text": "expect(events[0].event.block).toMatchObject({\n    number: 1n,\n  })"
+        }
+      ],
+      "test_source": "test(\"decodeEvents() block\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getBlocksIndexingBuild({\n    interval: 1,\n  });\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {\n      number: 1n,\n    } as RawEvent[\"block\"],\n    transaction: undefined,\n    log: undefined,\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [BlockEvent];\n\n  expect(events).toHaveLength(1);\n  expect(events[0].event.block).toMatchObject({\n    number: 1n,\n  });\n})"
+    },
+    {
+      "id": "f9af94ed6701e6a17149",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "title": "decodeEvents() transfer",
+      "source_name": "decodeEvents() transfer",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 3,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: {\n      type: \"CALL\",\n      from: ALICE,\n      to: BOB,\n      gas: 0n,\n      gasUsed: 0n,\n      input: \"0x0\",\n      output: \"0x0\",\n      value: parseEther(\"1\"),\n      traceAddress: [],\n      blockNumber: 0,\n      transactionIndex: 0,\n    },\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TransferEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 248,
+          "text": "expect(events).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 249,
+          "text": "expect(events[0].event.transfer).toMatchObject({\n    from: ALICE,\n    to: BOB,\n    value: parseEther(\"1\"),\n  })"
+        }
+      ],
+      "test_source": "test(\"decodeEvents() transfer\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  });\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 3,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: {\n      type: \"CALL\",\n      from: ALICE,\n      to: BOB,\n      gas: 0n,\n      gasUsed: 0n,\n      input: \"0x0\",\n      output: \"0x0\",\n      value: parseEther(\"1\"),\n      traceAddress: [],\n      blockNumber: 0,\n      transactionIndex: 0,\n    },\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TransferEvent];\n\n  expect(events).toHaveLength(1);\n  expect(events[0].event.transfer).toMatchObject({\n    from: ALICE,\n    to: BOB,\n    value: parseEther(\"1\"),\n  });\n})"
+    },
+    {
+      "id": "23f4c8c913fdb10d1f9f",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "title": "decodeEvents() transaction",
+      "source_name": "decodeEvents() transaction",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: undefined,\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TransferEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 277,
+          "text": "expect(events).toHaveLength(1)"
+        }
+      ],
+      "test_source": "test(\"decodeEvents() transaction\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  });\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: undefined,\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TransferEvent];\n\n  expect(events).toHaveLength(1);\n})"
+    },
+    {
+      "id": "51d9321079f0432f5258",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "title": "buildEvents() transaction matches receipt by transaction index",
+      "source_name": "buildEvents() transaction matches receipt by transaction index",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "{ eventCallbacks } = getAccountsIndexingBuild({ address: ALICE })",
+        "block = {\n    number: 1n,\n    timestamp: 1n,\n    hash: toHex(1, { size: 32 }),\n  } as InternalBlock",
+        "transaction = (transactionIndex: number) =>\n    ({\n      blockNumber: 1,\n      transactionIndex,\n      hash: toHex(transactionIndex, { size: 32 }),\n      from: BOB,\n      to: ALICE.toLowerCase(),\n      type: \"legacy\",\n    }) as InternalTransaction",
+        "receipt = (\n    transactionIndex: number,\n    status: InternalTransactionReceipt[\"status\"],\n  ) =>\n    ({\n      blockNumber: 1,\n      transactionIndex,\n      from: BOB,\n      to: ALICE.toLowerCase(),\n      status,\n    }) as InternalTransactionReceipt",
+        "build = (transactionReceipts: InternalTransactionReceipt[]) =>\n    buildEvents({\n      eventCallbacks,\n      blocks: [block],\n      logs: [],\n      transactions: [transaction(0), transaction(1)],\n      transactionReceipts,\n      traces: [],\n      childAddresses: new Map(),\n      chainId: 1,\n    })",
+        "receipts = [receipt(0, \"reverted\"), receipt(1, \"success\")]",
+        "events = build(receipts)"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 459,
+          "text": "expect(events).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 460,
+          "text": "expect(events[0]!.transaction!.transactionIndex).toBe(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 461,
+          "text": "expect(events[0]!.transactionReceipt).toBe(receipts[1])"
+        },
+        {
+          "kind": "runtime",
+          "line": 463,
+          "text": "expect(() => build([receipt(1, \"success\")])).toThrow(\n    \"Missing transaction receipt for block 1 and transaction index 0\",\n  )"
+        },
+        {
+          "kind": "runtime",
+          "line": 466,
+          "text": "expect(() => build([receipt(0, \"success\")])).toThrow(\n    \"Missing transaction receipt for block 1 and transaction index 1\",\n  )"
+        }
+      ],
+      "test_source": "test(\"buildEvents() transaction matches receipt by transaction index\", async () => {\n  const { eventCallbacks } = getAccountsIndexingBuild({ address: ALICE });\n\n  const block = {\n    number: 1n,\n    timestamp: 1n,\n    hash: toHex(1, { size: 32 }),\n  } as InternalBlock;\n  const transaction = (transactionIndex: number) =>\n    ({\n      blockNumber: 1,\n      transactionIndex,\n      hash: toHex(transactionIndex, { size: 32 }),\n      from: BOB,\n      to: ALICE.toLowerCase(),\n      type: \"legacy\",\n    }) as InternalTransaction;\n  const receipt = (\n    transactionIndex: number,\n    status: InternalTransactionReceipt[\"status\"],\n  ) =>\n    ({\n      blockNumber: 1,\n      transactionIndex,\n      from: BOB,\n      to: ALICE.toLowerCase(),\n      status,\n    }) as InternalTransactionReceipt;\n\n  const build = (transactionReceipts: InternalTransactionReceipt[]) =>\n    buildEvents({\n      eventCallbacks,\n      blocks: [block],\n      logs: [],\n      transactions: [transaction(0), transaction(1)],\n      transactionReceipts,\n      traces: [],\n      childAddresses: new Map(),\n      chainId: 1,\n    });\n\n  const receipts = [receipt(0, \"reverted\"), receipt(1, \"success\")];\n  const events = build(receipts);\n  expect(events).toHaveLength(1);\n  expect(events[0]!.transaction!.transactionIndex).toBe(1);\n  expect(events[0]!.transactionReceipt).toBe(receipts[1]);\n\n  expect(() => build([receipt(1, \"success\")])).toThrow(\n    \"Missing transaction receipt for block 1 and transaction index 0\",\n  );\n  expect(() => build([receipt(0, \"success\")])).toThrow(\n    \"Missing transaction receipt for block 1 and transaction index 1\",\n  );\n})"
+    }
+  ]
+}

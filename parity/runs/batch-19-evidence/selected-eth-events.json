@@ -1,0 +1,4214 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "method": "Selective unchanged source declarations and actual source helper implementations; loopback endpoint adaptation and existing Anvil0.2.0 explicitly recorded. Not the full original suite or Foundry1.8.5 acceptance.",
+  "sources": [
+    {
+      "file": "packages/core/src/_test/setup.ts",
+      "sha256": "266fd6d21510c2f90ea7b47d2631c2218eafe149b1f680acbefd07b502932e2d"
+    },
+    {
+      "file": "packages/core/src/_test/utils.ts",
+      "sha256": "c82853764e17721ff80d6a669362ac6b6f6a17cfe634dd33fbac4fc97bff4d23"
+    },
+    {
+      "file": "packages/core/src/_test/simulate.ts",
+      "sha256": "12df0b2c2c3ddf8353bc4e193de9fe88803742f367469951c27dfda9316fd501"
+    },
+    {
+      "file": "packages/core/src/runtime/events.ts",
+      "sha256": "00c6728ed56c9f8a41bd427d5de4488d942e260558a4e4ce6eb98654946d7a8f"
+    },
+    {
+      "file": "packages/core/src/runtime/filter.ts",
+      "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+    },
+    {
+      "file": "packages/core/src/rpc/actions.ts",
+      "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+    },
+    {
+      "file": "packages/core/src/rpc/index.ts",
+      "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+    }
+  ],
+  "cases": [
+    {
+      "id": "671bbb20047840beee3c",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "title": "decodeEvents() block",
+      "source_name": "decodeEvents() block",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getBlocksIndexingBuild({\n    interval: 1,\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {\n      number: 1n,\n    } as RawEvent[\"block\"],\n    transaction: undefined,\n    log: undefined,\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [BlockEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 209,
+          "text": "expect(events).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 210,
+          "text": "expect(events[0].event.block).toMatchObject({\n    number: 1n,\n  })"
+        }
+      ],
+      "test_source": "test(\"decodeEvents() block\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getBlocksIndexingBuild({\n    interval: 1,\n  });\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {\n      number: 1n,\n    } as RawEvent[\"block\"],\n    transaction: undefined,\n    log: undefined,\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [BlockEvent];\n\n  expect(events).toHaveLength(1);\n  expect(events[0].event.block).toMatchObject({\n    number: 1n,\n  });\n})",
+      "calls": [
+        {
+          "operation": "decodeEvents",
+          "args": [
+            {
+              "$source_common_fixture": true
+            },
+            {
+              "cacheRpcRequests": true,
+              "ethGetLogsBlockRange": {
+                "$undefined": true
+              },
+              "id": 1,
+              "name": "mainnet",
+              "pollingInterval": 1000,
+              "reorgWindow": 1,
+              "rpc": "http://127.0.0.1:8545/1",
+              "viemChain": {
+                "blockExplorers": {
+                  "default": {
+                    "apiUrl": "https://api.etherscan.io/api",
+                    "name": "Etherscan",
+                    "url": "https://etherscan.io"
+                  }
+                },
+                "blockTime": 12000,
+                "contracts": {
+                  "ensUniversalResolver": {
+                    "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                    "blockCreated": 23085558
+                  },
+                  "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 14353601
+                  }
+                },
+                "fees": {
+                  "$undefined": true
+                },
+                "formatters": {
+                  "$undefined": true
+                },
+                "id": 1,
+                "name": "Ethereum",
+                "nativeCurrency": {
+                  "decimals": 18,
+                  "name": "Ether",
+                  "symbol": "ETH"
+                },
+                "rpcUrls": {
+                  "default": {
+                    "http": [
+                      "http://127.0.0.1:8545/1"
+                    ],
+                    "webSocket": [
+                      "ws://127.0.0.1:8545/1"
+                    ]
+                  },
+                  "public": {
+                    "http": [
+                      "http://127.0.0.1:8545/1"
+                    ],
+                    "webSocket": [
+                      "ws://127.0.0.1:8545/1"
+                    ]
+                  }
+                },
+                "serializers": {
+                  "$undefined": true
+                }
+              },
+              "ws": {
+                "$undefined": true
+              }
+            },
+            [
+              {
+                "chain": {
+                  "cacheRpcRequests": true,
+                  "ethGetLogsBlockRange": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "mainnet",
+                  "pollingInterval": 1000,
+                  "reorgWindow": 1,
+                  "rpc": "http://127.0.0.1:8545/1",
+                  "viemChain": {
+                    "blockExplorers": {
+                      "default": {
+                        "apiUrl": "https://api.etherscan.io/api",
+                        "name": "Etherscan",
+                        "url": "https://etherscan.io"
+                      }
+                    },
+                    "blockTime": 12000,
+                    "contracts": {
+                      "ensUniversalResolver": {
+                        "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                        "blockCreated": 23085558
+                      },
+                      "multicall3": {
+                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                        "blockCreated": 14353601
+                      }
+                    },
+                    "fees": {
+                      "$undefined": true
+                    },
+                    "formatters": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "Ethereum",
+                    "nativeCurrency": {
+                      "decimals": 18,
+                      "name": "Ether",
+                      "symbol": "ETH"
+                    },
+                    "rpcUrls": {
+                      "default": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      },
+                      "public": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      }
+                    },
+                    "serializers": {
+                      "$undefined": true
+                    }
+                  },
+                  "ws": {
+                    "$undefined": true
+                  }
+                },
+                "filter": {
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [
+                    "block.baseFeePerGas",
+                    "block.difficulty",
+                    "block.extraData",
+                    "block.gasLimit",
+                    "block.gasUsed",
+                    "block.hash",
+                    "block.logsBloom",
+                    "block.miner",
+                    "block.mixHash",
+                    "block.totalDifficulty",
+                    "block.nonce",
+                    "block.number",
+                    "block.parentHash",
+                    "block.receiptsRoot",
+                    "block.sha3Uncles",
+                    "block.size",
+                    "block.stateRoot",
+                    "block.timestamp",
+                    "block.transactionsRoot"
+                  ],
+                  "interval": 1,
+                  "offset": 0,
+                  "sourceId": "Blocks",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "block"
+                },
+                "fn": {
+                  "$function": true
+                },
+                "name": "Blocks:block",
+                "type": "block"
+              }
+            ],
+            [
+              {
+                "block": {
+                  "number": {
+                    "$bigint": "1"
+                  }
+                },
+                "chainId": 1,
+                "checkpoint": "000000000000000000000000000000000000000000000000000000000000000000000000000",
+                "eventCallbackIndex": 0,
+                "log": {
+                  "$undefined": true
+                },
+                "transaction": {
+                  "$undefined": true
+                }
+              }
+            ]
+          ],
+          "result": [
+            {
+              "chain": {
+                "cacheRpcRequests": true,
+                "ethGetLogsBlockRange": {
+                  "$undefined": true
+                },
+                "id": 1,
+                "name": "mainnet",
+                "pollingInterval": 1000,
+                "reorgWindow": 1,
+                "rpc": "http://127.0.0.1:8545/1",
+                "viemChain": {
+                  "blockExplorers": {
+                    "default": {
+                      "apiUrl": "https://api.etherscan.io/api",
+                      "name": "Etherscan",
+                      "url": "https://etherscan.io"
+                    }
+                  },
+                  "blockTime": 12000,
+                  "contracts": {
+                    "ensUniversalResolver": {
+                      "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                      "blockCreated": 23085558
+                    },
+                    "multicall3": {
+                      "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                      "blockCreated": 14353601
+                    }
+                  },
+                  "fees": {
+                    "$undefined": true
+                  },
+                  "formatters": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "Ethereum",
+                  "nativeCurrency": {
+                    "decimals": 18,
+                    "name": "Ether",
+                    "symbol": "ETH"
+                  },
+                  "rpcUrls": {
+                    "default": {
+                      "http": [
+                        "http://127.0.0.1:8545/1"
+                      ],
+                      "webSocket": [
+                        "ws://127.0.0.1:8545/1"
+                      ]
+                    },
+                    "public": {
+                      "http": [
+                        "http://127.0.0.1:8545/1"
+                      ],
+                      "webSocket": [
+                        "ws://127.0.0.1:8545/1"
+                      ]
+                    }
+                  },
+                  "serializers": {
+                    "$undefined": true
+                  }
+                },
+                "ws": {
+                  "$undefined": true
+                }
+              },
+              "checkpoint": "000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "event": {
+                "block": {
+                  "number": {
+                    "$bigint": "1"
+                  }
+                },
+                "id": "000000000000000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "eventCallback": {
+                "chain": {
+                  "cacheRpcRequests": true,
+                  "ethGetLogsBlockRange": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "mainnet",
+                  "pollingInterval": 1000,
+                  "reorgWindow": 1,
+                  "rpc": "http://127.0.0.1:8545/1",
+                  "viemChain": {
+                    "blockExplorers": {
+                      "default": {
+                        "apiUrl": "https://api.etherscan.io/api",
+                        "name": "Etherscan",
+                        "url": "https://etherscan.io"
+                      }
+                    },
+                    "blockTime": 12000,
+                    "contracts": {
+                      "ensUniversalResolver": {
+                        "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                        "blockCreated": 23085558
+                      },
+                      "multicall3": {
+                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                        "blockCreated": 14353601
+                      }
+                    },
+                    "fees": {
+                      "$undefined": true
+                    },
+                    "formatters": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "Ethereum",
+                    "nativeCurrency": {
+                      "decimals": 18,
+                      "name": "Ether",
+                      "symbol": "ETH"
+                    },
+                    "rpcUrls": {
+                      "default": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      },
+                      "public": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      }
+                    },
+                    "serializers": {
+                      "$undefined": true
+                    }
+                  },
+                  "ws": {
+                    "$undefined": true
+                  }
+                },
+                "filter": {
+                  "chainId": 1,
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [
+                    "block.baseFeePerGas",
+                    "block.difficulty",
+                    "block.extraData",
+                    "block.gasLimit",
+                    "block.gasUsed",
+                    "block.hash",
+                    "block.logsBloom",
+                    "block.miner",
+                    "block.mixHash",
+                    "block.totalDifficulty",
+                    "block.nonce",
+                    "block.number",
+                    "block.parentHash",
+                    "block.receiptsRoot",
+                    "block.sha3Uncles",
+                    "block.size",
+                    "block.stateRoot",
+                    "block.timestamp",
+                    "block.transactionsRoot"
+                  ],
+                  "interval": 1,
+                  "offset": 0,
+                  "sourceId": "Blocks",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "block"
+                },
+                "fn": {
+                  "$function": true
+                },
+                "name": "Blocks:block",
+                "type": "block"
+              },
+              "type": "block"
+            }
+          ]
+        }
+      ],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "f9af94ed6701e6a17149",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "title": "decodeEvents() transfer",
+      "source_name": "decodeEvents() transfer",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 3,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: {\n      type: \"CALL\",\n      from: ALICE,\n      to: BOB,\n      gas: 0n,\n      gasUsed: 0n,\n      input: \"0x0\",\n      output: \"0x0\",\n      value: parseEther(\"1\"),\n      traceAddress: [],\n      blockNumber: 0,\n      transactionIndex: 0,\n    },\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TransferEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 248,
+          "text": "expect(events).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 249,
+          "text": "expect(events[0].event.transfer).toMatchObject({\n    from: ALICE,\n    to: BOB,\n    value: parseEther(\"1\"),\n  })"
+        }
+      ],
+      "test_source": "test(\"decodeEvents() transfer\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  });\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 3,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: {\n      type: \"CALL\",\n      from: ALICE,\n      to: BOB,\n      gas: 0n,\n      gasUsed: 0n,\n      input: \"0x0\",\n      output: \"0x0\",\n      value: parseEther(\"1\"),\n      traceAddress: [],\n      blockNumber: 0,\n      transactionIndex: 0,\n    },\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TransferEvent];\n\n  expect(events).toHaveLength(1);\n  expect(events[0].event.transfer).toMatchObject({\n    from: ALICE,\n    to: BOB,\n    value: parseEther(\"1\"),\n  });\n})",
+      "calls": [
+        {
+          "operation": "decodeEvents",
+          "args": [
+            {
+              "$source_common_fixture": true
+            },
+            {
+              "cacheRpcRequests": true,
+              "ethGetLogsBlockRange": {
+                "$undefined": true
+              },
+              "id": 1,
+              "name": "mainnet",
+              "pollingInterval": 1000,
+              "reorgWindow": 1,
+              "rpc": "http://127.0.0.1:8545/1",
+              "viemChain": {
+                "blockExplorers": {
+                  "default": {
+                    "apiUrl": "https://api.etherscan.io/api",
+                    "name": "Etherscan",
+                    "url": "https://etherscan.io"
+                  }
+                },
+                "blockTime": 12000,
+                "contracts": {
+                  "ensUniversalResolver": {
+                    "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                    "blockCreated": 23085558
+                  },
+                  "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 14353601
+                  }
+                },
+                "fees": {
+                  "$undefined": true
+                },
+                "formatters": {
+                  "$undefined": true
+                },
+                "id": 1,
+                "name": "Ethereum",
+                "nativeCurrency": {
+                  "decimals": 18,
+                  "name": "Ether",
+                  "symbol": "ETH"
+                },
+                "rpcUrls": {
+                  "default": {
+                    "http": [
+                      "http://127.0.0.1:8545/1"
+                    ],
+                    "webSocket": [
+                      "ws://127.0.0.1:8545/1"
+                    ]
+                  },
+                  "public": {
+                    "http": [
+                      "http://127.0.0.1:8545/1"
+                    ],
+                    "webSocket": [
+                      "ws://127.0.0.1:8545/1"
+                    ]
+                  }
+                },
+                "serializers": {
+                  "$undefined": true
+                }
+              },
+              "ws": {
+                "$undefined": true
+              }
+            },
+            [
+              {
+                "chain": {
+                  "cacheRpcRequests": true,
+                  "ethGetLogsBlockRange": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "mainnet",
+                  "pollingInterval": 1000,
+                  "reorgWindow": 1,
+                  "rpc": "http://127.0.0.1:8545/1",
+                  "viemChain": {
+                    "blockExplorers": {
+                      "default": {
+                        "apiUrl": "https://api.etherscan.io/api",
+                        "name": "Etherscan",
+                        "url": "https://etherscan.io"
+                      }
+                    },
+                    "blockTime": 12000,
+                    "contracts": {
+                      "ensUniversalResolver": {
+                        "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                        "blockCreated": 23085558
+                      },
+                      "multicall3": {
+                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                        "blockCreated": 14353601
+                      }
+                    },
+                    "fees": {
+                      "$undefined": true
+                    },
+                    "formatters": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "Ethereum",
+                    "nativeCurrency": {
+                      "decimals": 18,
+                      "name": "Ether",
+                      "symbol": "ETH"
+                    },
+                    "rpcUrls": {
+                      "default": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      },
+                      "public": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      }
+                    },
+                    "serializers": {
+                      "$undefined": true
+                    }
+                  },
+                  "ws": {
+                    "$undefined": true
+                  }
+                },
+                "direction": "to",
+                "filter": {
+                  "chainId": 1,
+                  "fromAddress": {
+                    "$undefined": true
+                  },
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": true,
+                  "include": [
+                    "transaction.from",
+                    "transaction.gas",
+                    "transaction.hash",
+                    "transaction.input",
+                    "transaction.nonce",
+                    "transaction.r",
+                    "transaction.s",
+                    "transaction.to",
+                    "transaction.transactionIndex",
+                    "transaction.v",
+                    "transaction.value",
+                    "transaction.type",
+                    "transaction.gasPrice",
+                    "transaction.accessList",
+                    "transaction.maxFeePerGas",
+                    "transaction.maxPriorityFeePerGas",
+                    "transactionReceipt.contractAddress",
+                    "transactionReceipt.cumulativeGasUsed",
+                    "transactionReceipt.effectiveGasPrice",
+                    "transactionReceipt.from",
+                    "transactionReceipt.gasUsed",
+                    "transactionReceipt.logsBloom",
+                    "transactionReceipt.status",
+                    "transactionReceipt.to",
+                    "transactionReceipt.type",
+                    "block.baseFeePerGas",
+                    "block.difficulty",
+                    "block.extraData",
+                    "block.gasLimit",
+                    "block.gasUsed",
+                    "block.hash",
+                    "block.logsBloom",
+                    "block.miner",
+                    "block.mixHash",
+                    "block.totalDifficulty",
+                    "block.nonce",
+                    "block.number",
+                    "block.parentHash",
+                    "block.receiptsRoot",
+                    "block.sha3Uncles",
+                    "block.size",
+                    "block.stateRoot",
+                    "block.timestamp",
+                    "block.transactionsRoot"
+                  ],
+                  "sourceId": "Accounts",
+                  "toAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "transaction"
+                },
+                "fn": {
+                  "$function": true
+                },
+                "name": "Accounts:transaction:to",
+                "type": "account"
+              },
+              {
+                "chain": {
+                  "cacheRpcRequests": true,
+                  "ethGetLogsBlockRange": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "mainnet",
+                  "pollingInterval": 1000,
+                  "reorgWindow": 1,
+                  "rpc": "http://127.0.0.1:8545/1",
+                  "viemChain": {
+                    "blockExplorers": {
+                      "default": {
+                        "apiUrl": "https://api.etherscan.io/api",
+                        "name": "Etherscan",
+                        "url": "https://etherscan.io"
+                      }
+                    },
+                    "blockTime": 12000,
+                    "contracts": {
+                      "ensUniversalResolver": {
+                        "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                        "blockCreated": 23085558
+                      },
+                      "multicall3": {
+                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                        "blockCreated": 14353601
+                      }
+                    },
+                    "fees": {
+                      "$undefined": true
+                    },
+                    "formatters": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "Ethereum",
+                    "nativeCurrency": {
+                      "decimals": 18,
+                      "name": "Ether",
+                      "symbol": "ETH"
+                    },
+                    "rpcUrls": {
+                      "default": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      },
+                      "public": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      }
+                    },
+                    "serializers": {
+                      "$undefined": true
+                    }
+                  },
+                  "ws": {
+                    "$undefined": true
+                  }
+                },
+                "direction": "from",
+                "filter": {
+                  "chainId": 1,
+                  "fromAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": true,
+                  "include": [
+                    "transaction.from",
+                    "transaction.gas",
+                    "transaction.hash",
+                    "transaction.input",
+                    "transaction.nonce",
+                    "transaction.r",
+                    "transaction.s",
+                    "transaction.to",
+                    "transaction.transactionIndex",
+                    "transaction.v",
+                    "transaction.value",
+                    "transaction.type",
+                    "transaction.gasPrice",
+                    "transaction.accessList",
+                    "transaction.maxFeePerGas",
+                    "transaction.maxPriorityFeePerGas",
+                    "transactionReceipt.contractAddress",
+                    "transactionReceipt.cumulativeGasUsed",
+                    "transactionReceipt.effectiveGasPrice",
+                    "transactionReceipt.from",
+                    "transactionReceipt.gasUsed",
+                    "transactionReceipt.logsBloom",
+                    "transactionReceipt.status",
+                    "transactionReceipt.to",
+                    "transactionReceipt.type",
+                    "block.baseFeePerGas",
+                    "block.difficulty",
+                    "block.extraData",
+                    "block.gasLimit",
+                    "block.gasUsed",
+                    "block.hash",
+                    "block.logsBloom",
+                    "block.miner",
+                    "block.mixHash",
+                    "block.totalDifficulty",
+                    "block.nonce",
+                    "block.number",
+                    "block.parentHash",
+                    "block.receiptsRoot",
+                    "block.sha3Uncles",
+                    "block.size",
+                    "block.stateRoot",
+                    "block.timestamp",
+                    "block.transactionsRoot"
+                  ],
+                  "sourceId": "Accounts",
+                  "toAddress": {
+                    "$undefined": true
+                  },
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "transaction"
+                },
+                "fn": {
+                  "$function": true
+                },
+                "name": "Accounts:transaction:from",
+                "type": "account"
+              },
+              {
+                "chain": {
+                  "cacheRpcRequests": true,
+                  "ethGetLogsBlockRange": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "mainnet",
+                  "pollingInterval": 1000,
+                  "reorgWindow": 1,
+                  "rpc": "http://127.0.0.1:8545/1",
+                  "viemChain": {
+                    "blockExplorers": {
+                      "default": {
+                        "apiUrl": "https://api.etherscan.io/api",
+                        "name": "Etherscan",
+                        "url": "https://etherscan.io"
+                      }
+                    },
+                    "blockTime": 12000,
+                    "contracts": {
+                      "ensUniversalResolver": {
+                        "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                        "blockCreated": 23085558
+                      },
+                      "multicall3": {
+                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                        "blockCreated": 14353601
+                      }
+                    },
+                    "fees": {
+                      "$undefined": true
+                    },
+                    "formatters": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "Ethereum",
+                    "nativeCurrency": {
+                      "decimals": 18,
+                      "name": "Ether",
+                      "symbol": "ETH"
+                    },
+                    "rpcUrls": {
+                      "default": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      },
+                      "public": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      }
+                    },
+                    "serializers": {
+                      "$undefined": true
+                    }
+                  },
+                  "ws": {
+                    "$undefined": true
+                  }
+                },
+                "direction": "to",
+                "filter": {
+                  "chainId": 1,
+                  "fromAddress": {
+                    "$undefined": true
+                  },
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [
+                    "block.baseFeePerGas",
+                    "block.difficulty",
+                    "block.extraData",
+                    "block.gasLimit",
+                    "block.gasUsed",
+                    "block.hash",
+                    "block.logsBloom",
+                    "block.miner",
+                    "block.mixHash",
+                    "block.totalDifficulty",
+                    "block.nonce",
+                    "block.number",
+                    "block.parentHash",
+                    "block.receiptsRoot",
+                    "block.sha3Uncles",
+                    "block.size",
+                    "block.stateRoot",
+                    "block.timestamp",
+                    "block.transactionsRoot",
+                    "transaction.from",
+                    "transaction.gas",
+                    "transaction.hash",
+                    "transaction.input",
+                    "transaction.nonce",
+                    "transaction.r",
+                    "transaction.s",
+                    "transaction.to",
+                    "transaction.transactionIndex",
+                    "transaction.v",
+                    "transaction.value",
+                    "transaction.type",
+                    "transaction.gasPrice",
+                    "transaction.accessList",
+                    "transaction.maxFeePerGas",
+                    "transaction.maxPriorityFeePerGas",
+                    "trace.traceAddress",
+                    "trace.type",
+                    "trace.from",
+                    "trace.to",
+                    "trace.gas",
+                    "trace.gasUsed",
+                    "trace.input",
+                    "trace.output",
+                    "trace.value"
+                  ],
+                  "sourceId": "Accounts",
+                  "toAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "transfer"
+                },
+                "fn": {
+                  "$function": true
+                },
+                "name": "Accounts:transfer:to",
+                "type": "account"
+              },
+              {
+                "chain": {
+                  "cacheRpcRequests": true,
+                  "ethGetLogsBlockRange": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "mainnet",
+                  "pollingInterval": 1000,
+                  "reorgWindow": 1,
+                  "rpc": "http://127.0.0.1:8545/1",
+                  "viemChain": {
+                    "blockExplorers": {
+                      "default": {
+                        "apiUrl": "https://api.etherscan.io/api",
+                        "name": "Etherscan",
+                        "url": "https://etherscan.io"
+                      }
+                    },
+                    "blockTime": 12000,
+                    "contracts": {
+                      "ensUniversalResolver": {
+                        "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                        "blockCreated": 23085558
+                      },
+                      "multicall3": {
+                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                        "blockCreated": 14353601
+                      }
+                    },
+                    "fees": {
+                      "$undefined": true
+                    },
+                    "formatters": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "Ethereum",
+                    "nativeCurrency": {
+                      "decimals": 18,
+                      "name": "Ether",
+                      "symbol": "ETH"
+                    },
+                    "rpcUrls": {
+                      "default": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      },
+                      "public": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      }
+                    },
+                    "serializers": {
+                      "$undefined": true
+                    }
+                  },
+                  "ws": {
+                    "$undefined": true
+                  }
+                },
+                "direction": "from",
+                "filter": {
+                  "chainId": 1,
+                  "fromAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [
+                    "block.baseFeePerGas",
+                    "block.difficulty",
+                    "block.extraData",
+                    "block.gasLimit",
+                    "block.gasUsed",
+                    "block.hash",
+                    "block.logsBloom",
+                    "block.miner",
+                    "block.mixHash",
+                    "block.totalDifficulty",
+                    "block.nonce",
+                    "block.number",
+                    "block.parentHash",
+                    "block.receiptsRoot",
+                    "block.sha3Uncles",
+                    "block.size",
+                    "block.stateRoot",
+                    "block.timestamp",
+                    "block.transactionsRoot",
+                    "transaction.from",
+                    "transaction.gas",
+                    "transaction.hash",
+                    "transaction.input",
+                    "transaction.nonce",
+                    "transaction.r",
+                    "transaction.s",
+                    "transaction.to",
+                    "transaction.transactionIndex",
+                    "transaction.v",
+                    "transaction.value",
+                    "transaction.type",
+                    "transaction.gasPrice",
+                    "transaction.accessList",
+                    "transaction.maxFeePerGas",
+                    "transaction.maxPriorityFeePerGas",
+                    "trace.traceAddress",
+                    "trace.type",
+                    "trace.from",
+                    "trace.to",
+                    "trace.gas",
+                    "trace.gasUsed",
+                    "trace.input",
+                    "trace.output",
+                    "trace.value"
+                  ],
+                  "sourceId": "Accounts",
+                  "toAddress": {
+                    "$undefined": true
+                  },
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "transfer"
+                },
+                "fn": {
+                  "$function": true
+                },
+                "name": "Accounts:transfer:from",
+                "type": "account"
+              }
+            ],
+            [
+              {
+                "block": {},
+                "chainId": 1,
+                "checkpoint": "000000000000000000000000000000000000000000000000000000000000000000000000000",
+                "eventCallbackIndex": 3,
+                "log": {
+                  "$undefined": true
+                },
+                "trace": {
+                  "blockNumber": 0,
+                  "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                  "gas": {
+                    "$bigint": "0"
+                  },
+                  "gasUsed": {
+                    "$bigint": "0"
+                  },
+                  "input": "0x0",
+                  "output": "0x0",
+                  "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "traceAddress": [],
+                  "transactionIndex": 0,
+                  "type": "CALL",
+                  "value": {
+                    "$bigint": "1000000000000000000"
+                  }
+                },
+                "transaction": {}
+              }
+            ]
+          ],
+          "result": [
+            {
+              "chain": {
+                "cacheRpcRequests": true,
+                "ethGetLogsBlockRange": {
+                  "$undefined": true
+                },
+                "id": 1,
+                "name": "mainnet",
+                "pollingInterval": 1000,
+                "reorgWindow": 1,
+                "rpc": "http://127.0.0.1:8545/1",
+                "viemChain": {
+                  "blockExplorers": {
+                    "default": {
+                      "apiUrl": "https://api.etherscan.io/api",
+                      "name": "Etherscan",
+                      "url": "https://etherscan.io"
+                    }
+                  },
+                  "blockTime": 12000,
+                  "contracts": {
+                    "ensUniversalResolver": {
+                      "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                      "blockCreated": 23085558
+                    },
+                    "multicall3": {
+                      "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                      "blockCreated": 14353601
+                    }
+                  },
+                  "fees": {
+                    "$undefined": true
+                  },
+                  "formatters": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "Ethereum",
+                  "nativeCurrency": {
+                    "decimals": 18,
+                    "name": "Ether",
+                    "symbol": "ETH"
+                  },
+                  "rpcUrls": {
+                    "default": {
+                      "http": [
+                        "http://127.0.0.1:8545/1"
+                      ],
+                      "webSocket": [
+                        "ws://127.0.0.1:8545/1"
+                      ]
+                    },
+                    "public": {
+                      "http": [
+                        "http://127.0.0.1:8545/1"
+                      ],
+                      "webSocket": [
+                        "ws://127.0.0.1:8545/1"
+                      ]
+                    }
+                  },
+                  "serializers": {
+                    "$undefined": true
+                  }
+                },
+                "ws": {
+                  "$undefined": true
+                }
+              },
+              "checkpoint": "000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "event": {
+                "block": {},
+                "id": "000000000000000000000000000000000000000000000000000000000000000000000000000",
+                "trace": {
+                  "blockNumber": 0,
+                  "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                  "gas": {
+                    "$bigint": "0"
+                  },
+                  "gasUsed": {
+                    "$bigint": "0"
+                  },
+                  "input": "0x0",
+                  "output": "0x0",
+                  "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "traceAddress": [],
+                  "transactionIndex": 0,
+                  "type": "CALL",
+                  "value": {
+                    "$bigint": "1000000000000000000"
+                  }
+                },
+                "transaction": {},
+                "transactionReceipt": {
+                  "$undefined": true
+                },
+                "transfer": {
+                  "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                  "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "value": {
+                    "$bigint": "1000000000000000000"
+                  }
+                }
+              },
+              "eventCallback": {
+                "chain": {
+                  "cacheRpcRequests": true,
+                  "ethGetLogsBlockRange": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "mainnet",
+                  "pollingInterval": 1000,
+                  "reorgWindow": 1,
+                  "rpc": "http://127.0.0.1:8545/1",
+                  "viemChain": {
+                    "blockExplorers": {
+                      "default": {
+                        "apiUrl": "https://api.etherscan.io/api",
+                        "name": "Etherscan",
+                        "url": "https://etherscan.io"
+                      }
+                    },
+                    "blockTime": 12000,
+                    "contracts": {
+                      "ensUniversalResolver": {
+                        "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                        "blockCreated": 23085558
+                      },
+                      "multicall3": {
+                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                        "blockCreated": 14353601
+                      }
+                    },
+                    "fees": {
+                      "$undefined": true
+                    },
+                    "formatters": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "Ethereum",
+                    "nativeCurrency": {
+                      "decimals": 18,
+                      "name": "Ether",
+                      "symbol": "ETH"
+                    },
+                    "rpcUrls": {
+                      "default": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      },
+                      "public": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      }
+                    },
+                    "serializers": {
+                      "$undefined": true
+                    }
+                  },
+                  "ws": {
+                    "$undefined": true
+                  }
+                },
+                "direction": "from",
+                "filter": {
+                  "chainId": 1,
+                  "fromAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [
+                    "block.baseFeePerGas",
+                    "block.difficulty",
+                    "block.extraData",
+                    "block.gasLimit",
+                    "block.gasUsed",
+                    "block.hash",
+                    "block.logsBloom",
+                    "block.miner",
+                    "block.mixHash",
+                    "block.totalDifficulty",
+                    "block.nonce",
+                    "block.number",
+                    "block.parentHash",
+                    "block.receiptsRoot",
+                    "block.sha3Uncles",
+                    "block.size",
+                    "block.stateRoot",
+                    "block.timestamp",
+                    "block.transactionsRoot",
+                    "transaction.from",
+                    "transaction.gas",
+                    "transaction.hash",
+                    "transaction.input",
+                    "transaction.nonce",
+                    "transaction.r",
+                    "transaction.s",
+                    "transaction.to",
+                    "transaction.transactionIndex",
+                    "transaction.v",
+                    "transaction.value",
+                    "transaction.type",
+                    "transaction.gasPrice",
+                    "transaction.accessList",
+                    "transaction.maxFeePerGas",
+                    "transaction.maxPriorityFeePerGas",
+                    "trace.traceAddress",
+                    "trace.type",
+                    "trace.from",
+                    "trace.to",
+                    "trace.gas",
+                    "trace.gasUsed",
+                    "trace.input",
+                    "trace.output",
+                    "trace.value"
+                  ],
+                  "sourceId": "Accounts",
+                  "toAddress": {
+                    "$undefined": true
+                  },
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "transfer"
+                },
+                "fn": {
+                  "$function": true
+                },
+                "name": "Accounts:transfer:from",
+                "type": "account"
+              },
+              "type": "transfer"
+            }
+          ]
+        }
+      ],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "23f4c8c913fdb10d1f9f",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "title": "decodeEvents() transaction",
+      "source_name": "decodeEvents() transaction",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: undefined,\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TransferEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 277,
+          "text": "expect(events).toHaveLength(1)"
+        }
+      ],
+      "test_source": "test(\"decodeEvents() transaction\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  });\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: undefined,\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TransferEvent];\n\n  expect(events).toHaveLength(1);\n})",
+      "calls": [
+        {
+          "operation": "decodeEvents",
+          "args": [
+            {
+              "$source_common_fixture": true
+            },
+            {
+              "cacheRpcRequests": true,
+              "ethGetLogsBlockRange": {
+                "$undefined": true
+              },
+              "id": 1,
+              "name": "mainnet",
+              "pollingInterval": 1000,
+              "reorgWindow": 1,
+              "rpc": "http://127.0.0.1:8545/1",
+              "viemChain": {
+                "blockExplorers": {
+                  "default": {
+                    "apiUrl": "https://api.etherscan.io/api",
+                    "name": "Etherscan",
+                    "url": "https://etherscan.io"
+                  }
+                },
+                "blockTime": 12000,
+                "contracts": {
+                  "ensUniversalResolver": {
+                    "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                    "blockCreated": 23085558
+                  },
+                  "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 14353601
+                  }
+                },
+                "fees": {
+                  "$undefined": true
+                },
+                "formatters": {
+                  "$undefined": true
+                },
+                "id": 1,
+                "name": "Ethereum",
+                "nativeCurrency": {
+                  "decimals": 18,
+                  "name": "Ether",
+                  "symbol": "ETH"
+                },
+                "rpcUrls": {
+                  "default": {
+                    "http": [
+                      "http://127.0.0.1:8545/1"
+                    ],
+                    "webSocket": [
+                      "ws://127.0.0.1:8545/1"
+                    ]
+                  },
+                  "public": {
+                    "http": [
+                      "http://127.0.0.1:8545/1"
+                    ],
+                    "webSocket": [
+                      "ws://127.0.0.1:8545/1"
+                    ]
+                  }
+                },
+                "serializers": {
+                  "$undefined": true
+                }
+              },
+              "ws": {
+                "$undefined": true
+              }
+            },
+            [
+              {
+                "chain": {
+                  "cacheRpcRequests": true,
+                  "ethGetLogsBlockRange": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "mainnet",
+                  "pollingInterval": 1000,
+                  "reorgWindow": 1,
+                  "rpc": "http://127.0.0.1:8545/1",
+                  "viemChain": {
+                    "blockExplorers": {
+                      "default": {
+                        "apiUrl": "https://api.etherscan.io/api",
+                        "name": "Etherscan",
+                        "url": "https://etherscan.io"
+                      }
+                    },
+                    "blockTime": 12000,
+                    "contracts": {
+                      "ensUniversalResolver": {
+                        "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                        "blockCreated": 23085558
+                      },
+                      "multicall3": {
+                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                        "blockCreated": 14353601
+                      }
+                    },
+                    "fees": {
+                      "$undefined": true
+                    },
+                    "formatters": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "Ethereum",
+                    "nativeCurrency": {
+                      "decimals": 18,
+                      "name": "Ether",
+                      "symbol": "ETH"
+                    },
+                    "rpcUrls": {
+                      "default": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      },
+                      "public": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      }
+                    },
+                    "serializers": {
+                      "$undefined": true
+                    }
+                  },
+                  "ws": {
+                    "$undefined": true
+                  }
+                },
+                "direction": "to",
+                "filter": {
+                  "chainId": 1,
+                  "fromAddress": {
+                    "$undefined": true
+                  },
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": true,
+                  "include": [
+                    "transaction.from",
+                    "transaction.gas",
+                    "transaction.hash",
+                    "transaction.input",
+                    "transaction.nonce",
+                    "transaction.r",
+                    "transaction.s",
+                    "transaction.to",
+                    "transaction.transactionIndex",
+                    "transaction.v",
+                    "transaction.value",
+                    "transaction.type",
+                    "transaction.gasPrice",
+                    "transaction.accessList",
+                    "transaction.maxFeePerGas",
+                    "transaction.maxPriorityFeePerGas",
+                    "transactionReceipt.contractAddress",
+                    "transactionReceipt.cumulativeGasUsed",
+                    "transactionReceipt.effectiveGasPrice",
+                    "transactionReceipt.from",
+                    "transactionReceipt.gasUsed",
+                    "transactionReceipt.logsBloom",
+                    "transactionReceipt.status",
+                    "transactionReceipt.to",
+                    "transactionReceipt.type",
+                    "block.baseFeePerGas",
+                    "block.difficulty",
+                    "block.extraData",
+                    "block.gasLimit",
+                    "block.gasUsed",
+                    "block.hash",
+                    "block.logsBloom",
+                    "block.miner",
+                    "block.mixHash",
+                    "block.totalDifficulty",
+                    "block.nonce",
+                    "block.number",
+                    "block.parentHash",
+                    "block.receiptsRoot",
+                    "block.sha3Uncles",
+                    "block.size",
+                    "block.stateRoot",
+                    "block.timestamp",
+                    "block.transactionsRoot"
+                  ],
+                  "sourceId": "Accounts",
+                  "toAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "transaction"
+                },
+                "fn": {
+                  "$function": true
+                },
+                "name": "Accounts:transaction:to",
+                "type": "account"
+              },
+              {
+                "chain": {
+                  "cacheRpcRequests": true,
+                  "ethGetLogsBlockRange": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "mainnet",
+                  "pollingInterval": 1000,
+                  "reorgWindow": 1,
+                  "rpc": "http://127.0.0.1:8545/1",
+                  "viemChain": {
+                    "blockExplorers": {
+                      "default": {
+                        "apiUrl": "https://api.etherscan.io/api",
+                        "name": "Etherscan",
+                        "url": "https://etherscan.io"
+                      }
+                    },
+                    "blockTime": 12000,
+                    "contracts": {
+                      "ensUniversalResolver": {
+                        "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                        "blockCreated": 23085558
+                      },
+                      "multicall3": {
+                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                        "blockCreated": 14353601
+                      }
+                    },
+                    "fees": {
+                      "$undefined": true
+                    },
+                    "formatters": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "Ethereum",
+                    "nativeCurrency": {
+                      "decimals": 18,
+                      "name": "Ether",
+                      "symbol": "ETH"
+                    },
+                    "rpcUrls": {
+                      "default": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      },
+                      "public": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      }
+                    },
+                    "serializers": {
+                      "$undefined": true
+                    }
+                  },
+                  "ws": {
+                    "$undefined": true
+                  }
+                },
+                "direction": "from",
+                "filter": {
+                  "chainId": 1,
+                  "fromAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": true,
+                  "include": [
+                    "transaction.from",
+                    "transaction.gas",
+                    "transaction.hash",
+                    "transaction.input",
+                    "transaction.nonce",
+                    "transaction.r",
+                    "transaction.s",
+                    "transaction.to",
+                    "transaction.transactionIndex",
+                    "transaction.v",
+                    "transaction.value",
+                    "transaction.type",
+                    "transaction.gasPrice",
+                    "transaction.accessList",
+                    "transaction.maxFeePerGas",
+                    "transaction.maxPriorityFeePerGas",
+                    "transactionReceipt.contractAddress",
+                    "transactionReceipt.cumulativeGasUsed",
+                    "transactionReceipt.effectiveGasPrice",
+                    "transactionReceipt.from",
+                    "transactionReceipt.gasUsed",
+                    "transactionReceipt.logsBloom",
+                    "transactionReceipt.status",
+                    "transactionReceipt.to",
+                    "transactionReceipt.type",
+                    "block.baseFeePerGas",
+                    "block.difficulty",
+                    "block.extraData",
+                    "block.gasLimit",
+                    "block.gasUsed",
+                    "block.hash",
+                    "block.logsBloom",
+                    "block.miner",
+                    "block.mixHash",
+                    "block.totalDifficulty",
+                    "block.nonce",
+                    "block.number",
+                    "block.parentHash",
+                    "block.receiptsRoot",
+                    "block.sha3Uncles",
+                    "block.size",
+                    "block.stateRoot",
+                    "block.timestamp",
+                    "block.transactionsRoot"
+                  ],
+                  "sourceId": "Accounts",
+                  "toAddress": {
+                    "$undefined": true
+                  },
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "transaction"
+                },
+                "fn": {
+                  "$function": true
+                },
+                "name": "Accounts:transaction:from",
+                "type": "account"
+              },
+              {
+                "chain": {
+                  "cacheRpcRequests": true,
+                  "ethGetLogsBlockRange": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "mainnet",
+                  "pollingInterval": 1000,
+                  "reorgWindow": 1,
+                  "rpc": "http://127.0.0.1:8545/1",
+                  "viemChain": {
+                    "blockExplorers": {
+                      "default": {
+                        "apiUrl": "https://api.etherscan.io/api",
+                        "name": "Etherscan",
+                        "url": "https://etherscan.io"
+                      }
+                    },
+                    "blockTime": 12000,
+                    "contracts": {
+                      "ensUniversalResolver": {
+                        "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                        "blockCreated": 23085558
+                      },
+                      "multicall3": {
+                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                        "blockCreated": 14353601
+                      }
+                    },
+                    "fees": {
+                      "$undefined": true
+                    },
+                    "formatters": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "Ethereum",
+                    "nativeCurrency": {
+                      "decimals": 18,
+                      "name": "Ether",
+                      "symbol": "ETH"
+                    },
+                    "rpcUrls": {
+                      "default": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      },
+                      "public": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      }
+                    },
+                    "serializers": {
+                      "$undefined": true
+                    }
+                  },
+                  "ws": {
+                    "$undefined": true
+                  }
+                },
+                "direction": "to",
+                "filter": {
+                  "chainId": 1,
+                  "fromAddress": {
+                    "$undefined": true
+                  },
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [
+                    "block.baseFeePerGas",
+                    "block.difficulty",
+                    "block.extraData",
+                    "block.gasLimit",
+                    "block.gasUsed",
+                    "block.hash",
+                    "block.logsBloom",
+                    "block.miner",
+                    "block.mixHash",
+                    "block.totalDifficulty",
+                    "block.nonce",
+                    "block.number",
+                    "block.parentHash",
+                    "block.receiptsRoot",
+                    "block.sha3Uncles",
+                    "block.size",
+                    "block.stateRoot",
+                    "block.timestamp",
+                    "block.transactionsRoot",
+                    "transaction.from",
+                    "transaction.gas",
+                    "transaction.hash",
+                    "transaction.input",
+                    "transaction.nonce",
+                    "transaction.r",
+                    "transaction.s",
+                    "transaction.to",
+                    "transaction.transactionIndex",
+                    "transaction.v",
+                    "transaction.value",
+                    "transaction.type",
+                    "transaction.gasPrice",
+                    "transaction.accessList",
+                    "transaction.maxFeePerGas",
+                    "transaction.maxPriorityFeePerGas",
+                    "trace.traceAddress",
+                    "trace.type",
+                    "trace.from",
+                    "trace.to",
+                    "trace.gas",
+                    "trace.gasUsed",
+                    "trace.input",
+                    "trace.output",
+                    "trace.value"
+                  ],
+                  "sourceId": "Accounts",
+                  "toAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "transfer"
+                },
+                "fn": {
+                  "$function": true
+                },
+                "name": "Accounts:transfer:to",
+                "type": "account"
+              },
+              {
+                "chain": {
+                  "cacheRpcRequests": true,
+                  "ethGetLogsBlockRange": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "mainnet",
+                  "pollingInterval": 1000,
+                  "reorgWindow": 1,
+                  "rpc": "http://127.0.0.1:8545/1",
+                  "viemChain": {
+                    "blockExplorers": {
+                      "default": {
+                        "apiUrl": "https://api.etherscan.io/api",
+                        "name": "Etherscan",
+                        "url": "https://etherscan.io"
+                      }
+                    },
+                    "blockTime": 12000,
+                    "contracts": {
+                      "ensUniversalResolver": {
+                        "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                        "blockCreated": 23085558
+                      },
+                      "multicall3": {
+                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                        "blockCreated": 14353601
+                      }
+                    },
+                    "fees": {
+                      "$undefined": true
+                    },
+                    "formatters": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "Ethereum",
+                    "nativeCurrency": {
+                      "decimals": 18,
+                      "name": "Ether",
+                      "symbol": "ETH"
+                    },
+                    "rpcUrls": {
+                      "default": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      },
+                      "public": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      }
+                    },
+                    "serializers": {
+                      "$undefined": true
+                    }
+                  },
+                  "ws": {
+                    "$undefined": true
+                  }
+                },
+                "direction": "from",
+                "filter": {
+                  "chainId": 1,
+                  "fromAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": false,
+                  "include": [
+                    "block.baseFeePerGas",
+                    "block.difficulty",
+                    "block.extraData",
+                    "block.gasLimit",
+                    "block.gasUsed",
+                    "block.hash",
+                    "block.logsBloom",
+                    "block.miner",
+                    "block.mixHash",
+                    "block.totalDifficulty",
+                    "block.nonce",
+                    "block.number",
+                    "block.parentHash",
+                    "block.receiptsRoot",
+                    "block.sha3Uncles",
+                    "block.size",
+                    "block.stateRoot",
+                    "block.timestamp",
+                    "block.transactionsRoot",
+                    "transaction.from",
+                    "transaction.gas",
+                    "transaction.hash",
+                    "transaction.input",
+                    "transaction.nonce",
+                    "transaction.r",
+                    "transaction.s",
+                    "transaction.to",
+                    "transaction.transactionIndex",
+                    "transaction.v",
+                    "transaction.value",
+                    "transaction.type",
+                    "transaction.gasPrice",
+                    "transaction.accessList",
+                    "transaction.maxFeePerGas",
+                    "transaction.maxPriorityFeePerGas",
+                    "trace.traceAddress",
+                    "trace.type",
+                    "trace.from",
+                    "trace.to",
+                    "trace.gas",
+                    "trace.gasUsed",
+                    "trace.input",
+                    "trace.output",
+                    "trace.value"
+                  ],
+                  "sourceId": "Accounts",
+                  "toAddress": {
+                    "$undefined": true
+                  },
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "transfer"
+                },
+                "fn": {
+                  "$function": true
+                },
+                "name": "Accounts:transfer:from",
+                "type": "account"
+              }
+            ],
+            [
+              {
+                "block": {},
+                "chainId": 1,
+                "checkpoint": "000000000000000000000000000000000000000000000000000000000000000000000000000",
+                "eventCallbackIndex": 0,
+                "log": {
+                  "$undefined": true
+                },
+                "trace": {
+                  "$undefined": true
+                },
+                "transaction": {}
+              }
+            ]
+          ],
+          "result": [
+            {
+              "chain": {
+                "cacheRpcRequests": true,
+                "ethGetLogsBlockRange": {
+                  "$undefined": true
+                },
+                "id": 1,
+                "name": "mainnet",
+                "pollingInterval": 1000,
+                "reorgWindow": 1,
+                "rpc": "http://127.0.0.1:8545/1",
+                "viemChain": {
+                  "blockExplorers": {
+                    "default": {
+                      "apiUrl": "https://api.etherscan.io/api",
+                      "name": "Etherscan",
+                      "url": "https://etherscan.io"
+                    }
+                  },
+                  "blockTime": 12000,
+                  "contracts": {
+                    "ensUniversalResolver": {
+                      "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                      "blockCreated": 23085558
+                    },
+                    "multicall3": {
+                      "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                      "blockCreated": 14353601
+                    }
+                  },
+                  "fees": {
+                    "$undefined": true
+                  },
+                  "formatters": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "Ethereum",
+                  "nativeCurrency": {
+                    "decimals": 18,
+                    "name": "Ether",
+                    "symbol": "ETH"
+                  },
+                  "rpcUrls": {
+                    "default": {
+                      "http": [
+                        "http://127.0.0.1:8545/1"
+                      ],
+                      "webSocket": [
+                        "ws://127.0.0.1:8545/1"
+                      ]
+                    },
+                    "public": {
+                      "http": [
+                        "http://127.0.0.1:8545/1"
+                      ],
+                      "webSocket": [
+                        "ws://127.0.0.1:8545/1"
+                      ]
+                    }
+                  },
+                  "serializers": {
+                    "$undefined": true
+                  }
+                },
+                "ws": {
+                  "$undefined": true
+                }
+              },
+              "checkpoint": "000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "event": {
+                "block": {},
+                "id": "000000000000000000000000000000000000000000000000000000000000000000000000000",
+                "transaction": {},
+                "transactionReceipt": {
+                  "$undefined": true
+                }
+              },
+              "eventCallback": {
+                "chain": {
+                  "cacheRpcRequests": true,
+                  "ethGetLogsBlockRange": {
+                    "$undefined": true
+                  },
+                  "id": 1,
+                  "name": "mainnet",
+                  "pollingInterval": 1000,
+                  "reorgWindow": 1,
+                  "rpc": "http://127.0.0.1:8545/1",
+                  "viemChain": {
+                    "blockExplorers": {
+                      "default": {
+                        "apiUrl": "https://api.etherscan.io/api",
+                        "name": "Etherscan",
+                        "url": "https://etherscan.io"
+                      }
+                    },
+                    "blockTime": 12000,
+                    "contracts": {
+                      "ensUniversalResolver": {
+                        "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                        "blockCreated": 23085558
+                      },
+                      "multicall3": {
+                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                        "blockCreated": 14353601
+                      }
+                    },
+                    "fees": {
+                      "$undefined": true
+                    },
+                    "formatters": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "Ethereum",
+                    "nativeCurrency": {
+                      "decimals": 18,
+                      "name": "Ether",
+                      "symbol": "ETH"
+                    },
+                    "rpcUrls": {
+                      "default": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      },
+                      "public": {
+                        "http": [
+                          "http://127.0.0.1:8545/1"
+                        ],
+                        "webSocket": [
+                          "ws://127.0.0.1:8545/1"
+                        ]
+                      }
+                    },
+                    "serializers": {
+                      "$undefined": true
+                    }
+                  },
+                  "ws": {
+                    "$undefined": true
+                  }
+                },
+                "direction": "to",
+                "filter": {
+                  "chainId": 1,
+                  "fromAddress": {
+                    "$undefined": true
+                  },
+                  "fromBlock": {
+                    "$undefined": true
+                  },
+                  "hasTransactionReceipt": true,
+                  "include": [
+                    "transaction.from",
+                    "transaction.gas",
+                    "transaction.hash",
+                    "transaction.input",
+                    "transaction.nonce",
+                    "transaction.r",
+                    "transaction.s",
+                    "transaction.to",
+                    "transaction.transactionIndex",
+                    "transaction.v",
+                    "transaction.value",
+                    "transaction.type",
+                    "transaction.gasPrice",
+                    "transaction.accessList",
+                    "transaction.maxFeePerGas",
+                    "transaction.maxPriorityFeePerGas",
+                    "transactionReceipt.contractAddress",
+                    "transactionReceipt.cumulativeGasUsed",
+                    "transactionReceipt.effectiveGasPrice",
+                    "transactionReceipt.from",
+                    "transactionReceipt.gasUsed",
+                    "transactionReceipt.logsBloom",
+                    "transactionReceipt.status",
+                    "transactionReceipt.to",
+                    "transactionReceipt.type",
+                    "block.baseFeePerGas",
+                    "block.difficulty",
+                    "block.extraData",
+                    "block.gasLimit",
+                    "block.gasUsed",
+                    "block.hash",
+                    "block.logsBloom",
+                    "block.miner",
+                    "block.mixHash",
+                    "block.totalDifficulty",
+                    "block.nonce",
+                    "block.number",
+                    "block.parentHash",
+                    "block.receiptsRoot",
+                    "block.sha3Uncles",
+                    "block.size",
+                    "block.stateRoot",
+                    "block.timestamp",
+                    "block.transactionsRoot"
+                  ],
+                  "sourceId": "Accounts",
+                  "toAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "toBlock": {
+                    "$undefined": true
+                  },
+                  "type": "transaction"
+                },
+                "fn": {
+                  "$function": true
+                },
+                "name": "Accounts:transaction:to",
+                "type": "account"
+              },
+              "type": "transaction"
+            }
+          ]
+        }
+      ],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "51d9321079f0432f5258",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "title": "buildEvents() transaction matches receipt by transaction index",
+      "source_name": "buildEvents() transaction matches receipt by transaction index",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "{ eventCallbacks } = getAccountsIndexingBuild({ address: ALICE })",
+        "block = {\n    number: 1n,\n    timestamp: 1n,\n    hash: toHex(1, { size: 32 }),\n  } as InternalBlock",
+        "transaction = (transactionIndex: number) =>\n    ({\n      blockNumber: 1,\n      transactionIndex,\n      hash: toHex(transactionIndex, { size: 32 }),\n      from: BOB,\n      to: ALICE.toLowerCase(),\n      type: \"legacy\",\n    }) as InternalTransaction",
+        "receipt = (\n    transactionIndex: number,\n    status: InternalTransactionReceipt[\"status\"],\n  ) =>\n    ({\n      blockNumber: 1,\n      transactionIndex,\n      from: BOB,\n      to: ALICE.toLowerCase(),\n      status,\n    }) as InternalTransactionReceipt",
+        "build = (transactionReceipts: InternalTransactionReceipt[]) =>\n    buildEvents({\n      eventCallbacks,\n      blocks: [block],\n      logs: [],\n      transactions: [transaction(0), transaction(1)],\n      transactionReceipts,\n      traces: [],\n      childAddresses: new Map(),\n      chainId: 1,\n    })",
+        "receipts = [receipt(0, \"reverted\"), receipt(1, \"success\")]",
+        "events = build(receipts)"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 459,
+          "text": "expect(events).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 460,
+          "text": "expect(events[0]!.transaction!.transactionIndex).toBe(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 461,
+          "text": "expect(events[0]!.transactionReceipt).toBe(receipts[1])"
+        },
+        {
+          "kind": "runtime",
+          "line": 463,
+          "text": "expect(() => build([receipt(1, \"success\")])).toThrow(\n    \"Missing transaction receipt for block 1 and transaction index 0\",\n  )"
+        },
+        {
+          "kind": "runtime",
+          "line": 466,
+          "text": "expect(() => build([receipt(0, \"success\")])).toThrow(\n    \"Missing transaction receipt for block 1 and transaction index 1\",\n  )"
+        }
+      ],
+      "test_source": "test(\"buildEvents() transaction matches receipt by transaction index\", async () => {\n  const { eventCallbacks } = getAccountsIndexingBuild({ address: ALICE });\n\n  const block = {\n    number: 1n,\n    timestamp: 1n,\n    hash: toHex(1, { size: 32 }),\n  } as InternalBlock;\n  const transaction = (transactionIndex: number) =>\n    ({\n      blockNumber: 1,\n      transactionIndex,\n      hash: toHex(transactionIndex, { size: 32 }),\n      from: BOB,\n      to: ALICE.toLowerCase(),\n      type: \"legacy\",\n    }) as InternalTransaction;\n  const receipt = (\n    transactionIndex: number,\n    status: InternalTransactionReceipt[\"status\"],\n  ) =>\n    ({\n      blockNumber: 1,\n      transactionIndex,\n      from: BOB,\n      to: ALICE.toLowerCase(),\n      status,\n    }) as InternalTransactionReceipt;\n\n  const build = (transactionReceipts: InternalTransactionReceipt[]) =>\n    buildEvents({\n      eventCallbacks,\n      blocks: [block],\n      logs: [],\n      transactions: [transaction(0), transaction(1)],\n      transactionReceipts,\n      traces: [],\n      childAddresses: new Map(),\n      chainId: 1,\n    });\n\n  const receipts = [receipt(0, \"reverted\"), receipt(1, \"success\")];\n  const events = build(receipts);\n  expect(events).toHaveLength(1);\n  expect(events[0]!.transaction!.transactionIndex).toBe(1);\n  expect(events[0]!.transactionReceipt).toBe(receipts[1]);\n\n  expect(() => build([receipt(1, \"success\")])).toThrow(\n    \"Missing transaction receipt for block 1 and transaction index 0\",\n  );\n  expect(() => build([receipt(0, \"success\")])).toThrow(\n    \"Missing transaction receipt for block 1 and transaction index 1\",\n  );\n})",
+      "calls": [
+        {
+          "operation": "buildEvents",
+          "args": [
+            {
+              "blocks": [
+                {
+                  "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                  "number": {
+                    "$bigint": "1"
+                  },
+                  "timestamp": {
+                    "$bigint": "1"
+                  }
+                }
+              ],
+              "chainId": 1,
+              "childAddresses": {
+                "$map": []
+              },
+              "eventCallbacks": [
+                {
+                  "chain": {
+                    "cacheRpcRequests": true,
+                    "ethGetLogsBlockRange": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "mainnet",
+                    "pollingInterval": 1000,
+                    "reorgWindow": 1,
+                    "rpc": "http://127.0.0.1:8545/1",
+                    "viemChain": {
+                      "blockExplorers": {
+                        "default": {
+                          "apiUrl": "https://api.etherscan.io/api",
+                          "name": "Etherscan",
+                          "url": "https://etherscan.io"
+                        }
+                      },
+                      "blockTime": 12000,
+                      "contracts": {
+                        "ensUniversalResolver": {
+                          "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                          "blockCreated": 23085558
+                        },
+                        "multicall3": {
+                          "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                          "blockCreated": 14353601
+                        }
+                      },
+                      "fees": {
+                        "$undefined": true
+                      },
+                      "formatters": {
+                        "$undefined": true
+                      },
+                      "id": 1,
+                      "name": "Ethereum",
+                      "nativeCurrency": {
+                        "decimals": 18,
+                        "name": "Ether",
+                        "symbol": "ETH"
+                      },
+                      "rpcUrls": {
+                        "default": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        },
+                        "public": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        }
+                      },
+                      "serializers": {
+                        "$undefined": true
+                      }
+                    },
+                    "ws": {
+                      "$undefined": true
+                    }
+                  },
+                  "direction": "to",
+                  "filter": {
+                    "chainId": 1,
+                    "fromAddress": {
+                      "$undefined": true
+                    },
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "hasTransactionReceipt": true,
+                    "include": [
+                      "transaction.from",
+                      "transaction.gas",
+                      "transaction.hash",
+                      "transaction.input",
+                      "transaction.nonce",
+                      "transaction.r",
+                      "transaction.s",
+                      "transaction.to",
+                      "transaction.transactionIndex",
+                      "transaction.v",
+                      "transaction.value",
+                      "transaction.type",
+                      "transaction.gasPrice",
+                      "transaction.accessList",
+                      "transaction.maxFeePerGas",
+                      "transaction.maxPriorityFeePerGas",
+                      "transactionReceipt.contractAddress",
+                      "transactionReceipt.cumulativeGasUsed",
+                      "transactionReceipt.effectiveGasPrice",
+                      "transactionReceipt.from",
+                      "transactionReceipt.gasUsed",
+                      "transactionReceipt.logsBloom",
+                      "transactionReceipt.status",
+                      "transactionReceipt.to",
+                      "transactionReceipt.type",
+                      "block.baseFeePerGas",
+                      "block.difficulty",
+                      "block.extraData",
+                      "block.gasLimit",
+                      "block.gasUsed",
+                      "block.hash",
+                      "block.logsBloom",
+                      "block.miner",
+                      "block.mixHash",
+                      "block.totalDifficulty",
+                      "block.nonce",
+                      "block.number",
+                      "block.parentHash",
+                      "block.receiptsRoot",
+                      "block.sha3Uncles",
+                      "block.size",
+                      "block.stateRoot",
+                      "block.timestamp",
+                      "block.transactionsRoot"
+                    ],
+                    "sourceId": "Accounts",
+                    "toAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "transaction"
+                  },
+                  "fn": {
+                    "$function": true
+                  },
+                  "name": "Accounts:transaction:to",
+                  "type": "account"
+                },
+                {
+                  "chain": {
+                    "cacheRpcRequests": true,
+                    "ethGetLogsBlockRange": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "mainnet",
+                    "pollingInterval": 1000,
+                    "reorgWindow": 1,
+                    "rpc": "http://127.0.0.1:8545/1",
+                    "viemChain": {
+                      "blockExplorers": {
+                        "default": {
+                          "apiUrl": "https://api.etherscan.io/api",
+                          "name": "Etherscan",
+                          "url": "https://etherscan.io"
+                        }
+                      },
+                      "blockTime": 12000,
+                      "contracts": {
+                        "ensUniversalResolver": {
+                          "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                          "blockCreated": 23085558
+                        },
+                        "multicall3": {
+                          "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                          "blockCreated": 14353601
+                        }
+                      },
+                      "fees": {
+                        "$undefined": true
+                      },
+                      "formatters": {
+                        "$undefined": true
+                      },
+                      "id": 1,
+                      "name": "Ethereum",
+                      "nativeCurrency": {
+                        "decimals": 18,
+                        "name": "Ether",
+                        "symbol": "ETH"
+                      },
+                      "rpcUrls": {
+                        "default": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        },
+                        "public": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        }
+                      },
+                      "serializers": {
+                        "$undefined": true
+                      }
+                    },
+                    "ws": {
+                      "$undefined": true
+                    }
+                  },
+                  "direction": "from",
+                  "filter": {
+                    "chainId": 1,
+                    "fromAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "hasTransactionReceipt": true,
+                    "include": [
+                      "transaction.from",
+                      "transaction.gas",
+                      "transaction.hash",
+                      "transaction.input",
+                      "transaction.nonce",
+                      "transaction.r",
+                      "transaction.s",
+                      "transaction.to",
+                      "transaction.transactionIndex",
+                      "transaction.v",
+                      "transaction.value",
+                      "transaction.type",
+                      "transaction.gasPrice",
+                      "transaction.accessList",
+                      "transaction.maxFeePerGas",
+                      "transaction.maxPriorityFeePerGas",
+                      "transactionReceipt.contractAddress",
+                      "transactionReceipt.cumulativeGasUsed",
+                      "transactionReceipt.effectiveGasPrice",
+                      "transactionReceipt.from",
+                      "transactionReceipt.gasUsed",
+                      "transactionReceipt.logsBloom",
+                      "transactionReceipt.status",
+                      "transactionReceipt.to",
+                      "transactionReceipt.type",
+                      "block.baseFeePerGas",
+                      "block.difficulty",
+                      "block.extraData",
+                      "block.gasLimit",
+                      "block.gasUsed",
+                      "block.hash",
+                      "block.logsBloom",
+                      "block.miner",
+                      "block.mixHash",
+                      "block.totalDifficulty",
+                      "block.nonce",
+                      "block.number",
+                      "block.parentHash",
+                      "block.receiptsRoot",
+                      "block.sha3Uncles",
+                      "block.size",
+                      "block.stateRoot",
+                      "block.timestamp",
+                      "block.transactionsRoot"
+                    ],
+                    "sourceId": "Accounts",
+                    "toAddress": {
+                      "$undefined": true
+                    },
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "transaction"
+                  },
+                  "fn": {
+                    "$function": true
+                  },
+                  "name": "Accounts:transaction:from",
+                  "type": "account"
+                },
+                {
+                  "chain": {
+                    "cacheRpcRequests": true,
+                    "ethGetLogsBlockRange": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "mainnet",
+                    "pollingInterval": 1000,
+                    "reorgWindow": 1,
+                    "rpc": "http://127.0.0.1:8545/1",
+                    "viemChain": {
+                      "blockExplorers": {
+                        "default": {
+                          "apiUrl": "https://api.etherscan.io/api",
+                          "name": "Etherscan",
+                          "url": "https://etherscan.io"
+                        }
+                      },
+                      "blockTime": 12000,
+                      "contracts": {
+                        "ensUniversalResolver": {
+                          "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                          "blockCreated": 23085558
+                        },
+                        "multicall3": {
+                          "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                          "blockCreated": 14353601
+                        }
+                      },
+                      "fees": {
+                        "$undefined": true
+                      },
+                      "formatters": {
+                        "$undefined": true
+                      },
+                      "id": 1,
+                      "name": "Ethereum",
+                      "nativeCurrency": {
+                        "decimals": 18,
+                        "name": "Ether",
+                        "symbol": "ETH"
+                      },
+                      "rpcUrls": {
+                        "default": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        },
+                        "public": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        }
+                      },
+                      "serializers": {
+                        "$undefined": true
+                      }
+                    },
+                    "ws": {
+                      "$undefined": true
+                    }
+                  },
+                  "direction": "to",
+                  "filter": {
+                    "chainId": 1,
+                    "fromAddress": {
+                      "$undefined": true
+                    },
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "hasTransactionReceipt": false,
+                    "include": [
+                      "block.baseFeePerGas",
+                      "block.difficulty",
+                      "block.extraData",
+                      "block.gasLimit",
+                      "block.gasUsed",
+                      "block.hash",
+                      "block.logsBloom",
+                      "block.miner",
+                      "block.mixHash",
+                      "block.totalDifficulty",
+                      "block.nonce",
+                      "block.number",
+                      "block.parentHash",
+                      "block.receiptsRoot",
+                      "block.sha3Uncles",
+                      "block.size",
+                      "block.stateRoot",
+                      "block.timestamp",
+                      "block.transactionsRoot",
+                      "transaction.from",
+                      "transaction.gas",
+                      "transaction.hash",
+                      "transaction.input",
+                      "transaction.nonce",
+                      "transaction.r",
+                      "transaction.s",
+                      "transaction.to",
+                      "transaction.transactionIndex",
+                      "transaction.v",
+                      "transaction.value",
+                      "transaction.type",
+                      "transaction.gasPrice",
+                      "transaction.accessList",
+                      "transaction.maxFeePerGas",
+                      "transaction.maxPriorityFeePerGas",
+                      "trace.traceAddress",
+                      "trace.type",
+                      "trace.from",
+                      "trace.to",
+                      "trace.gas",
+                      "trace.gasUsed",
+                      "trace.input",
+                      "trace.output",
+                      "trace.value"
+                    ],
+                    "sourceId": "Accounts",
+                    "toAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "transfer"
+                  },
+                  "fn": {
+                    "$function": true
+                  },
+                  "name": "Accounts:transfer:to",
+                  "type": "account"
+                },
+                {
+                  "chain": {
+                    "cacheRpcRequests": true,
+                    "ethGetLogsBlockRange": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "mainnet",
+                    "pollingInterval": 1000,
+                    "reorgWindow": 1,
+                    "rpc": "http://127.0.0.1:8545/1",
+                    "viemChain": {
+                      "blockExplorers": {
+                        "default": {
+                          "apiUrl": "https://api.etherscan.io/api",
+                          "name": "Etherscan",
+                          "url": "https://etherscan.io"
+                        }
+                      },
+                      "blockTime": 12000,
+                      "contracts": {
+                        "ensUniversalResolver": {
+                          "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                          "blockCreated": 23085558
+                        },
+                        "multicall3": {
+                          "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                          "blockCreated": 14353601
+                        }
+                      },
+                      "fees": {
+                        "$undefined": true
+                      },
+                      "formatters": {
+                        "$undefined": true
+                      },
+                      "id": 1,
+                      "name": "Ethereum",
+                      "nativeCurrency": {
+                        "decimals": 18,
+                        "name": "Ether",
+                        "symbol": "ETH"
+                      },
+                      "rpcUrls": {
+                        "default": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        },
+                        "public": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        }
+                      },
+                      "serializers": {
+                        "$undefined": true
+                      }
+                    },
+                    "ws": {
+                      "$undefined": true
+                    }
+                  },
+                  "direction": "from",
+                  "filter": {
+                    "chainId": 1,
+                    "fromAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "hasTransactionReceipt": false,
+                    "include": [
+                      "block.baseFeePerGas",
+                      "block.difficulty",
+                      "block.extraData",
+                      "block.gasLimit",
+                      "block.gasUsed",
+                      "block.hash",
+                      "block.logsBloom",
+                      "block.miner",
+                      "block.mixHash",
+                      "block.totalDifficulty",
+                      "block.nonce",
+                      "block.number",
+                      "block.parentHash",
+                      "block.receiptsRoot",
+                      "block.sha3Uncles",
+                      "block.size",
+                      "block.stateRoot",
+                      "block.timestamp",
+                      "block.transactionsRoot",
+                      "transaction.from",
+                      "transaction.gas",
+                      "transaction.hash",
+                      "transaction.input",
+                      "transaction.nonce",
+                      "transaction.r",
+                      "transaction.s",
+                      "transaction.to",
+                      "transaction.transactionIndex",
+                      "transaction.v",
+                      "transaction.value",
+                      "transaction.type",
+                      "transaction.gasPrice",
+                      "transaction.accessList",
+                      "transaction.maxFeePerGas",
+                      "transaction.maxPriorityFeePerGas",
+                      "trace.traceAddress",
+                      "trace.type",
+                      "trace.from",
+                      "trace.to",
+                      "trace.gas",
+                      "trace.gasUsed",
+                      "trace.input",
+                      "trace.output",
+                      "trace.value"
+                    ],
+                    "sourceId": "Accounts",
+                    "toAddress": {
+                      "$undefined": true
+                    },
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "transfer"
+                  },
+                  "fn": {
+                    "$function": true
+                  },
+                  "name": "Accounts:transfer:from",
+                  "type": "account"
+                }
+              ],
+              "logs": [],
+              "traces": [],
+              "transactionReceipts": [
+                {
+                  "blockNumber": 1,
+                  "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "status": "reverted",
+                  "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "transactionIndex": 0
+                },
+                {
+                  "blockNumber": 1,
+                  "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "status": "success",
+                  "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "transactionIndex": 1
+                }
+              ],
+              "transactions": [
+                {
+                  "blockNumber": 1,
+                  "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                  "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "transactionIndex": 0,
+                  "type": "legacy"
+                },
+                {
+                  "blockNumber": 1,
+                  "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                  "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "transactionIndex": 1,
+                  "type": "legacy"
+                }
+              ]
+            }
+          ],
+          "result": [
+            {
+              "block": {
+                "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                "number": {
+                  "$bigint": "1"
+                },
+                "timestamp": {
+                  "$bigint": "1"
+                }
+              },
+              "chainId": 1,
+              "checkpoint": "000000000100000000000000010000000000000001000000000000000120000000000000000",
+              "eventCallbackIndex": 0,
+              "log": {
+                "$undefined": true
+              },
+              "trace": {
+                "$undefined": true
+              },
+              "transaction": {
+                "blockNumber": 1,
+                "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                "transactionIndex": 1,
+                "type": "legacy"
+              },
+              "transactionReceipt": {
+                "blockNumber": 1,
+                "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                "status": "success",
+                "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                "transactionIndex": 1
+              }
+            }
+          ]
+        },
+        {
+          "operation": "buildEvents",
+          "args": [
+            {
+              "blocks": [
+                {
+                  "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                  "number": {
+                    "$bigint": "1"
+                  },
+                  "timestamp": {
+                    "$bigint": "1"
+                  }
+                }
+              ],
+              "chainId": 1,
+              "childAddresses": {
+                "$map": []
+              },
+              "eventCallbacks": [
+                {
+                  "chain": {
+                    "cacheRpcRequests": true,
+                    "ethGetLogsBlockRange": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "mainnet",
+                    "pollingInterval": 1000,
+                    "reorgWindow": 1,
+                    "rpc": "http://127.0.0.1:8545/1",
+                    "viemChain": {
+                      "blockExplorers": {
+                        "default": {
+                          "apiUrl": "https://api.etherscan.io/api",
+                          "name": "Etherscan",
+                          "url": "https://etherscan.io"
+                        }
+                      },
+                      "blockTime": 12000,
+                      "contracts": {
+                        "ensUniversalResolver": {
+                          "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                          "blockCreated": 23085558
+                        },
+                        "multicall3": {
+                          "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                          "blockCreated": 14353601
+                        }
+                      },
+                      "fees": {
+                        "$undefined": true
+                      },
+                      "formatters": {
+                        "$undefined": true
+                      },
+                      "id": 1,
+                      "name": "Ethereum",
+                      "nativeCurrency": {
+                        "decimals": 18,
+                        "name": "Ether",
+                        "symbol": "ETH"
+                      },
+                      "rpcUrls": {
+                        "default": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        },
+                        "public": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        }
+                      },
+                      "serializers": {
+                        "$undefined": true
+                      }
+                    },
+                    "ws": {
+                      "$undefined": true
+                    }
+                  },
+                  "direction": "to",
+                  "filter": {
+                    "chainId": 1,
+                    "fromAddress": {
+                      "$undefined": true
+                    },
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "hasTransactionReceipt": true,
+                    "include": [
+                      "transaction.from",
+                      "transaction.gas",
+                      "transaction.hash",
+                      "transaction.input",
+                      "transaction.nonce",
+                      "transaction.r",
+                      "transaction.s",
+                      "transaction.to",
+                      "transaction.transactionIndex",
+                      "transaction.v",
+                      "transaction.value",
+                      "transaction.type",
+                      "transaction.gasPrice",
+                      "transaction.accessList",
+                      "transaction.maxFeePerGas",
+                      "transaction.maxPriorityFeePerGas",
+                      "transactionReceipt.contractAddress",
+                      "transactionReceipt.cumulativeGasUsed",
+                      "transactionReceipt.effectiveGasPrice",
+                      "transactionReceipt.from",
+                      "transactionReceipt.gasUsed",
+                      "transactionReceipt.logsBloom",
+                      "transactionReceipt.status",
+                      "transactionReceipt.to",
+                      "transactionReceipt.type",
+                      "block.baseFeePerGas",
+                      "block.difficulty",
+                      "block.extraData",
+                      "block.gasLimit",
+                      "block.gasUsed",
+                      "block.hash",
+                      "block.logsBloom",
+                      "block.miner",
+                      "block.mixHash",
+                      "block.totalDifficulty",
+                      "block.nonce",
+                      "block.number",
+                      "block.parentHash",
+                      "block.receiptsRoot",
+                      "block.sha3Uncles",
+                      "block.size",
+                      "block.stateRoot",
+                      "block.timestamp",
+                      "block.transactionsRoot"
+                    ],
+                    "sourceId": "Accounts",
+                    "toAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "transaction"
+                  },
+                  "fn": {
+                    "$function": true
+                  },
+                  "name": "Accounts:transaction:to",
+                  "type": "account"
+                },
+                {
+                  "chain": {
+                    "cacheRpcRequests": true,
+                    "ethGetLogsBlockRange": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "mainnet",
+                    "pollingInterval": 1000,
+                    "reorgWindow": 1,
+                    "rpc": "http://127.0.0.1:8545/1",
+                    "viemChain": {
+                      "blockExplorers": {
+                        "default": {
+                          "apiUrl": "https://api.etherscan.io/api",
+                          "name": "Etherscan",
+                          "url": "https://etherscan.io"
+                        }
+                      },
+                      "blockTime": 12000,
+                      "contracts": {
+                        "ensUniversalResolver": {
+                          "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                          "blockCreated": 23085558
+                        },
+                        "multicall3": {
+                          "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                          "blockCreated": 14353601
+                        }
+                      },
+                      "fees": {
+                        "$undefined": true
+                      },
+                      "formatters": {
+                        "$undefined": true
+                      },
+                      "id": 1,
+                      "name": "Ethereum",
+                      "nativeCurrency": {
+                        "decimals": 18,
+                        "name": "Ether",
+                        "symbol": "ETH"
+                      },
+                      "rpcUrls": {
+                        "default": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        },
+                        "public": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        }
+                      },
+                      "serializers": {
+                        "$undefined": true
+                      }
+                    },
+                    "ws": {
+                      "$undefined": true
+                    }
+                  },
+                  "direction": "from",
+                  "filter": {
+                    "chainId": 1,
+                    "fromAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "hasTransactionReceipt": true,
+                    "include": [
+                      "transaction.from",
+                      "transaction.gas",
+                      "transaction.hash",
+                      "transaction.input",
+                      "transaction.nonce",
+                      "transaction.r",
+                      "transaction.s",
+                      "transaction.to",
+                      "transaction.transactionIndex",
+                      "transaction.v",
+                      "transaction.value",
+                      "transaction.type",
+                      "transaction.gasPrice",
+                      "transaction.accessList",
+                      "transaction.maxFeePerGas",
+                      "transaction.maxPriorityFeePerGas",
+                      "transactionReceipt.contractAddress",
+                      "transactionReceipt.cumulativeGasUsed",
+                      "transactionReceipt.effectiveGasPrice",
+                      "transactionReceipt.from",
+                      "transactionReceipt.gasUsed",
+                      "transactionReceipt.logsBloom",
+                      "transactionReceipt.status",
+                      "transactionReceipt.to",
+                      "transactionReceipt.type",
+                      "block.baseFeePerGas",
+                      "block.difficulty",
+                      "block.extraData",
+                      "block.gasLimit",
+                      "block.gasUsed",
+                      "block.hash",
+                      "block.logsBloom",
+                      "block.miner",
+                      "block.mixHash",
+                      "block.totalDifficulty",
+                      "block.nonce",
+                      "block.number",
+                      "block.parentHash",
+                      "block.receiptsRoot",
+                      "block.sha3Uncles",
+                      "block.size",
+                      "block.stateRoot",
+                      "block.timestamp",
+                      "block.transactionsRoot"
+                    ],
+                    "sourceId": "Accounts",
+                    "toAddress": {
+                      "$undefined": true
+                    },
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "transaction"
+                  },
+                  "fn": {
+                    "$function": true
+                  },
+                  "name": "Accounts:transaction:from",
+                  "type": "account"
+                },
+                {
+                  "chain": {
+                    "cacheRpcRequests": true,
+                    "ethGetLogsBlockRange": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "mainnet",
+                    "pollingInterval": 1000,
+                    "reorgWindow": 1,
+                    "rpc": "http://127.0.0.1:8545/1",
+                    "viemChain": {
+                      "blockExplorers": {
+                        "default": {
+                          "apiUrl": "https://api.etherscan.io/api",
+                          "name": "Etherscan",
+                          "url": "https://etherscan.io"
+                        }
+                      },
+                      "blockTime": 12000,
+                      "contracts": {
+                        "ensUniversalResolver": {
+                          "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                          "blockCreated": 23085558
+                        },
+                        "multicall3": {
+                          "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                          "blockCreated": 14353601
+                        }
+                      },
+                      "fees": {
+                        "$undefined": true
+                      },
+                      "formatters": {
+                        "$undefined": true
+                      },
+                      "id": 1,
+                      "name": "Ethereum",
+                      "nativeCurrency": {
+                        "decimals": 18,
+                        "name": "Ether",
+                        "symbol": "ETH"
+                      },
+                      "rpcUrls": {
+                        "default": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        },
+                        "public": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        }
+                      },
+                      "serializers": {
+                        "$undefined": true
+                      }
+                    },
+                    "ws": {
+                      "$undefined": true
+                    }
+                  },
+                  "direction": "to",
+                  "filter": {
+                    "chainId": 1,
+                    "fromAddress": {
+                      "$undefined": true
+                    },
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "hasTransactionReceipt": false,
+                    "include": [
+                      "block.baseFeePerGas",
+                      "block.difficulty",
+                      "block.extraData",
+                      "block.gasLimit",
+                      "block.gasUsed",
+                      "block.hash",
+                      "block.logsBloom",
+                      "block.miner",
+                      "block.mixHash",
+                      "block.totalDifficulty",
+                      "block.nonce",
+                      "block.number",
+                      "block.parentHash",
+                      "block.receiptsRoot",
+                      "block.sha3Uncles",
+                      "block.size",
+                      "block.stateRoot",
+                      "block.timestamp",
+                      "block.transactionsRoot",
+                      "transaction.from",
+                      "transaction.gas",
+                      "transaction.hash",
+                      "transaction.input",
+                      "transaction.nonce",
+                      "transaction.r",
+                      "transaction.s",
+                      "transaction.to",
+                      "transaction.transactionIndex",
+                      "transaction.v",
+                      "transaction.value",
+                      "transaction.type",
+                      "transaction.gasPrice",
+                      "transaction.accessList",
+                      "transaction.maxFeePerGas",
+                      "transaction.maxPriorityFeePerGas",
+                      "trace.traceAddress",
+                      "trace.type",
+                      "trace.from",
+                      "trace.to",
+                      "trace.gas",
+                      "trace.gasUsed",
+                      "trace.input",
+                      "trace.output",
+                      "trace.value"
+                    ],
+                    "sourceId": "Accounts",
+                    "toAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "transfer"
+                  },
+                  "fn": {
+                    "$function": true
+                  },
+                  "name": "Accounts:transfer:to",
+                  "type": "account"
+                },
+                {
+                  "chain": {
+                    "cacheRpcRequests": true,
+                    "ethGetLogsBlockRange": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "mainnet",
+                    "pollingInterval": 1000,
+                    "reorgWindow": 1,
+                    "rpc": "http://127.0.0.1:8545/1",
+                    "viemChain": {
+                      "blockExplorers": {
+                        "default": {
+                          "apiUrl": "https://api.etherscan.io/api",
+                          "name": "Etherscan",
+                          "url": "https://etherscan.io"
+                        }
+                      },
+                      "blockTime": 12000,
+                      "contracts": {
+                        "ensUniversalResolver": {
+                          "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                          "blockCreated": 23085558
+                        },
+                        "multicall3": {
+                          "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                          "blockCreated": 14353601
+                        }
+                      },
+                      "fees": {
+                        "$undefined": true
+                      },
+                      "formatters": {
+                        "$undefined": true
+                      },
+                      "id": 1,
+                      "name": "Ethereum",
+                      "nativeCurrency": {
+                        "decimals": 18,
+                        "name": "Ether",
+                        "symbol": "ETH"
+                      },
+                      "rpcUrls": {
+                        "default": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        },
+                        "public": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        }
+                      },
+                      "serializers": {
+                        "$undefined": true
+                      }
+                    },
+                    "ws": {
+                      "$undefined": true
+                    }
+                  },
+                  "direction": "from",
+                  "filter": {
+                    "chainId": 1,
+                    "fromAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "hasTransactionReceipt": false,
+                    "include": [
+                      "block.baseFeePerGas",
+                      "block.difficulty",
+                      "block.extraData",
+                      "block.gasLimit",
+                      "block.gasUsed",
+                      "block.hash",
+                      "block.logsBloom",
+                      "block.miner",
+                      "block.mixHash",
+                      "block.totalDifficulty",
+                      "block.nonce",
+                      "block.number",
+                      "block.parentHash",
+                      "block.receiptsRoot",
+                      "block.sha3Uncles",
+                      "block.size",
+                      "block.stateRoot",
+                      "block.timestamp",
+                      "block.transactionsRoot",
+                      "transaction.from",
+                      "transaction.gas",
+                      "transaction.hash",
+                      "transaction.input",
+                      "transaction.nonce",
+                      "transaction.r",
+                      "transaction.s",
+                      "transaction.to",
+                      "transaction.transactionIndex",
+                      "transaction.v",
+                      "transaction.value",
+                      "transaction.type",
+                      "transaction.gasPrice",
+                      "transaction.accessList",
+                      "transaction.maxFeePerGas",
+                      "transaction.maxPriorityFeePerGas",
+                      "trace.traceAddress",
+                      "trace.type",
+                      "trace.from",
+                      "trace.to",
+                      "trace.gas",
+                      "trace.gasUsed",
+                      "trace.input",
+                      "trace.output",
+                      "trace.value"
+                    ],
+                    "sourceId": "Accounts",
+                    "toAddress": {
+                      "$undefined": true
+                    },
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "transfer"
+                  },
+                  "fn": {
+                    "$function": true
+                  },
+                  "name": "Accounts:transfer:from",
+                  "type": "account"
+                }
+              ],
+              "logs": [],
+              "traces": [],
+              "transactionReceipts": [
+                {
+                  "blockNumber": 1,
+                  "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "status": "success",
+                  "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "transactionIndex": 1
+                }
+              ],
+              "transactions": [
+                {
+                  "blockNumber": 1,
+                  "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                  "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "transactionIndex": 0,
+                  "type": "legacy"
+                },
+                {
+                  "blockNumber": 1,
+                  "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                  "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "transactionIndex": 1,
+                  "type": "legacy"
+                }
+              ]
+            }
+          ],
+          "error": {
+            "name": "Error",
+            "message": "Failed to build events from block data. Missing transaction receipt for block 1 and transaction index 0 for chain ID 1"
+          }
+        },
+        {
+          "operation": "buildEvents",
+          "args": [
+            {
+              "blocks": [
+                {
+                  "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                  "number": {
+                    "$bigint": "1"
+                  },
+                  "timestamp": {
+                    "$bigint": "1"
+                  }
+                }
+              ],
+              "chainId": 1,
+              "childAddresses": {
+                "$map": []
+              },
+              "eventCallbacks": [
+                {
+                  "chain": {
+                    "cacheRpcRequests": true,
+                    "ethGetLogsBlockRange": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "mainnet",
+                    "pollingInterval": 1000,
+                    "reorgWindow": 1,
+                    "rpc": "http://127.0.0.1:8545/1",
+                    "viemChain": {
+                      "blockExplorers": {
+                        "default": {
+                          "apiUrl": "https://api.etherscan.io/api",
+                          "name": "Etherscan",
+                          "url": "https://etherscan.io"
+                        }
+                      },
+                      "blockTime": 12000,
+                      "contracts": {
+                        "ensUniversalResolver": {
+                          "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                          "blockCreated": 23085558
+                        },
+                        "multicall3": {
+                          "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                          "blockCreated": 14353601
+                        }
+                      },
+                      "fees": {
+                        "$undefined": true
+                      },
+                      "formatters": {
+                        "$undefined": true
+                      },
+                      "id": 1,
+                      "name": "Ethereum",
+                      "nativeCurrency": {
+                        "decimals": 18,
+                        "name": "Ether",
+                        "symbol": "ETH"
+                      },
+                      "rpcUrls": {
+                        "default": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        },
+                        "public": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        }
+                      },
+                      "serializers": {
+                        "$undefined": true
+                      }
+                    },
+                    "ws": {
+                      "$undefined": true
+                    }
+                  },
+                  "direction": "to",
+                  "filter": {
+                    "chainId": 1,
+                    "fromAddress": {
+                      "$undefined": true
+                    },
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "hasTransactionReceipt": true,
+                    "include": [
+                      "transaction.from",
+                      "transaction.gas",
+                      "transaction.hash",
+                      "transaction.input",
+                      "transaction.nonce",
+                      "transaction.r",
+                      "transaction.s",
+                      "transaction.to",
+                      "transaction.transactionIndex",
+                      "transaction.v",
+                      "transaction.value",
+                      "transaction.type",
+                      "transaction.gasPrice",
+                      "transaction.accessList",
+                      "transaction.maxFeePerGas",
+                      "transaction.maxPriorityFeePerGas",
+                      "transactionReceipt.contractAddress",
+                      "transactionReceipt.cumulativeGasUsed",
+                      "transactionReceipt.effectiveGasPrice",
+                      "transactionReceipt.from",
+                      "transactionReceipt.gasUsed",
+                      "transactionReceipt.logsBloom",
+                      "transactionReceipt.status",
+                      "transactionReceipt.to",
+                      "transactionReceipt.type",
+                      "block.baseFeePerGas",
+                      "block.difficulty",
+                      "block.extraData",
+                      "block.gasLimit",
+                      "block.gasUsed",
+                      "block.hash",
+                      "block.logsBloom",
+                      "block.miner",
+                      "block.mixHash",
+                      "block.totalDifficulty",
+                      "block.nonce",
+                      "block.number",
+                      "block.parentHash",
+                      "block.receiptsRoot",
+                      "block.sha3Uncles",
+                      "block.size",
+                      "block.stateRoot",
+                      "block.timestamp",
+                      "block.transactionsRoot"
+                    ],
+                    "sourceId": "Accounts",
+                    "toAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "transaction"
+                  },
+                  "fn": {
+                    "$function": true
+                  },
+                  "name": "Accounts:transaction:to",
+                  "type": "account"
+                },
+                {
+                  "chain": {
+                    "cacheRpcRequests": true,
+                    "ethGetLogsBlockRange": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "mainnet",
+                    "pollingInterval": 1000,
+                    "reorgWindow": 1,
+                    "rpc": "http://127.0.0.1:8545/1",
+                    "viemChain": {
+                      "blockExplorers": {
+                        "default": {
+                          "apiUrl": "https://api.etherscan.io/api",
+                          "name": "Etherscan",
+                          "url": "https://etherscan.io"
+                        }
+                      },
+                      "blockTime": 12000,
+                      "contracts": {
+                        "ensUniversalResolver": {
+                          "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                          "blockCreated": 23085558
+                        },
+                        "multicall3": {
+                          "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                          "blockCreated": 14353601
+                        }
+                      },
+                      "fees": {
+                        "$undefined": true
+                      },
+                      "formatters": {
+                        "$undefined": true
+                      },
+                      "id": 1,
+                      "name": "Ethereum",
+                      "nativeCurrency": {
+                        "decimals": 18,
+                        "name": "Ether",
+                        "symbol": "ETH"
+                      },
+                      "rpcUrls": {
+                        "default": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        },
+                        "public": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        }
+                      },
+                      "serializers": {
+                        "$undefined": true
+                      }
+                    },
+                    "ws": {
+                      "$undefined": true
+                    }
+                  },
+                  "direction": "from",
+                  "filter": {
+                    "chainId": 1,
+                    "fromAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "hasTransactionReceipt": true,
+                    "include": [
+                      "transaction.from",
+                      "transaction.gas",
+                      "transaction.hash",
+                      "transaction.input",
+                      "transaction.nonce",
+                      "transaction.r",
+                      "transaction.s",
+                      "transaction.to",
+                      "transaction.transactionIndex",
+                      "transaction.v",
+                      "transaction.value",
+                      "transaction.type",
+                      "transaction.gasPrice",
+                      "transaction.accessList",
+                      "transaction.maxFeePerGas",
+                      "transaction.maxPriorityFeePerGas",
+                      "transactionReceipt.contractAddress",
+                      "transactionReceipt.cumulativeGasUsed",
+                      "transactionReceipt.effectiveGasPrice",
+                      "transactionReceipt.from",
+                      "transactionReceipt.gasUsed",
+                      "transactionReceipt.logsBloom",
+                      "transactionReceipt.status",
+                      "transactionReceipt.to",
+                      "transactionReceipt.type",
+                      "block.baseFeePerGas",
+                      "block.difficulty",
+                      "block.extraData",
+                      "block.gasLimit",
+                      "block.gasUsed",
+                      "block.hash",
+                      "block.logsBloom",
+                      "block.miner",
+                      "block.mixHash",
+                      "block.totalDifficulty",
+                      "block.nonce",
+                      "block.number",
+                      "block.parentHash",
+                      "block.receiptsRoot",
+                      "block.sha3Uncles",
+                      "block.size",
+                      "block.stateRoot",
+                      "block.timestamp",
+                      "block.transactionsRoot"
+                    ],
+                    "sourceId": "Accounts",
+                    "toAddress": {
+                      "$undefined": true
+                    },
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "transaction"
+                  },
+                  "fn": {
+                    "$function": true
+                  },
+                  "name": "Accounts:transaction:from",
+                  "type": "account"
+                },
+                {
+                  "chain": {
+                    "cacheRpcRequests": true,
+                    "ethGetLogsBlockRange": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "mainnet",
+                    "pollingInterval": 1000,
+                    "reorgWindow": 1,
+                    "rpc": "http://127.0.0.1:8545/1",
+                    "viemChain": {
+                      "blockExplorers": {
+                        "default": {
+                          "apiUrl": "https://api.etherscan.io/api",
+                          "name": "Etherscan",
+                          "url": "https://etherscan.io"
+                        }
+                      },
+                      "blockTime": 12000,
+                      "contracts": {
+                        "ensUniversalResolver": {
+                          "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                          "blockCreated": 23085558
+                        },
+                        "multicall3": {
+                          "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                          "blockCreated": 14353601
+                        }
+                      },
+                      "fees": {
+                        "$undefined": true
+                      },
+                      "formatters": {
+                        "$undefined": true
+                      },
+                      "id": 1,
+                      "name": "Ethereum",
+                      "nativeCurrency": {
+                        "decimals": 18,
+                        "name": "Ether",
+                        "symbol": "ETH"
+                      },
+                      "rpcUrls": {
+                        "default": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        },
+                        "public": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        }
+                      },
+                      "serializers": {
+                        "$undefined": true
+                      }
+                    },
+                    "ws": {
+                      "$undefined": true
+                    }
+                  },
+                  "direction": "to",
+                  "filter": {
+                    "chainId": 1,
+                    "fromAddress": {
+                      "$undefined": true
+                    },
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "hasTransactionReceipt": false,
+                    "include": [
+                      "block.baseFeePerGas",
+                      "block.difficulty",
+                      "block.extraData",
+                      "block.gasLimit",
+                      "block.gasUsed",
+                      "block.hash",
+                      "block.logsBloom",
+                      "block.miner",
+                      "block.mixHash",
+                      "block.totalDifficulty",
+                      "block.nonce",
+                      "block.number",
+                      "block.parentHash",
+                      "block.receiptsRoot",
+                      "block.sha3Uncles",
+                      "block.size",
+                      "block.stateRoot",
+                      "block.timestamp",
+                      "block.transactionsRoot",
+                      "transaction.from",
+                      "transaction.gas",
+                      "transaction.hash",
+                      "transaction.input",
+                      "transaction.nonce",
+                      "transaction.r",
+                      "transaction.s",
+                      "transaction.to",
+                      "transaction.transactionIndex",
+                      "transaction.v",
+                      "transaction.value",
+                      "transaction.type",
+                      "transaction.gasPrice",
+                      "transaction.accessList",
+                      "transaction.maxFeePerGas",
+                      "transaction.maxPriorityFeePerGas",
+                      "trace.traceAddress",
+                      "trace.type",
+                      "trace.from",
+                      "trace.to",
+                      "trace.gas",
+                      "trace.gasUsed",
+                      "trace.input",
+                      "trace.output",
+                      "trace.value"
+                    ],
+                    "sourceId": "Accounts",
+                    "toAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "transfer"
+                  },
+                  "fn": {
+                    "$function": true
+                  },
+                  "name": "Accounts:transfer:to",
+                  "type": "account"
+                },
+                {
+                  "chain": {
+                    "cacheRpcRequests": true,
+                    "ethGetLogsBlockRange": {
+                      "$undefined": true
+                    },
+                    "id": 1,
+                    "name": "mainnet",
+                    "pollingInterval": 1000,
+                    "reorgWindow": 1,
+                    "rpc": "http://127.0.0.1:8545/1",
+                    "viemChain": {
+                      "blockExplorers": {
+                        "default": {
+                          "apiUrl": "https://api.etherscan.io/api",
+                          "name": "Etherscan",
+                          "url": "https://etherscan.io"
+                        }
+                      },
+                      "blockTime": 12000,
+                      "contracts": {
+                        "ensUniversalResolver": {
+                          "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+                          "blockCreated": 23085558
+                        },
+                        "multicall3": {
+                          "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                          "blockCreated": 14353601
+                        }
+                      },
+                      "fees": {
+                        "$undefined": true
+                      },
+                      "formatters": {
+                        "$undefined": true
+                      },
+                      "id": 1,
+                      "name": "Ethereum",
+                      "nativeCurrency": {
+                        "decimals": 18,
+                        "name": "Ether",
+                        "symbol": "ETH"
+                      },
+                      "rpcUrls": {
+                        "default": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        },
+                        "public": {
+                          "http": [
+                            "http://127.0.0.1:8545/1"
+                          ],
+                          "webSocket": [
+                            "ws://127.0.0.1:8545/1"
+                          ]
+                        }
+                      },
+                      "serializers": {
+                        "$undefined": true
+                      }
+                    },
+                    "ws": {
+                      "$undefined": true
+                    }
+                  },
+                  "direction": "from",
+                  "filter": {
+                    "chainId": 1,
+                    "fromAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                    "fromBlock": {
+                      "$undefined": true
+                    },
+                    "hasTransactionReceipt": false,
+                    "include": [
+                      "block.baseFeePerGas",
+                      "block.difficulty",
+                      "block.extraData",
+                      "block.gasLimit",
+                      "block.gasUsed",
+                      "block.hash",
+                      "block.logsBloom",
+                      "block.miner",
+                      "block.mixHash",
+                      "block.totalDifficulty",
+                      "block.nonce",
+                      "block.number",
+                      "block.parentHash",
+                      "block.receiptsRoot",
+                      "block.sha3Uncles",
+                      "block.size",
+                      "block.stateRoot",
+                      "block.timestamp",
+                      "block.transactionsRoot",
+                      "transaction.from",
+                      "transaction.gas",
+                      "transaction.hash",
+                      "transaction.input",
+                      "transaction.nonce",
+                      "transaction.r",
+                      "transaction.s",
+                      "transaction.to",
+                      "transaction.transactionIndex",
+                      "transaction.v",
+                      "transaction.value",
+                      "transaction.type",
+                      "transaction.gasPrice",
+                      "transaction.accessList",
+                      "transaction.maxFeePerGas",
+                      "transaction.maxPriorityFeePerGas",
+                      "trace.traceAddress",
+                      "trace.type",
+                      "trace.from",
+                      "trace.to",
+                      "trace.gas",
+                      "trace.gasUsed",
+                      "trace.input",
+                      "trace.output",
+                      "trace.value"
+                    ],
+                    "sourceId": "Accounts",
+                    "toAddress": {
+                      "$undefined": true
+                    },
+                    "toBlock": {
+                      "$undefined": true
+                    },
+                    "type": "transfer"
+                  },
+                  "fn": {
+                    "$function": true
+                  },
+                  "name": "Accounts:transfer:from",
+                  "type": "account"
+                }
+              ],
+              "logs": [],
+              "traces": [],
+              "transactionReceipts": [
+                {
+                  "blockNumber": 1,
+                  "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "status": "success",
+                  "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "transactionIndex": 0
+                }
+              ],
+              "transactions": [
+                {
+                  "blockNumber": 1,
+                  "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                  "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "transactionIndex": 0,
+                  "type": "legacy"
+                },
+                {
+                  "blockNumber": 1,
+                  "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                  "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "transactionIndex": 1,
+                  "type": "legacy"
+                }
+              ]
+            }
+          ],
+          "error": {
+            "name": "Error",
+            "message": "Failed to build events from block data. Missing transaction receipt for block 1 and transaction index 1 for chain ID 1"
+          }
+        }
+      ],
+      "instrumentation_after_each_state": "pass"
+    }
+  ]
+}
