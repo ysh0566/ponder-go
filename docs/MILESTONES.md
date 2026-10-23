@@ -81,3 +81,9 @@ SELECT INTO（含 TEMP）、多语句写入显式拒绝；双后端另验证 CTE
 新增 8 个原生后端叶子回归，源映射仍 204（200 Go +4 SDK），701 未实现；200 Go 通过，167 原版 oracle 也通过、33 DB oracle 阻塞。JSON U+0000、raw SQL 超 JS 精度 JSON 数字、bytes 主键、显式旧 journal 格式拒绝、1001 行第二批失败后的完整 savepoint 回滚和纠正重试均在 PG/PGlite 通过。修复删除后重插造成顺序表重复发出同一 key 的问题。
 
 存储格式 json-v2：before_row 为 json，主键 trigger 直接读取 OLD/NEW 字段，row_to_json 快照，逐列参数化批量写与无损 raw JSON undo；默认新影子 ponder_go_shadow_v2_<hash>，不迁移旧 schema。全套 Go/race 各 314/314，PostgreSQL 69/69、PGlite 68/68；vet/build、所选 oracle/SDK、53 typed ABI/runtime/compile fixture 和 2466 差分向量通过。Foundry 安装仍待批准。batch-7/8-evidence 保存不可变日志副本与 hash，避免刷新当前日志后失去证据。完整功能与测试移植继续按 CONTINUATION.md。
+
+## M11：profile 原例与独立 oracle 阻塞
+
+新增 13 个 profile 源例，保留 19 个原始 pattern/recovery 断言、事件/schema/键/hint/分隔符输入；完整源/适配在 profile-source-cases.json 与 ledger。7 个额外原生分支用例单列。原版 profile Vitest 实际尝试，因 _test/generated.js 缺失在收集前失败：0 例执行、1 suite 失败，不算 oracle 通过。当前函数尚未接入完整 prefetch/eviction 或跨事件 cache，原生 FieldOrder 与 ABI 对象顺序接入待完成。
+
+完整 verify 退出 0：Go/race 各 334/334、无 skip；PG 69/69、PGlite 68/68；vet/build、167 个所选 core 活动原例（原 skip 2）、保留 SDK 4/4、53 typed ABI/runtime/compile fixture 和 2466 差分向量通过。累计 217/905（213 Go +4 SDK），213 Go 通过，其中167 原版 oracle 也通过、46 原版 fixture oracle 阻塞；688 静态记录未实现。Foundry 未安装。所有最终日志的不可变副本/hash 见 batch-9.json。

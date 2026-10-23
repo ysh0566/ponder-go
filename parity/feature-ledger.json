@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "204 mapped: 200 native Go passed (167 original oracle also passed, 33 database oracle blocked) + 4 retained SDK passed; 701 static records remain unimplemented. Full runtime discovery remains incomplete."
+      "remaining": "217 mapped: 213 native Go passed (167 original oracle also passed, 46 fixture oracle blocked: 33 database +13 profile) +4 retained SDK passed; 688 static records remain unimplemented. Full runtime discovery remains incomplete."
     },
     {
       "id": "differential-harness",
@@ -796,7 +796,9 @@
       "implementation_files": [
         "store/indexing.go",
         "store/column_values.go",
-        "store/cache_upstream_test.go"
+        "store/cache_upstream_test.go",
+        "store/profile.go",
+        "store/profile_upstream_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/indexing-store/index.ts",
@@ -805,9 +807,11 @@
       ],
       "evidence": [
         "parity/orm-source-cases.json",
-        "parity/runs/batch-7.json"
+        "parity/runs/batch-7.json",
+        "parity/profile-source-cases.json",
+        "parity/runs/batch-9.json"
       ],
-      "remaining": "Event-local buffering, copies, explicit flush recovery, SQL/direct API visibility and event auto-flush verified. Profile patterns, prefetch, eviction, full cross-event cache metadata, COPY performance and remaining exact tests not implemented."
+      "remaining": "13 original record/recover profile cases (19 assertions) now pass natively; original fixture oracle blocked before collection. Standalone profile functions cover paths/hints/delimiters, native FieldOrder metadata required for JS argument insertion order. Cache prefetch/eviction, cross-event profile integration, lifecycle/metrics, COPY performance and remaining exact source cases unimplemented."
     }
   ]
 }

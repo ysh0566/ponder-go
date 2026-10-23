@@ -21,17 +21,17 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 204,
-    "executed": 204,
-    "passed": 204,
+    "ported": 217,
+    "executed": 217,
+    "passed": 217,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 701,
-    "go_ports": 200,
+    "unimplemented": 688,
+    "go_ports": 213,
     "retained_sdk": 4,
     "oracle_passed": 171,
-    "oracle_blocked": 33,
-    "go_passed": 200,
+    "oracle_blocked": 46,
+    "go_passed": 213,
     "sdk_passed": 4,
     "go_and_original_oracle_passed": 167,
     "target_and_original_oracle_passed": 171
@@ -14211,12 +14211,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() no pattern",
+        "source_id": "699fd4a69ee4300cc1d9",
+        "source_line": 10,
+        "assertions_sha256": "fae22fc9fa383d9478154cde927a6165f3c5d90d7ab2e3d7908d2ffabc2423ee",
+        "original_assertions": 1,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_no_pattern",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "a626edbf1e2467155a25",
@@ -14252,12 +14279,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() with undefined log event args",
+        "source_id": "a626edbf1e2467155a25",
+        "source_line": 45,
+        "assertions_sha256": "fae22fc9fa383d9478154cde927a6165f3c5d90d7ab2e3d7908d2ffabc2423ee",
+        "original_assertions": 1,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_with_undefined_log_event_args",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "434a7494e71440d23e01",
@@ -14293,12 +14347,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() with undefined trace event args",
+        "source_id": "434a7494e71440d23e01",
+        "source_line": 83,
+        "assertions_sha256": "fae22fc9fa383d9478154cde927a6165f3c5d90d7ab2e3d7908d2ffabc2423ee",
+        "original_assertions": 1,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_with_undefined_trace_event_args",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "3885abd417468b83a998",
@@ -14334,12 +14415,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() with array log event args",
+        "source_id": "3885abd417468b83a998",
+        "source_line": 122,
+        "assertions_sha256": "fae22fc9fa383d9478154cde927a6165f3c5d90d7ab2e3d7908d2ffabc2423ee",
+        "original_assertions": 1,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_with_array_log_event_args",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "f67bf9c3de81bfc86df5",
@@ -14375,12 +14483,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() with array trace event args",
+        "source_id": "f67bf9c3de81bfc86df5",
+        "source_line": 160,
+        "assertions_sha256": "fae22fc9fa383d9478154cde927a6165f3c5d90d7ab2e3d7908d2ffabc2423ee",
+        "original_assertions": 1,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_with_array_trace_event_args",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "27bdd2930459c971e987",
@@ -14421,12 +14556,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() chainId",
+        "source_id": "27bdd2930459c971e987",
+        "source_line": 199,
+        "assertions_sha256": "750ab5b043f0b436ff26411fa379dc0a77ec669fbdd18793560249d908c9e175",
+        "original_assertions": 2,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_chainId",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "a89e4c57cfe9dc9280a4",
@@ -14467,12 +14629,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() log args",
+        "source_id": "a89e4c57cfe9dc9280a4",
+        "source_line": 249,
+        "assertions_sha256": "9deb3fbda765bd782dbb5df3062b95617e6bd61685d695ef01bec1a7f8e68ef9",
+        "original_assertions": 2,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_log_args",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "8409f85708b399b5b6d0",
@@ -14513,12 +14702,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() block",
+        "source_id": "8409f85708b399b5b6d0",
+        "source_line": 305,
+        "assertions_sha256": "1e4b5b3f2c30a3ac08a1cc49564178734bd9bc489149d3793b1826977eab9ca1",
+        "original_assertions": 2,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_block",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "9dbf8a2cc49295c47707",
@@ -14559,12 +14775,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() hint",
+        "source_id": "9dbf8a2cc49295c47707",
+        "source_line": 356,
+        "assertions_sha256": "1e4b5b3f2c30a3ac08a1cc49564178734bd9bc489149d3793b1826977eab9ca1",
+        "original_assertions": 2,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_hint",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "d1d2c060eeb207a12f0c",
@@ -14600,12 +14843,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() object args",
+        "source_id": "d1d2c060eeb207a12f0c",
+        "source_line": 415,
+        "assertions_sha256": "1fee7c28d43a0d47ed23d4fb2e4e4a126cbf99ce231a3133ef7f9e0856da981c",
+        "original_assertions": 1,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_object_args",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "5447c36f361464b2e48b",
@@ -14646,12 +14916,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() string concat",
+        "source_id": "5447c36f361464b2e48b",
+        "source_line": 455,
+        "assertions_sha256": "2ab6b7648238f746e5eb943939794c88d45cf84c399ee8ebcbb1695f0dd8418b",
+        "original_assertions": 2,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_string_concat",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "c027e45a1190f6143b10",
@@ -14687,12 +14984,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() string concat mixed delimiters",
+        "source_id": "c027e45a1190f6143b10",
+        "source_line": 524,
+        "assertions_sha256": "1fee7c28d43a0d47ed23d4fb2e4e4a126cbf99ce231a3133ef7f9e0856da981c",
+        "original_assertions": 1,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_string_concat_mixed_delimiters",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "cb42c42fcd8720b6ebc4",
@@ -14733,12 +15057,39 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/profile.test.ts",
+        "source_name": "recordProfilePattern() string concat hint",
+        "source_id": "cb42c42fcd8720b6ebc4",
+        "source_line": 565,
+        "assertions_sha256": "2ab6b7648238f746e5eb943939794c88d45cf84c399ee8ebcbb1695f0dd8418b",
+        "original_assertions": 2,
+        "target_file": "store/profile_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamProfile/recordProfilePattern()_string_concat_hint",
+        "assertion_policy": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+          "evidence": "parity/runs/profile-oracle-blocked.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unmodified profile oracle was attempted and failed importing /packages/core/src/_test/generated.js from _test/utils. Generated contract setup requires pending Foundry 1.8.5 approval; no original fixtures or assertions replaced.",
+        "evidence": "parity/runs/profile-oracle-blocked.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "7f66357694409c4f3ef8",

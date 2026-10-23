@@ -1,0 +1,370 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "13 source records and 19 original runtime assertions. Supplemental native branch tests are separate.",
+  "limitations": [
+    "Standalone profiler functions do not yet connect profile metadata to cache prefetch or eviction.",
+    "Native FieldOrder must carry ABI/JS object field order for equal argument values; absent metadata uses sorted order, and runtime integration is pending.",
+    "Original oracle import failed; target execution is not original oracle verification."
+  ],
+  "cases": [
+    {
+      "source_id": "699fd4a69ee4300cc1d9",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() no pattern",
+      "source_state": "active",
+      "source_line": 10,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 42,
+          "text": "expect(pattern).toBeUndefined()"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"block\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      block: { timestamp: 1n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies BlockEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { address: zeroAddress },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_no_pattern",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    },
+    {
+      "source_id": "a626edbf1e2467155a25",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() with undefined log event args",
+      "source_state": "active",
+      "source_line": 45,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 80,
+          "text": "expect(pattern).toBeUndefined()"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: undefined,\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { timestamp: 1n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { address: zeroAddress },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_with_undefined_log_event_args",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    },
+    {
+      "source_id": "434a7494e71440d23e01",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() with undefined trace event args",
+      "source_state": "active",
+      "source_line": 83,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 119,
+          "text": "expect(pattern).toBeUndefined()"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"trace\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: undefined,\n      result: undefined,\n      trace: {} as TraceEvent[\"event\"][\"trace\"],\n      transaction: {} as TraceEvent[\"event\"][\"transaction\"],\n      block: { timestamp: 1n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies TraceEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { address: zeroAddress },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_with_undefined_trace_event_args",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    },
+    {
+      "source_id": "3885abd417468b83a998",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() with array log event args",
+      "source_state": "active",
+      "source_line": 122,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 157,
+          "text": "expect(pattern).toBeUndefined()"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: [],\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { timestamp: 1n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { address: zeroAddress },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_with_array_log_event_args",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    },
+    {
+      "source_id": "f67bf9c3de81bfc86df5",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() with array trace event args",
+      "source_state": "active",
+      "source_line": 160,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 196,
+          "text": "expect(pattern).toBeUndefined()"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"trace\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: [],\n      result: [],\n      trace: {} as TraceEvent[\"event\"][\"trace\"],\n      transaction: {} as TraceEvent[\"event\"][\"transaction\"],\n      block: { timestamp: 1n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies TraceEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { address: zeroAddress },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_with_array_trace_event_args",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    },
+    {
+      "source_id": "27bdd2930459c971e987",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() chainId",
+      "source_state": "active",
+      "source_line": 199,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 231,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"address\": {\n        \"type\": \"derived\",\n        \"value\": [\n          \"chainId\",\n        ],\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 242,
+          "text": "expect(recoverProfilePattern(pattern!, event)).toMatchInlineSnapshot(`\n    {\n      \"address\": 1,\n    }\n  `)"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"block\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      block: { timestamp: 1n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies BlockEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.integer().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { address: 1 },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_chainId",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    },
+    {
+      "source_id": "a89e4c57cfe9dc9280a4",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() log args",
+      "source_state": "active",
+      "source_line": 249,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 286,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"address\": {\n        \"type\": \"derived\",\n        \"value\": [\n          \"args\",\n          \"address\",\n        ],\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 298,
+          "text": "expect(recoverProfilePattern(pattern!, event)).toMatchInlineSnapshot(`\n    {\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n    }\n  `)"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: {\n        address: zeroAddress,\n      },\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { timestamp: 1n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { address: zeroAddress },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_log_args",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    },
+    {
+      "source_id": "8409f85708b399b5b6d0",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() block",
+      "source_state": "active",
+      "source_line": 305,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 337,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"address\": {\n        \"type\": \"derived\",\n        \"value\": [\n          \"block\",\n          \"number\",\n        ],\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 349,
+          "text": "expect(recoverProfilePattern(pattern!, event)).toMatchInlineSnapshot(`\n    {\n      \"address\": 3n,\n    }\n  `)"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"block\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      block: { number: 3n, timestamp: 1n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies BlockEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.bigint().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { address: 3n },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_block",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    },
+    {
+      "source_id": "9dbf8a2cc49295c47707",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() hint",
+      "source_state": "active",
+      "source_line": 356,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 396,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"address\": {\n        \"type\": \"derived\",\n        \"value\": [\n          \"block\",\n          \"number\",\n        ],\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 408,
+          "text": "expect(recoverProfilePattern(pattern!, event)).toMatchInlineSnapshot(`\n    {\n      \"address\": 3n,\n    }\n  `)"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"block\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      block: { number: 3n, timestamp: 1n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies BlockEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.bigint().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { address: 3n },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_hint",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    },
+    {
+      "source_id": "d1d2c060eeb207a12f0c",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() object args",
+      "source_state": "active",
+      "source_line": 415,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 452,
+          "text": "expect(pattern).toBe(undefined)"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: {\n        address: [zeroAddress],\n      },\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { timestamp: 1n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      address: p.hex().primaryKey(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { address: zeroAddress },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_object_args",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    },
+    {
+      "source_id": "5447c36f361464b2e48b",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() string concat",
+      "source_state": "active",
+      "source_line": 455,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 493,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"id\": {\n        \"delimiter\": \"-\",\n        \"type\": \"delimiter\",\n        \"values\": [\n          {\n            \"type\": \"derived\",\n            \"value\": [\n              \"chainId\",\n            ],\n          },\n          {\n            \"type\": \"derived\",\n            \"value\": [\n              \"args\",\n              \"address\",\n            ],\n          },\n        ],\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 517,
+          "text": "expect(recoverProfilePattern(pattern!, event)).toMatchInlineSnapshot(`\n    {\n      \"id\": \"1-0x0000000000000000000000000000000000000000\",\n    }\n  `)"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: {\n        address: zeroAddress,\n      },\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { timestamp: 26n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      id: p.text().primaryKey(),\n      address: p.bigint().notNull(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { id: `${1}-${zeroAddress}` },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_string_concat",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    },
+    {
+      "source_id": "c027e45a1190f6143b10",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() string concat mixed delimiters",
+      "source_state": "active",
+      "source_line": 524,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 562,
+          "text": "expect(pattern).toBe(undefined)"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: {\n        address: zeroAddress,\n      },\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { timestamp: 26n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      id: p.text().primaryKey(),\n      address: p.bigint().notNull(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { id: `${1}-${zeroAddress}_${zeroAddress}` },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_string_concat_mixed_delimiters",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    },
+    {
+      "source_id": "cb42c42fcd8720b6ebc4",
+      "source_file": "packages/core/src/indexing-store/profile.test.ts",
+      "source_sha256": "320ef31b2e452171c6eab35ea497a005b1de322ed32958de5ca77a2449054e50",
+      "source_name": "recordProfilePattern() string concat hint",
+      "source_state": "active",
+      "source_line": 565,
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 611,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"id\": {\n        \"delimiter\": \"-\",\n        \"type\": \"delimiter\",\n        \"values\": [\n          {\n            \"type\": \"derived\",\n            \"value\": [\n              \"chainId\",\n            ],\n          },\n          {\n            \"type\": \"derived\",\n            \"value\": [\n              \"args\",\n              \"address\",\n            ],\n          },\n        ],\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 635,
+          "text": "expect(recoverProfilePattern(pattern!, event)).toMatchInlineSnapshot(`\n    {\n      \"id\": \"1-0x0000000000000000000000000000000000000000\",\n    }\n  `)"
+        }
+      ],
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: {\n        address: zeroAddress,\n      },\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { timestamp: 26n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "schema = {\n    account: onchainTable(\"account\", (p) => ({\n      id: p.text().primaryKey(),\n      address: p.bigint().notNull(),\n      balance: p.bigint().notNull(),\n    })),\n  }",
+        "primaryKeyCache = new Map<Table, [string, Column][]>()",
+        "pattern = recordProfilePattern(\n    event,\n    schema.account,\n    { id: `${1}-${zeroAddress}` },\n    [],\n    primaryKeyCache,\n  )"
+      ],
+      "target_test": "TestUpstreamProfile/recordProfilePattern()_string_concat_hint",
+      "target_file": "store/profile_upstream_test.go",
+      "adaptation": "All source event fields read by record/recover, exact table/key/chain=1/zero-checkpoint/args inputs, undefined-vs-array and object exclusions, hint retry, delimiter ordering and every pattern/recovered-row snapshot retained as independent literals. Source callback metadata is not part of the profiler data read; source full fixtures remain in the ledger. BigInt is *big.Int, undefined profile is nil, native ChainID is uint64. No additional native profile branch test earns source credit."
+    }
+  ]
+}
