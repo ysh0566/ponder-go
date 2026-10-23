@@ -1,0 +1,440 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 292,
+    "unimplemented": 613,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 288,
+    "passed_with_required_type_checks": 288,
+    "original_oracle_also_passed": 210,
+    "original_oracle_blocked": 78
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "original_oracle": {
+    "mapped_passed": 214,
+    "mapped_blocked": 78,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 1634,
+    "pass": 1634,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 1634,
+    "pass": 1634,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 183,
+        "pass": 183,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 183,
+        "pass": 183,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 180,
+        "pass": 180,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 180,
+        "pass": 180,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "orm_type_fixtures": {
+    "source_error_directives": 6,
+    "source_error_directives_passed": 6,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 203,
+    "passed": 201,
+    "failed": 0
+  },
+  "selected_source_oracle": {
+    "evidence": "parity/runs/selected-runtime-oracle.json",
+    "mode": "unchanged_selected_declarations_with_actual_source_dependencies",
+    "total": 4,
+    "passed": 4,
+    "success": true
+  },
+  "selected_existing_oracle": {
+    "evidence": "parity/runs/selected-mapped-oracle.json",
+    "mode": "unchanged_already_mapped_filter_genesis_split_declarations",
+    "total": 15,
+    "passed": 15,
+    "success": true
+  },
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.27.1 darwin/arm64",
+    "node": "v25.2.1",
+    "differences": []
+  },
+  "filter_fragment_differential": {
+    "counting": "Synthetic differential vectors only; no source-test credit.",
+    "vectors": 867,
+    "source_expected_exceptions": 4,
+    "go": {
+      "pass": 867,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 867,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/runtime/filter-differential.json"
+  },
+  "event_build_differential": {
+    "counting": "Supplemental vectors from actual pinned selected declarations; not original source test credit.",
+    "vectors": 135,
+    "source_expected_errors": 8,
+    "go": {
+      "pass": 135,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 135,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/runtime/event-build-differential.json"
+  },
+  "milestone": "M22",
+  "status": "verified_subset_paused_for_cloud_migration_project_incomplete",
+  "based_on": "8965d61031f85c4a9d3e43fa541a0f662b5106ca",
+  "new_exact_source_records": 4,
+  "new_original_assertions": 8,
+  "existing_mapped_source_oracles_unblocked": 15,
+  "new_extra_event_vectors": 16,
+  "new_extra_real_backend_leaves": 4,
+  "new_extra_rpc_boundary_leaves": 3,
+  "new_extra_abi_metadata_leaves": 1,
+  "native_leaf_delta": 28,
+  "commands": [
+    {
+      "milestone": "M22",
+      "command": "PONDER_TEST_POSTGRES=<task-only127.0.0.1:53398> ./tools/verify.sh",
+      "exit_code": 0,
+      "execution_session": 79820,
+      "observed_utc": "2026-10-23T17:24:09.784715+00:00",
+      "leaf_cases": 1634,
+      "note": "Normal/race complete and final record-results reached; six skip actions per file belong only to packages with no tests, no leaf test skipped. Earlier failed attempts are separately retained."
+    },
+    {
+      "command": "node --check tools/event-build-fixtures.mjs && node --check tools/selected-runtime-oracle.mjs && node --check tools/record-results.mjs && sh -n tools/verify.sh",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "prior_attempts": {
+    "contract_trace_fixture": "First same-hash assertion failed because automatic fees/nonce changed hash; fixture now explicitly fixes nonce0 and gasPrice. Full handler/order/fork assertions preserved.",
+    "source_boundaries": "Actual source viem probes exposed case-sensitive selector, empty tuple name, byte hex normalization and zero-argument extra calldata. Red logs retained, function-boundary adapter fixed; original Ponder parameter helper preserved.",
+    "intermediate_build": "Copying diagnostic function.go under parity produced an unwanted Go package; preserved actual failure and renamed source snapshot function.go.txt. Full final verification reran after cleanup.",
+    "intermediate_success": "contract-before-function-boundaries contains old1630 results, diagnostic only; does not override final1634."
+  },
+  "boundaries": [
+    "ABI metadata retains original order/duplicates/collisions; native contract trace handler shares matched indexes with account callbacks; both backends/cache switches test same-hash canonical replacement, bad output, business rollback and trace invalidation.",
+    "Legacy native contract-log scheduling still uses old ABI.DecodeEvent error policy, not yet connected to complete batch decoder.",
+    "Four rpc.actions source records retain all eight original assertions/inputs/constants; native chunks sequential rather than Promise.all. Complete historical planner/remaining10 rpc.actions declarations unimplemented.",
+    "135 actual-source-function vectors,4 new contract backend leaves and other boundaries are supplementary; original generated-ABI contract/trace and original ETH fixtures are not passed by a replacement helper.",
+    "Selective existing15 retains exact declarations/helpers/constants and all assertions; full original collection status remains separately blocked.",
+    "No full parity, TS zero-change compatibility, old DB adoption, full multichain or deployment claim."
+  ],
+  "blockers": [
+    {
+      "action": "Install official project-local Foundry1.8.5",
+      "target": "Project test tools only",
+      "status": "pending_approval",
+      "executed": false,
+      "reason": "No user approval received; no download/install. Original generated fixtures and three ETH helper paths remain limited."
+    },
+    {
+      "action": "Start cloud execution",
+      "target": "User-created ponder-go environment/repository connection",
+      "status": "blocked_connection",
+      "executed_by_this_thread": false,
+      "reason": "Parent reports repository nonexistent or connected GitHub account lacks access; user environment connection correction pending."
+    }
+  ],
+  "remaining": "613 static records unimplemented. See CONTINUATION.md and feature-ledger; independent work remains executable after cloud connection is fixed. Mac pauses at handoff per user migration request.",
+  "implementation": [
+    {
+      "path": "abi/abi.go",
+      "sha256": "b9028e851ce13fef1f2481d7d7836fc79c5fe3edf4cf9789debbc79e557689b9"
+    },
+    {
+      "path": "abi/function.go",
+      "sha256": "415799556c14710e3e181e4079ca3b44adfcb8f364d3e145c165fc84cbbf98e4"
+    },
+    {
+      "path": "events/contract.go",
+      "sha256": "968920a93bc487c0770b09a79878fc1af2a2618334df7bf98f9fab98561da58d"
+    },
+    {
+      "path": "runtime/accounts.go",
+      "sha256": "a04a3a01a24882ba36eb8cd36a6e76cb02bda857b1b442e35dbc40f8ff6d9509"
+    },
+    {
+      "path": "runtime/engine.go",
+      "sha256": "f0f65332b49446a65ec9bf1f26e18ce997055fe5325cd443045f8db4a9f1bec8"
+    },
+    {
+      "path": "config/config.go",
+      "sha256": "4d951474eb0a71f5dade10e497c66d9aee52dc25f2520ba74498cb925f12e999"
+    },
+    {
+      "path": "rpc/logs.go",
+      "sha256": "ccc74f350ece26d212ff4eb1cb4723017634ce1a37d9705e1c183a6d0e84ac0d"
+    },
+    {
+      "path": "rpc/logs_upstream_test.go",
+      "sha256": "2fcff26aa22b526a1a0e1e2d2626210d09a235682455d3fad47b41714c65d387"
+    },
+    {
+      "path": "rpc/logs_boundaries_test.go",
+      "sha256": "b4cf570f9b1bcdbfed86ebf8cb3dce23c30f1be6549b43efb2fdf2b689b89094"
+    },
+    {
+      "path": "runtime/contract_trace_test.go",
+      "sha256": "1e0a1a443de49e35510d7a79ebc68a846a70cf34f60923af795676b23af86099"
+    },
+    {
+      "path": "abi/function_test.go",
+      "sha256": "b4240fa4a58807fc1dc42d5b3cc0289d96fe7032a7edf764ac66b9b6085fd4cb"
+    },
+    {
+      "path": "tools/event-build-fixtures.mjs",
+      "sha256": "badc6244a9f72bf893e586d80041393c76cbe55a8d2e96226a208663fe9bdeb6"
+    },
+    {
+      "path": "tools/selected-runtime-oracle.mjs",
+      "sha256": "a4baebaa7a1c42c7def03a562931385f710e5a8caf6d397c06ac4f265e3e7a60"
+    },
+    {
+      "path": "tools/record-results.mjs",
+      "sha256": "d22aeac0266782680d402a8645c48eaf7eb2d26b2bf891b86395b5904f73e6d1"
+    },
+    {
+      "path": "tools/verify.sh",
+      "sha256": "8092cc0fdd4ba24abc535f77e6409003b92c3232772acb63e99c28f9cf3675f4"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "parity/runs/batch-21-evidence/go-test.jsonl",
+      "sha256": "63787c9704793897d88d9c44852add317514bb9cdcf6d84245dc1d0afdfa244f"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/go-race.jsonl",
+      "sha256": "deef80fb87fea09c037d08b04425b7e0ef349cfd0131eba552eb85aefd0c8768"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/go-vet.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/summary.json",
+      "sha256": "8590804608f1a5d2d5ac7ca9152996734f3a6d284e9b5aad590d4855feffeba2"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/tool-versions.txt",
+      "sha256": "4b91ecd59a944510c8acc3e68e9b233347188b51f182bce2d0ee00d88e2524ba"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/batch-21-verify.txt",
+      "sha256": "8d3a62e30418fde0b25abf8e160fcf9ed6016622230b50e9e87d8e65fa7b0ac1"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/batch-21-completion.json",
+      "sha256": "01c5a0fd6f2d8351660e8efc8d38d275db926c2314ae25f30fac7fa78ee61e0a"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/batch-21-services.json",
+      "sha256": "1f24282421e4f28c269ffa9de08afce24937f77a51e7ed16e07b90ef2f50a577"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/core-oracle.json",
+      "sha256": "635cdf7eba669c07644060d50774c566dac3a4ead5b77407892feb01e8982e86"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/foundation-oracle.json",
+      "sha256": "bce9416675d843e3736edf34a7bbf7cd7748a4f9bcf52f338c37c848a8ce9798"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/selected-runtime-oracle.json",
+      "sha256": "68a394d0a421009b3600c0389c12b21861c2d649ea68be80a7fb56915a765364"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/selected-mapped-oracle.json",
+      "sha256": "5fdf13eb251876dac10c37a6a21980cd1b00c94c675b3007295794efc9042310"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/orm-compile-fixtures.json",
+      "sha256": "406811fc58e8a77c089dc06b8825664dc690be8656315ab4ed12c5f30f06011b"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/compile-fixtures.json",
+      "sha256": "836e078f41b50cc1aa0978825ee69efa52b743fa9aebd3567c3d41d000749d5b"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/abi-typed-go.jsonl",
+      "sha256": "3511d2b3707efb830acb9e2062277271576efd110fa2d063bc8de85a2fcfa5f4"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/abi-typed-race.jsonl",
+      "sha256": "91ae3c1b95e90f4b9115a23981eea37ad7afac3f82c4523f868efc8f19a0a737"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/parameters-typecheck.json",
+      "sha256": "92c5c2a30ff31db3f5dea19de6564d9ca1ea58336682f70137a6be4443157bcb"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/differential.json",
+      "sha256": "88787f0cf3676c14d06ab381bfba412823a6c4815779fc6453ba4cdfd4efacf9"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/contract-first-build.txt",
+      "sha256": "2f564b6318e297fc4e6b21165760991e599715e09c99746c5a034d107065b4f5"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/contract-first-race.jsonl",
+      "sha256": "d9e1c8dc9e97b8bb0b0340d76e261dbd32345de957f8e6eb7df4f929c36e59e5"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/contract-runtime-first-race.jsonl",
+      "sha256": "884c4cc9635da3ceb9e6a24faa98671c4445761065658aca8501236e88324ed6"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/contract-runtime-fixed-race.jsonl",
+      "sha256": "0898bc7a9478b95d75994c96ed9304e597bebcc6fe47127ee5c733c7b3c816d3"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/contract-metadata-race.jsonl",
+      "sha256": "0af2b1db1a51445cf73867e1f40c7fd8ce8eb42be068049f5bb68f0a955a343f"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/rpc-logs-first-race.jsonl",
+      "sha256": "97e4314f0786c3f85b563e4241e27df6d7b7a3bb2cf19aaefeef125de78ca8ed"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/rpc-logs-boundaries-race.jsonl",
+      "sha256": "dd25019e7460103e8221addc1494f6cbcbc0876ff8a112e53e61c5a424833002"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/function-boundaries-red-race.jsonl",
+      "sha256": "448037255341403d9121e89bbca9d25c48f261c34847673599f6f2e9853deded"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/function-boundaries-fixed-race.jsonl",
+      "sha256": "083ab704453bbc53e6702a4851beba934f3300f1c28c10992fe66809515642b5"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/function-boundaries-normal-build-failure.jsonl",
+      "sha256": "4dfdd4f67b32bfcd943e9025da18f06a8b3f801031c335c5f52c200f2c93f27e"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/contract-intermediate-build-failure.txt",
+      "sha256": "7d7efd907e64b23f1f513d62daeab31103a0ee774d0526ea922b95040d7ba306"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/function-bytes-red-race.jsonl",
+      "sha256": "1608e280fd6195efa68f8d2c7e8434b932368683f195b2f17ad8eecb57273e99"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/function-bytes-fixed-race.jsonl",
+      "sha256": "d253da9c1f8d5dfc0f765dae9b1b4703eda04dad891dc448f19e5cc312cd32b0"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/selected-mapped-first-failure.json",
+      "sha256": "773965b6ce1baf924920d4cfda314e87f15a4a72f245c25cf9f5d898ac935e5c"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/selected-mapped-second-failure.json",
+      "sha256": "b77789fc3c2f080c60b68eee02b10f0d3a6ad1b2df32fbe49efe474051945736"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/event-build-differential.json",
+      "sha256": "31ac7583c1e8fec40e60861275a91239528b81120242e1aa1bb11f58ac23c220"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/rpc-log-source-cases.json",
+      "sha256": "99b1a20fdeaf5e9e8d8e9bc4f2ca7fca33fe8d052fb62a73b87c61017e92008d"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/selected-mapped-declarations.json",
+      "sha256": "fbb173aba95ec4334d09cd713ea8a2ac581ce94f7afdddbdad5e1061ff1b952d"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/client-original.json",
+      "sha256": "559946b6bcfe1bb7719ca7b6f3d0ca0c76f931e8119c6681328992a33317b53b"
+    },
+    {
+      "path": "parity/runs/batch-21-evidence/react-original-typecheck-supported.json",
+      "sha256": "f820a58f5d5fc8a21289b08b84dfd5dd9d1c6dc0bb66a9b9669482e8974116b5"
+    }
+  ]
+}

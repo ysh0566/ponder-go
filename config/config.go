@@ -36,6 +36,7 @@ type Contract struct {
 	StartBlock                 uint64          `json:"startBlock"`
 	EndBlock                   *uint64         `json:"endBlock,omitempty"`
 	IncludeTransactionReceipts bool            `json:"includeTransactionReceipts,omitempty"`
+	IncludeCallTraces          bool            `json:"includeCallTraces,omitempty"`
 }
 type BlockSource struct {
 	Name       string  `json:"name"`

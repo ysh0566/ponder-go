@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "288 mapped:284 native Go passed (191 source oracle also passed including4 selective unchanged declarations,93 fixture oracle blocked)+4 retained SDK;617 static records unimplemented. Dynamic exhaustiveness unproven."
+      "remaining": "292 mapped:288 native Go passed (210 source oracle also passed including4+15 selective unchanged declarations,78 fixture oracle blocked)+4 retained SDK;613 static records unimplemented. Dynamic exhaustiveness unproven. Mac paused for cloud handoff after M22; see docs/CLOUD_HANDOFF.md."
     },
     {
       "id": "differential-harness",
@@ -89,7 +89,9 @@
         "abi/parameters_test.go",
         "abi/event_test.go",
         "abi/offset.go",
-        "abi/offset_test.go"
+        "abi/offset_test.go",
+        "abi/function.go",
+        "abi/function_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/utils/decodeAbiParameters.ts",
@@ -98,7 +100,8 @@
       "evidence": [
         "parity/runs/core-oracle.json",
         "parity/runs/compile-fixtures.json",
-        "parity/runs/parameters-typecheck.json"
+        "parity/runs/parameters-typecheck.json",
+        "parity/runs/batch-21.json"
       ],
       "remaining": "69 active parameter +19 event +7 offset source cases mapped. Original skipped parameter cases retained. Native typed codegen verifies 53 inline type obligations and null-topic error directive; Go readonly/Hex string adaptations explicit. Broader ABI pathological/format/out options differential coverage remains."
     },
@@ -190,15 +193,20 @@
       "implementation_files": [
         "rpc/traces.go",
         "events/build.go",
-        "events/convert.go"
+        "events/convert.go",
+        "abi/function.go",
+        "events/contract.go",
+        "runtime/accounts.go",
+        "runtime/contract_trace_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/runtime/events.ts"
       ],
       "evidence": [
-        "parity/runs/batch-19.json"
+        "parity/runs/batch-19.json",
+        "parity/runs/batch-21.json"
       ],
-      "remaining": "Actual callTracer flattening/native transfer frames and generic normalized trace matching implemented. Complete contract ABI trace decoding/config and original generated-ABI fixtures remain unfinished."
+      "remaining": "Single-chain contract callbacks now share matched trace indexes with account callbacks; ABI function args/results, selector-dedup error logging, actual same-hash fork/cache boundaries verified natively. Synthetic source-function vectors and real EVM fixtures do not replace original generated-ABI contract cases. Legacy native contract-log path still propagates decode errors; shared full log/trace batching, complete include/config/factory account targets and multichain remain. Existing Anvil0.2 fallback is not original ETH helper parity."
     },
     {
       "id": "factory-dynamic-addresses",
@@ -250,13 +258,18 @@
       "status": "partial",
       "implementation_files": [
         "rpc/client.go",
-        "rpc/client_test.go"
+        "rpc/client_test.go",
+        "rpc/logs.go",
+        "rpc/logs_upstream_test.go",
+        "rpc/logs_boundaries_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/rpc/http.ts"
       ],
-      "evidence": [],
-      "remaining": "Basic HTTP errors/retry/limits/failover implemented; source request scheduling, retry policies, cache protocol and all exact tests remain."
+      "evidence": [
+        "parity/runs/batch-21.json"
+      ],
+      "remaining": "HTTP retry/limits/failover plus4 additional exact rpc.actions source cases/eight assertions:chunk50 merged logs, numeric log sort, transaction sort,empty address no request. Native chunks sequential vs source Promise.all; GetLogs bypasses numeric response cache. Standardizer/planner integration, other10of16 rpc.actions declarations and complete protocol remain."
     },
     {
       "id": "rpc-websocket",
@@ -779,7 +792,7 @@
         "parity/runs/orm-compile-fixtures.json",
         "parity/runs/batch-10.json"
       ],
-      "remaining": "53 source inline ABI obligations and 6 source error directives verified natively (1 ABI +5 ORM). 53 ABI and 6 ORM additional negative controls separate. React retained type record passes. 10 inline assertions, 72 dedicated native type records and most source error directives remain. Native typed constructors/nominal models/update columns/scalar values are checked by real Go compilation; Go zero values, same-package dynamic Row escape, string Hex/enum domain types and container/custom codegen are not strict TS type/source compatibility."
+      "remaining": "53 source inline ABI obligations and 7 source error directives verified natively (1 ABI +6 ORM). 53 ABI and 6 ORM additional negative controls separate. React retained type record passes. 10 inline assertions, 72 dedicated native type records and most source error directives remain. Native typed constructors/nominal models/update columns/scalar values are checked by real Go compilation; Go zero values, same-package dynamic Row escape, string Hex/enum domain types and container/custom codegen are not strict TS type/source compatibility."
     },
     {
       "id": "simulation-e2e",
@@ -1007,9 +1020,11 @@
         "testdata/runtime/filters.json",
         "testdata/runtime/block-filter.json",
         "testdata/runtime/filter-differential.json",
-        "docs/FILTER_FRAGMENTS.md"
+        "docs/FILTER_FRAGMENTS.md",
+        "parity/selected-mapped-declarations.json",
+        "parity/runs/batch-21.json"
       ],
-      "remaining": "32 source records mapped; full original filter suite remains blocked before collection by missing generated.js/Foundry1.8.5 pending approval. Original deployment/mint/range-selector/trace records not replaced. Single-chain log predicate and >50-address widening connected; full config filter DSL, complete history planner, typed event projection, account/trace/multichain scheduling remain unfinished.867 generated vectors and8 real-backend leaves give no source credit."
+      "remaining": "32 source records mapped;14 static/genesis declarations now pass selective unchanged oracle (plus splitEvents separately); full original suite still blocked before collection by generated.js. Original deployment/mint/range/trace cases not replaced;3ETH helper declarations fail before assertions on missing block-hash method in Anvil0.2. Native log predicates and account/contract trace path are partial; full filter DSL/history planner/multichain remain.867 generated vectors give no source credit."
     },
     {
       "id": "account-event-construction",
@@ -1021,7 +1036,8 @@
         "events/values.go",
         "rpc/traces.go",
         "runtime/accounts.go",
-        "config/config.go"
+        "config/config.go",
+        "events/contract.go"
       ],
       "upstream_sources": [
         "packages/core/src/runtime/events.ts",
@@ -1034,9 +1050,10 @@
         "testdata/runtime/event-build-differential.json",
         "parity/runs/accounts-cold-race.jsonl",
         "docs/ACCOUNT_EVENTS.md",
-        "parity/runs/batch-20.json"
+        "parity/runs/batch-20.json",
+        "parity/runs/batch-21.json"
       ],
-      "remaining": "Six exact source records mapped independently of119 supplemental vectors/four real-backend leaves. Full original events suite remains generated-ABI blocked; selected4 actual source declarations pass separately. Three ETH filter declarations block on existing Anvil0.2 missing debug_traceBlockByHash. Native fallback is additional compatibility. Single-chain static/wildcard account transaction/transfer handlers connected; full contract trace decoder/config/include, factory account/trace targets, multichain/history/query/CLI remain incomplete."
+      "remaining": "Six exact event source records plus generic contract decoder and connected single-chain trace path;135 supplemental event vectors separate. Four event source declarations plus15 previously mapped filter/split declarations have selective oracle; full original events suite remains generated-ABI blocked. Three unchanged ETH fixtures blocked by old Anvil missing debug_traceBlockByHash; native transaction fallback adds no source credit. Legacy contract log scheduling still uses old ABI decode/error path; complete include/factory account targets/multichain/history/query/CLI remain."
     }
   ]
 }

@@ -1,0 +1,81 @@
+package abi
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/ethereum/go-ethereum/crypto"
+)
+
+type Function struct {
+	Type            string      `json:"type"`
+	Name            string      `json:"name"`
+	Inputs          []Parameter `json:"inputs"`
+	Outputs         []Parameter `json:"outputs"`
+	StateMutability string      `json:"stateMutability,omitempty"`
+}
+
+func (f Function) Signature() string { return signature(Event{Name: f.Name, Inputs: f.Inputs}) }
+func FunctionSelector(f Function) string {
+	return crypto.Keccak256Hash([]byte(f.Signature())).Hex()[:10]
+}
+func (f Function) SafeName(overloaded bool) string {
+	if !overloaded {
+		return f.Name + "()"
+	}
+	parts := []string{}
+	for _, p := range f.Inputs {
+		parts = append(parts, formatParameter(p))
+	}
+	out := f.Name + "(" + strings.Join(parts, ", ") + ")"
+	if f.StateMutability == "view" || f.StateMutability == "pure" || f.StateMutability == "payable" {
+		out += " " + f.StateMutability
+	}
+	if len(f.Outputs) > 0 {
+		parts = nil
+		for _, p := range f.Outputs {
+			parts = append(parts, formatParameter(p))
+		}
+		out += " returns (" + strings.Join(parts, ", ") + ")"
+	}
+	return out
+}
+
+// DecodeCall follows viem's function argument/result shapes. The caller projects
+// zero arguments/results as absent; single outputs unwrap and tuples retain names.
+func (f Function) DecodeCall(input, output string) ([]any, []any, error) {
+	if len(input) < 10 || input[:10] != FunctionSelector(f) {
+		return nil, nil, fmt.Errorf("function selector does not match %s", f.Signature())
+	}
+	args := []any{}
+	var e error
+	if len(f.Inputs) > 0 {
+		args, e = DecodeParameters(functionParameters(f.Inputs), strings.ToLower("0x"+input[10:]))
+		if e != nil {
+			return nil, nil, e
+		}
+	}
+	result, e := DecodeParameters(functionParameters(f.Outputs), strings.ToLower(output))
+	return args, result, e
+}
+func (a ABI) Functions() map[string]Function {
+	out := map[string]Function{}
+	for selector, f := range a.originalFunctions {
+		out[selector] = f
+	}
+	return out
+}
+
+// FunctionEntries retains ABI order, duplicates and selector collisions.
+func (a ABI) FunctionEntries() []Function { return append([]Function{}, a.functionEntries...) }
+
+// viem treats an empty component name as unnamed. Keep Ponder's separate
+// parameter helper name-presence semantics unchanged by adapting a copy here.
+func functionParameters(input []Parameter) []Parameter {
+	out := append([]Parameter{}, input...)
+	for i := range out {
+		out[i].HasName = out[i].Name != ""
+		out[i].Components = functionParameters(out[i].Components)
+	}
+	return out
+}

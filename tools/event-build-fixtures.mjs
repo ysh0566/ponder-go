@@ -3,7 +3,8 @@ const root=path.resolve(import.meta.dirname,'..'),up=path.resolve(root,'../ponde
 function load(file,deps={},names,globals={}){let text=fs.readFileSync(path.join(up,file),'utf8');sources.push({file,sha256:crypto.createHash('sha256').update(text).digest('hex')});if(names){const sf=ts.createSourceFile(file,text,99,true);text=sf.statements.filter(n=>ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>names.includes(d.name.getText(sf)))).map(n=>n.getText(sf)).join('\n');}const exports={};vm.runInNewContext(ts.transpileModule(text,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,{...globals,exports,require:n=>{if(!(n in deps))throw Error('Unexpected '+n);return deps[n]}},{filename:file,timeout:10000});return exports;}
 const lower=load('packages/core/src/utils/lowercase.ts'),rpc=load('packages/core/src/rpc/index.ts',{},['sanitizeLogTopics']),actions=load('packages/core/src/rpc/actions.ts',{},['ADDRESS_CHUNK_SIZE']);
 const filters=load('packages/core/src/runtime/filter.ts',{viem,'@/utils/lowercase.js':lower,'@/rpc/index.js':rpc,'@/rpc/actions.js':actions}),checkpoint=load('packages/core/src/utils/checkpoint.ts',{viem});
-const operations=['buildEvents','syncBlockToInternal','syncLogToInternal','syncTransactionToInternal','syncTransactionReceiptToInternal','syncTraceToInternal'];const events=load('packages/core/src/runtime/events.ts',{},operations,{...viem,...filters,...checkpoint,...lower});
+const parameters=load('packages/core/src/utils/decodeAbiParameters.ts',{viem}),eventLog=load('packages/core/src/utils/decodeEventLog.ts',{viem,'./decodeAbiParameters.js':parameters,'./lowercase.js':lower});
+const operations=['decodeEvents','buildEvents','syncBlockToInternal','syncLogToInternal','syncTransactionToInternal','syncTransactionReceiptToInternal','syncTraceToInternal'];const events=load('packages/core/src/runtime/events.ts',{},operations,{...viem,...filters,...checkpoint,...lower,...eventLog});
 function mark(v){if(v===undefined)return {$undefined:true};if(typeof v==='bigint')return {$bigint:String(v)};if(Array.isArray(v))return Array.from(v,mark);if(v instanceof Map)return {$map:[...v.entries()].map(mark)};if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().map(k=>[k,mark(v[k])]));return v;}
 const vectors=[];function add(operation,input){const args=mark(input);try{vectors.push({operation,args,result:mark(events[operation](input))});}catch(e){vectors.push({operation,args,error:{name:e.name,message:e.message}})}}
 const a='0x'+'ab'.repeat(20),b='0x'+'cd'.repeat(20),hash='0x'+'01'.repeat(32),signature='0x'+'02'.repeat(32);
@@ -25,4 +26,34 @@ for(const type of ['0x0','0x1','0x2','0x7e','0x99'])for(const to of [a,null,unde
 for(const optional of [undefined,null,'','0x0'])add('syncTransactionToInternal',{transaction:{blockNumber:'0x1',transactionIndex:'0x0',from:a,to:b,gas:'0x5208',hash,input:'0x',nonce:'0x0',value:'0x0',v:undefined,type:'0x7e',maxFeePerGas:optional,maxPriorityFeePerGas:optional}});
 for(const value of [undefined,null,'0x0','0xffffffffffffffff'])for(const to of [a,null,undefined])add('syncTraceToInternal',{trace:{trace:{type:'CALL',from:a,to,gas:'0x1',gasUsed:'0x0',input:'0x',output:undefined,value,traceAddress:[1,0]}},block:{number:'0x1'},transaction:{transactionIndex:'0x2'}});
 add('syncLogToInternal',{log:{address:a.toUpperCase().replace('0X','0x'),data:'0x',topics:[signature],blockNumber:'0x1',logIndex:'0x0',transactionIndex:'0x2',removed:true}});
+
+// Fresh synthetic ABI callbacks; no original generated ABI or fixture replacement.
+const chain={id:1,name:'NativeOracle'},callbacks=[],rawEvents=[];
+function callback(abiItem){const c={type:'contract',name:'C.'+abiItem.name,chain,filter:{type:abiItem.type==='event'?'log':'trace'},abiItem};callbacks.push(c);return callbacks.length-1;}
+function raw(index,frame){return {chainId:1,eventCallbackIndex:index,checkpoint:checkpoint.ZERO_CHECKPOINT_STRING,block:{number:1n},transaction:{transactionIndex:0},transactionReceipt:undefined,log:undefined,trace:undefined,...frame};}
+function decodeVector(selected,raw){const logs=[],common={logger:{debug:fields=>logs.push(mark(fields))}};const args=mark({chain,callbacks:selected,rawEvents:raw});const result=events.decodeEvents(common,chain,selected,raw);vectors.push({operation:'decodeEvents',args,result:mark({events:result,logs})});}
+const fn=(name,inputs,outputs=[],stateMutability='nonpayable')=>({type:'function',name,inputs,outputs,stateMutability});
+const functionCases=[
+ [fn('transfer',[{name:'to',type:'address'},{name:'amount',type:'uint256'}],[{type:'bool'}]),[viem.getAddress(b),1000000000000000000n],true],
+ [fn('f',[{name:'x',type:'uint256'}],[{name:'value',type:'uint256'}],'view'),[7n],9n],
+ [fn('f',[{name:'who',type:'address'}],[{name:'dest',type:'address'}]),[viem.getAddress(b)],viem.getAddress(a)],
+ [fn('tuple',[{name:'item',type:'tuple',components:[{name:'owner',type:'address'},{name:'values',type:'uint256[]'}]}],[{name:'items',type:'tuple[]',components:[{name:'owner',type:'address'},{name:'values',type:'uint256[]'}]}]),[{owner:viem.getAddress(a),values:[1n,2n]}],[{owner:viem.getAddress(b),values:[3n,4n]}]],
+ [fn('multi',[{name:'xs',type:'uint256[]'}],[{type:'address'},{type:'uint256[]'}]),[[1n,2n]],[viem.getAddress(b),[3n,4n]]],
+ [fn('ping',[],[]),[],undefined],
+ [fn('notify',[{name:'who',type:'address'}],[]),[viem.getAddress(a)],undefined],
+ [fn('emptyNames',[{name:'item',type:'tuple',components:[{name:'',type:'uint256'},{name:'x',type:'uint256'}]}],[{type:'tuple',components:[{name:'',type:'uint256'},{name:'x',type:'uint256'}]}]),[[1n,2n]],[3n,4n]],
+ [fn('byteValues',[{name:'value',type:'bytes2'}],[{type:'bytes'}]),['0xabcd'],'0x1234abcd']
+];
+for(const [item,args,result] of functionCases){const index=callback(item),input=viem.encodeFunctionData({abi:[item],functionName:item.name,args}),output=item.outputs.length?viem.encodeFunctionResult({abi:[item],functionName:item.name,result}):undefined;rawEvents.push(raw(index,{trace:{type:'CALL',from:a,to:b,input:item.name==='byteValues'?input.slice(0,10)+input.slice(10).toUpperCase():input,output:item.name==='byteValues'?'0x'+output.slice(2).toUpperCase():output,traceAddress:[index]}}));}
+decodeVector(callbacks,rawEvents);
+for(const index of [0,1]){const good=rawEvents[index];decodeVector(callbacks,[raw(index,{trace:{...good.trace,input:'0x'}}),raw(index,{trace:{...good.trace,output:'0x'}}),good,raw(index,{trace:{...good.trace,input:'0x'}})]);}
+decodeVector(callbacks,[raw(0,{trace:{...rawEvents[0].trace,input:'0x'}}),raw(1,{trace:{...rawEvents[1].trace,input:'0x'}}),raw(0,{trace:{...rawEvents[0].trace,input:'0x'}})]);
+const transferEvent={type:'event',name:'Transfer',inputs:[{name:'from',type:'address',indexed:true},{name:'to',type:'address',indexed:true},{name:'value',type:'uint256',indexed:false}]};
+const logCallback={type:'contract',name:'C:Transfer',chain,filter:{type:'log'},abiItem:transferEvent},logTopics=viem.encodeEventTopics({abi:[transferEvent],eventName:'Transfer',args:{from:a,to:b}}),log={topics:logTopics,data:viem.encodeAbiParameters([{type:'uint256'}],[99n]),logIndex:0};
+decodeVector([logCallback],[raw(0,{log}),raw(0,{log:{...log,data:'0x'}}),raw(0,{log:{...log,data:'0x'}}),raw(0,{log:{...log,topics:[]}})]);
+const overloaded=functionCases.filter(([f])=>f.name==='f').map(([f])=>f),duplicates=load('packages/core/src/utils/duplicates.ts'),safe=load('packages/core/src/utils/abi.ts',{},['toSafeName'],{formatAbiItem:require('abitype').formatAbiItem,...duplicates});
+for(const [item] of functionCases)vectors.push({operation:'functionMetadata',args:mark({item,overloaded:item.name==='f'}),result:mark({selector:viem.toFunctionSelector(item),safeName:safe.toSafeName({abi:item.name==='f'?overloaded:[item],item})})});
+
+decodeVector(callbacks,[raw(0,{trace:{...rawEvents[0].trace,input:'0x'+rawEvents[0].trace.input.slice(2).toUpperCase()}}),rawEvents[0]]);
+const pingIndex=callbacks.findIndex(c=>c.abiItem.name==='ping');decodeVector(callbacks,[raw(pingIndex,{trace:{...rawEvents[pingIndex].trace,input:rawEvents[pingIndex].trace.input+'ab'}})]);
 fs.writeFileSync(path.join(root,'testdata/runtime/event-build-differential.json'),JSON.stringify({counting:'Supplemental vectors from actual pinned selected declarations; not original source test credit.',baseline:'17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334',sources,vectors},null,2)+'\n');console.log({vectors:vectors.length,errors:vectors.filter(x=>x.error).length});

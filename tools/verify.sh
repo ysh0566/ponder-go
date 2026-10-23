@@ -17,6 +17,7 @@ node tools/factory-fixtures.mjs
 node tools/protocol-fixtures.mjs
 node tools/runtime-fixtures.mjs
 node tools/selected-runtime-oracle.mjs
+node tools/selected-runtime-oracle.mjs --mapped-only
 node tools/event-build-fixtures.mjs
 node tools/compile-fixtures.mjs
 node tools/orm-compile-fixtures.mjs

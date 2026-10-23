@@ -11,7 +11,9 @@ import (
 
 type ABI struct {
 	ethabi.ABI
-	originalEvents map[string]Event
+	originalEvents    map[string]Event
+	originalFunctions map[string]Function
+	functionEntries   []Function
 }
 
 func signatureType(p Parameter) string {
@@ -52,10 +54,21 @@ func Parse(data string) (ABI, error) {
 		return ABI{}, e
 	}
 	events := map[string]Event{}
+	functions := map[string]Function{}
+	functionEntries := []Function{}
 	for _, entry := range entries {
 		var event Event
 		if e = json.Unmarshal(entry, &event); e != nil {
 			return ABI{}, e
+		}
+		if event.Type == "function" {
+			var function Function
+			if e = json.Unmarshal(entry, &function); e != nil {
+				return ABI{}, e
+			}
+			functions[FunctionSelector(function)] = function
+			functionEntries = append(functionEntries, function)
+			continue
 		}
 		if event.Type != "event" {
 			continue
@@ -66,7 +79,7 @@ func Parse(data string) (ABI, error) {
 			}
 		}
 	}
-	return ABI{ABI: a, originalEvents: events}, nil
+	return ABI{ABI: a, originalEvents: events, originalFunctions: functions, functionEntries: functionEntries}, nil
 }
 func (a ABI) DecodeEvent(name string, topics []string, data string) (any, error) {
 	event, ok := a.originalEvents[name]

@@ -1,0 +1,183 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "Four exact source records/eight original assertion expressions. Contract decoder vectors/real-EVM boundaries and provider/cache classification controls are supplementary.",
+  "cases": [
+    {
+      "id": "5498a690d87fda2d2e79",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "eth_getLogs chunks address arrays and merges responses in order",
+      "contexts": [],
+      "test_source": "test(\"eth_getLogs chunks address arrays and merges responses in order\", async () => {\n  const addresses = Array.from(\n    { length: 51 },\n    (_, index) => `0x${index.toString(16).padStart(40, \"0\")}` as Address,\n  );\n  const firstLog = { ...log, address: addresses[0], blockNumber: \"0x2\" };\n  const secondLog = { ...log, address: addresses[50], logIndex: \"0x1\" };\n  const requests: Extract<RequestParameters, { method: \"eth_getLogs\" }>[] = [];\n  const rpcRequest = vi.fn(\n    async (request: Extract<RequestParameters, { method: \"eth_getLogs\" }>) => {\n      requests.push(request);\n      const requestAddress = request.params[0].address;\n      if (\n        Array.isArray(requestAddress) &&\n        requestAddress[0] === addresses[50]\n      ) {\n        return [secondLog];\n      }\n      return [firstLog];\n    },\n  );\n  const rpc = { request: rpcRequest } as unknown as Rpc;\n  const params: Extract<\n    RequestParameters,\n    { method: \"eth_getLogs\" }\n  >[\"params\"] = [{ address: addresses }];\n\n  // Note: The second chunk has the earlier log.\n  await expect(eth_getLogs(rpc, params)).resolves.toStrictEqual([\n    secondLog,\n    firstLog,\n  ]);\n  expect(requests).toHaveLength(2);\n  expect(requests.map((request) => request.params[0].address)).toStrictEqual([\n    addresses.slice(0, 50),\n    [addresses[50]],\n  ]);\n  expect(params[0].address).toStrictEqual(addresses);\n})",
+      "inputs": [
+        "addresses = Array.from(\n    { length: 51 },\n    (_, index) => `0x${index.toString(16).padStart(40, \"0\")}` as Address,\n  )",
+        "firstLog = { ...log, address: addresses[0], blockNumber: \"0x2\" }",
+        "secondLog = { ...log, address: addresses[50], logIndex: \"0x1\" }",
+        "requests: Extract<RequestParameters, { method: \"eth_getLogs\" }>[] = []",
+        "rpcRequest = vi.fn(\n    async (request: Extract<RequestParameters, { method: \"eth_getLogs\" }>) => {\n      requests.push(request);\n      const requestAddress = request.params[0].address;\n      if (\n        Array.isArray(requestAddress) &&\n        requestAddress[0] === addresses[50]\n      ) {\n        return [secondLog];\n      }\n      return [firstLog];\n    },\n  )",
+        "requestAddress = request.params[0].address",
+        "rpc = { request: rpcRequest } as unknown as Rpc",
+        "params: Extract<\n    RequestParameters,\n    { method: \"eth_getLogs\" }\n  >[\"params\"] = [{ address: addresses }]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 133,
+          "text": "expect(eth_getLogs(rpc, params)).resolves.toStrictEqual([\n    secondLog,\n    firstLog,\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 137,
+          "text": "expect(requests).toHaveLength(2)"
+        },
+        {
+          "kind": "runtime",
+          "line": 138,
+          "text": "expect(requests.map((request) => request.params[0].address)).toStrictEqual([\n    addresses.slice(0, 50),\n    [addresses[50]],\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 142,
+          "text": "expect(params[0].address).toStrictEqual(addresses)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getLogs chunks address arrays and merges responses in order",
+        "source_id": "5498a690d87fda2d2e79",
+        "source_line": 105,
+        "assertions_sha256": "d344fcf574eff8bf13850ce04d200357979e5a10540994dd6b4d6e8320681287",
+        "original_assertions": 4,
+        "target_file": "rpc/logs_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCLogs/eth_getLogs_chunks_address_arrays_and_merges_responses_in_order",
+        "assertion_policy": "Every original request chunk, result/order/length/params immutability/not-called assertion retained. Exact51addresses, globalhash/address/log/transaction fixture fields, no generated ABI dependency. Source vi.fn request adapted to task-local Go HTTP mock; full original rpc.actions test file runs unchanged separately. Chunks are sequential in the native action, rather than source Promise.all; output/request ordering and inputs preserved."
+      }
+    },
+    {
+      "id": "9110e7f26aee7138dd26",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "eth_getLogs sorts logs by block number and log index",
+      "contexts": [],
+      "test_source": "test(\"eth_getLogs sorts logs by block number and log index\", async () => {\n  const logs = [\n    { ...log, blockNumber: \"0x2\", logIndex: \"0x0\" },\n    { ...log, blockNumber: \"0x1\", logIndex: \"0x1\" },\n    { ...log, blockNumber: \"0x1\", logIndex: \"0x0\" },\n  ];\n  const rpc = { request: vi.fn(async () => logs) } as unknown as Rpc;\n\n  const result = await eth_getLogs(rpc, [{ fromBlock: \"0x1\", toBlock: \"0x2\" }]);\n  expect(\n    result.map(({ blockNumber, logIndex }) => [blockNumber, logIndex]),\n  ).toStrictEqual([\n    [\"0x1\", \"0x0\"],\n    [\"0x1\", \"0x1\"],\n    [\"0x2\", \"0x0\"],\n  ]);\n})",
+      "inputs": [
+        "logs = [\n    { ...log, blockNumber: \"0x2\", logIndex: \"0x0\" },\n    { ...log, blockNumber: \"0x1\", logIndex: \"0x1\" },\n    { ...log, blockNumber: \"0x1\", logIndex: \"0x0\" },\n  ]",
+        "rpc = { request: vi.fn(async () => logs) } as unknown as Rpc",
+        "result = await eth_getLogs(rpc, [{ fromBlock: \"0x1\", toBlock: \"0x2\" }])"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 154,
+          "text": "expect(\n    result.map(({ blockNumber, logIndex }) => [blockNumber, logIndex]),\n  ).toStrictEqual([\n    [\"0x1\", \"0x0\"],\n    [\"0x1\", \"0x1\"],\n    [\"0x2\", \"0x0\"],\n  ])"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getLogs sorts logs by block number and log index",
+        "source_id": "9110e7f26aee7138dd26",
+        "source_line": 145,
+        "assertions_sha256": "24e75950fbc44eae9e17e4fe68e6c4b5ae66a34aab39384854561f20b1489be9",
+        "original_assertions": 1,
+        "target_file": "rpc/logs_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCLogs/eth_getLogs_sorts_logs_by_block_number_and_log_index",
+        "assertion_policy": "Every original request chunk, result/order/length/params immutability/not-called assertion retained. Exact51addresses, globalhash/address/log/transaction fixture fields, no generated ABI dependency. Source vi.fn request adapted to task-local Go HTTP mock; full original rpc.actions test file runs unchanged separately. Chunks are sequential in the native action, rather than source Promise.all; output/request ordering and inputs preserved."
+      }
+    },
+    {
+      "id": "9b978d33ce2fa80c6b0f",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "standardizeTransactions() sorts transactions by transaction index",
+      "contexts": [],
+      "test_source": "test(\"standardizeTransactions() sorts transactions by transaction index\", () => {\n  const transaction = {\n    blockHash: hash,\n    blockNumber: \"0x1\",\n    from: address,\n    hash,\n    to: address,\n    transactionIndex: \"0x0\",\n  };\n  const transactions = standardizeTransactions(\n    [\n      { ...transaction, transactionIndex: \"0x2\" },\n      { ...transaction, transactionIndex: \"0x0\" },\n      { ...transaction, transactionIndex: \"0x1\" },\n    ] as unknown as SyncTransaction[],\n    { method: \"eth_getBlockByNumber\", params: [\"0x1\", true] },\n  );\n  expect(\n    transactions.map(({ transactionIndex }) => transactionIndex),\n  ).toStrictEqual([\"0x0\", \"0x1\", \"0x2\"]);\n})",
+      "inputs": [
+        "transaction = {\n    blockHash: hash,\n    blockNumber: \"0x1\",\n    from: address,\n    hash,\n    to: address,\n    transactionIndex: \"0x0\",\n  }",
+        "transactions = standardizeTransactions(\n    [\n      { ...transaction, transactionIndex: \"0x2\" },\n      { ...transaction, transactionIndex: \"0x0\" },\n      { ...transaction, transactionIndex: \"0x1\" },\n    ] as unknown as SyncTransaction[],\n    { method: \"eth_getBlockByNumber\", params: [\"0x1\", true] },\n  )"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 180,
+          "text": "expect(\n    transactions.map(({ transactionIndex }) => transactionIndex),\n  ).toStrictEqual([\"0x0\", \"0x1\", \"0x2\"])"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "standardizeTransactions() sorts transactions by transaction index",
+        "source_id": "9b978d33ce2fa80c6b0f",
+        "source_line": 163,
+        "assertions_sha256": "9cdddd1061d2c83e741ebd53ff7e1e36083fc5195468dccab1ef7e085d0d1f7c",
+        "original_assertions": 1,
+        "target_file": "rpc/logs_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCLogs/standardizeTransactions()_sorts_transactions_by_transaction_index",
+        "assertion_policy": "Every original request chunk, result/order/length/params immutability/not-called assertion retained. Exact51addresses, globalhash/address/log/transaction fixture fields, no generated ABI dependency. Source vi.fn request adapted to task-local Go HTTP mock; full original rpc.actions test file runs unchanged separately. Chunks are sequential in the native action, rather than source Promise.all; output/request ordering and inputs preserved."
+      }
+    },
+    {
+      "id": "8eff803a0e6767e14afe",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "eth_getLogs skips empty address arrays",
+      "contexts": [],
+      "test_source": "test(\"eth_getLogs skips empty address arrays\", async () => {\n  const rpcRequest = vi.fn();\n  const rpc = { request: rpcRequest } as unknown as Rpc;\n  const params: Extract<\n    RequestParameters,\n    { method: \"eth_getLogs\" }\n  >[\"params\"] = [{ address: [] }];\n\n  await expect(eth_getLogs(rpc, params)).resolves.toStrictEqual([]);\n  expect(rpcRequest).not.toHaveBeenCalled();\n})",
+      "inputs": [
+        "rpcRequest = vi.fn()",
+        "rpc = { request: rpcRequest } as unknown as Rpc",
+        "params: Extract<\n    RequestParameters,\n    { method: \"eth_getLogs\" }\n  >[\"params\"] = [{ address: [] }]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 193,
+          "text": "expect(eth_getLogs(rpc, params)).resolves.toStrictEqual([])"
+        },
+        {
+          "kind": "runtime",
+          "line": 194,
+          "text": "expect(rpcRequest).not.toHaveBeenCalled()"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getLogs skips empty address arrays",
+        "source_id": "8eff803a0e6767e14afe",
+        "source_line": 185,
+        "assertions_sha256": "c67792af83c94c56d2aab2e596dcd7d1dc99be18e3c923bf76a0cb48f24e9646",
+        "original_assertions": 2,
+        "target_file": "rpc/logs_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCLogs/eth_getLogs_skips_empty_address_arrays",
+        "assertion_policy": "Every original request chunk, result/order/length/params immutability/not-called assertion retained. Exact51addresses, globalhash/address/log/transaction fixture fields, no generated ABI dependency. Source vi.fn request adapted to task-local Go HTTP mock; full original rpc.actions test file runs unchanged separately. Chunks are sequential in the native action, rather than source Promise.all; output/request ordering and inputs preserved."
+      }
+    }
+  ],
+  "static_assertions": 8
+}
