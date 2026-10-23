@@ -2,7 +2,7 @@
 
 固定 `ponder-sh/ponder@17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`（核心 `0.18.2`）的本地 Go 复刻，**仍在实现，不是全功能完成版**。
 
-项目：`/Users/ysh0566/Documents/Codex/2026-10-23/task/ponder-go`。完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。此项目没有远端、推送、PR 或部署。
+完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。用户已授权将经验证的阶段提交发布到 `ysh0566` 名下的私有仓库；整体复刻仍未完成，没有部署或 PR。
 
 目前已有可运行的单链路径：本地 Ethereum RPC → 静态或 factory 动态合约日志/receipt → Go handler → PostgreSQL 事务写入、journal、checkpoint → SQL HTTP/SSE。Anvil 重组后可以撤销并重新索引。PostgreSQL 与真实 PGlite 分别验证；没有 SQLite 替代实现。
 
@@ -30,7 +30,7 @@ export PONDER_TEST_POSTGRES='postgres://ponder:ponder-local-test@127.0.0.1:53398
 ./tools/verify.sh
 ```
 
-该脚本执行 `go test -count=1 -json ./...`、`go test -count=1 -race -json ./...`、`go vet ./...`、CLI/示例编译、原版 83 条所选 core 测试及差分 harness。本环境的沙箱限制本地 TCP/IPC，执行数据库、HTTP 和 Anvil 测试需要已授权的工具网络能力。缺少 PostgreSQL 环境变量的单独 `go test` 会明确报告相关集成测试未运行；完整验收脚本直接要求该变量。
+该脚本执行 `go test -count=1 -json ./...`、`go test -count=1 -race -json ./...`、`go vet ./...`、CLI/示例编译、原版 167 条活动 core 测试（另保留 2 条原 skip）及差分 harness。本环境的沙箱限制本地 TCP/IPC，执行数据库、HTTP 和 Anvil 测试需要已授权的工具网络能力。缺少 PostgreSQL 环境变量的单独 `go test` 会明确报告相关集成测试未运行；完整验收脚本直接要求该变量。
 
 SDK 测试单独运行，保留原断言与 inline snapshots：
 
@@ -55,7 +55,7 @@ bin/ponder codegen --schema examples/erc20/schema.json --out examples/erc20/pond
 
 ## 存储边界
 
-- 默认创建新的 `ponder_go_shadow_<schema hash>`，索引 schema 与 sync schema 分离；拒绝接管没有本项目 ownership marker 的 schema。
+- 默认创建新的 `ponder_go_shadow_v3_<schema hash>`，索引 schema 与 sync schema 分离；拒绝接管没有本项目 ownership marker 的 schema。
 - 业务 DML 与 undo journal 在同一数据库语句的 trigger 内完成；事件去重与 checkpoint 进度在同一事务内提交。默认 multichain 回滚从目标链边界后的最小 operation_id 撤销全局后缀；isolated 只回滚目标链。
 - 四个应用进程边界（业务 SQL 后、确认 journal 后、进度后、commit 后）在两个后端分别测试；前两个现已位于同一业务/trigger SQL 语句完成之后。额外 journal 约束失败验证语句内回滚。没有测试数据库服务端断电或磁盘损坏，不外推这些保证。
 - `reorgWindow` 按时间戳秒计算。调度器目前明确限制单链；多链调度尚未实现，存储层的多链回滚已经有真实验证。
@@ -69,7 +69,7 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 
 未取得计划 PDF 的本地可读副本：Library 已解析给定文件，但所提供下载经指定 helper 两次失败；未伪造本地文件。实现以完整委托范围和固定源码为依据。
 
-当前 89 条映射中，87 条也取得原版 oracle 通过，2 条 SQL 用例已在 Go 双后端执行，其完整原版 setup 因待批准的 Foundry 1.8.5 安装仍阻塞。见台账 `oracle_passed` / `oracle_blocked`，不将 Go 通过冒充 oracle 通过。
+当前 228 条映射中，171 条也取得原版 oracle 通过（167 Go + 4 SDK），57 条数据库/profile oracle 因待批准的 Foundry 1.8.5 及其生成 fixture 仍阻塞。见台账 `oracle_passed` / `oracle_blocked`，不将 Go 通过冒充 oracle 通过。
 
 ## ABI 原生类型适配
 
