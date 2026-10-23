@@ -36,6 +36,9 @@ func (e *Engine) discoverFactories(ctx context.Context, b Block, number uint64) 
 				return err
 			}
 		}
+		if err := e.cacheLogs(ctx, logs); err != nil {
+			return err
+		}
 		children := []store.FactoryChild{}
 		for _, log := range logs {
 			if log.Removed || len(log.Topics) == 0 || !strings.EqualFold(log.Topics[0], f.EventSelector) {
@@ -59,4 +62,15 @@ func (e *Engine) discoverFactories(ctx context.Context, b Block, number uint64) 
 		}
 	}
 	return nil
+}
+
+func (e *Engine) cacheLogs(ctx context.Context, logs []Log) error {
+	if e.cache == nil || len(logs) == 0 {
+		return nil
+	}
+	rows := make([]map[string]any, len(logs))
+	for i, log := range logs {
+		rows[i] = map[string]any{"blockNumber": log.BlockNumber, "logIndex": log.LogIndex, "transactionIndex": log.TransactionIndex, "blockHash": log.BlockHash, "transactionHash": log.TransactionHash, "address": log.Address, "topics": log.Topics, "data": log.Data}
+	}
+	return e.cache.Insert(ctx, "logs", e.chain.ID, rows)
 }

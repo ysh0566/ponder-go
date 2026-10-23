@@ -83,6 +83,36 @@ type Table[K, I, U, R any] struct {
 	db         *store.IndexingStore
 }
 
+// SQL exposes eager, typed database operations. Insert uses the exact same
+// generated required-field/value types as the buffered operation.
+type SQLTable[K, I, U, R any] struct{ table Table[K, I, U, R] }
+
+func (t Table[K, I, U, R]) SQL() SQLTable[K, I, U, R] { return SQLTable[K, I, U, R]{t} }
+func (s SQLTable[K, I, U, R]) Insert(ctx context.Context, input I) (R, error) {
+	var zero R
+	row, e := s.table.definition.insert(input)
+	if e != nil {
+		return zero, e
+	}
+	result, e := s.table.db.SQLInsert(ctx, s.table.definition.name, row)
+	if e != nil {
+		return zero, e
+	}
+	return s.table.definition.decode(result)
+}
+func (s SQLTable[K, I, U, R]) Find(ctx context.Context, key K) (*R, error) {
+	row, e := s.table.definition.key(key)
+	if e != nil {
+		return nil, e
+	}
+	rows, e := s.table.db.Select(ctx, s.table.definition.name, row)
+	if e != nil || len(rows) == 0 {
+		return nil, e
+	}
+	value, e := s.table.definition.decode(rows[0])
+	return &value, e
+}
+
 func (d Definition[K, I, U, R]) Bind(db *store.IndexingStore) Table[K, I, U, R] {
 	return Table[K, I, U, R]{d, db}
 }

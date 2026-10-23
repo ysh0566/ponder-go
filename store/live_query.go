@@ -40,7 +40,10 @@ END; $$`); e != nil {
 	}
 	// The 7900-byte boundary, JSON escaping, sorted iteration and final empty
 	// array follow getLiveQueryNotifyProcedureSql at the pinned revision.
-	return tx.Exec(ctx, `CREATE OR REPLACE FUNCTION `+a.s.internal("live_query_notify")+`() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+	return tx.Exec(ctx, liveQueryNotifySQL(a.s.Namespace, a.LiveQueryChannel()))
+}
+func liveQueryNotifySQL(namespace, channel string) string {
+	return `CREATE OR REPLACE FUNCTION ` + schema.Quote(namespace) + `."live_query_notify"() RETURNS TRIGGER LANGUAGE plpgsql AS $$
 DECLARE
  current_payload text := '[';
  separator text := '';
@@ -51,7 +54,7 @@ BEGIN
  FOR entry IN SELECT table_name FROM pg_temp.live_query_tables ORDER BY table_name LOOP
   entry_json := to_json(entry)::text;
   IF current_payload <> '[' AND octet_length(current_payload) + octet_length(separator) + octet_length(entry_json) + 1 >= 7900 THEN
-   PERFORM pg_notify('`+a.LiveQueryChannel()+`', current_payload || ']');
+   PERFORM pg_notify('` + channel + `', current_payload || ']');
    current_payload := '[' || entry_json;
    separator := ',';
   ELSE
@@ -60,12 +63,12 @@ BEGIN
   END IF;
  END LOOP;
  IF current_payload = '[' THEN
-  PERFORM pg_notify('`+a.LiveQueryChannel()+`', '[]');
+  PERFORM pg_notify('` + channel + `', '[]');
  ELSE
-  PERFORM pg_notify('`+a.LiveQueryChannel()+`', current_payload || ']');
+  PERFORM pg_notify('` + channel + `', current_payload || ']');
  END IF;
  RETURN NULL;
-END; $$`)
+END; $$`
 }
 
 // tables selects declared business tables, including the empty selection used

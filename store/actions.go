@@ -62,13 +62,32 @@ func (a *Actions) DropTriggers(ctx context.Context) error {
 	})
 }
 func (a *Actions) CreateViews(ctx context.Context) error {
-	return a.transaction(ctx, func(tx Transaction) error { return a.s.createViews(ctx, tx) })
+	return a.transaction(ctx, func(tx Transaction) error {
+		if e := a.s.createViews(ctx, tx); e != nil {
+			return e
+		}
+		return a.s.createAliasViews(ctx, tx)
+	})
 }
 func (a *Actions) CreateIndexes(ctx context.Context) error {
 	return a.transaction(ctx, func(tx Transaction) error { return a.s.createIndexes(ctx, tx) })
 }
 func (a *Actions) RawBatch(ctx context.Context, chain uint64, handler func(*Writer) error) error {
+	return a.rawBatch(ctx, chain, handler, false)
+}
+
+// HistoricalBatch keeps historical writes journaled too. Initial safe metadata
+// seals only a provably safe prefix; it never creates an unjournaled DML path.
+func (a *Actions) HistoricalBatch(ctx context.Context, chain uint64, handler func(*Writer) error) error {
+	return a.rawBatch(ctx, chain, handler, true)
+}
+func (a *Actions) rawBatch(ctx context.Context, chain uint64, handler func(*Writer) error, installCapture bool) error {
 	return a.transaction(ctx, func(tx Transaction) error {
+		if installCapture {
+			if e := a.s.createJournalTriggers(ctx, tx); e != nil {
+				return e
+			}
+		}
 		if e := a.s.eventContext(ctx, tx, checkpoint.MaxString, chain, false); e != nil {
 			return e
 		}
@@ -240,7 +259,7 @@ func (a *Actions) InitializeCheckpoints(ctx context.Context, states []Checkpoint
 				return e
 			}
 		}
-		return nil
+		return a.s.pruneInitialSafePrefix(ctx, tx)
 	})
 }
 func (a *Actions) Checkpoints(ctx context.Context) ([]CheckpointState, error) {

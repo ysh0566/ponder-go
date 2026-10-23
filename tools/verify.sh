@@ -14,6 +14,7 @@ node tools/discovery-audit.mjs
 node tools/event-fixtures.mjs
 node tools/parameter-fixtures.mjs
 node tools/factory-fixtures.mjs
+node tools/protocol-fixtures.mjs
 node tools/compile-fixtures.mjs
 node tools/orm-compile-fixtures.mjs
 go test -count=1 -json ./abi/testdata/compile/generated > parity/runs/abi-typed-go.jsonl

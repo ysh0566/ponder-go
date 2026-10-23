@@ -21,17 +21,17 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 245,
-    "executed": 245,
-    "passed": 245,
+    "ported": 249,
+    "executed": 249,
+    "passed": 249,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 660,
-    "go_ports": 241,
+    "unimplemented": 656,
+    "go_ports": 245,
     "retained_sdk": 4,
     "oracle_passed": 171,
-    "oracle_blocked": 74,
-    "go_passed": 241,
+    "oracle_blocked": 78,
+    "go_passed": 245,
     "sdk_passed": 4,
     "go_and_original_oracle_passed": 167,
     "target_and_original_oracle_passed": 171
@@ -8998,12 +8998,41 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "migrate() with crash recovery reverts rows",
+        "source_id": "3813ee03d59e149c556f",
+        "source_line": 837,
+        "assertions_sha256": "bbd635c8f282f5e3c1a9aeb82b51d787e1af6b227fda9f715da3cb2f12e4a908",
+        "original_assertions": 4,
+        "target_file": "store/lifecycle_remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamRemainingLifecycle/postgres/migrate()_with_crash_recovery_reverts_rows",
+        "assertion_policy": "Historical baseline insert, separate block9 commit, later nullable live row/block11, initial safe10, ready flag, shutdown/reopen and full75digit checkpoint snapshot are retained. Native HistoricalBatch captures every write; safe metadata atomically seals only a globally safe journal prefix, preserving the historical baseline without a journal bypass.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/indexing fixture imports missing _test/generated.js. Foundry 1.8.5 installation remains pending; no source assertion/import or generated fixture was replaced.",
+          "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unchanged full database/indexing fixture imports missing _test/generated.js. Foundry 1.8.5 installation remains pending; no source assertion/import or generated fixture was replaced.",
+        "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "688108a7658e1ae083e3",
@@ -9191,12 +9220,41 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/database/index.test.ts",
+        "source_name": "camelCase",
+        "source_id": "a8e07ec7cc849e360caf",
+        "source_line": 1119,
+        "assertions_sha256": "1bfee24129f2977e9ddadcd8dc7f3cacd2393fd15485bdb8b1a5eef30d867555",
+        "original_assertions": 4,
+        "target_file": "store/lifecycle_remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamRemainingLifecycle/postgres/camelCase",
+        "assertion_policy": "camelCase physical names and logical address property, nullable bigint and view definition retained; all original create/drop/commit/revert/finalize/recovery action sequence executes. Source public/viewCc namespaces map to owned task/child alias schemas; per-table reorg containment maps explicitly to the native global journal. Alias forwarding triggers and source-shaped public metadata views exclude fencing tokens. This is not raw source DB layout compatibility.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/indexing fixture imports missing _test/generated.js. Foundry 1.8.5 installation remains pending; no source assertion/import or generated fixture was replaced.",
+          "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unchanged full database/indexing fixture imports missing _test/generated.js. Foundry 1.8.5 installation remains pending; no source assertion/import or generated fixture was replaced.",
+        "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "41d9fd6464ab131ac476",
@@ -13226,12 +13284,41 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/index.test.ts",
+        "source_name": "insert then",
+        "source_id": "b6760c6aa30d9b14cf06",
+        "source_line": 543,
+        "assertions_sha256": "656284fbc68d5397e5a4bdabc92196445a883b99446f33606cdcbb6451626361",
+        "original_assertions": 3,
+        "target_file": "store/orm_completion_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamInsertThen/postgres",
+        "assertion_policy": "Original empty physical schema, complete cache and transaction without runtime auto-flush retained; zeroAddress/10n and ALICE/10n one-element array go through real InsertThen/InsertManyThen callbacks. Preserve all3 source assertions. Native callbacks are synchronous success continuations, not JS Promise scheduling or arbitrary thenable assimilation.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/indexing fixture imports missing _test/generated.js. Foundry 1.8.5 installation remains pending; no source assertion/import or generated fixture was replaced.",
+          "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unchanged full database/indexing fixture imports missing _test/generated.js. Foundry 1.8.5 installation remains pending; no source assertion/import or generated fixture was replaced.",
+        "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "cbc4d5b072d01ca9645e",
@@ -13551,12 +13638,48 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing-store/index.test.ts",
+        "source_name": "sql",
+        "source_id": "3c5e9101f97d02eeb949",
+        "source_line": 829,
+        "assertions_sha256": "63c78b813ad7c069ab94294020c626a4f57ed0a631dabd02c977e905ab4e6d9f",
+        "original_assertions": 3,
+        "target_file": "store/orm_completion_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/store",
+        "go_test": "TestUpstreamFullSQL/postgres",
+        "assertion_policy": "Original buffered zeroAddress/10n insert then eager SELECT/WHERE; SAVEPOINT test, address1/undefined NOT NULL RawSqlError, ROLLBACK TO test, duplicate zeroAddress/10n RawSqlError retained in order. Source returns before fixture on PGlite so only PostgreSQL source credit. Native typed SQL().Insert uses the real generated required big.Int constructor; positive and source undefined-to-nil negative compilation fixture required. Companion typed PG/PGlite tests are extra, not source credit.",
+        "oracle_blocker": {
+          "status": "blocked",
+          "reason": "Unchanged full database/indexing fixture imports missing _test/generated.js. Foundry 1.8.5 installation remains pending; no source assertion/import or generated fixture was replaced.",
+          "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
+          "dependency_evidence": "parity/foundry-generation-dependencies.json"
+        }
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "blocked",
+        "reason": "Unchanged full database/indexing fixture imports missing _test/generated.js. Foundry 1.8.5 installation remains pending; no source assertion/import or generated fixture was replaced.",
+        "evidence": "parity/runs/lifecycle-orm-oracle-blocked.json",
+        "dependency_evidence": "parity/foundry-generation-dependencies.json"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/orm-compile-fixtures.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_passed_original_oracle_blocked"
     },
     {
       "id": "5b25add55a497fbe4ece",

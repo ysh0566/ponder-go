@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "228 mapped: 224 native Go passed (167 original oracle also passed, 57 fixture oracle blocked) +4 retained SDK passed; 677 static records remain unimplemented. Full runtime discovery still incomplete."
+      "remaining": "249 mapped: 245 native Go passed (167 original oracle also passed, 78 fixture oracle blocked) +4 retained SDK passed; 656 static records remain unimplemented. Full runtime discovery still incomplete."
     },
     {
       "id": "differential-harness",
@@ -919,6 +919,26 @@
         "parity/runs/sync-migration-crash-race.jsonl"
       ],
       "remaining": "Eight migrateSync source records mapped through owned shadows using unchanged SQL. Real old database/global-schema adoption, full sync-store event CRUD and automatic runtime integration remain unimplemented. Nullable/int64 RPC row API and decimal scalar transport verified; permission roles and remaining source features still pending."
+    },
+    {
+      "id": "protocol-cache-runtime",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/protocol_cache.go",
+        "runtime/engine.go",
+        "runtime/factory.go",
+        "store/sync.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/sync-store/encode.ts",
+        "packages/core/src/sync-store/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/batch-15.json",
+        "testdata/protocol/encoding.json",
+        "docs/PROTOCOL_CACHE.md"
+      ],
+      "remaining": "Full original CRUD fixtures, source request hash/block cache metadata, cold disabled-cache re-enable invalidation, full filter/include/pagination, automatic traces, staged/multichain scheduling and history/live handoff remain incomplete. Twenty generated codec vectors are extra evidence, not source credit."
     }
   ]
 }

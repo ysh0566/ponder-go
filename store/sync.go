@@ -65,6 +65,11 @@ func (s *Store) CompleteBlock(ctx context.Context, b SyncBlock, filter string) e
 			return e
 		}
 	}
+	if cache := s.protocol.Load(); cache != nil {
+		if e = cache.complete(ctx, tx, b.ChainID, b.Number, filter); e != nil {
+			return e
+		}
+	}
 	return tx.Commit(ctx)
 }
 
@@ -90,6 +95,11 @@ func (s *Store) SaveBlock(ctx context.Context, b SyncBlock) error {
 }
 
 func (s *Store) saveBlock(ctx context.Context, tx Transaction, b SyncBlock) error {
+	if cache := s.protocol.Load(); cache != nil {
+		if e := cache.saveBlock(ctx, tx, b); e != nil {
+			return e
+		}
+	}
 	return tx.Exec(ctx, "INSERT INTO "+s.syncTable("blocks")+" VALUES ($1,$2,$3,$4,$5,$6::jsonb) ON CONFLICT(chain_id,number) DO UPDATE SET hash=excluded.hash,parent_hash=excluded.parent_hash,timestamp=excluded.timestamp,payload=excluded.payload", b.ChainID, b.Number, b.Hash, b.ParentHash, b.Timestamp, string(b.Payload))
 }
 func (s *Store) Missing(ctx context.Context, chain uint64, filter string, wanted interval.Interval) ([]interval.Interval, error) {
@@ -124,6 +134,11 @@ func (s *Store) RewindSync(ctx context.Context, chain, number uint64) error {
 }
 
 func (s *Store) rewindSync(ctx context.Context, tx Transaction, chain, number uint64) error {
+	if cache := s.protocol.Load(); cache != nil {
+		if e := cache.rewind(ctx, tx, chain, number); e != nil {
+			return e
+		}
+	}
 	var e error
 	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number>$2", chain, number); e != nil {
 		return e
@@ -159,6 +174,11 @@ func (s *Store) RecordFactoryChildren(ctx context.Context, id string, chain, blo
 	}
 	if e = s.requireLease(ctx, tx); e != nil {
 		return e
+	}
+	if cache := s.protocol.Load(); cache != nil {
+		if e = cache.factoryChildren(ctx, tx, id, chain, block, children); e != nil {
+			return e
+		}
 	}
 	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("factory_addresses")+" WHERE factory_id=$1 AND chain_id=$2 AND block_number=$3", id, chain, block); e != nil {
 		return e

@@ -8,7 +8,7 @@
   "inputs": [
     {
       "file": "orm/orm.go",
-      "sha256": "f1a44ec99ffc05a5ed3a614037cbb6fa7699b0b5a73cb339aa4c313cb95e6504"
+      "sha256": "fd20acb1982c7307791c82757ad9119c016d842606f2280a5ddc0eb306a6920e"
     },
     {
       "file": "orm/generate.go",
@@ -20,7 +20,7 @@
     },
     {
       "file": "tools/orm-compile-fixtures.mjs",
-      "sha256": "b19cb51dd4e027700c741470478840d1d8ba955681249759b523fa3751b0d75c"
+      "sha256": "f4bb42e82291bfb424403278cdf536e3e52dc2f23b549de19b3c5f99591dc52e"
     }
   ],
   "method": "Real Go build of independent public typed model API calls. Required constructor arity, nominal model identity, update column sets and value types are compiler-enforced; no runtime error counts as compilation rejection. Go zero-value syntax is explicitly runtime guarded.",
@@ -138,6 +138,29 @@
         "exit_code": 1,
         "expected": true,
         "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/75798852a81ed6440af4_0.go:3:81: cannot use strict.Account (variable of struct type orm.Definition[strict.AccountKey, strict.AccountInsert, strict.AccountUpdate, strict.AccountRow]) as orm.Definition[nullable.AccountKey, nullable.AccountInsert, nullable.AccountUpdate, nullable.AccountRow] value in assignment"
+      }
+    },
+    {
+      "name": "3c5e9101f97d02eeb949_0",
+      "source_id": "3c5e9101f97d02eeb949",
+      "source_sha256": "1492da684b496f1871472a7097f5f482e8ebb890a3a902e9964330eb1081271a",
+      "directive_index": 0,
+      "source_name": "sql",
+      "status": "passed",
+      "adaptation": "Eager SQL Insert uses the generated required balance big.Int constructor. Source undefined is rejected by the real Go compiler; dynamic SQLInsert separately executes NULL and duplicate-key constraints with the original savepoint sequence.",
+      "positive": {
+        "file": "orm/testdata/compile/pass/3c5e9101f97d02eeb949_0.go",
+        "sha256": "05a784255635c19b6282efbe36efba370a383daa0ef2d5813f3530e50e9c390b",
+        "exit_code": 0,
+        "expected": true,
+        "diagnostics": ""
+      },
+      "negative": {
+        "file": "orm/testdata/compile/fail/3c5e9101f97d02eeb949_0.go",
+        "sha256": "c9d8c0b901fab2faebfff03776e52c741fdfe77981048ca092f382e232dc06c3",
+        "exit_code": 1,
+        "expected": true,
+        "diagnostics": "# command-line-arguments\norm/testdata/compile/fail/3c5e9101f97d02eeb949_0.go:3:169: cannot use nil as big.Int value in argument to strict.NewAccountInsert"
       }
     }
   ],
@@ -262,8 +285,8 @@
     }
   ],
   "summary": {
-    "source_error_directives": 5,
-    "source_error_directives_passed": 5,
+    "source_error_directives": 6,
+    "source_error_directives_passed": 6,
     "supplemental_negative_controls": 6,
     "supplemental_rejected": 6,
     "failed": 0

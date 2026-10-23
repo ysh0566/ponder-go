@@ -167,6 +167,16 @@ func (s *Store) Finalize(ctx context.Context, target checkpoint.Checkpoint) erro
 		return e
 	}
 	if s.staged && len(r.Rows) == 0 {
+		journal, e := tx.Query(ctx, "SELECT operation_id FROM "+s.internal("_ponder_go_journal")+" LIMIT 1")
+		if e != nil {
+			return e
+		}
+		if len(journal.Rows) == 0 {
+			if e = tx.Exec(ctx, "UPDATE "+s.internal("_ponder_go_finalized")+" SET checkpoint=$1 WHERE chain_id=$2", encoded, target.ChainID); e != nil {
+				return e
+			}
+			return tx.Commit(ctx)
+		}
 		return fmt.Errorf("chain checkpoint state must be initialized before finalization")
 	}
 	if len(r.Rows) > 0 && encoded < fmt.Sprint(r.Rows[0]["checkpoint"]) {

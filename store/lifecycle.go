@@ -24,6 +24,7 @@ var ErrLeaseLost = errors.New("database writer lease has expired or changed owne
 type LifecycleOptions struct {
 	HeartbeatInterval time.Duration
 	HeartbeatTimeout  time.Duration
+	ViewsSchema       string
 }
 type MigrationChain struct {
 	ID   uint64
@@ -51,6 +52,7 @@ type AppMetadata struct {
 	IsLocked    int      `json:"is_locked"`
 	IsReady     int      `json:"is_ready"`
 	HeartbeatAt int64    `json:"heartbeat_at"`
+	ViewsSchema string   `json:"views_schema,omitempty"`
 }
 type AppMetadataRow struct {
 	Key   string
@@ -89,6 +91,12 @@ func NewLifecycle(backend Backend, model schema.Schema, namespace string, orderi
 	if namespace == "" {
 		s.Namespace = strings.Replace(s.Namespace, "ponder_go_actions_", "ponder_go_lifecycle_", 1)
 		s.SyncNamespace = s.Namespace + "_sync"
+	}
+	if options.ViewsSchema != "" {
+		if !schema.Identifier(options.ViewsSchema) || !strings.HasPrefix(options.ViewsSchema, s.Namespace+"_") || len(options.ViewsSchema) > 45 {
+			return nil, fmt.Errorf("views schema must be an owned child identifier of the indexing namespace, at most 45 characters")
+		}
+		s.viewsSchema = options.ViewsSchema
 	}
 	var token [16]byte
 	if _, e = rand.Read(token[:]); e != nil {
@@ -188,7 +196,7 @@ func (d *Lifecycle) tryMigrate(ctx context.Context, request Migration) ([]Recove
 	if e != nil {
 		return nil, 0, e
 	}
-	metadata := AppMetadata{Version: "6", BuildID: request.BuildID, TableNames: []string{}, ViewNames: []string{}, IsLocked: 1, HeartbeatAt: time.Now().UnixMilli()}
+	metadata := AppMetadata{Version: "6", BuildID: request.BuildID, TableNames: []string{}, ViewNames: []string{}, IsLocked: 1, HeartbeatAt: time.Now().UnixMilli(), ViewsSchema: d.s.viewsSchema}
 	for _, table := range d.s.Schema.Tables {
 		metadata.TableNames = append(metadata.TableNames, table.Name)
 	}
@@ -201,6 +209,9 @@ func (d *Lifecycle) tryMigrate(ctx context.Context, request Migration) ([]Recove
 			return nil, 0, e
 		}
 		if e = d.Actions().createLiveQueryProcedures(ctx, tx); e != nil {
+			return nil, 0, e
+		}
+		if e = d.s.createAliasViews(ctx, tx); e != nil {
 			return nil, 0, e
 		}
 	} else {
@@ -216,6 +227,9 @@ func (d *Lifecycle) tryMigrate(ctx context.Context, request Migration) ([]Recove
 		}
 		if old.BuildID != request.BuildID {
 			return nil, 0, &MigrationError{Message: "schema was previously used by a different Ponder app; use a new shadow schema"}
+		}
+		if old.ViewsSchema != d.s.viewsSchema {
+			return nil, 0, &MigrationError{Message: "views schema configuration changed; use a new shadow schema"}
 		}
 		expiry := old.HeartbeatAt + d.opts.HeartbeatTimeout.Milliseconds()
 		if old.IsLocked != 0 && expiry > time.Now().UnixMilli() {
