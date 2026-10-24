@@ -10,8 +10,15 @@ import (
 
 func (e *Engine) discoverFactories(ctx context.Context, b Block, number uint64) error {
 	seen := map[string]bool{}
+	sourceNames := []string{}
 	for _, source := range e.Config.Contracts {
-		f, ok := e.factories[source.Name]
+		sourceNames = append(sourceNames, source.Name)
+	}
+	for _, source := range e.Config.Accounts {
+		sourceNames = append(sourceNames, source.Name)
+	}
+	for _, name := range sourceNames {
+		f, ok := e.factories[name]
 		if !ok || seen[f.ID] {
 			continue
 		}

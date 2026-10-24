@@ -67,6 +67,20 @@ func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]p
 			}
 			address = xs
 		}
+		if f, ok := e.factories[source.Name]; ok {
+			address = nativeFactory(f)
+			if _, loaded := childrenByFactory[f.ID]; !loaded {
+				children, err := e.Store.FactoryChildren(ctx, f.ID, e.chain.ID, number)
+				if err != nil {
+					return nil, err
+				}
+				entries := []filter.ChildAddress{}
+				for child, birth := range children {
+					entries = append(entries, filter.ChildAddress{Address: child, Block: birth})
+				}
+				childrenByFactory[f.ID] = entries
+			}
+		}
 		for _, kind := range []string{"transaction", "transfer"} {
 			for _, direction := range []string{"from", "to"} {
 				name := source.Name + ":" + kind + ":" + direction

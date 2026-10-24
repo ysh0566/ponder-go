@@ -46,14 +46,15 @@ type BlockSource struct {
 	Interval   uint64  `json:"interval"`
 }
 
-// AccountSource is the native single-chain static address account source.
-// Factory targets and the complete source configuration DSL remain separate.
+// AccountSource is a native single-chain static, wildcard or factory account source.
+// Complete source configuration DSL compatibility remains separate.
 type AccountSource struct {
-	Name       string   `json:"name"`
-	Chain      string   `json:"chain"`
-	Address    []string `json:"address"`
-	StartBlock uint64   `json:"startBlock"`
-	EndBlock   *uint64  `json:"endBlock,omitempty"`
+	Name       string          `json:"name"`
+	Chain      string          `json:"chain"`
+	Address    []string        `json:"address"`
+	StartBlock uint64          `json:"startBlock"`
+	EndBlock   *uint64         `json:"endBlock,omitempty"`
+	Factory    *factory.Config `json:"factory,omitempty"`
 }
 type Config struct {
 	Ordering  schema.Ordering `json:"ordering"`
@@ -132,6 +133,71 @@ func (c Config) Validate() error {
 		sources[account.Name] = true
 		if account.EndBlock != nil && *account.EndBlock < account.StartBlock {
 			return fmt.Errorf("account end block precedes start")
+		}
+		if account.Factory != nil {
+			if account.Address != nil {
+				return fmt.Errorf("account %s must choose static addresses or a factory", account.Name)
+			}
+			if account.Factory.Event.Name == "" || account.Factory.Event.Type != "event" {
+				return fmt.Errorf("factory for %s requires an ABI event", account.Name)
+			}
+			validateParent := func(value string) error {
+				if !address.MatchString(value) {
+					return fmt.Errorf("invalid account factory address %q", value)
+				}
+				return nil
+			}
+			switch parent := account.Factory.Address.(type) {
+			case nil:
+			case string:
+				if err := validateParent(parent); err != nil {
+					return err
+				}
+			case []string:
+				if len(parent) == 0 {
+					return fmt.Errorf("account factory parent array must not be empty")
+				}
+				for _, value := range parent {
+					if err := validateParent(value); err != nil {
+						return err
+					}
+				}
+			case []any:
+				if len(parent) == 0 {
+					return fmt.Errorf("account factory parent array must not be empty")
+				}
+				for _, value := range parent {
+					text, ok := value.(string)
+					if !ok {
+						return fmt.Errorf("account factory addresses must be strings")
+					}
+					if err := validateParent(text); err != nil {
+						return err
+					}
+				}
+			default:
+				return fmt.Errorf("account factory address must be a string or array")
+			}
+			from := account.StartBlock
+			if account.Factory.FromBlock != nil {
+				from = *account.Factory.FromBlock
+			}
+			if from > account.StartBlock {
+				return fmt.Errorf("account start block precedes factory start block")
+			}
+			to := account.Factory.ToBlock
+			if to == nil {
+				to = account.EndBlock
+			}
+			if to != nil && *to < from {
+				return fmt.Errorf("account factory end block precedes start block")
+			}
+			if account.EndBlock != nil && (to == nil || *to > *account.EndBlock) {
+				return fmt.Errorf("account end block precedes factory end block")
+			}
+			if _, err := factory.Build(*account.Factory); err != nil {
+				return err
+			}
 		}
 		for _, value := range account.Address {
 			if !address.MatchString(value) {
