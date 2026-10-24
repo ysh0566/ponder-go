@@ -145,7 +145,7 @@
       "success": true,
       "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
       "packages": 21,
-      "top_level_functions": 146,
+      "top_level_functions": 149,
       "batches": 50
     },
     "race": {
@@ -154,7 +154,7 @@
       "success": true,
       "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
       "packages": 21,
-      "top_level_functions": 146,
+      "top_level_functions": 149,
       "batches": 50
     }
   },
@@ -220,6 +220,13 @@
     "error_directives_native_verified": 20,
     "error_directives_retained_sdk_verified": 1
   },
+  "indexed_topic_source_verification": {
+    "source_vectors": 50,
+    "source_expected_errors": 6,
+    "new_exact_source_records": 0,
+    "parameter_types": 5,
+    "evidence": "parity/runs/topic-source-verification.json"
+  },
   "sql_source_verification": {
     "source_cases": 14,
     "source_assertions": 19,
@@ -249,14 +256,14 @@
     "postgres": {
       "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
       "go": {
-        "leaf_cases": 206,
-        "pass": 206,
+        "leaf_cases": 222,
+        "pass": 222,
         "fail": 0,
         "skip": 0
       },
       "race": {
-        "leaf_cases": 206,
-        "pass": 206,
+        "leaf_cases": 222,
+        "pass": 222,
         "fail": 0,
         "skip": 0
       },
@@ -265,14 +272,14 @@
     "pglite": {
       "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
       "go": {
-        "leaf_cases": 203,
-        "pass": 203,
+        "leaf_cases": 219,
+        "pass": 219,
         "fail": 0,
         "skip": 0
       },
       "race": {
-        "leaf_cases": 203,
-        "pass": 203,
+        "leaf_cases": 219,
+        "pass": 219,
         "fail": 0,
         "skip": 0
       },
@@ -286,15 +293,15 @@
   },
   "native_go": {
     "file": "parity/runs/go-test.jsonl",
-    "leaf_cases": 1948,
-    "pass": 1948,
+    "leaf_cases": 2030,
+    "pass": 2030,
     "fail": 0,
     "skip": 0
   },
   "race": {
     "file": "parity/runs/go-race.jsonl",
-    "leaf_cases": 1948,
-    "pass": 1948,
+    "leaf_cases": 2030,
+    "pass": 2030,
     "fail": 0,
     "skip": 0
   },

@@ -4,6 +4,16 @@
 
 
 
+## 当前执行入口：M31已验证，完整目标继续
+
+batch-30.json/batch-30-evidence及topics-m31/full-verify-01退出0。Go/race各2030，PG222/PGlite219，0fail/skip；21包149函数，每模式50不重复批次，默认timeout保留。989/9b6fe9b1dc8b141af45e676383455830afa40121cf33b85915b413a00109100a在native前准备并贯穿两种模式前后。精确映射378/905=374Go+4SDK，全部映射原版oracle通过；527未实现。新增82=实际source50+真实runtime32，零原例credit。
+
+修复abi.EncodeEventTopics显式undefined标量wildcard；string/bytes OR null编码null、undefined编码empty，静态OR nullish仍拒绝。未把OR nullish改成wildcard。实际源码50保留标记和hash，比较完整topics与error发生，不外推全部JS强制转换/错误类文案。真实typedSource->topics/bloom/RPC/receipt/handler/PG/PGlite/cache/replay通过。旧4EVM红灯与中间source40两失败保留；冻结M30 985输入加未改测试精确重建986旧输入指纹。
+
+见INDEXED_TOPICS.md。完整模块验收先于普通提交/发布；上一实际发布M30为61f4da4e86a8b55ffc43583c39c7c016e0ee0d86。M31实际发布按外部m31-publication.json，不用本地commit或bundle推断。官方CLI默认scope/任务持久化已授权，不再问、不读token、不改全局helper、不force/历史改写、不开PR/部署、不操作Mac/业务repo/DB。
+
+下一步继续527剩余静态记录；外部history-next仅静态78例/165断言/21typeerrors审计，RPC MD5与旧nativeSHA256契约须分开。完整原生类型、ABI、配置、transport/context/include、历史/多链/实时、query/GraphQL/API/CLI/dev/templates/SDK/simulation仍未完成。M30首轮租约失败根因未确定，保留原配置，不可伪称已修复。
+
 ## 当前执行入口：M30已验证，完整目标继续
 
 正式batch-29.json/batch-29-evidence/、sql-m30/full-verify-02退出0。Go/race各1948，0fail/skip，PG206/PGlite203；21包146函数，每模式50不重复批次，默认timeout保留。985/82761e1cc11689adcba96e49c7e40dadac8bb88b42b076ca7c8dd000987d039a原生输入在Go前准备并贯穿normal/race前后及最终汇总一致。累计378/905=374Go+4SDK，全部映射原版oracle通过；527未实现，静态905不是动态穷尽证明。

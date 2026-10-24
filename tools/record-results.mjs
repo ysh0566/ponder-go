@@ -77,6 +77,11 @@ if(sqlVerification){
  const refs=[...sqlVerification.inputs,sqlVerification.rules,sqlVerification.pristine.report,sqlVerification.pristine.raw_oracle,...sqlVerification.pristine.source_context,sqlVerification.capture.fixture,sqlVerification.capture.raw_oracle,...sqlVerification.capture.source_context,sqlVerification.vectors.fixture,...sqlVerification.vectors.sources];
  if(sqlVerification.summary.source_cases!==14||sqlVerification.summary.source_assertions!==19||sqlVerification.summary.captured_operations!==38||refs.some(f=>!exists(f.file)||fileHash(f.file)!==f.sha256))throw Error("Incomplete/stale SQL original/native context");
 }
+const topicVerification=exists("parity/runs/topic-source-verification.json")?read("parity/runs/topic-source-verification.json"):null;
+if(topicVerification){
+ const refs=[topicVerification.fixture,...topicVerification.source_context,...topicVerification.inputs];
+ if(topicVerification.summary.source_vectors!==50||topicVerification.summary.new_exact_source_records!==0||refs.some(f=>!exists(f.file)||fileHash(f.file)!==f.sha256))throw Error("Incomplete/stale indexed-topic source evidence");
+}
 const oraclePath = exists("parity/runs/foundation-oracle.json")
 	? "parity/runs/foundation-oracle.json"
 	: "parity/foundation-oracle-focused.json";
@@ -321,6 +326,7 @@ const summary = {
 		error_directives_native_verified:ledger.tests.filter(x=>x.type_directives_verification?.status==="passed").reduce((n,x)=>n+x.type_error_directives.length,0),
 		error_directives_retained_sdk_verified:ledger.tests.filter(x=>x.mapping?.target_kind==="retained_sdk"&&x.pass_status==="passed").reduce((n,x)=>n+x.type_error_directives.length,0),
 	},
+ indexed_topic_source_verification:topicVerification?{...topicVerification.summary,evidence:"parity/runs/topic-source-verification.json"}:null,
  sql_source_verification:sqlVerification?{...sqlVerification.summary,evidence:"parity/runs/sql-source-verification.json"}:null,
 	typed_abi_runtime: {file:"parity/runs/abi-typed-go.jsonl",leaf_cases:leaves(typedGo).length,...count(leaves(typedGo)),counting:"Supplementary typed decoder execution; not additional source test records."},
 	typed_abi_race: {file:"parity/runs/abi-typed-race.jsonl",leaf_cases:leaves(typedRace).length,...count(leaves(typedRace))},
