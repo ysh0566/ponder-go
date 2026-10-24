@@ -344,13 +344,26 @@
       "status": "partial",
       "implementation_files": [
         "runtime/engine.go",
-        "rpc/client.go"
+        "rpc/client.go",
+        "bloom/bloom.go",
+        "runtime/bloom.go",
+        "filter/log_filter.go",
+        "runtime/filter_bloom_false_positive_test.go",
+        "bridge/bloom-oracle.mjs"
       ],
       "upstream_sources": [
         "packages/core/src/sync-realtime/index.ts"
       ],
-      "evidence": [],
-      "remaining": "Polling/head subscriptions and reorg replay demonstrated; complete reconnect/stall/finality pipeline remains."
+      "evidence": [
+        "parity/runs/bloom-m27/original-capture-01/result.json",
+        "parity/runs/bloom-compile-fixtures.json",
+        "parity/runs/bloom-m27/focused-pure-02.jsonl",
+        "parity/runs/bloom-m27/focused-runtime-03.jsonl",
+        "parity/runs/batch-26.json",
+        "parity/runs/bloom-m27/full-01-evidence/recovery.json",
+        "parity/runs/bloom-m27/focused-recovery-01.jsonl"
+      ],
+      "remaining": "M27 bloom8 source cases/12 assertions and2 native compiler obligations verified; full Go/race1804 pass each. Native predicates precompiled once and only contract/factory log RPC screened; accounts/traces/setup/block/progress preserved. Original own widened scenario unchanged except explicitRPC3->1; separate4-case real-EVM false-positive fixture retains3RPC with local filtering and actual-source header checks. Missing cached field preserves validation/atomic retry; fresh uncached absence,empty0x/zero/short/malformed andrealchain143 verified. Full reconnect/stall/log validation/finality and scheduler remain."
     },
     {
       "id": "ordering-multichain",

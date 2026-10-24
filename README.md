@@ -2,20 +2,20 @@
 
 固定 `ponder-sh/ponder@17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`（核心 `0.18.2`）的本地 Go 复刻，**仍在实现，不是全功能完成版**。
 
-完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。既定私有仓库为 [ysh0566/ponder-go](https://github.com/ysh0566/ponder-go)。云端 M23–M25 已保留原 SHA 依次普通快进发布，远端 main 核验为 `89549111c03f57fa3a35d9917bbab786d46177d7`；[发布证明](parity/runs/account-factory-m26/publication-results.json) 保存各步 SHA/tree/身份。没有部署或 PR。
+完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。既定私有仓库为 [ysh0566/ponder-go](https://github.com/ysh0566/ponder-go)。云端 M23–M26 已保留原 SHA 依次普通快进发布，上一发布基线为 M26 `253f4f903a534dcc4f7f745a9a8d0ea3bdcd095d`，后续发布以 Git 远端和验收回执为准；[M23–M25证明](parity/runs/account-factory-m26/publication-results.json) 和 [M26证明](parity/runs/bloom-m27/m26-publication.json) 保存 SHA/tree/身份。没有部署或 PR。
 
 目前已有可运行的单链路径：本地 Ethereum RPC → 静态或 factory 动态合约日志/receipt → Go handler → PostgreSQL 事务写入、journal、checkpoint → SQL HTTP/SSE。Anvil 重组后可以撤销并重新索引。默认单链 runtime 已写入版本化规范化缓存的 block/transaction/log/receipt；冷重开禁用缓存的重组也清理已归属缓存。PostgreSQL 与真实 PGlite 分别验证；没有 SQLite 替代实现。
 
 ## 当前验证与计数
 
-最新已验证基线为 M26：[验收记录](parity/runs/batch-25.json)、[冻结证据](parity/runs/batch-25-evidence/) 和 [summary.json](parity/runs/summary.json)。factory account 接入已有29项聚焦 race及完整验收；这些原生检查不加source credit。用例发现、移植、执行、通过分别登记。
+最新已验证基线为 M27：[验收记录](parity/runs/batch-26.json)、[冻结证据](parity/runs/batch-26-evidence/) 和 [summary.json](parity/runs/summary.json)。Bloom8个精确原例、12个原断言及两项类型错误义务通过，真实EVM/假阳性/空与缺失header/async链边界和完整验收均通过。发现、移植、执行、通过分别登记；补充测试和差分向量不加source credit。
 
 - 104 个原测试文件、897 个声明、905 条静态展开记录；包含73条专门类型测试、63个内联类型断言和84条类型错误指令。
-- 已精确映射并通过317条：313条Go与4条保留SDK，原版oracle均通过；588条静态记录未实现。
-- M26 Go/race各1769通过、0失败/skip；PG189/PGlite186分别通过。19包、129顶层函数、每模式46个不重复串行批次，Go默认timeout保留。
-- ABI53条内联类型义务及53个额外负控制、ORM6条原错误义务及6个额外负控制、callback union1条原错误义务分别通过真实编译检查。更广的源码类型兼容仍在范围内。
+- 已精确映射并通过325条：321条Go与4条保留SDK，原版oracle均通过；580条静态记录未实现。
+- M27 Go/race各1804通过、0失败/skip；PG194/PGlite191分别通过。20包、134顶层函数、每模式48个不重复串行批次，Go默认timeout保留。
+- ABI53条内联类型义务及53个额外负控制、ORM6条原错误义务及6个额外负控制、callback union1条及bloom2条原错误义务分别通过真实编译检查。更广的源码类型兼容仍在范围内。
 - events11/11与filter23/23已映射。完整原文件保留真实生成ABI/helper和未改断言，通过call-through采集后由Go重放；采集与pristine原版验收分开标注。此前八文件PG/PGlite原版验收各129通过、3个原skip，未冒称全部上游验收。
-- 补充差分2466基础/factory、867filter/fragments、135events、20协议编码、62RPC分别计数。额外Go集成/故障/进程测试不加原例credit。
+- 补充差分2466基础/factory、867filter/fragments、135events、20协议编码、62RPC、497bloom分别计数。额外Go集成/故障/进程测试不加原例credit。
 - 原版10个skip、2个todo状态保留，不计作移植通过。
 
 静态发现不能证明任意 JavaScript 动态执行的全部实例均已收集。4 个 literal `test.each` 声明已展开；本基线未发现动态测试生成、别名测试遗漏、`describe.each` 或 `only`。Simulation 的 8 个应用和无限 seed 空间单列。详见 [discovery-audit.json](parity/discovery-audit.json)，完整测试源码和 247 个依赖/fixture 模块分别保存在 `parity/source-tests/`、`parity/source-support/`。早期 1,957 个断言表达式计数重复计算了链式 `expect().rejects`，已修正为 1,905；905 条测试记录不变。
@@ -68,7 +68,7 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 
 未取得计划 PDF 的本地可读副本：Library 已解析给定文件，但所提供下载经指定 helper 两次失败；未伪造本地文件。实现以完整委托范围和固定源码为依据。
 
-当前317条精确映射均有源码 oracle 通过；此前数据库/profile所需 Foundry 与生成 fixture 已按授权准备，八文件PG/PGlite验收结果和完整events/filter采集分别保留。588条静态记录仍未实现，不能将 Go 通过外推为全部源码验收。
+当前325条精确映射均有源码 oracle 通过；此前数据库/profile所需 Foundry 与生成 fixture 已按授权准备，八文件PG/PGlite验收结果和完整events/filter采集分别保留。580条静态记录仍未实现，不能将 Go 通过外推为全部源码验收。
 
 原生 `NewLifecycle` 已实现新影子启动、build ID 校验、heartbeat 租约、带 fencing 的业务/同步写入和事务恢复；新增8条生命周期源例及真实进程退出验证。恢复返回 safe checkpoint 并保留 latest，NewStaged 自动协调私有恢复游标及安装 capture。自动单链 staged runtime 已接入生命周期和实时事务；完整多链调度、真实旧版接管、dev reset 和角色权限仍待实现。接口与边界见 [DATABASE_LIFECYCLE.md](docs/DATABASE_LIFECYCLE.md)。
 
@@ -90,4 +90,6 @@ M23统一合约日志/trace批量Decoder，并恢复原八文件PG/PGlite oracle
 
 ## 云端继续入口
 
-实际checkout为 `/root/ponder-go/work/ponder-go`，固定上游在相邻 `ponder-upstream`。M25已发布提交 `89549111c03f57fa3a35d9917bbab786d46177d7`，原历史与MIT许可证保留。用户明确批准默认repo/read:org/gist后，官方CLI实际登录ysh0566，任务认证目录权限0700/文件0600；通过每命令helper依次普通快进发布M23–M25并核验远端。此前停止与失败探测作为历史保留；当前状态见 [认证证明](parity/runs/account-factory-m26/authentication-success.json) 和 [发布证明](parity/runs/account-factory-m26/publication-results.json)。未修改全局helper或操作Mac。M26及后续工作继续source配置/history planner、多链三种ordering、完整查询/API/CLI/dev/templates/类型/SDK/simulation。整体目标尚未完成。
+实际checkout为 `/root/ponder-go/work/ponder-go`，固定上游在相邻 `ponder-upstream`。上一已核验发布为M26提交 `253f4f903a534dcc4f7f745a9a8d0ea3bdcd095d`，原历史与MIT许可证保留。用户明确批准默认repo/read:org/gist后，官方CLI实际登录ysh0566，任务认证目录权限0700/文件0600；通过每命令helper依次普通快进发布M23–M25并核验远端。此前停止与失败探测作为历史保留；当前状态见 [认证证明](parity/runs/account-factory-m26/authentication-success.json) 和 [发布证明](parity/runs/account-factory-m26/publication-results.json)。未修改全局helper或操作Mac。M26及后续工作继续source配置/history planner、多链三种ordering、完整查询/API/CLI/dev/templates/类型/SDK/simulation。整体目标尚未完成。
+
+M27对有效非零同步链bloom预计算并筛选日志请求，保持账户/trace/区块/发现进度。旧自有宽查询场景保留输入/setup并明确将RPC预期3改1；独立真实跨日志假阳性场景保持3次请求且正确本地过滤，固定上游函数独立验证两种场景。完整首轮普通测试1795/4失败未启动race，失败快照与修复后的第二轮完整1804通过均保留。cached缺少logsBloom保持原校验/无进度/补齐重试；uncached缺字段保守抓取，空0x/zero/short/malformed和真实chain143均验证。见[LOG_BLOOM.md](docs/LOG_BLOOM.md)。

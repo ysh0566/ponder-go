@@ -29,6 +29,7 @@ type Block struct {
 	Hash         string           `json:"hash"`
 	ParentHash   string           `json:"parentHash"`
 	Timestamp    string           `json:"timestamp"`
+	LogsBloom    string           `json:"logsBloom,omitempty"`
 	Transactions []map[string]any `json:"transactions"`
 	raw          json.RawMessage
 }
@@ -89,6 +90,7 @@ type Engine struct {
 	Client    *rpc.Client
 	abis      map[string]abi.ABI
 	factories map[string]factory.LogFactory
+	blooms    bloomPlan
 	filter    string
 	chain     config.Chain
 	options   Options
@@ -164,6 +166,9 @@ func NewWithOptions(c config.Config, s *store.Store, handlers map[string]Handler
 	engine.filter = fmt.Sprintf("runtime:%x", hash)
 	engine.Client = rpc.New(engine.chain.RPC...)
 	engine.Client.ChainID = engine.chain.ID
+	if err := engine.compileBloomPlan(); err != nil {
+		return nil, err
+	}
 	return engine, nil
 }
 func Number(hex string) (uint64, error) {
@@ -369,7 +374,8 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 		return err
 	}
 	base := checkpoint.Block(timestamp, e.chain.ID, number, false)
-	if err = e.discoverFactories(ctx, b, number); err != nil {
+	blockBloom := e.blockBloom(b)
+	if err = e.discoverFactories(ctx, b, number, blockBloom); err != nil {
 		return err
 	}
 	events := []pending{}
@@ -380,6 +386,9 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 		}
 		if e.staged == nil && number == contract.StartBlock {
 			events = append(events, pending{cursor: base, id: fmt.Sprintf("setup:%d:%s:%s", e.chain.ID, contract.Name, b.Hash), event: Event{Name: contract.Name + ":setup", Block: b}})
+		}
+		if !e.contractLogsMayMatch(blockBloom, contract.Name) {
+			continue
 		}
 		compiled := nativeContractFilter(contract, "")
 		requestAddress := compiled["address"]

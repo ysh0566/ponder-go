@@ -133,8 +133,8 @@ func TestFilterWideRequestRuntime(t *testing.T) {
 				if err != nil || len(rows.Rows) != 1 || count != 1 {
 					t.Fatal("local address/topic filtering", rows, count, err)
 				}
-				if wide.Load() != 3 {
-					t.Fatal("expected one widened actual RPC per block1..3", wide.Load())
+				if wide.Load() != 1 {
+					t.Fatal("expected only bloom-matching block1 to request widened actual RPC", wide.Load())
 				}
 				if err = engine.Sync(ctx); err != nil || count != 1 {
 					t.Fatal("repeat duplicated filtered event", err, count)

@@ -3,16 +3,17 @@
 import fs from "node:fs";
 import path from "node:path";
 import { beforeEach, afterEach, afterAll, vi } from "vitest";
+import * as sourceBlooms from "../../ponder-upstream/packages/core/src/sync-realtime/bloom.ts";
 import * as sourceEvents from "../../ponder-upstream/packages/core/src/runtime/events.ts";
 import * as sourceFilters from "../../ponder-upstream/packages/core/src/runtime/filter.ts";
 const root = path.resolve(import.meta.dirname, "..");
 const ledger = JSON.parse(fs.readFileSync(`${root}/parity/test-ledger.json`, "utf8"));
 const mode = process.env.PONDER_CAPTURE_MODE;
-if (!["events", "filters"].includes(mode ?? "")) throw Error("Explicit capture mode required");
-const file = `packages/core/src/runtime/${mode === "events" ? "events" : "filter"}.test.ts`;
-const ids = mode === "events" ? ["a79cdf7b715b85a9f407", "a15552820b679aef4e63", "1ec7507f442eaaf13b93", "865433ec410487c54e12", "8300d175fc036ad366e1", "65aa38de0638bd7a31c5"] : ["d4a44fd18de58d842e60", "123f7747ecf98637dc07", "53007c4c2fcd23a21915", "8aa0ec9cda98fa1dccb6", "d36b571984e648e371c4", "f07738a89b1c2efd1eb0", "2b549b12673f747c4eeb", "1d570bf765cbf80ff44f", "ae73867bea12d4576440"];
+if (!["events", "filters", "blooms"].includes(mode ?? "")) throw Error("Explicit capture mode required");
+const file = mode === "blooms" ? "packages/core/src/sync-realtime/bloom.test.ts" : `packages/core/src/runtime/${mode === "events" ? "events" : "filter"}.test.ts`;
+const ids = mode === "blooms" ? ["0690899dc79faaa31e80", "f320bf67a5268a8e92f4", "2802c5310fdbf04c2fe6", "c087a7ba1265e944e178", "8cb2637446c8139001f1", "8dfc023b6099e3112ebb", "5c5c8409a09216953656", "9fead9ef384a009de6f9"] : mode === "events" ? ["a79cdf7b715b85a9f407", "a15552820b679aef4e63", "1ec7507f442eaaf13b93", "865433ec410487c54e12", "8300d175fc036ad366e1", "65aa38de0638bd7a31c5"] : ["d4a44fd18de58d842e60", "123f7747ecf98637dc07", "53007c4c2fcd23a21915", "8aa0ec9cda98fa1dccb6", "d36b571984e648e371c4", "f07738a89b1c2efd1eb0", "2b549b12673f747c4eeb", "1d570bf765cbf80ff44f", "ae73867bea12d4576440"];
 const selected = ledger.tests.filter((t: any) => t.source_file === file && ids.includes(t.id));
-if (selected.length !== (mode === "events" ? 6 : 9)) throw Error("Unexpected exact source selection");
+if (selected.length !== (mode === "events" ? 6 : mode === "blooms" ? 8 : 9)) throw Error("Unexpected exact source selection");
 const result: any[] = [];
 let current: any;
 function mark(value: any): any {
@@ -20,12 +21,13 @@ function mark(value: any): any {
  if (typeof value === "bigint") return {$bigint:String(value)};
  if (typeof value === "function") return {$function:true};
  if (value instanceof Map) return {$map:[...value.entries()].map(mark)};
+ if (value instanceof Uint8Array) return {$uint8Array:Array.from(value)};
  if (Array.isArray(value)) return value.map(mark);
  if (value && typeof value === "object") return Object.fromEntries(Object.keys(value).sort().map(key => [key, mark(value[key])]));
  return value;
 }
-const target = mode === "events" ? sourceEvents : sourceFilters;
-const names = mode === "events" ? ["decodeEvents", "buildEvents"] : ["isLogFactoryMatched", "isLogFilterMatched", "isTransactionFilterMatched", "isTransferFilterMatched", "isTraceFilterMatched", "mergeLogFiltersToRequests"];
+const target = mode === "blooms" ? sourceBlooms : mode === "events" ? sourceEvents : sourceFilters;
+const names = mode === "blooms" ? ["getBloomBits", "isBloomBitsInBloom", "isInBloom", "getLogFilterBloom", "isFilterInBloom", "getFactoryBloom", "isFactoryInBloom"] : mode === "events" ? ["decodeEvents", "buildEvents"] : ["isLogFactoryMatched", "isLogFilterMatched", "isTransactionFilterMatched", "isTransferFilterMatched", "isTraceFilterMatched", "mergeLogFiltersToRequests"];
 const originals = Object.fromEntries(names.map(name => [name, (target as any)[name]]));
 beforeEach(ctx => {
  const original = selected.find((t: any) => t.title === ctx.task.name);

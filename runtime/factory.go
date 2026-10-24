@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (e *Engine) discoverFactories(ctx context.Context, b Block, number uint64) error {
+func (e *Engine) discoverFactories(ctx context.Context, b Block, number uint64, blockBloom []byte) error {
 	seen := map[string]bool{}
 	sourceNames := []string{}
 	for _, source := range e.Config.Contracts {
@@ -39,7 +39,7 @@ func (e *Engine) discoverFactories(ctx context.Context, b Block, number uint64) 
 			}
 		}
 		logs := []Log{}
-		if !empty {
+		if !empty && e.factoryLogsMayMatch(blockBloom, f.ID) {
 			if err := e.Client.CallCached(ctx, "eth_getLogs", []any{query}, &logs); err != nil {
 				return err
 			}
