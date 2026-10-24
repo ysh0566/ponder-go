@@ -1,5 +1,5 @@
 {
-  "counting": "50 actual pinned source vectors and new native/runtime regressions add zero original mappings. Original378 mapped records remain separate. Native values and error occurrence are compared; complete JS/Go error class/message equivalence and all coercions are not claimed.",
+  "counting": "50 actual pinned source vectors and new native/runtime regressions add zero original mappings. Exact original mappings are counted separately by the ledger. Native values and error occurrence are compared; complete JS/Go error class/message equivalence and all coercions are not claimed.",
   "summary": {
     "source_vectors": 50,
     "source_expected_errors": 6,
@@ -8,12 +8,12 @@
   },
   "fixture": {
     "file": "testdata/abi/topics-source.json",
-    "sha256": "b359e293cd7ed07053002c649ac8555e2efc98e27604795ecacccdb28a15fe13"
+    "sha256": "ac01a3718d9b668cf28bd6e945de58b52701bd8e926983e571195dcb0ccacc9b"
   },
   "source_context": [
     {
       "file": "tools/topic-fixtures.mjs",
-      "sha256": "b6471cf775e21c95872529671fa4771e3607c4887297535bcb963cd2fb9a9e7d"
+      "sha256": "4d6c80b9bac08f17bca753a55085ffe204c57dc54bce0dde257b62392cfdc27a"
     },
     {
       "file": "../ponder-upstream/pnpm-lock.yaml",
@@ -24,12 +24,40 @@
       "sha256": "08b1378afb32a2fbcad82604723dd7104a598e0b2fe7887b0b2a2431551c0de2"
     },
     {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/index.js",
+      "sha256": "a159baabd9da9741d4a4ff76e3ba43ac189957e49a9dc132f22e5004554bd1aa"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/utils/abi/encodeEventTopics.js",
+      "sha256": "8103976f52937b638afeb32a3f21e6f6fb7b6ff57f88c3daac0d57d9b91b233e"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/utils/abi/encodeAbiParameters.js",
+      "sha256": "97c7394ec434f93d254e9beefc728e74301c94c439683c75558e2577b7f276d6"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/utils/encoding/toBytes.js",
+      "sha256": "1a4beab59798bbb9bc29eb285512ed35cb1089f3a53ae35ccdef79b642c73237"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/utils/hash/keccak256.js",
+      "sha256": "877924fe76d470b55d566e9fb95f0c8c54f2b0ed7e699d032136e81c80671843"
+    },
+    {
       "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_esm/utils/abi/encodeEventTopics.js",
       "sha256": "8ee5ef279235fb54412446d4c63caf2e463ddce706acd993c4b19f26b95f0600"
     },
     {
       "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_esm/utils/abi/encodeAbiParameters.js",
       "sha256": "d329bf678e995dba1e6d735befac5e29591f7166649cc8143f91460b1589b32c"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_esm/utils/encoding/toBytes.js",
+      "sha256": "c67c68428c516b67b27ea3094c79632771efbf9a2df9c65b412f8f9220d7741d"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_esm/utils/hash/keccak256.js",
+      "sha256": "3e3b256aa1b5537440955848234b84aa4de248225cb038c82317420279e77c14"
     }
   ],
   "inputs": [
@@ -51,11 +79,11 @@
     },
     {
       "file": "tools/topic-fixtures.mjs",
-      "sha256": "b6471cf775e21c95872529671fa4771e3607c4887297535bcb963cd2fb9a9e7d"
+      "sha256": "4d6c80b9bac08f17bca753a55085ffe204c57dc54bce0dde257b62392cfdc27a"
     },
     {
       "file": "tools/topic-source-results.mjs",
-      "sha256": "3918a9736f3350d9ff3f15b6faf9af02f280fb6c9bb637f15b40df777e8396bf"
+      "sha256": "54afa034acca5266aea577b2b7fa14c48256c5139614d775c9659616ee5eb4bf"
     }
   ],
   "native_acceptance": "Required separately from complete unchanged-input module normal/race; focused runtime32 and source50 are supplementary only."

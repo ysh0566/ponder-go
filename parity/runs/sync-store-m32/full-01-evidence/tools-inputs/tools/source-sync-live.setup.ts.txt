@@ -1,0 +1,47 @@
+// Complete original SyncStore call-through observer; source results are preserved.
+import fs from 'node:fs';import path from 'node:path';import{spawnSync}from'node:child_process';import{beforeEach,afterEach,afterAll,vi}from'vitest';
+import * as source from '@/sync-store/index.js';import * as tables from '@/sync-store/schema.js';import{anvil}from'@/_test/utils.js';
+const root=process.env.PONDER_PORT_ROOT,endpoint=process.env.PONDER_SOURCE_SYNC_ENDPOINT;if(!root||!endpoint)throw Error('Explicit native root/endpoint required');
+const ledger=JSON.parse(fs.readFileSync(path.join(root,'parity/test-ledger.json'),'utf8'));const selected=ledger.tests.filter((t:any)=>t.source_file==='packages/core/src/sync-store/index.test.ts');if(selected.length!==38)throw Error('Expected all38 original declarations');
+let current:any;const completed:any[]=[];let objects:WeakMap<object,number>,nextID=0;
+// Identity tags are separate from genuine object keys. Repeated original filter
+// and factory keys restore to the same native Go map throughout a case. Each
+// argument/result snapshot expands each object once, so caller mutations are
+// transported in-place without losing identity.
+function mark(value:any):any{
+ const expanded=new Set<object>();
+ function walk(v:any):any{
+  if(v===undefined)return{$undefined:true};if(typeof v==='bigint')return{$bigint:String(v)};
+  if(typeof v==='number'){if(!Number.isFinite(v))return{$number:String(v)};if(Object.is(v,-0))return{$number:'-0'}}
+  if(Array.isArray(v))return v.map(walk);if(v instanceof Map)return{$map:[...v].map(([k,v])=>[walk(k),walk(v)])};
+  if(v&&typeof v==='object'){let id=objects.get(v);if(id===undefined){id=++nextID;objects.set(v,id)}if(expanded.has(v))return{$ref:id};expanded.add(v);return{$id:id,$object:Object.entries(v).map(([k,v])=>[k,walk(v)])}};return v;
+ }
+ return walk(value);
+}
+
+function post(route:string,body:any){const program='let s="";for await(const c of process.stdin)s+=c;const r=await fetch(process.argv[1],{method:"POST",body:s});if(!r.ok)throw Error(await r.text());';const r=spawnSync(process.execPath,['--input-type=module','-e',program,endpoint+route],{input:JSON.stringify(body),encoding:'utf8'});if(r.error||r.status!==0)throw Error('Native sourceSync comparison failed: '+(r.error?.message??r.stderr));}
+const create=source.createSyncStore,range=source.getFilterBlockRange;
+const methods=['insertIntervals','getIntervals','insertChildAddresses','getChildAddresses','getSafeCrashRecoveryBlock','insertLogs','insertBlocks','insertTransactions','insertTransactionReceipts','insertTraces','getEventData','insertRpcRequestResults','getRpcRequestResults','pruneRpcRequestResults','pruneByChain']as const;
+const physicalTables=['intervals','factories','factoryAddresses','blocks','logs','transactions','transactionReceipts','traces','rpcRequestResults']as const;
+async function physical(qb:any){const result:any={};for(const name of physicalTables){const rows=await qb.wrap((db:any)=>db.select().from(tables[name]));result[name]=rows.map((row:any)=>Object.fromEntries(Object.entries(row).map(([key,value])=>[key,typeof value==='bigint'?{$bigint:String(value)}:value])))}return result;}
+beforeEach(ctx=>{
+ const t=selected.find((t:any)=>t.title===ctx.task.name);if(!t)throw Error('Unknown original SyncStore case');current={...t,calls:[],seeds:[],factory_calls:0,depth:0,sequence:0};objects=new WeakMap();nextID=0;post('/start',{case_id:t.id,endpoint:anvil.rpcUrls.default.http[0]});
+ vi.spyOn(source,'getFilterBlockRange').mockImplementation((args:any)=>{const before=mark(args),result=range(args);const call={case_id:current.id,sequence:current.sequence++,operation:'getFilterBlockRange',args:before,result:mark(result)};post('/call',call);current.calls.push(call);return result;});
+ vi.spyOn(source,'createSyncStore').mockImplementation((arg:any)=>{
+  const store=create(arg);current.factory_calls++;
+  const client=arg.qb.$client,query=client.query;
+  vi.spyOn(client,'query').mockImplementation(function(this:any,...values:any[]){
+   const text=typeof values[0]==='string'?values[0]:values[0]?.text;
+   const params=typeof values[0]==='string'?(values[1]??[]):(values[0]?.values??values[1]??[]);
+   const seed=current!==undefined&&current.depth===0&&typeof text==='string'&&/^\s*(?:insert\s+into|update|delete\s+from|truncate(?:\s+table)?)\s+"ponder_rpc_cache_1"\./i.test(text);
+   if(!seed)return query.apply(this,values);
+   const captured=mark(params),context=current;
+   return (async()=>{const result=await query.apply(this,values);if(current!==context)throw Error('Source setup SQL escaped its case');const item={case_id:current.id,sequence:current.sequence++,sql:text,params:captured};post('/seed-sql',item);current.seeds.push(item);return result;})();
+  }as any);
+  for(const method of methods){const fn=store[method];vi.spyOn(store,method).mockImplementation((async(args:any,context:any)=>{
+   const before=mark(args);current.depth++;let result;try{result=await(fn as any)(args,context);}finally{current.depth--}const call={case_id:current.id,sequence:current.sequence++,operation:method,args:before,result:mark(result),physical_rows:await physical(arg.qb)};post('/call',call);current.calls.push(call);return result;
+  })as any)}return store;
+ });
+});
+afterEach(()=>{if(!current||!current.calls.length)throw Error('Missing actualsource native calls');post('/case',current);completed.push(current);current=undefined;});
+afterAll(()=>{if(completed.length!==38)throw Error('Incomplete full original SyncStore execution');const destination=process.env.PONDER_SOURCE_SYNC_CAPTURE;if(!destination)throw Error('Capture destination required');fs.writeFileSync(destination,JSON.stringify({baseline:ledger.baseline,method:'Complete original hooks/body/inputs/assertions; separate native actualSQL/state and value/Map-keyidentity comparison, originaloutputsreturned unchanged.',cases:completed},null,2)+'\n')});

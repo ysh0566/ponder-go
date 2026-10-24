@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { sourceFingerprint } from "./go-source-fingerprint.mjs";
+import { backendLabelMatches } from "./backend-labels.mjs";
 const root = path.resolve(import.meta.dirname, "..");
 const read = (file) =>
 	JSON.parse(fs.readFileSync(path.join(root, file), "utf8"));
@@ -50,7 +51,14 @@ const eventCompile = exists("parity/runs/event-compile-fixtures.json") ? read("p
 const bloomCompile = exists("parity/runs/bloom-compile-fixtures.json") ? read("parity/runs/bloom-compile-fixtures.json") : null;
 const configCompile = exists("parity/runs/config-live-verification.json") ? read("parity/runs/config-live-verification.json") : null;
 const parameterTypes = exists("parity/runs/parameters-typecheck.json") ? read("parity/runs/parameters-typecheck.json") : null;
+const syncVerification = exists("parity/runs/source-sync-verification.json") ? read("parity/runs/source-sync-verification.json") : null;
 const fileHash = file => crypto.createHash("sha256").update(fs.readFileSync(path.join(root,file))).digest("hex");
+
+if(ledger.tests.some(t=>t.mapping&&t.source_file==="packages/core/src/sync-store/index.test.ts")&&!syncVerification)throw Error("SyncStore mappings require complete actual source/native/type proof");
+if(syncVerification){
+ const refs=[syncVerification.pristine,syncVerification.source_types,syncVerification.compile,...syncVerification.inputs,...syncVerification.executions.flatMap(e=>[e.log,e.native,e.capture,e.original,e.result,...e.source_context])];
+ if(!syncVerification.complete||syncVerification.scope!=="complete_module_source_sync"||syncVerification.executions.length!==4||syncVerification.summary.source_cases!==38||syncVerification.summary.source_assertions!==63||syncVerification.directives.length!==9||refs.some(f=>!exists(f.file)||fileHash(f.file)!==f.sha256))throw Error("Incomplete or stale SyncStore source/native evidence");
+}
 
 if (configCompile) {
  if(configCompile.executions.length!==2||configCompile.executions.some(x=>!x.complete||![x.native,x.capture,x.original,x.compile,...x.source_context].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256))||!configCompile.inputs.every(f=>exists(f.file)&&fileHash(f.file)===f.sha256))throw Error("Incomplete or stale live config/native proof");
@@ -150,6 +158,16 @@ for (const test of ledger.tests) {
 		}
 	}
 
+ if (test.source_file === "packages/core/src/sync-store/index.test.ts" && syncVerification) {
+  const pristine=read(syncVerification.pristine.file), backends={};
+  for(const execution of pristine.executions){
+   const original=read(execution.raw_oracle.file).testResults.flatMap(f=>f.assertionResults).find(t=>t.title===test.title);
+   if(original)backends[execution.backend]={status:original.status,evidence:execution.raw_oracle.file};
+  }
+  const passed=Object.keys(backends).length===2&&Object.values(backends).every(x=>x.status==="passed");
+  test.oracle={status:passed?"passed":"blocked",evidence:syncVerification.pristine.file,mode:"complete_unmodified_original_file_with_original_setup",full_original:true,backends};
+  test.runtime_validation={status:"passed",evidence:"parity/runs/source-sync-verification.json",meaning:"Actual native values, ordered Maps/identities, SQL ranges and nine physical tables compared during complete original executions in both Go modes and both backends"};
+ }
  if (test.source_file === "packages/core/src/build/config.test.ts" && configOriginal) {
   const title=test.title.includes("%s")?test.title.replace("%s",test.parameter?.$special??String(test.parameter)):test.title;
   const original=read(configOriginal.raw_oracle.file).testResults.flatMap(f=>f.assertionResults).find(t=>t.title===title);
@@ -212,14 +230,15 @@ for (const test of ledger.tests) {
 			if (!valid) {status="skip";test.blockers.push("Native runtime alone is insufficient: inline type compilation/typed output evidence is incomplete.");}
 		}
 		if (test.type_error_directives.length) {
-			const directives=[...(compile?.directives??[]),...(ormCompile?.directives??[]),...(eventCompile?.directives??[]),...(bloomCompile?.directives??[]),...(configCompile?.directives??[])].filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256);
+			const directives=[...(compile?.directives??[]),...(ormCompile?.directives??[]),...(eventCompile?.directives??[]),...(bloomCompile?.directives??[]),...(configCompile?.directives??[]),...(syncVerification?.directives??[])].filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256);
 			const generatedValid=!ormCompile?.directives.some(x=>x.source_id===test.id)||((ormCompile.inputs?.length??0)>=3&&[...ormCompile.generated,...ormCompile.inputs].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
 			const eventValid=!eventCompile?.directives.some(x=>x.source_id===test.id)||((eventCompile.inputs?.length??0)>=3&&eventCompile.inputs.every(f=>exists(f.file)&&fileHash(f.file)===f.sha256)&&directives.every(x=>x.build_positive?.exit_code===0&&x.execute_positive?.exit_code===0&&Number.isInteger(x.build_negative?.exit_code)&&x.build_negative.exit_code>0&&/callbacks\[0\]\.ABIItem undefined/.test(x.build_negative?.stderr??"")));
 			const bloomValid=!bloomCompile?.directives.some(x=>x.source_id===test.id)||((bloomCompile.inputs?.length??0)>=5&&bloomCompile.inputs.every(f=>exists(f.file)&&fileHash(f.file)===f.sha256)&&directives.every(x=>x.build_positive?.exit_code===0&&x.execute_positive?.exit_code===0&&Number.isInteger(x.build_negative?.exit_code)&&x.build_negative.exit_code>0&&/cannot use filter\.Undefined.*as filter\.HexTopic/.test(x.build_negative?.stderr??"")));
 			const configDiagnostic=x=>x.mode?.startsWith("network-")?/does not satisfy config\.SourceTypedContractShape/.test(x.build_negative.stderr):x.mode?.startsWith("bounds-")?/string does not satisfy config\.SourceBlockBound/.test(x.build_negative.stderr):x.mode==="literal-chain"?/bindings\.Chains\.Mainnetz undefined/.test(x.build_negative.stderr):x.mode==="literal-event"?/bindings\.Events\.Event2 undefined/.test(x.build_negative.stderr):/Filter\.Interval undefined.*config\.SourceFilter has no field or method Interval/.test(x.build_negative.stderr);
    const configValid=!configCompile?.directives.some(x=>x.source_id===test.id)||(configCompile.executions.length===2&&directives.every(x=>x.build_positive?.exit_code===0&&x.execute_positive?.exit_code===0&&x.build_negative?.exit_code>0&&configDiagnostic(x)));
-			const valid=generatedValid&&eventValid&&bloomValid&&configValid&&directives.length===test.type_error_directives.length&&directives.every(x=>x.status==="passed"&&[x.positive,x.negative].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
-			test.type_directives_verification={status:valid?"passed":"blocked",evidence:["parity/runs/compile-fixtures.json",...(ormCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/orm-compile-fixtures.json"]:[]),...(eventCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/event-compile-fixtures.json"]:[]),...(bloomCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/bloom-compile-fixtures.json"]:[]),...(configCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/config-live-verification.json"]:[])]};
+			const syncValid=!syncVerification?.directives.some(x=>x.source_id===test.id)||(syncVerification.executions.length===4&&directives.every(x=>x.build_positive?.exit_code===0&&x.execute_positive?.exit_code===0&&x.execute_positive.executions.length===4&&x.execute_positive.executions.every(e=>e.run?.passed)&&x.build_negative?.exit_code>0&&/cannot use \[\]string.*as rpc\.SourceCallParameters value/.test(x.build_negative.stderr)));
+			const valid=generatedValid&&eventValid&&bloomValid&&configValid&&syncValid&&directives.length===test.type_error_directives.length&&directives.every(x=>x.status==="passed"&&[x.positive,x.negative].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
+			test.type_directives_verification={status:valid?"passed":"blocked",evidence:["parity/runs/compile-fixtures.json",...(ormCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/orm-compile-fixtures.json"]:[]),...(eventCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/event-compile-fixtures.json"]:[]),...(bloomCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/bloom-compile-fixtures.json"]:[]),...(configCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/config-live-verification.json"]:[]),...(syncVerification?.directives.some(x=>x.source_id===test.id)?["parity/runs/source-sync-verification.json"]:[])]};
 			if(!valid){status="skip";test.blockers.push("Source type-error directive requires a verified native compile-failure fixture.");}
 		}
 	}
@@ -327,12 +346,13 @@ const summary = {
 		error_directives_retained_sdk_verified:ledger.tests.filter(x=>x.mapping?.target_kind==="retained_sdk"&&x.pass_status==="passed").reduce((n,x)=>n+x.type_error_directives.length,0),
 	},
  indexed_topic_source_verification:topicVerification?{...topicVerification.summary,evidence:"parity/runs/topic-source-verification.json"}:null,
+ source_sync_verification:syncVerification?{...syncVerification.summary,evidence:"parity/runs/source-sync-verification.json"}:null,
  sql_source_verification:sqlVerification?{...sqlVerification.summary,evidence:"parity/runs/sql-source-verification.json"}:null,
 	typed_abi_runtime: {file:"parity/runs/abi-typed-go.jsonl",leaf_cases:leaves(typedGo).length,...count(leaves(typedGo)),counting:"Supplementary typed decoder execution; not additional source test records."},
 	typed_abi_race: {file:"parity/runs/abi-typed-race.jsonl",leaf_cases:leaves(typedRace).length,...count(leaves(typedRace))},
 	backend_execution: Object.fromEntries(["postgres","pglite"].map(backend=>{
-		const selected=native.filter(x=>x.Test.toLowerCase().includes(backend)),selectedRace=nativeRace.filter(x=>x.Test.toLowerCase().includes(backend));
-		return [backend,{counting:"Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",go:{leaf_cases:selected.length,...count(selected)},race:{leaf_cases:selectedRace.length,...count(selectedRace)},evidence:goFile}];
+		const selected=native.filter(x=>backendLabelMatches(x.Test,backend)),selectedRace=nativeRace.filter(x=>backendLabelMatches(x.Test,backend));
+		return [backend,{counting:"First explicit slash dialect component wins; legacy backend-tagged names remain supported. Source titles mentioning another backend do not double count. Source mappings and backend companions remain separate from source parity.",go:{leaf_cases:selected.length,...count(selected)},race:{leaf_cases:selectedRace.length,...count(selectedRace)},evidence:goFile}];
 	})),
 	simulation: {seed_space:"unbounded",status:"unimplemented",executed_seeds:0},
 	native_go: { file: goFile, leaf_cases: native.length, ...count(native) },

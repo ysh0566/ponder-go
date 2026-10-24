@@ -1,0 +1,8 @@
+package main
+import("encoding/json";"ponder.local/ponder-go/abi";"ponder.local/ponder-go/events")
+func main(){
+ var original abi.Function
+ if err:=json.Unmarshal([]byte("{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}"),&original);err!=nil{panic(err)}
+ callbacks:=[]events.EventCallback{events.ContractCallback[abi.Function]{CallbackBase:events.CallbackBase{Name:"Erc20.transfer()",Filter:events.Object{"type":"trace"}},ABIItem:original}}
+ callbacks[0].ABIItem=original
+}

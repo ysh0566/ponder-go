@@ -20,7 +20,7 @@ for(const [type,value]of [['bytes32','0x'+'01'.padStart(64,'0')],['address','0x'
 }
 function mark(value){if(value===undefined)return{$undefined:true};if(typeof value==='bigint')return{$bigint:String(value)};if(Array.isArray(value))return value.map(mark);if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,mark(v)]));return value;}
 const pkgRoot=path.dirname(path.dirname(require.resolve('viem')));
-const sources=[import.meta.filename,path.join(upstream,'pnpm-lock.yaml'),pkgRoot+'/package.json',...['encodeEventTopics','encodeAbiParameters'].map(name=>pkgRoot+'/_esm/utils/abi/'+name+'.js')].map(absolute=>({file:path.relative(root,absolute),sha256:crypto.createHash('sha256').update(fs.readFileSync(absolute)).digest('hex')}));
+const sources=[import.meta.filename,path.join(upstream,'pnpm-lock.yaml'),pkgRoot+'/package.json',require.resolve('viem'),...['_cjs','_esm'].flatMap(kind=>['utils/abi/encodeEventTopics.js','utils/abi/encodeAbiParameters.js','utils/encoding/toBytes.js','utils/hash/keccak256.js'].map(file=>pkgRoot+'/'+kind+'/'+file))].map(absolute=>({file:path.relative(root,absolute),sha256:crypto.createHash('sha256').update(fs.readFileSync(absolute)).digest('hex')}));
 const output={counting:'Supplementary actual pinned viem calls, zero original mappings. Native comparison and real runtime are separate required evidence.',sources,cases:vectors};
 fs.mkdirSync(path.join(root,'testdata/abi'),{recursive:true});
 fs.writeFileSync(path.join(root,'testdata/abi/topics-source.json'),JSON.stringify(output,null,2)+'\n');

@@ -1,0 +1,49 @@
+[Sat Oct 24 21:31:24 2026] V8Worker invoked oom-killer: gfp_mask=0x1100dca(GFP_HIGHUSER_MOVABLE|__GFP_ZERO), order=0, oom_score_adj=0
+[Sat Oct 24 21:31:24 2026] CPU: 2 PID: 2396822 Comm: V8Worker Not tainted 5.15.0-46-generic #49-Ubuntu
+[Sat Oct 24 21:31:24 2026] Hardware name: Red Hat KVM, BIOS 1.16.3-5.el9.alma.1 11/05/2023
+[Sat Oct 24 21:31:24 2026] Call Trace:
+[Sat Oct 24 21:31:24 2026]  <TASK>
+[Sat Oct 24 21:31:24 2026]  show_stack+0x52/0x5c
+[Sat Oct 24 21:31:24 2026]  dump_stack_lvl+0x4a/0x63
+[Sat Oct 24 21:31:24 2026]  dump_stack+0x10/0x16
+[Sat Oct 24 21:31:24 2026]  dump_header+0x53/0x228
+[Sat Oct 24 21:31:24 2026]  oom_kill_process.cold+0xb/0x10
+[Sat Oct 24 21:31:24 2026]  out_of_memory+0x106/0x2e0
+[Sat Oct 24 21:31:24 2026]  __alloc_pages_slowpath.constprop.0+0x97e/0xa40
+[Sat Oct 24 21:31:24 2026]  __alloc_pages+0x311/0x330
+[Sat Oct 24 21:31:24 2026]  alloc_pages_vma+0x9d/0x390
+[Sat Oct 24 21:31:24 2026]  do_anonymous_page+0xf2/0x3c0
+[Sat Oct 24 21:31:24 2026]  handle_pte_fault+0x20a/0x240
+[Sat Oct 24 21:31:24 2026]  __handle_mm_fault+0x3c7/0x700
+[Sat Oct 24 21:31:24 2026]  handle_mm_fault+0xd8/0x2c0
+[Sat Oct 24 21:31:24 2026]  do_user_addr_fault+0x1c9/0x670
+[Sat Oct 24 21:31:24 2026]  exc_page_fault+0x77/0x170
+[Sat Oct 24 21:31:24 2026]  asm_exc_page_fault+0x26/0x30
+[Sat Oct 24 21:31:24 2026] RIP: 0033:0x2aa965f
+[Sat Oct 24 21:31:24 2026] Code: 98 48 8b 7d c8 4a 8d 34 00 49 01 c6 4d 89 b5 30 01 00 00 48 8d 14 3e 48 39 d6 0f 83 b3 01 00 00 0f 1f 00 8b 43 10 48 83 c6 04 <89> 46 fc 48 39 d6 72 f1 8b 53 14 49 8b 85 20 01 00 00 e9 72 fe ff
+[Sat Oct 24 21:31:24 2026] RSP: 002b:00007efdbaffa750 EFLAGS: 00010202
+[Sat Oct 24 21:31:24 2026] RAX: 00000000ffffffff RBX: 00007efd78289a08 RCX: 00007efd790ba758
+[Sat Oct 24 21:31:24 2026] RDX: 00007efb530ded24 RSI: 00007efb530dd004 RDI: 00000000000025ac
+[Sat Oct 24 21:31:24 2026] RBP: 00007efdbaffa800 R08: 000000000a5f4750 R09: 00007efb5b848028
+[Sat Oct 24 21:31:24 2026] R10: 0000000000000000 R11: 000000000000096b R12: 00007efd790ba828
+[Sat Oct 24 21:31:24 2026] R13: 00007efdbaffb440 R14: 00007efd790ba758 R15: 00000000000005e6
+[Sat Oct 24 21:31:24 2026]  </TASK>
+[Sat Oct 24 21:31:24 2026] Mem-Info:
+[Sat Oct 24 21:31:24 2026] active_anon:116789 inactive_anon:330338 isolated_anon:0
+[Sat Oct 24 21:31:24 2026] Node 0 active_anon:467156kB inactive_anon:1321352kB active_file:108kB inactive_file:84kB unevictable:29160kB isolated(anon):0kB isolated(file):0kB mapped:111168kB dirty:0kB writeback:0kB shmem:114820kB shmem_thp: 0kB shmem_pmdmapped: 0kB anon_thp: 12288kB writeback_tmp:0kB kernel_stack:4864kB pagetables:26804kB all_unreclaimable? no
+[Sat Oct 24 21:31:24 2026] Node 0 DMA free:7732kB min:360kB low:448kB high:536kB reserved_highatomic:0KB active_anon:128kB inactive_anon:7060kB active_file:0kB inactive_file:0kB unevictable:0kB writepending:0kB present:15992kB managed:15360kB mlocked:0kB bounce:0kB free_pcp:0kB local_pcp:0kB free_cma:0kB
+[Sat Oct 24 21:31:24 2026] lowmem_reserve[]: 0 1849 1849 1849 1849
+[Sat Oct 24 21:31:24 2026] Node 0 DMA32 free:44192kB min:44692kB low:55864kB high:67036kB reserved_highatomic:0KB active_anon:467028kB inactive_anon:1313956kB active_file:0kB inactive_file:100kB unevictable:29160kB writepending:0kB present:2080620kB managed:2007536kB mlocked:27624kB bounce:0kB free_pcp:216kB local_pcp:4kB free_cma:0kB
+[Sat Oct 24 21:31:24 2026] lowmem_reserve[]: 0 0 0 0 0
+[Sat Oct 24 21:31:24 2026] Node 0 DMA: 7*4kB (UME) 13*8kB (UME) 9*16kB (UE) 7*32kB (UME) 13*64kB (UME) 4*128kB (ME) 3*256kB (UE) 4*512kB (UE) 1*1024kB (U) 1*2048kB (M) 0*4096kB = 7732kB
+[Sat Oct 24 21:31:24 2026] Node 0 DMA32: 946*4kB (UME) 740*8kB (UME) 274*16kB (UME) 295*32kB (UE) 186*64kB (UE) 49*128kB (UME) 4*256kB (U) 1*512kB (M) 1*1024kB (M) 0*2048kB 0*4096kB = 44264kB
+[Sat Oct 24 21:31:24 2026] 41238 total pagecache pages
+[Sat Oct 24 21:31:24 2026] 10167 pages in swap cache
+[Sat Oct 24 21:31:24 2026] Swap cache stats: add 15663061, delete 15653029, find 162543887/166570559
+[Sat Oct 24 21:31:24 2026] Free swap  = 0kB
+[Sat Oct 24 21:31:24 2026] Total swap = 1048572kB
+[Sat Oct 24 21:31:24 2026] 524153 pages RAM
+[Sat Oct 24 21:31:24 2026] 0 pages HighMem/MovableOnly
+[Sat Oct 24 21:31:24 2026] 18429 pages reserved
+[Sat Oct 24 21:31:24 2026] 0 pages hwpoisoned
+[Sat Oct 24 21:31:24 2026] Out of memory: Killed process 2396818 (MainThread) total-vm:10494452kB, anon-rss:729392kB, file-rss:1968kB, shmem-rss:0kB, UID:0 pgtables:2616kB oom_score_adj:0

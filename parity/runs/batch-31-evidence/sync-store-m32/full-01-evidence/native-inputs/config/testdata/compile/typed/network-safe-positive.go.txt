@@ -1,0 +1,55 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"ponder.local/ponder-go/config"
+)
+
+func main() {
+	raw, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		panic(err)
+	}
+	base, err := config.ParseSourceConfiguration(raw)
+	if err != nil {
+		panic(err)
+	}
+	_ = context.Background
+	_ = json.Valid
+	input := struct {
+		Chain                      config.SourceChainSelection
+		ABI                        json.RawMessage
+		Address                    config.SourceOption[any]
+		StartBlock                 config.SourceUndefinedBound
+		EndBlock                   config.SourceUndefinedBound
+		Filter                     config.SourceOption[any]
+		IncludeTransactionReceipts config.SourceOption[bool]
+		IncludeCallTraces          config.SourceOption[bool]
+	}{Chain: config.SourceOnChains(config.SourceChainOverride{Name: "mainnet"}, config.SourceChainOverride{Name: "optimism"}), ABI: json.RawMessage("[{\"name\":\"Event0\",\"type\":\"event\",\"inputs\":[{\"type\":\"bytes32\",\"name\":\"arg\",\"indexed\":true}]}]")}
+	typed := config.SourceTypedConfiguration[struct {
+		Chain                      config.SourceChainSelection
+		ABI                        json.RawMessage
+		Address                    config.SourceOption[any]
+		StartBlock                 config.SourceUndefinedBound
+		EndBlock                   config.SourceUndefinedBound
+		Filter                     config.SourceOption[any]
+		IncludeTransactionReceipts config.SourceOption[bool]
+		IncludeCallTraces          config.SourceOption[bool]
+	}]{Base: base, Name: "a", Contract: input}
+	built, err := config.BuildSourceConfig(base, config.SourceBuildOptions{})
+	if err != nil {
+		panic(err)
+	}
+	indexing, err := config.SafeBuildTypedSourceIndexing[config.SourceUndefinedBound, config.SourceUndefinedBound](context.Background(), typed, built, []config.SourceIndexingFunction{{Name: "a:Event0", Fn: func() {}}})
+	if err != nil {
+		panic(err)
+	}
+	if len(indexing.EventCallbacks()) != 2 {
+		panic("actual typed chain/callback result changed")
+	}
+	fmt.Println("actual typed source pipeline passed")
+}

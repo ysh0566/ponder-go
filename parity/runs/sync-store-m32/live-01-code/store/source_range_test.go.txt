@@ -1,0 +1,20 @@
+package store
+
+import "testing"
+
+// Exact original four assertions; not mapped or executed yet.
+func TestUpstreamFilterBlockRange(t *testing.T) {
+	n := func(v float64) *float64 { return &v }
+	if got := GetSourceFilterBlockRange([]SourceFilterRange{{n(10), n(80)}, {n(20), n(90)}}, 0, 100); got != (SourceBlockRange{10, 90}) {
+		t.Fatal(got)
+	}
+	if got := GetSourceFilterBlockRange([]SourceFilterRange{{n(10), n(80)}, {nil, nil}}, 20, 70); got != (SourceBlockRange{20, 70}) {
+		t.Fatal(got)
+	}
+	if got := GetSourceFilterBlockRange([]SourceFilterRange{{n(0), n(30)}}, 20, 90); got != (SourceBlockRange{20, 30}) {
+		t.Fatal(got)
+	}
+	if got := GetSourceFilterBlockRange(nil, 20, 90); got != (SourceBlockRange{20, 90}) {
+		t.Fatal(got)
+	}
+}
