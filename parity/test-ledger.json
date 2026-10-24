@@ -21,20 +21,20 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 302,
-    "executed": 302,
-    "passed": 302,
+    "ported": 317,
+    "executed": 317,
+    "passed": 317,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 603,
-    "go_ports": 298,
+    "unimplemented": 588,
+    "go_ports": 313,
     "retained_sdk": 4,
-    "oracle_passed": 302,
+    "oracle_passed": 317,
     "oracle_blocked": 0,
-    "go_passed": 298,
+    "go_passed": 313,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 298,
-    "target_and_original_oracle_passed": 302
+    "go_and_original_oracle_passed": 313,
+    "target_and_original_oracle_passed": 317
   },
   "unresolved_expansion_ids": [],
   "files": [
@@ -21850,10 +21850,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() log",
+        "source_id": "a79cdf7b715b85a9f407",
+        "source_line": 112,
+        "assertions_sha256": "6344e080bb8700c2bda1d36efc6c472a0027b0572684213d32b5198d438cb529",
+        "original_assertions": 2,
+        "target_file": "events/upstream_contract_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamContractEventConstruction/decodeEvents()_log",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-events.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -21871,7 +21883,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "a15552820b679aef4e63",
@@ -21907,10 +21925,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() log error",
+        "source_id": "a15552820b679aef4e63",
+        "source_line": 151,
+        "assertions_sha256": "8a8ba3654174cb9746ddade7ac017c4c6a18454c7e8bfb82009bafb2d753db24",
+        "original_assertions": 1,
+        "target_file": "events/upstream_contract_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamContractEventConstruction/decodeEvents()_log_error",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-events.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -21928,7 +21958,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "671bbb20047840beee3c",
@@ -22235,10 +22271,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() trace",
+        "source_id": "1ec7507f442eaaf13b93",
+        "source_line": 280,
+        "assertions_sha256": "665a533559bc36b29d1604b7fb35ceffe6aeff89c088b6c192e7466c8472b514",
+        "original_assertions": 3,
+        "target_file": "events/upstream_contract_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamContractEventConstruction/decodeEvents()_trace",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-events.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -22256,7 +22304,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "865433ec410487c54e12",
@@ -22303,10 +22357,22 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() trace w/o output",
+        "source_id": "865433ec410487c54e12",
+        "source_line": 327,
+        "assertions_sha256": "4e95faf3b2c12d43abee81a73ad937ffa7188dfa0cba035962658b3371edc5e7",
+        "original_assertions": 3,
+        "target_file": "events/upstream_contract_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamContractEventConstruction/decodeEvents()_trace_w/o_output",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks. The original union property-access compiler error is independently verified by public EventCallback/ContractCallback Go API positive-build/run and specific negative compilation, preserving the ABI copy; runtime alone cannot earn credit.",
+        "source_fixture": "testdata/runtime/captured-original-events.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -22324,7 +22390,20 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/event-compile-fixtures.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "8300d175fc036ad366e1",
@@ -22359,10 +22438,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() trace error",
+        "source_id": "8300d175fc036ad366e1",
+        "source_line": 375,
+        "assertions_sha256": "8a8ba3654174cb9746ddade7ac017c4c6a18454c7e8bfb82009bafb2d753db24",
+        "original_assertions": 1,
+        "target_file": "events/upstream_contract_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamContractEventConstruction/decodeEvents()_trace_error",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-events.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -22380,7 +22471,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "51d9321079f0432f5258",
@@ -22540,10 +22637,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "buildEvents() trace index ignores traces that match no filter",
+        "source_id": "65aa38de0638bd7a31c5",
+        "source_line": 471,
+        "assertions_sha256": "e9097ae66fb8e33e0c10a6443c69ac79815bf978cc218b2c77bd9461adcd8dad",
+        "original_assertions": 3,
+        "target_file": "events/upstream_contract_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamContractEventConstruction/buildEvents()_trace_index_ignores_traces_that_match_no_filter",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-events.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -22561,7 +22670,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "dcb5e73908e894a2b815",
@@ -22782,10 +22897,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isLogFactoryMatched()",
+        "source_id": "d4a44fd18de58d842e60",
+        "source_line": 90,
+        "assertions_sha256": "27dedfbd3e08df8f0f062fae5ec47675acee10741d2636d0f8b17cb7c09b5571",
+        "original_assertions": 4,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/isLogFactoryMatched()",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -22803,7 +22930,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "123f7747ecf98637dc07",
@@ -22844,10 +22977,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isLogFilterMatched()",
+        "source_id": "123f7747ecf98637dc07",
+        "source_line": 134,
+        "assertions_sha256": "3b93d7fbb0c4eb152e21bac4b4178235f996f10635ec65689ea37ad4d8eece99",
+        "original_assertions": 2,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/isLogFilterMatched()",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -22865,7 +23010,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "ad3050b801ac9f9e4a4b",
@@ -23001,10 +23152,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isTransactionFilterMatched()",
+        "source_id": "53007c4c2fcd23a21915",
+        "source_line": 189,
+        "assertions_sha256": "3b93d7fbb0c4eb152e21bac4b4178235f996f10635ec65689ea37ad4d8eece99",
+        "original_assertions": 2,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/isTransactionFilterMatched()",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -23022,7 +23185,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "8aa0ec9cda98fa1dccb6",
@@ -23064,10 +23233,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isTransactionFilterMatched() with null transaction.to",
+        "source_id": "8aa0ec9cda98fa1dccb6",
+        "source_line": 229,
+        "assertions_sha256": "3b93d7fbb0c4eb152e21bac4b4178235f996f10635ec65689ea37ad4d8eece99",
+        "original_assertions": 2,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/isTransactionFilterMatched()_with_null_transaction.to",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -23085,7 +23266,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "d36b571984e648e371c4",
@@ -23136,10 +23323,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isTransferFilterMatched()",
+        "source_id": "d36b571984e648e371c4",
+        "source_line": 270,
+        "assertions_sha256": "98132ed1919b25e6fbe47052a56531ae447fd889348379e17db7f36520cf3e25",
+        "original_assertions": 4,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/isTransferFilterMatched()",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -23157,7 +23356,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "f07738a89b1c2efd1eb0",
@@ -23203,10 +23408,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isTraceFilterMatched()",
+        "source_id": "f07738a89b1c2efd1eb0",
+        "source_line": 319,
+        "assertions_sha256": "c8601967368881af9decbcedd8fada51a41851fe99ee779b5082ea8996eba858",
+        "original_assertions": 3,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/isTraceFilterMatched()",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -23224,7 +23441,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "2b549b12673f747c4eeb",
@@ -23263,10 +23486,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToRequests merges filters with different topic1 values into one request",
+        "source_id": "2b549b12673f747c4eeb",
+        "source_line": 381,
+        "assertions_sha256": "b08144aaf6edd2f265ebcd9205f474807293d2ead3fd27bed92411661c218095",
+        "original_assertions": 2,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/mergeLogFiltersToRequests_merges_filters_with_different_topic1_values_into_one_request",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -23284,7 +23519,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "1d570bf765cbf80ff44f",
@@ -23323,10 +23564,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToRequests merges filters with different addresses into one request",
+        "source_id": "1d570bf765cbf80ff44f",
+        "source_line": 426,
+        "assertions_sha256": "d51037d9b056f3125447097dfc7b2c35d25b59d82b90b1179b60c34034cccb1b",
+        "original_assertions": 2,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/mergeLogFiltersToRequests_merges_filters_with_different_addresses_into_one_request",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -23344,7 +23597,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "ae73867bea12d4576440",
@@ -23393,10 +23652,22 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToRequests does not merge disjoint intervals into an overly wide request",
+        "source_id": "ae73867bea12d4576440",
+        "source_line": 471,
+        "assertions_sha256": "8fc3526a3ca9f7181296ed17641398938c1e67c441fc7ef254cb4ca7867f0c0f",
+        "original_assertions": 4,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/mergeLogFiltersToRequests_does_not_merge_disjoint_intervals_into_an_overly_wide_request",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle": {
@@ -23414,7 +23685,13 @@
             "evidence": "parity/runs/full-original-pglite-oracle.json"
           }
         }
-      }
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "81d93c6efbaaa64aa4e8",

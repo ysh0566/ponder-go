@@ -1,0 +1,746 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "15 exact source records and38 original assertion expressions. The no-output union property-access obligation is separately compiled; no extra credit from captured operations, native EVM regressions or projection checks.",
+  "cases": [
+    {
+      "id": "a79cdf7b715b85a9f407",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "full_name": "decodeEvents() log",
+      "contexts": [],
+      "test_source": "test(\"decodeEvents() log\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address: zeroAddress,\n  });\n\n  const topics = encodeEventTopics({\n    abi: erc20ABI,\n    eventName: \"Transfer\",\n    args: {\n      from: zeroAddress,\n      to: ALICE,\n    },\n  });\n\n  const data = padHex(toHex(parseEther(\"1\")), { size: 32 });\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: { data, topics },\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [LogEvent];\n\n  expect(events).toHaveLength(1);\n  expect(events[0].event.args).toMatchObject({\n    from: zeroAddress,\n    to: ALICE.toLowerCase(),\n    amount: parseEther(\"1\"),\n  });\n})",
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getErc20IndexingBuild({\n    address: zeroAddress,\n  })",
+        "topics = encodeEventTopics({\n    abi: erc20ABI,\n    eventName: \"Transfer\",\n    args: {\n      from: zeroAddress,\n      to: ALICE,\n    },\n  })",
+        "data = padHex(toHex(parseEther(\"1\")), { size: 32 })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: { data, topics },\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [LogEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 143,
+          "text": "expect(events).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 144,
+          "text": "expect(events[0].event.args).toMatchObject({\n    from: zeroAddress,\n    to: ALICE.toLowerCase(),\n    amount: parseEther(\"1\"),\n  })"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() log",
+        "source_id": "a79cdf7b715b85a9f407",
+        "source_line": 112,
+        "assertions_sha256": "6344e080bb8700c2bda1d36efc6c472a0027b0572684213d32b5198d438cb529",
+        "original_assertions": 2,
+        "target_file": "events/upstream_contract_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamContractEventConstruction/decodeEvents()_log",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-events.json"
+      },
+      "captured_calls": 1
+    },
+    {
+      "id": "a15552820b679aef4e63",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "full_name": "decodeEvents() log error",
+      "contexts": [],
+      "test_source": "test(\"decodeEvents() log error\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address: zeroAddress,\n  });\n\n  const topics = encodeEventTopics({\n    abi: erc20ABI,\n    eventName: \"Transfer\",\n    args: {\n      from: zeroAddress,\n      to: ALICE,\n    },\n  });\n\n  // invalid log.data, causing an error when decoding\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: {\n      data: \"0x0\" as Hex,\n      topics,\n    },\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [LogEvent];\n\n  expect(events).toHaveLength(0);\n})",
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getErc20IndexingBuild({\n    address: zeroAddress,\n  })",
+        "topics = encodeEventTopics({\n    abi: erc20ABI,\n    eventName: \"Transfer\",\n    args: {\n      from: zeroAddress,\n      to: ALICE,\n    },\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: {\n      data: \"0x0\" as Hex,\n      topics,\n    },\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [LogEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 184,
+          "text": "expect(events).toHaveLength(0)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() log error",
+        "source_id": "a15552820b679aef4e63",
+        "source_line": 151,
+        "assertions_sha256": "8a8ba3654174cb9746ddade7ac017c4c6a18454c7e8bfb82009bafb2d753db24",
+        "original_assertions": 1,
+        "target_file": "events/upstream_contract_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamContractEventConstruction/decodeEvents()_log_error",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-events.json"
+      },
+      "captured_calls": 1
+    },
+    {
+      "id": "1ec7507f442eaaf13b93",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "full_name": "decodeEvents() trace",
+      "contexts": [],
+      "test_source": "test(\"decodeEvents() trace\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address: zeroAddress,\n    includeCallTraces: true,\n  });\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: {\n      type: \"CALL\",\n      from: ALICE,\n      to: BOB,\n      input: encodeFunctionData({\n        abi: erc20ABI,\n        functionName: \"transfer\",\n        args: [BOB, parseEther(\"1\")],\n      }),\n      output: encodeFunctionResult({\n        abi: erc20ABI,\n        functionName: \"transfer\",\n        result: true,\n      }),\n      gas: 0n,\n      gasUsed: 0n,\n      value: 0n,\n      traceAddress: [],\n      blockNumber: 0,\n      transactionIndex: 0,\n    },\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TraceEvent];\n\n  expect(events).toHaveLength(1);\n  expect(events[0].event.args).toStrictEqual([BOB, parseEther(\"1\")]);\n  expect(events[0].event.result).toBe(true);\n})",
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getErc20IndexingBuild({\n    address: zeroAddress,\n    includeCallTraces: true,\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: {\n      type: \"CALL\",\n      from: ALICE,\n      to: BOB,\n      input: encodeFunctionData({\n        abi: erc20ABI,\n        functionName: \"transfer\",\n        args: [BOB, parseEther(\"1\")],\n      }),\n      output: encodeFunctionResult({\n        abi: erc20ABI,\n        functionName: \"transfer\",\n        result: true,\n      }),\n      gas: 0n,\n      gasUsed: 0n,\n      value: 0n,\n      traceAddress: [],\n      blockNumber: 0,\n      transactionIndex: 0,\n    },\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TraceEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 322,
+          "text": "expect(events).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 323,
+          "text": "expect(events[0].event.args).toStrictEqual([BOB, parseEther(\"1\")])"
+        },
+        {
+          "kind": "runtime",
+          "line": 324,
+          "text": "expect(events[0].event.result).toBe(true)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() trace",
+        "source_id": "1ec7507f442eaaf13b93",
+        "source_line": 280,
+        "assertions_sha256": "665a533559bc36b29d1604b7fb35ceffe6aeff89c088b6c192e7466c8472b514",
+        "original_assertions": 3,
+        "target_file": "events/upstream_contract_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamContractEventConstruction/decodeEvents()_trace",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-events.json"
+      },
+      "captured_calls": 1
+    },
+    {
+      "id": "865433ec410487c54e12",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "full_name": "decodeEvents() trace w/o output",
+      "contexts": [],
+      "test_source": "test(\"decodeEvents() trace w/o output\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address: zeroAddress,\n    includeCallTraces: true,\n  });\n\n  // Remove output from the trace abi\n  // Note: `abiItem` is shared with `erc20ABI`, so copy it instead of mutating it.\n  // @ts-expect-error\n  eventCallbacks[0].abiItem = { ...eventCallbacks[0].abiItem, outputs: [] };\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: {\n      type: \"CALL\",\n      from: ALICE,\n      to: BOB,\n      input: encodeFunctionData({\n        abi: erc20ABI,\n        functionName: \"transfer\",\n        args: [BOB, parseEther(\"1\")],\n      }),\n      output: undefined,\n      gas: 0n,\n      gasUsed: 0n,\n      value: 0n,\n      traceAddress: [],\n      blockNumber: 0,\n      transactionIndex: 0,\n    },\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TraceEvent];\n\n  expect(events).toHaveLength(1);\n  expect(events[0].event.args).toStrictEqual([BOB, parseEther(\"1\")]);\n  expect(events[0].event.result).toBe(undefined);\n})",
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getErc20IndexingBuild({\n    address: zeroAddress,\n    includeCallTraces: true,\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: {\n      type: \"CALL\",\n      from: ALICE,\n      to: BOB,\n      input: encodeFunctionData({\n        abi: erc20ABI,\n        functionName: \"transfer\",\n        args: [BOB, parseEther(\"1\")],\n      }),\n      output: undefined,\n      gas: 0n,\n      gasUsed: 0n,\n      value: 0n,\n      traceAddress: [],\n      blockNumber: 0,\n      transactionIndex: 0,\n    },\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TraceEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 370,
+          "text": "expect(events).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 371,
+          "text": "expect(events[0].event.args).toStrictEqual([BOB, parseEther(\"1\")])"
+        },
+        {
+          "kind": "runtime",
+          "line": 372,
+          "text": "expect(events[0].event.result).toBe(undefined)"
+        }
+      ],
+      "type_error_directives": [
+        "// @ts-expect-error"
+      ],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() trace w/o output",
+        "source_id": "865433ec410487c54e12",
+        "source_line": 327,
+        "assertions_sha256": "4e95faf3b2c12d43abee81a73ad937ffa7188dfa0cba035962658b3371edc5e7",
+        "original_assertions": 3,
+        "target_file": "events/upstream_contract_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamContractEventConstruction/decodeEvents()_trace_w/o_output",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks. The original union property-access compiler error is independently verified by public EventCallback/ContractCallback Go API positive-build/run and specific negative compilation, preserving the ABI copy; runtime alone cannot earn credit.",
+        "source_fixture": "testdata/runtime/captured-original-events.json"
+      },
+      "captured_calls": 1
+    },
+    {
+      "id": "8300d175fc036ad366e1",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "full_name": "decodeEvents() trace error",
+      "contexts": [],
+      "test_source": "test(\"decodeEvents() trace error\", async () => {\n  const { common } = context;\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address: zeroAddress,\n    includeCallTraces: true,\n  });\n\n  const rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: {\n      type: \"CALL\",\n      from: ALICE,\n      to: BOB,\n      input: \"0x\",\n      output: encodeFunctionResult({\n        abi: erc20ABI,\n        functionName: \"transfer\",\n        result: true,\n      }),\n      gas: 0n,\n      gasUsed: 0n,\n      value: 0n,\n      traceAddress: [],\n      blockNumber: 0,\n      transactionIndex: 0,\n    },\n  } as RawEvent;\n\n  const events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TraceEvent];\n\n  expect(events).toHaveLength(0);\n})",
+      "inputs": [
+        "{ common } = context",
+        "{ eventCallbacks } = getErc20IndexingBuild({\n    address: zeroAddress,\n    includeCallTraces: true,\n  })",
+        "rawEvent = {\n    chainId: 1,\n    eventCallbackIndex: 0,\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    block: {} as RawEvent[\"block\"],\n    transaction: {} as RawEvent[\"transaction\"],\n    log: undefined,\n    trace: {\n      type: \"CALL\",\n      from: ALICE,\n      to: BOB,\n      input: \"0x\",\n      output: encodeFunctionResult({\n        abi: erc20ABI,\n        functionName: \"transfer\",\n        result: true,\n      }),\n      gas: 0n,\n      gasUsed: 0n,\n      value: 0n,\n      traceAddress: [],\n      blockNumber: 0,\n      transactionIndex: 0,\n    },\n  } as RawEvent",
+        "events = decodeEvents(common, getChain(), eventCallbacks, [\n    rawEvent,\n  ]) as [TraceEvent]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 413,
+          "text": "expect(events).toHaveLength(0)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "decodeEvents() trace error",
+        "source_id": "8300d175fc036ad366e1",
+        "source_line": 375,
+        "assertions_sha256": "8a8ba3654174cb9746ddade7ac017c4c6a18454c7e8bfb82009bafb2d753db24",
+        "original_assertions": 1,
+        "target_file": "events/upstream_contract_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamContractEventConstruction/decodeEvents()_trace_error",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-events.json"
+      },
+      "captured_calls": 1
+    },
+    {
+      "id": "65aa38de0638bd7a31c5",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "full_name": "buildEvents() trace index ignores traces that match no filter",
+      "contexts": [],
+      "test_source": "test(\"buildEvents() trace index ignores traces that match no filter\", async () => {\n  const erc20 = \"0x1111111111111111111111111111111111111111\";\n  const alice = ALICE.toLowerCase() as `0x${string}`;\n  const bob = BOB.toLowerCase() as `0x${string}`;\n\n  const eventCallbacks = [\n    ...getErc20IndexingBuild({ address: erc20, includeCallTraces: true })\n      .eventCallbacks,\n    ...getAccountsIndexingBuild({ address: ALICE }).eventCallbacks.filter(\n      ({ filter }) => filter.type === \"transfer\",\n    ),\n  ];\n\n  const block = {\n    number: 1n,\n    timestamp: 1n,\n    hash: toHex(1, { size: 32 }),\n  } as InternalBlock;\n  const transactions = [\n    {\n      blockNumber: 1,\n      transactionIndex: 0,\n      hash: toHex(0, { size: 32 }),\n      from: alice,\n      to: erc20,\n      type: \"legacy\",\n    },\n    {\n      blockNumber: 1,\n      transactionIndex: 1,\n      hash: toHex(1, { size: 32 }),\n      from: alice,\n      to: erc20,\n      type: \"legacy\",\n    },\n  ] as InternalTransaction[];\n\n  const transferInput = encodeFunctionData({\n    abi: erc20ABI,\n    functionName: \"transfer\",\n    args: [BOB, parseEther(\"1\")],\n  });\n\n  // Matched by the ERC20 call trace filter\n  const call0: InternalTrace = {\n    type: \"CALL\",\n    from: alice,\n    to: erc20,\n    input: transferInput,\n    output: undefined,\n    value: 0n,\n    gas: 0n,\n    gasUsed: 0n,\n    traceAddress: [],\n    blockNumber: 1,\n    transactionIndex: 0,\n  };\n  // Matched by the `transfer:from` filter\n  const transfer0: InternalTrace = {\n    type: \"CALL\",\n    from: alice,\n    to: bob,\n    input: \"0x\",\n    output: undefined,\n    value: parseEther(\"1\"),\n    gas: 0n,\n    gasUsed: 0n,\n    traceAddress: [3],\n    blockNumber: 1,\n    transactionIndex: 0,\n  };\n  // Matched by the ERC20 call trace filter\n  const call1: InternalTrace = {\n    ...call0,\n    transactionIndex: 1,\n  };\n\n  const exact = buildEvents({\n    eventCallbacks,\n    blocks: [block],\n    logs: [],\n    transactions,\n    transactionReceipts: [],\n    traces: [call0, transfer0, call1],\n    childAddresses: new Map(),\n    chainId: 1,\n  });\n  const superset = buildEvents({\n    eventCallbacks,\n    blocks: [block],\n    logs: [],\n    transactions,\n    transactionReceipts: [],\n    traces: [\n      call0,\n      // `STATICCALL` frame with a selector of the ERC20 ABI\n      {\n        ...call0,\n        type: \"STATICCALL\",\n        from: erc20,\n        input: encodeFunctionData({\n          abi: erc20ABI,\n          functionName: \"balanceOf\",\n          args: [BOB],\n        }),\n        value: null,\n        traceAddress: [0],\n      },\n      // `CALL` frame without value\n      { ...transfer0, value: 0n, traceAddress: [1] },\n      // `DELEGATECALL` frame that reports the value of its parent call\n      { ...transfer0, type: \"DELEGATECALL\", traceAddress: [2] },\n      transfer0,\n      call1,\n    ],\n    childAddresses: new Map(),\n    chainId: 1,\n  });\n\n  expect(exact.map((event) => event.trace!.traceAddress)).toStrictEqual([\n    [],\n    [3],\n    [],\n  ]);\n  expect(superset.map((event) => event.checkpoint)).toStrictEqual(\n    exact.map((event) => event.checkpoint),\n  );\n  expect(\n    exact.map((event) => decodeCheckpoint(event.checkpoint).eventIndex),\n  ).toStrictEqual([0n, 1n, 0n]);\n})",
+      "inputs": [
+        "erc20 = \"0x1111111111111111111111111111111111111111\"",
+        "alice = ALICE.toLowerCase() as `0x${string}`",
+        "bob = BOB.toLowerCase() as `0x${string}`",
+        "eventCallbacks = [\n    ...getErc20IndexingBuild({ address: erc20, includeCallTraces: true })\n      .eventCallbacks,\n    ...getAccountsIndexingBuild({ address: ALICE }).eventCallbacks.filter(\n      ({ filter }) => filter.type === \"transfer\",\n    ),\n  ]",
+        "block = {\n    number: 1n,\n    timestamp: 1n,\n    hash: toHex(1, { size: 32 }),\n  } as InternalBlock",
+        "transactions = [\n    {\n      blockNumber: 1,\n      transactionIndex: 0,\n      hash: toHex(0, { size: 32 }),\n      from: alice,\n      to: erc20,\n      type: \"legacy\",\n    },\n    {\n      blockNumber: 1,\n      transactionIndex: 1,\n      hash: toHex(1, { size: 32 }),\n      from: alice,\n      to: erc20,\n      type: \"legacy\",\n    },\n  ] as InternalTransaction[]",
+        "transferInput = encodeFunctionData({\n    abi: erc20ABI,\n    functionName: \"transfer\",\n    args: [BOB, parseEther(\"1\")],\n  })",
+        "call0: InternalTrace = {\n    type: \"CALL\",\n    from: alice,\n    to: erc20,\n    input: transferInput,\n    output: undefined,\n    value: 0n,\n    gas: 0n,\n    gasUsed: 0n,\n    traceAddress: [],\n    blockNumber: 1,\n    transactionIndex: 0,\n  }",
+        "transfer0: InternalTrace = {\n    type: \"CALL\",\n    from: alice,\n    to: bob,\n    input: \"0x\",\n    output: undefined,\n    value: parseEther(\"1\"),\n    gas: 0n,\n    gasUsed: 0n,\n    traceAddress: [3],\n    blockNumber: 1,\n    transactionIndex: 0,\n  }",
+        "call1: InternalTrace = {\n    ...call0,\n    transactionIndex: 1,\n  }",
+        "exact = buildEvents({\n    eventCallbacks,\n    blocks: [block],\n    logs: [],\n    transactions,\n    transactionReceipts: [],\n    traces: [call0, transfer0, call1],\n    childAddresses: new Map(),\n    chainId: 1,\n  })",
+        "superset = buildEvents({\n    eventCallbacks,\n    blocks: [block],\n    logs: [],\n    transactions,\n    transactionReceipts: [],\n    traces: [\n      call0,\n      // `STATICCALL` frame with a selector of the ERC20 ABI\n      {\n        ...call0,\n        type: \"STATICCALL\",\n        from: erc20,\n        input: encodeFunctionData({\n          abi: erc20ABI,\n          functionName: \"balanceOf\",\n          args: [BOB],\n        }),\n        value: null,\n        traceAddress: [0],\n      },\n      // `CALL` frame without value\n      { ...transfer0, value: 0n, traceAddress: [1] },\n      // `DELEGATECALL` frame that reports the value of its parent call\n      { ...transfer0, type: \"DELEGATECALL\", traceAddress: [2] },\n      transfer0,\n      call1,\n    ],\n    childAddresses: new Map(),\n    chainId: 1,\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 590,
+          "text": "expect(exact.map((event) => event.trace!.traceAddress)).toStrictEqual([\n    [],\n    [3],\n    [],\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 595,
+          "text": "expect(superset.map((event) => event.checkpoint)).toStrictEqual(\n    exact.map((event) => event.checkpoint),\n  )"
+        },
+        {
+          "kind": "runtime",
+          "line": 598,
+          "text": "expect(\n    exact.map((event) => decodeCheckpoint(event.checkpoint).eventIndex),\n  ).toStrictEqual([0n, 1n, 0n])"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/events.test.ts",
+        "source_name": "buildEvents() trace index ignores traces that match no filter",
+        "source_id": "65aa38de0638bd7a31c5",
+        "source_line": 471,
+        "assertions_sha256": "e9097ae66fb8e33e0c10a6443c69ac79815bf978cc218b2c77bd9461adcd8dad",
+        "original_assertions": 3,
+        "target_file": "events/upstream_contract_test.go",
+        "go_package": "ponder.local/ponder-go/events",
+        "go_test": "TestUpstreamContractEventConstruction/buildEvents()_trace_index_ignores_traces_that_match_no_filter",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-events.json"
+      },
+      "captured_calls": 2
+    },
+    {
+      "id": "d4a44fd18de58d842e60",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "full_name": "isLogFactoryMatched()",
+      "contexts": [],
+      "test_source": "test(\"isLogFactoryMatched()\", async () => {\n  const { address } = await deployFactory({ sender: ALICE });\n  const blockData = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  const filter = eventCallbacks[0]!.filter as LogFilter<Factory>;\n\n  let isMatched = isLogFactoryMatched({\n    factory: filter.address,\n    log: blockData.log,\n  });\n  expect(isMatched).toBe(true);\n\n  filter.address.address = [filter.address.address as Address];\n\n  isMatched = isLogFactoryMatched({\n    factory: filter.address,\n    log: blockData.log,\n  });\n  expect(isMatched).toBe(true);\n\n  filter.address.address = undefined;\n\n  isMatched = isLogFactoryMatched({\n    factory: filter.address,\n    log: blockData.log,\n  });\n  expect(isMatched).toBe(true);\n\n  blockData.log.topics[0] = zeroHash;\n\n  isMatched = isLogFactoryMatched({\n    factory: filter.address,\n    log: blockData.log,\n  });\n  expect(isMatched).toBe(false);\n})",
+      "inputs": [
+        "{ address } = await deployFactory({ sender: ALICE })",
+        "blockData = await createPair({\n    factory: address,\n    sender: ALICE,\n  })",
+        "{ eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  })",
+        "filter = eventCallbacks[0]!.filter as LogFilter<Factory>",
+        "isMatched = isLogFactoryMatched({\n    factory: filter.address,\n    log: blockData.log,\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 107,
+          "text": "expect(isMatched).toBe(true)"
+        },
+        {
+          "kind": "runtime",
+          "line": 115,
+          "text": "expect(isMatched).toBe(true)"
+        },
+        {
+          "kind": "runtime",
+          "line": 123,
+          "text": "expect(isMatched).toBe(true)"
+        },
+        {
+          "kind": "runtime",
+          "line": 131,
+          "text": "expect(isMatched).toBe(false)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isLogFactoryMatched()",
+        "source_id": "d4a44fd18de58d842e60",
+        "source_line": 90,
+        "assertions_sha256": "27dedfbd3e08df8f0f062fae5ec47675acee10741d2636d0f8b17cb7c09b5571",
+        "original_assertions": 4,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/isLogFactoryMatched()",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "captured_calls": 4
+    },
+    {
+      "id": "123f7747ecf98637dc07",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "full_name": "isLogFilterMatched()",
+      "contexts": [],
+      "test_source": "test(\"isLogFilterMatched()\", async () => {\n  const { address } = await deployErc20({ sender: ALICE });\n  const blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n  });\n\n  const filter = eventCallbacks[0]!.filter as LogFilter;\n\n  let isMatched = isLogFilterMatched({ filter, log: blockData.log });\n  expect(isMatched).toBe(true);\n\n  blockData.log.address = zeroAddress;\n\n  isMatched = isLogFilterMatched({ filter, log: blockData.log });\n  expect(isMatched).toBe(false);\n})",
+      "inputs": [
+        "{ address } = await deployErc20({ sender: ALICE })",
+        "blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  })",
+        "{ eventCallbacks } = getErc20IndexingBuild({\n    address,\n  })",
+        "filter = eventCallbacks[0]!.filter as LogFilter",
+        "isMatched = isLogFilterMatched({ filter, log: blockData.log })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 150,
+          "text": "expect(isMatched).toBe(true)"
+        },
+        {
+          "kind": "runtime",
+          "line": 155,
+          "text": "expect(isMatched).toBe(false)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isLogFilterMatched()",
+        "source_id": "123f7747ecf98637dc07",
+        "source_line": 134,
+        "assertions_sha256": "3b93d7fbb0c4eb152e21bac4b4178235f996f10635ec65689ea37ad4d8eece99",
+        "original_assertions": 2,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/isLogFilterMatched()",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "captured_calls": 2
+    },
+    {
+      "id": "53007c4c2fcd23a21915",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "full_name": "isTransactionFilterMatched()",
+      "contexts": [],
+      "test_source": "test(\"isTransactionFilterMatched()\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  await transferEth({\n    to: BOB,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  });\n\n  // transaction:from\n  const filter = eventCallbacks[1]!.filter as TransactionFilter<\n    undefined,\n    undefined\n  >;\n\n  const rpcBlock = await eth_getBlockByNumber(rpc, [\"0x1\", true]);\n\n  let isMatched = isTransactionFilterMatched({\n    filter,\n    transaction: rpcBlock.transactions[0]!,\n  });\n  expect(isMatched).toBe(true);\n\n  rpcBlock.transactions[0]!.from = zeroAddress;\n\n  isMatched = isTransactionFilterMatched({\n    filter,\n    transaction: rpcBlock.transactions[0]!,\n  });\n  expect(isMatched).toBe(false);\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "{ eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  })",
+        "filter = eventCallbacks[1]!.filter as TransactionFilter<\n    undefined,\n    undefined\n  >",
+        "rpcBlock = await eth_getBlockByNumber(rpc, [\"0x1\", true])",
+        "isMatched = isTransactionFilterMatched({\n    filter,\n    transaction: rpcBlock.transactions[0]!,\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 218,
+          "text": "expect(isMatched).toBe(true)"
+        },
+        {
+          "kind": "runtime",
+          "line": 226,
+          "text": "expect(isMatched).toBe(false)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isTransactionFilterMatched()",
+        "source_id": "53007c4c2fcd23a21915",
+        "source_line": 189,
+        "assertions_sha256": "3b93d7fbb0c4eb152e21bac4b4178235f996f10635ec65689ea37ad4d8eece99",
+        "original_assertions": 2,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/isTransactionFilterMatched()",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "captured_calls": 2
+    },
+    {
+      "id": "8aa0ec9cda98fa1dccb6",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "full_name": "isTransactionFilterMatched() with null transaction.to",
+      "contexts": [],
+      "test_source": "test(\"isTransactionFilterMatched() with null transaction.to\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  await transferEth({\n    to: BOB,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  });\n\n  // transaction:to\n  const filter = eventCallbacks[1]!.filter as TransactionFilter<\n    undefined,\n    undefined\n  >;\n  filter.toAddress = BOB.toLowerCase() as Address;\n\n  const rpcBlock = await eth_getBlockByNumber(rpc, [\"0x1\", true]);\n\n  let isMatched = isTransactionFilterMatched({\n    filter,\n    transaction: rpcBlock.transactions[0]!,\n  });\n  expect(isMatched).toBe(true);\n\n  rpcBlock.transactions[0]!.to = null;\n\n  isMatched = isTransactionFilterMatched({\n    filter,\n    transaction: rpcBlock.transactions[0]!,\n  });\n  expect(isMatched).toBe(false);\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "{ eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  })",
+        "filter = eventCallbacks[1]!.filter as TransactionFilter<\n    undefined,\n    undefined\n  >",
+        "rpcBlock = await eth_getBlockByNumber(rpc, [\"0x1\", true])",
+        "isMatched = isTransactionFilterMatched({\n    filter,\n    transaction: rpcBlock.transactions[0]!,\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 259,
+          "text": "expect(isMatched).toBe(true)"
+        },
+        {
+          "kind": "runtime",
+          "line": 267,
+          "text": "expect(isMatched).toBe(false)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isTransactionFilterMatched() with null transaction.to",
+        "source_id": "8aa0ec9cda98fa1dccb6",
+        "source_line": 229,
+        "assertions_sha256": "3b93d7fbb0c4eb152e21bac4b4178235f996f10635ec65689ea37ad4d8eece99",
+        "original_assertions": 2,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/isTransactionFilterMatched()_with_null_transaction.to",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "captured_calls": 2
+    },
+    {
+      "id": "d36b571984e648e371c4",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "full_name": "isTransferFilterMatched()",
+      "contexts": [],
+      "test_source": "test(\"isTransferFilterMatched()\", async () => {\n  const blockData = await transferEth({\n    to: BOB,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  });\n\n  // transfer:from\n  const filter = eventCallbacks[3]!.filter as TransferFilter;\n\n  let isMatched = isTransferFilterMatched({\n    filter,\n    block: blockData.block,\n    trace: blockData.trace.trace,\n  });\n  expect(isMatched).toBe(true);\n\n  // `DELEGATECALL` and `CALLCODE` frames do not move value\n\n  for (const type of [\"DELEGATECALL\", \"CALLCODE\"] as const) {\n    isMatched = isTransferFilterMatched({\n      filter,\n      block: blockData.block,\n      trace: { ...blockData.trace.trace, type },\n    });\n    expect(isMatched).toBe(false);\n  }\n\n  isMatched = isTransferFilterMatched({\n    filter,\n    block: blockData.block,\n    trace: { ...blockData.trace.trace, type: \"CREATE\" },\n  });\n  expect(isMatched).toBe(true);\n\n  blockData.trace.trace.value = \"0x0\";\n\n  isMatched = isTransferFilterMatched({\n    filter,\n    block: blockData.block,\n    trace: blockData.trace.trace,\n  });\n  expect(isMatched).toBe(false);\n})",
+      "inputs": [
+        "blockData = await transferEth({\n    to: BOB,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  })",
+        "{ eventCallbacks } = getAccountsIndexingBuild({\n    address: ALICE,\n  })",
+        "filter = eventCallbacks[3]!.filter as TransferFilter",
+        "isMatched = isTransferFilterMatched({\n    filter,\n    block: blockData.block,\n    trace: blockData.trace.trace,\n  })",
+        "type"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 289,
+          "text": "expect(isMatched).toBe(true)"
+        },
+        {
+          "kind": "runtime",
+          "line": 299,
+          "text": "expect(isMatched).toBe(false)"
+        },
+        {
+          "kind": "runtime",
+          "line": 307,
+          "text": "expect(isMatched).toBe(true)"
+        },
+        {
+          "kind": "runtime",
+          "line": 316,
+          "text": "expect(isMatched).toBe(false)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isTransferFilterMatched()",
+        "source_id": "d36b571984e648e371c4",
+        "source_line": 270,
+        "assertions_sha256": "98132ed1919b25e6fbe47052a56531ae447fd889348379e17db7f36520cf3e25",
+        "original_assertions": 4,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/isTransferFilterMatched()",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "captured_calls": 5
+    },
+    {
+      "id": "f07738a89b1c2efd1eb0",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "full_name": "isTraceFilterMatched()",
+      "contexts": [],
+      "test_source": "test(\"isTraceFilterMatched()\", async () => {\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n  const blockData = await transferErc20({\n    erc20: address,\n    to: BOB,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n    includeCallTraces: true,\n  });\n\n  const filter = eventCallbacks[0]!.filter as TraceFilter;\n\n  let isMatched = isTraceFilterMatched({\n    filter,\n    block: blockData.block,\n    trace: blockData.trace.trace,\n  });\n  expect(isMatched).toBe(true);\n\n  isMatched = isTraceFilterMatched({\n    filter,\n    block: blockData.block,\n    trace: { ...blockData.trace.trace, type: \"STATICCALL\" },\n  });\n  expect(isMatched).toBe(false);\n\n  blockData.trace.trace.to = zeroAddress;\n\n  isMatched = isTraceFilterMatched({\n    filter,\n    block: blockData.block,\n    trace: blockData.trace.trace,\n  });\n  expect(isMatched).toBe(false);\n})",
+      "inputs": [
+        "{ address } = await deployErc20({ sender: ALICE })",
+        "blockData = await transferErc20({\n    erc20: address,\n    to: BOB,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  })",
+        "{ eventCallbacks } = getErc20IndexingBuild({\n    address,\n    includeCallTraces: true,\n  })",
+        "filter = eventCallbacks[0]!.filter as TraceFilter",
+        "isMatched = isTraceFilterMatched({\n    filter,\n    block: blockData.block,\n    trace: blockData.trace.trace,\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 346,
+          "text": "expect(isMatched).toBe(true)"
+        },
+        {
+          "kind": "runtime",
+          "line": 353,
+          "text": "expect(isMatched).toBe(false)"
+        },
+        {
+          "kind": "runtime",
+          "line": 362,
+          "text": "expect(isMatched).toBe(false)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "isTraceFilterMatched()",
+        "source_id": "f07738a89b1c2efd1eb0",
+        "source_line": 319,
+        "assertions_sha256": "c8601967368881af9decbcedd8fada51a41851fe99ee779b5082ea8996eba858",
+        "original_assertions": 3,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/isTraceFilterMatched()",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "captured_calls": 3
+    },
+    {
+      "id": "2b549b12673f747c4eeb",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "full_name": "mergeLogFiltersToRequests merges filters with different topic1 values into one request",
+      "contexts": [],
+      "test_source": "test(\"mergeLogFiltersToRequests merges filters with different topic1 values into one request\", () => {\n  const transfer = toEventSelector(\n    getAbiItem({ abi: erc20ABI, name: \"Transfer\" }),\n  );\n\n  const requiredIntervals: IntervalWithFilter[] = [\n    {\n      filter: {\n        ...baseLogFilter,\n        address: ADDRESS_A,\n        topic0: transfer,\n        topic1: TOPIC1_ALICE,\n        topic2: null,\n        topic3: null,\n      } as LogFilter,\n      interval: [1, 100],\n    },\n    {\n      filter: {\n        ...baseLogFilter,\n        address: ADDRESS_A,\n        topic0: transfer,\n        topic1: TOPIC1_BOB,\n        topic2: null,\n        topic3: null,\n      } as LogFilter,\n      interval: [1, 100],\n    },\n  ];\n\n  // Only `topic1` differs between the two filters, so they're merged into a\n  // single request with `topic1` unioned into an array.\n  const mergedRequests = mergeLogFiltersToRequests(\n    requiredIntervals,\n    new Map(),\n    1000,\n  );\n\n  expect(mergedRequests).toHaveLength(1);\n  expect(mergedRequests[0]!.params[0]).toMatchObject({\n    address: ADDRESS_A,\n    topics: [transfer, [TOPIC1_ALICE, TOPIC1_BOB]],\n  });\n})",
+      "inputs": [
+        "transfer = toEventSelector(\n    getAbiItem({ abi: erc20ABI, name: \"Transfer\" }),\n  )",
+        "requiredIntervals: IntervalWithFilter[] = [\n    {\n      filter: {\n        ...baseLogFilter,\n        address: ADDRESS_A,\n        topic0: transfer,\n        topic1: TOPIC1_ALICE,\n        topic2: null,\n        topic3: null,\n      } as LogFilter,\n      interval: [1, 100],\n    },\n    {\n      filter: {\n        ...baseLogFilter,\n        address: ADDRESS_A,\n        topic0: transfer,\n        topic1: TOPIC1_BOB,\n        topic2: null,\n        topic3: null,\n      } as LogFilter,\n      interval: [1, 100],\n    },\n  ]",
+        "mergedRequests = mergeLogFiltersToRequests(\n    requiredIntervals,\n    new Map(),\n    1000,\n  )"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 419,
+          "text": "expect(mergedRequests).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 420,
+          "text": "expect(mergedRequests[0]!.params[0]).toMatchObject({\n    address: ADDRESS_A,\n    topics: [transfer, [TOPIC1_ALICE, TOPIC1_BOB]],\n  })"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToRequests merges filters with different topic1 values into one request",
+        "source_id": "2b549b12673f747c4eeb",
+        "source_line": 381,
+        "assertions_sha256": "b08144aaf6edd2f265ebcd9205f474807293d2ead3fd27bed92411661c218095",
+        "original_assertions": 2,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/mergeLogFiltersToRequests_merges_filters_with_different_topic1_values_into_one_request",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "captured_calls": 1
+    },
+    {
+      "id": "1d570bf765cbf80ff44f",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "full_name": "mergeLogFiltersToRequests merges filters with different addresses into one request",
+      "contexts": [],
+      "test_source": "test(\"mergeLogFiltersToRequests merges filters with different addresses into one request\", () => {\n  const transfer = toEventSelector(\n    getAbiItem({ abi: erc20ABI, name: \"Transfer\" }),\n  );\n\n  const requiredIntervals: IntervalWithFilter[] = [\n    {\n      filter: {\n        ...baseLogFilter,\n        address: ADDRESS_A,\n        topic0: transfer,\n        topic1: null,\n        topic2: null,\n        topic3: null,\n      } as LogFilter,\n      interval: [1, 100],\n    },\n    {\n      filter: {\n        ...baseLogFilter,\n        address: ADDRESS_B,\n        topic0: transfer,\n        topic1: null,\n        topic2: null,\n        topic3: null,\n      } as LogFilter,\n      interval: [1, 100],\n    },\n  ];\n\n  // Only `address` differs between the two filters, so they're merged into a\n  // single request with `address` unioned into an array.\n  const mergedRequests = mergeLogFiltersToRequests(\n    requiredIntervals,\n    new Map(),\n    1000,\n  );\n\n  expect(mergedRequests).toHaveLength(1);\n  expect(mergedRequests[0]!.params[0]).toMatchObject({\n    address: [ADDRESS_A, ADDRESS_B],\n    topics: [transfer],\n  });\n})",
+      "inputs": [
+        "transfer = toEventSelector(\n    getAbiItem({ abi: erc20ABI, name: \"Transfer\" }),\n  )",
+        "requiredIntervals: IntervalWithFilter[] = [\n    {\n      filter: {\n        ...baseLogFilter,\n        address: ADDRESS_A,\n        topic0: transfer,\n        topic1: null,\n        topic2: null,\n        topic3: null,\n      } as LogFilter,\n      interval: [1, 100],\n    },\n    {\n      filter: {\n        ...baseLogFilter,\n        address: ADDRESS_B,\n        topic0: transfer,\n        topic1: null,\n        topic2: null,\n        topic3: null,\n      } as LogFilter,\n      interval: [1, 100],\n    },\n  ]",
+        "mergedRequests = mergeLogFiltersToRequests(\n    requiredIntervals,\n    new Map(),\n    1000,\n  )"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 464,
+          "text": "expect(mergedRequests).toHaveLength(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 465,
+          "text": "expect(mergedRequests[0]!.params[0]).toMatchObject({\n    address: [ADDRESS_A, ADDRESS_B],\n    topics: [transfer],\n  })"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToRequests merges filters with different addresses into one request",
+        "source_id": "1d570bf765cbf80ff44f",
+        "source_line": 426,
+        "assertions_sha256": "d51037d9b056f3125447097dfc7b2c35d25b59d82b90b1179b60c34034cccb1b",
+        "original_assertions": 2,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/mergeLogFiltersToRequests_merges_filters_with_different_addresses_into_one_request",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "captured_calls": 1
+    },
+    {
+      "id": "ae73867bea12d4576440",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "full_name": "mergeLogFiltersToRequests does not merge disjoint intervals into an overly wide request",
+      "contexts": [],
+      "test_source": "test(\"mergeLogFiltersToRequests does not merge disjoint intervals into an overly wide request\", () => {\n  const transfer = toEventSelector(\n    getAbiItem({ abi: erc20ABI, name: \"Transfer\" }),\n  );\n\n  const requiredIntervals: IntervalWithFilter[] = [\n    {\n      filter: {\n        ...baseLogFilter,\n        address: ADDRESS_A,\n        topic0: transfer,\n        topic1: null,\n        topic2: null,\n        topic3: null,\n      } as LogFilter,\n      interval: [1, 100],\n    },\n    {\n      filter: {\n        ...baseLogFilter,\n        address: ADDRESS_A,\n        topic0: transfer,\n        topic1: null,\n        topic2: null,\n        topic3: null,\n      } as LogFilter,\n      interval: [100_000, 100_100],\n    },\n  ];\n\n  // The two filters are otherwise identical, but their intervals are\n  // disjoint (0% overlap), so merging them would force an unnecessarily wide\n  // request that refetches ~100,000 unrelated blocks. Instead, two\n  // tightly-bounded requests are kept.\n  const mergedRequests = mergeLogFiltersToRequests(\n    requiredIntervals,\n    new Map(),\n    1000,\n  );\n\n  expect(mergedRequests).toHaveLength(2);\n  expect(mergedRequests.map((request) => request.params[0])).toEqual(\n    expect.arrayContaining([\n      expect.objectContaining({\n        fromBlock: numberToHex(1),\n        toBlock: numberToHex(100),\n      }),\n      expect.objectContaining({\n        fromBlock: numberToHex(100_000),\n        toBlock: numberToHex(100_100),\n      }),\n    ]),\n  );\n})",
+      "inputs": [
+        "transfer = toEventSelector(\n    getAbiItem({ abi: erc20ABI, name: \"Transfer\" }),\n  )",
+        "requiredIntervals: IntervalWithFilter[] = [\n    {\n      filter: {\n        ...baseLogFilter,\n        address: ADDRESS_A,\n        topic0: transfer,\n        topic1: null,\n        topic2: null,\n        topic3: null,\n      } as LogFilter,\n      interval: [1, 100],\n    },\n    {\n      filter: {\n        ...baseLogFilter,\n        address: ADDRESS_A,\n        topic0: transfer,\n        topic1: null,\n        topic2: null,\n        topic3: null,\n      } as LogFilter,\n      interval: [100_000, 100_100],\n    },\n  ]",
+        "mergedRequests = mergeLogFiltersToRequests(\n    requiredIntervals,\n    new Map(),\n    1000,\n  )"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 511,
+          "text": "expect(mergedRequests).toHaveLength(2)"
+        },
+        {
+          "kind": "runtime",
+          "line": 512,
+          "text": "expect(mergedRequests.map((request) => request.params[0])).toEqual(\n    expect.arrayContaining([\n      expect.objectContaining({\n        fromBlock: numberToHex(1),\n        toBlock: numberToHex(100),\n      }),\n      expect.objectContaining({\n        fromBlock: numberToHex(100_000),\n        toBlock: numberToHex(100_100),\n      }),\n    ]),\n  )"
+        },
+        {
+          "kind": "runtime",
+          "line": 514,
+          "text": "expect.objectContaining({\n        fromBlock: numberToHex(1),\n        toBlock: numberToHex(100),\n      })"
+        },
+        {
+          "kind": "runtime",
+          "line": 518,
+          "text": "expect.objectContaining({\n        fromBlock: numberToHex(100_000),\n        toBlock: numberToHex(100_100),\n      })"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/filter.test.ts",
+        "source_name": "mergeLogFiltersToRequests does not merge disjoint intervals into an overly wide request",
+        "source_id": "ae73867bea12d4576440",
+        "source_line": 471,
+        "assertions_sha256": "8fc3526a3ca9f7181296ed17641398938c1e67c441fc7ef254cb4ca7867f0c0f",
+        "original_assertions": 4,
+        "target_file": "filter/remaining_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/filter",
+        "go_test": "TestUpstreamRemainingFilters/mergeLogFiltersToRequests_does_not_merge_disjoint_intervals_into_an_overly_wide_request",
+        "assertion_policy": "Complete original declaration, source contexts, exact generated ERC20/factory ABI and original helpers retained. The whole original file runs actual deploy/mint/transfer fixtures and unchanged Vitest assertions with call-through capture only; Go replays every complete captured input/result and input mutation state, plus explicit original assertions (including both delegate/callcode loop frames and asymmetric interval membership). This is materialized original fixture data, not a synthetic ABI/helper/RPC replacement. Pristine full original backend acceptance stays separate. Function and common-context values are explicitly opaque fixture markers; decoder does not invoke callbacks.",
+        "source_fixture": "testdata/runtime/captured-original-filters.json"
+      },
+      "captured_calls": 1
+    }
+  ],
+  "static_assertion_expressions": 38,
+  "source_type_error_directives": 1,
+  "fixture_mode": "instrumented complete original files, original helpers/generated ABI and unchanged assertions; separate pristine backend oracle proof remains unchanged"
+}

@@ -1,0 +1,73 @@
+{
+  "counting": "One original callback-union property-access error directive, verified by real Go compilation. Positive narrows the public union and copies the ABI before replacement; no claim of full callback/filter/static TS type equivalence.",
+  "directives": [
+    {
+      "source_id": "865433ec410487c54e12",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "source_error_directive": "// @ts-expect-error",
+      "status": "passed",
+      "positive": {
+        "file": "events/testdata/compile/callback-union-positive.go",
+        "sha256": "0a15bb476654c4e720152b6f16319f8c452ecae00cec357040ac3979ec82b104"
+      },
+      "negative": {
+        "file": "events/testdata/compile/callback-union-negative.go.txt",
+        "sha256": "e349b6fd0f747d4d3d1ce999aec4602d68df9ef718f34c92277391ea7dd536a8"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/event-union/positive",
+          "events/testdata/compile/callback-union-positive.go"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "execute_positive": {
+        "command": [
+          "/root/ponder-go/work/ponder-go/.parity-build/event-union/positive"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/event-union/negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/event-union/negative.go"
+        ],
+        "exit_code": 1,
+        "error": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/event-union/negative.go:7:15: callbacks[0].ABIItem undefined (type events.EventCallback has no field or method ABIItem)\n"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "events/callbacks.go",
+      "sha256": "aa909c3d6df4068fcc4a15ef84bd8e9d12c97a42eec228433aec4642008f5306"
+    },
+    {
+      "file": "abi/function.go",
+      "sha256": "415799556c14710e3e181e4079ca3b44adfcb8f364d3e145c165fc84cbbf98e4"
+    },
+    {
+      "file": "tools/event-compile-fixtures.mjs",
+      "sha256": "bf80f11bb8b8866ccdb77b04583d4d03a0be02ed8a0aea44bcbded165c675eef"
+    }
+  ],
+  "summary": {
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1,
+    "failed": 0
+  }
+}

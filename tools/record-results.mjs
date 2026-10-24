@@ -46,8 +46,18 @@ const typedGo = goResults("parity/runs/abi-typed-go.jsonl");
 const typedRace = goResults("parity/runs/abi-typed-race.jsonl");
 const compile = exists("parity/runs/compile-fixtures.json") ? read("parity/runs/compile-fixtures.json") : null;
 const ormCompile = exists("parity/runs/orm-compile-fixtures.json") ? read("parity/runs/orm-compile-fixtures.json") : null;
+const eventCompile = exists("parity/runs/event-compile-fixtures.json") ? read("parity/runs/event-compile-fixtures.json") : null;
 const parameterTypes = exists("parity/runs/parameters-typecheck.json") ? read("parity/runs/parameters-typecheck.json") : null;
 const fileHash = file => crypto.createHash("sha256").update(fs.readFileSync(path.join(root,file))).digest("hex");
+for (const fixtureFile of ["testdata/runtime/captured-original-events.json", "testdata/runtime/captured-original-filters.json"]) {
+	if (!exists(fixtureFile)) continue;
+	const fixture = read(fixtureFile), proof = fixture.capture_proof;
+	if (fixture.baseline?.revision !== ledger.baseline.revision || proof?.scope !== "instrumented_original_file_with_call_through" || !proof.source_context.every(x => exists(x.file) && fileHash(x.file) === x.sha256) || !exists(proof.raw_oracle.file) || fileHash(proof.raw_oracle.file) !== proof.raw_oracle.sha256 || !read(proof.raw_oracle.file).success) throw Error("Original capture context changed or is incomplete: " + fixtureFile);
+	for (const captured of fixture.cases) {
+		const source = ledger.tests.find(x => x.id === captured.id);
+		if (!source || source.source_sha256 !== captured.source_sha256 || source.test_source !== captured.test_source || !captured.calls.length) throw Error("Stale or incomplete original captured declaration: " + captured.id);
+	}
+}
 const oraclePath = exists("parity/runs/foundation-oracle.json")
 	? "parity/runs/foundation-oracle.json"
 	: "parity/foundation-oracle-focused.json";
@@ -166,10 +176,11 @@ for (const test of ledger.tests) {
 			if (!valid) {status="skip";test.blockers.push("Native runtime alone is insufficient: inline type compilation/typed output evidence is incomplete.");}
 		}
 		if (test.type_error_directives.length) {
-			const directives=[...(compile?.directives??[]),...(ormCompile?.directives??[])].filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256);
+			const directives=[...(compile?.directives??[]),...(ormCompile?.directives??[]),...(eventCompile?.directives??[])].filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256);
 			const generatedValid=!ormCompile?.directives.some(x=>x.source_id===test.id)||((ormCompile.inputs?.length??0)>=3&&[...ormCompile.generated,...ormCompile.inputs].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
-			const valid=generatedValid&&directives.length===test.type_error_directives.length&&directives.every(x=>x.status==="passed"&&[x.positive,x.negative].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
-			test.type_directives_verification={status:valid?"passed":"blocked",evidence:["parity/runs/compile-fixtures.json",...(ormCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/orm-compile-fixtures.json"]:[])]};
+			const eventValid=!eventCompile?.directives.some(x=>x.source_id===test.id)||((eventCompile.inputs?.length??0)>=3&&eventCompile.inputs.every(f=>exists(f.file)&&fileHash(f.file)===f.sha256)&&directives.every(x=>x.build_positive?.exit_code===0&&x.execute_positive?.exit_code===0&&Number.isInteger(x.build_negative?.exit_code)&&x.build_negative.exit_code>0&&/callbacks\[0\]\.ABIItem undefined/.test(x.build_negative?.stderr??"")));
+			const valid=generatedValid&&eventValid&&directives.length===test.type_error_directives.length&&directives.every(x=>x.status==="passed"&&[x.positive,x.negative].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
+			test.type_directives_verification={status:valid?"passed":"blocked",evidence:["parity/runs/compile-fixtures.json",...(ormCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/orm-compile-fixtures.json"]:[]),...(eventCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/event-compile-fixtures.json"]:[])]};
 			if(!valid){status="skip";test.blockers.push("Source type-error directive requires a verified native compile-failure fixture.");}
 		}
 	}
@@ -263,6 +274,7 @@ const summary = {
 	native_execution_schedule: executions.every(Boolean) ? Object.fromEntries(executions.map((x,i)=>[i===0?"go":"race",{evidence:executionPaths[i],complete:x.complete,success:x.success,policy:x.policy,packages:x.packages.length,top_level_functions:x.packages.reduce((n,p)=>n+p.listed_functions.length,0),batches:x.packages.reduce((n,p)=>n+p.batches.length,0)}])) : null,
 	type_fixtures: compile?.summary ?? null,
 	orm_type_fixtures: ormCompile?.summary ?? null,
+	event_type_fixtures: eventCompile?.summary ?? null,
 	type_scope: {
 		dedicated_source_records: ledger.summary.type_records,
 		dedicated_retained_sdk_passed: ledger.tests.filter(x=>x.kind==="type"&&x.mapping?.target_kind==="retained_sdk"&&x.pass_status==="passed").length,

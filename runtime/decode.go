@@ -22,19 +22,20 @@ func projectionDefaults(input, defaults protocol.Object) protocol.Object {
 	return result
 }
 
-func normalizedContractLog(block Block, log Log, transaction, receipt map[string]any, cursor checkpoint.Checkpoint) (*protocol.RawEvent, error) {
-	object := func(value any) (protocol.Object, error) {
-		data, err := json.Marshal(value)
-		if err != nil {
-			return nil, err
-		}
-		var result protocol.Object
-		decoder := json.NewDecoder(bytes.NewReader(data))
-		decoder.UseNumber()
-		err = decoder.Decode(&result)
-		return result, err
+func projectionObject(value any) (protocol.Object, error) {
+	data, err := json.Marshal(value)
+	if err != nil {
+		return nil, err
 	}
-	rawBlock, err := object(block)
+	var result protocol.Object
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.UseNumber()
+	err = decoder.Decode(&result)
+	return result, err
+}
+
+func normalizedContractLog(block Block, log Log, transaction, receipt map[string]any, cursor checkpoint.Checkpoint) (*protocol.RawEvent, error) {
+	rawBlock, err := projectionObject(block)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +49,7 @@ func normalizedContractLog(block Block, log Log, transaction, receipt map[string
 	if log.BlockNumber == "" {
 		log.BlockNumber = block.Number
 	}
-	rawLog, err := object(log)
+	rawLog, err := projectionObject(log)
 	if err != nil {
 		return nil, err
 	}

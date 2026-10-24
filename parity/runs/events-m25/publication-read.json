@@ -1,0 +1,48 @@
+{
+  "checked_utc": "2026-10-24T12:13:55.769Z",
+  "mode": "read_only",
+  "connected_account": {
+    "login": "ysh0566",
+    "id": "19503475"
+  },
+  "target": {
+    "repository": "ysh0566/ponder-go",
+    "id": "1431001484",
+    "owner": "ysh0566",
+    "visibility": "private",
+    "permissions": {
+      "admin": true,
+      "maintain": true,
+      "pull": true,
+      "push": true,
+      "triage": true
+    }
+  },
+  "remote_main": "9180e4f915f3e3fdce27bcaf5a4e4a7c7be8da1a",
+  "prior_transport_and_exact_commit_upload_check": "parity/runs/rpc-actions-m24/publication-check.json",
+  "remote_mutations": [],
+  "new_credentials_or_permissions": false,
+  "mac_operations": false,
+  "latest_auth_recheck_utc": "2026-10-24T12:16:12.364174+00:00",
+  "git_configuration_evidence": "parity/runs/events-m25/publication-auth-recheck.json",
+  "ssh_evidence": "parity/runs/events-m25/publication-ssh-recheck.json",
+  "status": "blocked_existing_transport_still_has_no_target_repository_access",
+  "ssh_login": "whyareulaughing",
+  "ssh_target_read_exit": 128,
+  "ssh_target_error": "Repository not found",
+  "unchanged_credentials_not_retried": true,
+  "m23_published": false,
+  "m24_published": false,
+  "verified_bundle": {
+    "path": "/root/ponder-go/.cloud-bootstrap/ponder-go-M24.bundle",
+    "sha256": "d2b37cd36b51442e9cbcc0aac16fd8277ff76aca2138419f122736b58f102b51",
+    "includes_m23_m24_original_commits_only": true,
+    "prerequisite": "9180e4f915f3e3fdce27bcaf5a4e4a7c7be8da1a"
+  },
+  "minimal_user_steps": [
+    "In an existing non-Mac Git environment that already has access to ysh0566/ponder-go, transfer only the verified M24 bundle; no credential/key transfer or permission expansion.",
+    "Verify bundle SHA256 and run git bundle verify <bundle>; git fetch <bundle> refs/heads/main; require FETCH_HEAD=4d654d598375ce75c4e448051443672326bba8c8.",
+    "Read remote main and require9180e4f915f3e3fdce27bcaf5a4e4a7c7be8da1a, otherwise review the changed remote state before writing.",
+    "Use ordinary git push <target> 3e208c1b35beaa87f936a958391ca431df80c757:refs/heads/main, verify M23 SHA/tree/author/committer, then ordinary git push <target> 4d654d598375ce75c4e448051443672326bba8c8:refs/heads/main and verify M24 SHA/tree/identities. No force, rebase, cherry-pick or replacement commit."
+  ]
+}
