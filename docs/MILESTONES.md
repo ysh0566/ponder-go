@@ -137,3 +137,7 @@ RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋check
 ## M29：生产配置类型约束和生成引用
 
 新增4精确配置原例/7断言/9原生类型义务，累计364/905，541未实现；完整Go/race各1865，PG204/PGlite201，0fail/skip。21包141函数50批次。原config39active全部映射，原skip1保留。实际构造/配置消费/索引消费结构和bounds约束、实际chains/ABI生成的闭合引用均有正编译/原版Anvil实际执行/负编译；12真实集成+1nil回归无source credit。原短字节0x正向控制保持其剩余runtime错误；失败与输入不变证明保留。见TYPED_SOURCE_CONFIGURATION.md和batch-28。完整目标继续。
+
+## M30：SQL原例、源码缓存与ORM可见性
+
+新增14精确原例/19断言/38调用，原完整文件14通过，含8实际Drizzle SQL和并发校验；累计378/905，527未实现。Go/race各1948、PG206/PGlite203，0fail/skip，21包146函数50批次。源码LRU/fullSHA/UTF16/错误/readonly接真实ORM，旧双后端DB2/ORM1在同输入下修复为ORM2/update3/journal3；61向量+cache4+HTTP2+transaction2补充零credit。失败与输入不变证据保留。见SQL_SOURCE_HELPERS.md与batch-29。完整目标继续。

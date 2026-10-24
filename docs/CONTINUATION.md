@@ -4,6 +4,20 @@
 
 
 
+## 当前执行入口：M30已验证，完整目标继续
+
+正式batch-29.json/batch-29-evidence/、sql-m30/full-verify-02退出0。Go/race各1948，0fail/skip，PG206/PGlite203；21包146函数，每模式50不重复批次，默认timeout保留。985/82761e1cc11689adcba96e49c7e40dadac8bb88b42b076ca7c8dd000987d039a原生输入在Go前准备并贯穿normal/race前后及最终汇总一致。累计378/905=374Go+4SDK，全部映射原版oracle通过；527未实现，静态905不是动态穷尽证明。
+
+新增SQL14原例/19断言/38调用，8个真实Drizzle SQL输入和并发调用保留；完整原文件pristine通过与call-through采集分开。两个完整SHA碰撞断言、源双LRU/缓存错误/有序可变集合身份/UTF16 cap/PG16.1和公开Error(object)语义已核实。真正source readonly遍历接入Writer.SQL，双后端同输入旧DB2/ORM1红灯->ORM2/后续更新3/journal3；原子业务/journal边界保持。
+
+新native增量83=原例14+源码向量61+cache4+HTTP2+真实SQL缓存回归2，补充不加sourcecredit。最初HTTP自有测试误用Go客户端仅状态码错误观察正文，保留失败/旧测试快照；原SQL/期待不变，直接观察实际HTTP正文后通过。保留首60向量与生成器快照、实际旧代码978输入重建证明；M29冻结977快照仍可复核。Go只读fixture，准备阶段生成并在native前记录快照。
+
+首轮full01 normal1948通过、race1947通过/1原生250ms租约失败，81份快照保留；同输入单例5次/原批次2次通过后，未改代码/参数/断言重新完整执行full02。根因未确定，不能把复查当修复证明，不能拼接轮次验收。
+
+M30普通提交必须基于实际发布M29 6cca7170dcd6ff29d114b5af7b2d5d9aea1caf3e，作者/提交者ysh0566；实际发布按外部m30-publication.json，不用本地commit/bundle推断远端。官方CLI默认repo/read:org/gist及任务认证持久化已明确授权，不再问，不读/输出token、不改全局helper、不force/改写历史、不操作Mac/业务repo/DB、不开PR/部署。
+
+继续完整原生类型/ABI/transport/context/include、负数和历史调度、多链/实时校验重连、查询/GraphQL/API/CLI/dev/templates/SDK/simulation及527静态记录。sourceNode静态联合、完整TS/JSSet语义不由这批证明。显式undefined indexed topic差异已在外部config-next/topic-audit实际复现，仍待修复/接真实运行时。任务未完成，继续推进。
+
 ## 当前执行入口：M29已验证，完整目标继续
 
 正式batch-28.json/batch-28-evidence/、config-types-m29/full-verify-01退出0。Go/race各1865、0fail/skip，PG204/PGlite201；21包141函数，每模式50不重复批次，默认Go/source timeout保留。977/12b021ae80a8fc75e9c90a9860e082153b6ec7328b4b5199c86d42e135f0a5c0输入快照在native Go开始前记录，贯穿normal/race前后与汇总相同。累计364/905=360Go+4SDK，所有映射原版oracle通过；541未实现，静态905不是动态穷尽证明。

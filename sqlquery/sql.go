@@ -4,8 +4,10 @@ package sqlquery
 import (
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	pgquery "github.com/pganalyze/pg_query_go/v5"
+	"github.com/pganalyze/pg_query_go/v5/parser"
 )
 
 //go:embed rules.json
@@ -36,11 +38,24 @@ func contains(xs []string, s string) bool {
 	return false
 }
 func Parse(sql string) (map[string]any, error) {
-	if len(sql) > 5000 {
+	if sourceStringLength(sql) > 5000 {
 		return nil, fmt.Errorf("Invalid query")
 	}
-	return ParseStatement(sql)
+	tree, err := ParseStatement(sql)
+	var syntax *parser.Error
+	if errors.As(err, &syntax) {
+		return nil, &SourceParseError{Cause: err}
+	}
+	return tree, err
 }
+
+// SourceParseError preserves the actual source helper's Error(object) message
+// while retaining the native PostgreSQL diagnostic as an inspectable cause.
+// ParseStatement continues to return the detailed trusted-indexing error.
+type SourceParseError struct{ Cause error }
+
+func (e *SourceParseError) Error() string { return "[object Object]" }
+func (e *SourceParseError) Unwrap() error { return e.Cause }
 
 // ParseStatement parses trusted indexing SQL without the public HTTP size cap.
 func ParseStatement(sql string) (map[string]any, error) {
@@ -60,22 +75,34 @@ func ParseStatement(sql string) (map[string]any, error) {
 	if len(tree.Stmts) > 1 {
 		return nil, fmt.Errorf("Multiple statements not supported")
 	}
+	if tree.Stmts[0].Stmt == nil {
+		return nil, fmt.Errorf("Invalid query")
+	}
 	return tree.Stmts[0].Stmt, nil
 }
-func walk(node map[string]any, validate bool, visit func(string, map[string]any)) error {
+
+type walkMode uint8
+
+const (
+	findRelations walkMode = iota
+	validateAllowable
+	readonlyAllowable
+)
+
+func walk(node map[string]any, mode walkMode, visit func(string, map[string]any)) error {
 	for kind, value := range node {
 		body, _ := value.(map[string]any)
 		if body == nil {
 			body = map[string]any{}
 		}
 		allowed := rules.Find
-		if validate {
+		if mode != findRelations {
 			allowed = rules.Allow
 		}
 		if !contains(allowed, kind) {
 			return fmt.Errorf("%s not supported", kind)
 		}
-		if validate {
+		if mode == validateAllowable {
 			switch kind {
 			case "RangeVar":
 				if body["schemaname"] != nil {
@@ -131,7 +158,7 @@ func walk(node map[string]any, validate bool, visit func(string, map[string]any)
 				if f.Wrap != "" {
 					m = map[string]any{f.Wrap: m}
 				}
-				if e := walk(m, validate, visit); e != nil {
+				if e := walk(m, mode, visit); e != nil {
 					return e
 				}
 			}
@@ -139,36 +166,47 @@ func walk(node map[string]any, validate bool, visit func(string, map[string]any)
 	}
 	return nil
 }
-func Validate(sql string) error {
+func Validate(sql string) error { return defaultValidator.Validate(sql) }
+
+// IsReadonly checks the source AST allow-list without the public function,
+// schema and recursion restrictions. It is distinct from Validate.
+func IsReadonly(sql string) bool {
 	tree, e := Parse(sql)
-	if e != nil {
-		return e
-	}
-	return walk(tree, true, nil)
+	return e == nil && walk(tree, readonlyAllowable, nil) == nil
 }
-func Relations(sql string) ([]string, error) {
-	tree, e := Parse(sql)
-	if e != nil {
-		return nil, e
-	}
-	out := []string{}
-	e = walk(tree, false, func(kind string, node map[string]any) {
-		if kind == "RangeVar" {
-			name, _ := node["relname"].(string)
-			if name != "" && !contains(out, name) {
-				out = append(out, name)
-			}
+
+func sourceStringLength(s string) int {
+	length := 0
+	for _, r := range s {
+		length++
+		if r > 0xffff {
+			length++
 		}
-	})
-	return out, e
+	}
+	return length
 }
+
+// Relations returns a snapshot of the cached ordered relation set.
+func Relations(sql string) ([]string, error) {
+	set, err := GetSQLQueryRelations(sql)
+	if err != nil {
+		return nil, err
+	}
+	return set.Values(), nil
+}
+
+// GetSQLQueryRelations retains the source cache's set identity.
+func GetSQLQueryRelations(sql string) (*RelationSet, error) {
+	return defaultValidator.Relations(sql)
+}
+
 func CTEs(sql string) ([]string, error) {
 	tree, e := Parse(sql)
 	if e != nil {
 		return nil, e
 	}
 	out := []string{}
-	e = walk(tree, false, func(kind string, node map[string]any) {
+	e = walk(tree, findRelations, func(kind string, node map[string]any) {
 		if kind == "CommonTableExpr" {
 			name, _ := node["ctename"].(string)
 			out = append(out, name)

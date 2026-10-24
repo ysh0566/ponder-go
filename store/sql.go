@@ -32,24 +32,7 @@ func (w *Writer) SQL(ctx context.Context, query string, args ...any) (Result, er
 		return Result{}, &RawSQLError{e}
 	}
 	if orm := w.indexingSession(); orm != nil {
-		readonly := true
-		var inspect func(any)
-		inspect = func(value any) {
-			switch n := value.(type) {
-			case map[string]any:
-				for kind, child := range n {
-					if kind == "InsertStmt" || kind == "UpdateStmt" || kind == "DeleteStmt" || kind == "lockingClause" {
-						readonly = false
-					}
-					inspect(child)
-				}
-			case []any:
-				for _, child := range n {
-					inspect(child)
-				}
-			}
-		}
-		inspect(tree)
+		readonly := sqlquery.IsReadonly(query)
 		if !readonly {
 			if e = orm.Cache.Flush(ctx); e != nil {
 				return Result{}, e
