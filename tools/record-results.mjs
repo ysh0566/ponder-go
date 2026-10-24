@@ -48,8 +48,20 @@ const compile = exists("parity/runs/compile-fixtures.json") ? read("parity/runs/
 const ormCompile = exists("parity/runs/orm-compile-fixtures.json") ? read("parity/runs/orm-compile-fixtures.json") : null;
 const eventCompile = exists("parity/runs/event-compile-fixtures.json") ? read("parity/runs/event-compile-fixtures.json") : null;
 const bloomCompile = exists("parity/runs/bloom-compile-fixtures.json") ? read("parity/runs/bloom-compile-fixtures.json") : null;
+const configCompile = exists("parity/runs/config-live-verification.json") ? read("parity/runs/config-live-verification.json") : null;
 const parameterTypes = exists("parity/runs/parameters-typecheck.json") ? read("parity/runs/parameters-typecheck.json") : null;
 const fileHash = file => crypto.createHash("sha256").update(fs.readFileSync(path.join(root,file))).digest("hex");
+
+if (configCompile) {
+ if(configCompile.executions.length!==2||configCompile.executions.some(x=>!x.complete||![x.native,x.capture,x.original,x.compile,...x.source_context].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256))||!configCompile.inputs.every(f=>exists(f.file)&&fileHash(f.file)===f.sha256))throw Error("Incomplete or stale live config/native proof");
+}
+
+const preparedNative=exists("parity/runs/prepared-native-inputs.json")?read("parity/runs/prepared-native-inputs.json"):null;
+if(executions.every(Boolean)) {
+ if(!preparedNative||executions.some(x=>x.source_fingerprint.sha256!==preparedNative.fingerprint.sha256)||Date.parse(preparedNative.recorded_utc)>Date.parse(executions[0].started_utc)||!preparedNative.files.every(f=>exists(f.file)&&fileHash(f.file)===f.sha256)||fileHash(preparedNative.tool.file)!==preparedNative.tool.sha256)throw Error("Prepared native input snapshot must precede execution and remain unchanged");
+}
+const configOriginal=exists("parity/runs/config-oracle.json")?read("parity/runs/config-oracle.json"):null;
+if(configOriginal&&(!configOriginal.complete||!configOriginal.success||![configOriginal.raw_oracle,...configOriginal.source_context].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256)))throw Error("Pristine config oracle context changed");
 for (const fixtureFile of ["testdata/runtime/captured-original-events.json", "testdata/runtime/captured-original-filters.json", "testdata/bloom/captured-original-blooms.json"]) {
 	if (!exists(fixtureFile)) continue;
 	const fixture = read(fixtureFile), proof = fixture.capture_proof;
@@ -125,6 +137,16 @@ for (const test of ledger.tests) {
 			test.blockers = test.blockers.filter(x => x !== test.mapping.oracle_blocker.reason);
 		}
 	}
+
+ if (test.source_file === "packages/core/src/build/config.test.ts" && configOriginal) {
+  const title=test.title.includes("%s")?test.title.replace("%s",test.parameter?.$special??String(test.parameter)):test.title;
+  const original=read(configOriginal.raw_oracle.file).testResults.flatMap(f=>f.assertionResults).find(t=>t.title===title);
+  if(original)test.oracle={status:original.status,evidence:"parity/runs/config-oracle.json",mode:"complete_unmodified_original_file_with_original_setup",full_original:true};
+  if (configCompile && test.source_state==="active") {
+   test.runtime_validation={status:"passed",evidence:"parity/runs/config-live-verification.json",meaning:"Actual native runtime construction checked in both complete Go modes; source port/type completion remains separate"};
+   if (!test.mapping && test.type_error_directives.length) test.remaining_native_type_obligations=test.type_error_directives.length;
+  }
+ }
 	if (test.source_file.endsWith("/decodeAbiParameters.test.ts") && parameterTypes?.source_sha256 === test.source_sha256)
 		test.oracle_types = {status: parameterTypes.exit_code === 0 ? "passed" : "failed", evidence:"parity/runs/parameters-typecheck.json"};
 	if (test.source_file.endsWith("/decodeEventLog.test.ts") && parameterTypes?.event_source_sha256 === test.source_sha256)
@@ -178,12 +200,13 @@ for (const test of ledger.tests) {
 			if (!valid) {status="skip";test.blockers.push("Native runtime alone is insufficient: inline type compilation/typed output evidence is incomplete.");}
 		}
 		if (test.type_error_directives.length) {
-			const directives=[...(compile?.directives??[]),...(ormCompile?.directives??[]),...(eventCompile?.directives??[]),...(bloomCompile?.directives??[])].filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256);
+			const directives=[...(compile?.directives??[]),...(ormCompile?.directives??[]),...(eventCompile?.directives??[]),...(bloomCompile?.directives??[]),...(configCompile?.directives??[])].filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256);
 			const generatedValid=!ormCompile?.directives.some(x=>x.source_id===test.id)||((ormCompile.inputs?.length??0)>=3&&[...ormCompile.generated,...ormCompile.inputs].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
 			const eventValid=!eventCompile?.directives.some(x=>x.source_id===test.id)||((eventCompile.inputs?.length??0)>=3&&eventCompile.inputs.every(f=>exists(f.file)&&fileHash(f.file)===f.sha256)&&directives.every(x=>x.build_positive?.exit_code===0&&x.execute_positive?.exit_code===0&&Number.isInteger(x.build_negative?.exit_code)&&x.build_negative.exit_code>0&&/callbacks\[0\]\.ABIItem undefined/.test(x.build_negative?.stderr??"")));
 			const bloomValid=!bloomCompile?.directives.some(x=>x.source_id===test.id)||((bloomCompile.inputs?.length??0)>=5&&bloomCompile.inputs.every(f=>exists(f.file)&&fileHash(f.file)===f.sha256)&&directives.every(x=>x.build_positive?.exit_code===0&&x.execute_positive?.exit_code===0&&Number.isInteger(x.build_negative?.exit_code)&&x.build_negative.exit_code>0&&/cannot use filter\.Undefined.*as filter\.HexTopic/.test(x.build_negative?.stderr??"")));
-			const valid=generatedValid&&eventValid&&bloomValid&&directives.length===test.type_error_directives.length&&directives.every(x=>x.status==="passed"&&[x.positive,x.negative].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
-			test.type_directives_verification={status:valid?"passed":"blocked",evidence:["parity/runs/compile-fixtures.json",...(ormCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/orm-compile-fixtures.json"]:[]),...(eventCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/event-compile-fixtures.json"]:[]),...(bloomCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/bloom-compile-fixtures.json"]:[])]};
+			const configValid=!configCompile?.directives.some(x=>x.source_id===test.id)||(configCompile.executions.length===2&&directives.every(x=>x.build_positive?.exit_code===0&&x.execute_positive?.exit_code===0&&x.build_negative?.exit_code>0&&/Filter\.Interval undefined.*config\.SourceFilter has no field or method Interval/.test(x.build_negative.stderr)));
+			const valid=generatedValid&&eventValid&&bloomValid&&configValid&&directives.length===test.type_error_directives.length&&directives.every(x=>x.status==="passed"&&[x.positive,x.negative].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
+			test.type_directives_verification={status:valid?"passed":"blocked",evidence:["parity/runs/compile-fixtures.json",...(ormCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/orm-compile-fixtures.json"]:[]),...(eventCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/event-compile-fixtures.json"]:[]),...(bloomCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/bloom-compile-fixtures.json"]:[]),...(configCompile?.directives.some(x=>x.source_id===test.id)?["parity/runs/config-live-verification.json"]:[])]};
 			if(!valid){status="skip";test.blockers.push("Source type-error directive requires a verified native compile-failure fixture.");}
 		}
 	}
@@ -279,6 +302,7 @@ const summary = {
 	orm_type_fixtures: ormCompile?.summary ?? null,
 	event_type_fixtures: eventCompile?.summary ?? null,
  bloom_type_fixtures: bloomCompile?.summary ?? null,
+ config_builder: configCompile?.summary ?? null,
  bloom_differential: exists("testdata/bloom/differential.json") ? (()=>{const fixture=read("testdata/bloom/differential.json");if(fixture.sources.some(x=>fileHash("../ponder-upstream/"+x.file)!==x.sha256))throw Error("Bloom source changed");const select=xs=>xs.filter(x=>x.Package==="ponder.local/ponder-go/bloom"&&x.Test.startsWith("TestBloomDifferential/"));return{counting:fixture.counting,vectors:fixture.cases.length,source_expected_errors:fixture.cases.filter(x=>x.error).length,go:count(select(native)),race:count(select(nativeRace)),evidence:"testdata/bloom/differential.json"};})():null,
 	type_scope: {
 		dedicated_source_records: ledger.summary.type_records,

@@ -1,0 +1,35 @@
+// Validate actual executions in both complete Go logs; never substitute a
+// previously captured Go result for running the native source builder.
+import fs from "node:fs";
+import path from "node:path";
+import crypto from "node:crypto";
+const root=path.resolve(import.meta.dirname,".."),read=file=>JSON.parse(fs.readFileSync(path.resolve(root,file),"utf8"));
+const hash=file=>({file:path.relative(root,path.resolve(root,file)),sha256:crypto.createHash("sha256").update(fs.readFileSync(path.resolve(root,file))).digest("hex")});
+const validHash=entry=>fs.existsSync(path.resolve(root,entry.file))&&hash(entry.file).sha256===entry.sha256;
+const ledger=read("parity/test-ledger.json"),selected=ledger.tests.filter(t=>t.source_file==="packages/core/src/build/config.test.ts");
+if(selected.length!==40)throw Error("Expected 40 complete expanded source records");
+const executions=[];
+for(const mode of ["go-test","go-race"]){
+ const lines=fs.readFileSync(path.join(root,`parity/runs/${mode}.jsonl`),"utf8").trim().split("\n").map(JSON.parse);
+ const location=lines.filter(x=>x.Test==="TestUpstreamConfigRuntime"&&x.Output?.includes("Live original/native evidence: "));
+ if(location.length!==1||!lines.some(x=>x.Test==="TestUpstreamConfigRuntime"&&x.Action==="pass"))throw Error("Missing actual successful complete native config execution: "+mode);
+ const directory=location[0].Output.split("Live original/native evidence: ")[1].trim();
+ if(!directory.startsWith(path.join(root,"parity/runs/config-m28/live-")))throw Error("Unexpected native evidence directory");
+ const file=path.join(directory,"native.json"),native=read(file),capture=read(path.join(directory,"calls.json")),original=read(path.join(directory,"original.json")),compile=read(path.join(directory,"block-filter-compile.json"));
+ if(native.cases.length!==39||capture.cases.length!==39||native.calls.length!==69||native.calls.some(c=>c.differences?.length))throw Error("Incomplete source calls or native differences: "+mode);
+ if(!original.success||original.numPassedTests!==39||original.numPendingTests!==1||original.numFailedTests!==0)throw Error("Incomplete unchanged source assertions");
+ if(!native.source_context?.length||!native.source_context.every(validHash)||!compile.inputs.every(validHash)||!validHash(compile.positive)||!validHash(compile.negative)||!compile.compile_passed)throw Error("Stale source or compiler context");
+ for(const c of capture.cases){const source=selected.find(t=>t.id===c.id);if(!source||source.source_sha256!==c.source_sha256||source.test_source!==c.test_source||JSON.stringify(source.assertions)!==JSON.stringify(c.assertions)||!c.calls.length)throw Error("Incomplete original declaration: "+c.id);}
+ const proofs=native.calls.filter(c=>c.type_proof);
+ if(proofs.length!==1||proofs[0].case_id!==compile.source_id||proofs[0].type_proof.passed!==true)throw Error("Missing actual public filter positive execution");
+ const output=JSON.parse(proofs[0].type_proof.positive_output);if(output.interval!==1||output.filter.fromBlock!==16370000||output.filter.toBlock!==16370020||output.callback!=="a:block")throw Error("Positive compiler fixture did not execute original materialized block input");
+ const rpcChecks=native.calls.reduce((n,c)=>n+(c.rpc_identity_checks??0),0),callbackChecks=native.calls.reduce((n,c)=>n+(c.callback_identity_checks??0),0);
+ if(!rpcChecks||!callbackChecks)throw Error("Actual client/callback identity checks missing");
+ executions.push({mode,complete:true,native:hash(file),capture:hash(path.join(directory,"calls.json")),original:hash(path.join(directory,"original.json")),compile:hash(path.join(directory,"block-filter-compile.json")),source_context:native.source_context,original_passed:39,original_pending:1,actual_native_calls:69,rpc_identity_checks:rpcChecks,callback_identity_checks:callbackChecks,positive_execution:{source_id:compile.source_id,exit_code:0,input:proofs[0].type_proof.input,output},compile_report:compile});
+}
+const first=executions[0].compile_report;
+const directive={source_id:first.source_id,source_sha256:first.source_sha256,source_error_directive:first.source_error_directive,status:"passed",positive:first.positive,negative:first.negative,build_positive:first.build_positive,build_negative:first.build_negative,execute_positive:{exit_code:0,method:"Original materialized config input on the actual original Anvil during both complete native Go runs",normal:executions[0].positive_execution,race:executions[1].positive_execution}};
+const pristine=read("parity/runs/config-oracle.json");if(!pristine.complete||!pristine.success||!validHash(pristine.raw_oracle)||!pristine.source_context.every(validHash))throw Error("Pristine original config acceptance missing or stale");
+const report={baseline:ledger.baseline,counting:"39 active declarations executed on both sides, 1 original skip retained. Only35 source declarations fully mapped; four declarations retain9 unresolved native type obligations. Supplementary runtime/backend cases add zero source credit.",summary:{source_cases:40,active_runtime_cases:39,original_skip:1,source_assertion_expressions:94,active_assertion_expressions:92,fully_mapped:35,mapped_assertion_expressions:85,source_error_directives:10,source_error_directives_passed:1,source_error_directives_remaining:9},executions,pristine:hash("parity/runs/config-oracle.json"),directives:[directive],inputs:["config/source_native.go","config/source_upstream_test.go","runtime/source.go","tools/config-live-results.mjs","tools/config-compile-fixtures.mjs"].map(hash)};
+fs.writeFileSync(path.join(root,"parity/runs/config-live-verification.json"),JSON.stringify(report,null,2)+"\n");
+console.log(report.summary);

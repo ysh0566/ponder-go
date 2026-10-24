@@ -1,0 +1,130 @@
+{
+  "counting": "Two original topic0=undefined errors. Public LogFilter.Topic0 accepts single HexTopic and is used by actual runtime bloom precomputation. Go omitted/zero-value fields and string conversion, plus dynamic address/topic/include fields, remain broader than TypeScript.",
+  "directives": [
+    {
+      "source_id": "2802c5310fdbf04c2fe6",
+      "source_sha256": "3bdf2cd3882bf9146299f21d0903c0e51624cc16cdd273bc87da7f2b7d6c9e29",
+      "source_error_directive": "// @ts-expect-error",
+      "status": "passed",
+      "positive": {
+        "file": "bloom/testdata/compile/2802c5310fdbf04c2fe6-positive.go",
+        "sha256": "b941d67fe793660ccd732798cc307551bc150e939d2c6992448f6b44ac01889e"
+      },
+      "negative": {
+        "file": "bloom/testdata/compile/2802c5310fdbf04c2fe6-negative.go.txt",
+        "sha256": "c2535713bf9045c14274146e9ee49be12f486cf2689d5c1ed30549aa73ff45e8"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/bloom-types/2802c5310fdbf04c2fe6-positive",
+          "bloom/testdata/compile/2802c5310fdbf04c2fe6-positive.go"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "execute_positive": {
+        "command": [
+          "/root/ponder-go/work/ponder-go/.parity-build/bloom-types/2802c5310fdbf04c2fe6-positive"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/bloom-types/2802c5310fdbf04c2fe6-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/bloom-types/2802c5310fdbf04c2fe6-negative.go"
+        ],
+        "exit_code": 1,
+        "error": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/bloom-types/2802c5310fdbf04c2fe6-negative.go:5:11: cannot use filter.Undefined (variable of struct type filter.undefinedValue) as filter.HexTopic value in assignment\n"
+      }
+    },
+    {
+      "source_id": "8dfc023b6099e3112ebb",
+      "source_sha256": "3bdf2cd3882bf9146299f21d0903c0e51624cc16cdd273bc87da7f2b7d6c9e29",
+      "source_error_directive": "// @ts-expect-error",
+      "status": "passed",
+      "positive": {
+        "file": "bloom/testdata/compile/8dfc023b6099e3112ebb-positive.go",
+        "sha256": "e29036ecd16ca0380d54d14e592e64eb204c19309e67134e09b1baf911d1141c"
+      },
+      "negative": {
+        "file": "bloom/testdata/compile/8dfc023b6099e3112ebb-negative.go.txt",
+        "sha256": "58d237f936406d5ae3fc3be4d3cfd9861861c6ca9ddd7e1ac6396a1780774332"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/bloom-types/8dfc023b6099e3112ebb-positive",
+          "bloom/testdata/compile/8dfc023b6099e3112ebb-positive.go"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "execute_positive": {
+        "command": [
+          "/root/ponder-go/work/ponder-go/.parity-build/bloom-types/8dfc023b6099e3112ebb-positive"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/bloom-types/8dfc023b6099e3112ebb-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/bloom-types/8dfc023b6099e3112ebb-negative.go"
+        ],
+        "exit_code": 1,
+        "error": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/bloom-types/8dfc023b6099e3112ebb-negative.go:5:11: cannot use filter.Undefined (variable of struct type filter.undefinedValue) as filter.HexTopic value in assignment\n"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "filter/log_filter.go",
+      "sha256": "3b8a8377dcfde2a1ee2b74c56a4eba51c5373fdd35d568ee648c0dc43420f698"
+    },
+    {
+      "file": "bloom/bloom.go",
+      "sha256": "511094f1a011bdcb0408ae78ebd3bde35e4c821d3aea5df51f0a2c39463882b4"
+    },
+    {
+      "file": "runtime/bloom.go",
+      "sha256": "42888853ab161e5b1b0acbc379b1ba01a2f0f42aa5b309973081e2b7586afca2"
+    },
+    {
+      "file": "tools/bloom-compile-fixtures.mjs",
+      "sha256": "f5f9297685a1c425f1929143de9b1a2f16acef1ace7928bc975dd45851886524"
+    },
+    {
+      "file": "testdata/bloom/captured-original-blooms.json",
+      "sha256": "64a81c584816deac8814720907026819e24a041bb69949c71ca764b97a2ff87c"
+    }
+  ],
+  "summary": {
+    "source_error_directives": 2,
+    "source_error_directives_passed": 2,
+    "failed": 0
+  }
+}

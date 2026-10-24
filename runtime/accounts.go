@@ -16,84 +16,92 @@ func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]p
 	needsTrace := false
 
 	childrenByFactory := map[string][]filter.ChildAddress{}
-	for _, source := range e.Config.Contracts {
-		if !source.IncludeCallTraces || number < source.StartBlock || source.EndBlock != nil && number > *source.EndBlock {
-			continue
+	if e.Config.SourcePlan != nil {
+		var err error
+		callbacks, needsTrace, childrenByFactory, err = e.sourceAccountCallbacks(ctx, number)
+		if err != nil {
+			return nil, err
 		}
-		a := e.abis[source.Name]
-		functions := a.FunctionEntries()
-		counts := map[string]int{}
-		for _, item := range functions {
-			counts[item.Name]++
-		}
-		registered := map[string]bool{}
-		for _, item := range functions {
-			selector := abi.FunctionSelector(item)
-			name := source.Name + "." + item.SafeName(counts[item.Name] > 1)
-			if e.Handlers[name] == nil || registered[name] {
+	} else {
+		for _, source := range e.Config.Contracts {
+			if !source.IncludeCallTraces || number < source.StartBlock || source.EndBlock != nil && number > *source.EndBlock {
 				continue
 			}
-			registered[name] = true
-			address := nativeContractFilter(source, selector)["address"]
-			if factory, ok := e.factories[source.Name]; ok {
-				address = nativeFactory(factory)
-				children, err := e.Store.FactoryChildren(ctx, factory.ID, e.chain.ID, number)
-				if err != nil {
-					return nil, err
-				}
-				entries := []filter.ChildAddress{}
-				for child, birth := range children {
-					entries = append(entries, filter.ChildAddress{Address: child, Block: birth})
-				}
-				childrenByFactory[factory.ID] = entries
+			a := e.abis[source.Name]
+			functions := a.FunctionEntries()
+			counts := map[string]int{}
+			for _, item := range functions {
+				counts[item.Name]++
 			}
-			f := protocol.Object{"type": "trace", "chainId": e.chain.ID, "sourceId": source.Name, "fromAddress": filter.Undefined, "toAddress": address, "callType": "CALL", "functionSelector": selector, "fromBlock": source.StartBlock, "toBlock": filter.Undefined, "hasTransactionReceipt": source.IncludeTransactionReceipts}
-			if source.EndBlock != nil {
-				f["toBlock"] = *source.EndBlock
-			}
-			callbacks = append(callbacks, protocol.ContractCallback[abi.Function]{CallbackBase: protocol.CallbackBase{Name: name, Chain: protocol.Object{"id": e.chain.ID, "name": e.chain.Name}, Filter: f}, ABIItem: item}.CallbackObject())
-			needsTrace = true
-		}
-	}
-	for _, source := range e.Config.Accounts {
-		if number < source.StartBlock || source.EndBlock != nil && number > *source.EndBlock {
-			continue
-		}
-		var address any = filter.Undefined
-		if source.Address != nil {
-			xs := []any{}
-			for _, a := range source.Address {
-				xs = append(xs, strings.ToLower(a))
-			}
-			address = xs
-		}
-		if f, ok := e.factories[source.Name]; ok {
-			address = nativeFactory(f)
-			if _, loaded := childrenByFactory[f.ID]; !loaded {
-				children, err := e.Store.FactoryChildren(ctx, f.ID, e.chain.ID, number)
-				if err != nil {
-					return nil, err
-				}
-				entries := []filter.ChildAddress{}
-				for child, birth := range children {
-					entries = append(entries, filter.ChildAddress{Address: child, Block: birth})
-				}
-				childrenByFactory[f.ID] = entries
-			}
-		}
-		for _, kind := range []string{"transaction", "transfer"} {
-			for _, direction := range []string{"from", "to"} {
-				name := source.Name + ":" + kind + ":" + direction
-				if e.Handlers[name] == nil {
+			registered := map[string]bool{}
+			for _, item := range functions {
+				selector := abi.FunctionSelector(item)
+				name := source.Name + "." + item.SafeName(counts[item.Name] > 1)
+				if e.Handlers[name] == nil || registered[name] {
 					continue
 				}
-				f := protocol.Object{"type": kind, "chainId": e.chain.ID, "fromAddress": filter.Undefined, "toAddress": filter.Undefined, "fromBlock": source.StartBlock, "toBlock": filter.Undefined, "hasTransactionReceipt": kind == "transaction"}
+				registered[name] = true
+				address := nativeContractFilter(source, selector)["address"]
+				if factory, ok := e.factories[source.Name]; ok {
+					address = nativeFactory(factory)
+					children, err := e.Store.FactoryChildren(ctx, factory.ID, e.chain.ID, number)
+					if err != nil {
+						return nil, err
+					}
+					entries := []filter.ChildAddress{}
+					for child, birth := range children {
+						entries = append(entries, filter.ChildAddress{Address: child, Block: birth})
+					}
+					childrenByFactory[factory.ID] = entries
+				}
+				f := protocol.Object{"type": "trace", "chainId": e.chain.ID, "sourceId": source.Name, "fromAddress": filter.Undefined, "toAddress": address, "callType": "CALL", "functionSelector": selector, "fromBlock": source.StartBlock, "toBlock": filter.Undefined, "hasTransactionReceipt": source.IncludeTransactionReceipts}
 				if source.EndBlock != nil {
 					f["toBlock"] = *source.EndBlock
 				}
-				f[direction+"Address"] = address
-				callbacks = append(callbacks, protocol.Object{"name": name, "type": "account", "filter": f})
-				needsTrace = needsTrace || kind == "transfer"
+				callbacks = append(callbacks, protocol.ContractCallback[abi.Function]{CallbackBase: protocol.CallbackBase{Name: name, Chain: protocol.Object{"id": e.chain.ID, "name": e.chain.Name}, Filter: f}, ABIItem: item}.CallbackObject())
+				needsTrace = true
+			}
+		}
+		for _, source := range e.Config.Accounts {
+			if number < source.StartBlock || source.EndBlock != nil && number > *source.EndBlock {
+				continue
+			}
+			var address any = filter.Undefined
+			if source.Address != nil {
+				xs := []any{}
+				for _, a := range source.Address {
+					xs = append(xs, strings.ToLower(a))
+				}
+				address = xs
+			}
+			if f, ok := e.factories[source.Name]; ok {
+				address = nativeFactory(f)
+				if _, loaded := childrenByFactory[f.ID]; !loaded {
+					children, err := e.Store.FactoryChildren(ctx, f.ID, e.chain.ID, number)
+					if err != nil {
+						return nil, err
+					}
+					entries := []filter.ChildAddress{}
+					for child, birth := range children {
+						entries = append(entries, filter.ChildAddress{Address: child, Block: birth})
+					}
+					childrenByFactory[f.ID] = entries
+				}
+			}
+			for _, kind := range []string{"transaction", "transfer"} {
+				for _, direction := range []string{"from", "to"} {
+					name := source.Name + ":" + kind + ":" + direction
+					if e.Handlers[name] == nil {
+						continue
+					}
+					f := protocol.Object{"type": kind, "chainId": e.chain.ID, "fromAddress": filter.Undefined, "toAddress": filter.Undefined, "fromBlock": source.StartBlock, "toBlock": filter.Undefined, "hasTransactionReceipt": kind == "transaction"}
+					if source.EndBlock != nil {
+						f["toBlock"] = *source.EndBlock
+					}
+					f[direction+"Address"] = address
+					callbacks = append(callbacks, protocol.Object{"name": name, "type": "account", "filter": f})
+					needsTrace = needsTrace || kind == "transfer"
+				}
 			}
 		}
 	}
@@ -195,6 +203,9 @@ func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]p
 			event.Trace = raw.Trace
 			event.Transfer = map[string]any{"from": raw.Trace["from"], "to": raw.Trace["to"], "value": raw.Trace["value"]}
 			event.Args = event.Transfer
+		}
+		if e.Config.SourcePlan != nil && callback["filter"].(map[string]any)["hasTransactionReceipt"] != true {
+			event.Receipt = nil
 		}
 		out = append(out, pending{cursor: cp, id: fmt.Sprintf("account:%d:%s:%s:%s", e.chain.ID, b.Hash, name, raw.Checkpoint), event: event, callback: callback})
 	}

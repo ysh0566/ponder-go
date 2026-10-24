@@ -1,0 +1,38 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+
+	"ponder.local/ponder-go/config"
+)
+
+func main() {
+	data, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		panic(err)
+	}
+	cfg, err := config.ParseSourceConfiguration(data)
+	if err != nil {
+		panic(err)
+	}
+	built, err := config.BuildSourceConfig(cfg, config.SourceBuildOptions{})
+	if err != nil {
+		panic(err)
+	}
+	indexing, err := config.BuildSourceIndexing(context.Background(), cfg, built, []config.SourceIndexingFunction{{Name: "a:block", Fn: func() {}}})
+	if err != nil {
+		panic(err)
+	}
+	callbacks := indexing.EventCallbacks()
+	narrowed := callbacks[0][0].Filter.(config.SourceBlockFilter)
+	interval := narrowed.Interval
+	if interval != 1 || narrowed.Value()["fromBlock"] != float64(16370000) || narrowed.Value()["toBlock"] != float64(16370020) {
+		panic("original block filter values changed")
+	}
+	output, _ := json.Marshal(map[string]any{"interval": interval, "filter": narrowed.Value(), "callback": callbacks[0][0].Name})
+	fmt.Println(string(output))
+}

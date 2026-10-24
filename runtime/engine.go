@@ -107,6 +107,9 @@ func New(c config.Config, s *store.Store, handlers map[string]Handler) (*Engine,
 	return NewWithOptions(c, s, handlers, Options{})
 }
 func NewWithOptions(c config.Config, s *store.Store, handlers map[string]Handler, options Options) (*Engine, error) {
+	if c.SourcePlan != nil && !c.SourcePlan.CacheRPCRequests {
+		options.DisableCache = true
+	}
 	if e := c.Validate(); e != nil {
 		return nil, e
 	}
@@ -161,11 +164,19 @@ func NewWithOptions(c config.Config, s *store.Store, handlers map[string]Handler
 		}
 		engine.factories[account.Name] = f
 	}
+	if c.SourcePlan != nil {
+		for name, factory := range c.SourcePlan.Factories {
+			engine.factories[name] = factory
+		}
+	}
 	encoded, _ := json.Marshal(c)
 	hash := sha256.Sum256(encoded)
 	engine.filter = fmt.Sprintf("runtime:%x", hash)
 	engine.Client = rpc.New(engine.chain.RPC...)
 	engine.Client.ChainID = engine.chain.ID
+	if c.SourcePlan != nil && c.SourcePlan.Client != nil {
+		engine.Client = c.SourcePlan.Client
+	}
 	if err := engine.compileBloomPlan(); err != nil {
 		return nil, err
 	}
@@ -390,6 +401,10 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 		if !e.contractLogsMayMatch(blockBloom, contract.Name) {
 			continue
 		}
+		callbacks, callbackErr := e.logCallbacks(contract)
+		if callbackErr != nil {
+			return callbackErr
+		}
 		compiled := nativeContractFilter(contract, "")
 		requestAddress := compiled["address"]
 		childEntries := []selection.ChildAddress{}
@@ -410,7 +425,7 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 			requestAddress = addresses
 			compiled["address"] = nativeFactory(factory)
 		}
-		query, needed := plannedBlockLogs(requestAddress, b.Hash)
+		query, needed := e.planSourceLogs(callbacks, requestAddress, b.Hash)
 		if !needed {
 			continue
 		}
@@ -426,20 +441,22 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 		if err = e.cacheLogs(ctx, logs); err != nil {
 			return err
 		}
-		a := e.abis[contract.Name]
 		for _, log := range logs {
 			if log.Removed || len(log.Topics) == 0 {
 				continue
 			}
-			for name, item := range a.Events {
-				compiled["topic0"] = item.ID.Hex()
+			for _, callback := range callbacks {
+				compiled = callback.filter
+				if factory, ok := e.factories[contract.Name]; ok {
+					compiled["address"] = nativeFactory(factory)
+				}
 				if !selection.IsLogFilterMatched(compiled, nativeLog(log, number)) {
 					continue
 				}
 				if _, dynamic := e.factories[contract.Name]; dynamic && !selection.IsAddressMatched(log.Address, float64(number), childEntries) {
 					continue
 				}
-				eventName := contract.Name + ":" + name
+				eventName := callback.name
 				if e.Handlers[eventName] == nil {
 					continue
 				}
@@ -478,16 +495,11 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 					}
 				}
 				copyLog := log
-				item, ok := a.EventItem(name)
-				if !ok {
-					return fmt.Errorf("missing original ABI event %s", eventName)
-				}
 				raw, err := normalizedContractLog(b, copyLog, transaction, receipt, cursor)
 				if err != nil {
 					return err
 				}
-				callback := protocol.ContractCallback[abi.Event]{CallbackBase: protocol.CallbackBase{Name: eventName, Chain: protocol.Object{"id": e.chain.ID, "name": e.chain.Name}, Filter: protocol.Object{"type": "log"}}, ABIItem: item}.CallbackObject()
-				events = append(events, pending{cursor: cursor, id: fmt.Sprintf("log:%d:%s:%s:%s", e.chain.ID, b.Hash, contract.Name, log.LogIndex), event: Event{Name: eventName, Block: b, Log: &copyLog, Transaction: transaction, Receipt: receipt, Normalized: raw}, callback: callback})
+				events = append(events, pending{cursor: cursor, id: fmt.Sprintf("log:%d:%s:%s:%s", e.chain.ID, b.Hash, contract.Name, log.LogIndex), event: Event{Name: eventName, Block: b, Log: &copyLog, Transaction: transaction, Receipt: receipt, Normalized: raw}, callback: callback.callback})
 			}
 		}
 	}

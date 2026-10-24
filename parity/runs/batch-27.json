@@ -1,0 +1,1430 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "Only exact source mappings count toward upstream parity. Native regression cases and generated differential vectors are separate evidence.",
+  "parity": {
+    "source_files": 104,
+    "test_declarations": 897,
+    "expanded_static_records": 905,
+    "unresolved_expansion_records": 0,
+    "assertion_expressions": 1905,
+    "type_records": 73,
+    "inline_type_assertions": 63,
+    "type_error_directives": 84,
+    "source_states": {
+      "active": 893,
+      "skip": 10,
+      "todo": 2,
+      "expected_failure": 0
+    },
+    "ported": 360,
+    "executed": 360,
+    "passed": 360,
+    "failed": 0,
+    "blocked": 0,
+    "unimplemented": 545,
+    "go_ports": 356,
+    "retained_sdk": 4,
+    "oracle_passed": 360,
+    "oracle_blocked": 0,
+    "go_passed": 356,
+    "sdk_passed": 4,
+    "go_and_original_oracle_passed": 356,
+    "target_and_original_oracle_passed": 360
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 360,
+    "unimplemented": 545,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 356,
+    "passed_with_required_type_checks": 356,
+    "original_oracle_also_passed": 356,
+    "original_oracle_blocked": 0
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "rpc_action_differential": {
+    "counting": "Supplementary vectors executed by unchanged pinned source functions; no original test record credit. Provider live-RPC tests remain separate.",
+    "vectors": 62,
+    "source_expected_errors": 13,
+    "go": {
+      "pass": 62,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 62,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/rpc/actions-differential.json"
+  },
+  "event_build_differential": {
+    "counting": "Supplemental vectors from actual pinned selected declarations; not original source test credit.",
+    "vectors": 135,
+    "source_expected_errors": 8,
+    "go": {
+      "pass": 135,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 135,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/runtime/event-build-differential.json"
+  },
+  "selected_source_oracle": {
+    "evidence": "parity/runs/selected-runtime-oracle.json",
+    "mode": "unchanged_selected_declarations_with_actual_source_dependencies",
+    "total": 4,
+    "passed": 4,
+    "success": true
+  },
+  "selected_existing_oracle": {
+    "evidence": "parity/runs/selected-mapped-oracle.json",
+    "mode": "unchanged_already_mapped_filter_genesis_split_declarations",
+    "total": 15,
+    "passed": 15,
+    "success": true
+  },
+  "filter_fragment_differential": {
+    "counting": "Synthetic differential vectors only; no source-test credit.",
+    "vectors": 867,
+    "source_expected_exceptions": 4,
+    "go": {
+      "pass": 867,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 867,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/runtime/filter-differential.json"
+  },
+  "original_oracle": {
+    "mapped_passed": 360,
+    "mapped_blocked": 0,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "full_original_backend_oracles": [
+    {
+      "backend": "postgres",
+      "evidence": "parity/runs/full-original-postgres-oracle.json",
+      "scope": "Eight original source files, not complete upstream acceptance or additional Go port credit",
+      "passed": 129,
+      "failed": 0,
+      "pending": 3,
+      "source_context_hashes_verified": true
+    },
+    {
+      "backend": "pglite",
+      "evidence": "parity/runs/full-original-pglite-oracle.json",
+      "scope": "Eight original source files, not complete upstream acceptance or additional Go port credit",
+      "passed": 129,
+      "failed": 0,
+      "pending": 3,
+      "source_context_hashes_verified": true
+    }
+  ],
+  "native_execution_schedule": {
+    "go": {
+      "evidence": "parity/runs/go-test-execution.json",
+      "complete": true,
+      "success": true,
+      "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
+      "packages": 20,
+      "top_level_functions": 138,
+      "batches": 48
+    },
+    "race": {
+      "evidence": "parity/runs/go-race-execution.json",
+      "complete": true,
+      "success": true,
+      "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
+      "packages": 20,
+      "top_level_functions": 138,
+      "batches": 48
+    }
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "orm_type_fixtures": {
+    "source_error_directives": 6,
+    "source_error_directives_passed": 6,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  },
+  "event_type_fixtures": {
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1,
+    "failed": 0
+  },
+  "bloom_type_fixtures": {
+    "source_error_directives": 2,
+    "source_error_directives_passed": 2,
+    "failed": 0
+  },
+  "config_builder": {
+    "source_cases": 40,
+    "active_runtime_cases": 39,
+    "original_skip": 1,
+    "source_assertion_expressions": 94,
+    "active_assertion_expressions": 92,
+    "fully_mapped": 35,
+    "mapped_assertion_expressions": 85,
+    "source_error_directives": 10,
+    "source_error_directives_passed": 1,
+    "source_error_directives_remaining": 9
+  },
+  "bloom_differential": {
+    "counting": "Supplementary actual-source vectors; zero exact source declaration credit. Explicit dynamic adapter cases do not claim valid typed topic0 inputs.",
+    "vectors": 497,
+    "source_expected_errors": 0,
+    "go": {
+      "pass": 7,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 7,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/bloom/differential.json"
+  },
+  "type_scope": {
+    "dedicated_source_records": 73,
+    "dedicated_retained_sdk_passed": 1,
+    "inline_assertions_discovered": 63,
+    "inline_assertions_native_compiled": 53,
+    "error_directives_discovered": 84,
+    "error_directives_native_verified": 11,
+    "error_directives_retained_sdk_verified": 1
+  },
+  "typed_abi_runtime": {
+    "file": "parity/runs/abi-typed-go.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0,
+    "counting": "Supplementary typed decoder execution; not additional source test records."
+  },
+  "typed_abi_race": {
+    "file": "parity/runs/abi-typed-race.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 198,
+        "pass": 198,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 198,
+        "pass": 198,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 195,
+        "pass": 195,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 195,
+        "pass": 195,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "simulation": {
+    "seed_space": "unbounded",
+    "status": "unimplemented",
+    "executed_seeds": 0
+  },
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 1852,
+    "pass": 1852,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 1852,
+    "pass": 1852,
+    "fail": 0,
+    "skip": 0
+  },
+  "foundation_oracle": {
+    "file": "parity/runs/foundation-oracle.json",
+    "total": 34,
+    "passed": 34,
+    "failed": 0
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 203,
+    "passed": 201,
+    "failed": 0
+  },
+  "client": {
+    "file": "parity/client-original.json",
+    "numTotalTests": 3,
+    "numPassedTests": 3,
+    "numFailedTests": 0
+  },
+  "react": true,
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.25.0 linux/amd64",
+    "node": "v24.20.0",
+    "differences": []
+  },
+  "milestone": "M28",
+  "status": "verified_subset_project_incomplete",
+  "recorded_utc": "2026-10-24T15:43:21.784927+00:00",
+  "based_on": "219a76e11dca7fa3804324c72401405d48c129d7",
+  "new_exact_source_records": 35,
+  "new_original_assertions": 85,
+  "new_native_compile_source_error_obligations": 1,
+  "native_leaf_delta": 48,
+  "native_delta_breakdown": {
+    "source_config_runtime_cases": 39,
+    "supplementary_source_runtime_cases": 8,
+    "supplementary_rpc_concurrency_case": 1
+  },
+  "native_source_fingerprint": {
+    "files": 952,
+    "sha256": "ded57969d2f68ba7910400427e04ecae8ffc552be7f9f4400f9d776443a11a8e"
+  },
+  "implementation": [
+    {
+      "file": "abi/abi.go",
+      "sha256": "66b1a823e4e55340b079b0a935b290137361a1420eba71f86b77b897f7c47be4"
+    },
+    {
+      "file": "abi/event_names.go",
+      "sha256": "a8c2454cc1a289d72717057c61aad146f9b2b593eb3a83d5b3afd6c1fe507a45"
+    },
+    {
+      "file": "abi/topics.go",
+      "sha256": "87d06e305b5bbc23052325e4161f7e229e6f933b72212e8c92174dddb83eba63"
+    },
+    {
+      "file": "config/chain_catalog.json",
+      "sha256": "b87c9c105d0a6cd4782915a8dc1326034a70d04c460cf5432648ad06c776880f"
+    },
+    {
+      "file": "config/config.go",
+      "sha256": "015bb68aad9bd052b9d4e86e1a30eaee86dad97a7edf1abf59e72637ef9c6d2e"
+    },
+    {
+      "file": "config/source_blocks.go",
+      "sha256": "9e5a81da5648f971e5188b8ec7bafc6bbe8d1e64832d838e2e8bb53e872c42e2"
+    },
+    {
+      "file": "config/source_build.go",
+      "sha256": "6ef3324f8c9e80675cfda171756db36c5c7c0e599a7d282db29c4915f2a9f90f"
+    },
+    {
+      "file": "config/source_callbacks.go",
+      "sha256": "afdb3331e7ab355720b18921aa9243311d01b29c6b46fe3d3da22dec6c1e28b4"
+    },
+    {
+      "file": "config/source_indexing.go",
+      "sha256": "1ad46a557394bfdecd2bad2e903f685a8d04a7593dc2a0ac7688bb68b04476ad"
+    },
+    {
+      "file": "config/source_model.go",
+      "sha256": "065ce123594a9de291779b98f5cca8c7111011b29e4df643bd81b077535d8e77"
+    },
+    {
+      "file": "config/source_native.go",
+      "sha256": "99a77725b9db3ada79ad8760f97ba76b090c2b3432f66f6a2a4f26dcfe917b3a"
+    },
+    {
+      "file": "config/source_upstream_test.go",
+      "sha256": "2a210e255b487c6df32c2c5c26005c1a0cf16308099d07d4317cb846d9e585ac"
+    },
+    {
+      "file": "config/source_values.go",
+      "sha256": "87794bfaa4465ccec6ef33285ed7d51f8685c5c74de8113c8703b0a903956cd8"
+    },
+    {
+      "file": "config/testdata/compile/block-filter-negative.go.txt",
+      "sha256": "8ee023ee5ba9361056e02002348de943e7c881cdb90cb7ca93d396b7be647d77"
+    },
+    {
+      "file": "config/testdata/compile/block-filter-positive.go",
+      "sha256": "d5ccec4866b8900825f4819d565bd8628864a7e743047f7b9bc31db7ba8725ec"
+    },
+    {
+      "file": "parity/mappings.json",
+      "sha256": "b484beb51b9ae1a5e6cc1244bc15af9ba3f72a9735a243d565eb7818447de660"
+    },
+    {
+      "file": "rpc/client.go",
+      "sha256": "d11663010eee1415dbcd5442aceaeb79b5c1c35ba50df86a7bd27c876adcaee4"
+    },
+    {
+      "file": "rpc/concurrency_test.go",
+      "sha256": "0b8d6237b93eaf6da4ca45e85e1ace106029cf0dfd6743b06613377744246ee0"
+    },
+    {
+      "file": "runtime/accounts.go",
+      "sha256": "66fac615eed0f09eb0f8677592f63d4b41d62cad59cf412a25deada149c8a347"
+    },
+    {
+      "file": "runtime/bloom.go",
+      "sha256": "42888853ab161e5b1b0acbc379b1ba01a2f0f42aa5b309973081e2b7586afca2"
+    },
+    {
+      "file": "runtime/engine.go",
+      "sha256": "97cef001d188c2b27f8e496c953197c3749b8a79bfc6cb486c72a02842bcc5a8"
+    },
+    {
+      "file": "runtime/source.go",
+      "sha256": "65d61096a8b91802b8f35e024184866d994d81d7347204e9157201b678a38125"
+    },
+    {
+      "file": "runtime/source_configuration_test.go",
+      "sha256": "f1e9a5b72db8f1539dae14e66d2f80fd4143ca776edb426c23837d4282fc2753"
+    },
+    {
+      "file": "runtime/source_factory_test.go",
+      "sha256": "6cebda1fe21ed4233be42d26b3a4dbe69f66d7bf8e46ef7a1da297126d2096a7"
+    },
+    {
+      "file": "tools/config-chain-catalog.mjs",
+      "sha256": "6ec8529dfeaa3ef562b916fe5fd29a0066917c29f34de4263285ba1b79a3b29c"
+    },
+    {
+      "file": "tools/config-compile-fixtures.mjs",
+      "sha256": "4902a62364ee7977c3dc3494c3bda1db3471919229c68e5daacdce9bdcc37f54"
+    },
+    {
+      "file": "tools/config-live-results.mjs",
+      "sha256": "ce8158f20593d7b9e21b6ac7ceec15782bb033e63b056fe6bb281693bf6f5360"
+    },
+    {
+      "file": "tools/config-live.config.mjs",
+      "sha256": "3d73ee075799dec980625cdccc9c3ab3f221f9e8e76e963c51c92897a4913e1c"
+    },
+    {
+      "file": "tools/config-live.setup.ts",
+      "sha256": "920e60d729e2fe4a3d002176d3472af5caa8e8533f4e51d74c67156b8c007719"
+    },
+    {
+      "file": "tools/config-pristine-oracle.mjs",
+      "sha256": "f5a1b7db06aaa196327a2ca2bbc1ac0665e3c2d88b127157ae6a602d793ee58f"
+    },
+    {
+      "file": "tools/record-native-inputs.mjs",
+      "sha256": "fe0dfc0db3717b30864ce40f8ccd97272f4ef0d0d4afd3982a4244c47baff9d8"
+    },
+    {
+      "file": "tools/record-results.mjs",
+      "sha256": "c1d645647f7f6c1ec6b8c90c90c8a96ae894849a5aa3f6bc32625fd31804c56c"
+    },
+    {
+      "file": "tools/verify.sh",
+      "sha256": "bfd2306d001870e6842f49b4de47c4385833adae7010f912256bb0c52e759638"
+    }
+  ],
+  "prepared_input_proof": "parity/runs/prepared-native-inputs.json",
+  "frozen_evidence": [
+    {
+      "file": "parity/runs/batch-27-evidence/summary.json",
+      "sha256": "8837844d743541f7189cad1b78cb73b04bd4614936924a25444d7094898428c3",
+      "bytes": 9440,
+      "copied_from": "parity/runs/summary.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/parity/test-ledger.json",
+      "sha256": "d4a6b835982b7c68d939fb3bc25a98a89fc6f00d7d76003fe935510e14d6bbea",
+      "bytes": 3323721,
+      "copied_from": "parity/test-ledger.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/parity/mappings.json",
+      "sha256": "b484beb51b9ae1a5e6cc1244bc15af9ba3f72a9735a243d565eb7818447de660",
+      "bytes": 378261,
+      "copied_from": "parity/mappings.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/parity/config-source-cases.json",
+      "sha256": "5cd68823c09f833fd79c6e7b86b93965412f5d9d7a4518ecab8b7267a969debc",
+      "bytes": 97871,
+      "copied_from": "parity/config-source-cases.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/go-test.jsonl",
+      "sha256": "6b10ac9ce496d2cbe0a47294240f79af51f65e78caebec7605fb0685c3b9f620",
+      "bytes": 1652471,
+      "copied_from": "parity/runs/go-test.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/go-race.jsonl",
+      "sha256": "1740bf5cfd3317ad6758c7c566e48adaaaecef052d05f7941d677a48a911bb21",
+      "bytes": 1652631,
+      "copied_from": "parity/runs/go-race.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/go-test-execution.json",
+      "sha256": "89f9122a8f82c1488bcf695f14851042d11e67041c871d7ba69f1d1f6d887333",
+      "bytes": 40010,
+      "copied_from": "parity/runs/go-test-execution.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/go-race-execution.json",
+      "sha256": "51d26a0d40ad948a0c4bdb986cc484c47ee8ad11adc1f75a93d21774beff9a44",
+      "bytes": 41020,
+      "copied_from": "parity/runs/go-race-execution.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/go-vet.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "copied_from": "parity/runs/go-vet.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/tool-versions.txt",
+      "sha256": "05fc9ce42c402ed89c3498ba4bad4ca779e40ecd04eb938b8602e6c2a868a6fa",
+      "bytes": 233,
+      "copied_from": "parity/runs/tool-versions.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/abi-typed-go.jsonl",
+      "sha256": "e665f518e19ca71642e123b9189bc15737e09d9ca22e65c4bcf2a840e7248f9c",
+      "bytes": 49125,
+      "copied_from": "parity/runs/abi-typed-go.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/abi-typed-race.jsonl",
+      "sha256": "950a1677865f202e8afdd6a7b8509a6bbdb12a5c9d95c00897c7cd1e3899d6b7",
+      "bytes": 49130,
+      "copied_from": "parity/runs/abi-typed-race.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/compile-fixtures.json",
+      "sha256": "c2bfab43654609f82ba2a1d744622ca44df6f757a710554a169e9223042c86fe",
+      "bytes": 72943,
+      "copied_from": "parity/runs/compile-fixtures.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/orm-compile-fixtures.json",
+      "sha256": "02431cfafa8fcbd626861918ac3f171fbbcaf980ead04f150bbf2f8a25f63272",
+      "bytes": 13363,
+      "copied_from": "parity/runs/orm-compile-fixtures.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/event-compile-fixtures.json",
+      "sha256": "84309324fd1007e5969ccd904c4e5ed5d31c7d1c80cf013f228754126d85ac25",
+      "bytes": 2522,
+      "copied_from": "parity/runs/event-compile-fixtures.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/bloom-compile-fixtures.json",
+      "sha256": "67b180b87ea89f28c3d6523ee74a0ca4ca2e6a0b20e284f9c4b9b80f46ab16b9",
+      "bytes": 4852,
+      "copied_from": "parity/runs/bloom-compile-fixtures.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/abi-codegen-stages.json",
+      "sha256": "1f41ecf0f856b27c7e05f288f37a534a9b52d22b3cb7e4db615000630e21d4c7",
+      "bytes": 831,
+      "copied_from": "parity/runs/abi-codegen-stages.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/orm-codegen-stages.json",
+      "sha256": "4bdbe899223c9fa7c781a52172b2cf3233418cc5afd4869b785bb6b5f1d9655e",
+      "bytes": 1435,
+      "copied_from": "parity/runs/orm-codegen-stages.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/parameters-typecheck.json",
+      "sha256": "92c5c2a30ff31db3f5dea19de6564d9ca1ea58336682f70137a6be4443157bcb",
+      "bytes": 589,
+      "copied_from": "parity/runs/parameters-typecheck.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/foundation-oracle.json",
+      "sha256": "a811d5e7684b27dd47552696ed09ea648abe6f9d34adf83667bf59733471f0d9",
+      "bytes": 9125,
+      "copied_from": "parity/runs/foundation-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/core-oracle.json",
+      "sha256": "79c9c39893d284f7c68598922d191c904f155b3aca91079ea236893171791b15",
+      "bytes": 49604,
+      "copied_from": "parity/runs/core-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/full-original-postgres-oracle.json",
+      "sha256": "0655723634454be1fb41b15f02e75041645ff0a3beb8fef4104c064672ee88af",
+      "bytes": 54574,
+      "copied_from": "parity/runs/full-original-postgres-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/full-original-pglite-oracle.json",
+      "sha256": "5d22579ef01dd88ee9d1122b18f8a253c55546ddb74b0ebc529edc2fc2a8f1ba",
+      "bytes": 55647,
+      "copied_from": "parity/runs/full-original-pglite-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/selected-runtime-oracle.json",
+      "sha256": "626976c37e6ffe446edbbd06178e03da9ddbcf99d283a2d0e11ab13b6f195cc0",
+      "bytes": 1671,
+      "copied_from": "parity/runs/selected-runtime-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/selected-mapped-oracle.json",
+      "sha256": "70926637d69b4a816a62ea2de69b4af8f5ac5a4dfbfd34389aa3e9c3d1048a78",
+      "bytes": 5139,
+      "copied_from": "parity/runs/selected-mapped-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/parity/client-original.json",
+      "sha256": "5e5a7b2db3a42c3cf39f62168451a999524355fc6af5a2920f29e6b2286adf04",
+      "bytes": 1269,
+      "copied_from": "parity/client-original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/parity/react-original-typecheck-supported.json",
+      "sha256": "031e8f0d30d4747556eae16651f76c5e38836c716e408eca9d341e64f544dee7",
+      "bytes": 887,
+      "copied_from": "parity/react-original-typecheck-supported.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/differential.json",
+      "sha256": "b3e76a40cc1f9a715a77364adf7b4fa9a21e4a77ce7f6052095c3dfc0fdddaf2",
+      "bytes": 469,
+      "copied_from": "parity/runs/differential.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-live-verification.json",
+      "sha256": "4c303121b47f12be190b1e41b9d10be634f1a7af71baee40f3b8b638bd3d2608",
+      "bytes": 23539,
+      "copied_from": "parity/runs/config-live-verification.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-oracle.json",
+      "sha256": "598af94ac2e24d196bd8cd847705395c0d4a3b3f3848fdcb02463013332b9297",
+      "bytes": 2649,
+      "copied_from": "parity/runs/config-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/prepared-native-inputs.json",
+      "sha256": "68dd3eb5fad6235cc79a2eaa3c2fa0f3995076aca9b909c2558a786d35a0e862",
+      "bytes": 159356,
+      "copied_from": "parity/runs/prepared-native-inputs.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/testdata/runtime/captured-original-events.json",
+      "sha256": "5eea6e5dabb2384806fa41017f5c1d63a6ca3cc77a4077644226ba198673c8e0",
+      "bytes": 608384,
+      "copied_from": "testdata/runtime/captured-original-events.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/testdata/runtime/captured-original-filters.json",
+      "sha256": "b0d56f21ce50f1ea1644da84fcc57ec14a093e71565f3687d7126a3411543c4c",
+      "bytes": 199707,
+      "copied_from": "testdata/runtime/captured-original-filters.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/testdata/bloom/captured-original-blooms.json",
+      "sha256": "64a81c584816deac8814720907026819e24a041bb69949c71ca764b97a2ff87c",
+      "bytes": 182779,
+      "copied_from": "testdata/bloom/captured-original-blooms.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/both-go-complete-02.json",
+      "sha256": "3ba718de6d5559de9940a0566c43ab40f3cb7c69e62030a0a76850334db027f9",
+      "bytes": 1137,
+      "copied_from": "parity/runs/config-m28/both-go-complete-02.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/initial-compile-02.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/initial-compile-02.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/initial-compile-01.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/initial-compile-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/native-runtime-race-02.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/native-runtime-race-02.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/block-filter-compile.json",
+      "sha256": "a78659ac718cec5cfcb045b27836bfbd740dda5682a8135460ca82b29830a170",
+      "bytes": 1968,
+      "copied_from": "parity/runs/config-m28/block-filter-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/initial-draft-inputs.json",
+      "sha256": "2cbde5a216b085feac3281165a55ed15dbe4ff2ba7c67422e05c2b7217a501eb",
+      "bytes": 977,
+      "copied_from": "parity/runs/config-m28/initial-draft-inputs.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/concurrency-race-01.jsonl",
+      "sha256": "219cbf01dab1b3fcc540a02762b60baf34a0d292d17147f122b6a8592ef43166",
+      "bytes": 3744,
+      "copied_from": "parity/runs/config-m28/concurrency-race-01.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-race-02.jsonl",
+      "sha256": "9c3857a1e24f83d8b8b91fca7ec3412430a2fd7a732fc399565f6b93fa5a1055",
+      "bytes": 40843,
+      "copied_from": "parity/runs/config-m28/live-race-02.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/initial-compile-02.txt",
+      "sha256": "e798253294bc2411d5ba752dc34189585036ca673f76d90444aaa6c155063175",
+      "bytes": 117,
+      "copied_from": "parity/runs/config-m28/initial-compile-02.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/initial-compile-03.txt",
+      "sha256": "4c8187096183bde50d18f26a9df9c649cc30ebce264dae90770989bb8762833f",
+      "bytes": 117,
+      "copied_from": "parity/runs/config-m28/initial-compile-03.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-verify-01.exit",
+      "sha256": "9d9b18720961e9b4689fd763b85e7b6f36160ccd3a8a1c9ddc5103bb0f66c396",
+      "bytes": 4,
+      "copied_from": "parity/runs/config-m28/full-verify-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/native-runtime-race-02.jsonl",
+      "sha256": "f0857c5c3b59634e5065c69d9d7866baf745800e5a33dee6bcbb1f9f3a401f16",
+      "bytes": 4674,
+      "copied_from": "parity/runs/config-m28/native-runtime-race-02.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-race-01.jsonl",
+      "sha256": "58d8745c4466e40f3393b22f68a8e69c0db5ccbba227bf15ee5e5114aaeb431e",
+      "bytes": 49216,
+      "copied_from": "parity/runs/config-m28/live-race-01.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/m27-publication.json",
+      "sha256": "895e6c256be8284e157b11997bcfdd5dd05df313622a8a5f5ff1d395e5992220",
+      "bytes": 2275,
+      "copied_from": "parity/runs/config-m28/m27-publication.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/normal-complete-02.json",
+      "sha256": "5f16841fc9b20f390286adf785a4f9082d0a8da6487e11d38c1b2b8136c579b0",
+      "bytes": 495,
+      "copied_from": "parity/runs/config-m28/normal-complete-02.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/native-compile-01.txt",
+      "sha256": "f25877b7d784bfa2ebf3834e487646a78139531b0b1fa5d34d01875c64afca5d",
+      "bytes": 121,
+      "copied_from": "parity/runs/config-m28/native-compile-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/native-runtime-race-01.jsonl",
+      "sha256": "7e9874ac8de3fc54ed7b4d52b2cada42fe2673b319a791de11a60ef5bf9e1c80",
+      "bytes": 1545,
+      "copied_from": "parity/runs/config-m28/native-runtime-race-01.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-normal-01.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/live-normal-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-stop-request.json",
+      "sha256": "708423fde392ee1861694693a4f2ddf13fa0cc5009096cb19876412a4fb5d0d2",
+      "bytes": 558,
+      "copied_from": "parity/runs/config-m28/full-01-stop-request.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/native-runtime-race-03.jsonl",
+      "sha256": "f8a360b499844168fec5e3c0f1e922db7ec9bbdb2be0fefb710305abc26c9d28",
+      "bytes": 8670,
+      "copied_from": "parity/runs/config-m28/native-runtime-race-03.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/source-audit.json",
+      "sha256": "54fdd72acf315c77a3d68e350e7783625614a1a96a811933441fc0f511fb921d",
+      "bytes": 113636,
+      "copied_from": "parity/runs/config-m28/source-audit.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/concurrency-race-01.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/concurrency-race-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-race-03.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/live-race-03.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-verify-01.txt",
+      "sha256": "7b738d64f231ef4eab371346850724432384c803f84458b73055f343290b8165",
+      "bytes": 9745,
+      "copied_from": "parity/runs/config-m28/full-verify-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/preflight-02.json",
+      "sha256": "c42f3754cbedc777a6392fa0a9125923bf55572743caa2069d8e6447c18ac794",
+      "bytes": 8034,
+      "copied_from": "parity/runs/config-m28/preflight-02.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-normal-01.jsonl",
+      "sha256": "7031925a33d771bada4c493665086bded680d8ee642314c4c3a10564032a6c31",
+      "bytes": 40847,
+      "copied_from": "parity/runs/config-m28/live-normal-01.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-verify-02.txt",
+      "sha256": "99648bf9b01b96ae45051d4d06d84d837adf72a0d79c7717216fa72ec7bbce53",
+      "bytes": 19618,
+      "copied_from": "parity/runs/config-m28/full-verify-02.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-race-02.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/live-race-02.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/legacy-runtime-race-01.jsonl",
+      "sha256": "931e320856530613b5149fbc59dba7bb31f6a026f5c13c5444a42aa18495dd96",
+      "bytes": 21589,
+      "copied_from": "parity/runs/config-m28/legacy-runtime-race-01.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/focused-vet-01.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/focused-vet-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/initial-compile-03.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/initial-compile-03.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/prepared-execution-inputs.json",
+      "sha256": "3723d1fbb41e80ce8c07c0c92b113d5659df1a31b27f78878e5278f0481ff4c6",
+      "bytes": 175928,
+      "copied_from": "parity/runs/config-m28/prepared-execution-inputs.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-race-03.jsonl",
+      "sha256": "043e774e8ac247e8fca01e280d576d734682f14e1f7f017bdc8c57fdba5baabb",
+      "bytes": 40845,
+      "copied_from": "parity/runs/config-m28/live-race-03.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/initial-compile-01.txt",
+      "sha256": "abaf62078724f675c7b78b3416a6990abf73b8a8dbf585d557594762af35c4a4",
+      "bytes": 117,
+      "copied_from": "parity/runs/config-m28/initial-compile-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-verify-02.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/full-verify-02.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/legacy-runtime-race-01.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/legacy-runtime-race-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/preflight-01.json",
+      "sha256": "03698fb2a47527ed4ce2daeb44b93ee5ae42e9aa060a1e40a5e44cecceb5d460",
+      "bytes": 7202,
+      "copied_from": "parity/runs/config-m28/preflight-01.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-race-01.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/live-race-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/native-runtime-race-01.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/native-runtime-race-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/focused-vet-01.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "copied_from": "parity/runs/config-m28/focused-vet-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/native-compile-01.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/native-compile-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/native-runtime-race-03.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/config-m28/native-runtime-race-03.exit"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2298243457/bindings.jsonl",
+      "sha256": "2a5bac8d12933ccecd7e59fdc9848855dce701756efeddd7ba06138352e7c72c",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-m28/live-2298243457/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2298243457/original.json",
+      "sha256": "0a83ada7acb249c7397f53829d8093fbbb9382c4ca2c978508c898b860712c99",
+      "bytes": 11159,
+      "copied_from": "parity/runs/config-m28/live-2298243457/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2298243457/output.txt",
+      "sha256": "2a51b274bdb0c1260c18134e2fa5e4391e25feda395c39aa71756b15a4f58ea5",
+      "bytes": 301,
+      "copied_from": "parity/runs/config-m28/live-2298243457/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2298243457/native.json",
+      "sha256": "1054890016a74b15b821d9eb056d381245ac054c0242e8e4aac615ee8f71d9b3",
+      "bytes": 2628344,
+      "copied_from": "parity/runs/config-m28/live-2298243457/native.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2298243457/calls.json",
+      "sha256": "cba6e3eb667626e3a5e0d323d4cd4e859f807bc2b8c4567a238fe1973cc72728",
+      "bytes": 2598922,
+      "copied_from": "parity/runs/config-m28/live-2298243457/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/go-test.jsonl",
+      "sha256": "92fed6951c0f1da947500dd07dc8516e04fbff2510dfde9f06d5bce47c8cbd70",
+      "bytes": 1259582,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/go-test.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/go-test-execution.json",
+      "sha256": "f175f51c4fa69faeaa8702c8ad0aee97bb9cf2d4f6a69e7dc0f2c67f50f0b0a9",
+      "bytes": 23668,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/go-test-execution.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/config-oracle.json",
+      "sha256": "56e60a795a919029486948732004a0dd6a67851e0161600c4b6562f065c4b5ec",
+      "bytes": 2649,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/config-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/source_upstream_test.go.txt",
+      "sha256": "1b19ca3ce43ae751d60f17041f40b40ea476cce4518774a80278210535b4d74a",
+      "bytes": 14770,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/source_upstream_test.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/config-live-results.mjs.txt",
+      "sha256": "1a5a491f49547c25eb3198444399ba38093f6c2b32edc24ac5c72ae6e9d19553",
+      "bytes": 5669,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/config-live-results.mjs.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/recovery.json",
+      "sha256": "6e45ac4306b6297be0b71e60a75a61a54ca862b2a89db30bed27508068b99cdd",
+      "bytes": 4523,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/recovery.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/config-m28/full-01-stop-request.json",
+      "sha256": "708423fde392ee1861694693a4f2ddf13fa0cc5009096cb19876412a4fb5d0d2",
+      "bytes": 558,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/config-m28/full-01-stop-request.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/config-m28/full-verify-01.txt",
+      "sha256": "7b738d64f231ef4eab371346850724432384c803f84458b73055f343290b8165",
+      "bytes": 9745,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/config-m28/full-verify-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/config-m28/prepared-execution-inputs.json",
+      "sha256": "3723d1fbb41e80ce8c07c0c92b113d5659df1a31b27f78878e5278f0481ff4c6",
+      "bytes": 175928,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/config-m28/prepared-execution-inputs.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/config-m28/preflight-01.json",
+      "sha256": "03698fb2a47527ed4ce2daeb44b93ee5ae42e9aa060a1e40a5e44cecceb5d460",
+      "bytes": 7202,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/config-m28/preflight-01.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/config-m28/live-2721851881/bindings.jsonl",
+      "sha256": "f27b37dbf4f9d7ddae352109b9c45a790d831ff6eadea9ea3dd9052ea780ade8",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/config-m28/live-2721851881/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/config-m28/live-2721851881/block-filter-compile.json",
+      "sha256": "3027a24d8b2955c3e0c74d263e89c174d0c25f0a524a17a5697da96816cba6c9",
+      "bytes": 1968,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/config-m28/live-2721851881/block-filter-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/config-m28/live-2721851881/original.json",
+      "sha256": "954bd8a92550bb9d7bb9d4d3b9808de3862ac480e1bbe67d0fb034ec5fba07a0",
+      "bytes": 11151,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/config-m28/live-2721851881/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/config-m28/live-2721851881/output.txt",
+      "sha256": "a999b68a4554e7983382edd7a7ff7221977abe6569717f634d8435c0f848c28a",
+      "bytes": 301,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/config-m28/live-2721851881/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/config-m28/live-2721851881/native.json",
+      "sha256": "50b0fe77384aaacbcb32f61d07ed6e36800d52ad04868acefd6b03726398514d",
+      "bytes": 2637492,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/config-m28/live-2721851881/native.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/full-01-evidence/config-m28/live-2721851881/calls.json",
+      "sha256": "c7377f7453bbb177e810fc69435defa88066527d302877904c1703ab406838d4",
+      "bytes": 2645401,
+      "copied_from": "parity/runs/config-m28/full-01-evidence/config-m28/live-2721851881/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3238975413/bindings.jsonl",
+      "sha256": "af52611e25c1e785c9839d3758f900b25975a37a5974a300d67d5c6d7f117d09",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-m28/live-3238975413/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3238975413/block-filter-compile.json",
+      "sha256": "a78659ac718cec5cfcb045b27836bfbd740dda5682a8135460ca82b29830a170",
+      "bytes": 1968,
+      "copied_from": "parity/runs/config-m28/live-3238975413/block-filter-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3238975413/original.json",
+      "sha256": "ce60fe273e14b8fdd33bb2383cb797c32a01f304ecdeb29ff5a2e1a08620ae6e",
+      "bytes": 11163,
+      "copied_from": "parity/runs/config-m28/live-3238975413/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3238975413/output.txt",
+      "sha256": "09aadb600ce68e4b4f1e1839a1a4a7ef85124ae78d8eaf354bb98a4800a0c930",
+      "bytes": 301,
+      "copied_from": "parity/runs/config-m28/live-3238975413/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3238975413/native.json",
+      "sha256": "5ecebb31a8a9fb5c0051021f3b792cdab0dbe33f0acabd1376ca317fbae643e6",
+      "bytes": 2634276,
+      "copied_from": "parity/runs/config-m28/live-3238975413/native.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3238975413/calls.json",
+      "sha256": "c5c22b4b1bc4a3a1e233228636636df8715cb817274445af0b42cd227371f090",
+      "bytes": 2598922,
+      "copied_from": "parity/runs/config-m28/live-3238975413/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3160062060/bindings.jsonl",
+      "sha256": "d63c48192a8bc39eb890e99129e6c2e8730a66893f37be7756ece92f8f6142cc",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-m28/live-3160062060/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3160062060/block-filter-compile.json",
+      "sha256": "3027a24d8b2955c3e0c74d263e89c174d0c25f0a524a17a5697da96816cba6c9",
+      "bytes": 1968,
+      "copied_from": "parity/runs/config-m28/live-3160062060/block-filter-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3160062060/original.json",
+      "sha256": "112403ab5e77dcae0ec2b4785c99e121bd33a95fb639c682ad7abb9ce456c05e",
+      "bytes": 11150,
+      "copied_from": "parity/runs/config-m28/live-3160062060/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3160062060/output.txt",
+      "sha256": "b7211b3835599760ba2b8f53b8983de6b2039c8c6955dc286d74ff4924cd5c75",
+      "bytes": 301,
+      "copied_from": "parity/runs/config-m28/live-3160062060/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3160062060/native.json",
+      "sha256": "9142138caf4c598498c3bcd6c1c104099c004327e0aff841aaaf9b4074cccfc1",
+      "bytes": 2642804,
+      "copied_from": "parity/runs/config-m28/live-3160062060/native.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3160062060/calls.json",
+      "sha256": "d8696068f5371d38313d33170cab795a7fc66fe0bc8bbe2fc993a53f72588b60",
+      "bytes": 2647641,
+      "copied_from": "parity/runs/config-m28/live-3160062060/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/pristine-2026-10-24T14-59-12-942Z-2190614/bindings.jsonl",
+      "sha256": "717bda4fa01951b03755a54c5a6d1876a74955ec0bc44c72bce1394239b0a219",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-m28/pristine-2026-10-24T14-59-12-942Z-2190614/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/pristine-2026-10-24T14-59-12-942Z-2190614/original.json",
+      "sha256": "52255f82d4c9544d0a749dd69df006f5b4fae6d8803466c13add0a809b5ade5e",
+      "bytes": 11168,
+      "copied_from": "parity/runs/config-m28/pristine-2026-10-24T14-59-12-942Z-2190614/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/pristine-2026-10-24T14-59-12-942Z-2190614/output.txt",
+      "sha256": "18d76fcae50345411fcade889360ca401a4806a915d37275a724c622ed5922c5",
+      "bytes": 327,
+      "copied_from": "parity/runs/config-m28/pristine-2026-10-24T14-59-12-942Z-2190614/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3620311156/bindings.jsonl",
+      "sha256": "fc8b4eefe10409a2f88edb8a283a9c93ce2976cce29fc27e8fa376e1a22a2b8a",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-m28/live-3620311156/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3620311156/block-filter-compile.json",
+      "sha256": "3027a24d8b2955c3e0c74d263e89c174d0c25f0a524a17a5697da96816cba6c9",
+      "bytes": 1968,
+      "copied_from": "parity/runs/config-m28/live-3620311156/block-filter-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3620311156/original.json",
+      "sha256": "cd7c370b9e059da38686d34909499b7a58c83cb1e342b6c0cbd8b5caefa65137",
+      "bytes": 11129,
+      "copied_from": "parity/runs/config-m28/live-3620311156/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3620311156/output.txt",
+      "sha256": "a9ba25d2da4d707b8bcd9c6e27417cf7fcf4065c53763fc69aa3d068cd64994f",
+      "bytes": 301,
+      "copied_from": "parity/runs/config-m28/live-3620311156/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3620311156/native.json",
+      "sha256": "845a877fd316fef9c99c9e0a13b3195075b8ee080a6f5c950b4f1caafb0e7dce",
+      "bytes": 2642805,
+      "copied_from": "parity/runs/config-m28/live-3620311156/native.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3620311156/calls.json",
+      "sha256": "61258fdd8d9d22310f3a02948862dd3d86ff62cd7235f27839bdb2530ff5b5cb",
+      "bytes": 2645401,
+      "copied_from": "parity/runs/config-m28/live-3620311156/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3090707525/bindings.jsonl",
+      "sha256": "7f5fb4fd4e69998ac79ad9d97cd0089ac0cef881f7e0cde9c767c02b24c5c1e4",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-m28/live-3090707525/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3090707525/block-filter-compile.json",
+      "sha256": "3027a24d8b2955c3e0c74d263e89c174d0c25f0a524a17a5697da96816cba6c9",
+      "bytes": 1968,
+      "copied_from": "parity/runs/config-m28/live-3090707525/block-filter-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3090707525/original.json",
+      "sha256": "3596e52ed0ddd93fd57ba3b0b49b4ee811cd8454773b144e97f5884572e79d1f",
+      "bytes": 11170,
+      "copied_from": "parity/runs/config-m28/live-3090707525/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3090707525/output.txt",
+      "sha256": "b1912803518c22a40d4c8ee865b9fff83215f5f908f61c23e307ba93983fb604",
+      "bytes": 301,
+      "copied_from": "parity/runs/config-m28/live-3090707525/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3090707525/native.json",
+      "sha256": "b89adb536cf292c56b14af8897687103550ba76bfe3f955993c0e15a0d3e1bce",
+      "bytes": 2637492,
+      "copied_from": "parity/runs/config-m28/live-3090707525/native.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-3090707525/calls.json",
+      "sha256": "0100d86509f1c394f6f24e87db4f6a6e69ae945c40711ec2d3a031951f22d0ed",
+      "bytes": 2598922,
+      "copied_from": "parity/runs/config-m28/live-3090707525/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2336039716/bindings.jsonl",
+      "sha256": "8f2273a9883fded4a0371adb84637af69b1f64b812fea03166f7c1500542243b",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-m28/live-2336039716/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2336039716/block-filter-compile.json",
+      "sha256": "3027a24d8b2955c3e0c74d263e89c174d0c25f0a524a17a5697da96816cba6c9",
+      "bytes": 1968,
+      "copied_from": "parity/runs/config-m28/live-2336039716/block-filter-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2336039716/original.json",
+      "sha256": "e8cd4e5ed8a5ba1b18568e4ec35244e5181081acdc37a48b558da739b1279624",
+      "bytes": 11158,
+      "copied_from": "parity/runs/config-m28/live-2336039716/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2336039716/output.txt",
+      "sha256": "bd9ab2bbac9d259629116337f5f644d786669b0c751efc73ef68a5ac3d9fe0d6",
+      "bytes": 301,
+      "copied_from": "parity/runs/config-m28/live-2336039716/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2336039716/native.json",
+      "sha256": "e5ab1c3dea3a4728a62e88161d62de9e400a5901484d5255875661494d1d3c27",
+      "bytes": 2642805,
+      "copied_from": "parity/runs/config-m28/live-2336039716/native.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2336039716/calls.json",
+      "sha256": "b2454a829d50f493e3cdc5e405cec65d522a84715609517ae9d39e8442e95fa3",
+      "bytes": 2647641,
+      "copied_from": "parity/runs/config-m28/live-2336039716/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2721851881/bindings.jsonl",
+      "sha256": "f27b37dbf4f9d7ddae352109b9c45a790d831ff6eadea9ea3dd9052ea780ade8",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-m28/live-2721851881/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2721851881/block-filter-compile.json",
+      "sha256": "3027a24d8b2955c3e0c74d263e89c174d0c25f0a524a17a5697da96816cba6c9",
+      "bytes": 1968,
+      "copied_from": "parity/runs/config-m28/live-2721851881/block-filter-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2721851881/original.json",
+      "sha256": "954bd8a92550bb9d7bb9d4d3b9808de3862ac480e1bbe67d0fb034ec5fba07a0",
+      "bytes": 11151,
+      "copied_from": "parity/runs/config-m28/live-2721851881/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2721851881/output.txt",
+      "sha256": "a999b68a4554e7983382edd7a7ff7221977abe6569717f634d8435c0f848c28a",
+      "bytes": 301,
+      "copied_from": "parity/runs/config-m28/live-2721851881/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2721851881/native.json",
+      "sha256": "50b0fe77384aaacbcb32f61d07ed6e36800d52ad04868acefd6b03726398514d",
+      "bytes": 2637492,
+      "copied_from": "parity/runs/config-m28/live-2721851881/native.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/live-2721851881/calls.json",
+      "sha256": "c7377f7453bbb177e810fc69435defa88066527d302877904c1703ab406838d4",
+      "bytes": 2645401,
+      "copied_from": "parity/runs/config-m28/live-2721851881/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/pristine-2026-10-24T14-47-40-729Z-2181123/bindings.jsonl",
+      "sha256": "db53fe5732d4856155c1b062371163371fdea58c2500e5048c2ba3fd254d9d7c",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-m28/pristine-2026-10-24T14-47-40-729Z-2181123/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/pristine-2026-10-24T14-47-40-729Z-2181123/original.json",
+      "sha256": "51ddcc3846b794c77537ac4af2449e87df2ca248af33062a8070713b07b5fc96",
+      "bytes": 11157,
+      "copied_from": "parity/runs/config-m28/pristine-2026-10-24T14-47-40-729Z-2181123/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/config-m28/pristine-2026-10-24T14-47-40-729Z-2181123/output.txt",
+      "sha256": "9c7ac4308f1ef1536b2b96bb7b10399989e6a2bfdd366005346efd0a2409b521",
+      "bytes": 327,
+      "copied_from": "parity/runs/config-m28/pristine-2026-10-24T14-47-40-729Z-2181123/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/events/calls.json",
+      "sha256": "5eea6e5dabb2384806fa41017f5c1d63a6ca3cc77a4077644226ba198673c8e0",
+      "bytes": 608384,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/events/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/events/original.json",
+      "sha256": "d19744045a5a72b50dfff6ef640d0b85299fdc27db8e73123730b63437a88b7a",
+      "bytes": 2991,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/events/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/events/result.json",
+      "sha256": "f89ea6ea7231ab017fd2f57281cc0c78b4b52bd68eca919366c82c79ac70761a",
+      "bytes": 1171,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/events/result.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/events/bindings.jsonl",
+      "sha256": "3b7980bde4503f5d822610ba09e02fdfdd241f6ef77295f6f717cb8340fc730f",
+      "bytes": 51,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/events/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/events/output.txt",
+      "sha256": "4fb2b05c8d3f33e4f973cd65ac06bad95f37955e1c1821b12d9559c093795621",
+      "bytes": 129,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/events/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/filters/calls.json",
+      "sha256": "b0d56f21ce50f1ea1644da84fcc57ec14a093e71565f3687d7126a3411543c4c",
+      "bytes": 199707,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/filters/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/filters/original.json",
+      "sha256": "367911ff1ef1fc533d08b763c198517040b5fd514a1573da659285f71782e962",
+      "bytes": 6678,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/filters/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/filters/result.json",
+      "sha256": "2a1d79b33a605e9a4cdba39c70cd74e2b2aa2cc12e8373ab8a33dc28819dd715",
+      "bytes": 1175,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/filters/result.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/filters/bindings.jsonl",
+      "sha256": "6d69121fe2ac0bbc1e8769be67ed17cef846ef8e3d84ecb7922a42b32296071f",
+      "bytes": 102,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/filters/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/filters/output.txt",
+      "sha256": "0b8005d4cf12b85cc1e0c299438b901a32ac63734a59d52722306ae857084e4b",
+      "bytes": 324,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/filters/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/blooms/calls.json",
+      "sha256": "64a81c584816deac8814720907026819e24a041bb69949c71ca764b97a2ff87c",
+      "bytes": 182779,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/blooms/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/blooms/original.json",
+      "sha256": "09e18bffae0b280073fecebae0abf1605b0d8b96693cabddf388712165a5df39",
+      "bytes": 2698,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/blooms/original.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/blooms/result.json",
+      "sha256": "8ae019ba70ffdf30f6511ceb12d116f4c40a432c26ffc002e3bd2fc94c2f923d",
+      "bytes": 1181,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/blooms/result.json"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/blooms/bindings.jsonl",
+      "sha256": "2badc68b0ef4dc7a7272027d2fb0939cb2f4a20a304b653bbc3a8b210e48795f",
+      "bytes": 51,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/blooms/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-27-evidence/original-captures/20261024T145841-2188126/blooms/output.txt",
+      "sha256": "474a2fa3fafaff4e8b43fbe83f378c5c87f7169d71bd78ccf4fa175d12e8f59f",
+      "bytes": 129,
+      "copied_from": "parity/runs/original-captures/20261024T145841-2188126/blooms/output.txt"
+    }
+  ],
+  "commands": [
+    {
+      "command": "GOFLAGS=-p=1 GOMAXPROCS=2 flock <task-heavy-test-lock> ./tools/verify.sh",
+      "exit_code": 0,
+      "log": "parity/runs/config-m28/full-verify-02.txt",
+      "exit_receipt": "parity/runs/config-m28/full-verify-02.exit",
+      "note": "All20 packages,138 listed functions,48 disjoint sequential batches per mode; default Go/source timeouts and original test bodies preserved."
+    }
+  ],
+  "published": false,
+  "scope_limits": [
+    "Only360/905 static source records are mapped and passed;545 unimplemented. Static discovery is not dynamic exhaustiveness.",
+    "Complete original config40 records retain39active/92assertions and1originalskip/2assertions. Live bridge executes69actual native calls per mode on the same unchanged original Anvil environment, preserving full results/mutations/errors and checking real client/callback/canonical chain metadata identities, including actual Hyperliquid toBe pointer checks.",
+    "Only35 config declarations/85assertions count. Four runtime-checked declarations retain9 native type obligations: network migration3, unknown chain1, unknown ABI event1, bound property/callsites4. They remain unmapped. Original public RPC warning skip remains unmapped/skipped in original evidence, never substituted or counted passed.",
+    "One real public Filter-union interval access requires narrowing; positive compiles and runs on exact materialized original block-source input while its original Anvil is alive, negative fails on Filter.Interval. Other contextual TS literal/bounds constraints are not established by dynamic JSON parsing.",
+    "Native plan version1 binds source callbacks/overloaded event names/topics/receipts/ABI metadata and actual native handlers/clients to the existing single-chain scheduler. Multi-chain construction is not multi-chain scheduling.",
+    "Source factory IDs preserve undefined bounds and shared discovery; legacy native Config JSON/factory defaults remain unchanged when SourcePlan is absent. Eight real EVM PG/PGlite/cache cases prove dispatch/transactional writes/replay and prebirth exclusion/same-block children; zero extra source credit.",
+    "601 pinned ESM viem2.35.0 chain descriptors and explicitHyperliquid999 override are metadata only.17 opaque function descriptors do not port formatters/serializers or full RPC subscriptions/adaptive provider behavior.",
+    "New test Progress API compile failure and collector synchronization race remain recorded as failures despite original/runtime-value success; corrections do not modify original test sources/inputs/setup/assertions/skips.",
+    "Full verification intentionally refreshes three original capture fixtures before Go. Implementation33inputs remain fixed. Full02 writes the entire prepared952-file inventory before any native Go tests; it matches start/end normal/race fingerprints. Full01 was stopped for a missing Hyperliquid canonical identity assertion after1473completed normal leaves/0fail/skip, with no race started, and cannot substitute for full acceptance. The original before/after-preparation observation receipt is preserved and explicitly labelled.",
+    "Complete native typed config DSL, transport functions, public context/include behavior, negative block/interval scheduling, history planner, multi-chain scheduling, realtime reconnect/stall/validation, queries/API/CLI/dev/templates/SDK/simulation remain in the active complete-project objective."
+  ]
+}

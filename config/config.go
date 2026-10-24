@@ -57,11 +57,12 @@ type AccountSource struct {
 	Factory    *factory.Config `json:"factory,omitempty"`
 }
 type Config struct {
-	Ordering  schema.Ordering `json:"ordering"`
-	Chains    []Chain         `json:"chains"`
-	Contracts []Contract      `json:"contracts"`
-	Blocks    []BlockSource   `json:"blocks"`
-	Accounts  []AccountSource `json:"accounts,omitempty"`
+	SourcePlan *SourceRuntimePlan `json:"sourcePlan,omitempty"`
+	Ordering   schema.Ordering    `json:"ordering"`
+	Chains     []Chain            `json:"chains"`
+	Contracts  []Contract         `json:"contracts"`
+	Blocks     []BlockSource      `json:"blocks"`
+	Accounts   []AccountSource    `json:"accounts,omitempty"`
 }
 
 var address = regexp.MustCompile(`^0x[0-9a-fA-F]{40}$`)

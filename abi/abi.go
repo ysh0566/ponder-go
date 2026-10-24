@@ -14,6 +14,7 @@ type ABI struct {
 	originalEvents    map[string]Event
 	originalFunctions map[string]Function
 	functionEntries   []Function
+	eventEntries      []Event
 }
 
 func signatureType(p Parameter) string {
@@ -56,6 +57,7 @@ func Parse(data string) (ABI, error) {
 	events := map[string]Event{}
 	functions := map[string]Function{}
 	functionEntries := []Function{}
+	eventEntries := []Event{}
 	for _, entry := range entries {
 		var event Event
 		if e = json.Unmarshal(entry, &event); e != nil {
@@ -73,13 +75,14 @@ func Parse(data string) (ABI, error) {
 		if event.Type != "event" {
 			continue
 		}
+		eventEntries = append(eventEntries, event)
 		for name, metadata := range a.Events {
 			if metadata.Sig == signature(event) {
 				events[name] = event
 			}
 		}
 	}
-	return ABI{ABI: a, originalEvents: events, originalFunctions: functions, functionEntries: functionEntries}, nil
+	return ABI{ABI: a, originalEvents: events, originalFunctions: functions, functionEntries: functionEntries, eventEntries: eventEntries}, nil
 }
 func (a ABI) DecodeEvent(name string, topics []string, data string) (any, error) {
 	event, ok := a.originalEvents[name]

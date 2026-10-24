@@ -1,0 +1,55 @@
+{
+  "source_id": "99833a317bc466ee8736",
+  "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+  "source_error_directive": "// @ts-expect-error",
+  "compile_passed": true,
+  "positive_execution": "required separately during actual original block-source case on the live shared Anvil; compile success alone is insufficient",
+  "positive": {
+    "file": "config/testdata/compile/block-filter-positive.go",
+    "sha256": "d5ccec4866b8900825f4819d565bd8628864a7e743047f7b9bc31db7ba8725ec"
+  },
+  "negative": {
+    "file": "config/testdata/compile/block-filter-negative.go.txt",
+    "sha256": "8ee023ee5ba9361056e02002348de943e7c881cdb90cb7ca93d396b7be647d77"
+  },
+  "inputs": [
+    {
+      "file": "config/source_native.go",
+      "sha256": "73a05f6d61ed4f374da73729a8b40b59ddffb6f1bd26452a141819f3bf21f608"
+    },
+    {
+      "file": "runtime/source.go",
+      "sha256": "65d61096a8b91802b8f35e024184866d994d81d7347204e9157201b678a38125"
+    },
+    {
+      "file": "tools/config-compile-fixtures.mjs",
+      "sha256": "4902a62364ee7977c3dc3494c3bda1db3471919229c68e5daacdce9bdcc37f54"
+    }
+  ],
+  "build_positive": {
+    "command": [
+      "go",
+      "build",
+      "-o",
+      "/root/ponder-go/work/ponder-go/.parity-build/config-types/block-filter-positive",
+      "config/testdata/compile/block-filter-positive.go"
+    ],
+    "exit_code": 0,
+    "error": null,
+    "stdout": "",
+    "stderr": ""
+  },
+  "build_negative": {
+    "command": [
+      "go",
+      "build",
+      "-o",
+      "/root/ponder-go/work/ponder-go/.parity-build/config-types/block-filter-negative",
+      "/root/ponder-go/work/ponder-go/.parity-build/config-types/block-filter-negative.go"
+    ],
+    "exit_code": 1,
+    "error": null,
+    "stdout": "",
+    "stderr": "# command-line-arguments\n.parity-build/config-types/block-filter-negative.go:20:35: callbacks[0][0].Filter.Interval undefined (type config.SourceFilter has no field or method Interval)\n"
+  }
+}
