@@ -2,6 +2,19 @@
 
 任务没有完成。先读 `AGENTS.md`、本文件、`parity/runs/summary.json`、`parity/test-ledger.json` 和 `parity/feature-ledger.json`。不要把新增集成测试或差分向量算成上游逐例移植。
 
+
+## 当前执行入口：M28验收完成，完整目标继续
+
+正式证据batch-27.json/batch-27-evidence/、config-m28/full-verify-02退出0。Go/race各1852、PG198/PGlite195、0失败/skip；20包138顶层函数，每模式48不重复串行批次，默认timeout保留。所有实际执行均对应测试前952/ded57969d2f68ba7910400427e04ecae8ffc552be7f9f4400f9d776443a11a8e输入快照。源码360/905=356Go+4SDK均有oracle通过，545未实现；905静态记录不是动态穷尽证明。
+
+配置完整原版39active/92断言通过、1原始skip/2断言保留；69实际Go调用与同一个原版Anvil比较完整结果/错误/输入修改。每模式60次原生规范链元数据身份检查，包括Hyperliquid配置/索引各1次。只映射35例/85断言；4例仍欠9项原生类型义务，严格保持未映射。区块Filter联合的1项错误义务已有真实正向编译/实际原始区块输入执行/负向编译。新来源配置/工厂8个真实后端cache场景和RPC并发1例为补充，零source credit。原生增量48=39运行时原例（其中4未完成类型）+8集成+1并发。
+
+保留新增测试进度API编译错误、collector race，以及首轮发现Hyperliquid身份断言缺口后主动停止的1473完成/0fail/skip部分normal、实际退出143、未启动race。不得把部分结果代替正式full02。原版输入/setup/断言/skip不变。SourcePlan版本1隔离新配置/cache标识，旧native Config及legacy合约factory标识不改。601目录描述/17opaque函数不代表viem格式化行为已移植。见SOURCE_CONFIGURATION.md。
+
+M28必须基于已核验远端M27 219a76e11dca7fa3804324c72401405d48c129d7普通后继提交，作者/提交者ysh0566；实际发布以外部m28-publication.json成功证明为准。用户已明确允许官方CLI默认repo/read:org/gist及任务云端认证持久化，不要重复询问。禁止读/输出token、改全局helper、force/历史改写、Mac/业务仓库/业务数据库操作。
+
+下一步先补4例9项真正生产typed API编译义务：network迁移3、未知链1、未知ABI事件1、字符串bounds属性/调用4。外部config-next/typed-obligations-next.md是设计笔记，零source credit；不要用语言玩具/任意名义错类型/缺失map key替代真实约束。更完整的typed DSL、transport函数、完整RPC/context/include、负数区块调度、历史planner、多链排序/调度、实时重连/校验、查询/API/CLI/dev/templates/SDK/simulation仍全部在用户完整范围内。
+
 ## 当前执行入口：M27已验证，完整目标继续
 
 最新验收batch-26.json/batch-26-evidence/，full-verify-02退出0：Go/race各1804通过、0失败/skip，PG194/PGlite191。20包134顶层函数48不重复串行批次，默认Go timeout及执行体保留；前后935/c18845a3bd6421af83240dd76033c2647b09f5ccc5ebb5db60f86c8d1bf6225d一致。源码325/905=321Go+4SDK均有oracle通过，580未实现。8个新bloom原例/12断言/19调用及两项Topic0错误义务经真实正向/运行/负向编译通过。Go省略值/string构造和其他dynamic字段仍宽于TS，不能称完整类型等价。497补充源码向量、新假阳性和native回退测试均无source credit。见docs/LOG_BLOOM.md。

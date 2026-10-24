@@ -32,9 +32,9 @@
       "upstream_sources": [],
       "evidence": [
         "parity/runs/summary.json",
-        "parity/runs/batch-24.json"
+        "parity/runs/batch-27.json"
       ],
-      "remaining": "M25 verifies317/905 source mappings and executions:313 Go plus4 retained SDK,588 unimplemented static records. New15 exact events/filter cases retain38 assertion expressions and one callback-union compiler obligation. All mapped original oracles pass.905 static records are not proof of runtime discovery exhaustiveness."
+      "remaining": "M28 verifies360/905 exact source records:356 Go+4 SDK,all mapped original oracles pass,545 unimplemented static records. Config35 new mapped cases/85assertions;39active runtime checks/92assertions and1originalskip retained. Four runtime-checked config cases retain9 native type obligations and remain unmapped. Static discovery is not dynamic exhaustiveness."
     },
     {
       "id": "differential-harness",
@@ -58,14 +58,18 @@
       "id": "native-config",
       "status": "partial",
       "implementation_files": [
-        "config/config.go"
+        "config/config.go",
+        "config/source_build.go",
+        "config/source_indexing.go",
+        "config/source_native.go",
+        "runtime/source.go"
       ],
       "upstream_sources": [
         "packages/core/src/config/index.ts",
         "packages/core/src/build/config.ts"
       ],
       "evidence": [],
-      "remaining": "M26 native account factory/static union, parent validation and effective bounds verified; constructor inherits both account bounds without changing legacy contract IDs. Complete original40 build/config cases, latest resolution, include/handler DSL and exact source defaults/messages/types remain unported."
+      "remaining": "M28 source-shaped builder defaults/validation/latest/finality/ordered callbacks/ABI metadata and real native single-chain integration verified.35 original mappings;4 runtime-checked cases retain9 native compiler obligations,1originalskip preserved. Complete typed literal/bounds DSL,transport functions,fullRPC/context/include,negative block scheduling andmulti-chain scheduler remain."
     },
     {
       "id": "schema",
@@ -1084,6 +1088,33 @@
         "parity/runs/batch-24.json"
       ],
       "remaining": "M25 maps all11 runtime/events declarations; six new cases retain13 assertions plus genuine callback-union property compiler proof. Complete original capture passes11; exact Go replays and complete1740 Go/race pass. Real generated ABI/helpers retained, instrumented capture separate from pristine backend oracle. Shared lossless account block conversion has fixed-version red and focused race green. Dynamic filter/metadata/Fn typing remains broader than TS; full include/config/factory account/multichain/history/query/CLI remain incomplete."
+    },
+    {
+      "id": "source-config-builder-m28",
+      "status": "verified_subset",
+      "implementation_files": [
+        "config/source_model.go",
+        "config/source_build.go",
+        "config/source_indexing.go",
+        "config/source_callbacks.go",
+        "config/source_blocks.go",
+        "config/source_native.go",
+        "abi/event_names.go",
+        "abi/topics.go",
+        "runtime/source.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/build/config.ts",
+        "packages/core/src/build/config.test.ts",
+        "packages/core/src/utils/abi.ts",
+        "packages/core/src/utils/chains.ts"
+      ],
+      "evidence": [
+        "parity/runs/batch-27.json",
+        "parity/runs/config-live-verification.json",
+        "parity/runs/config-oracle.json"
+      ],
+      "remaining": "35/40 exact config mappings.39active runtime cases,originalskip retained;9 native type obligations across4cases still unmapped. Full typed DSL/publicsourceAPI/RPC/context/include andmulti-chain/history scheduler remain. Eight real EVM/backend/cache cases andcatalogmetadata addzero sourcecredit."
     }
   ]
 }

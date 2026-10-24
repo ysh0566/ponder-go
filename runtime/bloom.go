@@ -24,6 +24,22 @@ func (e *Engine) compileBloomPlan() error {
 		if f, ok := e.factories[source.Name]; ok {
 			address = nativeFactory(f)
 		}
+
+		if e.Config.SourcePlan != nil {
+			callbacks, err := e.logCallbacks(source)
+			if err != nil {
+				return err
+			}
+			for _, callback := range callbacks {
+				f := callback.filter
+				compiled, err := bloom.GetLogFilterBloom(selection.LogFilter{ChainID: e.chain.ID, SourceID: source.Name, Address: address, Topic0: selection.HexTopic(f["topic0"].(string)), Topic1: f["topic1"], Topic2: f["topic2"], Topic3: f["topic3"]})
+				if err != nil {
+					return fmt.Errorf("log bloom %s: %w", callback.name, err)
+				}
+				e.blooms.logs[source.Name] = append(e.blooms.logs[source.Name], compiled)
+			}
+			continue
+		}
 		from := source.StartBlock
 		for name, item := range e.abis[source.Name].Events {
 			compiled, err := bloom.GetLogFilterBloom(selection.LogFilter{

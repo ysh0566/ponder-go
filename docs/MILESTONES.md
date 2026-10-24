@@ -129,3 +129,7 @@ RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋check
 补充10个后端边界、4个真实应用退出及SQL资产校验，覆盖完整列值、NULL/大整数/opaque文本、部分copy回滚、提交确认丢失重试、16实例并发、未拥有/不完整schema拒绝和磁盘重开。原生补充fixture最初误用最新版trace_address，改为原legacy trace_index/subcalls，未改原SQL资产；失败记录保留。真实PGlite红灯暴露JSON number舍入int64最大值，store/values.go现统一以十进制字符串绑定Go整数；PG/PGlite完整回归均通过。
 
 完整verify退出0：Go/race各479/479，无skip；PG141/PGlite138分别通过；vet/build、core167活动原oracle（另原skip2）、SDK4、编译义务与2466差分向量通过。累计245/905（241 Go+4 SDK），Go oracle167通过、74fixture阻塞，660静态记录未实现。原数据库oracle再次收集前缺generated.js（0测试/1失败suite），不能算原版通过；Foundry未安装。原runtime最小sync store与新9表协议cache仍分开，完整事件CRUD/自动runtime/真实旧DB接管未完成。见batch-14.json与SYNC_MIGRATIONS.md。
+
+## M28：来源配置与原生运行时
+
+新增35个精确配置原例/85断言及1项公共Filter联合编译义务；累计360/905，545未实现。正式full02 Go/race各1852，PG198/PGlite195，0fail/skip，20包138函数48批次。39个活动原例有69次实际Go调用、完整原版oracle与输入/输出比较；原skip保留，4例9个类型义务仍未映射。来源回调/overload/topics/receipt/实际handler/client/factory身份接入单链运行时；8个真实集成与1并发例不加source credit。原生规范metadata身份检查60次，含Hyperliquid2次。新增测试失败与首轮主动停止1473项部分执行均保留；正式证据batch-27及SOURCE_CONFIGURATION.md。完整目标继续。

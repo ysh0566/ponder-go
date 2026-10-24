@@ -30,6 +30,9 @@ node tools/compile-fixtures.mjs
 node tools/orm-compile-fixtures.mjs
 node tools/event-compile-fixtures.mjs
 node tools/bloom-compile-fixtures.mjs
+node tools/config-chain-catalog.mjs
+node tools/config-pristine-oracle.mjs
+node tools/record-native-inputs.mjs
 go test -count=1 -json ./abi/testdata/compile/generated > parity/runs/abi-typed-go.jsonl
 go test -count=1 -race -json ./abi/testdata/compile/generated > parity/runs/abi-typed-race.jsonl
 node tools/go-tests.mjs
@@ -43,4 +46,5 @@ node tools/parameters-typecheck.mjs
 (cd sdk/typescript/client && CI=1 ./node_modules/.bin/vitest run --configLoader native --reporter=json --outputFile="$PWD/../../../parity/client-original.json")
 (cd sdk/typescript/react && CI=1 ./node_modules/.bin/vitest run --typecheck.only --configLoader native --reporter=json --outputFile="$PWD/../../../parity/react-original-typecheck-supported.json")
 node tools/differential.mjs
+node tools/config-live-results.mjs
 node tools/record-results.mjs

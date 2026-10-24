@@ -40,6 +40,42 @@ type Client struct {
 	nextTime          time.Time
 	transport         *Client
 	actions           *Actions
+	concurrencyMu     sync.Mutex
+	requestSlots      chan struct{}
+}
+
+// ConfigureConcurrency sets the shared transport limit before its first call.
+// Cache-scoped clients use the same transport slots and rate limiter.
+func (c *Client) ConfigureConcurrency(limit int) error {
+	base := c
+	for base.transport != nil {
+		base = base.transport
+	}
+	if limit < 1 {
+		return fmt.Errorf("RPC concurrency must be a positive integer")
+	}
+	base.concurrencyMu.Lock()
+	defer base.concurrencyMu.Unlock()
+	if base.next.Load() != 0 || base.requestSlots != nil {
+		return fmt.Errorf("RPC concurrency must be configured before requests")
+	}
+	base.requestSlots = make(chan struct{}, limit)
+	return nil
+}
+
+func (c *Client) acquireRequest(ctx context.Context) (func(), error) {
+	c.concurrencyMu.Lock()
+	slots := c.requestSlots
+	c.concurrencyMu.Unlock()
+	if slots == nil {
+		return func() {}, nil
+	}
+	select {
+	case slots <- struct{}{}:
+		return func() { <-slots }, nil
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
 }
 
 // WithCache scopes cache access to an indexing transaction while sharing the
@@ -104,6 +140,11 @@ func (c *Client) call(ctx context.Context, cached bool, method string, params an
 			return json.Unmarshal(raw, out)
 		}
 	}
+	release, err := base.acquireRequest(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
 	var last error
 	for attempt := 0; attempt <= base.Retries; attempt++ {
 		if e := base.wait(ctx); e != nil {
