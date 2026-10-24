@@ -21,8 +21,12 @@ node tools/selected-runtime-oracle.mjs
 node tools/selected-runtime-oracle.mjs --mapped-only
 node tools/event-build-fixtures.mjs
 node tools/rpc-actions-fixtures.mjs
+capture_run="$(date -u +%Y%m%dT%H%M%S)-$$"
+node tools/capture-original.mjs --mode=events --output="parity/runs/original-captures/$capture_run/events" --fixture=testdata/runtime/captured-original-events.json
+node tools/capture-original.mjs --mode=filters --output="parity/runs/original-captures/$capture_run/filters" --fixture=testdata/runtime/captured-original-filters.json
 node tools/compile-fixtures.mjs
 node tools/orm-compile-fixtures.mjs
+node tools/event-compile-fixtures.mjs
 go test -count=1 -json ./abi/testdata/compile/generated > parity/runs/abi-typed-go.jsonl
 go test -count=1 -race -json ./abi/testdata/compile/generated > parity/runs/abi-typed-race.jsonl
 node tools/go-tests.mjs

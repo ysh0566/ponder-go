@@ -1,0 +1,757 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "Only exact source mappings count toward upstream parity. Native regression cases and generated differential vectors are separate evidence.",
+  "parity": {
+    "source_files": 104,
+    "test_declarations": 897,
+    "expanded_static_records": 905,
+    "unresolved_expansion_records": 0,
+    "assertion_expressions": 1905,
+    "type_records": 73,
+    "inline_type_assertions": 63,
+    "type_error_directives": 84,
+    "source_states": {
+      "active": 893,
+      "skip": 10,
+      "todo": 2,
+      "expected_failure": 0
+    },
+    "ported": 317,
+    "executed": 317,
+    "passed": 317,
+    "failed": 0,
+    "blocked": 0,
+    "unimplemented": 588,
+    "go_ports": 313,
+    "retained_sdk": 4,
+    "oracle_passed": 317,
+    "oracle_blocked": 0,
+    "go_passed": 313,
+    "sdk_passed": 4,
+    "go_and_original_oracle_passed": 313,
+    "target_and_original_oracle_passed": 317
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 317,
+    "unimplemented": 588,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 313,
+    "passed_with_required_type_checks": 313,
+    "original_oracle_also_passed": 313,
+    "original_oracle_blocked": 0
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "rpc_action_differential": {
+    "counting": "Supplementary vectors executed by unchanged pinned source functions; no original test record credit. Provider live-RPC tests remain separate.",
+    "vectors": 62,
+    "source_expected_errors": 13,
+    "go": {
+      "pass": 62,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 62,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/rpc/actions-differential.json"
+  },
+  "event_build_differential": {
+    "counting": "Supplemental vectors from actual pinned selected declarations; not original source test credit.",
+    "vectors": 135,
+    "source_expected_errors": 8,
+    "go": {
+      "pass": 135,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 135,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/runtime/event-build-differential.json"
+  },
+  "selected_source_oracle": {
+    "evidence": "parity/runs/selected-runtime-oracle.json",
+    "mode": "unchanged_selected_declarations_with_actual_source_dependencies",
+    "total": 4,
+    "passed": 4,
+    "success": true
+  },
+  "selected_existing_oracle": {
+    "evidence": "parity/runs/selected-mapped-oracle.json",
+    "mode": "unchanged_already_mapped_filter_genesis_split_declarations",
+    "total": 15,
+    "passed": 15,
+    "success": true
+  },
+  "filter_fragment_differential": {
+    "counting": "Synthetic differential vectors only; no source-test credit.",
+    "vectors": 867,
+    "source_expected_exceptions": 4,
+    "go": {
+      "pass": 867,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 867,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/runtime/filter-differential.json"
+  },
+  "original_oracle": {
+    "mapped_passed": 317,
+    "mapped_blocked": 0,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "full_original_backend_oracles": [
+    {
+      "backend": "postgres",
+      "evidence": "parity/runs/full-original-postgres-oracle.json",
+      "scope": "Eight original source files, not complete upstream acceptance or additional Go port credit",
+      "passed": 129,
+      "failed": 0,
+      "pending": 3,
+      "source_context_hashes_verified": true
+    },
+    {
+      "backend": "pglite",
+      "evidence": "parity/runs/full-original-pglite-oracle.json",
+      "scope": "Eight original source files, not complete upstream acceptance or additional Go port credit",
+      "passed": 129,
+      "failed": 0,
+      "pending": 3,
+      "source_context_hashes_verified": true
+    }
+  ],
+  "native_execution_schedule": {
+    "go": {
+      "evidence": "parity/runs/go-test-execution.json",
+      "complete": true,
+      "success": true,
+      "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
+      "packages": 19,
+      "top_level_functions": 126,
+      "batches": 46
+    },
+    "race": {
+      "evidence": "parity/runs/go-race-execution.json",
+      "complete": true,
+      "success": true,
+      "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
+      "packages": 19,
+      "top_level_functions": 126,
+      "batches": 46
+    }
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "orm_type_fixtures": {
+    "source_error_directives": 6,
+    "source_error_directives_passed": 6,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  },
+  "event_type_fixtures": {
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1,
+    "failed": 0
+  },
+  "type_scope": {
+    "dedicated_source_records": 73,
+    "dedicated_retained_sdk_passed": 1,
+    "inline_assertions_discovered": 63,
+    "inline_assertions_native_compiled": 53,
+    "error_directives_discovered": 84,
+    "error_directives_native_verified": 8,
+    "error_directives_retained_sdk_verified": 1
+  },
+  "typed_abi_runtime": {
+    "file": "parity/runs/abi-typed-go.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0,
+    "counting": "Supplementary typed decoder execution; not additional source test records."
+  },
+  "typed_abi_race": {
+    "file": "parity/runs/abi-typed-race.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 185,
+        "pass": 185,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 185,
+        "pass": 185,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "Backend-explicit native leaf test names. Source mappings and backend companions are not added together for source parity.",
+      "go": {
+        "leaf_cases": 182,
+        "pass": 182,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 182,
+        "pass": 182,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "simulation": {
+    "seed_space": "unbounded",
+    "status": "unimplemented",
+    "executed_seeds": 0
+  },
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 1740,
+    "pass": 1740,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 1740,
+    "pass": 1740,
+    "fail": 0,
+    "skip": 0
+  },
+  "foundation_oracle": {
+    "file": "parity/runs/foundation-oracle.json",
+    "total": 34,
+    "passed": 34,
+    "failed": 0
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 203,
+    "passed": 201,
+    "failed": 0
+  },
+  "client": {
+    "file": "parity/client-original.json",
+    "numTotalTests": 3,
+    "numPassedTests": 3,
+    "numFailedTests": 0
+  },
+  "react": true,
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.25.0 linux/amd64",
+    "node": "v24.20.0",
+    "differences": []
+  },
+  "milestone": "M25",
+  "status": "verified_subset_project_incomplete_publication_blocked",
+  "recorded_utc": "2026-10-24T12:18:13.871724+00:00",
+  "based_on": "4d654d598375ce75c4e448051443672326bba8c8",
+  "new_exact_source_records": 15,
+  "new_original_assertion_expressions": 38,
+  "new_source_error_directives": 1,
+  "complete_original_test_file_mappings": {
+    "packages/core/src/runtime/events.test.ts": {
+      "mapped": 11,
+      "total": 11
+    },
+    "packages/core/src/runtime/filter.test.ts": {
+      "mapped": 23,
+      "total": 23
+    }
+  },
+  "native_leaf_delta": 17,
+  "native_delta_breakdown": {
+    "exact_source_cases": 15,
+    "supplementary_account_integer_projection": 2
+  },
+  "commands": [
+    {
+      "command": "GOFLAGS=-p=1 GOMAXPROCS=2 flock <task-heavy-test-lock> ./tools/verify.sh",
+      "exit_code": 1,
+      "log": "parity/runs/events-m25/full-verify-01.txt",
+      "note": "Stopped at legacy selective-oracle selection count after new mappings expanded its scope. No Go/race runs in this attempt. Selection predicate restored to its intended old14 filters plus split; new9 use complete original capture. Original assertions/helpers unchanged."
+    },
+    {
+      "command": "GOFLAGS=-p=1 GOMAXPROCS=2 flock <task-heavy-test-lock> ./tools/verify.sh",
+      "exit_code": 0,
+      "log": "parity/runs/events-m25/full-verify-02.txt",
+      "exit_receipt": "parity/runs/events-m25/full-verify-02.exit",
+      "note": "Complete module and codegen/type/oracle/SDK/differential gates. Native sources fixed for normal/race, matching start/end fingerprint. All126 listed functions across19 packages and46 sequential disjoint batches per mode; default Go timeout retained."
+    },
+    {
+      "command": "go test -count=1 -race -json <events/filter exact original cases and actual backend/projection groups>",
+      "exit_code": 0,
+      "evidence": "parity/runs/events-m25/source-focused-first.jsonl",
+      "leaf_pass": 27
+    },
+    {
+      "command": "fixed M24 native regression red then lossless projection focused race green",
+      "red_exit_code": 1,
+      "red_pass": 1,
+      "red_fail": 1,
+      "green_exit_code": 0,
+      "green_pass": 8,
+      "evidence": "parity/runs/events-m25/account-projection-red.jsonl"
+    },
+    {
+      "command": "sh -n tools/verify.sh; node --check <capture/compiler/recorder scripts>; git diff --check; verify previous frozen hashes and pristine upstream",
+      "exit_code": 0,
+      "evidence": "parity/runs/events-m25/static-checks.json"
+    }
+  ],
+  "native_source_fingerprint": {
+    "files": 919,
+    "sha256": "3ce5807f7885723be039c5b555ad9329aa5fe057f59cee57fb187c2ab85244ea"
+  },
+  "implementation": [
+    {
+      "file": "runtime/accounts.go",
+      "sha256": "555984152001a07bab16302ba46abc653805e889d8f47ea830932b0bec75f676"
+    },
+    {
+      "file": "runtime/decode.go",
+      "sha256": "060102ede00b4d1a047bc4f8208e3f243620776db2166b11dda347b5ba26a28a"
+    },
+    {
+      "file": "runtime/engine.go",
+      "sha256": "1d0e3115ee653883d95114f91f4802b9d311ab768237f7ff3658bc749fe32ffb"
+    },
+    {
+      "file": "runtime/account_projection_regression_test.go",
+      "sha256": "c67be19f2afd82066f78f7c717d7a8c6d2f576b1655e4a078ea29327f2c6c97a"
+    },
+    {
+      "file": "events/callbacks.go",
+      "sha256": "aa909c3d6df4068fcc4a15ef84bd8e9d12c97a42eec228433aec4642008f5306"
+    },
+    {
+      "file": "events/upstream_contract_test.go",
+      "sha256": "ae81b4afd86fed53e8ab4bc76eb0f6308e25fbb619db1fd2e22a222332b93663"
+    },
+    {
+      "file": "filter/remaining_upstream_test.go",
+      "sha256": "d7c3364345538bdad23e717985838d1062e042e7bb4a7af9f94d6f4fb173043f"
+    },
+    {
+      "file": "events/testdata/compile/callback-union-positive.go",
+      "sha256": "0a15bb476654c4e720152b6f16319f8c452ecae00cec357040ac3979ec82b104"
+    },
+    {
+      "file": "events/testdata/compile/callback-union-negative.go.txt",
+      "sha256": "e349b6fd0f747d4d3d1ce999aec4602d68df9ef718f34c92277391ea7dd536a8"
+    },
+    {
+      "file": "tools/capture-original.mjs",
+      "sha256": "10de2a10352fa2c878c255c4badd83aa08a7e353be3c54585c5f1f93a39da81c"
+    },
+    {
+      "file": "tools/capture-original.config.mjs",
+      "sha256": "97dc28dd4a0929f11ee6ea4f93cb8fc55da6e3d4bdd327a1c04334dc72f26357"
+    },
+    {
+      "file": "tools/capture-original.setup.ts",
+      "sha256": "6bbc4bef987cb776c06f27c5d99a66a0a1f96d6b8e57eb536b172b744d6f9bf5"
+    },
+    {
+      "file": "tools/event-compile-fixtures.mjs",
+      "sha256": "bf80f11bb8b8866ccdb77b04583d4d03a0be02ed8a0aea44bcbded165c675eef"
+    },
+    {
+      "file": "tools/selected-runtime-oracle.mjs",
+      "sha256": "642f1ee252439ce08f14ebc80b89ec8a4d8b91d6145ad6206f69adebc74e95bf"
+    },
+    {
+      "file": "tools/record-results.mjs",
+      "sha256": "321854e9a08c6847f50cc6f32035eab445cc3bae5923668e1d343f91e60fccd1"
+    },
+    {
+      "file": "tools/verify.sh",
+      "sha256": "6c1ee317f9de84350d474333670964a3a3b9c3f9d9d0c6126b4991a3184ae9eb"
+    }
+  ],
+  "frozen_evidence": [
+    {
+      "file": "parity/runs/batch-24-evidence/summary.json",
+      "sha256": "cb064386809f137fb85998e88df85cd98d9007271b5ac5f3b4b2b6e7f425e0ef",
+      "bytes": 8506,
+      "copied_from": "parity/runs/summary.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/parity/test-ledger.json",
+      "sha256": "c6e089bd589dbffa82cb35d6a2879f69feb55bb4090544484e8e73ac9a9110b1",
+      "bytes": 3234622,
+      "copied_from": "parity/test-ledger.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/parity/mappings.json",
+      "sha256": "051ed66e62216aa7e70e29d3fe6fe4d9973f51ea4babc0c983562b87ce32ef36",
+      "bytes": 321931,
+      "copied_from": "parity/mappings.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/parity/events-filter-completion-source-cases.json",
+      "sha256": "6b3a52e1480c05ad4604153fd8e4212ee0d3b747d7e1c8f2f663a01e3f996211",
+      "bytes": 65900,
+      "copied_from": "parity/events-filter-completion-source-cases.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/go-test.jsonl",
+      "sha256": "6ea72e751fc0144756ec1a6c3c41afad02e3160e7202e339437389283ecf4578",
+      "bytes": 1544273,
+      "copied_from": "parity/runs/go-test.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/go-race.jsonl",
+      "sha256": "ca381fe8521c2ffc2ab77858d6be7642d32ad992455817009c6e02d786fff131",
+      "bytes": 1544293,
+      "copied_from": "parity/runs/go-race.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/go-test-execution.json",
+      "sha256": "b32e0f7ac40e0b84504b1959cff58b537986bcaf303452480a6eaaea25e45932",
+      "bytes": 37600,
+      "copied_from": "parity/runs/go-test-execution.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/go-race-execution.json",
+      "sha256": "2a50a04a7c0e2f12b5e9f5f0110bc2340c690059041858c78811b8ec778707a1",
+      "bytes": 38571,
+      "copied_from": "parity/runs/go-race-execution.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/go-vet.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "copied_from": "parity/runs/go-vet.txt"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/tool-versions.txt",
+      "sha256": "05fc9ce42c402ed89c3498ba4bad4ca779e40ecd04eb938b8602e6c2a868a6fa",
+      "bytes": 233,
+      "copied_from": "parity/runs/tool-versions.txt"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/publication-read.json",
+      "sha256": "e811c5e475d57d0954e561a673378ff04e5f0f3f33b8df22a6783a8c50aa9af1",
+      "bytes": 2305,
+      "copied_from": "parity/runs/events-m25/publication-read.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/publication-auth-recheck.json",
+      "sha256": "dbee0b4dfe1c1c31d33056c96bbacb807b4dd8fe067d220a17827ac89aa11214",
+      "bytes": 1315,
+      "copied_from": "parity/runs/events-m25/publication-auth-recheck.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/publication-ssh-recheck.json",
+      "sha256": "f4dc6429cb9a9009c78e239fbde6f786bed29ab34cd78bcc0ba5574a8841b40a",
+      "bytes": 1323,
+      "copied_from": "parity/runs/events-m25/publication-ssh-recheck.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/abi-typed-go.jsonl",
+      "sha256": "9f38690ef2c79c8697735cbb1f5b76857af6d12f67aff1b430f0d0be7a3b29fc",
+      "bytes": 49118,
+      "copied_from": "parity/runs/abi-typed-go.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/abi-typed-race.jsonl",
+      "sha256": "d51b960b0d5500f90e95db97bfcd39d9743fae6c323fe1eefd26b182502d83af",
+      "bytes": 49125,
+      "copied_from": "parity/runs/abi-typed-race.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/compile-fixtures.json",
+      "sha256": "c2bfab43654609f82ba2a1d744622ca44df6f757a710554a169e9223042c86fe",
+      "bytes": 72943,
+      "copied_from": "parity/runs/compile-fixtures.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/orm-compile-fixtures.json",
+      "sha256": "02431cfafa8fcbd626861918ac3f171fbbcaf980ead04f150bbf2f8a25f63272",
+      "bytes": 13363,
+      "copied_from": "parity/runs/orm-compile-fixtures.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/event-compile-fixtures.json",
+      "sha256": "84309324fd1007e5969ccd904c4e5ed5d31c7d1c80cf013f228754126d85ac25",
+      "bytes": 2522,
+      "copied_from": "parity/runs/event-compile-fixtures.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/abi-codegen-stages.json",
+      "sha256": "7b387493e2666f9fb66a7ca1d03b8549cf499a3597138242e739cfd93e3e918e",
+      "bytes": 832,
+      "copied_from": "parity/runs/abi-codegen-stages.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/orm-codegen-stages.json",
+      "sha256": "7b4bbfc2f9bc81c33dc067b6a4fdc8a82603c3cc2869f51f6e93a876806ab62f",
+      "bytes": 1435,
+      "copied_from": "parity/runs/orm-codegen-stages.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/parameters-typecheck.json",
+      "sha256": "92c5c2a30ff31db3f5dea19de6564d9ca1ea58336682f70137a6be4443157bcb",
+      "bytes": 589,
+      "copied_from": "parity/runs/parameters-typecheck.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/foundation-oracle.json",
+      "sha256": "edcdc1031c47ddcebc3c17292768ffdecce142376e9f24625ee01f79812a010b",
+      "bytes": 9123,
+      "copied_from": "parity/runs/foundation-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/core-oracle.json",
+      "sha256": "506251edc099e532821b51534e4df4da107ff8656be965c438486b6855529de0",
+      "bytes": 49599,
+      "copied_from": "parity/runs/core-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/full-original-postgres-oracle.json",
+      "sha256": "0655723634454be1fb41b15f02e75041645ff0a3beb8fef4104c064672ee88af",
+      "bytes": 54574,
+      "copied_from": "parity/runs/full-original-postgres-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/full-original-pglite-oracle.json",
+      "sha256": "5d22579ef01dd88ee9d1122b18f8a253c55546ddb74b0ebc529edc2fc2a8f1ba",
+      "bytes": 55647,
+      "copied_from": "parity/runs/full-original-pglite-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/selected-runtime-oracle.json",
+      "sha256": "4f07a94a93edd8033a4ba5b6f4bd5c2e4d5f8a15beb593b410650ef59e2f924b",
+      "bytes": 1670,
+      "copied_from": "parity/runs/selected-runtime-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/selected-mapped-oracle.json",
+      "sha256": "da43a80a9b078957a862bea3ed6216f884bd7bf20ca223b1d6fdbc72b065c82a",
+      "bytes": 5135,
+      "copied_from": "parity/runs/selected-mapped-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/parity/client-original.json",
+      "sha256": "23b3245e4d301a88464964ffe788b6e57e38f2cf432a83694b0be3bb3649733e",
+      "bytes": 1266,
+      "copied_from": "parity/client-original.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/parity/react-original-typecheck-supported.json",
+      "sha256": "426e0e2ee67e009dbec323f2a4536eaec48ead5d025119514013ad6523b8f94f",
+      "bytes": 887,
+      "copied_from": "parity/react-original-typecheck-supported.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/differential.json",
+      "sha256": "b3e76a40cc1f9a715a77364adf7b4fa9a21e4a77ce7f6052095c3dfc0fdddaf2",
+      "bytes": 469,
+      "copied_from": "parity/runs/differential.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/source-focused-first.jsonl",
+      "sha256": "774a9cd5a5f23b2b9d877b3a519287db121eb4812f1835d96f02ffb4b6768945",
+      "bytes": 29755,
+      "copied_from": "parity/runs/events-m25/source-focused-first.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/source-focused-first.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/events-m25/source-focused-first.exit"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/account-projection-red.jsonl",
+      "sha256": "8cc52ca476711517e0e4ece1c0dad372dd5a4b4ae0648f9693899a3cb6614fa1",
+      "bytes": 3440,
+      "copied_from": "parity/runs/events-m25/account-projection-red.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/account-projection-red.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2,
+      "copied_from": "parity/runs/events-m25/account-projection-red.exit"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/account-projection-green-race.jsonl",
+      "sha256": "00c63948e7c5704d87b9d8f7442f3b50eedb2525972e10976ba2694a30f56f8b",
+      "bytes": 9177,
+      "copied_from": "parity/runs/events-m25/account-projection-green-race.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/account-projection-green-race.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/events-m25/account-projection-green-race.exit"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/static-checks.json",
+      "sha256": "78185ad40b997175422fc1d7d15d6205e41edd9d6c7733b1256022f515775bfb",
+      "bytes": 3787,
+      "copied_from": "parity/runs/events-m25/static-checks.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/full-verify-01.txt",
+      "sha256": "a13d75e1b6ff090bf3c2af659b5b9615407d36dc0204ddf567433851105e4afd",
+      "bytes": 2809,
+      "copied_from": "parity/runs/events-m25/full-verify-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/full-verify-01.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2,
+      "copied_from": "parity/runs/events-m25/full-verify-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/full-verify-02.txt",
+      "sha256": "ea913a8cdd41d70abd5ed180081f552f9280b2185e1065598ca883a20973fb7e",
+      "bytes": 16896,
+      "copied_from": "parity/runs/events-m25/full-verify-02.txt"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/events-m25/full-verify-02.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/events-m25/full-verify-02.exit"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/testdata/runtime/captured-original-events.json",
+      "sha256": "a54a3e4a3397f25777fafab152b9e3177dbd8185e02417007db15306d9d0456a",
+      "bytes": 608027,
+      "copied_from": "testdata/runtime/captured-original-events.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/testdata/runtime/captured-original-filters.json",
+      "sha256": "ed97a19732685f5852415ebc269583fbcf57dee6ffe37d4716db1fd0377d29ba",
+      "bytes": 199350,
+      "copied_from": "testdata/runtime/captured-original-filters.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/original-captures/20261024T113846-2090702/events/calls.json",
+      "sha256": "a54a3e4a3397f25777fafab152b9e3177dbd8185e02417007db15306d9d0456a",
+      "bytes": 608027,
+      "copied_from": "parity/runs/original-captures/20261024T113846-2090702/events/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/original-captures/20261024T113846-2090702/events/original.json",
+      "sha256": "8e3c5271d354168df2e6cb8afcda020d38378ef71f033cbb7bda72c6b07d152f",
+      "bytes": 2988,
+      "copied_from": "parity/runs/original-captures/20261024T113846-2090702/events/original.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/original-captures/20261024T113846-2090702/events/result.json",
+      "sha256": "0b6f3f4a480eba090a04539b5e10ac4ec7d9df0cb2321406ad6822a4292535c9",
+      "bytes": 1171,
+      "copied_from": "parity/runs/original-captures/20261024T113846-2090702/events/result.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/original-captures/20261024T113846-2090702/events/bindings.jsonl",
+      "sha256": "ac90da339c3be9439d7a5e8d8be30f8a72fc2429139b0016634aa89de30d7f12",
+      "bytes": 51,
+      "copied_from": "parity/runs/original-captures/20261024T113846-2090702/events/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/original-captures/20261024T113846-2090702/events/output.txt",
+      "sha256": "164ea2ec1f4bcdebbb7984641130229901a3bea5d8ace7103ce410e2b763ab90",
+      "bytes": 129,
+      "copied_from": "parity/runs/original-captures/20261024T113846-2090702/events/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/original-captures/20261024T113846-2090702/filters/calls.json",
+      "sha256": "ed97a19732685f5852415ebc269583fbcf57dee6ffe37d4716db1fd0377d29ba",
+      "bytes": 199350,
+      "copied_from": "parity/runs/original-captures/20261024T113846-2090702/filters/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/original-captures/20261024T113846-2090702/filters/original.json",
+      "sha256": "fa213023c0d314a7b549cb80d8ef66eeaeaf5bd7a274a8b4ca8d0d653734b589",
+      "bytes": 6676,
+      "copied_from": "parity/runs/original-captures/20261024T113846-2090702/filters/original.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/original-captures/20261024T113846-2090702/filters/result.json",
+      "sha256": "e38bfed44ca6a4f5f533ee94123b7a86f528720617e1b518de3e80bb5302ee4f",
+      "bytes": 1175,
+      "copied_from": "parity/runs/original-captures/20261024T113846-2090702/filters/result.json"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/original-captures/20261024T113846-2090702/filters/bindings.jsonl",
+      "sha256": "f2e50829a7089d4236bbf71dbb2d4adf4f979f50dc5fd414fb531cbc571b044f",
+      "bytes": 102,
+      "copied_from": "parity/runs/original-captures/20261024T113846-2090702/filters/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-24-evidence/original-captures/20261024T113846-2090702/filters/output.txt",
+      "sha256": "31698ab06977deed95718b251ef457165987ad9f23a919280ee60a2e6bc21f19",
+      "bytes": 324,
+      "copied_from": "parity/runs/original-captures/20261024T113846-2090702/filters/output.txt"
+    }
+  ],
+  "publication_check": "parity/runs/rpc-actions-m24/publication-check.json",
+  "published": false,
+  "next_drafts_in_candidate": false,
+  "scope_limits": [
+    "317/905 static source records mapped;588 unimplemented. Static inventory is not proof of runtime discovery exhaustiveness.",
+    "New original fixture captures execute complete files with unchanged assertions/helpers/generated ABI through call-through spies. They are labelled instrumented capture separately from pristine original backend acceptance. Go replays the materialized original operation inputs/results and mutation state.",
+    "All event/filter test declarations are mapped; complete runtime/config/include/planner/performance/public static API compatibility is not thereby proven.",
+    "Callback union compiler proof verifies the ABI property boundary before narrowing. Dynamic callback function/filter/metadata fields and the legacy Object API remain broader than source TS types.",
+    "Account JSON integer projection shares UseNumber only; existing optional-field defaults and raw input semantics are preserved. Native regression adds no source credit.",
+    "Original PG/PGlite acceptance reports cover eight files129 pass/3 original skips each, not all upstream tests. Existing reports are hash-validated; not falsely described as freshly rerun in M25.",
+    "Factory account targets and source configuration, multichain scheduling, GraphQL/query/API/SSE, SDK/types, CLI/dev/templates, simulation and remaining ledger continue; zero-change TS and old database adoption are separate incomplete tracks.",
+    "Exact local commits remain unpublished because no existing authorized exact-object upload transport is available. No new credentials, permissions, Mac operations, force push or commit rewriting."
+  ]
+}

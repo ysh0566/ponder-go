@@ -2,7 +2,22 @@
 
 任务没有完成。先读 `AGENTS.md`、本文件、`parity/runs/summary.json`、`parity/test-ledger.json` 和 `parity/feature-ledger.json`。不要把新增集成测试或差分向量算成上游逐例移植。
 
-## 当前执行入口：cloudcone2 M24已验证，完整目标继续
+## 当前执行入口：cloudcone2 M25已验证，完整目标继续
+
+当前 checkout `/root/ponder-go/work/ponder-go`；固定上游相邻 `ponder-upstream`，HEAD `17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`。M25 是 M24 `4d654d598375ce75c4e448051443672326bba8c8` 的普通本地后继，提交以 Git HEAD 为准，未发布。最新验收为 `parity/runs/batch-24.json`、`batch-24-evidence/` 和 `summary.json`。
+
+新增15个精确原例（events6/filter9）、38个原断言表达式和1个 callback union 编译错误义务。现在 events11/11、filter23/23 均映射；完整原文件用真实生成ABI和部署/转账helper、未改断言实际通过11/23。call-through采集与此前八文件的 pristine PG/PGlite 原版验收分开标注；Go逐项重放完整输入、结果、调用后状态及原显式断言。public callback union 的正向构建/运行和具体负向编译诊断均通过，不宣称动态filter/metadata/Fn和旧Object API完全具备TS静态约束。账户JSON整数舍入缺口经固定版本红灯、修复后race验证；只共享UseNumber，不变更两个路径缺省行为。见 `docs/EVENT_SOURCE_COMPLETION.md`。
+
+完整 verify 第二次退出0：Go/race各1740通过、0失败/skip，PG185/PGlite182分别通过；19包、126顶层函数、46不重复串行批次，原Go默认timeout保留。前后指纹919文件/3ce5807f7885723be039c5b555ad9329aa5fe057f59cee57fb187c2ab85244ea一致。类型/ABI/ORM、SDK、vet/build、适用oracle与2466+867+135+20+62补充差分通过。首次verify在旧选择性oracle错误纳入新增filter映射时退出1，尚未执行Go/race；已恢复旧14filter+split选择范围，新增9例走完整文件采集，失败日志保留。
+
+累计317/905映射并执行通过=313Go+4SDK，588静态记录未实现。native编译验证8条源码错误义务，retained SDK另1条；剩余types、905动态穷尽性和完整功能仍未完成。此前八个原版文件在PG/PGlite各129通过/3原skip的上下文和报告hash复核通过，本轮未把旧报告称为新跑的完整上游验收。
+
+发布阻塞仍是既有传输没有目标仓库权限、连接器不能上传保持本地SHA的原始commit对象。M23/M24精确本地提交和已校验bundle保留；M25完成本地提交后另导出只含已验证提交的bundle。具体证据及既有认证非Mac环境的普通快进步骤见 `parity/runs/rpc-actions-m24/publication-check.json`。不新建凭据/权限、不操作Mac、不强推/改写历史。
+
+下一步接factory account目标：独立草稿位于项目外部任务资料目录，尚未编译/接入/计数。先核对5个base hash，再只接config API做真实功能红灯，然后接发现、birth匹配和早于业务start的factory起点，分别验证legacy逐事件事务和staged整块事务、PG/PGlite关闭重开、safe后live重放、缓存开关、同parent交易hash的不同child分支和旧地址清理。旧contract factory默认ToBlock/ID不可随意更改以免重用旧interval；完整config/identity升级设计仍待做。继续完整source配置/history planner、多链三种ordering、查询/API/CLI/dev/templates/类型/SDK/simulation，任务未完成。
+
+## M24：上一已验证云端基线
+
 
 实际checkout是 `/root/ponder-go/work/ponder-go`，完整固定上游在相邻 `ponder-upstream`。27个原始Git提交与1916文件已校验恢复。M23本地提交 `3e208c1b35beaa87f936a958391ca431df80c757`，M24是其普通本地后继，以Git HEAD为准。没有改历史或操作Mac。最新正式证据为 `parity/runs/batch-23.json`、`batch-23-evidence/` 与 `parity/runs/summary.json`；下方M22是冻结Mac历史。
 
@@ -14,7 +29,9 @@ M24补齐剩余10个rpc.actions原例、29个原断言，包含分页惰性/提�
 
 发布仍阻塞。父会话显式授权区分传输账号与commit身份后，禁用转发agent、仅用既有云端SSH key做只读目标检查，返回Repository not found。ysh0566连接有blob/tree和普通ref API，但无raw commit或author/committer/时间输入，无法保留本地原SHA；远端main核实时仍9180e4f。具体证据及已有认证的非Mac环境导入Git bundle后普通快进推送的最小步骤见 `parity/runs/rpc-actions-m24/publication-check.json`。不创建凭据、增权限、改写提交或强推；本地提交不能称已发布。
 
-下一批：完整原events剩余6例、filter剩余9例的真实生成ABI/原helper/原断言采集与Go重放；trace无output的1个编译错误来自callback联合类型未收窄，需要真实public Go类型边界的正反编译验证，不能凭runtime通过给credit。独立草稿在 `.cloud-bootstrap/events-next`，均未合入或验收。另有账户分支JSON整数投影精度回归待做固定版本红绿验证。随后继续factory account目标、完整配置与历史planner、多链三种ordering、完整查询/API/CLI/dev/templates/类型/SDK/simulation；完整目标未完成。
+M25完整验收已完成，最新计数和后续工作以上方M25入口及batch-24为准；本节保留M24历史，不覆盖最新结果。
+
+随后继续factory account目标、完整配置与历史planner、多链三种ordering、完整查询/API/CLI/dev/templates/类型/SDK/simulation；完整目标未完成。
 
 ## 当前交接入口：M22，Mac 暂停以切换云端
 

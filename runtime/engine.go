@@ -455,7 +455,7 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 				if err != nil {
 					return err
 				}
-				callback := protocol.Object{"name": eventName, "type": "contract", "chain": protocol.Object{"id": e.chain.ID, "name": e.chain.Name}, "filter": protocol.Object{"type": "log"}, "abiItem": item}
+				callback := protocol.ContractCallback[abi.Event]{CallbackBase: protocol.CallbackBase{Name: eventName, Chain: protocol.Object{"id": e.chain.ID, "name": e.chain.Name}, Filter: protocol.Object{"type": "log"}}, ABIItem: item}.CallbackObject()
 				events = append(events, pending{cursor: cursor, id: fmt.Sprintf("log:%d:%s:%s:%s", e.chain.ID, b.Hash, contract.Name, log.LogIndex), event: Event{Name: eventName, Block: b, Log: &copyLog, Transaction: transaction, Receipt: receipt, Normalized: raw}, callback: callback})
 			}
 		}

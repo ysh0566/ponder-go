@@ -2,7 +2,6 @@ package runtime
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -52,7 +51,7 @@ func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]p
 			if source.EndBlock != nil {
 				f["toBlock"] = *source.EndBlock
 			}
-			callbacks = append(callbacks, protocol.Object{"name": name, "type": "contract", "chain": protocol.Object{"id": e.chain.ID, "name": e.chain.Name}, "filter": f, "abiItem": item})
+			callbacks = append(callbacks, protocol.ContractCallback[abi.Function]{CallbackBase: protocol.CallbackBase{Name: name, Chain: protocol.Object{"id": e.chain.ID, "name": e.chain.Name}, Filter: f}, ABIItem: item}.CallbackObject())
 			needsTrace = true
 		}
 	}
@@ -88,12 +87,8 @@ func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]p
 	if len(callbacks) == 0 {
 		return out, nil
 	}
-	encoded, err := json.Marshal(b)
+	rawBlock, err := projectionObject(b)
 	if err != nil {
-		return nil, err
-	}
-	var rawBlock map[string]any
-	if err = json.Unmarshal(encoded, &rawBlock); err != nil {
 		return nil, err
 	}
 	block, err := protocol.SyncBlockToInternal(rawBlock)

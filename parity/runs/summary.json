@@ -20,31 +20,31 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 302,
-    "executed": 302,
-    "passed": 302,
+    "ported": 317,
+    "executed": 317,
+    "passed": 317,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 603,
-    "go_ports": 298,
+    "unimplemented": 588,
+    "go_ports": 313,
     "retained_sdk": 4,
-    "oracle_passed": 302,
+    "oracle_passed": 317,
     "oracle_blocked": 0,
-    "go_passed": 298,
+    "go_passed": 313,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 298,
-    "target_and_original_oracle_passed": 302
+    "go_and_original_oracle_passed": 313,
+    "target_and_original_oracle_passed": 317
   },
   "source_records": {
     "statically_discovered": 905,
-    "mapped": 302,
-    "unimplemented": 603,
+    "mapped": 317,
+    "unimplemented": 588,
     "discovery_is_not_proven_runtime_exhaustive": true
   },
   "mapped_go": {
-    "mapped": 298,
-    "passed_with_required_type_checks": 298,
-    "original_oracle_also_passed": 298,
+    "mapped": 313,
+    "passed_with_required_type_checks": 313,
+    "original_oracle_also_passed": 313,
     "original_oracle_blocked": 0
   },
   "retained_sdk": {
@@ -114,7 +114,7 @@
     "evidence": "testdata/runtime/filter-differential.json"
   },
   "original_oracle": {
-    "mapped_passed": 302,
+    "mapped_passed": 317,
     "mapped_blocked": 0,
     "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
   },
@@ -145,8 +145,8 @@
       "success": true,
       "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
       "packages": 19,
-      "top_level_functions": 123,
-      "batches": 44
+      "top_level_functions": 126,
+      "batches": 46
     },
     "race": {
       "evidence": "parity/runs/go-race-execution.json",
@@ -154,8 +154,8 @@
       "success": true,
       "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
       "packages": 19,
-      "top_level_functions": 123,
-      "batches": 44
+      "top_level_functions": 126,
+      "batches": 46
     }
   },
   "type_fixtures": {
@@ -173,13 +173,18 @@
     "supplemental_rejected": 6,
     "failed": 0
   },
+  "event_type_fixtures": {
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1,
+    "failed": 0
+  },
   "type_scope": {
     "dedicated_source_records": 73,
     "dedicated_retained_sdk_passed": 1,
     "inline_assertions_discovered": 63,
     "inline_assertions_native_compiled": 53,
     "error_directives_discovered": 84,
-    "error_directives_native_verified": 7,
+    "error_directives_native_verified": 8,
     "error_directives_retained_sdk_verified": 1
   },
   "typed_abi_runtime": {
@@ -238,15 +243,15 @@
   },
   "native_go": {
     "file": "parity/runs/go-test.jsonl",
-    "leaf_cases": 1723,
-    "pass": 1723,
+    "leaf_cases": 1740,
+    "pass": 1740,
     "fail": 0,
     "skip": 0
   },
   "race": {
     "file": "parity/runs/go-race.jsonl",
-    "leaf_cases": 1723,
-    "pass": 1723,
+    "leaf_cases": 1740,
+    "pass": 1740,
     "fail": 0,
     "skip": 0
   },
