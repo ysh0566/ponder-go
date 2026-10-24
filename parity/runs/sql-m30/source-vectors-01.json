@@ -1,0 +1,1395 @@
+{
+  "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "source_parser_version": 160001,
+  "counting": "Supplementary actual source calls, zero original mappings. Native tests compare readonly, first and cached validation, ordered relation sets and exact helper diagnostics.",
+  "sources": [
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/sql-parse.ts",
+      "sha256": "3f33cc4cb320b29a5c218412c9be30cbb918daaf06798124811657aa7cb48d31"
+    },
+    {
+      "file": "../ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/node_modules/pg-query-emscripten/pg_query.js",
+      "sha256": "0506f7a1956cf13e0038ba9f34046bd805eb6b910f466e0917edc41fc5cba98d"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/node_modules/pg-query-emscripten/package.json",
+      "sha256": "035deefd06d8c0d6d28365a7aee049cb02d7b0a4fae56bbfd6b54e39f4a8e44b"
+    },
+    {
+      "file": "tools/sql-vectors.mjs",
+      "sha256": "d3d74ade43c010c21f0e1f28130019e8fd74870d0bc4c9888692ad815c1581ca"
+    }
+  ],
+  "cases": [
+    {
+      "id": "sql-source-001",
+      "sql": "",
+      "source_utf16_length": 0,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      }
+    },
+    {
+      "id": "sql-source-002",
+      "sql": ";",
+      "source_utf16_length": 1,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      }
+    },
+    {
+      "id": "sql-source-003",
+      "sql": "/* empty */",
+      "source_utf16_length": 11,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      }
+    },
+    {
+      "id": "sql-source-004",
+      "sql": "SELECT 1; SELECT 2;",
+      "source_utf16_length": 19,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Multiple statements not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Multiple statements not supported"
+        }
+      }
+    },
+    {
+      "id": "sql-source-005",
+      "sql": "SELECT",
+      "source_utf16_length": 6,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": []
+      }
+    },
+    {
+      "id": "sql-source-006",
+      "sql": "SELEKT 1",
+      "source_utf16_length": 8,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "[object Object]"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "[object Object]"
+        }
+      }
+    },
+    {
+      "id": "sql-source-007",
+      "sql": "SELECT 'unterminated",
+      "source_utf16_length": 20,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "[object Object]"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "[object Object]"
+        }
+      }
+    },
+    {
+      "id": "sql-source-008",
+      "sql": "SELECT * FROM users",
+      "source_utf16_length": 19,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-009",
+      "sql": "SELECT u.name FROM users AS u",
+      "source_utf16_length": 29,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-010",
+      "sql": "SELECT * FROM users AS u JOIN metadata AS m ON u.id=m.id",
+      "source_utf16_length": 56,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users",
+          "metadata"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-011",
+      "sql": "SELECT * FROM \"offchain\".\"metadata\"",
+      "source_utf16_length": 35,
+      "readonly": true,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Schema name not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "metadata"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-012",
+      "sql": "SELECT * FROM pg_stat_activity",
+      "source_utf16_length": 30,
+      "readonly": true,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "System tables not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "pg_stat_activity"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-013",
+      "sql": "SELECT * FROM _ponder_checkpoint",
+      "source_utf16_length": 32,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "_ponder_checkpoint"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-014",
+      "sql": "SELECT * INTO users",
+      "source_utf16_length": 19,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "IntoClause not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "IntoClause not supported"
+        }
+      }
+    },
+    {
+      "id": "sql-source-015",
+      "sql": "SELECT * FROM users FOR UPDATE",
+      "source_utf16_length": 30,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "LockingClause not supported"
+        }
+      }
+    },
+    {
+      "id": "sql-source-016",
+      "sql": "SELECT * FROM users FOR SHARE",
+      "source_utf16_length": 29,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "LockingClause not supported"
+        }
+      }
+    },
+    {
+      "id": "sql-source-017",
+      "sql": "WITH cte AS (SELECT * FROM users) SELECT * FROM cte",
+      "source_utf16_length": 51,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "cte",
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-018",
+      "sql": "WITH cte AS MATERIALIZED (SELECT * FROM users) SELECT * FROM cte",
+      "source_utf16_length": 64,
+      "readonly": true,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid CTE"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "cte",
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-019",
+      "sql": "WITH cte AS NOT MATERIALIZED (SELECT * FROM users) SELECT * FROM cte",
+      "source_utf16_length": 68,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "cte",
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-020",
+      "sql": "WITH RECURSIVE cte AS (SELECT 1 AS num UNION ALL SELECT num+1 FROM cte) SELECT * FROM cte",
+      "source_utf16_length": 89,
+      "readonly": true,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Recursive CTEs not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "cte"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-021",
+      "sql": "SELECT * FROM users UNION ALL SELECT * FROM admins",
+      "source_utf16_length": 50,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users",
+          "admins"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-022",
+      "sql": "SELECT * FROM (SELECT * FROM users) AS nested",
+      "source_utf16_length": 45,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-023",
+      "sql": "SELECT EXISTS(SELECT * FROM users)",
+      "source_utf16_length": 34,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "SubLink not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "SubLink not supported"
+        }
+      }
+    },
+    {
+      "id": "sql-source-024",
+      "sql": "SELECT count(*) OVER (PARTITION BY id ORDER BY id) FROM users",
+      "source_utf16_length": 61,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-025",
+      "sql": "SELECT sum(balance) FILTER (WHERE balance>0) FROM account",
+      "source_utf16_length": 57,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "account"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-026",
+      "sql": "SELECT json_agg(id) FROM users",
+      "source_utf16_length": 30,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-027",
+      "sql": "SELECT json_build_array(1, 'x')",
+      "source_utf16_length": 31,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": []
+      }
+    },
+    {
+      "id": "sql-source-028",
+      "sql": "SELECT pg_catalog.count(*) FROM users",
+      "source_utf16_length": 37,
+      "readonly": true,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Function call not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-029",
+      "sql": "SELECT pg_sleep(1)",
+      "source_utf16_length": 18,
+      "readonly": true,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Function call not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": true,
+        "value": []
+      }
+    },
+    {
+      "id": "sql-source-030",
+      "sql": "SELECT blow_up()",
+      "source_utf16_length": 16,
+      "readonly": true,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Function call not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": true,
+        "value": []
+      }
+    },
+    {
+      "id": "sql-source-031",
+      "sql": "SELECT * FROM unnest(ARRAY[1,2,3]) AS n",
+      "source_utf16_length": 39,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "RangeFunction not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "RangeFunction not supported"
+        }
+      }
+    },
+    {
+      "id": "sql-source-032",
+      "sql": "SELECT a[1] FROM users",
+      "source_utf16_length": 22,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-033",
+      "sql": "SELECT ARRAY[1,2,3]",
+      "source_utf16_length": 19,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": []
+      }
+    },
+    {
+      "id": "sql-source-034",
+      "sql": "SELECT balance::numeric FROM users",
+      "source_utf16_length": 34,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-035",
+      "sql": "SELECT CASE WHEN balance>0 THEN 1 ELSE 0 END FROM users",
+      "source_utf16_length": 55,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-036",
+      "sql": "SELECT COALESCE(balance,0) FROM users",
+      "source_utf16_length": 37,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-037",
+      "sql": "SELECT * FROM users GROUP BY ROLLUP(id) ORDER BY id LIMIT $1 OFFSET $2",
+      "source_utf16_length": 70,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-038",
+      "sql": "SELECT DISTINCT ON(id) id FROM users ORDER BY id",
+      "source_utf16_length": 48,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-039",
+      "sql": "VALUES(1),(2)",
+      "source_utf16_length": 13,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": []
+      }
+    },
+    {
+      "id": "sql-source-040",
+      "sql": "SELECT 'x' COLLATE \"C\"",
+      "source_utf16_length": 22,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": []
+      }
+    },
+    {
+      "id": "sql-source-041",
+      "sql": "UPDATE users SET col=$1",
+      "source_utf16_length": 23,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "UpdateStmt not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-042",
+      "sql": "DELETE FROM user_schema.table WHERE id=$1",
+      "source_utf16_length": 41,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "DeleteStmt not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "table"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-043",
+      "sql": "INSERT INTO users(id)VALUES(1)",
+      "source_utf16_length": 30,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "InsertStmt not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "InsertStmt not supported"
+        }
+      }
+    },
+    {
+      "id": "sql-source-044",
+      "sql": "WITH removed AS (DELETE FROM users RETURNING id) SELECT * FROM removed",
+      "source_utf16_length": 70,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "DeleteStmt not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "removed",
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-045",
+      "sql": "COMMENT ON TABLE users IS 'description'",
+      "source_utf16_length": 39,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": []
+      }
+    },
+    {
+      "id": "sql-source-046",
+      "sql": "SET statement_timeout='1s'",
+      "source_utf16_length": 26,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "VariableSetStmt not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "VariableSetStmt not supported"
+        }
+      }
+    },
+    {
+      "id": "sql-source-047",
+      "sql": "DROP TABLE users",
+      "source_utf16_length": 16,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "DropStmt not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "DropStmt not supported"
+        }
+      }
+    },
+    {
+      "id": "sql-source-048",
+      "sql": "CREATE TABLE users(id int)",
+      "source_utf16_length": 26,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "CreateStmt not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "CreateStmt not supported"
+        }
+      }
+    },
+    {
+      "id": "sql-source-049",
+      "sql": "SELECT 1 /*😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀*/",
+      "source_utf16_length": 4013,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": []
+      }
+    },
+    {
+      "id": "sql-source-050",
+      "sql": "SELECT 1 /*😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀*/",
+      "source_utf16_length": 5013,
+      "readonly": false,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      }
+    },
+    {
+      "id": "sql-source-051",
+      "sql": "SELECT lower('x') FROM users",
+      "source_utf16_length": 28,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-052",
+      "sql": "SELECT upper('x') FROM users",
+      "source_utf16_length": 28,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-053",
+      "sql": "SELECT length('x') FROM users",
+      "source_utf16_length": 29,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-054",
+      "sql": "SELECT trim('x') FROM users",
+      "source_utf16_length": 27,
+      "readonly": true,
+      "first_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Function call not supported"
+        }
+      },
+      "cached_validation": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid query"
+        }
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-055",
+      "sql": "SELECT replace('x','x','y') FROM users",
+      "source_utf16_length": 38,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-056",
+      "sql": "SELECT substring('xyz',1,1) FROM users",
+      "source_utf16_length": 38,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-057",
+      "sql": "SELECT concat('x','y') FROM users",
+      "source_utf16_length": 33,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-058",
+      "sql": "SELECT abs(1) FROM users",
+      "source_utf16_length": 24,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-059",
+      "sql": "SELECT round(1) FROM users",
+      "source_utf16_length": 26,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "sql-source-060",
+      "sql": "SELECT sqrt(1) FROM users",
+      "source_utf16_length": 25,
+      "readonly": true,
+      "first_validation": {
+        "ok": true,
+        "value": null
+      },
+      "cached_validation": {
+        "ok": true,
+        "value": null
+      },
+      "relations": {
+        "ok": true,
+        "value": [
+          "users"
+        ]
+      }
+    }
+  ]
+}

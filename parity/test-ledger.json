@@ -21,20 +21,20 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 364,
-    "executed": 364,
-    "passed": 364,
+    "ported": 378,
+    "executed": 378,
+    "passed": 378,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 541,
-    "go_ports": 360,
+    "unimplemented": 527,
+    "go_ports": 374,
     "retained_sdk": 4,
-    "oracle_passed": 364,
+    "oracle_passed": 378,
     "oracle_blocked": 0,
-    "go_passed": 360,
+    "go_passed": 374,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 360,
-    "target_and_original_oracle_passed": 364
+    "go_and_original_oracle_passed": 374,
+    "target_and_original_oracle_passed": 378
   },
   "unresolved_expansion_ids": [],
   "files": [
@@ -31098,7 +31098,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T161745-2221117/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31160,7 +31160,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T161745-2221117/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31224,7 +31224,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T161745-2221117/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31293,7 +31293,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T161745-2221117/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31355,7 +31355,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T161745-2221117/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31419,7 +31419,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T161745-2221117/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31487,7 +31487,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T161745-2221117/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31548,7 +31548,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T161745-2221117/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -48930,12 +48930,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "getSQLQueryRelations",
+        "source_id": "97f4ed222d7bfd7e74a8",
+        "source_line": 11,
+        "assertions_sha256": "51b568195f088b1a3d5b89c06fc6ed89a05ad769ae7bfbd77c66b5ded2784616",
+        "original_assertions": 3,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/getSQLQueryRelations",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "1bf6f8198d48a808c3af",
@@ -48992,12 +49016,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "getSQLQueryRelations() cache identity",
+        "source_id": "1bf6f8198d48a808c3af",
+        "source_line": 42,
+        "assertions_sha256": "7f4ceb3ef9898b6efb0183fb740ab3d250e34ab07efb334b278653c23ccc70b5",
+        "original_assertions": 5,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/getSQLQueryRelations()_cache_identity",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "0953a6deab90a1196f2a",
@@ -49021,12 +49069,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "validateAllowableSQLQuery()",
+        "source_id": "0953a6deab90a1196f2a",
+        "source_line": 59,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original_assertions": 0,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/validateAllowableSQLQuery()",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "f8daa68bf6ffbb15c384",
@@ -49061,12 +49133,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "validateAllowableSQLQuery() cache",
+        "source_id": "f8daa68bf6ffbb15c384",
+        "source_line": 79,
+        "assertions_sha256": "98a26c72d2b7d6ad29c1113a2b0d580cb7777f24b50a4411d870b2f83f6d060f",
+        "original_assertions": 2,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/validateAllowableSQLQuery()_cache",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "3526ec1ef69fdec4b80c",
@@ -49111,12 +49207,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "validateAllowableSQLQuery() cache identity",
+        "source_id": "3526ec1ef69fdec4b80c",
+        "source_line": 91,
+        "assertions_sha256": "723b8649a3f216d02c1d28e3807b416cd519ed1f707ecf19215ffd5b26e80a1e",
+        "original_assertions": 3,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/validateAllowableSQLQuery()_cache_identity",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "834aa827f7e975ce12c7",
@@ -49146,12 +49266,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "validateAllowableSQLQuery() select into",
+        "source_id": "834aa827f7e975ce12c7",
+        "source_line": 106,
+        "assertions_sha256": "682793c1c531b548ba1a1dc318f147d9f071bd3780ec3fe97284a66b7cedefeb",
+        "original_assertions": 1,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/validateAllowableSQLQuery()_select_into",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "6f977dfcb47982b9400d",
@@ -49181,12 +49325,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "validateAllowableSQLQuery() schema name",
+        "source_id": "6f977dfcb47982b9400d",
+        "source_line": 112,
+        "assertions_sha256": "2ec3ce5ab2e9da1eaf8181423d7b47e96ea03a88c1dbb38a616f0b233d3e4082",
+        "original_assertions": 1,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/validateAllowableSQLQuery()_schema_name",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "da8b67d320e679f1694c",
@@ -49216,12 +49384,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "validateAllowableSQLQuery() system tables",
+        "source_id": "da8b67d320e679f1694c",
+        "source_line": 118,
+        "assertions_sha256": "b14a30cde32aeeba0e6bbd961e53eb99249c89866ead7e7e16028849b4b59f21",
+        "original_assertions": 1,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/validateAllowableSQLQuery()_system_tables",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "7fbdd8c32a2fc874c9d8",
@@ -49251,12 +49443,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "validateAllowableSQLQuery() recursive cte",
+        "source_id": "7fbdd8c32a2fc874c9d8",
+        "source_line": 124,
+        "assertions_sha256": "1f341352730d38088780f333263935887fdf22572875c3a2e170400b856520c3",
+        "original_assertions": 1,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/validateAllowableSQLQuery()_recursive_cte",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "675773156df6d8ad698b",
@@ -49286,12 +49502,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "validateAllowableSQLQuery() function call",
+        "source_id": "675773156df6d8ad698b",
+        "source_line": 132,
+        "assertions_sha256": "6930f81119a138137c20d28bb39030d4e5dcda0ee753c95d143940ac3c541895",
+        "original_assertions": 1,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/validateAllowableSQLQuery()_function_call",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "ad1c37f144e1fe9de6b0",
@@ -49315,12 +49555,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "validateAllowableSQLQuery() window def",
+        "source_id": "ad1c37f144e1fe9de6b0",
+        "source_line": 139,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original_assertions": 0,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/validateAllowableSQLQuery()_window_def",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "f48a3cb59c4684b7cdaa",
@@ -49350,12 +49614,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "parseSQLQuery() handles large query",
+        "source_id": "f48a3cb59c4684b7cdaa",
+        "source_line": 192,
+        "assertions_sha256": "3cda202a34d207ecdf8f3ce396e0c4ddd0ab3f0de9e60ea4b49db8b71db27958",
+        "original_assertions": 1,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/parseSQLQuery()_handles_large_query",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "a0e8f19f1c34af2d3d6c",
@@ -49389,12 +49677,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "validateAllowableSQLQuery() relational query",
+        "source_id": "a0e8f19f1c34af2d3d6c",
+        "source_line": 196,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original_assertions": 0,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/validateAllowableSQLQuery()_relational_query",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "881b4ac5b3e7c5f0e721",
@@ -49422,12 +49734,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/utils/sql-parse.test.ts",
+        "source_name": "validateAllowableSQLQuery() race condition",
+        "source_id": "881b4ac5b3e7c5f0e721",
+        "source_line": 326,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original_assertions": 0,
+        "target_file": "sqlquery/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/sqlquery",
+        "go_test": "TestUpstreamSQLQuery/validateAllowableSQLQuery()_race_condition",
+        "assertion_policy": "Complete pristine original14 tests/19assertions plus separate call-through38operations with original full SQL/results/errors,8actual Drizzle relational inputs and original concurrent validation. Native real PG AST rules, complete SHA256 independent LRUs and cached ordered set identity. Go replays every call/error and hash collision assertion; 61actual source differential vectors and cache/real HTTP/transaction regressions add zero source credit. Original file/setup/inputs/assertions/states unchanged; native completion requires complete module normal/race with unchanged prepared inputs.",
+        "source_verification": "parity/runs/sql-source-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T180641-2279983/sql-pristine/original.json",
+        "mode": "complete_unmodified_original_file_with_original_setup",
+        "full_original": true
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "83d97d70833a7a4f19c7",

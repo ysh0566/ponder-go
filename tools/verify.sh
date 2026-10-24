@@ -34,6 +34,12 @@ node tools/config-chain-catalog.mjs
 node tools/config-typed-compile-fixtures.mjs --write
 node tools/config-literal-compile-fixtures.mjs --write
 node tools/config-pristine-oracle.mjs
+node tools/sql-rules.mjs --write
+node tools/sql-original.mjs --output="parity/runs/original-captures/$capture_run/sql-pristine"
+cp "parity/runs/original-captures/$capture_run/sql-pristine/result.json" parity/runs/sql-original-pristine.json
+node tools/sql-original.mjs --capture --output="parity/runs/original-captures/$capture_run/sql" --fixture=testdata/sql/captured-original-sql.json
+node tools/sql-vectors.mjs --output=testdata/sql/source-vectors.json
+node tools/sql-source-results.mjs
 node tools/record-native-inputs.mjs
 go test -count=1 -json ./abi/testdata/compile/generated > parity/runs/abi-typed-go.jsonl
 go test -count=1 -race -json ./abi/testdata/compile/generated > parity/runs/abi-typed-race.jsonl

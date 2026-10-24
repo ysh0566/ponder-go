@@ -1,8 +1,10 @@
 // Extract the pinned upstream allow-list and traversal schema without evaluating it.
 import fs from "node:fs";
+import crypto from "node:crypto";
+import {spawnSync} from "node:child_process";
 import path from "node:path";
 import { createRequire } from "node:module";
-const root = path.resolve(import.meta.dirname, ".."),
+const root = process.env.PONDER_PORT_ROOT ?? path.resolve(import.meta.dirname, ".."),
 	up = path.resolve(root, "../ponder-upstream"),
 	require = createRequire(path.join(up, "package.json")),
 	ts = require("typescript");
@@ -68,8 +70,11 @@ for (const [id, n] of vars) {
 const allow = firstArray(vars.get("ALLOW_LIST"))
 	.elements.filter(ts.isIdentifier)
 	.map((x) => validators[x.text].name);
+const revision=spawnSync("git",["rev-parse","HEAD"],{cwd:up,encoding:"utf8"});
+if(revision.status!==0||revision.stdout.trim()!=="17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334")throw Error("Wrong pinned SQL source revision");
 const rules = {
 	source: file,
+ source_sha256:crypto.createHash("sha256").update(text).digest("hex"),
 	revision: "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
 	allow,
 	find: [...allow, "UpdateStmt", "DeleteStmt"],
@@ -79,13 +84,13 @@ const rules = {
 		Object.values(validators).map((x) => [x.name, x.fields]),
 	),
 };
-fs.mkdirSync(path.join(root, "sqlquery"), { recursive: true });
-fs.writeFileSync(
-	path.join(root, "sqlquery/rules.json"),
-	JSON.stringify(rules, null, 2) + "\n",
-);
-console.log({
-	nodes: allow.length,
-	functions: rules.functions.length,
-	system_tables: rules.system_tables.length,
-});
+const destination=path.join(root,"sqlquery/rules.json"),generated=JSON.stringify(rules,null,2)+"\n";
+if(process.argv.includes("--write")){
+ fs.mkdirSync(path.dirname(destination),{recursive:true});fs.writeFileSync(destination,generated);
+}else if(!fs.existsSync(destination)||fs.readFileSync(destination,"utf8")!==generated){
+ throw Error("Native SQL rules differ from the actual pinned source; prepare explicitly with --write before Go execution");
+}
+const report={source:rules.source,source_sha256:rules.source_sha256,revision:rules.revision,rules:{file:"sqlquery/rules.json",sha256:crypto.createHash("sha256").update(generated).digest("hex")},nodes:allow.length,functions:rules.functions.length,system_tables:rules.system_tables.length};
+fs.mkdirSync(path.join(root,"parity/runs"),{recursive:true});
+fs.writeFileSync(path.join(root,"parity/runs/sql-rules.json"),JSON.stringify(report,null,2)+"\n");
+console.log(report);

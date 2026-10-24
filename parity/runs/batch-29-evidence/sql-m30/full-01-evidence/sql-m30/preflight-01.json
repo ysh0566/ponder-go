@@ -1,0 +1,106 @@
+{
+  "milestone": "M30",
+  "state": "candidate, full module verification not yet accepted",
+  "recorded_utc": "2026-10-24T17:16:42.236485+00:00",
+  "parent": "6cca7170dcd6ff29d114b5af7b2d5d9aea1caf3e",
+  "expected": {
+    "source_mapped": 378,
+    "source_go": 374,
+    "retained_sdk": 4,
+    "unimplemented": 527,
+    "normal_and_race_leaves": 1948,
+    "postgres": 206,
+    "pglite": 203,
+    "packages": 21,
+    "functions": 146,
+    "batches_per_mode": 50,
+    "native_files": 985
+  },
+  "files": [
+    {
+      "file": "parity/mappings.json",
+      "sha256": "90aa146480481ae0066a137997c73ab7b33a0552502bcc1dd960edca61d281ab"
+    },
+    {
+      "file": "query/sql_validation_test.go",
+      "sha256": "a5d131153132a2beff7758fcda26202eda8dd0358aef546b7f5b8143fd4a3e20"
+    },
+    {
+      "file": "sqlquery/cache.go",
+      "sha256": "202ad7ef8d3edbf2824738716fb25d401f65aa681748a0833e036d973bfecf97"
+    },
+    {
+      "file": "sqlquery/cache_test.go",
+      "sha256": "2c2fb92e718ace7c1b58a67e1aa1629b9d2b6db8f80aef6d1977ddf757da0e38"
+    },
+    {
+      "file": "sqlquery/differential_test.go",
+      "sha256": "947994e698105d86b79593f6b7211ee604f33b4d54769cf2cccfb976d12eb72d"
+    },
+    {
+      "file": "sqlquery/rules.json",
+      "sha256": "a0a839c5d753ca6fae44868e1f394982cae82c1a1b97f8eaf4cface86564d8d3"
+    },
+    {
+      "file": "sqlquery/sql.go",
+      "sha256": "d1c7bfc31d2b16cb347d7faac09c24dff361cc80876de80ef81dd2323e4bd460"
+    },
+    {
+      "file": "sqlquery/upstream_test.go",
+      "sha256": "f0a2255a35d82449564255576800283413de97e6ac1ea01e575a0b3352ea2a05"
+    },
+    {
+      "file": "store/sql.go",
+      "sha256": "6469d482dfd960d6f7cc30ad496a2fc4d09bfdfd2c6f03945288520fcb5eac17"
+    },
+    {
+      "file": "store/sql_parser_cache_test.go",
+      "sha256": "6bec85f5b4b8a662d2643fd045ce573cbb10762bf54107efcb5aefdb8229d5bc"
+    },
+    {
+      "file": "tools/record-results.mjs",
+      "sha256": "6c74205190ca0af0efae8baa622a0928851ca460d6dd6d8d5f0fd5a83ab3c080"
+    },
+    {
+      "file": "tools/sql-capture.config.mjs",
+      "sha256": "4b4a0a38b0fefe74beba34acc5e6eef175042855ae60d3a8c0c8b0727b02f261"
+    },
+    {
+      "file": "tools/sql-capture.setup.ts",
+      "sha256": "e1df5b58ea81d47d35bfe287056f4d1bef38b895a74def56546c1c0c7d5924ed"
+    },
+    {
+      "file": "tools/sql-original.mjs",
+      "sha256": "8f67234238e09625ad380c93d040f387419ea4a7bd46ac08ccfd7e7317211d56"
+    },
+    {
+      "file": "tools/sql-rules.mjs",
+      "sha256": "cc7bdc60b78bc0eacb818d7419ed433d8ca59adb530d3013c732aaff4b0aef95"
+    },
+    {
+      "file": "tools/sql-source-results.mjs",
+      "sha256": "97f0afdb3b74bc08dd14e4999721b24db3009cb2b08a0c7c26ed5eda48047926"
+    },
+    {
+      "file": "tools/sql-vectors.mjs",
+      "sha256": "477fb9ec562ce8a3744e1556ed727f4a317c9719ab1d454d21c1e25c84f23b29"
+    },
+    {
+      "file": "tools/verify.sh",
+      "sha256": "d460b6d3d0d776c3cfe9f42e64bb02a2bd8e4409734e4b4eb5303bacf2feb108"
+    }
+  ],
+  "focused": {
+    "sql_and_http_race": 81,
+    "store_race": 9,
+    "source_original_pristine": 14,
+    "source_original_capture": 14,
+    "source_assertions": 19,
+    "source_calls": 38,
+    "actual_relational_queries": 8,
+    "supplementary_source_vectors": 61,
+    "old_real_backend_red": 2,
+    "source_credit_from_supplemental": 0
+  },
+  "prep_note": "Fresh original captures/provenance regenerate before Go. Actual prepared-native-inputs snapshot must precede and match both complete Go modes; preflight fixture fingerprint is not the final executed snapshot."
+}

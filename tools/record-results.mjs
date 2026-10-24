@@ -71,6 +71,12 @@ for (const fixtureFile of ["testdata/runtime/captured-original-events.json", "te
 		if (!source || source.source_sha256 !== captured.source_sha256 || source.test_source !== captured.test_source || !captured.calls.length) throw Error("Stale or incomplete original captured declaration: " + captured.id);
 	}
 }
+const sqlVerification=exists("parity/runs/sql-source-verification.json")?read("parity/runs/sql-source-verification.json"):null;
+if(ledger.tests.some(t=>t.mapping&&t.source_file==="packages/core/src/utils/sql-parse.test.ts")&&!sqlVerification)throw Error("SQL source mappings require original/input/rules proof");
+if(sqlVerification){
+ const refs=[...sqlVerification.inputs,sqlVerification.rules,sqlVerification.pristine.report,sqlVerification.pristine.raw_oracle,...sqlVerification.pristine.source_context,sqlVerification.capture.fixture,sqlVerification.capture.raw_oracle,...sqlVerification.capture.source_context,sqlVerification.vectors.fixture,...sqlVerification.vectors.sources];
+ if(sqlVerification.summary.source_cases!==14||sqlVerification.summary.source_assertions!==19||sqlVerification.summary.captured_operations!==38||refs.some(f=>!exists(f.file)||fileHash(f.file)!==f.sha256))throw Error("Incomplete/stale SQL original/native context");
+}
 const oraclePath = exists("parity/runs/foundation-oracle.json")
 	? "parity/runs/foundation-oracle.json"
 	: "parity/foundation-oracle-focused.json";
@@ -86,6 +92,7 @@ const fullOriginalReports = fullOriginalPaths.filter(exists).map(path => {
 	return { path, report, fullOriginal: true, backend: acceptance.backend };
 });
 const oracleReports = [
+ ...(sqlVerification?[{path:sqlVerification.pristine.raw_oracle.file,report:read(sqlVerification.pristine.raw_oracle.file),completeOriginal:true}]:[]),
 	{ path: oraclePath, report: oracle },
 	...[
 		"parity/runs/finality-oracle.json",
@@ -126,7 +133,7 @@ for (const test of ledger.tests) {
 		const occurrence = ledger.tests.filter(x => x.source_file === test.source_file && x.full_name === test.full_name && x.start < test.start).length;
 		const original = originals[occurrence];
 		if (original)
-			test.oracle = { status: original.status, evidence: selected.path, ...(selected.instrumented ? {mode:"instrumented_original_file_with_call_through",pristine_original_acceptance:false}: {}) };
+			test.oracle = { status: original.status, evidence: selected.path, ...(selected.instrumented ? {mode:"instrumented_original_file_with_call_through",pristine_original_acceptance:false}: {}), ...(selected.completeOriginal?{mode:"complete_unmodified_original_file_with_original_setup",full_original:true}:{}) };
 		if (selected.fullOriginal && original) fullBackends[selected.backend] = { status: original.status, evidence: selected.path };
 	}
 	if (Object.keys(fullBackends).length) {
@@ -314,6 +321,7 @@ const summary = {
 		error_directives_native_verified:ledger.tests.filter(x=>x.type_directives_verification?.status==="passed").reduce((n,x)=>n+x.type_error_directives.length,0),
 		error_directives_retained_sdk_verified:ledger.tests.filter(x=>x.mapping?.target_kind==="retained_sdk"&&x.pass_status==="passed").reduce((n,x)=>n+x.type_error_directives.length,0),
 	},
+ sql_source_verification:sqlVerification?{...sqlVerification.summary,evidence:"parity/runs/sql-source-verification.json"}:null,
 	typed_abi_runtime: {file:"parity/runs/abi-typed-go.jsonl",leaf_cases:leaves(typedGo).length,...count(leaves(typedGo)),counting:"Supplementary typed decoder execution; not additional source test records."},
 	typed_abi_race: {file:"parity/runs/abi-typed-race.jsonl",leaf_cases:leaves(typedRace).length,...count(leaves(typedRace))},
 	backend_execution: Object.fromEntries(["postgres","pglite"].map(backend=>{

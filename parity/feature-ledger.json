@@ -32,9 +32,9 @@
       "upstream_sources": [],
       "evidence": [
         "parity/runs/summary.json",
-        "parity/runs/batch-28.json"
+        "parity/runs/batch-29.json"
       ],
-      "remaining": "M29 verifies364/905 exact records:360Go+4SDK,all mapped original oracles pass;541unimplemented. All39active config cases/92assertions and10 native type obligations verified,originalskip1/2assertions retained/unmapped. Static discovery is not dynamic exhaustiveness."
+      "remaining": "M30 verifies378/905 exact records:374Go+4SDK,all mapped original oracles pass;527unimplemented. SQL14/19assertions/38calls verified; static discovery is not dynamic exhaustiveness."
     },
     {
       "id": "differential-harness",
@@ -590,8 +590,10 @@
         "packages/core/src/client/index.ts",
         "packages/core/src/utils/sql-parse.ts"
       ],
-      "evidence": [],
-      "remaining": "Original client query protocol and SQL column order verified. Full SuperJSON nested types, all SQL/schema semantics and source tests remain."
+      "evidence": [
+        "parity/runs/batch-29.json"
+      ],
+      "remaining": "M30 all14 SQL helper source declarations/19assertions complete,8actual Drizzle SQL inputs,source caches/UTF16/diagnostics/readonly and real HTTP on both backends verified. Full SQL/schema/staticNode/relational DSL/query/GraphQL/protocol/API source scope remains."
     },
     {
       "id": "sse",
@@ -1139,6 +1141,26 @@
         "parity/runs/config-live-verification.json"
       ],
       "remaining": "All10 exact config error obligations established; originalskip preserved. FulltypedDSL/overrides/filter lists/sourceerror/context/ABI/RPC/transport/signedscheduler and541 remaining static records stayopen.12realruntime+1nil regression are supplemental only."
+    },
+    {
+      "id": "sql-source-m30",
+      "status": "verified_subset",
+      "implementation_files": [
+        "sqlquery/sql.go",
+        "sqlquery/cache.go",
+        "store/sql.go",
+        "query/http.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/utils/sql-parse.ts",
+        "packages/core/src/utils/sql-parse.test.ts",
+        "packages/core/src/indexing-store/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/batch-29.json",
+        "parity/runs/sql-source-verification.json"
+      ],
+      "remaining": "14original runtime records complete,no original SQL type-error directives.61source vectors/cache/HTTP/transaction regressions add zero sourcecredit. FullNode/statictypes/JSSet/SQL/ORM/client/GraphQL/API and527 remaining static records stayopen."
     }
   ]
 }
