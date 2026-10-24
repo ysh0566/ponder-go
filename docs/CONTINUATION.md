@@ -2,7 +2,17 @@
 
 任务没有完成。先读 `AGENTS.md`、本文件、`parity/runs/summary.json`、`parity/test-ledger.json` 和 `parity/feature-ledger.json`。不要把新增集成测试或差分向量算成上游逐例移植。
 
-## 当前执行入口：cloudcone2 M26已验证，完整目标继续
+## 当前执行入口：M27已验证，完整目标继续
+
+最新验收batch-26.json/batch-26-evidence/，full-verify-02退出0：Go/race各1804通过、0失败/skip，PG194/PGlite191。20包134顶层函数48不重复串行批次，默认Go timeout及执行体保留；前后935/c18845a3bd6421af83240dd76033c2647b09f5ccc5ebb5db60f86c8d1bf6225d一致。源码325/905=321Go+4SDK均有oracle通过，580未实现。8个新bloom原例/12断言/19调用及两项Topic0错误义务经真实正向/运行/负向编译通过。Go省略值/string构造和其他dynamic字段仍宽于TS，不能称完整类型等价。497补充源码向量、新假阳性和native回退测试均无source credit。见docs/LOG_BLOOM.md。
+
+首轮完整normal1795通过/4失败/0skip，没有启动race，快照保留bloom-m27/full-01-evidence/。失败是自有补充宽查询场景（原版映射0条）的旧RPC计数3；旧输入/setup不变且预期明确更新1。独立4场景真实跨日志Bloom假阳性保持3次RPC并正确本地筛选；actual pinned source bridge对实际头判断旧[true,false,false]/新[true,true,true]。恢复race24通过，包含empty0x/zero/short/malformed、cached缺字段原校验/无进度/重试、uncached缺字段同数据及真实chain143。原版源码/输入/setup/断言均未修改。
+
+M26已核验发布253f4f903a534dcc4f7f745a9a8d0ea3bdcd095d，tree fb1fd3f2e4d44f8d3408f319b1f896271f1e9cd6；证明bloom-m27/m26-publication.json。M27提交应是该SHA的普通后继，保留ysh0566指定author/committer，发布须核验实际远端，不能由本地提交/bundle推断成功。已有明确授权的HTTPS gh任务认证目录及每命令helper可复用，禁止输出token、全局helper变更、force/改写历史或Mac操作。
+
+之后继续完整配置构建器/历史planner/多链排序/实时完整校验与重连/查询/API/CLI/dev/templates/类型/SDK/simulation。外部config-next只完成40静态记录审计（39active+1原skip、94断言、10类型错误分布5例）及未编译ABI有序事件草稿；没有接入或source credit。PLAN.md保留真实原版TS与native Go HTTP桥同时使用同一Anvil的验收设计、真实public类型义务限制及ABI元数据保留要求。所有功能仍在用户原始完整范围内，任务未完成。
+
+## M26：上一已验证云端基线
 
 M26基于M25本地8954911接入account.Factory、共享发现/child birth筛选、早于业务起点的factory历史和新account bounds/parent校验。只接API的实际EVM红灯保留prebirth99错误派发。聚焦race最终29/29通过，含19配置/2默认值与身份/8真实PG/PGlite×legacy/staged×cache场景，覆盖from/to四种callback、事务失败、cold reopen/cache翻转、safe后live重放、same-parent-tx-hash换child、晚business start和canonical vs orphan cache。两次聚焦fixture失败保留并明确不是产品修复。完整verify退出0：Go/race各1769通过、0失败/skip，PG189/PGlite186。19包、129顶层函数、46不重复串行批次，源码前后922/3066e64710d39e96b10634f0468c7f842505a93a401dede5b43ed42d70eef1ca一致。vet/build/oracle/capture/type/SDK/差分均通过。source317映射/588未实现不变。最新证据batch-25.json与batch-25-evidence/；提交须为8954911的普通后继、原SHA与指定身份，验收后方可发布。见docs/FACTORY_ACCOUNTS.md及parity/runs/account-factory-m26/。
 

@@ -1,0 +1,357 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "state": "Initial pinned-source audit; implementation subsequently connected and focused-verified as described in pre-full-inputs.json; complete acceptance pending",
+  "source_cases": [
+    {
+      "id": "0690899dc79faaa31e80",
+      "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+      "source_sha256": "3bdf2cd3882bf9146299f21d0903c0e51624cc16cdd273bc87da7f2b7d6c9e29",
+      "line": 13,
+      "start": 341,
+      "end": 2003,
+      "suite_path": [],
+      "title": "isInBloom",
+      "full_name": "isInBloom",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"isInBloom\", () => {\n  let bloom =\n    \"0x00000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002020000000000000000000000000000000000000000000008000000001000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\" as Hex;\n\n  const address = \"0xef2d6d194084c2de36e0dabfce45d046b37d1106\";\n  let topic =\n    \"0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc\" as Hex;\n\n  expect(isInBloom(hexToBytes(bloom), address)).toBe(true);\n  expect(isInBloom(hexToBytes(bloom), topic)).toBe(true);\n\n  bloom =\n    \"0x00000000000000000000008000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000044000200000000000000000002000000000000000000000040000000000000000000000000000020000000000000000000800000000000800000000000800000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000808002000000000400000000000000000000000060000000000000000000000000000000000000000000000100000000000002000000\" as Hex;\n\n  expect(isInBloom(hexToBytes(bloom), address)).toBe(false);\n  expect(isInBloom(hexToBytes(bloom), topic)).toBe(false);\n\n  topic =\n    \"0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb\" as Hex;\n\n  expect(isInBloom(hexToBytes(bloom), topic)).toBe(true);\n})",
+      "inputs": [
+        "bloom =\n    \"0x00000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002020000000000000000000000000000000000000000000008000000001000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\" as Hex",
+        "address = \"0xef2d6d194084c2de36e0dabfce45d046b37d1106\"",
+        "topic =\n    \"0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc\" as Hex"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 21,
+          "text": "expect(isInBloom(hexToBytes(bloom), address)).toBe(true)"
+        },
+        {
+          "kind": "runtime",
+          "line": 22,
+          "text": "expect(isInBloom(hexToBytes(bloom), topic)).toBe(true)"
+        },
+        {
+          "kind": "runtime",
+          "line": 27,
+          "text": "expect(isInBloom(hexToBytes(bloom), address)).toBe(false)"
+        },
+        {
+          "kind": "runtime",
+          "line": 28,
+          "text": "expect(isInBloom(hexToBytes(bloom), topic)).toBe(false)"
+        },
+        {
+          "kind": "runtime",
+          "line": 33,
+          "text": "expect(isInBloom(hexToBytes(bloom), topic)).toBe(true)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded"
+    },
+    {
+      "id": "f320bf67a5268a8e92f4",
+      "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+      "source_sha256": "3bdf2cd3882bf9146299f21d0903c0e51624cc16cdd273bc87da7f2b7d6c9e29",
+      "line": 36,
+      "start": 2006,
+      "end": 2962,
+      "suite_path": [],
+      "title": "isFilterInBloom returns false for missing topics",
+      "full_name": "isFilterInBloom returns false for missing topics",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"isFilterInBloom returns false for missing topics\", () => {\n  const block = {\n    number: \"0x5\",\n    logsBloom:\n      \"0x00000000000000000000008000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000044000200000000000000000002000000000000000000000040000000000000000000000000000020000000000000000000800000000000800000000000800000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000808002000000000400000000000000000000000060000000000000000000000000000000000000000000000100000000000002000000\",\n  } as const;\n\n  const filter = {\n    ...EMPTY_LOG_FILTER,\n    topic0:\n      \"0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc\",\n  } satisfies LogFilter;\n\n  expect(\n    isFilterInBloom({\n      bloom: hexToBytes(block.logsBloom),\n      filter: getLogFilterBloom(filter),\n    }),\n  ).toBe(false);\n})",
+      "inputs": [
+        "block = {\n    number: \"0x5\",\n    logsBloom:\n      \"0x00000000000000000000008000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000044000200000000000000000002000000000000000000000040000000000000000000000000000020000000000000000000800000000000800000000000800000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000808002000000000400000000000000000000000060000000000000000000000000000000000000000000000100000000000002000000\",\n  } as const",
+        "filter = {\n    ...EMPTY_LOG_FILTER,\n    topic0:\n      \"0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc\",\n  } satisfies LogFilter"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 49,
+          "text": "expect(\n    isFilterInBloom({\n      bloom: hexToBytes(block.logsBloom),\n      filter: getLogFilterBloom(filter),\n    }),\n  ).toBe(false)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded"
+    },
+    {
+      "id": "2802c5310fdbf04c2fe6",
+      "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+      "source_sha256": "3bdf2cd3882bf9146299f21d0903c0e51624cc16cdd273bc87da7f2b7d6c9e29",
+      "line": 57,
+      "start": 2965,
+      "end": 3872,
+      "suite_path": [],
+      "title": "isFilterInBloom returns true for undefined address",
+      "full_name": "isFilterInBloom returns true for undefined address",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"isFilterInBloom returns true for undefined address\", () => {\n  const block = {\n    number: \"0x5\",\n    logsBloom:\n      \"0x00000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002020000000000000000000000000000000000000000000008000000001000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\",\n  } as const;\n\n  const filter: LogFilter = {\n    ...EMPTY_LOG_FILTER,\n    // @ts-expect-error\n    topic0: undefined,\n  };\n\n  expect(\n    isFilterInBloom({\n      bloom: hexToBytes(block.logsBloom),\n      filter: getLogFilterBloom(filter),\n    }),\n  ).toBe(true);\n})",
+      "inputs": [
+        "block = {\n    number: \"0x5\",\n    logsBloom:\n      \"0x00000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002020000000000000000000000000000000000000000000008000000001000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\",\n  } as const",
+        "filter: LogFilter = {\n    ...EMPTY_LOG_FILTER,\n    // @ts-expect-error\n    topic0: undefined,\n  }"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 70,
+          "text": "expect(\n    isFilterInBloom({\n      bloom: hexToBytes(block.logsBloom),\n      filter: getLogFilterBloom(filter),\n    }),\n  ).toBe(true)"
+        }
+      ],
+      "type_error_directives": [
+        "// @ts-expect-error"
+      ],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded"
+    },
+    {
+      "id": "c087a7ba1265e944e178",
+      "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+      "source_sha256": "3bdf2cd3882bf9146299f21d0903c0e51624cc16cdd273bc87da7f2b7d6c9e29",
+      "line": 78,
+      "start": 3875,
+      "end": 5305,
+      "suite_path": [],
+      "title": "isFilterInBloom returns false for factory with only new child address",
+      "full_name": "isFilterInBloom returns false for factory with only new child address",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"isFilterInBloom returns false for factory with only new child address\", () => {\n  const block = {\n    number: \"0x5\",\n    logsBloom:\n      \"0x00000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002020000000000000000000000000000000000000000000008000000001000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\",\n  } as const;\n\n  const filter = {\n    ...EMPTY_LOG_FILTER,\n    address: {\n      id: `log_${\"0xef2d6d194084c2de36e0dabfce45d046b37d1106\"}_${1}_topic${1}_${\"0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc\"}_${\"undefined\"}_${\"undefined\"}`,\n      type: \"log\",\n      chainId: 1,\n      sourceId: \"factory\",\n      address: \"0xef2d6d194084c2de36e0dabfce45d046b37d1106\",\n      eventSelector:\n        \"0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc\",\n      childAddressLocation: \"topic1\",\n      fromBlock: undefined,\n      toBlock: undefined,\n    } satisfies LogFactory,\n  } satisfies LogFilter;\n\n  expect(\n    isFilterInBloom({\n      bloom: hexToBytes(block.logsBloom),\n      filter: getLogFilterBloom(filter),\n    }),\n  ).toBe(false);\n})",
+      "inputs": [
+        "block = {\n    number: \"0x5\",\n    logsBloom:\n      \"0x00000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002020000000000000000000000000000000000000000000008000000001000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\",\n  } as const",
+        "filter = {\n    ...EMPTY_LOG_FILTER,\n    address: {\n      id: `log_${\"0xef2d6d194084c2de36e0dabfce45d046b37d1106\"}_${1}_topic${1}_${\"0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc\"}_${\"undefined\"}_${\"undefined\"}`,\n      type: \"log\",\n      chainId: 1,\n      sourceId: \"factory\",\n      address: \"0xef2d6d194084c2de36e0dabfce45d046b37d1106\",\n      eventSelector:\n        \"0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc\",\n      childAddressLocation: \"topic1\",\n      fromBlock: undefined,\n      toBlock: undefined,\n    } satisfies LogFactory,\n  } satisfies LogFilter"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 101,
+          "text": "expect(\n    isFilterInBloom({\n      bloom: hexToBytes(block.logsBloom),\n      filter: getLogFilterBloom(filter),\n    }),\n  ).toBe(false)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded"
+    },
+    {
+      "id": "8cb2637446c8139001f1",
+      "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+      "source_sha256": "3bdf2cd3882bf9146299f21d0903c0e51624cc16cdd273bc87da7f2b7d6c9e29",
+      "line": 109,
+      "start": 5308,
+      "end": 6822,
+      "suite_path": [],
+      "title": "isFilterInBloom returns true for factory without new child address",
+      "full_name": "isFilterInBloom returns true for factory without new child address",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"isFilterInBloom returns true for factory without new child address\", () => {\n  const block = {\n    number: \"0x5\",\n    logsBloom:\n      \"0x00000000000000000000008000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000044000200000000000000000002000000000000000000000040000000000000000000000000000020000000000000000000800000000000800000000000800000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000808002000000000400000000000000000000000060000000000000000000000000000000000000000000000100000000000002000000\",\n  } as const;\n\n  const filter = {\n    ...EMPTY_LOG_FILTER,\n    address: {\n      id: `log_${\"0xef2d6d194084c2de36e0dabfce45d046b37d1106\"}_${1}_topic${1}_${\"0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc\"}_${\"undefined\"}_${\"undefined\"}`,\n      type: \"log\",\n      chainId: 1,\n      sourceId: \"factory\",\n      address: \"0xef2d6d194084c2de36e0dabfce45d046b37d1106\",\n      eventSelector:\n        \"0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc\",\n      childAddressLocation: \"topic1\",\n      fromBlock: undefined,\n      toBlock: undefined,\n    } satisfies LogFactory,\n    topic0:\n      \"0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb\",\n  } satisfies LogFilter;\n\n  expect(\n    isFilterInBloom({\n      bloom: hexToBytes(block.logsBloom),\n      filter: getLogFilterBloom(filter),\n    }),\n  ).toBe(true);\n})",
+      "inputs": [
+        "block = {\n    number: \"0x5\",\n    logsBloom:\n      \"0x00000000000000000000008000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000044000200000000000000000002000000000000000000000040000000000000000000000000000020000000000000000000800000000000800000000000800000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000808002000000000400000000000000000000000060000000000000000000000000000000000000000000000100000000000002000000\",\n  } as const",
+        "filter = {\n    ...EMPTY_LOG_FILTER,\n    address: {\n      id: `log_${\"0xef2d6d194084c2de36e0dabfce45d046b37d1106\"}_${1}_topic${1}_${\"0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc\"}_${\"undefined\"}_${\"undefined\"}`,\n      type: \"log\",\n      chainId: 1,\n      sourceId: \"factory\",\n      address: \"0xef2d6d194084c2de36e0dabfce45d046b37d1106\",\n      eventSelector:\n        \"0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc\",\n      childAddressLocation: \"topic1\",\n      fromBlock: undefined,\n      toBlock: undefined,\n    } satisfies LogFactory,\n    topic0:\n      \"0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb\",\n  } satisfies LogFilter"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 134,
+          "text": "expect(\n    isFilterInBloom({\n      bloom: hexToBytes(block.logsBloom),\n      filter: getLogFilterBloom(filter),\n    }),\n  ).toBe(true)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded"
+    },
+    {
+      "id": "8dfc023b6099e3112ebb",
+      "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+      "source_sha256": "3bdf2cd3882bf9146299f21d0903c0e51624cc16cdd273bc87da7f2b7d6c9e29",
+      "line": 142,
+      "start": 6825,
+      "end": 7794,
+      "suite_path": [],
+      "title": "isFilterInBloom returns true for array of addresses",
+      "full_name": "isFilterInBloom returns true for array of addresses",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"isFilterInBloom returns true for array of addresses\", () => {\n  const block = {\n    number: \"0x5\",\n    logsBloom:\n      \"0x00000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002020000000000000000000000000000000000000000000008000000001000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\",\n  } as const;\n\n  const filter: LogFilter = {\n    ...EMPTY_LOG_FILTER,\n    address: [\"0xef2d6d194084c2de36e0dabfce45d046b37d1106\"],\n    // @ts-expect-error\n    topic0: undefined,\n  };\n\n  expect(\n    isFilterInBloom({\n      bloom: hexToBytes(block.logsBloom),\n      filter: getLogFilterBloom(filter),\n    }),\n  ).toBe(true);\n})",
+      "inputs": [
+        "block = {\n    number: \"0x5\",\n    logsBloom:\n      \"0x00000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002020000000000000000000000000000000000000000000008000000001000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\",\n  } as const",
+        "filter: LogFilter = {\n    ...EMPTY_LOG_FILTER,\n    address: [\"0xef2d6d194084c2de36e0dabfce45d046b37d1106\"],\n    // @ts-expect-error\n    topic0: undefined,\n  }"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 156,
+          "text": "expect(\n    isFilterInBloom({\n      bloom: hexToBytes(block.logsBloom),\n      filter: getLogFilterBloom(filter),\n    }),\n  ).toBe(true)"
+        }
+      ],
+      "type_error_directives": [
+        "// @ts-expect-error"
+      ],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded"
+    },
+    {
+      "id": "5c5c8409a09216953656",
+      "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+      "source_sha256": "3bdf2cd3882bf9146299f21d0903c0e51624cc16cdd273bc87da7f2b7d6c9e29",
+      "line": 177,
+      "start": 8147,
+      "end": 8885,
+      "suite_path": [],
+      "title": "isFactoryInBloom returns true for factory in bloom",
+      "full_name": "isFactoryInBloom returns true for factory in bloom",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"isFactoryInBloom returns true for factory in bloom\", () => {\n  const bloom =\n    \"0x00000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002020000000000000000000000000000000000000000000008000000001000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\";\n\n  expect(\n    isFactoryInBloom({\n      bloom: hexToBytes(bloom),\n      factory: getFactoryBloom(FACTORY),\n    }),\n  ).toBe(true);\n})",
+      "inputs": [
+        "bloom =\n    \"0x00000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002020000000000000000000000000000000000000000000008000000001000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\""
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 181,
+          "text": "expect(\n    isFactoryInBloom({\n      bloom: hexToBytes(bloom),\n      factory: getFactoryBloom(FACTORY),\n    }),\n  ).toBe(true)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded"
+    },
+    {
+      "id": "9fead9ef384a009de6f9",
+      "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+      "source_sha256": "3bdf2cd3882bf9146299f21d0903c0e51624cc16cdd273bc87da7f2b7d6c9e29",
+      "line": 189,
+      "start": 8888,
+      "end": 9760,
+      "suite_path": [],
+      "title": "isFactoryInBloom returns false for missing factory address",
+      "full_name": "isFactoryInBloom returns false for missing factory address",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"isFactoryInBloom returns false for missing factory address\", () => {\n  const bloom =\n    \"0x00000000000000000000008000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000044000200000000000000000002000000000000000000000040000000000000000000000000000020000000000000000000800000000000800000000000800000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000808002000000000400000000000000000000000060000000000000000000000000000000000000000000000100000000000002000000\";\n\n  expect(\n    isFactoryInBloom({\n      bloom: hexToBytes(bloom),\n      factory: getFactoryBloom({\n        ...FACTORY,\n        eventSelector:\n          \"0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb\",\n      }),\n    }),\n  ).toBe(false);\n})",
+      "inputs": [
+        "bloom =\n    \"0x00000000000000000000008000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000044000200000000000000000002000000000000000000000040000000000000000000000000000020000000000000000000800000000000800000000000800000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000808002000000000400000000000000000000000060000000000000000000000000000000000000000000000100000000000002000000\""
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 193,
+          "text": "expect(\n    isFactoryInBloom({\n      bloom: hexToBytes(bloom),\n      factory: getFactoryBloom({\n        ...FACTORY,\n        eventSelector:\n          \"0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb\",\n      }),\n    }),\n  ).toBe(false)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded"
+    }
+  ],
+  "assertion_expressions": 12,
+  "type_error_directives": 2,
+  "source_files": [
+    {
+      "file": "packages/core/src/sync-realtime/bloom.ts",
+      "sha256": "9ef282a3a7175b95f7964b6ee33a3d746d52f9c3ebee7db66c91ebe33b95e794"
+    },
+    {
+      "file": "packages/core/src/sync-realtime/bloom.test.ts",
+      "sha256": "3bdf2cd3882bf9146299f21d0903c0e51624cc16cdd273bc87da7f2b7d6c9e29"
+    },
+    {
+      "file": "packages/core/src/_test/constants.ts",
+      "sha256": "b214b5a5504156518027fbea443927abdabe11b735413eabbadd285e22fcb9b0"
+    },
+    {
+      "file": "packages/core/src/utils/finality.ts",
+      "sha256": "31017109c892bb593d0656ac79afc35df3b9fffddf7286705f7e69cfc6f1ff70"
+    }
+  ]
+}

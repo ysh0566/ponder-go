@@ -1,0 +1,151 @@
+{
+  "recorded_utc": "2026-10-24T13:10:08.300519+00:00",
+  "based_on": "253f4f903a534dcc4f7f745a9a8d0ea3bdcd095d",
+  "state": "Implementation fixed before complete verification; generated captures will be refreshed before Go source fingerprint is taken",
+  "focused_race": {
+    "pure_leaf_pass": 24,
+    "runtime_leaf_pass": 6,
+    "fail": 0,
+    "skip": 0
+  },
+  "source_cases_pending_acceptance": 8,
+  "source_assertions": 12,
+  "source_type_errors_passed": 2,
+  "actual_source_differential_vectors": 497,
+  "prior_frozen_entries_verified": 165,
+  "original_tracked_sources_clean": true,
+  "checks": [
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "sh",
+        "-n",
+        "tools/verify.sh"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "tools/capture-original.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "tools/go-source-fingerprint.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "tools/record-results.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "tools/bloom-compile-fixtures.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "tools/bloom-fixtures.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "files": [
+    {
+      "file": "bloom/bloom.go",
+      "sha256": "511094f1a011bdcb0408ae78ebd3bde35e4c821d3aea5df51f0a2c39463882b4"
+    },
+    {
+      "file": "bloom/upstream_test.go",
+      "sha256": "4df66dc18df836778f34ee574b172af28e967257d1a7633176dffeeffe35f9e2"
+    },
+    {
+      "file": "filter/log_filter.go",
+      "sha256": "3b8a8377dcfde2a1ee2b74c56a4eba51c5373fdd35d568ee648c0dc43420f698"
+    },
+    {
+      "file": "runtime/bloom.go",
+      "sha256": "c1b33e15f37420bf8306f732320864d93ce88674fdb62e0cde694aa480749858"
+    },
+    {
+      "file": "runtime/bloom_test.go",
+      "sha256": "e326ebf7750045dcd4993a5b29b06f7af763fa51c3a0edcf7ddd62c922cde4e8"
+    },
+    {
+      "file": "runtime/engine.go",
+      "sha256": "74cd47077f693a3ff1db9e60accd3b1fcf3f5c7ed6e3b1710fae67160a7d68ba"
+    },
+    {
+      "file": "runtime/factory.go",
+      "sha256": "33772b34b8a96478464fc6f34867d8654ef9eb1d7cebd1ec5fe19718e7ecc578"
+    },
+    {
+      "file": "tools/capture-original.mjs",
+      "sha256": "2614046a482379e1377d12ceb906815f056912320cab295f3824483fd888bb52"
+    },
+    {
+      "file": "tools/capture-original.setup.ts",
+      "sha256": "0fe909c5725d1779f0cf255238443850e4a913bef6ee31d96b400d1530ec03c7"
+    },
+    {
+      "file": "tools/go-source-fingerprint.mjs",
+      "sha256": "a5712b43fe4028186f3122835aaade34a3f942c1cb22a1c7ce84aa798ee6c97e"
+    },
+    {
+      "file": "tools/record-results.mjs",
+      "sha256": "952bc9575153cd72484c5697d7c57de65928cdd343bdcac453d7cdd37a3f8b6d"
+    },
+    {
+      "file": "tools/verify.sh",
+      "sha256": "b71596b83bc86043ec0f35976c67681c99b088e707d9c3d6d6596de3b57f4dea"
+    },
+    {
+      "file": "tools/bloom-compile-fixtures.mjs",
+      "sha256": "f5f9297685a1c425f1929143de9b1a2f16acef1ace7928bc975dd45851886524"
+    },
+    {
+      "file": "tools/bloom-fixtures.mjs",
+      "sha256": "349fe4926277ffa01dd2b886eb6861a5fadd2dabb477e6e18b3e90a3f6a0e8ce"
+    },
+    {
+      "file": "parity/mappings.json",
+      "sha256": "2202a1a336c0414c86d526e88931bf4763ae835c8456cb30e4700c0a5dc1bc57"
+    }
+  ]
+}

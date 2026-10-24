@@ -1,0 +1,20 @@
+{
+  "recorded_utc": "2026-10-24T13:05:05.294618+00:00",
+  "failure_log": "parity/runs/bloom-m27/focused-pure-01.jsonl",
+  "failure_exit": 1,
+  "cause": "New native replay serializer emitted Bits structs in declaration order, while captured JSON objects sort keys. Every bit/mask value matched; raw JSON string order was the sole mismatch.",
+  "correction": "Mark Bits as an object recursively; preserve all values, arrays, undefined and mutation comparisons. JSON object key order is not source value semantics.",
+  "production_files_changed_for_this_correction": [],
+  "original_tests_assertions_and_captured_expected_values_changed": false,
+  "compile_obligations": {
+    "passed": 2,
+    "failed": 0
+  },
+  "final_focus": {
+    "log": "parity/runs/bloom-m27/focused-pure-02.jsonl",
+    "exit_code": 0,
+    "passed_leaves": 24,
+    "failed_leaves": 0,
+    "skipped_leaves": 0
+  }
+}

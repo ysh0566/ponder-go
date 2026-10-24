@@ -7,17 +7,17 @@ import { spawnSync } from "node:child_process";
 const root = path.resolve(import.meta.dirname, ".."), upstream = path.resolve(root, "../ponder-upstream");
 const argument = name => process.argv.find(value => value.startsWith(`--${name}=`))?.slice(name.length+3);
 const mode = argument("mode"), destination = argument("output");
-if (!["events", "filters"].includes(mode) || !destination) throw Error("Explicit --mode=events|filters and a new --output=... are required");
+if (!["events", "filters", "blooms"].includes(mode) || !destination) throw Error("Explicit --mode=events|filters|blooms and a new --output=... are required");
 const output = path.resolve(root, destination);
 const fixture = argument("fixture");
-const expectedFixture = `testdata/runtime/captured-original-${mode}.json`;
+const expectedFixture = `testdata/${mode === "blooms" ? "bloom" : "runtime"}/captured-original-${mode}.json`;
 if (fixture && fixture !== expectedFixture) throw Error("Unexpected native fixture destination");
 if (fs.existsSync(output)) throw Error("Preserve existing evidence; choose a new output directory");
 for (const directory of [root, upstream, path.join(upstream,"packages/core")]) if (fs.existsSync(path.join(directory,".env.local"))) throw Error("Unexpected .env.local: " + directory);
 const probe = net.createServer();
 await new Promise((resolve,reject) => {probe.once("error",reject);probe.listen(8545,"127.0.0.1",() => probe.close(resolve));});
 fs.mkdirSync(output,{recursive:true});
-const file = `packages/core/src/runtime/${mode === "events" ? "events" : "filter"}.test.ts`;
+const file = mode === "blooms" ? "packages/core/src/sync-realtime/bloom.test.ts" : `packages/core/src/runtime/${mode === "events" ? "events" : "filter"}.test.ts`;
 const dataPath = path.join(output,"calls.json"), oraclePath = path.join(output,"original.json");
 const env = {...process.env,CI:"1",PONDER_CAPTURE_MODE:mode,PONDER_CAPTURE_OUTPUT:dataPath,PONDER_BIND_AUDIT:path.join(output,"bindings.jsonl"),NODE_OPTIONS:`${process.env.NODE_OPTIONS??""} --import=${path.join(root,"tools/loopback-only.mjs")}`.trim()};
 delete env.DATABASE_URL;
@@ -40,7 +40,7 @@ try {
  save();
  if(child.error||child.status!==0) throw Error("Original capture test run failed");
  const oracle=JSON.parse(fs.readFileSync(oraclePath,"utf8")),calls=JSON.parse(fs.readFileSync(dataPath,"utf8"));
- if(!oracle.success||oracle.numFailedTests!==0||oracle.numPassedTests!==(mode==="events"?11:23)||calls.cases.length!==(mode==="events"?6:9)) throw Error("Incomplete original file or selected capture");
+ if(!oracle.success||oracle.numFailedTests!==0||oracle.numPassedTests!==(mode==="events"?11:mode==="blooms"?8:23)||calls.cases.length!==(mode==="events"?6:mode==="blooms"?8:9)) throw Error("Incomplete original file or selected capture");
  const sourceHash=digest("../ponder-upstream/"+file),source=fs.readFileSync(path.join(upstream,file),"utf8");
  if(calls.cases.some(c=>c.source_sha256!==sourceHash||!source.includes(c.test_source)||!c.calls.length)) throw Error("Stale source or missing captured calls");
  const contexts=[
@@ -51,6 +51,7 @@ try {
   "../ponder-upstream/packages/core/src/runtime/filter.ts","../ponder-upstream/"+file,
   "../ponder-upstream/packages/core/src/rpc/actions.ts","../ponder-upstream/packages/core/src/rpc/index.ts",
   "../ponder-upstream/packages/core/src/utils/decodeEventLog.ts","../ponder-upstream/packages/core/src/utils/decodeAbiParameters.ts",
+  "../ponder-upstream/packages/core/src/sync-realtime/bloom.ts","../ponder-upstream/packages/core/src/internal/types.ts",
   "../ponder-upstream/packages/core/src/utils/lowercase.ts","../ponder-upstream/packages/core/src/utils/checkpoint.ts",
   "../ponder-upstream/packages/core/src/build/factory.ts","../ponder-upstream/packages/core/src/config/address.ts",
   "../ponder-upstream/pnpm-lock.yaml",

@@ -1,0 +1,222 @@
+{
+  "recorded_utc": "2026-10-24T13:32:41.189002+00:00",
+  "based_on": "253f4f903a534dcc4f7f745a9a8d0ea3bdcd095d",
+  "accepted_publication": false,
+  "state": "Fixed recovery inputs for fresh full02; first full01 failed4/1799 and did not start race. This metadata was recorded shortly after launch because the initial writer used an incorrect relative parent path. All18 implementation hashes are verified against14 unchanged first-run hashes plus4 applied-file hashes recorded before launch. No candidate input changed.",
+  "focused_recovery_race": {
+    "leaf_pass": 24,
+    "fail": 0,
+    "skip": 0,
+    "breakdown": {
+      "existing_own_widened_scenario": 4,
+      "new_independent_false_positive_scenario": 4,
+      "envelope_boundaries": 10,
+      "actual_evm_runtime": 6
+    }
+  },
+  "independent_actual_source_check": {
+    "original_supplementary_scenario": [
+      true,
+      false,
+      false
+    ],
+    "new_false_positive_scenario": [
+      true,
+      true,
+      true
+    ],
+    "sources": [
+      {
+        "file": "packages/core/src/sync-realtime/bloom.ts",
+        "sha256": "9ef282a3a7175b95f7964b6ee33a3d746d52f9c3ebee7db66c91ebe33b95e794"
+      },
+      {
+        "file": "packages/core/src/runtime/filter.ts",
+        "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+      }
+    ],
+    "evidence": "parity/runs/bloom-m27/focused-recovery-01.jsonl",
+    "script": "bridge/bloom-oracle.mjs",
+    "source_credit": 0
+  },
+  "earlier_pure_race": {
+    "source_cases": 8,
+    "supplementary_vector_groups": 7,
+    "old_envelope_cases": 9,
+    "pass": 24,
+    "evidence": "parity/runs/bloom-m27/focused-pure-02.jsonl"
+  },
+  "new_source_cases_pending_acceptance": 8,
+  "source_assertions": 12,
+  "source_type_error_directives": 2,
+  "actual_source_differential_vectors": 497,
+  "native_expected_counts_to_verify": {
+    "normal_race": 1804,
+    "postgres": 194,
+    "pglite": 191,
+    "packages": 20,
+    "functions": 134,
+    "batches": 48,
+    "files": 935
+  },
+  "prior_frozen_entries_verified": 165,
+  "original_tracked_sources_clean": true,
+  "first_failed_run": "parity/runs/bloom-m27/full-01-evidence/recovery.json",
+  "first_inputs": "parity/runs/bloom-m27/pre-full-01-inputs.json",
+  "checks": [
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "sh",
+        "-n",
+        "tools/verify.sh"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "tools/capture-original.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "tools/go-source-fingerprint.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "tools/record-results.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "tools/bloom-compile-fixtures.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "tools/bloom-fixtures.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "bridge/bloom-oracle.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "files": [
+    {
+      "file": "bloom/bloom.go",
+      "sha256": "511094f1a011bdcb0408ae78ebd3bde35e4c821d3aea5df51f0a2c39463882b4"
+    },
+    {
+      "file": "bloom/upstream_test.go",
+      "sha256": "4df66dc18df836778f34ee574b172af28e967257d1a7633176dffeeffe35f9e2"
+    },
+    {
+      "file": "filter/log_filter.go",
+      "sha256": "3b8a8377dcfde2a1ee2b74c56a4eba51c5373fdd35d568ee648c0dc43420f698"
+    },
+    {
+      "file": "runtime/bloom.go",
+      "sha256": "c1b33e15f37420bf8306f732320864d93ce88674fdb62e0cde694aa480749858"
+    },
+    {
+      "file": "runtime/bloom_test.go",
+      "sha256": "0c76068d9c88804a3404fee65c4455d70787250d110e7dcc04b54c8ffc84bc20"
+    },
+    {
+      "file": "runtime/engine.go",
+      "sha256": "74cd47077f693a3ff1db9e60accd3b1fcf3f5c7ed6e3b1710fae67160a7d68ba"
+    },
+    {
+      "file": "runtime/factory.go",
+      "sha256": "33772b34b8a96478464fc6f34867d8654ef9eb1d7cebd1ec5fe19718e7ecc578"
+    },
+    {
+      "file": "tools/capture-original.mjs",
+      "sha256": "2614046a482379e1377d12ceb906815f056912320cab295f3824483fd888bb52"
+    },
+    {
+      "file": "tools/capture-original.setup.ts",
+      "sha256": "0fe909c5725d1779f0cf255238443850e4a913bef6ee31d96b400d1530ec03c7"
+    },
+    {
+      "file": "tools/go-source-fingerprint.mjs",
+      "sha256": "a5712b43fe4028186f3122835aaade34a3f942c1cb22a1c7ce84aa798ee6c97e"
+    },
+    {
+      "file": "tools/record-results.mjs",
+      "sha256": "952bc9575153cd72484c5697d7c57de65928cdd343bdcac453d7cdd37a3f8b6d"
+    },
+    {
+      "file": "tools/verify.sh",
+      "sha256": "b71596b83bc86043ec0f35976c67681c99b088e707d9c3d6d6596de3b57f4dea"
+    },
+    {
+      "file": "tools/bloom-compile-fixtures.mjs",
+      "sha256": "f5f9297685a1c425f1929143de9b1a2f16acef1ace7928bc975dd45851886524"
+    },
+    {
+      "file": "tools/bloom-fixtures.mjs",
+      "sha256": "349fe4926277ffa01dd2b886eb6861a5fadd2dabb477e6e18b3e90a3f6a0e8ce"
+    },
+    {
+      "file": "parity/mappings.json",
+      "sha256": "2202a1a336c0414c86d526e88931bf4763ae835c8456cb30e4700c0a5dc1bc57"
+    },
+    {
+      "file": "runtime/filter_integration_test.go",
+      "sha256": "ba3ac91fdec9081b5c18a276469be6d7189ed7808977938a6c5891f10895b286"
+    },
+    {
+      "file": "runtime/filter_bloom_false_positive_test.go",
+      "sha256": "68d8c292bce2815b18ce77f1db3766d151297a5131d8fea557309d7915c13aec"
+    },
+    {
+      "file": "bridge/bloom-oracle.mjs",
+      "sha256": "65a2f417f19f6a1c0a9b73416732f395b036312781e0ac1339f5433544c215d0"
+    }
+  ]
+}

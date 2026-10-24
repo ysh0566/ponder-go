@@ -1,0 +1,35 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "exit_code": 1,
+      "log": "parity/runs/bloom-m27/focused-runtime-01.jsonl",
+      "failed_leaves": 6,
+      "stage": "Initial EVM fixture transaction, before any Engine.Sync execution",
+      "cause": "New test assumed a mined receipt was immediately available after eth_sendTransaction; real Anvil returned null asynchronously",
+      "correction": "Poll actual receipt up to5s at10ms intervals, matching established native EVM fixture behavior; retain success/provenance assertions",
+      "production_files_changed_for_correction": [],
+      "original_source_assertions_or_helpers_changed": false
+    },
+    {
+      "attempt": 2,
+      "exit_code": 1,
+      "log": "parity/runs/bloom-m27/focused-runtime-02.jsonl",
+      "failed_leaves": 6,
+      "stage": "After successful real EVM baseline/equivalence, request reduction, branch replacement, cache provenance and zero-header checks",
+      "cause": "New fixture incorrectly expected cached mode to accept a missing required blocks.logsBloom field. Existing protocol cache rejects it before bloom screening.",
+      "correction": "Preserve cached rejection, assert no business/block progress, retry with complete actual header; separately verify full missing-bloom fallback in a fresh uncached runtime against identical canonical business data. Zero/short/malformed fields remain exercised on cached mode.",
+      "production_files_changed_for_correction": [],
+      "original_source_assertions_or_helpers_changed": false
+    }
+  ],
+  "recorded_utc": "2026-10-24T13:06:45.165825+00:00",
+  "updated_utc": "2026-10-24T13:08:16.776540+00:00",
+  "final_focus": {
+    "log": "parity/runs/bloom-m27/focused-runtime-03.jsonl",
+    "exit_code": 0,
+    "passed_leaves": 6,
+    "failed_leaves": 0,
+    "skipped_leaves": 0
+  }
+}

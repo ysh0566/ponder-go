@@ -1,0 +1,75 @@
+{
+  "recorded_utc": "2026-10-24T13:24:19.168456+00:00",
+  "authority": "Parent/user project-scope testing guidance received during frozen full01: preserve original mapped inputs; for this own supplementary integration keep old scenario and update count, add false positives separately",
+  "test_provenance": {
+    "kind": "self-owned native supplementary EVM integration",
+    "introduced_commit": "530449a4b71dfe86fbfb8d0788162be3b8bad53d",
+    "file": "runtime/filter_integration_test.go",
+    "original_source_mapping_count": 0,
+    "header_explicitly_disclaims_original_mapping": true
+  },
+  "superseded_proposal": "superseded-replacement-proposal.go.txt is NOT to be applied to the original fixture",
+  "original_scenario": {
+    "inputs_and_setup_unchanged": true,
+    "only_expected_rpc_count_changes": [
+      3,
+      1
+    ],
+    "explanation": "Block1 has matching allowed-address Transfer; block2 only an excluded address; block3 only a wrong topic. Bloom may suppress2/3 while preserving all business/handler assertions."
+  },
+  "new_separate_scenario": {
+    "target_file": "runtime/filter_bloom_false_positive_test.go",
+    "test": "TestFilterWideRequestBloomFalsePositiveRuntime",
+    "supplementary_leaf_cases": 4,
+    "original_source_credit": 0,
+    "expected_actual_widened_rpc_requests": 3,
+    "proof": "Real EVM decoy logs distribute correct address/topic across different logs. Every excluded-block individual log is still rejected locally; no fabricated RPC responses.",
+    "independent_actual_source_oracle": "Run pinned TS bloom functions on actual EVM headers for original scenario [true,false,false], rewind, then new cross-log scenario [true,true,true]; zero source-case credit",
+    "helper": "bridge/bloom-oracle.mjs"
+  },
+  "must_wait_for": "Actual full01 exit1, complete failed execution/source fingerprint snapshot, then apply both files; affected8 race leaves plus full02 required",
+  "expected_new_full_counts_to_verify": {
+    "normal_and_race": 1804,
+    "packages": 20,
+    "functions": 134,
+    "batches": 48,
+    "native_files": 935,
+    "postgres": 194,
+    "pglite": 191,
+    "source_mapped": 325,
+    "unimplemented": 580
+  },
+  "additional_empty_bloom_boundary": {
+    "file": "runtime/bloom_test.go",
+    "original_candidate_sha256": "e326ebf7750045dcd4993a5b29b06f7af763fa51c3a0edcf7ddd62c922cde4e8",
+    "change": "Explicit empty hex0x envelope unit case and actual cached EVM fallback iteration; keep source zero-bloom, missing-header validation/uncached recovery and async143 checks intact",
+    "source_credit": 0
+  },
+  "applied_utc": "2026-10-24T13:29:24.882760+00:00",
+  "applied_files": [
+    {
+      "file": "runtime/filter_integration_test.go",
+      "sha256": "ba3ac91fdec9081b5c18a276469be6d7189ed7808977938a6c5891f10895b286"
+    },
+    {
+      "file": "runtime/filter_bloom_false_positive_test.go",
+      "sha256": "68d8c292bce2815b18ce77f1db3766d151297a5131d8fea557309d7915c13aec"
+    },
+    {
+      "file": "runtime/bloom_test.go",
+      "sha256": "0c76068d9c88804a3404fee65c4455d70787250d110e7dcc04b54c8ffc84bc20"
+    },
+    {
+      "file": "bridge/bloom-oracle.mjs",
+      "sha256": "65a2f417f19f6a1c0a9b73416732f395b036312781e0ac1339f5433544c215d0"
+    }
+  ],
+  "first_complete_failure_snapshot": "parity/runs/bloom-m27/full-01-evidence/recovery.json",
+  "focused_recovery": {
+    "exit_code": 0,
+    "pass": 24,
+    "fail": 0,
+    "skip": 0,
+    "log": "parity/runs/bloom-m27/focused-recovery-01.jsonl"
+  }
+}

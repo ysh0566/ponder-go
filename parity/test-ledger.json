@@ -21,20 +21,20 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 317,
-    "executed": 317,
-    "passed": 317,
+    "ported": 325,
+    "executed": 325,
+    "passed": 325,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 588,
-    "go_ports": 313,
+    "unimplemented": 580,
+    "go_ports": 321,
     "retained_sdk": 4,
-    "oracle_passed": 317,
+    "oracle_passed": 325,
     "oracle_blocked": 0,
-    "go_passed": 313,
+    "go_passed": 321,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 313,
-    "target_and_original_oracle_passed": 317
+    "go_and_original_oracle_passed": 321,
+    "target_and_original_oracle_passed": 325
   },
   "unresolved_expansion_ids": [],
   "files": [
@@ -29906,12 +29906,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+        "source_name": "isInBloom",
+        "source_id": "0690899dc79faaa31e80",
+        "source_line": 13,
+        "assertions_sha256": "46b4e5d1418749aa0e85559a3914b1f1f92d700acc8b9d8dc6d4ddb7c72c895c",
+        "original_assertions": 5,
+        "target_file": "bloom/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/bloom",
+        "go_test": "TestUpstreamBloom/isInBloom",
+        "assertion_policy": "Complete original file with original constants/setup and unchanged Vitest assertions; call-through captures retain every input/result and mutation. Go replays all operations and all12 original explicit boolean assertions. Both original topic0=undefined errors require actual public single-HexTopic positive/run/negative compiler proofs; explicit legacy adapter retains intentional invalid runtime inputs. No broad TS/static, realtime scheduler or complete source discovery claim.",
+        "source_fixture": "testdata/bloom/captured-original-blooms.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T133226-2148930/blooms/original.json",
+        "mode": "instrumented_original_file_with_call_through",
+        "pristine_original_acceptance": false
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "f320bf67a5268a8e92f4",
@@ -29944,12 +29968,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+        "source_name": "isFilterInBloom returns false for missing topics",
+        "source_id": "f320bf67a5268a8e92f4",
+        "source_line": 36,
+        "assertions_sha256": "384a7d5468bc17953cdeb4df49b55d28c44cbba1bd3178f73f1d45ff5b95189f",
+        "original_assertions": 1,
+        "target_file": "bloom/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/bloom",
+        "go_test": "TestUpstreamBloom/isFilterInBloom_returns_false_for_missing_topics",
+        "assertion_policy": "Complete original file with original constants/setup and unchanged Vitest assertions; call-through captures retain every input/result and mutation. Go replays all operations and all12 original explicit boolean assertions. Both original topic0=undefined errors require actual public single-HexTopic positive/run/negative compiler proofs; explicit legacy adapter retains intentional invalid runtime inputs. No broad TS/static, realtime scheduler or complete source discovery claim.",
+        "source_fixture": "testdata/bloom/captured-original-blooms.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T133226-2148930/blooms/original.json",
+        "mode": "instrumented_original_file_with_call_through",
+        "pristine_original_acceptance": false
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "2802c5310fdbf04c2fe6",
@@ -29984,12 +30032,43 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+        "source_name": "isFilterInBloom returns true for undefined address",
+        "source_id": "2802c5310fdbf04c2fe6",
+        "source_line": 57,
+        "assertions_sha256": "53152766a5dc8b5f8c4a5431e70f6205d28776e7df013891036a3bdda27b7e39",
+        "original_assertions": 1,
+        "target_file": "bloom/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/bloom",
+        "go_test": "TestUpstreamBloom/isFilterInBloom_returns_true_for_undefined_address",
+        "assertion_policy": "Complete original file with original constants/setup and unchanged Vitest assertions; call-through captures retain every input/result and mutation. Go replays all operations and all12 original explicit boolean assertions. Both original topic0=undefined errors require actual public single-HexTopic positive/run/negative compiler proofs; explicit legacy adapter retains intentional invalid runtime inputs. No broad TS/static, realtime scheduler or complete source discovery claim.",
+        "source_fixture": "testdata/bloom/captured-original-blooms.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T133226-2148930/blooms/original.json",
+        "mode": "instrumented_original_file_with_call_through",
+        "pristine_original_acceptance": false
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/bloom-compile-fixtures.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "c087a7ba1265e944e178",
@@ -30022,12 +30101,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+        "source_name": "isFilterInBloom returns false for factory with only new child address",
+        "source_id": "c087a7ba1265e944e178",
+        "source_line": 78,
+        "assertions_sha256": "384a7d5468bc17953cdeb4df49b55d28c44cbba1bd3178f73f1d45ff5b95189f",
+        "original_assertions": 1,
+        "target_file": "bloom/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/bloom",
+        "go_test": "TestUpstreamBloom/isFilterInBloom_returns_false_for_factory_with_only_new_child_address",
+        "assertion_policy": "Complete original file with original constants/setup and unchanged Vitest assertions; call-through captures retain every input/result and mutation. Go replays all operations and all12 original explicit boolean assertions. Both original topic0=undefined errors require actual public single-HexTopic positive/run/negative compiler proofs; explicit legacy adapter retains intentional invalid runtime inputs. No broad TS/static, realtime scheduler or complete source discovery claim.",
+        "source_fixture": "testdata/bloom/captured-original-blooms.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T133226-2148930/blooms/original.json",
+        "mode": "instrumented_original_file_with_call_through",
+        "pristine_original_acceptance": false
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "8cb2637446c8139001f1",
@@ -30060,12 +30163,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+        "source_name": "isFilterInBloom returns true for factory without new child address",
+        "source_id": "8cb2637446c8139001f1",
+        "source_line": 109,
+        "assertions_sha256": "53152766a5dc8b5f8c4a5431e70f6205d28776e7df013891036a3bdda27b7e39",
+        "original_assertions": 1,
+        "target_file": "bloom/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/bloom",
+        "go_test": "TestUpstreamBloom/isFilterInBloom_returns_true_for_factory_without_new_child_address",
+        "assertion_policy": "Complete original file with original constants/setup and unchanged Vitest assertions; call-through captures retain every input/result and mutation. Go replays all operations and all12 original explicit boolean assertions. Both original topic0=undefined errors require actual public single-HexTopic positive/run/negative compiler proofs; explicit legacy adapter retains intentional invalid runtime inputs. No broad TS/static, realtime scheduler or complete source discovery claim.",
+        "source_fixture": "testdata/bloom/captured-original-blooms.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T133226-2148930/blooms/original.json",
+        "mode": "instrumented_original_file_with_call_through",
+        "pristine_original_acceptance": false
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "8dfc023b6099e3112ebb",
@@ -30100,12 +30227,43 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+        "source_name": "isFilterInBloom returns true for array of addresses",
+        "source_id": "8dfc023b6099e3112ebb",
+        "source_line": 142,
+        "assertions_sha256": "53152766a5dc8b5f8c4a5431e70f6205d28776e7df013891036a3bdda27b7e39",
+        "original_assertions": 1,
+        "target_file": "bloom/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/bloom",
+        "go_test": "TestUpstreamBloom/isFilterInBloom_returns_true_for_array_of_addresses",
+        "assertion_policy": "Complete original file with original constants/setup and unchanged Vitest assertions; call-through captures retain every input/result and mutation. Go replays all operations and all12 original explicit boolean assertions. Both original topic0=undefined errors require actual public single-HexTopic positive/run/negative compiler proofs; explicit legacy adapter retains intentional invalid runtime inputs. No broad TS/static, realtime scheduler or complete source discovery claim.",
+        "source_fixture": "testdata/bloom/captured-original-blooms.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T133226-2148930/blooms/original.json",
+        "mode": "instrumented_original_file_with_call_through",
+        "pristine_original_acceptance": false
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/bloom-compile-fixtures.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "5c5c8409a09216953656",
@@ -30137,12 +30295,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+        "source_name": "isFactoryInBloom returns true for factory in bloom",
+        "source_id": "5c5c8409a09216953656",
+        "source_line": 177,
+        "assertions_sha256": "04191abc6ec9d7f925af844639b8d2779ff74f591317aeeec1dd78f63f2a46b8",
+        "original_assertions": 1,
+        "target_file": "bloom/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/bloom",
+        "go_test": "TestUpstreamBloom/isFactoryInBloom_returns_true_for_factory_in_bloom",
+        "assertion_policy": "Complete original file with original constants/setup and unchanged Vitest assertions; call-through captures retain every input/result and mutation. Go replays all operations and all12 original explicit boolean assertions. Both original topic0=undefined errors require actual public single-HexTopic positive/run/negative compiler proofs; explicit legacy adapter retains intentional invalid runtime inputs. No broad TS/static, realtime scheduler or complete source discovery claim.",
+        "source_fixture": "testdata/bloom/captured-original-blooms.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T133226-2148930/blooms/original.json",
+        "mode": "instrumented_original_file_with_call_through",
+        "pristine_original_acceptance": false
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "9fead9ef384a009de6f9",
@@ -30174,12 +30356,36 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-realtime/bloom.test.ts",
+        "source_name": "isFactoryInBloom returns false for missing factory address",
+        "source_id": "9fead9ef384a009de6f9",
+        "source_line": 189,
+        "assertions_sha256": "bd49d308883f94abf1b0c6a554ff5dfc9be0e5640a7ce9f48a8fa336574cde1c",
+        "original_assertions": 1,
+        "target_file": "bloom/upstream_test.go",
+        "go_package": "ponder.local/ponder-go/bloom",
+        "go_test": "TestUpstreamBloom/isFactoryInBloom_returns_false_for_missing_factory_address",
+        "assertion_policy": "Complete original file with original constants/setup and unchanged Vitest assertions; call-through captures retain every input/result and mutation. Go replays all operations and all12 original explicit boolean assertions. Both original topic0=undefined errors require actual public single-HexTopic positive/run/negative compiler proofs; explicit legacy adapter retains intentional invalid runtime inputs. No broad TS/static, realtime scheduler or complete source discovery claim.",
+        "source_fixture": "testdata/bloom/captured-original-blooms.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/original-captures/20261024T133226-2148930/blooms/original.json",
+        "mode": "instrumented_original_file_with_call_through",
+        "pristine_original_acceptance": false
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "fba380c787db24838542",

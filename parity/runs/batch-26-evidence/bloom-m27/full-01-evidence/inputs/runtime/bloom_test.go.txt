@@ -1,0 +1,427 @@
+package runtime
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"math/big"
+	"net"
+	"net/http"
+	"net/http/httptest"
+	"os/exec"
+	"reflect"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	"ponder.local/ponder-go/abi"
+	"ponder.local/ponder-go/bloom"
+	"ponder.local/ponder-go/config"
+	"ponder.local/ponder-go/factory"
+	"ponder.local/ponder-go/rpc"
+	"ponder.local/ponder-go/schema"
+	"ponder.local/ponder-go/store"
+)
+
+func bloomChain(t *testing.T, id uint64) (*rpc.Client, string) {
+	t.Helper()
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	port := listener.Addr().(*net.TCPAddr).Port
+	listener.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	cmd := exec.CommandContext(ctx, "anvil", "--silent", "--host", "127.0.0.1", "--port", fmt.Sprint(port), "--chain-id", fmt.Sprint(id))
+	if err = cmd.Start(); err != nil {
+		cancel()
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { cancel(); _ = cmd.Wait() })
+	endpoint := fmt.Sprintf("http://127.0.0.1:%d", port)
+	client := rpc.New(endpoint)
+	client.Retries, client.RequestsPerSecond = 0, 0
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		var chain string
+		if client.Call(ctx, "eth_chainId", []any{}, &chain) == nil {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("Anvil bloom chain startup")
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	return client, endpoint
+}
+
+func TestRuntimeBloomEnvelope(t *testing.T) {
+	nonzero := "0x01" + strings.Repeat("00", 255)
+	for _, c := range []struct {
+		name, value string
+		usable      bool
+	}{
+		{"valid", nonzero, true}, {"zero", bloom.ZeroLogsBloom, false}, {"missing", "", false}, {"short", "0x01", false}, {"malformed", "0xgg" + strings.Repeat("00", 255), false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			e := Engine{chain: config.Chain{ID: 1}}
+			if (e.blockBloom(Block{LogsBloom: c.value}) != nil) != c.usable {
+				t.Fatal("conservative bloom envelope", c)
+			}
+		})
+	}
+	for _, id := range []uint64{143, 10143, 43114, 43113} {
+		t.Run(fmt.Sprintf("async_%d", id), func(t *testing.T) {
+			e := Engine{chain: config.Chain{ID: id}}
+			if e.blockBloom(Block{LogsBloom: nonzero}) != nil {
+				t.Fatal("async chain bloom must be bypassed")
+			}
+		})
+	}
+}
+
+// Actual EVM data, real PG/PGlite and both runtime transaction modes. The proxy
+// counts real RPC calls; only explicit fallback cases alter the header bloom.
+func TestRuntimeBloom(t *testing.T) {
+	for _, dialect := range []string{"pglite", "postgres"} {
+		for _, staged := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/staged_%t", dialect, staged), func(t *testing.T) { testRuntimeBloom(t, dialect, staged, 1) })
+		}
+	}
+	for _, dialect := range []string{"pglite", "postgres"} {
+		t.Run(dialect+"/async_143", func(t *testing.T) { testRuntimeBloom(t, dialect, true, 143) })
+	}
+}
+func testRuntimeBloom(t *testing.T, dialect string, staged bool, chainID uint64) {
+	t.Helper()
+	ctx := context.Background()
+	client, endpoint := bloomChain(t, chainID)
+	backend := stagedBackend(t, ctx, dialect, "memory://")
+	defer backend.Close()
+	var lifecycles []*store.Lifecycle
+	defer func() {
+		for _, d := range lifecycles {
+			_ = d.Close()
+		}
+	}()
+	var mu sync.Mutex
+	mode := "real"
+	logRequests := map[string]int{}
+	traceRequests := 0
+	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		var request struct {
+			Method string
+			Params []json.RawMessage
+		}
+		if err = json.Unmarshal(body, &request); err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+		mu.Lock()
+		current := mode
+		if request.Method == "eth_getLogs" {
+			var query map[string]any
+			_ = json.Unmarshal(request.Params[0], &query)
+			logRequests[fmt.Sprint(query["blockHash"])]++
+		}
+		if strings.Contains(request.Method, "trace") {
+			traceRequests++
+		}
+		mu.Unlock()
+		forward, err := http.NewRequestWithContext(r.Context(), "POST", endpoint, bytes.NewReader(body))
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		forward.Header.Set("Content-Type", "application/json")
+		response, err := http.DefaultClient.Do(forward)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		defer response.Body.Close()
+		data, err := io.ReadAll(response.Body)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		if request.Method == "eth_getBlockByNumber" && current != "real" {
+			var envelope map[string]any
+			if err = json.Unmarshal(data, &envelope); err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+			if block, ok := envelope["result"].(map[string]any); ok {
+				switch current {
+				case "zero":
+					block["logsBloom"] = bloom.ZeroLogsBloom
+				case "missing":
+					delete(block, "logsBloom")
+				case "short":
+					block["logsBloom"] = "0x01"
+				case "malformed":
+					block["logsBloom"] = "0xgg" + strings.Repeat("00", 255)
+				}
+				data, _ = json.Marshal(envelope)
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(response.StatusCode)
+		_, _ = w.Write(data)
+	}))
+	defer proxy.Close()
+	setMode := func(value string) {
+		mu.Lock()
+		mode = value
+		logRequests = map[string]int{}
+		traceRequests = 0
+		mu.Unlock()
+	}
+	counts := func(hash string) (int, int) { mu.Lock(); defer mu.Unlock(); return logRequests[hash], traceRequests }
+	rpcCall := func(method string, args ...any) {
+		t.Helper()
+		var result any
+		if err := client.Call(ctx, method, args, &result); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var accounts []string
+	if err := client.Call(ctx, "eth_accounts", []any{}, &accounts); err != nil {
+		t.Fatal(err)
+	}
+	parent := "0x1000000000000000000000000000000000000001"
+	childA := "0x2000000000000000000000000000000000000001"
+	childB := "0x3000000000000000000000000000000000000001"
+	noise := "0x4000000000000000000000000000000000000001"
+	created := abi.Event{Type: "event", Name: "Created", Inputs: []abi.Parameter{{Name: "child", Type: "address"}}}
+	createdSelector := abi.EventSelector(created)
+	transferSelector := "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+	word := func(address string) string { return strings.Repeat("0", 24) + address[2:] }
+	childCode := "0x6000356000527f" + word(accounts[1]) + "7f" + word(accounts[0]) + "7f" + transferSelector + "60206000a300"
+	rpcCall("anvil_setCode", childA, childCode)
+	rpcCall("anvil_setCode", childB, childCode)
+	rpcCall("anvil_setCode", noise, "0x7f"+strings.Repeat("33", 32)+"60006000a100")
+	rpcCall("anvil_setBalance", parent, "0x100")
+	send := func(to, data string, value, nonce uint64) (string, string) {
+		t.Helper()
+		var tx string
+		if err := client.Call(ctx, "eth_sendTransaction", []any{map[string]any{"from": accounts[0], "to": to, "data": data, "value": Hex(value), "nonce": Hex(nonce), "gas": "0x493e0", "gasPrice": "0x3b9aca00"}}, &tx); err != nil {
+			t.Fatal(err)
+		}
+		deadline := time.Now().Add(5 * time.Second)
+		for {
+			var receipt map[string]any
+			if err := client.Call(ctx, "eth_getTransactionReceipt", []any{tx}, &receipt); err != nil {
+				t.Fatal(err)
+			}
+			if receipt != nil {
+				if receipt["status"] != "0x1" {
+					t.Fatal("actual EVM receipt", receipt)
+				}
+				return tx, receipt["blockHash"].(string)
+			}
+			if time.Now().After(deadline) {
+				t.Fatal("unmined actual EVM bloom fixture", tx)
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+	}
+	ping := abi.Function{Type: "function", Name: "ping", Inputs: []abi.Parameter{}, Outputs: []abi.Parameter{}, StateMutability: "payable"}
+	_, noiseHash := send(noise, abi.FunctionSelector(ping), 1, 0)
+	var snapshot string
+	if err := client.Call(ctx, "evm_snapshot", []any{}, &snapshot); err != nil {
+		t.Fatal(err)
+	}
+	setParent := func(child string, amount uint64) {
+		t.Helper()
+		code := "0x7f" + word(child) + "6000527f" + createdSelector[2:] + "60206000a1" + "60" + fmt.Sprintf("%02x", amount) + "6000526000600060206000600073" + child[2:] + "5af15000"
+		rpcCall("anvil_setCode", parent, code)
+	}
+	setParent(childA, 5)
+	parentTX, _ := send(parent, "0x", 0, 1)
+	_, postHash := send(childA, fmt.Sprintf("0x%064x", 7), 0, 2)
+	from, one := uint64(0), uint64(1)
+	parameter := "child"
+	cfg := config.Config{Chains: []config.Chain{{Name: "local", ID: chainID, RPC: []string{proxy.URL}}}, Contracts: []config.Contract{
+		{Name: "Token", Chain: "local", ABI: []byte(transferABI), StartBlock: 1, Factory: &factory.Config{Address: parent, Event: created, Parameter: &parameter, FromBlock: &from}},
+		{Name: "Noise", Chain: "local", ABI: []byte(`[{"type":"function","name":"ping","stateMutability":"payable","inputs":[],"outputs":[]}]`), Address: []string{noise}, StartBlock: 1, EndBlock: &one, IncludeCallTraces: true},
+	}, Accounts: []config.AccountSource{{Name: "NoiseAccount", Chain: "local", Address: []string{noise}, StartBlock: 1, EndBlock: &one}}, Blocks: []config.BlockSource{{Name: "Tick", Chain: "local", StartBlock: 1, Interval: 1}}}
+	model := schema.Schema{Tables: []schema.Table{{Name: "audit", Columns: []schema.Column{{Name: "id", Type: "text", Primary: true}, {Name: "kind", Type: "text", NotNull: true}, {Name: "address", Type: "text", NotNull: true}, {Name: "amount", Type: "bigint", NotNull: true}}}}}
+	handler := func(ctx context.Context, c *Context) error {
+		amount := new(big.Int)
+		address := ""
+		id := c.Event.Name + ":" + c.Event.Block.Number
+		if c.Event.Name == "Token:Transfer" {
+			amount.Set(c.Event.Args.(map[string]any)["value"].(*big.Int))
+			address = c.Event.Log.Address
+			id += ":" + c.Event.Log.LogIndex
+		} else if c.Event.Name == "NoiseAccount:transaction:to" {
+			amount.Set(c.Event.Normalized.Transaction["value"].(*big.Int))
+			address = c.Event.Transaction["to"].(string)
+		} else if c.Event.Name == "NoiseAccount:transfer:to" {
+			amount.Set(c.Event.Transfer["value"].(*big.Int))
+			address = c.Event.Transfer["to"].(string)
+		}
+		return c.DB.Write(ctx, "audit", store.Row{"id": id, "kind": c.Event.Name, "address": address, "amount": amount}, store.Insert)
+	}
+	handlers := map[string]Handler{"Token:Transfer": handler, "Noise.ping()": handler, "NoiseAccount:transaction:to": handler, "NoiseAccount:transfer:to": handler, "Tick:block": handler}
+	newEngine := func(disabled bool) (*Engine, *store.Store) {
+		t.Helper()
+		d, err := store.NewLifecycle(backend, model, fmt.Sprintf("ponder_go_bloom_%x", time.Now().UnixNano()), schema.Multichain, store.LifecycleOptions{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		lifecycles = append(lifecycles, d)
+		database := d.RuntimeStore()
+		var engine *Engine
+		if staged {
+			engine, err = NewStaged(cfg, d, handlers, StagedOptions{Options: Options{DisableCache: disabled}, BuildID: "native-bloom"})
+		} else {
+			database, err = store.New(ctx, backend, model, database.Namespace, schema.Multichain)
+			if err == nil {
+				engine, err = NewWithOptions(cfg, database, handlers, Options{DisableCache: disabled})
+			}
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		engine.Client.Retries, engine.Client.RequestsPerSecond = 0, 0
+		return engine, database
+	}
+	read := func(database *store.Store) map[string]string {
+		t.Helper()
+		rows, err := database.Read(ctx, "audit")
+		if err != nil {
+			t.Fatal(err)
+		}
+		out := map[string]string{}
+		for _, row := range rows.Rows {
+			out[row["id"].(string)] = fmt.Sprint(row["kind"]) + "/" + fmt.Sprint(row["address"]) + "/" + fmt.Sprint(row["amount"])
+		}
+		return out
+	}
+	setMode("zero")
+	baseline, baselineStore := newEngine(false)
+	if err := baseline.Sync(ctx); err != nil {
+		t.Fatal(err)
+	}
+	baselineRows := read(baselineStore)
+	baselineNoise, _ := counts(noiseHash)
+	baselinePost, _ := counts(postHash)
+	setMode("real")
+	engine, database := newEngine(false)
+	if err := engine.Sync(ctx); err != nil {
+		t.Fatal(err)
+	}
+	actual := read(database)
+	if len(actual) != 8 || !reflect.DeepEqual(actual, baselineRows) {
+		t.Fatal("bloom changed actual event data", actual, baselineRows)
+	}
+	noiseCalls, traces := counts(noiseHash)
+	postCalls, _ := counts(postHash)
+	if chainID == 1 {
+		if noiseCalls != 0 || postCalls != 1 || baselineNoise <= noiseCalls || baselinePost <= postCalls {
+			t.Fatal("log RPC reduction", noiseCalls, postCalls, baselineNoise, baselinePost)
+		}
+	} else if noiseCalls == 0 {
+		t.Fatal("async chain suppressed logs")
+	}
+	if traces == 0 {
+		t.Fatal("bloom suppressed account/contract traces")
+	}
+	before := read(database)
+	setMode("real")
+	if err := engine.Sync(ctx); err != nil || !reflect.DeepEqual(read(database), before) {
+		t.Fatal("idempotence", err)
+	}
+	rpcCall("evm_revert", snapshot)
+	setParent(childB, 8)
+	replacement, _ := send(parent, "0x", 0, 1)
+	if replacement != parentTX {
+		t.Fatal("same-parent-transaction-hash fork required")
+	}
+	send(childB, fmt.Sprintf("0x%064x", 11), 0, 2)
+	setMode("real")
+	if err := engine.Sync(ctx); err != nil {
+		t.Fatal(err)
+	}
+	rows := read(database)
+	if len(rows) != 8 {
+		t.Fatal("fork event rows", rows)
+	}
+	values := map[string]bool{}
+	for _, row := range rows {
+		if strings.Contains(row, childA) {
+			t.Fatal("orphan child business data", rows)
+		}
+		values[row] = true
+	}
+	if !values["Token:Transfer/"+childB+"/8"] || !values["Token:Transfer/"+childB+"/11"] {
+		t.Fatal("replacement birth and postbirth logs", rows)
+	}
+	f := engine.factories["Token"]
+	children, err := database.FactoryChildren(ctx, f.ID, chainID, 3)
+	if err != nil || len(children) != 1 || children[childB] != 2 {
+		t.Fatal("replacement factory provenance", children, err)
+	}
+	if engine.cache == nil {
+		t.Fatal("actual cache must be enabled in the bloom runtime fixture")
+	}
+	for address, expected := range map[string]string{childA: "0", childB: "2"} {
+		cached, err := backend.Query(ctx, "SELECT count(*)::text AS n FROM "+schema.Quote(engine.cache.Namespace())+".logs WHERE chain_id=$1 AND address=$2 AND block_number>=2", fmt.Sprint(chainID), address)
+		if err != nil || len(cached.Rows) != 1 || cached.Rows[0]["n"] != expected {
+			t.Fatal("branch-specific protocol log cache", address, cached, err)
+		}
+	}
+	for i, fallback := range []string{"zero", "missing", "short", "malformed"} {
+		setMode(fallback)
+		_, hash := send(childB, fmt.Sprintf("0x%064x", 13+i), 0, uint64(3+i))
+		beforeFallback := read(database)
+		if fallback == "missing" {
+			// Existing cache encoding requires logsBloom. Preserve its early
+			// rejection and prove no block/business progress before retry.
+			err := engine.Sync(ctx)
+			if err == nil || !strings.Contains(err.Error(), "missing RPC blocks.logsBloom") || !reflect.DeepEqual(read(database), beforeFallback) {
+				t.Fatal("cached incomplete header validation/atomicity", err)
+			}
+			persisted, err := database.SyncedBlock(ctx, chainID, uint64(4+i))
+			if err != nil || persisted != nil {
+				t.Fatal("incomplete header persisted", persisted, err)
+			}
+			setMode("real")
+		}
+		if err := engine.Sync(ctx); err != nil {
+			t.Fatal("fallback/retry", fallback, err)
+		}
+		requests, _ := counts(hash)
+		if requests == 0 {
+			t.Fatal("fallback bloom suppressed logs", fallback)
+		}
+		rows = read(database)
+		if len(rows) != 10+i*2 || !strings.Contains(rows["Token:Transfer:"+Hex(uint64(4+i))+":0x0"], fmt.Sprint(13+i)) {
+			t.Fatal("fallback lost real event", fallback, rows)
+		}
+	}
+	// Without protocol caching, permissive native envelopes remain supported;
+	// missing blooms must request the real logs and preserve all business data.
+	setMode("missing")
+	uncached, uncachedStore := newEngine(true)
+	if err := uncached.Sync(ctx); err != nil {
+		t.Fatal("uncached missing-bloom fallback", err)
+	}
+	if uncached.cache != nil || !reflect.DeepEqual(read(uncachedStore), read(database)) {
+		t.Fatal("uncached missing-bloom data", read(uncachedStore), read(database))
+	}
+	missingRequests, _ := counts(noiseHash)
+	if missingRequests == 0 {
+		t.Fatal("missing bloom suppressed log request")
+	}
+}
