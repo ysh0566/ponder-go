@@ -1,0 +1,27 @@
+// Pure pinned-source helper calls only; no network/Anvil/database or native edit.
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+const root=path.resolve(import.meta.dirname,'..');
+const upstream=path.resolve(root,'../ponder-upstream');
+const require=createRequire(path.join(upstream,'packages/core/package.json'));
+const viem=require('viem');
+
+const vectors=[];
+for(const [type,value]of [['bytes32','0x'+'01'.padStart(64,'0')],['address','0x'+'01'.padStart(40,'0')],['uint256',1n],['string','hello'],['bytes','0x0102']]){
+ const event={type:'event',name:'Seen',inputs:[{name:'arg',type,indexed:true}]};
+ for(const [name,args]of [['missing',{}],['null',{arg:null}],['undefined',{arg:undefined}],['positional_null',[null]],['positional_undefined',[undefined]],['empty_or',{arg:[]}],['value',{arg:value}],['or_value',{arg:[value]}],['or_null',{arg:[null]}],['or_undefined',{arg:[undefined]}]]){
+  const entry={name:type+'/'+name,event,args:mark(args)};
+  try{const out=viem.encodeEventTopics({abi:[event],eventName:'Seen',args});entry.topics={topic0:out[0],topic1:out[1]??null,topic2:out[2]??null,topic3:out[3]??null};}
+  catch(error){entry.error={name:error.name,message:error.message};}
+  vectors.push(entry);
+ }
+}
+function mark(value){if(value===undefined)return{$undefined:true};if(typeof value==='bigint')return{$bigint:String(value)};if(Array.isArray(value))return value.map(mark);if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,mark(v)]));return value;}
+const pkgRoot=path.dirname(path.dirname(require.resolve('viem')));
+const sources=[import.meta.filename,path.join(upstream,'pnpm-lock.yaml'),pkgRoot+'/package.json',...['encodeEventTopics','encodeAbiParameters'].map(name=>pkgRoot+'/_esm/utils/abi/'+name+'.js')].map(absolute=>({file:path.relative(root,absolute),sha256:crypto.createHash('sha256').update(fs.readFileSync(absolute)).digest('hex')}));
+const output={counting:'Supplementary actual pinned viem calls, zero original mappings. Native comparison and real runtime are separate required evidence.',sources,cases:vectors};
+fs.mkdirSync(path.join(root,'testdata/abi'),{recursive:true});
+fs.writeFileSync(path.join(root,'testdata/abi/topics-source.json'),JSON.stringify(output,null,2)+'\n');
+console.log(JSON.stringify({source_vectors:vectors.length,errors:vectors.filter(x=>x.error).length,source_credit:0}));

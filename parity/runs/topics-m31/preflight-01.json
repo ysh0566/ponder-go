@@ -1,0 +1,125 @@
+{
+  "milestone": "M31",
+  "state": "candidate; full verification not yet accepted",
+  "recorded_utc": "2026-10-24T18:58:52.840877+00:00",
+  "parent": "61f4da4e86a8b55ffc43583c39c7c016e0ee0d86",
+  "expected": {
+    "source_mapped": 378,
+    "source_go": 374,
+    "retained_sdk": 4,
+    "unimplemented": 527,
+    "normal_and_race_leaves": 2030,
+    "postgres": 222,
+    "pglite": 219,
+    "packages": 21,
+    "functions": 149,
+    "batches_per_mode": 50,
+    "native_files": 989
+  },
+  "files": [
+    {
+      "file": "abi/topics.go",
+      "sha256": "280a3d64a069e4f6ddc39420541183fae0ee25d0ef30ace2a0970503a397db69"
+    },
+    {
+      "file": "abi/topics_source_test.go",
+      "sha256": "987dafd53ec0c289ab24d68cba0412df29747a8786efd72a92ff90bb3aa7d0ab"
+    },
+    {
+      "file": "runtime/indexed_topic_source_test.go",
+      "sha256": "fd90365c7fd255f9858158b1060f39357ded17d4256d2a208e41645e627abf11"
+    },
+    {
+      "file": "runtime/indexed_topic_dynamic_test.go",
+      "sha256": "c0ce0152cb9c07c73359bcb9ff09c9f83ab23d2683d748a2b4d585a903159c68"
+    },
+    {
+      "file": "tools/topic-fixtures.mjs",
+      "sha256": "b6471cf775e21c95872529671fa4771e3607c4887297535bcb963cd2fb9a9e7d"
+    },
+    {
+      "file": "tools/topic-source-results.mjs",
+      "sha256": "3918a9736f3350d9ff3f15b6faf9af02f280fb6c9bb637f15b40df777e8396bf"
+    },
+    {
+      "file": "tools/record-results.mjs",
+      "sha256": "33bb46ec38792248e772ec6e35c1d2aa7d5a2cc619b9737aabfdba9ca65d0d7e"
+    },
+    {
+      "file": "tools/verify.sh",
+      "sha256": "51074e46c6950bf25a975d3276912b5b8fa7fd79a7c7e8bf8a5f2b7ef53c2096"
+    },
+    {
+      "file": "parity/mappings.json",
+      "sha256": "90aa146480481ae0066a137997c73ab7b33a0552502bcc1dd960edca61d281ab"
+    }
+  ],
+  "focused": {
+    "old-runtime-race-01": {
+      "counts": {
+        "fail": 4
+      },
+      "exit_code": 1,
+      "log": {
+        "file": "parity/runs/topics-m31/old-runtime-race-01.jsonl",
+        "sha256": "f4a45f9d61a8e2400aecd9a6c833d4a571fe6296e04c5f129fa2e22903afaade"
+      },
+      "failed_leaves": [
+        "TestIndexedTopicSourceRuntime/postgres/cache_disabled_false/undefined",
+        "TestIndexedTopicSourceRuntime/postgres/cache_disabled_true/undefined",
+        "TestIndexedTopicSourceRuntime/pglite/cache_disabled_false/undefined",
+        "TestIndexedTopicSourceRuntime/pglite/cache_disabled_true/undefined"
+      ]
+    },
+    "runtime-race-01": {
+      "counts": {
+        "pass": 16
+      },
+      "exit_code": 0,
+      "log": {
+        "file": "parity/runs/topics-m31/runtime-race-01.jsonl",
+        "sha256": "d420b44eab7f882db94b5c45c276855462b1917c0fb660cec28c68ff9dce7c99"
+      },
+      "failed_leaves": []
+    },
+    "source-race-01": {
+      "counts": {
+        "pass": 38,
+        "fail": 2
+      },
+      "exit_code": 1,
+      "log": {
+        "file": "parity/runs/topics-m31/source-race-01.jsonl",
+        "sha256": "7cdb3f84a9fcb45f6fb26a3bfed877459db46a8dde27236322c891f7bf3597b5"
+      },
+      "failed_leaves": [
+        "TestIndexedTopicsSource/string/or_null",
+        "TestIndexedTopicsSource/string/or_undefined"
+      ]
+    },
+    "source-race-02": {
+      "counts": {
+        "pass": 50
+      },
+      "exit_code": 0,
+      "log": {
+        "file": "parity/runs/topics-m31/source-race-02.jsonl",
+        "sha256": "7a3ab05f86810ffaa0f841fb3e5b3d5bb7f904c3ad43b46788440442a92c9f0a"
+      },
+      "failed_leaves": []
+    },
+    "runtime-race-02": {
+      "counts": {
+        "pass": 32
+      },
+      "exit_code": 0,
+      "log": {
+        "file": "parity/runs/topics-m31/runtime-race-02.jsonl",
+        "sha256": "85f352ada9245fab6de5854e261ed1e75cb9804c87e0b7b00b2d73736f8a37e7"
+      },
+      "failed_leaves": []
+    }
+  },
+  "source_credit": 0,
+  "prep_note": "Fresh original captures and actual50 source vectors generated before immutable native snapshot. Only complete normal/race plus final checks count."
+}

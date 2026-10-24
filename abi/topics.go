@@ -9,6 +9,8 @@ import (
 	"reflect"
 	"strings"
 
+	"ponder.local/ponder-go/filter"
+
 	ethabi "github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -54,7 +56,7 @@ func EncodeEventTopics(event Event, arguments any) (EventTopics, error) {
 		if i >= len(topics) {
 			break
 		}
-		if i >= len(values) || values[i] == nil {
+		if i >= len(values) || values[i] == nil || filter.IsUndefined(values[i]) {
 			continue
 		}
 		value := values[i]
@@ -87,7 +89,17 @@ func encodeIndexedArgument(parameter Parameter, value any) (string, error) {
 	if parameter.Type == "string" || parameter.Type == "bytes" {
 		text, ok := value.(string)
 		if !ok {
-			return "", fmt.Errorf("indexed %s argument must be a string", parameter.Type)
+			// The pinned helper passes array elements directly to toBytes.
+			// TextEncoder coerces null to "null" and undefined to empty bytes.
+			// Scalar nullish values are handled as wildcards by the caller.
+			switch {
+			case value == nil:
+				text = "null"
+			case filter.IsUndefined(value):
+				text = ""
+			default:
+				return "", fmt.Errorf("indexed %s argument must be a string", parameter.Type)
+			}
 		}
 		data := []byte(text)
 		if strings.HasPrefix(text, "0x") {

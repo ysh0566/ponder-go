@@ -141,3 +141,7 @@ RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋check
 ## M30：SQL原例、源码缓存与ORM可见性
 
 新增14精确原例/19断言/38调用，原完整文件14通过，含8实际Drizzle SQL和并发校验；累计378/905，527未实现。Go/race各1948、PG206/PGlite203，0fail/skip，21包146函数50批次。源码LRU/fullSHA/UTF16/错误/readonly接真实ORM，旧双后端DB2/ORM1在同输入下修复为ORM2/update3/journal3；61向量+cache4+HTTP2+transaction2补充零credit。失败与输入不变证据保留。见SQL_SOURCE_HELPERS.md与batch-29。完整目标继续。
+
+## M31：Indexed topic nullish源码行为
+
+新增精确映射0，仍378/905、527未实现。Go/race各2030、PG222/PGlite219，0fail/skip；21包149函数50批次。50实际viem源码向量和32真实EVM/backend/cache回归证明scalar undefined wildcard及dynamic OR null/undefined hash，静态OR仍拒绝。旧4端到端失败、中间2编码失败及同输入986指纹证明保留。见INDEXED_TOPICS.md与batch-30；完整目标继续。
