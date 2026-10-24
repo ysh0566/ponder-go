@@ -1,0 +1,37 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"ponder.local/ponder-go/config"
+)
+
+func main() {
+	raw, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		panic(err)
+	}
+	base, err := config.ParseSourceConfiguration(raw)
+	if err != nil {
+		panic(err)
+	}
+	_ = context.Background
+	_ = json.Valid
+	input := config.SourceTypedContract[int64, int64]{Chain: config.SourceOnChains(config.SourceChainOverride{Name: "mainnet"}), ABI: json.RawMessage("[{\"name\":\"Event0\",\"type\":\"event\",\"inputs\":[{\"type\":\"bytes32\",\"name\":\"arg\",\"indexed\":true}]},{\"name\":\"Event1\",\"type\":\"event\",\"inputs\":[]}]"), StartBlock: int64(16370000), EndBlock: int64(16370100)}
+	typed := config.SourceTypedConfiguration[config.SourceTypedContract[int64, int64]]{Base: base, Name: "a", Contract: input}
+	built, err := config.BuildSourceConfig(base, config.SourceBuildOptions{})
+	if err != nil {
+		panic(err)
+	}
+	indexing, err := config.SafeBuildTypedSourceIndexing(context.Background(), typed, built, []config.SourceIndexingFunction{{Name: "a:Event0", Fn: func() {}}})
+	if err != nil {
+		panic(err)
+	}
+	if len(indexing.EventCallbacks()) != 1 {
+		panic("actual typed chain/callback result changed")
+	}
+	fmt.Println("actual typed source pipeline passed")
+}

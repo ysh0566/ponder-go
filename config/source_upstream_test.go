@@ -24,7 +24,17 @@ import (
 	"ponder.local/ponder-go/rpc"
 )
 
+type sourceTypedControl struct {
+	SourceID string `json:"source_id"`
+	Mode     string `json:"mode"`
+	Input    any    `json:"input"`
+	ExitCode int    `json:"exit_code"`
+	Output   string `json:"output"`
+	Error    string `json:"error,omitempty"`
+}
+
 type sourceLiveCall struct {
+	TypedControls             []sourceTypedControl            `json:"typed_controls,omitempty"`
 	MetadataIdentityChecks    int                             `json:"metadata_identity_checks"`
 	HyperliquidIdentityChecks int                             `json:"hyperliquid_identity_checks"`
 	TypeProof                 any                             `json:"type_proof,omitempty"`
@@ -127,7 +137,7 @@ func TestUpstreamConfigRuntime(t *testing.T) {
 	if raw, err := pristine.Output(); err != nil || strings.TrimSpace(string(raw)) != "" {
 		t.Fatal("Original tracked files changed", err)
 	}
-	output, err := os.MkdirTemp(filepath.Join(root, "parity/runs/config-m28"), "live-")
+	output, err := os.MkdirTemp(filepath.Join(root, "parity/runs/config-types-m29"), "live-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,6 +151,51 @@ func TestUpstreamConfigRuntime(t *testing.T) {
 	if raw, err := compile.CombinedOutput(); err != nil {
 		t.Fatalf("Public filter compiler proof: %v\n%s", err, raw)
 	}
+
+	typedCompile := exec.Command("node", filepath.Join(root, "tools/config-typed-compile-fixtures.mjs"), filepath.Join(output, "typed-compile.json"))
+	typedCompile.Dir = root
+	if raw, err := typedCompile.CombinedOutput(); err != nil {
+		t.Fatalf("Production typed compiler controls: %v\n%s", err, raw)
+	}
+	typedRaw, err := os.ReadFile(filepath.Join(output, "typed-compile.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var typedProof struct {
+		Directives []struct {
+			SourceID       string `json:"source_id"`
+			Mode           string
+			PositiveBinary string `json:"positive_binary"`
+		}
+	}
+	if err := json.Unmarshal(typedRaw, &typedProof); err != nil {
+		t.Fatal(err)
+	}
+
+	literalCompile := exec.Command("node", filepath.Join(root, "tools/config-literal-compile-fixtures.mjs"), filepath.Join(output, "literal-compile.json"))
+	literalCompile.Dir = root
+	if raw, err := literalCompile.CombinedOutput(); err != nil {
+		t.Fatalf("Actual generated literal compiler controls: %v\n%s", err, raw)
+	}
+	literalRaw, err := os.ReadFile(filepath.Join(output, "literal-compile.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var literalProof struct {
+		Directives []struct {
+			SourceID       string `json:"source_id"`
+			Mode           string
+			PositiveBinary string `json:"positive_binary"`
+		}
+	}
+	if err := json.Unmarshal(literalRaw, &literalProof); err != nil {
+		t.Fatal(err)
+	}
+	typedProof.Directives = append(typedProof.Directives, literalProof.Directives...)
+	if len(typedProof.Directives) != 9 {
+		t.Fatal("Expected all nine production typed/literal compiler controls")
+	}
+
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
@@ -277,6 +332,33 @@ func TestUpstreamConfigRuntime(t *testing.T) {
 				}
 			}
 		}
+
+		if call.Operation == "safeBuildIndexingFunctions" {
+			for _, directive := range typedProof.Directives {
+				if directive.SourceID != call.CaseID {
+					continue
+				}
+				input, err := json.Marshal(cfg.Value())
+				if err != nil {
+					call.Differences = append(call.Differences, err.Error())
+					continue
+				}
+				command := exec.CommandContext(r.Context(), directive.PositiveBinary)
+				command.Stdin = bytes.NewReader(input)
+				raw, runErr := command.CombinedOutput()
+				exit := 0
+				message := ""
+				if runErr != nil {
+					exit = -1
+					if failure, ok := runErr.(*exec.ExitError); ok {
+						exit = failure.ExitCode()
+					}
+					message = runErr.Error()
+					call.Differences = append(call.Differences, "actual typed positive control failed: "+directive.Mode+": "+message+" "+string(raw))
+				}
+				call.TypedControls = append(call.TypedControls, sourceTypedControl{SourceID: directive.SourceID, Mode: directive.Mode, Input: sourceComparable(cfg.value), ExitCode: exit, Output: string(raw), Error: message})
+			}
+		}
 		safe := strings.HasPrefix(call.Operation, "safe")
 		if safe {
 			if runError != nil {
@@ -371,6 +453,19 @@ func TestUpstreamConfigRuntime(t *testing.T) {
 	}
 	if !status.Success || status.NumPassedTests != 39 || status.NumPendingTests != 1 || status.NumFailedTests != 0 {
 		t.Fatalf("Incomplete original oracle: %+v", status)
+	}
+
+	typedControls := 0
+	for _, call := range calls {
+		for _, control := range call.TypedControls {
+			typedControls++
+			if control.ExitCode != 0 {
+				t.Errorf("Typed positive control failed: %s %s", control.Mode, control.Error)
+			}
+		}
+	}
+	if typedControls != 9 {
+		t.Fatalf("Expected nine original live typed positive controls, got %d", typedControls)
 	}
 	hyperliquidChecks := 0
 	for _, call := range calls {

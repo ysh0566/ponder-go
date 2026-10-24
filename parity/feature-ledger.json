@@ -32,9 +32,9 @@
       "upstream_sources": [],
       "evidence": [
         "parity/runs/summary.json",
-        "parity/runs/batch-27.json"
+        "parity/runs/batch-28.json"
       ],
-      "remaining": "M28 verifies360/905 exact source records:356 Go+4 SDK,all mapped original oracles pass,545 unimplemented static records. Config35 new mapped cases/85assertions;39active runtime checks/92assertions and1originalskip retained. Four runtime-checked config cases retain9 native type obligations and remain unmapped. Static discovery is not dynamic exhaustiveness."
+      "remaining": "M29 verifies364/905 exact records:360Go+4SDK,all mapped original oracles pass;541unimplemented. All39active config cases/92assertions and10 native type obligations verified,originalskip1/2assertions retained/unmapped. Static discovery is not dynamic exhaustiveness."
     },
     {
       "id": "differential-harness",
@@ -62,14 +62,17 @@
         "config/source_build.go",
         "config/source_indexing.go",
         "config/source_native.go",
-        "runtime/source.go"
+        "runtime/source.go",
+        "config/typed_source.go",
+        "config/source_bindings.go",
+        "cmd/source-codegen/main.go"
       ],
       "upstream_sources": [
         "packages/core/src/config/index.ts",
         "packages/core/src/build/config.ts"
       ],
       "evidence": [],
-      "remaining": "M28 source-shaped builder defaults/validation/latest/finality/ordered callbacks/ABI metadata and real native single-chain integration verified.35 original mappings;4 runtime-checked cases retain9 native compiler obligations,1originalskip preserved. Complete typed literal/bounds DSL,transport functions,fullRPC/context/include,negative block scheduling andmulti-chain scheduler remain."
+      "remaining": "M29 all39active config records/type obligations verified through real typed native constructor/consumers/generated chain-event references. Originalskip remains. Current convenience API is partial,not fullTS DSL: complete overrides/filter lists/types/publiccontext/RPC/transport/signedscheduler/history/multichain remain."
     },
     {
       "id": "schema",
@@ -1115,6 +1118,27 @@
         "parity/runs/config-oracle.json"
       ],
       "remaining": "35/40 exact config mappings.39active runtime cases,originalskip retained;9 native type obligations across4cases still unmapped. Full typed DSL/publicsourceAPI/RPC/context/include andmulti-chain/history scheduler remain. Eight real EVM/backend/cache cases andcatalogmetadata addzero sourcecredit."
+    },
+    {
+      "id": "typed-source-config-m29",
+      "status": "verified_subset",
+      "implementation_files": [
+        "config/typed_source.go",
+        "config/source_bindings.go",
+        "cmd/source-codegen/main.go",
+        "runtime/typed_source_test.go",
+        "runtime/generated_source_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/config/index.ts",
+        "packages/core/src/config/eventFilter.ts",
+        "packages/core/src/build/config.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/batch-28.json",
+        "parity/runs/config-live-verification.json"
+      ],
+      "remaining": "All10 exact config error obligations established; originalskip preserved. FulltypedDSL/overrides/filter lists/sourceerror/context/ABI/RPC/transport/signedscheduler and541 remaining static records stayopen.12realruntime+1nil regression are supplemental only."
     }
   ]
 }
