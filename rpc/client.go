@@ -39,6 +39,7 @@ type Client struct {
 	mu                sync.Mutex
 	nextTime          time.Time
 	transport         *Client
+	actions           *Actions
 }
 
 // WithCache scopes cache access to an indexing transaction while sharing the

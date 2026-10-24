@@ -1,0 +1,97 @@
+{
+  "checked_utc": "2026-10-24T10:55:57.260Z",
+  "target": {
+    "repository": "ysh0566/ponder-go",
+    "owner": "ysh0566",
+    "visibility": "private"
+  },
+  "connected_account": {
+    "login": "ysh0566",
+    "id": 19503475,
+    "permissions": {
+      "admin": true,
+      "maintain": true,
+      "pull": true,
+      "push": true,
+      "triage": true
+    }
+  },
+  "observed_remote_main": "9180e4f915f3e3fdce27bcaf5a4e4a7c7be8da1a",
+  "local_m23": {
+    "sha": "3e208c1b35beaa87f936a958391ca431df80c757",
+    "tree": "307b0e0ba77665ecf73c2a03bb2ba65fff42f1b0",
+    "author": "ysh0566 <19503475+ysh0566@users.noreply.github.com>",
+    "committer": "ysh0566 <19503475+ysh0566@users.noreply.github.com>",
+    "published": false
+  },
+  "ssh": {
+    "forwarded_agent_disabled": true,
+    "cloud_local_existing_key_only": true,
+    "observed_login": "whyareulaughing",
+    "repository_read_exit": 128,
+    "error": "Repository not found",
+    "evidence": "parity/runs/rpc-actions-m24/ssh-existing-access.json",
+    "path_stopped": true
+  },
+  "connector_git_objects": {
+    "create_blob": {
+      "supported": true,
+      "encoding": [
+        "utf-8",
+        "base64"
+      ]
+    },
+    "create_tree": {
+      "supported": true,
+      "fields": [
+        "base_tree_sha",
+        "tree_elements"
+      ]
+    },
+    "create_commit": {
+      "supported": true,
+      "fields": [
+        "message",
+        "parent_sha",
+        "additional_parent_shas",
+        "tree_sha"
+      ],
+      "raw_commit_bytes": false,
+      "explicit_author_committer": false,
+      "explicit_dates": false,
+      "preserves_local_m23_sha": false
+    },
+    "update_ref": {
+      "supported": true,
+      "fields": [
+        "branch_name",
+        "sha",
+        "force",
+        "expected_sha"
+      ],
+      "safe_mode": "force=false with expected_sha"
+    },
+    "raw_git_receive_pack_or_generic_raw_commit_upload_exposed": false
+  },
+  "status": "blocked_no_existing_transport_to_upload_exact_local_commit",
+  "missing_capability": "Either an already authorized Git transport on a non-Mac environment, or connector support for uploading the exact raw Git commit object. Blob/tree creation plus ref updates cannot create the missing exact commit object.",
+  "bundle": {
+    "path": "/root/ponder-go/.cloud-bootstrap/ponder-go-M23.bundle",
+    "sha256": "61b651a998ef9b0d32bd964dce0c58a8069780e103c015ef0187cd2a3f19300b",
+    "advertised_ref": "refs/heads/main",
+    "commit": "3e208c1b35beaa87f936a958391ca431df80c757",
+    "prerequisite": "9180e4f915f3e3fdce27bcaf5a4e4a7c7be8da1a",
+    "git_bundle_verify_exit": 0,
+    "includes_credentials": false,
+    "includes_unverified_m24": false
+  },
+  "minimal_user_steps": [
+    "Use an existing non-Mac checkout/environment that already has Git access to ysh0566/ponder-go; no new permission, token, key or copied credential is required or requested.",
+    "Transfer only the verified Git bundle into that environment, verify its SHA256 and run git bundle verify. Confirm remote main is still9180e4f915f3e3fdce27bcaf5a4e4a7c7be8da1a; stop and review if it differs.",
+    "Fetch refs/heads/main from the bundle and confirm FETCH_HEAD is3e208c1b35beaa87f936a958391ca431df80c757. Use ordinary git push <target-remote> 3e208c1b35beaa87f936a958391ca431df80c757:refs/heads/main; no force, cherry-pick, rebase or replacement commit.",
+    "Afterward verify remote main, target owner/private repository and the exact author/committer. If push result is unclear, read remote state first."
+  ],
+  "remote_mutations": [],
+  "credentials_or_permissions_created_or_copied": false,
+  "mac_operations": false
+}
