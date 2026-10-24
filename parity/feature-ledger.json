@@ -32,9 +32,9 @@
       "upstream_sources": [],
       "evidence": [
         "parity/runs/summary.json",
-        "parity/runs/batch-29.json"
+        "parity/runs/batch-31.json"
       ],
-      "remaining": "M30 verifies378/905 exact records:374Go+4SDK,all mapped original oracles pass;527unimplemented. SQL14/19assertions/38calls verified; static discovery is not dynamic exhaustiveness."
+      "remaining": "M32 verifies416/905 exact records=412Go+4SDK, all mapped source oracles passed;489unimplemented. SyncStore38/63assertions/9native type obligations and95calls perbackendmode verified. Static discovery is not dynamic exhaustiveness."
     },
     {
       "id": "differential-harness",
@@ -1178,6 +1178,31 @@
         "docs/INDEXED_TOPICS.md"
       ],
       "remaining": "50actualsourcevectors/32realruntime cases addzero sourcecredit. Scalarundefined wildcard anddynamicOR nullish hash covered; fullJS coercion/errorclasses/messages andfullABI/config/history/scheduler remain. Exact378/905,527unimplemented."
+    },
+    {
+      "id": "source-sync-store-m32",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/source_intervals.go",
+        "store/source_children.go",
+        "store/source_crud.go",
+        "store/source_query.go",
+        "store/source_rpc_cache.go",
+        "store/source_rpc_hash.go",
+        "store/source_rpc_adapter.go",
+        "rpc/source_request.go",
+        "runtime/source_page.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/sync-store/index.ts",
+        "packages/core/src/sync-store/index.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/source-sync-verification.json",
+        "parity/runs/batch-31.json",
+        "docs/SOURCE_SYNC_STORE.md"
+      ],
+      "remaining": "38 exact original cases/63assertions/9actual type controls verified onPG/PGlite andnormal/race. Native realEVMpageconsumer/cache/rollback/replay/reorg plushash40/range12/boundary/rewind cases are supplementary. Typed request family coverseth_call; completegenericRPCschema/returninference, arbitraryJScoercions, context/metrics, historical acquisition/provenance/finality/scheduler andmultichain remain."
     }
   ]
 }

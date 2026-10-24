@@ -1,0 +1,245 @@
+{
+  "state": "Twelve actual pinned helper vectors; supplementary differential coverage, no additional original declaration credit.",
+  "sources": [
+    {
+      "file": "tools/source-range-fixtures.mjs",
+      "sha256": "e21d4cf790bf76b139f240264b76557e9a1c9f10ed176df8a797bbd70d0d1b21"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/sync-store/index.ts",
+      "sha256": "1f05bea9940a01765e107968b00bd5cc676f3950d70589c5e39ac4ca577fbdb5"
+    },
+    {
+      "file": "../ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    }
+  ],
+  "cases": [
+    {
+      "name": "0",
+      "args": {
+        "filters": [
+          {
+            "fromBlock": 10,
+            "toBlock": 80
+          },
+          {
+            "fromBlock": 20,
+            "toBlock": 90
+          }
+        ],
+        "fromBlock": 0,
+        "toBlock": 100
+      },
+      "result": {
+        "fromBlock": 10,
+        "toBlock": 90
+      }
+    },
+    {
+      "name": "1",
+      "args": {
+        "filters": [
+          {
+            "fromBlock": 10,
+            "toBlock": 80
+          },
+          {
+            "fromBlock": {
+              "$undefined": true
+            },
+            "toBlock": {
+              "$undefined": true
+            }
+          }
+        ],
+        "fromBlock": 20,
+        "toBlock": 70
+      },
+      "result": {
+        "fromBlock": 20,
+        "toBlock": 70
+      }
+    },
+    {
+      "name": "2",
+      "args": {
+        "filters": [
+          {
+            "fromBlock": 0,
+            "toBlock": 30
+          }
+        ],
+        "fromBlock": 20,
+        "toBlock": 90
+      },
+      "result": {
+        "fromBlock": 20,
+        "toBlock": 30
+      }
+    },
+    {
+      "name": "3",
+      "args": {
+        "filters": [],
+        "fromBlock": 20,
+        "toBlock": 90
+      },
+      "result": {
+        "fromBlock": 20,
+        "toBlock": 90
+      }
+    },
+    {
+      "name": "4",
+      "args": {
+        "filters": [
+          {}
+        ],
+        "fromBlock": 20,
+        "toBlock": 90
+      },
+      "result": {
+        "fromBlock": 20,
+        "toBlock": 90
+      }
+    },
+    {
+      "name": "5",
+      "args": {
+        "filters": [
+          {
+            "fromBlock": null,
+            "toBlock": null
+          }
+        ],
+        "fromBlock": 20,
+        "toBlock": 90
+      },
+      "result": {
+        "fromBlock": 20,
+        "toBlock": 90
+      }
+    },
+    {
+      "name": "6",
+      "args": {
+        "filters": [
+          {
+            "fromBlock": 200,
+            "toBlock": 300
+          }
+        ],
+        "fromBlock": 0,
+        "toBlock": 100
+      },
+      "result": {
+        "fromBlock": 200,
+        "toBlock": 100
+      }
+    },
+    {
+      "name": "7",
+      "args": {
+        "filters": [
+          {
+            "fromBlock": -100,
+            "toBlock": -1
+          }
+        ],
+        "fromBlock": -200,
+        "toBlock": 10
+      },
+      "result": {
+        "fromBlock": -100,
+        "toBlock": -1
+      }
+    },
+    {
+      "name": "8",
+      "args": {
+        "filters": [
+          {
+            "fromBlock": {
+              "$number": "NaN"
+            },
+            "toBlock": 30
+          },
+          {
+            "fromBlock": 0,
+            "toBlock": 40
+          }
+        ],
+        "fromBlock": 0,
+        "toBlock": 100
+      },
+      "result": {
+        "fromBlock": {
+          "$number": "NaN"
+        },
+        "toBlock": 40
+      }
+    },
+    {
+      "name": "9",
+      "args": {
+        "filters": [
+          {
+            "fromBlock": {
+              "$number": "-Infinity"
+            },
+            "toBlock": {
+              "$number": "Infinity"
+            }
+          }
+        ],
+        "fromBlock": 0,
+        "toBlock": 100
+      },
+      "result": {
+        "fromBlock": 0,
+        "toBlock": 100
+      }
+    },
+    {
+      "name": "10",
+      "args": {
+        "filters": [
+          {
+            "fromBlock": {
+              "$number": "-0"
+            },
+            "toBlock": 0
+          }
+        ],
+        "fromBlock": {
+          "$number": "-0"
+        },
+        "toBlock": 0
+      },
+      "result": {
+        "fromBlock": {
+          "$number": "-0"
+        },
+        "toBlock": 0
+      }
+    },
+    {
+      "name": "11",
+      "args": {
+        "filters": [
+          {
+            "fromBlock": 1.5,
+            "toBlock": 3.5
+          }
+        ],
+        "fromBlock": 0,
+        "toBlock": 10
+      },
+      "result": {
+        "fromBlock": 1.5,
+        "toBlock": 3.5
+      }
+    }
+  ]
+}

@@ -4,7 +4,19 @@
 
 
 
-## 当前执行入口：M31已验证，完整目标继续
+## 当前执行入口：M32已验证，完整目标继续
+
+batch-31.json/batch-31-evidence及sync-store-m32/full-verify-02实际退出0。Go/race各2183，PG272/PGlite269，0fail/skip；21包157函数，每模式53个不重复批次，默认timeout保留。原生输入1031/8dae6bb50112f6bf40b5c122fe969005006cb35330d03a7090a740d8d0e62a5d在准备后、native前冻结，贯穿两种模式。精确映射416/905=412Go+4SDK，全部映射原版oracle通过；489未实现。
+
+新增同步存储38条原例/63断言/9类型错误义务。完整原文件保留原hooks/Anvil/输入/断言，每后端每模式95个实际Go调用，严格比较返回值、Map顺序与真实键身份、ownproperties/undefined/NULL、查询范围和九张物理表；pristine38在两个后端分别通过。原版TS pristine0诊断、内存去注释恰9诊断；九对Go具体参数编译控制的正向程序在四次backend/mode中执行真实RPC、存储、哈希和pruning。typed API覆盖eth_call，更广RPC schema仍需实现。
+
+SourceSyncStore与ReadSourcePage/DispatchSourceEvents使用实际协议缓存、共享事件/ABI和业务事务。source MD5与native SHA256明确共存；block0NULL、100/101查询、pruning/冲突/失败原子性/生命周期有补充回归。旧区间rewind四红灯原样保留，修复source expanded端点且保留native point区间控制。真实EVM四backend/cache页消费证明失败回滚、重放、evm_revert分叉后重新索引。范围获取/来源/finality/完整历史调度、metrics/context和所有JS强制转换仍未完成。完整full01保留normal2183通过/race2145通过1失败及全部1031输入快照：独立类型程序启动第三个PGlite时被内核OOM kill，后续7原例连带中断。调度修复在全部38原例比较后释放native对照数据库，再用独立afterAll hook逐项执行9个正向程序；原Anvil仍运行，原输入/断言/超时保留。后端分类优先实际dialect分支，避免PGlite原例名称中的postgres被双计，实际M31日志回归不变。初始observer/映射预检失败及compile01被取代边界也保留。
+
+上一实际发布为M31 5c4be485caa8155f3516c2f1a84693aa737059aa，tree f2851c5e0f00a41b99d43a69ab03d78645752c93，证明sync-store-m32/m31-publication.json。M32只允许作为该SHA普通后继发布，继续指定ysh0566 author/committer、核验实际远端；已有GH_CONFIG_DIR与每命令helper授权持续有效，不重复登录/权限问题，不读token/改全局helper/force/改历史/接触Mac或业务库。
+
+后续先推进sync-historical/in-memory23及index17，共40原例/102断言/12类型错误义务；静态审计或外部草稿没有credit。外部history-next/m33已有12实际async merge向量、44实际block/一致性向量及格式化未编译Go草稿，须独立编译/原始完整调用/类型/真实EVM/fullnormal/race验收后才能应用并映射。保留generator next-before-yield、100块有界prefetch、factory依赖分页/共享/最终drain与原始RPC泛型override义务。然后继续多链/实时/查询/GraphQL/API/CLI/dev/templates/SDK/simulation等完整范围，任务没有完成。接口与证明见SOURCE_SYNC_STORE.md。
+
+## M31历史已验证基线
 
 batch-30.json/batch-30-evidence及topics-m31/full-verify-01退出0。Go/race各2030，PG222/PGlite219，0fail/skip；21包149函数，每模式50不重复批次，默认timeout保留。989/9b6fe9b1dc8b141af45e676383455830afa40121cf33b85915b413a00109100a在native前准备并贯穿两种模式前后。精确映射378/905=374Go+4SDK，全部映射原版oracle通过；527未实现。新增82=实际source50+真实runtime32，零原例credit。
 

@@ -42,6 +42,11 @@ node tools/sql-vectors.mjs --output=testdata/sql/source-vectors.json
 node tools/sql-source-results.mjs
 node tools/topic-fixtures.mjs
 node tools/topic-source-results.mjs
+node tools/source-rpc-fixtures.mjs
+node tools/source-range-fixtures.mjs
+node tools/source-sync-compile.mjs --write
+node tools/source-sync-types.mjs
+node tools/source-sync-pristine.mjs
 node tools/record-native-inputs.mjs
 go test -count=1 -json ./abi/testdata/compile/generated > parity/runs/abi-typed-go.jsonl
 go test -count=1 -race -json ./abi/testdata/compile/generated > parity/runs/abi-typed-race.jsonl
@@ -57,4 +62,5 @@ node tools/parameters-typecheck.mjs
 (cd sdk/typescript/react && CI=1 ./node_modules/.bin/vitest run --typecheck.only --configLoader native --reporter=json --outputFile="$PWD/../../../parity/react-original-typecheck-supported.json")
 node tools/differential.mjs
 node tools/config-live-results.mjs
+node tools/source-sync-results.mjs
 node tools/record-results.mjs

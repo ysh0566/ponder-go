@@ -1,0 +1,1123 @@
+{
+  "state": "Actual isolated pinned helper exports, not original test execution or native acceptance; zero credit.",
+  "source_revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "node": "v24.20.0",
+  "typescript": "5.4.5",
+  "sources": [
+    {
+      "file": "tools/source-rpc-fixtures.mjs",
+      "sha256": "11add68e2bc384822dc5c28f4029c0cb28664d35b9211f066888a7448208766d"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/order.ts",
+      "sha256": "6ed91fbaeedd51078a5c59150a54474ce7fcb1bf5f87f1193259efc68d3ea1ad"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/lowercase.ts",
+      "sha256": "0aa78833df2cdf1c9f517c636f979de22f8cb308e4bb52bb0747ec198fd12385"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/indexing/client.ts",
+      "sha256": "a53e67e1b72036cbd74cb3c9c807550df65e5d65aa2b6991fee12f69acfb40f7"
+    },
+    {
+      "file": "../ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/index.js",
+      "sha256": "a159baabd9da9741d4a4ff76e3ba43ac189957e49a9dc132f22e5004554bd1aa"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/utils/encoding/fromHex.js",
+      "sha256": "0f739a604366e68d28ef693630a0e1f3850874ac36df2f3a4b9d073809b96a5c"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/utils/data/isHex.js",
+      "sha256": "c209c62ab2c84d3cb74b16cffea12e640234194601bef9f413ff13a2102b654a"
+    }
+  ],
+  "cases": [
+    {
+      "name": "original-invalid-call/0x1",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[\"0x1\"]}",
+      "hash": "39d5ace8093d42c1bd00ce7781a7891a",
+      "block": {
+        "$undefined": true
+      },
+      "numeric_block": null
+    },
+    {
+      "name": "original-invalid-call/0x2",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              "0x2"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[\"0x2\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[\"0x2\"]}",
+      "hash": "1ef809143621d9927cf70049ec528ad1",
+      "block": {
+        "$undefined": true
+      },
+      "numeric_block": null
+    },
+    {
+      "name": "original-invalid-call/0x3",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              "0x3"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[\"0x3\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[\"0x3\"]}",
+      "hash": "f5b26f799527d5b1ac1b5828ee526773",
+      "block": {
+        "$undefined": true
+      },
+      "numeric_block": null
+    },
+    {
+      "name": "original-invalid-call/0x4",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              "0x4"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[\"0x4\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[\"0x4\"]}",
+      "hash": "c5828fb593f334d11ed8931f3d20e2b8",
+      "block": {
+        "$undefined": true
+      },
+      "numeric_block": null
+    },
+    {
+      "name": "block-param-0/eth_getBlockByNumber",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_getBlockByNumber"
+          ],
+          [
+            "params",
+            [
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_getBlockByNumber\",\"params\":[\"0x10\"]}",
+      "lowercase": "{\"method\":\"eth_getblockbynumber\",\"params\":[\"0x10\"]}",
+      "hash": "08ddb80024d3ff801bc78e2957ba04ab",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "block-param-0/eth_getBlockTransactionCountByNumber",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_getBlockTransactionCountByNumber"
+          ],
+          [
+            "params",
+            [
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_getBlockTransactionCountByNumber\",\"params\":[\"0x10\"]}",
+      "lowercase": "{\"method\":\"eth_getblocktransactioncountbynumber\",\"params\":[\"0x10\"]}",
+      "hash": "734f8d9e68e56f8904b4cdbd2b64fe4c",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "block-param-0/eth_getTransactionByBlockNumberAndIndex",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_getTransactionByBlockNumberAndIndex"
+          ],
+          [
+            "params",
+            [
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_getTransactionByBlockNumberAndIndex\",\"params\":[\"0x10\"]}",
+      "lowercase": "{\"method\":\"eth_gettransactionbyblocknumberandindex\",\"params\":[\"0x10\"]}",
+      "hash": "a03e0536cc04274121e0b292bc91f7a9",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "block-param-0/eth_getUncleByBlockNumberAndIndex",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_getUncleByBlockNumberAndIndex"
+          ],
+          [
+            "params",
+            [
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_getUncleByBlockNumberAndIndex\",\"params\":[\"0x10\"]}",
+      "lowercase": "{\"method\":\"eth_getunclebyblocknumberandindex\",\"params\":[\"0x10\"]}",
+      "hash": "e2f29f92a0767972e43d255ef344b31e",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "block-param-0/debug_traceBlockByNumber",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "debug_traceBlockByNumber"
+          ],
+          [
+            "params",
+            [
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"debug_traceBlockByNumber\",\"params\":[\"0x10\"]}",
+      "lowercase": "{\"method\":\"debug_traceblockbynumber\",\"params\":[\"0x10\"]}",
+      "hash": "ccd23a758804aceb8be6351c2179e299",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "block-param-1/eth_getBalance",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_getBalance"
+          ],
+          [
+            "params",
+            [
+              "0x1",
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_getBalance\",\"params\":[\"0x1\",\"0x10\"]}",
+      "lowercase": "{\"method\":\"eth_getbalance\",\"params\":[\"0x1\",\"0x10\"]}",
+      "hash": "910a6adad97c7dade8f88073c3467579",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "block-param-1/eth_call",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              "0x1",
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[\"0x1\",\"0x10\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[\"0x1\",\"0x10\"]}",
+      "hash": "e44520fde2d3e355df478e3ddd58462c",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "block-param-1/eth_getCode",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_getCode"
+          ],
+          [
+            "params",
+            [
+              "0x1",
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_getCode\",\"params\":[\"0x1\",\"0x10\"]}",
+      "lowercase": "{\"method\":\"eth_getcode\",\"params\":[\"0x1\",\"0x10\"]}",
+      "hash": "86d21c8a78eae6fb8815e71a9a5a0a26",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "block-param-1/eth_estimateGas",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_estimateGas"
+          ],
+          [
+            "params",
+            [
+              "0x1",
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_estimateGas\",\"params\":[\"0x1\",\"0x10\"]}",
+      "lowercase": "{\"method\":\"eth_estimategas\",\"params\":[\"0x1\",\"0x10\"]}",
+      "hash": "a087e6ef353af8419c9a47cbc1d29a97",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "block-param-1/eth_feeHistory",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_feeHistory"
+          ],
+          [
+            "params",
+            [
+              "0x1",
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_feeHistory\",\"params\":[\"0x1\",\"0x10\"]}",
+      "lowercase": "{\"method\":\"eth_feehistory\",\"params\":[\"0x1\",\"0x10\"]}",
+      "hash": "374ed5fe5a71611363a374cc252e8e75",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "block-param-1/eth_getTransactionCount",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_getTransactionCount"
+          ],
+          [
+            "params",
+            [
+              "0x1",
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_getTransactionCount\",\"params\":[\"0x1\",\"0x10\"]}",
+      "lowercase": "{\"method\":\"eth_gettransactioncount\",\"params\":[\"0x1\",\"0x10\"]}",
+      "hash": "1e0c245f5307043ff986d2bf1afc7838",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "block-param-2/eth_getProof",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_getProof"
+          ],
+          [
+            "params",
+            [
+              "0x1",
+              "0x2",
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_getProof\",\"params\":[\"0x1\",\"0x2\",\"0x10\"]}",
+      "lowercase": "{\"method\":\"eth_getproof\",\"params\":[\"0x1\",\"0x2\",\"0x10\"]}",
+      "hash": "f9af885a616697285ae79221fd00f3bf",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "block-param-2/eth_getStorageAt",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_getStorageAt"
+          ],
+          [
+            "params",
+            [
+              "0x1",
+              "0x2",
+              "0x10"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_getStorageAt\",\"params\":[\"0x1\",\"0x2\",\"0x10\"]}",
+      "lowercase": "{\"method\":\"eth_getstorageat\",\"params\":[\"0x1\",\"0x2\",\"0x10\"]}",
+      "hash": "8963a71e994d8d610848143519091644",
+      "block": "0x10",
+      "numeric_block": 16
+    },
+    {
+      "name": "key-order",
+      "request": {
+        "$object": [
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "value",
+                    "0xAB"
+                  ],
+                  [
+                    "to",
+                    "0xABC"
+                  ],
+                  [
+                    "data",
+                    "0xFF"
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ],
+          [
+            "method",
+            "eth_call"
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"data\":\"0xFF\",\"to\":\"0xABC\",\"value\":\"0xAB\"},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"data\":\"0xff\",\"to\":\"0xabc\",\"value\":\"0xab\"},\"0x1\"]}",
+      "hash": "11c281f33210f86d30eec54254b98cf1",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "case-normalized",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "ETH_CALL"
+          ],
+          [
+            "params",
+            [
+              "0xA"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"ETH_CALL\",\"params\":[\"0xA\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[\"0xa\"]}",
+      "hash": "162790883e0e15fc61cf40602a051711",
+      "block": {
+        "$undefined": true
+      },
+      "numeric_block": null
+    },
+    {
+      "name": "genesis",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": []
+              },
+              "0x0"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{},\"0x0\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{},\"0x0\"]}",
+      "hash": "3047fdcc39ac9b83889b229824d2d55f",
+      "block": "0x0",
+      "numeric_block": 0
+    },
+    {
+      "name": "latest",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": []
+              },
+              "latest"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{},\"latest\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{},\"latest\"]}",
+      "hash": "43b6056b7689b64a854ac024a4d28d3c",
+      "block": "latest",
+      "numeric_block": null
+    },
+    {
+      "name": "missing-params",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\"}",
+      "lowercase": "{\"method\":\"eth_call\"}",
+      "hash": "6c5608eef328e7a71b1e4ca16f34e900",
+      "error": {
+        "name": "TypeError",
+        "message": "undefined is not iterable (cannot read property Symbol(Symbol.iterator))"
+      }
+    },
+    {
+      "name": "unrelated-method",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_chainId"
+          ],
+          [
+            "params",
+            []
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_chainId\",\"params\":[]}",
+      "lowercase": "{\"method\":\"eth_chainid\",\"params\":[]}",
+      "hash": "13c670242fc1c003d7b2d51c5c5289e7",
+      "block": {
+        "$undefined": true
+      },
+      "numeric_block": null
+    },
+    {
+      "name": "numeric-keys",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "1",
+                    "c"
+                  ],
+                  [
+                    "2",
+                    "b"
+                  ],
+                  [
+                    "10",
+                    "a"
+                  ],
+                  [
+                    "01",
+                    "d"
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"1\":\"c\",\"2\":\"b\",\"10\":\"a\",\"01\":\"d\"},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"1\":\"c\",\"2\":\"b\",\"10\":\"a\",\"01\":\"d\"},\"0x1\"]}",
+      "hash": "cd9c4e5debf5c59dc66bb747df2124b9",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "html-and-unicode",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "data",
+                    "<>\\u2028  ßİΟΣA"
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"data\":\"<>\\\\u2028  ßİΟΣA\"},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"data\":\"<>\\\\u2028  ßi̇οσa\"},\"0x1\"]}",
+      "hash": "263040c65c546d310547889deb1c053b",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "undefined-property",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "to",
+                    {
+                      "$undefined": true
+                    }
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{},\"0x1\"]}",
+      "hash": "f54aa7231688bc83544e8f8221231886",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "undefined-array",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$undefined": true
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[null,\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[null,\"0x1\"]}",
+      "hash": "386b7dd5636d6af23b9138fd626cf8e2",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "null-object",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              null,
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot convert undefined or null to object"
+      }
+    },
+    {
+      "name": "bigint",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "value",
+                    {
+                      "$bigint": "1"
+                    }
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Do not know how to serialize a BigInt"
+      }
+    },
+    {
+      "name": "nonfinite",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "value",
+                    {
+                      "$number": "NaN"
+                    }
+                  ],
+                  [
+                    "other",
+                    {
+                      "$number": "Infinity"
+                    }
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"other\":null,\"value\":null},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"other\":null,\"value\":null},\"0x1\"]}",
+      "hash": "64dff2e0922f8491cc98c59169a7d9c5",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "proto-key",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "__proto__",
+                    {
+                      "$object": [
+                        [
+                          "x",
+                          1
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    "to",
+                    "0xA"
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"to\":\"0xA\"},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"to\":\"0xa\"},\"0x1\"]}",
+      "hash": "860d40a631c693cb25521b723e3e020f",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "utf16-key-order",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "𐀀",
+                    "a"
+                  ],
+                  [
+                    "",
+                    "b"
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"𐀀\":\"a\",\"\":\"b\"},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"𐀀\":\"a\",\"\":\"b\"},\"0x1\"]}",
+      "hash": "ff277d0fd8842f871aef6fdf0aa39ab7",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "number/0",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "n",
+                    0
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"n\":0},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"n\":0},\"0x1\"]}",
+      "hash": "d120c71c8ef7343bc4207056c6902a57",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "number/0",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "n",
+                    {
+                      "$number": "-0"
+                    }
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"n\":0},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"n\":0},\"0x1\"]}",
+      "hash": "d120c71c8ef7343bc4207056c6902a57",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "number/1e-7",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "n",
+                    1e-7
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"n\":1e-7},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"n\":1e-7},\"0x1\"]}",
+      "hash": "4817ae278ba5483708fdd91932089042",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "number/0.000001",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "n",
+                    0.000001
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"n\":0.000001},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"n\":0.000001},\"0x1\"]}",
+      "hash": "bbd00aca95b3e5b22ea22843736b3f38",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "number/100000000000000000000",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "n",
+                    100000000000000000000
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"n\":100000000000000000000},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"n\":100000000000000000000},\"0x1\"]}",
+      "hash": "81546167a05f9f7306d957766ffb1513",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "number/1e+21",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "n",
+                    1e+21
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"n\":1e+21},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"n\":1e+21},\"0x1\"]}",
+      "hash": "d9d8066ebd0c03d9174c177bb4a17cd4",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "number/9007199254740991",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "n",
+                    9007199254740991
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"n\":9007199254740991},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"n\":9007199254740991},\"0x1\"]}",
+      "hash": "8b23fd374c389b74028b3655d4e6efd9",
+      "block": "0x1",
+      "numeric_block": 1
+    },
+    {
+      "name": "number/9007199254740992",
+      "request": {
+        "$object": [
+          [
+            "method",
+            "eth_call"
+          ],
+          [
+            "params",
+            [
+              {
+                "$object": [
+                  [
+                    "n",
+                    9007199254740992
+                  ]
+                ]
+              },
+              "0x1"
+            ]
+          ]
+        ]
+      },
+      "serialized": "{\"method\":\"eth_call\",\"params\":[{\"n\":9007199254740992},\"0x1\"]}",
+      "lowercase": "{\"method\":\"eth_call\",\"params\":[{\"n\":9007199254740992},\"0x1\"]}",
+      "hash": "0fe0159c186fa8a3c3ec3fbfc218ca7c",
+      "block": "0x1",
+      "numeric_block": 1
+    }
+  ]
+}

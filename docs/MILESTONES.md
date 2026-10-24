@@ -145,3 +145,7 @@ RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋check
 ## M31：Indexed topic nullish源码行为
 
 新增精确映射0，仍378/905、527未实现。Go/race各2030、PG222/PGlite219，0fail/skip；21包149函数50批次。50实际viem源码向量和32真实EVM/backend/cache回归证明scalar undefined wildcard及dynamic OR null/undefined hash，静态OR仍拒绝。旧4端到端失败、中间2编码失败及同输入986指纹证明保留。见INDEXED_TOPICS.md与batch-30；完整目标继续。
+
+## M32：原版同步存储与事务页处理
+
+新增38精确原例/63断言/9原生类型错误义务，累计416/905，489未实现。完整Go/race各2183、PG272/PGlite269，0fail/skip；21包157函数53批次，1031个准备后原生输入指纹贯穿两种模式。完整SyncStore原文件38、95实际调用、Map身份/顺序/字段/SQL范围/九表状态在每后端每模式比较，独立pristine38双后端与原版TS0-vs9诊断另计。9项具体错误参数编译控制的正向程序在真实原Anvil及两种后端实际执行；typed API当前只覆盖eth_call。source MD5缓存、区间rewind、真实EVM页消费/失败回滚/重放/换链均有补充证明，零额外source credit。完整full01的OOM失败、原1031输入及observer/预检失败完整保留；full02在实际关闭对照数据库后逐项执行9个独立类型程序，原始输入/断言/超时不改。后端名称分类修正也在full02前纳入。历史范围获取/来源/finality/完整调度/metrics/context/广泛JS强制转换仍需继续。见SOURCE_SYNC_STORE.md与batch-31。

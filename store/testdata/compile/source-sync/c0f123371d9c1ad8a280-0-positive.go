@@ -1,0 +1,91 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/url"
+	"os"
+	"ponder.local/ponder-go/rpc"
+	"ponder.local/ponder-go/schema"
+	"ponder.local/ponder-go/store"
+	"strings"
+)
+
+func main() {
+	var input struct{ Backend, DatabaseURL, RPCURL, Namespace string }
+	if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+		panic(err)
+	}
+	if !strings.HasPrefix(input.Namespace, "ponder_go_src_type_") {
+		panic("task namespace required")
+	}
+	endpoint, err := url.Parse(input.RPCURL)
+	if err != nil || (endpoint.Hostname() != "127.0.0.1" && endpoint.Hostname() != "localhost") {
+		panic("task loopback RPC required")
+	}
+	ctx := context.Background()
+	var backend store.Backend
+	if input.Backend == "postgres" {
+		database, parseErr := url.Parse(input.DatabaseURL)
+		if parseErr != nil || database.Hostname() != "127.0.0.1" || database.Port() != "53398" || database.Path != "/ponder_test" {
+			panic("explicit task PostgreSQL required")
+		}
+		backend, err = store.OpenPostgres(ctx, input.DatabaseURL)
+	} else if input.Backend == "pglite" {
+		backend, err = store.OpenPGlite(ctx, "memory://")
+	} else {
+		panic("explicit backend required")
+	}
+	if err != nil {
+		panic(err)
+	}
+	defer backend.Close()
+	model := schema.Schema{Tables: []schema.Table{{Name: "type_probe", Columns: []schema.Column{{Name: "id", Type: "text", Primary: true}}}}}
+	db, err := store.New(ctx, backend, model, input.Namespace, schema.Multichain)
+	if err != nil {
+		panic(err)
+	}
+	cache, err := db.EnableProtocolCache(ctx)
+	if err != nil {
+		panic(err)
+	}
+	source, err := cache.SourceSyncStore(0)
+	if err != nil {
+		panic(err)
+	}
+	req := rpc.SourceCallRequest{Params: rpc.SourceCallParameters{Transaction: map[string]any{}}}
+	client := rpc.New(input.RPCURL)
+	client.ChainID = 1
+	client.RequestsPerSecond = 0
+	var rpcResult string
+	if err = client.CallSource(ctx, req, &rpcResult); err != nil {
+		panic(err)
+	}
+	if rpcResult != "0x" {
+		panic("remaining empty transaction RPC result changed: " + rpcResult)
+	}
+	block := uint64(1)
+	if err = source.InsertRPCRequestResults(ctx, 1, []store.SourceRPCResult{{Request: req, BlockNumber: &block, Result: "0x1"}}); err != nil {
+		panic(err)
+	}
+	values, err := source.GetRPCRequestResults(ctx, 1, []rpc.SourceRequest{req})
+	if err != nil || len(values) != 1 || values[0] == nil || *values[0] != "0x1" {
+		panic(fmt.Sprint("actual typed storage mismatch ", values, " ", err))
+	}
+	rows, err := backend.Query(ctx, "SELECT request_hash FROM "+schema.Quote(cache.Namespace())+".rpc_request_results WHERE chain_id=1")
+	if err != nil || len(rows.Rows) != 1 || rows.Rows[0]["request_hash"] != "7c1d211b40cafed6a7d77c5502955035" {
+		panic(fmt.Sprint("actual source positive hash mismatch ", rows, " ", err))
+	}
+
+	if err = source.PruneRPCRequestResults(ctx, 1, []uint64{block}); err != nil {
+		panic(err)
+	}
+	values, err = source.GetRPCRequestResults(ctx, 1, []rpc.SourceRequest{req})
+	if err != nil || len(values) != 1 || values[0] != nil {
+		panic("actual typed prune mismatch")
+	}
+	if err = json.NewEncoder(os.Stdout).Encode(map[string]any{"source_id": "c0f123371d9c1ad8a280", "directive_index": 0, "rpc_result": rpcResult, "request_hash": "7c1d211b40cafed6a7d77c5502955035", "storage_result": "0x1", "passed": true}); err != nil {
+		panic(err)
+	}
+}

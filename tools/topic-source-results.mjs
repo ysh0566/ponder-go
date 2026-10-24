@@ -21,7 +21,7 @@ for(const type of ["bytes32","address","uint256","string","bytes"]){
   }
 }
 const report={
-  counting:"50 actual pinned source vectors and new native/runtime regressions add zero original mappings. Original378 mapped records remain separate. Native values and error occurrence are compared; complete JS/Go error class/message equivalence and all coercions are not claimed.",
+  counting:"50 actual pinned source vectors and new native/runtime regressions add zero original mappings. Exact original mappings are counted separately by the ledger. Native values and error occurrence are compared; complete JS/Go error class/message equivalence and all coercions are not claimed.",
   summary:{source_vectors:50,source_expected_errors:fixture.cases.filter(c=>c.error).length,new_exact_source_records:0,parameter_types:5},
   fixture:digest("testdata/abi/topics-source.json"),
   source_context:fixture.sources,

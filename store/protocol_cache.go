@@ -281,7 +281,9 @@ func (c *ProtocolCache) rewind(ctx context.Context, tx Transaction, chain, numbe
 			return e
 		}
 	}
-	if e := tx.Exec(ctx, "UPDATE "+c.table("intervals")+" SET blocks=blocks * nummultirange(numrange(0,$2,'[]')) WHERE chain_id=$1", chain, number); e != nil {
+	// Source fragment IDs use closed type/chain prefixes and store end+1.
+	// Native completion descriptors retain their point-interval boundary.
+	if e := tx.Exec(ctx, "UPDATE "+c.table("intervals")+" SET blocks=blocks * nummultirange(numrange(0,CASE WHEN fragment_id ~ '^(block|log|transaction|transfer|trace|factory_log)_-?[0-9]+_' THEN $2::numeric+1 ELSE $2::numeric END,'[]')) WHERE chain_id=$1", chain, number); e != nil {
 		return e
 	}
 	return nil
