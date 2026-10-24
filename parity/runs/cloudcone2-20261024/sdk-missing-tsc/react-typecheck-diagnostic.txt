@@ -1,0 +1,36 @@
+Testing types with tsc and vue-tsc is an experimental feature.
+Breaking changes might not follow SemVer, please pin Vitest's version when using it.
+
+ RUN  v5.0.2 /root/ponder-go/work/ponder-go/sdk/typescript/react
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯⎯ Test Run Error ⎯⎯⎯⎯⎯⎯⎯
+Error: Spawning typechecker failed - is typescript installed?
+ ❯ ChildProcess.onError ../../../../ponder-upstream/node_modules/.pnpm/vitest@5.0.2_@edge-runtime+vm@3.2.0_@types+node@22.20.1_vite@8.3.1_@types+node@22.20.1_jiti@2.4.2_tsx@4.19.2_yaml@2.3.4_/node_modules/vitest/dist/chunks/index.C-uw7tH9.js:8839:12
+ ❯ ChildProcess.wrapper node:events:639:12
+ ❯ ChildProcess.emit node:events:526:24
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+ ❯ onErrorNT node:internal/child_process:525:16
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+Caused by: Error: spawn tsc ENOENT
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:287:19
+ ❯ onErrorNT node:internal/child_process:525:16
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { errno: -2, code: 'ENOENT', syscall: 'spawn tsc', path: 'tsc', spawnargs: [ '--pretty', 'false', '--noEmit', '--incremental', '--tsBuildInfoFile', '/root/ponder-go/work/ponder-upstream/node_modules/.pnpm/vitest@5.0.2_@edge-runtime+vm@3.2.0_@types+node@22.20.1_vite@8.3.1_@types+node@22.20.1_jiti@2.4.2_tsx@4.19.2_yaml@2.3.4_/node_modules/vitest/dist/tsconfig.tmp.tsbuildinfo' ] }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  no tests
+      Tests  no tests
+Type Errors  no errors
+     Errors  1 error
+   Start at  10:30:20
+   Duration  90ms
+

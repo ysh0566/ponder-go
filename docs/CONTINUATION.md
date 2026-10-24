@@ -2,6 +2,18 @@
 
 任务没有完成。先读 `AGENTS.md`、本文件、`parity/runs/summary.json`、`parity/test-ledger.json` 和 `parity/feature-ledger.json`。不要把新增集成测试或差分向量算成上游逐例移植。
 
+## 当前执行入口：cloudcone2 M23已验证，完整目标继续
+
+实际checkout是 `/root/ponder-go/work/ponder-go`，完整固定上游在相邻 `ponder-upstream`。全部27个原始Git提交与1916文件已校验恢复；未改历史或操作Mac。当前结果入口是 `parity/runs/batch-22.json`、`parity/runs/summary.json` 与 `docs/CLOUDCONE2.md`。下方M22是冻结Mac历史。
+
+M23统一legacy日志与contract/account trace的block批次Decoder，畸形匹配日志去重记录后跳过，保持有效handler事务、重试和同交易hash重组。投影副本补全缺省数量，用json.Number保留整数，局部callback索引不改handler原数据；原factory fixture/断言未改。新增11个native叶子不增加source credit。
+
+完整模块按118个顶层函数、19包、42个不重复批次串行执行，Go默认timeout不变；Go/race各1645通过，零失败/skip，PG185/PGlite182分别通过，前后源码指纹一致。vet、CLI/示例build、ABI/ORM类型正反例、参数tsc、SDK4和基础差分2466均通过。第三轮verify在SDK缺tsc PATH处退出1，修复验证脚本PATH后原React类型例通过，随后差分与结果记录退出0；保留失败原报告，没有宣称整条原命令退出0。
+
+原始固定上游8个文件在PG14.24和真实PGlite0.2.13各129通过/3原skip/0失败。官方Foundry1.8.5已核验安装，历史78个已映射oracle阻塞解除。映射仍292/905=288Go+4SDK，613未实现，静态905不保证动态穷尽。原oracle的额外通过没有充作Go移植。
+
+当前候选验收已闭合；下一步审计并整合独立RPC草稿的剩余10个actions原例，逐项核对原输入/断言/类型再新增精确映射；草稿此前不参与本批。随后继续generated-ABI原事件、factory/account、多链三种ordering、完整查询/API/CLI/dev/templates/类型/SDK/simulation。发布认证阻塞独立保留：HTTPS无凭据、默认SSH账号不同，连接API不能指定本地commit身份；不得创建凭据、改权限或重写历史。完整目标未完成。
+
 ## 当前交接入口：M22，Mac 暂停以切换云端
 
 用户已创建专用云环境；本端完成当前回归与发布后暂停，不开启下一批。已验证且已发布实现提交 `5a3886dfcf30d2b2debd61090fe24adf8513497a`，tree `718d6a61cf0d26d45afacf26c78e88e45ee5fdca`。之后仅有本节 SHA 与 `parity/runs/cloud-handoff.json` 的纯文档交接提交，最终 main 以 Git/远端核验和执行线程报告为准；上一发布基线为 `8965d61031f85c4a9d3e43fa541a0f662b5106ca`。当前正式证据为 `parity/runs/batch-21.json` 和 `batch-21-evidence/`，此前各批只作历史证据，下面早期“下一批”或计数不得覆盖本节。

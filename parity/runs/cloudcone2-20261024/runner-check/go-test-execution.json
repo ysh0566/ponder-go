@@ -1,0 +1,70 @@
+{
+  "started_utc": "2026-10-24T08:59:59.748Z",
+  "race": false,
+  "scope": "explicit_package_subset",
+  "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
+  "packages": [
+    {
+      "package": "ponder.local/ponder-go/abi",
+      "listed_functions": [
+        "TestUpstreamEventLog",
+        "TestFunctionEntriesPreserveDuplicatesAndCollisions",
+        "TestReusableOutput",
+        "TestTypedGenerationGuards",
+        "TestUpstreamOffset",
+        "TestUpstreamParameters"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestUpstreamEventLog",
+            "TestFunctionEntriesPreserveDuplicatesAndCollisions",
+            "TestReusableOutput",
+            "TestTypedGenerationGuards"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamEventLog|TestFunctionEntriesPreserveDuplicatesAndCollisions|TestReusableOutput|TestTypedGenerationGuards)$",
+            "ponder.local/ponder-go/abi"
+          ],
+          "started_utc": "2026-10-24T09:00:01.914Z",
+          "complete": true,
+          "elapsed_ms": 1171,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestUpstreamOffset",
+            "TestUpstreamParameters"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamOffset|TestUpstreamParameters)$",
+            "ponder.local/ponder-go/abi"
+          ],
+          "started_utc": "2026-10-24T09:00:03.091Z",
+          "complete": true,
+          "elapsed_ms": 1203,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    }
+  ],
+  "complete": true,
+  "finished_utc": "2026-10-24T09:00:04.296Z",
+  "success": true
+}

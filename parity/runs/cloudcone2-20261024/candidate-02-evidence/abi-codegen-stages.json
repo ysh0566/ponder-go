@@ -1,0 +1,38 @@
+{
+  "format_version": 1,
+  "started_utc": "2026-10-24T09:19:12.455Z",
+  "stages": [
+    {
+      "stage": "build",
+      "command": [
+        "go",
+        "build",
+        "-o",
+        "/root/ponder-go/work/ponder-go/.parity-build/abi-codegen",
+        "./cmd/abi-codegen"
+      ],
+      "timeout_ms": 300000,
+      "elapsed_ms": 369,
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "stage": "generation",
+      "command": [
+        "/root/ponder-go/work/ponder-go/.parity-build/abi-codegen",
+        "abi/testdata/compile/schemas.json",
+        "abi/testdata/compile/generated"
+      ],
+      "timeout_ms": 45000,
+      "elapsed_ms": 27,
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

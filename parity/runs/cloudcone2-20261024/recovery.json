@@ -1,0 +1,203 @@
+{
+  "format_version": 1,
+  "recorded_utc": "2026-10-24T08:50:51.835530+00:00",
+  "host": "ysh0566.top",
+  "project_path": "/root/ponder-go",
+  "checkout": "/root/ponder-go/work/ponder-go",
+  "recovery_transport": "Existing connected GitHub account ysh0566, id19503475; Git data read through connector; no local or Mac credentials copied or created.",
+  "repository": "https://github.com/ysh0566/ponder-go",
+  "visibility": "private",
+  "head": "9180e4f915f3e3fdce27bcaf5a4e4a7c7be8da1a",
+  "head_tree": "674bac1b54679954512c89c6d867ee2777edd73b",
+  "upstream": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "commit": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "full_clone": true
+  },
+  "historical_commits": 27,
+  "shallow": false,
+  "current_version_files": 1916,
+  "sha_policy": "Every blob SHA verified against canonical Git blob header and bytes. Every tree rebuilt and hash checked. Every original commit reproduced byte for byte to its original SHA; no substitute commits.",
+  "fsck": {
+    "command": "git fsck --full",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "published_implementation_is_ancestor": true,
+  "initial_restored_index_tree": "674bac1b54679954512c89c6d867ee2777edd73b",
+  "tracked_wip": [
+    "abi/abi.go",
+    "runtime/accounts.go",
+    "runtime/engine.go"
+  ],
+  "wip_validation": "M23 verified subset; Go/race1645 each, SDK/type/differential complete. Full port still incomplete. Publication independently blocked.",
+  "git_identity": {
+    "author": "ysh0566",
+    "email": "19503475+ysh0566@users.noreply.github.com"
+  },
+  "publication": {
+    "status": "blocked_authentication",
+    "https": "No existing credential; terminal prompt disabled.",
+    "ssh_observed_login": "whyareulaughing",
+    "ssh_used_for_repository_access": false,
+    "new_credentials_created": false
+  },
+  "baseline": {
+    "working_tree": "/root/ponder-go/work/cloud-baseline/ponder-go",
+    "first_attempt": "Go abi-codegen cold compilation exceeded existing45000ms spawnSync timeout; exact failure preserved.",
+    "first_log": "/root/ponder-go/.cloud-bootstrap/cloud-first-verify.txt",
+    "warmup_command": "go test -run ^$ ./... (compilation only, no test pass credit)",
+    "warmup_log": "/root/ponder-go/.cloud-bootstrap/cloud-cold-compile.txt",
+    "second_attempt_status": "failed",
+    "second_log": "/root/ponder-go/.cloud-bootstrap/cloud-baseline-verify-warm.txt",
+    "postgres_version": "14.24 Ubuntu amd64; fixed upstream explicitly supports14,15,16,17 (docs/pages/docs/requirements.mdx)",
+    "mac_postgres_version": "16.15 aarch64-linux (historical only)",
+    "postgres_cluster": "/tmp/ponder-go-cloudcone2-pg-20261024/data",
+    "postgres_bind": "127.0.0.1:53398",
+    "pglite": "0.2.13, separately executed by original verify",
+    "foundry": "1.8.5 official release, sha2566c66ffcc55fa4249197721baa3098bc208014ea1d8aa04b2ed50ac6bccffb226",
+    "go": "1.25.0 linux/amd64 official archive, sha2562852af0cb20a13139b3448992e69b868e50ed0f8a1e5940ee1de9e19a123b613",
+    "node": "24.20.0",
+    "pnpm": "12.10.1 frozen install",
+    "actual_outcomes": {
+      "pass": 1547,
+      "fail": 6,
+      "unfinished_observed_leaf": 1,
+      "additional_original_tests": "not reached before store package10m timeout",
+      "race": "not run"
+    },
+    "evidence": "parity/runs/cloudcone2-20261024/baseline-attempt-02/result.json"
+  },
+  "original_oracle": {
+    "status": "completed_subset",
+    "postgres": {
+      "passed": 129,
+      "original_skip": 3,
+      "failed": 0,
+      "evidence": "parity/runs/full-original-postgres-oracle.json"
+    },
+    "pglite": {
+      "passed": 129,
+      "original_skip": 3,
+      "failed": 0,
+      "evidence": "parity/runs/full-original-pglite-oracle.json"
+    },
+    "scope": "Eight unmodified original files, original globalSetup/helpers and fixtures. Separate backend execution; no new Go port credit.",
+    "adapter": "Only wildcard listener to loopback; no replaced trace helper or fallback."
+  },
+  "goal_complete": false,
+  "updated_utc": "2026-10-24T10:32:17.316877+00:00",
+  "focused_regression": {
+    "fixed_original_code": {
+      "failed_as_expected": 4,
+      "exit_code": 1,
+      "evidence": "parity/runs/cloudcone2-20261024/contract-log-batch-red.jsonl"
+    },
+    "candidate": {
+      "passed": 5,
+      "failed": 0,
+      "skip": 0,
+      "exit_code": 0,
+      "evidence": "parity/runs/cloudcone2-20261024/contract-log-batch-green.jsonl"
+    },
+    "counting": "Supplementary backend/runtime and fake-child startup diagnostic only; no source port credit"
+  },
+  "candidate_validation": {
+    "first_attempt": "failed at ORM CLI cold go-run compilation45s; preserved candidate-verify.txt and exit1",
+    "second_attempt": "failed: normal Go1637pass/2factoryfail; race not run; no fixture changes",
+    "log": "parity/runs/cloudcone2-20261024/candidate-verify-03.txt",
+    "exit_receipt": "parity/runs/cloudcone2-20261024/candidate-verify-03.exit",
+    "strategy": "Single heavy execution lock, GOFLAGS=-p=1 GOMAXPROCS2; enumerate all native top-level functions, disjoint groups4, original Go default test timeout retained. Check native source fingerprint before/after and in final recorder.",
+    "orm_cold_build_observed_ms": 75954,
+    "codegen_runtime_timeout_ms": 45000,
+    "compiler_build_timeout_ms": 300000,
+    "old_mac_evidence": "parity/runs/cloudcone2-20261024/mac-m22-frozen plus original batch-21-evidence and complete original Git history",
+    "third_attempt": "Original command exit1 after completed Go/race/vet/build/core/client: React typechecker could not spawn tsc. Report retained; harness PATH fixed. Unchanged React type test and remaining differential/recorder passed separately.",
+    "native_source_freeze": "Includes production projection fix and six minimal regressions; independent RPC draft remains excluded.",
+    "normal_go": {
+      "complete": true,
+      "success": true,
+      "leaf_outcomes": {
+        "pass": 1645,
+        "fail": 0,
+        "skip": 0
+      },
+      "backends": {
+        "postgres": {
+          "pass": 185
+        },
+        "pglite": {
+          "pass": 182
+        }
+      },
+      "evidence": "parity/runs/go-test.jsonl",
+      "execution_report": "parity/runs/go-test-execution.json",
+      "source_fingerprint": {
+        "files": 906,
+        "sha256": "3fc10adfa3d459fb81ab55ac605a813d3c7a925f0c621c0a0c1bb43880177356"
+      }
+    },
+    "race": {
+      "complete": true,
+      "success": true,
+      "leaf_outcomes": {
+        "pass": 1645,
+        "fail": 0,
+        "skip": 0
+      },
+      "backends": {
+        "postgres": {
+          "pass": 185
+        },
+        "pglite": {
+          "pass": 182
+        }
+      },
+      "evidence": "parity/runs/go-race.jsonl",
+      "execution_report": "parity/runs/go-race-execution.json",
+      "source_fingerprint": {
+        "files": 906,
+        "sha256": "3fc10adfa3d459fb81ab55ac605a813d3c7a925f0c621c0a0c1bb43880177356"
+      }
+    },
+    "react_rerun": {
+      "exit_code": 0,
+      "report": "parity/react-original-typecheck-supported.json",
+      "log": "parity/runs/cloudcone2-20261024/react-typecheck-fixed.txt"
+    },
+    "remaining_tail": {
+      "exit_code": 0,
+      "log": "parity/runs/cloudcone2-20261024/candidate-verify-03-tail.txt",
+      "sandbox_attempt": "Go spawn EPERM preserved; approved execution completed successfully"
+    },
+    "status": "verified_subset",
+    "new_source_credit": 0
+  },
+  "projection_regression": {
+    "red": {
+      "pass": 3,
+      "fail": 3,
+      "evidence": "parity/runs/cloudcone2-20261024/projection-red.jsonl"
+    },
+    "green": {
+      "pass": 13,
+      "fail": 0,
+      "skip": 0,
+      "evidence": "parity/runs/cloudcone2-20261024/projection-green.jsonl"
+    },
+    "production_fixes": [
+      "Only absent optional quantities get projection defaults; raw handler data and explicit invalid quantities remain intact.",
+      "UseNumber prevents rounding provided large JSON integer block quantities.",
+      "Decode-local callback indexes are assigned on a copy; existing Normalized handler metadata is preserved."
+    ],
+    "original_factory_fixture": "unchanged; both backend cases now pass their original handler failure/retry/reorg assertions"
+  },
+  "rpc_draft": {
+    "path": "/root/ponder-go/.cloud-bootstrap/rpc-next",
+    "state": "independent draft only;10 remaining action declarations implemented and lightweight tests passed",
+    "in_main_candidate": false,
+    "source_parity_credit": 0,
+    "next_action": "Current M23 acceptance closed; next inspect/integrate exact remaining10 original actions with mappings and full validation."
+  }
+}

@@ -3,13 +3,13 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import os from 'node:os';
 import {spawnSync} from 'node:child_process';
+import {buildGenerator} from './go-codegen.mjs';
 const root=path.resolve(import.meta.dirname,'..');
+const runDirectory=path.resolve(root,process.env.PONDER_RUN_DIR??'parity/runs');
 const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
 function command(args){const r=spawnSync('go',args,{cwd:root,encoding:'utf8',timeout:45000,maxBuffer:8*1024*1024});if(r.error)throw r.error;return r;}
-for(const fixture of ['strict','nullable']){
- const result=command(['run','./cmd/ponder','codegen','--typed','--schema',`orm/testdata/${fixture}/model.json`,'--out',`orm/testdata/${fixture}/models.go`,'--package',fixture]);
- if(result.status!==0)throw Error(result.stdout+result.stderr);
-}
+const codegen=buildGenerator(root,'./cmd/ponder','ponder-codegen',path.join(runDirectory,'orm-codegen-stages.json'));
+for(const fixture of ['strict','nullable'])codegen(fixture,['codegen','--typed','--schema',`orm/testdata/${fixture}/model.json`,'--out',`orm/testdata/${fixture}/models.go`,'--package',fixture]);
 const ledger=JSON.parse(fs.readFileSync(path.join(root,'parity/test-ledger.json'),'utf8'));
 const zero='0x0000000000000000000000000000000000000000';
 const alice='0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
@@ -53,9 +53,9 @@ try{
   if(c.supplemental){report.supplementary.push(item);report.summary.supplemental_negative_controls++;if(status==='passed')report.summary.supplemental_rejected++;}else{report.directives.push(item);report.summary.source_error_directives++;if(status==='passed')report.summary.source_error_directives_passed++;}
   if(status!=='passed')report.summary.failed++;
  }
- for(const file of ['orm/orm.go','orm/generate.go','cmd/ponder/main.go','tools/orm-compile-fixtures.mjs'])report.inputs.push({file,sha256:hash(fs.readFileSync(path.join(root,file)))});
+ for(const file of ['orm/orm.go','orm/generate.go','cmd/ponder/main.go','tools/orm-compile-fixtures.mjs','tools/go-codegen.mjs'])report.inputs.push({file,sha256:hash(fs.readFileSync(path.join(root,file)))});
  for(const fixture of ['strict','nullable']){const file=`orm/testdata/${fixture}/models.go`;report.generated.push({file,sha256:hash(fs.readFileSync(path.join(root,file)))});}
- fs.writeFileSync(path.join(root,'parity/runs/orm-compile-fixtures.json'),JSON.stringify(report,null,2)+'\n');
+ fs.writeFileSync(path.join(runDirectory,'orm-compile-fixtures.json'),JSON.stringify(report,null,2)+'\n');
  console.log(report.summary);
  if(report.summary.failed)throw Error('ORM compile fixtures failed');
 }finally{fs.rmSync(scratch,{recursive:true,force:true});}

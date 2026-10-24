@@ -179,8 +179,8 @@ func OpenPGlite(ctx context.Context, directory string) (Backend, error) {
 	lines.Buffer(make([]byte, 64*1024), 32*1024*1024)
 	if !lines.Scan() {
 		in.Close()
-		cmd.Wait()
-		return nil, fmt.Errorf("PGlite did not become ready: %v", lines.Err())
+		processError := cmd.Wait()
+		return nil, fmt.Errorf("PGlite did not become ready (process: %v, stdout: %v)", processError, lines.Err())
 	}
 	var ready struct{ Ready bool }
 	if e = json.Unmarshal(lines.Bytes(), &ready); e != nil || !ready.Ready {

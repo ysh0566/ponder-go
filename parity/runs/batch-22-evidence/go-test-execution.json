@@ -1,0 +1,1205 @@
+{
+  "started_utc": "2026-10-24T09:51:56.131Z",
+  "race": false,
+  "scope": "all_module_packages",
+  "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
+  "packages": [
+    {
+      "package": "ponder.local/ponder-go/abi",
+      "listed_functions": [
+        "TestUpstreamEventLog",
+        "TestFunctionEntriesPreserveDuplicatesAndCollisions",
+        "TestReusableOutput",
+        "TestTypedGenerationGuards",
+        "TestUpstreamOffset",
+        "TestUpstreamParameters"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestUpstreamEventLog",
+            "TestFunctionEntriesPreserveDuplicatesAndCollisions",
+            "TestReusableOutput",
+            "TestTypedGenerationGuards"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamEventLog|TestFunctionEntriesPreserveDuplicatesAndCollisions|TestReusableOutput|TestTypedGenerationGuards)$",
+            "ponder.local/ponder-go/abi"
+          ],
+          "started_utc": "2026-10-24T09:51:57.823Z",
+          "complete": true,
+          "elapsed_ms": 1000,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestUpstreamOffset",
+            "TestUpstreamParameters"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamOffset|TestUpstreamParameters)$",
+            "ponder.local/ponder-go/abi"
+          ],
+          "started_utc": "2026-10-24T09:51:58.827Z",
+          "complete": true,
+          "elapsed_ms": 1208,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/checkpoint",
+      "listed_functions": [
+        "TestUpstreamCheckpoint",
+        "TestEncodingBounds"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestUpstreamCheckpoint",
+            "TestEncodingBounds"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamCheckpoint|TestEncodingBounds)$",
+            "ponder.local/ponder-go/checkpoint"
+          ],
+          "started_utc": "2026-10-24T09:52:00.646Z",
+          "complete": true,
+          "elapsed_ms": 546,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/cmd/abi-codegen",
+      "listed_functions": [],
+      "batches": [
+        {
+          "functions": [],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "ponder.local/ponder-go/cmd/abi-codegen"
+          ],
+          "started_utc": "2026-10-24T09:52:01.602Z",
+          "complete": true,
+          "elapsed_ms": 355,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/cmd/parity-probe",
+      "listed_functions": [],
+      "batches": [
+        {
+          "functions": [],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "ponder.local/ponder-go/cmd/parity-probe"
+          ],
+          "started_utc": "2026-10-24T09:52:02.421Z",
+          "complete": true,
+          "elapsed_ms": 393,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/cmd/ponder",
+      "listed_functions": [],
+      "batches": [
+        {
+          "functions": [],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "ponder.local/ponder-go/cmd/ponder"
+          ],
+          "started_utc": "2026-10-24T09:52:03.651Z",
+          "complete": true,
+          "elapsed_ms": 648,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "listed_functions": [],
+      "batches": [
+        {
+          "functions": [],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "ponder.local/ponder-go/config"
+          ],
+          "started_utc": "2026-10-24T09:52:04.640Z",
+          "complete": true,
+          "elapsed_ms": 315,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/events",
+      "listed_functions": [
+        "TestEventBuildDifferential",
+        "TestUpstreamEventConstruction"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestEventBuildDifferential",
+            "TestUpstreamEventConstruction"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestEventBuildDifferential|TestUpstreamEventConstruction)$",
+            "ponder.local/ponder-go/events"
+          ],
+          "started_utc": "2026-10-24T09:52:05.914Z",
+          "complete": true,
+          "elapsed_ms": 1084,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/examples/erc20",
+      "listed_functions": [],
+      "batches": [
+        {
+          "functions": [],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "ponder.local/ponder-go/examples/erc20"
+          ],
+          "started_utc": "2026-10-24T09:52:08.410Z",
+          "complete": true,
+          "elapsed_ms": 664,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/factory",
+      "listed_functions": [
+        "TestUpstreamFactory"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestUpstreamFactory"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamFactory)$",
+            "ponder.local/ponder-go/factory"
+          ],
+          "started_utc": "2026-10-24T09:52:10.008Z",
+          "complete": true,
+          "elapsed_ms": 949,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/filter",
+      "listed_functions": [
+        "TestUpstreamBlockFilter",
+        "TestFilterDifferential",
+        "TestUpstreamFilters",
+        "TestUpstreamFragments"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestUpstreamBlockFilter",
+            "TestFilterDifferential",
+            "TestUpstreamFilters",
+            "TestUpstreamFragments"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamBlockFilter|TestFilterDifferential|TestUpstreamFilters|TestUpstreamFragments)$",
+            "ponder.local/ponder-go/filter"
+          ],
+          "started_utc": "2026-10-24T09:52:12.051Z",
+          "complete": true,
+          "elapsed_ms": 2418,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/finality",
+      "listed_functions": [
+        "TestUpstreamFinality"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestUpstreamFinality"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamFinality)$",
+            "ponder.local/ponder-go/finality"
+          ],
+          "started_utc": "2026-10-24T09:52:14.995Z",
+          "complete": true,
+          "elapsed_ms": 490,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/interval",
+      "listed_functions": [
+        "TestUpstreamInterval"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestUpstreamInterval"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamInterval)$",
+            "ponder.local/ponder-go/interval"
+          ],
+          "started_utc": "2026-10-24T09:52:15.994Z",
+          "complete": true,
+          "elapsed_ms": 525,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/orm",
+      "listed_functions": [
+        "TestGenerateModels",
+        "TestTypedJSON",
+        "TestTypedRuntime",
+        "TestTypedNullable",
+        "TestTypedEagerSQL"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestGenerateModels",
+            "TestTypedJSON",
+            "TestTypedRuntime",
+            "TestTypedNullable"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestGenerateModels|TestTypedJSON|TestTypedRuntime|TestTypedNullable)$",
+            "ponder.local/ponder-go/orm"
+          ],
+          "started_utc": "2026-10-24T09:52:18.966Z",
+          "complete": true,
+          "elapsed_ms": 10636,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestTypedEagerSQL"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestTypedEagerSQL)$",
+            "ponder.local/ponder-go/orm"
+          ],
+          "started_utc": "2026-10-24T09:52:29.604Z",
+          "complete": true,
+          "elapsed_ms": 7259,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/query",
+      "listed_functions": [
+        "TestOriginalClientCompatibility",
+        "TestSuperJSON"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestOriginalClientCompatibility",
+            "TestSuperJSON"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestOriginalClientCompatibility|TestSuperJSON)$",
+            "ponder.local/ponder-go/query"
+          ],
+          "started_utc": "2026-10-24T09:52:39.430Z",
+          "complete": true,
+          "elapsed_ms": 17944,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/rpc",
+      "listed_functions": [
+        "TestRetryAndCache",
+        "TestInvalidParamsIsNotRetried",
+        "TestRateLimitCancellation",
+        "TestRPCLogBoundaries",
+        "TestUpstreamRPCLogs",
+        "TestScopedCacheSharesTransport",
+        "TestScopedCacheSharesRateLimit",
+        "TestUpstreamTraceActions"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestRetryAndCache",
+            "TestInvalidParamsIsNotRetried",
+            "TestRateLimitCancellation",
+            "TestRPCLogBoundaries"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestRetryAndCache|TestInvalidParamsIsNotRetried|TestRateLimitCancellation|TestRPCLogBoundaries)$",
+            "ponder.local/ponder-go/rpc"
+          ],
+          "started_utc": "2026-10-24T09:52:58.420Z",
+          "complete": true,
+          "elapsed_ms": 1071,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestUpstreamRPCLogs",
+            "TestScopedCacheSharesTransport",
+            "TestScopedCacheSharesRateLimit",
+            "TestUpstreamTraceActions"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamRPCLogs|TestScopedCacheSharesTransport|TestScopedCacheSharesRateLimit|TestUpstreamTraceActions)$",
+            "ponder.local/ponder-go/rpc"
+          ],
+          "started_utc": "2026-10-24T09:52:59.492Z",
+          "complete": true,
+          "elapsed_ms": 988,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "listed_functions": [
+        "TestAccountTransferRuntime",
+        "TestContractLogAndTraceBatch",
+        "TestContractLogProjection",
+        "TestDecodePendingPreservesNormalizedCallbackIndex",
+        "TestContractTraceRuntime",
+        "TestAnvilPostgresVertical",
+        "TestAnvilPGliteVertical",
+        "TestStagedAnvilVertical",
+        "TestUpstreamSplitEvents",
+        "TestFactoryRuntime",
+        "TestFilterFactoryBirthAndReorg",
+        "TestFilterWideRequestRuntime",
+        "TestStagedRuntimePersistence",
+        "TestStagedHandlerFailureAndReconnect",
+        "TestStagedHandoffAdvancingHead",
+        "TestStagedAutomaticFinality",
+        "TestStagedRollbackKeepsPublicLatest",
+        "TestStagedEmptySchema",
+        "TestStagedRuntimeProcessCrash",
+        "TestStagedSetupRollback"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestAccountTransferRuntime",
+            "TestContractLogAndTraceBatch",
+            "TestContractLogProjection",
+            "TestDecodePendingPreservesNormalizedCallbackIndex"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestAccountTransferRuntime|TestContractLogAndTraceBatch|TestContractLogProjection|TestDecodePendingPreservesNormalizedCallbackIndex)$",
+            "ponder.local/ponder-go/runtime"
+          ],
+          "started_utc": "2026-10-24T09:53:03.375Z",
+          "complete": true,
+          "elapsed_ms": 30575,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestContractTraceRuntime",
+            "TestAnvilPostgresVertical",
+            "TestAnvilPGliteVertical",
+            "TestStagedAnvilVertical"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestContractTraceRuntime|TestAnvilPostgresVertical|TestAnvilPGliteVertical|TestStagedAnvilVertical)$",
+            "ponder.local/ponder-go/runtime"
+          ],
+          "started_utc": "2026-10-24T09:53:33.955Z",
+          "complete": true,
+          "elapsed_ms": 23422,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestUpstreamSplitEvents",
+            "TestFactoryRuntime",
+            "TestFilterFactoryBirthAndReorg",
+            "TestFilterWideRequestRuntime"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamSplitEvents|TestFactoryRuntime|TestFilterFactoryBirthAndReorg|TestFilterWideRequestRuntime)$",
+            "ponder.local/ponder-go/runtime"
+          ],
+          "started_utc": "2026-10-24T09:53:57.385Z",
+          "complete": true,
+          "elapsed_ms": 28146,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestStagedRuntimePersistence",
+            "TestStagedHandlerFailureAndReconnect",
+            "TestStagedHandoffAdvancingHead",
+            "TestStagedAutomaticFinality"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestStagedRuntimePersistence|TestStagedHandlerFailureAndReconnect|TestStagedHandoffAdvancingHead|TestStagedAutomaticFinality)$",
+            "ponder.local/ponder-go/runtime"
+          ],
+          "started_utc": "2026-10-24T09:54:25.544Z",
+          "complete": true,
+          "elapsed_ms": 26732,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestStagedRollbackKeepsPublicLatest",
+            "TestStagedEmptySchema",
+            "TestStagedRuntimeProcessCrash",
+            "TestStagedSetupRollback"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestStagedRollbackKeepsPublicLatest|TestStagedEmptySchema|TestStagedRuntimeProcessCrash|TestStagedSetupRollback)$",
+            "ponder.local/ponder-go/runtime"
+          ],
+          "started_utc": "2026-10-24T09:54:52.283Z",
+          "complete": true,
+          "elapsed_ms": 187726,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/schema",
+      "listed_functions": [
+        "TestUpstreamSchema"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestUpstreamSchema"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamSchema)$",
+            "ponder.local/ponder-go/schema"
+          ],
+          "started_utc": "2026-10-24T09:58:01.565Z",
+          "complete": true,
+          "elapsed_ms": 505,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/sqlquery",
+      "listed_functions": [],
+      "batches": [
+        {
+          "functions": [],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "ponder.local/ponder-go/sqlquery"
+          ],
+          "started_utc": "2026-10-24T09:58:02.749Z",
+          "complete": true,
+          "elapsed_ms": 400,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "listed_functions": [
+        "TestStagedActionGuards",
+        "TestStagedGlobalSuffixAndIsolated",
+        "TestStagedActionCrashRecovery",
+        "TestUpstreamStagedDataActions",
+        "TestUpstreamStagedActions",
+        "TestUpstreamDatabaseActions",
+        "TestUpstreamIndexingDelete",
+        "TestUpstreamCache",
+        "TestUpstreamCopyText",
+        "TestLifecycleBoundaries",
+        "TestLifecycleProcessCrash",
+        "TestUpstreamRemainingLifecycle",
+        "TestHistoricalSafeSealing",
+        "TestViewsSchemaBoundaries",
+        "TestUpstreamDatabaseLifecycle",
+        "TestLiveQueryCommitBoundary",
+        "TestLiveQueryUTF8Payload",
+        "TestUpstreamNormalize",
+        "TestDatabaseNotifications",
+        "TestUpstreamLiveQueryNotify",
+        "TestORMEventAtomicity",
+        "TestORMBatchChunks",
+        "TestORMNullAndFlushRecovery",
+        "TestORMRawSQLVisibility",
+        "TestORMJSONNullCharacterUndo",
+        "TestStorageVersionRejectsOldJournal",
+        "TestORMBytesPrimaryKey",
+        "TestUpstreamORMColumns",
+        "TestUpstreamInsertThen",
+        "TestUpstreamFullSQL",
+        "TestUpstreamORMDefaults",
+        "TestUpstreamORMFoundUpdate",
+        "TestUpstreamORMJSONBigInt",
+        "TestUpstreamORMDelete",
+        "TestUpstreamORMErrors",
+        "TestORMIsolatedComposite",
+        "TestUpstreamORMClosed",
+        "TestUpstreamORM",
+        "TestBridgeStartupReportsProcessFailure",
+        "TestProfileAcrossRollbackAndReorg",
+        "TestCacheMemoryBudget",
+        "TestUpstreamCacheEviction",
+        "TestNativeProfilePrefetch",
+        "TestCacheConcurrentReadModifyWrite",
+        "TestProfileNativeBranches",
+        "TestUpstreamProfile",
+        "TestProtocolEncodingDifferential",
+        "TestProtocolCacheBoundaries",
+        "TestProtocolColdRewind",
+        "TestProtocolDisabledOwnership",
+        "TestReorgCrashRecovery",
+        "TestSchemaObjects",
+        "TestInitialSafeFailureAtomicity",
+        "TestInitialSafeProcessCrash",
+        "TestSQLWriteBoundaries",
+        "TestRawSQLJournal",
+        "TestUpstreamSQLCases",
+        "TestPGliteStore",
+        "TestPostgresStore",
+        "TestCrashRecovery",
+        "TestPGliteCancelledCommit",
+        "TestSyncMigrationSQLAssets",
+        "TestSyncMigrationBoundaries",
+        "TestSyncMigrationProcessCrash",
+        "TestUpstreamSyncMigration"
+      ],
+      "batches": [
+        {
+          "functions": [
+            "TestStagedActionGuards",
+            "TestStagedGlobalSuffixAndIsolated",
+            "TestStagedActionCrashRecovery",
+            "TestUpstreamStagedDataActions"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestStagedActionGuards|TestStagedGlobalSuffixAndIsolated|TestStagedActionCrashRecovery|TestUpstreamStagedDataActions)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T09:58:06.628Z",
+          "complete": true,
+          "elapsed_ms": 77773,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestUpstreamStagedActions",
+            "TestUpstreamDatabaseActions",
+            "TestUpstreamIndexingDelete",
+            "TestUpstreamCache"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamStagedActions|TestUpstreamDatabaseActions|TestUpstreamIndexingDelete|TestUpstreamCache)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T09:59:24.413Z",
+          "complete": true,
+          "elapsed_ms": 48198,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestUpstreamCopyText",
+            "TestLifecycleBoundaries",
+            "TestLifecycleProcessCrash",
+            "TestUpstreamRemainingLifecycle"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamCopyText|TestLifecycleBoundaries|TestLifecycleProcessCrash|TestUpstreamRemainingLifecycle)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:00:12.686Z",
+          "complete": true,
+          "elapsed_ms": 65528,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestHistoricalSafeSealing",
+            "TestViewsSchemaBoundaries",
+            "TestUpstreamDatabaseLifecycle",
+            "TestLiveQueryCommitBoundary"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestHistoricalSafeSealing|TestViewsSchemaBoundaries|TestUpstreamDatabaseLifecycle|TestLiveQueryCommitBoundary)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:01:18.222Z",
+          "complete": true,
+          "elapsed_ms": 42795,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestLiveQueryUTF8Payload",
+            "TestUpstreamNormalize",
+            "TestDatabaseNotifications",
+            "TestUpstreamLiveQueryNotify"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestLiveQueryUTF8Payload|TestUpstreamNormalize|TestDatabaseNotifications|TestUpstreamLiveQueryNotify)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:02:01.031Z",
+          "complete": true,
+          "elapsed_ms": 21283,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestORMEventAtomicity",
+            "TestORMBatchChunks",
+            "TestORMNullAndFlushRecovery",
+            "TestORMRawSQLVisibility"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestORMEventAtomicity|TestORMBatchChunks|TestORMNullAndFlushRecovery|TestORMRawSQLVisibility)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:02:22.328Z",
+          "complete": true,
+          "elapsed_ms": 16183,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestORMJSONNullCharacterUndo",
+            "TestStorageVersionRejectsOldJournal",
+            "TestORMBytesPrimaryKey",
+            "TestUpstreamORMColumns"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestORMJSONNullCharacterUndo|TestStorageVersionRejectsOldJournal|TestORMBytesPrimaryKey|TestUpstreamORMColumns)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:02:38.524Z",
+          "complete": true,
+          "elapsed_ms": 39188,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestUpstreamInsertThen",
+            "TestUpstreamFullSQL",
+            "TestUpstreamORMDefaults",
+            "TestUpstreamORMFoundUpdate"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamInsertThen|TestUpstreamFullSQL|TestUpstreamORMDefaults|TestUpstreamORMFoundUpdate)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:03:17.776Z",
+          "complete": true,
+          "elapsed_ms": 16925,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestUpstreamORMJSONBigInt",
+            "TestUpstreamORMDelete",
+            "TestUpstreamORMErrors",
+            "TestORMIsolatedComposite"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamORMJSONBigInt|TestUpstreamORMDelete|TestUpstreamORMErrors|TestORMIsolatedComposite)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:03:34.712Z",
+          "complete": true,
+          "elapsed_ms": 26143,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestUpstreamORMClosed",
+            "TestUpstreamORM",
+            "TestBridgeStartupReportsProcessFailure",
+            "TestProfileAcrossRollbackAndReorg"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamORMClosed|TestUpstreamORM|TestBridgeStartupReportsProcessFailure|TestProfileAcrossRollbackAndReorg)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:04:00.882Z",
+          "complete": true,
+          "elapsed_ms": 25588,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestCacheMemoryBudget",
+            "TestUpstreamCacheEviction",
+            "TestNativeProfilePrefetch",
+            "TestCacheConcurrentReadModifyWrite"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestCacheMemoryBudget|TestUpstreamCacheEviction|TestNativeProfilePrefetch|TestCacheConcurrentReadModifyWrite)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:04:26.486Z",
+          "complete": true,
+          "elapsed_ms": 16187,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestProfileNativeBranches",
+            "TestUpstreamProfile",
+            "TestProtocolEncodingDifferential",
+            "TestProtocolCacheBoundaries"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestProfileNativeBranches|TestUpstreamProfile|TestProtocolEncodingDifferential|TestProtocolCacheBoundaries)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:04:42.685Z",
+          "complete": true,
+          "elapsed_ms": 13948,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestProtocolColdRewind",
+            "TestProtocolDisabledOwnership",
+            "TestReorgCrashRecovery",
+            "TestSchemaObjects"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestProtocolColdRewind|TestProtocolDisabledOwnership|TestReorgCrashRecovery|TestSchemaObjects)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:04:56.643Z",
+          "complete": true,
+          "elapsed_ms": 58139,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestInitialSafeFailureAtomicity",
+            "TestInitialSafeProcessCrash",
+            "TestSQLWriteBoundaries",
+            "TestRawSQLJournal"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestInitialSafeFailureAtomicity|TestInitialSafeProcessCrash|TestSQLWriteBoundaries|TestRawSQLJournal)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:05:54.796Z",
+          "complete": true,
+          "elapsed_ms": 28382,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestUpstreamSQLCases",
+            "TestPGliteStore",
+            "TestPostgresStore",
+            "TestCrashRecovery"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamSQLCases|TestPGliteStore|TestPostgresStore|TestCrashRecovery)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:06:23.191Z",
+          "complete": true,
+          "elapsed_ms": 43930,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestPGliteCancelledCommit",
+            "TestSyncMigrationSQLAssets",
+            "TestSyncMigrationBoundaries",
+            "TestSyncMigrationProcessCrash"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestPGliteCancelledCommit|TestSyncMigrationSQLAssets|TestSyncMigrationBoundaries|TestSyncMigrationProcessCrash)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:07:07.145Z",
+          "complete": true,
+          "elapsed_ms": 34744,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        },
+        {
+          "functions": [
+            "TestUpstreamSyncMigration"
+          ],
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-json",
+            "-run",
+            "^(TestUpstreamSyncMigration)$",
+            "ponder.local/ponder-go/store"
+          ],
+          "started_utc": "2026-10-24T10:07:41.894Z",
+          "complete": true,
+          "elapsed_ms": 21532,
+          "exit_code": 0,
+          "signal": null,
+          "error": null,
+          "stderr": ""
+        }
+      ]
+    }
+  ],
+  "complete": true,
+  "source_fingerprint": {
+    "files": 906,
+    "sha256": "3fc10adfa3d459fb81ab55ac605a813d3c7a925f0c621c0a0c1bb43880177356"
+  },
+  "driver_sha256": "c4de2f4a967654d761c813936e39e29e1260fb3cc75656661445cfc826c67db2",
+  "finished_source_fingerprint": {
+    "files": 906,
+    "sha256": "3fc10adfa3d459fb81ab55ac605a813d3c7a925f0c621c0a0c1bb43880177356"
+  },
+  "finished_utc": "2026-10-24T10:08:04.677Z",
+  "success": true
+}
