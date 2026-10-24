@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-// Draft only. Exact live source fixtures are captured by the complete original
-// file and real Vitest assertions. No synthetic ABI, fake RPC or altered helper.
+// Exact original fixtures are captured by the complete original file and real
+// Vitest assertions. No synthetic ABI, fake RPC or altered helper.
 func TestUpstreamRemainingFilters(t *testing.T) {
 	data, err := os.ReadFile("../testdata/runtime/captured-original-filters.json")
 	if err != nil {

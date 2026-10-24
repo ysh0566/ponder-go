@@ -1,0 +1,22 @@
+{
+  "recorded_utc": "2026-10-24T12:20:52.762181+00:00",
+  "first_focused_exit": 1,
+  "first_focused_failure": "All8 native EVM/backend cases reached the late-start new namespace fixture and rejected its overlong identifier. No other first focused failures. Config19 passed.",
+  "fixture_only_correction": "Use ponder_go_af_late_<time> within45 characters; no production code changed after connected proof. Original assertions/helpers untouched.",
+  "additional_checks": "Two constructor cases verify inherited/explicit account bounds, caller input immutability, and unchanged legacy contract factory defaults/ID. No source credit.",
+  "second_focused": {
+    "exit_code": 1,
+    "failures": [
+      {
+        "test": "TestAccountFactoryRuntime/pglite/staged_false/cache_disabled_false",
+        "output": "account_factory_test.go:294: cold disabled orphan cache survived {[map[n:1]] [map[dataTypeID:25 name:n]] 0} <nil>"
+      },
+      {
+        "test": "TestAccountFactoryRuntime/postgres/staged_false/cache_disabled_false",
+        "output": "account_factory_test.go:294: cold disabled orphan cache survived {[map[n:1]] [map[name:n]] 0} <nil>"
+      }
+    ],
+    "correction": "The protocol cache legitimately retains the canonical block1 prebirth transfer99. Limit orphan assertion to replaced blocks>=2 and separately assert block1 trace retained for legacy atomic cold-disabled recovery. Staged safe0 recovery may refetch without cache, as documented. No production change for this fixture assertion correction.",
+    "additional_boundary": "All four callbacks now execute: add child-signed transaction/transfer from childB after the replacement branch; verify values, destinations and idempotence."
+  }
+}

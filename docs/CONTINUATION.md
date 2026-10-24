@@ -2,9 +2,15 @@
 
 任务没有完成。先读 `AGENTS.md`、本文件、`parity/runs/summary.json`、`parity/test-ledger.json` 和 `parity/feature-ledger.json`。不要把新增集成测试或差分向量算成上游逐例移植。
 
-## 当前执行入口：cloudcone2 M25已验证，完整目标继续
+## 当前执行入口：cloudcone2 M26已验证，完整目标继续
 
-当前 checkout `/root/ponder-go/work/ponder-go`；固定上游相邻 `ponder-upstream`，HEAD `17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`。M25 是 M24 `4d654d598375ce75c4e448051443672326bba8c8` 的普通本地后继，提交以 Git HEAD 为准，未发布。最新验收为 `parity/runs/batch-24.json`、`batch-24-evidence/` 和 `summary.json`。
+M26基于M25本地8954911接入account.Factory、共享发现/child birth筛选、早于业务起点的factory历史和新account bounds/parent校验。只接API的实际EVM红灯保留prebirth99错误派发。聚焦race最终29/29通过，含19配置/2默认值与身份/8真实PG/PGlite×legacy/staged×cache场景，覆盖from/to四种callback、事务失败、cold reopen/cache翻转、safe后live重放、same-parent-tx-hash换child、晚business start和canonical vs orphan cache。两次聚焦fixture失败保留并明确不是产品修复。完整verify退出0：Go/race各1769通过、0失败/skip，PG189/PGlite186。19包、129顶层函数、46不重复串行批次，源码前后922/3066e64710d39e96b10634f0468c7f842505a93a401dede5b43ed42d70eef1ca一致。vet/build/oracle/capture/type/SDK/差分均通过。source317映射/588未实现不变。最新证据batch-25.json与batch-25-evidence/；提交须为8954911的普通后继、原SHA与指定身份，验收后方可发布。见docs/FACTORY_ACCOUNTS.md及parity/runs/account-factory-m26/。
+
+用户已明确批准官方CLI默认repo/read:org/gist并重新发起登录；第二次CLI流程41773实际退出0，登录ysh0566/id19503475。仓库private/owner/推送权限及远端main9180e4f先核验，再以每命令HTTPS helper依次普通快进推送M23 3e208c1、M24 4d654d5、M25 8954911；每步退出0且远端SHA/tree/parent/author/committer一致，最终main89549111c03f57fa3a35d9917bbab786d46177d7。没有全局helper改动、token内容输出或Mac操作；任务认证目录0700、文件0600。最新证明account-factory-m26/authentication-success.json、publication-preflight.json与publication-results.json；旧停止/失败探测保留为历史。M26当时为WIP，未推送。
+
+## M25：上一已验证云端基线
+
+当前 checkout `/root/ponder-go/work/ponder-go`；固定上游相邻 `ponder-upstream`，HEAD `17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`。M25 是 M24 `4d654d598375ce75c4e448051443672326bba8c8` 的普通本地后继，提交89549111c03f57fa3a35d9917bbab786d46177d7已发布。该里程碑验收为 `parity/runs/batch-24.json`、`batch-24-evidence/` 和 `summary.json`。
 
 新增15个精确原例（events6/filter9）、38个原断言表达式和1个 callback union 编译错误义务。现在 events11/11、filter23/23 均映射；完整原文件用真实生成ABI和部署/转账helper、未改断言实际通过11/23。call-through采集与此前八文件的 pristine PG/PGlite 原版验收分开标注；Go逐项重放完整输入、结果、调用后状态及原显式断言。public callback union 的正向构建/运行和具体负向编译诊断均通过，不宣称动态filter/metadata/Fn和旧Object API完全具备TS静态约束。账户JSON整数舍入缺口经固定版本红灯、修复后race验证；只共享UseNumber，不变更两个路径缺省行为。见 `docs/EVENT_SOURCE_COMPLETION.md`。
 
@@ -12,9 +18,9 @@
 
 累计317/905映射并执行通过=313Go+4SDK，588静态记录未实现。native编译验证8条源码错误义务，retained SDK另1条；剩余types、905动态穷尽性和完整功能仍未完成。此前八个原版文件在PG/PGlite各129通过/3原skip的上下文和报告hash复核通过，本轮未把旧报告称为新跑的完整上游验收。
 
-发布阻塞仍是既有传输没有目标仓库权限、连接器不能上传保持本地SHA的原始commit对象。M23/M24精确本地提交和已校验bundle保留；M25完成本地提交后另导出只含已验证提交的bundle。具体证据及既有认证非Mac环境的普通快进步骤见 `parity/runs/rpc-actions-m24/publication-check.json`。不新建凭据/权限、不操作Mac、不强推/改写历史。
+M23–M25传输阻塞已在用户明确授权网页登录和默认权限后解决，原SHA均已通过HTTPS发布；三份已校验bundle继续保留。最新发布证明在上方入口；rpc-actions-m24/publication-check.json仅记载当时的历史阻塞。不操作Mac、不强推/改写历史。
 
-下一步接factory account目标：独立草稿位于项目外部任务资料目录，尚未编译/接入/计数。先核对5个base hash，再只接config API做真实功能红灯，然后接发现、birth匹配和早于业务start的factory起点，分别验证legacy逐事件事务和staged整块事务、PG/PGlite关闭重开、safe后live重放、缓存开关、同parent交易hash的不同child分支和旧地址清理。旧contract factory默认ToBlock/ID不可随意更改以免重用旧interval；完整config/identity升级设计仍待做。继续完整source配置/history planner、多链三种ordering、查询/API/CLI/dev/templates/类型/SDK/simulation，任务未完成。
+上述factory account目标现已接入M26并完成29项聚焦race；完整验收状态见最新入口。旧contract factory默认ToBlock/ID保持，完整config/identity升级设计仍待做。继续完整source配置/history planner、多链三种ordering、查询/API/CLI/dev/templates/类型/SDK/simulation，任务未完成。
 
 ## M24：上一已验证云端基线
 
@@ -27,7 +33,7 @@ M24补齐剩余10个rpc.actions原例、29个原断言，包含分页惰性/提�
 
 累计302/905映射=298Go+4SDK，全部执行通过，已映射原版oracle也通过；603静态记录未实现。八个原版文件在PG14.24与PGlite0.2.13各129通过/3原skip，原setup/helper/生成ABI和断言未改，Foundry1.8.5已核验安装。905不是动态穷尽证明，八文件也不是完整上游验收。M23及更早冻结证据保留，不混用跨平台通过数。
 
-发布仍阻塞。父会话显式授权区分传输账号与commit身份后，禁用转发agent、仅用既有云端SSH key做只读目标检查，返回Repository not found。ysh0566连接有blob/tree和普通ref API，但无raw commit或author/committer/时间输入，无法保留本地原SHA；远端main核实时仍9180e4f。具体证据及已有认证的非Mac环境导入Git bundle后普通快进推送的最小步骤见 `parity/runs/rpc-actions-m24/publication-check.json`。不创建凭据、增权限、改写提交或强推；本地提交不能称已发布。
+本M24历史验收时发布仍阻塞（现已由上方M23–M25发布证明取代）。父会话显式授权区分传输账号与commit身份后，禁用转发agent、仅用既有云端SSH key做只读目标检查，返回Repository not found。ysh0566连接有blob/tree和普通ref API，但无raw commit或author/committer/时间输入，无法保留本地原SHA；远端main核实时仍9180e4f。具体证据及已有认证的非Mac环境导入Git bundle后普通快进推送的最小步骤见 `parity/runs/rpc-actions-m24/publication-check.json`。不创建凭据、增权限、改写提交或强推；本地提交不能称已发布。
 
 M25完整验收已完成，最新计数和后续工作以上方M25入口及batch-24为准；本节保留M24历史，不覆盖最新结果。
 
@@ -285,3 +291,5 @@ filter包有ID/adjacency/recovery、地址/topic/factory/区间谓词、80% over
 复核发现SyncTransactionToInternal(type0x7e)把maxFee/maxPriority为null或空串时保留输入，而源码返回undefined。先增加4个实际source-generated控制（undefined/null/空串/0x0），真实红灯2leaf，再修正转换为filter.Undefined；0x0仍是*big.Int零。source credit不变，288映射/617未实现，Go284（oracle191含4选择性，93完整suite受限）+SDK4。events差分119（8预期错误）分别全部通过。最后完整verify退出0：Go/race1606/1606、PG181/PGlite178，vet/build/type/core201活动/2skip/选择性4/SDK及各差分都通过；33份M21旧冻结证据未改，补充证据batch-20.json。当前无在途命令。
 
 下一步除前节contract decoder/trace/rpc.actions剩余14源例，还可扩展选择性oracle至已移植的14个filter静态/Genesis例及splitEvents：它们原full suite缺generated.js，但不是都需要生成ABI。明确保留whole-suite收集状态与selective source结果，不能把所有93受限项笼统称不可执行。ETH transferEth三例则已经实际确认旧Anvil缺blockHash trace方法，native每tx回退不加这些source credit。Foundry安装仍pending未执行。
+
+M26之后继续完整source配置/planner、多链三个ordering、完整查询/API/CLI/dev/templates/类型/SDK/simulation。独立bloom-next草稿在任务资料目录，8个确切源例/12断言/2个topic0=undefined编译义务；需真实public型接口、完整原文件采集与原断言、真实编译证明、source差分和运行时连接，不可只以map键缺失计类型通过。zero bloom按原码视为missing，async链绕过，不得跳过account交易/trace。草稿未接入/编译/计数。

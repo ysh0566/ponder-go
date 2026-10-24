@@ -70,6 +70,9 @@ func (e *Engine) initializeStaged(ctx context.Context, head Block) error {
 	}
 	for _, account := range e.Config.Accounts {
 		start = min(start, account.StartBlock)
+		if f, ok := e.factories[account.Name]; ok && f.FromBlock != nil {
+			start = min(start, *f.FromBlock)
+		}
 	}
 	for _, b := range e.Config.Blocks {
 		start = min(start, b.StartBlock)

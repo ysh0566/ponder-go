@@ -65,7 +65,7 @@
         "packages/core/src/build/config.ts"
       ],
       "evidence": [],
-      "remaining": "All configuration validators, latest bounds, account/factory/filter/trace options and exact cases remain."
+      "remaining": "M26 native account factory/static union, parent validation and effective bounds verified; constructor inherits both account bounds without changing legacy contract IDs. Complete original40 build/config cases, latest resolution, include/handler DSL and exact source defaults/messages/types remain unported."
     },
     {
       "id": "schema",
@@ -218,7 +218,11 @@
         "factory/factory_test.go",
         "runtime/factory.go",
         "runtime/factory_test.go",
-        "store/sync.go"
+        "store/sync.go",
+        "runtime/accounts.go",
+        "config/config.go",
+        "runtime/account_factory_test.go",
+        "runtime/account_factory_configuration_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/build/factory.ts"
@@ -227,9 +231,11 @@
         "parity/runs/factory-offset-oracle.json",
         "parity/runs/factory-persistence-go.jsonl",
         "parity/runs/go-race.jsonl",
-        "parity/runs/differential.json"
+        "parity/runs/differential.json",
+        "parity/runs/account-factory-m26/focused-race-03.jsonl",
+        "parity/runs/batch-25.json"
       ],
-      "remaining": "32 filter/fragments records now mapped separately. Real EVM factory same-transaction birth/child logs, pre-discovery exclusion and reorg/cache on/off verified on both backends. Complete original generated-ABI factory E2E, trace/account targets and multichain remain pending."
+      "remaining": "M26 native account factory discovery and all four callback directions verified on PG/PGlite, legacy/staged and both cache modes, including cold recovery, same-parent-tx-hash replacement, earlier factory history, caller immutability and legacy contract ID preservation. Focused race29 and complete Go/race1769 each passed. No new source credit. Original full config/latest/include/planner and generated-ABI factory E2E, identity upgrades and multichain remain."
     },
     {
       "id": "receipt",

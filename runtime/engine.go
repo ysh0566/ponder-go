@@ -140,6 +140,25 @@ func NewWithOptions(c config.Config, s *store.Store, handlers map[string]Handler
 			engine.factories[contract.Name] = f
 		}
 	}
+	for _, account := range c.Accounts {
+		if account.Factory == nil {
+			continue
+		}
+		cfg := *account.Factory
+		cfg.ChainID, cfg.SourceID = engine.chain.ID, account.Name
+		if cfg.ToBlock == nil {
+			cfg.ToBlock = account.EndBlock
+		}
+		if cfg.FromBlock == nil {
+			from := account.StartBlock
+			cfg.FromBlock = &from
+		}
+		f, err := factory.Build(cfg)
+		if err != nil {
+			return nil, err
+		}
+		engine.factories[account.Name] = f
+	}
 	encoded, _ := json.Marshal(c)
 	hash := sha256.Sum256(encoded)
 	engine.filter = fmt.Sprintf("runtime:%x", hash)
@@ -215,6 +234,9 @@ func (e *Engine) Sync(ctx context.Context) error {
 	}
 	for _, account := range e.Config.Accounts {
 		start = min(start, account.StartBlock)
+		if f, ok := e.factories[account.Name]; ok && f.FromBlock != nil {
+			start = min(start, *f.FromBlock)
+		}
 		hasSource = true
 	}
 	for _, b := range e.Config.Blocks {
