@@ -31,6 +31,8 @@ node tools/orm-compile-fixtures.mjs
 node tools/event-compile-fixtures.mjs
 node tools/bloom-compile-fixtures.mjs
 node tools/config-chain-catalog.mjs
+node tools/config-typed-compile-fixtures.mjs --write
+node tools/config-literal-compile-fixtures.mjs --write
 node tools/config-pristine-oracle.mjs
 node tools/record-native-inputs.mjs
 go test -count=1 -json ./abi/testdata/compile/generated > parity/runs/abi-typed-go.jsonl

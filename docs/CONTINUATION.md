@@ -3,6 +3,19 @@
 任务没有完成。先读 `AGENTS.md`、本文件、`parity/runs/summary.json`、`parity/test-ledger.json` 和 `parity/feature-ledger.json`。不要把新增集成测试或差分向量算成上游逐例移植。
 
 
+
+## 当前执行入口：M29已验证，完整目标继续
+
+正式batch-28.json/batch-28-evidence/、config-types-m29/full-verify-01退出0。Go/race各1865、0fail/skip，PG204/PGlite201；21包141函数，每模式50不重复批次，默认Go/source timeout保留。977/12b021ae80a8fc75e9c90a9860e082153b6ec7328b4b5199c86d42e135f0a5c0输入快照在native Go开始前记录，贯穿normal/race前后与汇总相同。累计364/905=360Go+4SDK，所有映射原版oracle通过；541未实现，静态905不是动态穷尽证明。
+
+新增4配置原例/7断言/9项生产native类型义务；全部39active/92断言与10项配置类型义务已映射/验证，原RPC skip1/2断言保持未映射。typed容器保留被忽略错误的真实shape，构造/配置consumer/indexing consumer各自施加结构和bounds约束；实际链/ABI生成封闭引用进入真实builder/handler。每模式九个正向编译程序在同一原版Anvil执行，负编译诊断具体对应原错。Event2->Event0控制保持args.arg0x，仍验证剩余字节长度错误，不能填充值伪造成功。
+
+真实typed8+generated4个两后端/cache场景与nilselection1回归补充，不加sourcecredit。保留新输入抽取器错误、确定性fixture重写的未接受聚焦轮次、过窄错误匹配造成1控制失败。默认Go测试只校验fixture，显式--write仅在准备阶段；后续指纹一致。当前生成API快捷链/单ABI/单eventfilter、底层动态接口和Go零值差异不宣称完整TS等价。
+
+普通提交必须基于实际已发布M28 80bc22273a8bc740886dee9b8a46214c79f98106，ysh0566作者/提交者；实际发布按外部m29-publication.json，不用本地commit/bundle推断远端。官方CLI默认repo/read:org/gist和任务云端持久化已获明确授权，不要再问；不读/输出token，不改全局helper，不force/改写历史，不操作Mac/业务repo/DB，不开PR或部署。
+
+后续仍完整原生typed/ABI/transport/context/include、负数调度、历史planner、多链/实时重连校验、查询/API/CLI/dev/templates/SDK/simulation及541静态记录。外部config-next/typed-obligations-next.md还保留已复现的显式undefined topic差异，以及尚待实际source对照的重复ABI事件/完整JS值语义审计线索；需真source差分，不能由既有通过外推。目标未完成，继续推进。
+
 ## 当前执行入口：M28验收完成，完整目标继续
 
 正式证据batch-27.json/batch-27-evidence/、config-m28/full-verify-02退出0。Go/race各1852、PG198/PGlite195、0失败/skip；20包138顶层函数，每模式48不重复串行批次，默认timeout保留。所有实际执行均对应测试前952/ded57969d2f68ba7910400427e04ecae8ffc552be7f9f4400f9d776443a11a8e输入快照。源码360/905=356Go+4SDK均有oracle通过，545未实现；905静态记录不是动态穷尽证明。

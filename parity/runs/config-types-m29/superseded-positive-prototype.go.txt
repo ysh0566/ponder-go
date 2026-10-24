@@ -1,0 +1,106 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"sort"
+	"strconv"
+
+	"ponder.local/ponder-go/config"
+)
+
+func selection(value any) config.SourceChainSelection {
+	if name, ok := value.(string); ok {
+		return config.SourceOnChain(name)
+	}
+	values := value.(map[string]any)
+	keys := []string{}
+	for name := range values {
+		keys = append(keys, name)
+	}
+	sort.Strings(keys)
+	overrides := []config.SourceChainOverride{}
+	for _, name := range keys {
+		if len(values[name].(map[string]any)) != 0 {
+			panic("control expects original empty overrides")
+		}
+		overrides = append(overrides, config.SourceChainOverride{Name: name})
+	}
+	return config.SourceOnChains(overrides...)
+}
+func main() {
+	if len(os.Args) != 2 {
+		panic("network or bounds control required")
+	}
+	raw, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		panic(err)
+	}
+	base, err := config.ParseSourceConfiguration(raw)
+	if err != nil {
+		panic(err)
+	}
+	input := base.Value()["contracts"].(map[string]any)["a"].(map[string]any)
+	abiJSON, err := json.Marshal(input["abi"])
+	if err != nil {
+		panic(err)
+	}
+	var built *config.SourceConfigBuild
+	var indexing *config.SourceIndexingBuild
+	functions := []config.SourceIndexingFunction{{Name: "a:Event0", Fn: func() {}}}
+	switch os.Args[1] {
+	case "network":
+		typed := config.CreateTypedSourceConfiguration[config.SourceUndefinedBound, config.SourceUndefinedBound](base, "a", config.SourceTypedContract[config.SourceUndefinedBound, config.SourceUndefinedBound]{Chain: selection(input["network"]), ABI: abiJSON})
+		built, err = config.BuildTypedSourceConfig[config.SourceUndefinedBound, config.SourceUndefinedBound](typed, config.SourceBuildOptions{})
+		if err != nil {
+			panic(err)
+		}
+		indexing, err = config.SafeBuildTypedSourceIndexing[config.SourceUndefinedBound, config.SourceUndefinedBound](context.Background(), typed, built, functions)
+		if err != nil {
+			panic(err)
+		}
+		if len(indexing.EventCallbacks()) != 2 {
+			panic("original corrected network control requires both mainnet/optimism")
+		}
+	case "bounds":
+		start, err := strconv.ParseInt(input["startBlock"].(string), 10, 64)
+		if err != nil {
+			panic(err)
+		}
+		end, err := strconv.ParseInt(input["endBlock"].(string), 10, 64)
+		if err != nil {
+			panic(err)
+		}
+		if start != 16370000 || end != 16370100 {
+			panic("original bad bound input changed")
+		}
+		typed := config.CreateTypedSourceConfiguration(base, "a", config.SourceTypedContract[int64, int64]{Chain: selection(input["chain"]), ABI: abiJSON, StartBlock: start, EndBlock: end})
+		built, err = config.BuildTypedSourceConfig(typed, config.SourceBuildOptions{})
+		if err != nil {
+			panic(err)
+		}
+		indexing, err = config.SafeBuildTypedSourceIndexing(context.Background(), typed, built, functions)
+		if err != nil {
+			panic(err)
+		}
+		f := indexing.EventCallbacks()[0][0].Filter.Value()
+		if f["fromBlock"] != float64(start) || f["toBlock"] != float64(end) {
+			panic("typed bound values changed")
+		}
+	default:
+		panic("unknown control")
+	}
+	for _, callbacks := range indexing.EventCallbacks() {
+		if len(callbacks) != 1 || callbacks[0].Name != "a:Event0" {
+			panic("actual typed callback missing")
+		}
+	}
+	output, err := json.Marshal(map[string]any{"config": built.Value(), "indexing": indexing.Value()})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(output))
+}

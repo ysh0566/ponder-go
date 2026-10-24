@@ -25,3 +25,5 @@ M28 的完整模块验收通过：Go/race各1852、0失败/skip，PG198/PGlite19
 身份校验补齐后的live-race-03通过：39原版活动例、69实际构建调用、0差异，60次规范元数据身份检查，其中Hyperliquid配置/索引各1次。第二轮完整验收会在任何native Go测试前写入prepared-native-inputs.json，原版采集完成后的完整输入指纹必须贯穿normal/race与最终验收一致。
 
 正式full02退出0。测试前记录的952文件指纹`ded57969d2f68ba7910400427e04ecae8ffc552be7f9f4400f9d776443a11a8e`贯穿normal/race开始、结束与最终汇总一致。35个映射原例的独立完整原版oracle也通过。桥将Go的(value,error)返回规范化为来源safe状态/BuildError JSON表示；这不宣称导出的来源safe-status API或完整原生错误类层次。
+
+M29后续已补齐此前4例9项原生类型义务：全部39active/92断言映射并经完整Go/race/original通过，原skip1/2断言仍保留未映射。新的生产构造/消费/生成绑定边界及其范围见TYPED_SOURCE_CONFIGURATION.md；上面的M28限制作为历史保留。

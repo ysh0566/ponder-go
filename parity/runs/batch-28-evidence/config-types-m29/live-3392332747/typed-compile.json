@@ -1,0 +1,568 @@
+{
+  "state": "Compiled controls only; runtime on actual original live Anvil and real runtime integration required before source credit",
+  "directives": [
+    {
+      "source_id": "55a01f0bc082946abd42",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "source_error_directive": "// @ts-expect-error",
+      "source_directive_index": 0,
+      "mode": "network-create",
+      "status": "compiled_runtime_pending",
+      "positive": {
+        "file": "config/testdata/compile/typed/network-create-positive.go",
+        "sha256": "9b6688d3989733b63da27debedda4e188c50b77386c3efa9a8f9a9d0eef0c19d"
+      },
+      "negative": {
+        "file": "config/testdata/compile/typed/network-create-negative.go.txt",
+        "sha256": "f378fa9f3def5de6a94103f76505e86c97ed8bcafc2b772f816d8aab843733f6"
+      },
+      "positive_binary": "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/network-create-positive",
+      "original_input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "network": {
+              "mainnet": {},
+              "optimism": {}
+            },
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "positive_control": "Only Network field becomes Chain; original ordered chain overrides/ABI and absent options retained",
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/network-create-positive",
+          "/root/ponder-go/work/ponder-go/config/testdata/compile/typed/network-create-positive.go"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/network-create-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/network-create-negative.go"
+        ],
+        "exit_code": 1,
+        "error": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/config-types/typed/network-create-negative.go:8:102: in call to config.CreateTypedSourceConfiguration[config.SourceUndefinedBound, config.SourceUndefinedBound], C (type struct{Network config.SourceChainSelection; ABI json.RawMessage; Address config.SourceOption[any]; StartBlock config.SourceUndefinedBound; EndBlock config.SourceUndefinedBound; Filter config.SourceOption[any]; IncludeTransactionReceipts config.SourceOption[bool]; IncludeCallTraces config.SourceOption[bool]}) does not satisfy config.SourceTypedContractShape[S, E]\n"
+      }
+    },
+    {
+      "source_id": "55a01f0bc082946abd42",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "source_error_directive": "// @ts-expect-error",
+      "source_directive_index": 1,
+      "mode": "network-build",
+      "status": "compiled_runtime_pending",
+      "positive": {
+        "file": "config/testdata/compile/typed/network-build-positive.go",
+        "sha256": "115edb95a4ddf702e014de824b321c8b718fdc8ea906a2816241a04a4fc76f2b"
+      },
+      "negative": {
+        "file": "config/testdata/compile/typed/network-build-negative.go.txt",
+        "sha256": "b0eda6c1a71a141ffaf84515d8e9f6195ea5656b7c4af78c2cc57055687c17c4"
+      },
+      "positive_binary": "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/network-build-positive",
+      "original_input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "network": {
+              "mainnet": {},
+              "optimism": {}
+            },
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "positive_control": "Only Network field becomes Chain; original ordered chain overrides/ABI and absent options retained",
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/network-build-positive",
+          "/root/ponder-go/work/ponder-go/config/testdata/compile/typed/network-build-positive.go"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/network-build-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/network-build-negative.go"
+        ],
+        "exit_code": 1,
+        "error": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/config-types/typed/network-build-negative.go:9:98: in call to config.BuildTypedSourceConfig[config.SourceUndefinedBound, config.SourceUndefinedBound], C (type struct{Network config.SourceChainSelection; ABI json.RawMessage; Address config.SourceOption[any]; StartBlock config.SourceUndefinedBound; EndBlock config.SourceUndefinedBound; Filter config.SourceOption[any]; IncludeTransactionReceipts config.SourceOption[bool]; IncludeCallTraces config.SourceOption[bool]}) does not satisfy config.SourceTypedContractShape[S, E]\n.parity-build/config-types/typed/network-build-negative.go:10:107: in call to config.SafeBuildTypedSourceIndexing[config.SourceUndefinedBound, config.SourceUndefinedBound], C (type struct{Network config.SourceChainSelection; ABI json.RawMessage; Address config.SourceOption[any]; StartBlock config.SourceUndefinedBound; EndBlock config.SourceUndefinedBound; Filter config.SourceOption[any]; IncludeTransactionReceipts config.SourceOption[bool]; IncludeCallTraces config.SourceOption[bool]}) does not satisfy config.SourceTypedContractShape[S, E]\n"
+      }
+    },
+    {
+      "source_id": "55a01f0bc082946abd42",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "source_error_directive": "// @ts-expect-error",
+      "source_directive_index": 2,
+      "mode": "network-safe",
+      "status": "compiled_runtime_pending",
+      "positive": {
+        "file": "config/testdata/compile/typed/network-safe-positive.go",
+        "sha256": "b264336cb8f0e85a28cec8cac99e5a6fc9ac8b6a3eb12a6e018a9d728ddbc983"
+      },
+      "negative": {
+        "file": "config/testdata/compile/typed/network-safe-negative.go.txt",
+        "sha256": "61c1484d875cf2bb66472c377c6d9bb49092230dcc51765e4dd8b119295093ab"
+      },
+      "positive_binary": "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/network-safe-positive",
+      "original_input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "network": {
+              "mainnet": {},
+              "optimism": {}
+            },
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "positive_control": "Only Network field becomes Chain; original ordered chain overrides/ABI and absent options retained",
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/network-safe-positive",
+          "/root/ponder-go/work/ponder-go/config/testdata/compile/typed/network-safe-positive.go"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/network-safe-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/network-safe-negative.go"
+        ],
+        "exit_code": 1,
+        "error": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/config-types/typed/network-safe-negative.go:10:107: in call to config.SafeBuildTypedSourceIndexing[config.SourceUndefinedBound, config.SourceUndefinedBound], C (type struct{Network config.SourceChainSelection; ABI json.RawMessage; Address config.SourceOption[any]; StartBlock config.SourceUndefinedBound; EndBlock config.SourceUndefinedBound; Filter config.SourceOption[any]; IncludeTransactionReceipts config.SourceOption[bool]; IncludeCallTraces config.SourceOption[bool]}) does not satisfy config.SourceTypedContractShape[S, E]\n"
+      }
+    },
+    {
+      "source_id": "03426bf3f44186f9b02b",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "source_error_directive": "// @ts-expect-error",
+      "source_directive_index": 0,
+      "mode": "bounds-start",
+      "status": "compiled_runtime_pending",
+      "positive": {
+        "file": "config/testdata/compile/typed/bounds-start-positive.go",
+        "sha256": "a5f84296eafd6c2976da00ce27211346090cf7f8ba74b9d796ffd3fa51820aaf"
+      },
+      "negative": {
+        "file": "config/testdata/compile/typed/bounds-start-negative.go.txt",
+        "sha256": "a5c94fe3ad6cf6a32132518869d98d695b1c64b685b5dd892a475472cb2cd906"
+      },
+      "positive_binary": "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-start-positive",
+      "original_input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "chain": {
+              "mainnet": {}
+            },
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "startBlock": "16370000",
+            "endBlock": "16370100"
+          }
+        }
+      },
+      "positive_control": "Only original bad numeric strings become numeric bounds; other bad field is corrected to isolate each field directive",
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-start-positive",
+          "/root/ponder-go/work/ponder-go/config/testdata/compile/typed/bounds-start-positive.go"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-start-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-start-negative.go"
+        ],
+        "exit_code": 1,
+        "error": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/config-types/typed/bounds-start-negative.go:8:45: string does not satisfy config.SourceBlockBound (string missing in ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ponder.local/ponder-go/config.SourceUndefinedBound | ponder.local/ponder-go/config.SourceLatestBound)\n.parity-build/config-types/typed/bounds-start-negative.go:9:41: string does not satisfy config.SourceBlockBound (string missing in ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ponder.local/ponder-go/config.SourceUndefinedBound | ponder.local/ponder-go/config.SourceLatestBound)\n.parity-build/config-types/typed/bounds-start-negative.go:10:50: string does not satisfy config.SourceBlockBound (string missing in ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ponder.local/ponder-go/config.SourceUndefinedBound | ponder.local/ponder-go/config.SourceLatestBound)\n"
+      }
+    },
+    {
+      "source_id": "03426bf3f44186f9b02b",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "source_error_directive": "// @ts-expect-error",
+      "source_directive_index": 1,
+      "mode": "bounds-end",
+      "status": "compiled_runtime_pending",
+      "positive": {
+        "file": "config/testdata/compile/typed/bounds-end-positive.go",
+        "sha256": "a5f84296eafd6c2976da00ce27211346090cf7f8ba74b9d796ffd3fa51820aaf"
+      },
+      "negative": {
+        "file": "config/testdata/compile/typed/bounds-end-negative.go.txt",
+        "sha256": "31aa7d7dab3dcf9bcb55348850c0d34fe81e497a31cacf1d3fad16176fe5765f"
+      },
+      "positive_binary": "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-end-positive",
+      "original_input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "chain": {
+              "mainnet": {}
+            },
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "startBlock": "16370000",
+            "endBlock": "16370100"
+          }
+        }
+      },
+      "positive_control": "Only original bad numeric strings become numeric bounds; other bad field is corrected to isolate each field directive",
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-end-positive",
+          "/root/ponder-go/work/ponder-go/config/testdata/compile/typed/bounds-end-positive.go"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-end-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-end-negative.go"
+        ],
+        "exit_code": 1,
+        "error": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/config-types/typed/bounds-end-negative.go:8:45: string does not satisfy config.SourceBlockBound (string missing in ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ponder.local/ponder-go/config.SourceUndefinedBound | ponder.local/ponder-go/config.SourceLatestBound)\n.parity-build/config-types/typed/bounds-end-negative.go:9:41: string does not satisfy config.SourceBlockBound (string missing in ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ponder.local/ponder-go/config.SourceUndefinedBound | ponder.local/ponder-go/config.SourceLatestBound)\n.parity-build/config-types/typed/bounds-end-negative.go:10:50: string does not satisfy config.SourceBlockBound (string missing in ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ponder.local/ponder-go/config.SourceUndefinedBound | ponder.local/ponder-go/config.SourceLatestBound)\n"
+      }
+    },
+    {
+      "source_id": "03426bf3f44186f9b02b",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "source_error_directive": "// @ts-expect-error",
+      "source_directive_index": 2,
+      "mode": "bounds-build",
+      "status": "compiled_runtime_pending",
+      "positive": {
+        "file": "config/testdata/compile/typed/bounds-build-positive.go",
+        "sha256": "b288b27f722a57531dce1771e5675a6e19eeee6915ae23a2305af7a91062a730"
+      },
+      "negative": {
+        "file": "config/testdata/compile/typed/bounds-build-negative.go.txt",
+        "sha256": "9b64cb790ae9d23e70c1e4c101ebb12dc25a51050861689549b7d09820c12bfc"
+      },
+      "positive_binary": "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-build-positive",
+      "original_input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "chain": {
+              "mainnet": {}
+            },
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "startBlock": "16370000",
+            "endBlock": "16370100"
+          }
+        }
+      },
+      "positive_control": "Only original bad numeric strings become numeric bounds; other bad field is corrected to isolate each field directive",
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-build-positive",
+          "/root/ponder-go/work/ponder-go/config/testdata/compile/typed/bounds-build-positive.go"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-build-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-build-negative.go"
+        ],
+        "exit_code": 1,
+        "error": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/config-types/typed/bounds-build-negative.go:9:41: string does not satisfy config.SourceBlockBound (string missing in ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ponder.local/ponder-go/config.SourceUndefinedBound | ponder.local/ponder-go/config.SourceLatestBound)\n.parity-build/config-types/typed/bounds-build-negative.go:10:50: string does not satisfy config.SourceBlockBound (string missing in ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ponder.local/ponder-go/config.SourceUndefinedBound | ponder.local/ponder-go/config.SourceLatestBound)\n"
+      }
+    },
+    {
+      "source_id": "03426bf3f44186f9b02b",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "source_error_directive": "// @ts-expect-error",
+      "source_directive_index": 3,
+      "mode": "bounds-safe",
+      "status": "compiled_runtime_pending",
+      "positive": {
+        "file": "config/testdata/compile/typed/bounds-safe-positive.go",
+        "sha256": "b3dc6320146bc9781d0b3da875c8b02ae2e9a367751e588f8193763adde7f731"
+      },
+      "negative": {
+        "file": "config/testdata/compile/typed/bounds-safe-negative.go.txt",
+        "sha256": "e367db7b33f9b650ab6721a72b608657ef5f205f25960724e31dafddeb4de6a7"
+      },
+      "positive_binary": "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-safe-positive",
+      "original_input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "chain": {
+              "mainnet": {}
+            },
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "startBlock": "16370000",
+            "endBlock": "16370100"
+          }
+        }
+      },
+      "positive_control": "Only original bad numeric strings become numeric bounds; other bad field is corrected to isolate each field directive",
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-safe-positive",
+          "/root/ponder-go/work/ponder-go/config/testdata/compile/typed/bounds-safe-positive.go"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-safe-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/config-types/typed/bounds-safe-negative.go"
+        ],
+        "exit_code": 1,
+        "error": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/config-types/typed/bounds-safe-negative.go:10:50: string does not satisfy config.SourceBlockBound (string missing in ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ponder.local/ponder-go/config.SourceUndefinedBound | ponder.local/ponder-go/config.SourceLatestBound)\n"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "config/typed_source.go",
+      "sha256": "974e05794dc2a0b9456c0e35925ba372235201e13fea3e367118516cff2c72af"
+    },
+    {
+      "file": "tools/config-typed-compile-fixtures.mjs",
+      "sha256": "617ef3db6652a66f7e9fe8fb3a8d7782a318e9038737af4e8179db9a16ad39d2"
+    }
+  ],
+  "summary": {
+    "source_error_directives": 7,
+    "compiled": 7,
+    "failed": 0,
+    "positive_runtime_verified": 0
+  }
+}

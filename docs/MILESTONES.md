@@ -133,3 +133,7 @@ RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋check
 ## M28：来源配置与原生运行时
 
 新增35个精确配置原例/85断言及1项公共Filter联合编译义务；累计360/905，545未实现。正式full02 Go/race各1852，PG198/PGlite195，0fail/skip，20包138函数48批次。39个活动原例有69次实际Go调用、完整原版oracle与输入/输出比较；原skip保留，4例9个类型义务仍未映射。来源回调/overload/topics/receipt/实际handler/client/factory身份接入单链运行时；8个真实集成与1并发例不加source credit。原生规范metadata身份检查60次，含Hyperliquid2次。新增测试失败与首轮主动停止1473项部分执行均保留；正式证据batch-27及SOURCE_CONFIGURATION.md。完整目标继续。
+
+## M29：生产配置类型约束和生成引用
+
+新增4精确配置原例/7断言/9原生类型义务，累计364/905，541未实现；完整Go/race各1865，PG204/PGlite201，0fail/skip。21包141函数50批次。原config39active全部映射，原skip1保留。实际构造/配置消费/索引消费结构和bounds约束、实际chains/ABI生成的闭合引用均有正编译/原版Anvil实际执行/负编译；12真实集成+1nil回归无source credit。原短字节0x正向控制保持其剩余runtime错误；失败与输入不变证明保留。见TYPED_SOURCE_CONFIGURATION.md和batch-28。完整目标继续。
