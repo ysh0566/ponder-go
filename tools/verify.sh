@@ -4,6 +4,7 @@ cd "$(dirname "$0")/.."
 : "${PONDER_TEST_POSTGRES:?Set the explicit task-only PostgreSQL URL; no environment fallback is used.}"
 export GOMODCACHE="$PWD/.toolcache/gomod"
 export GOCACHE="$PWD/.toolcache/gobuild"
+export PATH="$PWD/../ponder-upstream/node_modules/.bin:$PATH"
 mkdir -p parity/runs bin
 go version > parity/runs/tool-versions.txt
 node --version >> parity/runs/tool-versions.txt
@@ -23,8 +24,8 @@ node tools/compile-fixtures.mjs
 node tools/orm-compile-fixtures.mjs
 go test -count=1 -json ./abi/testdata/compile/generated > parity/runs/abi-typed-go.jsonl
 go test -count=1 -race -json ./abi/testdata/compile/generated > parity/runs/abi-typed-race.jsonl
-go test -count=1 -json ./... > parity/runs/go-test.jsonl
-go test -count=1 -race -json ./... > parity/runs/go-race.jsonl
+node tools/go-tests.mjs
+node tools/go-tests.mjs --race
 go vet ./... > parity/runs/go-vet.txt 2>&1
 go build -o bin/ponder ./cmd/ponder
 go build -o bin/erc20 ./examples/erc20

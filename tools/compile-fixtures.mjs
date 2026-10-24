@@ -3,11 +3,14 @@ import path from "node:path";
 import crypto from "node:crypto";
 import os from "node:os";
 import { spawnSync } from "node:child_process";
+import { buildGenerator } from "./go-codegen.mjs";
 const root = path.resolve(import.meta.dirname, "..");
+const runDirectory = path.resolve(root, process.env.PONDER_RUN_DIR ?? "parity/runs");
 const cases = JSON.parse(fs.readFileSync(path.join(root,"testdata/abi/parameter-cases.json")));
 const obligations = cases.flatMap(c => c.assertions.filter(a=>a.matcher==="expectTypeOf").map((a,i)=>({...a,id:c.id,full_name:c.full_name,source_sha256:c.source_sha256,name:`Case${c.id}Type${i}`})));
 const directory = "abi/testdata/compile", generated = directory+"/generated", positive = directory+"/pass", negative = directory+"/fail";
-for (const dir of [generated,positive,negative,"parity/runs"]) fs.mkdirSync(path.join(root,dir),{recursive:true});
+for (const dir of [generated,positive,negative]) fs.mkdirSync(path.join(root,dir),{recursive:true});
+fs.mkdirSync(runDirectory,{recursive:true});
 const hash = v => crypto.createHash("sha256").update(v).digest("hex");
 function command(args, options={}) {
   const result=spawnSync("go",args,{cwd:root,encoding:"utf8",timeout:45000,maxBuffer:8*1024*1024,...options});
@@ -17,7 +20,11 @@ function command(args, options={}) {
 function requireSuccess(args,options) { const r=command(args,options); if(r.status!==0) throw Error(r.stdout+r.stderr); return r.stdout; }
 const schemas = obligations.map(a=>({package:"generated",name:a.name,params:a.input.params}));
 fs.writeFileSync(path.join(root,directory,"schemas.json"),JSON.stringify(schemas,null,2)+"\n");
-requireSuccess(["run","./cmd/abi-codegen",directory+"/schemas.json",generated]);
+// Keep cold compilation separate from the bounded generator execution. Linux
+// cloud startup exceeded the former 45s combined `go run` limit before any
+// generator assertion ran. Build once and retain phase-specific timing/errors.
+const codegen = buildGenerator(root,"./cmd/abi-codegen","abi-codegen",path.join(runDirectory,"abi-codegen-stages.json"));
+codegen("generation",[directory+"/schemas.json",generated]);
 const decoders=obligations.map(a=>`${JSON.stringify(a.id)}:func()(any,error){return Decode${a.name}(${JSON.stringify(a.input.data)},abi.DecodeOptions{${a.input.format_address==="lowercase"?"FormatAddress:strings.ToLower":""}})},`).join("\n");
 fs.writeFileSync(path.join(root,generated,"TypedSource_test.go"),fs.readFileSync(path.join(root,"tools/abi-typed-template.txt"),"utf8").replace("// INSERT_DECODERS",decoders));
 function field(name) {
@@ -115,6 +122,6 @@ try {
   report.summary={inline_source_type_obligations:obligations.length,positive_passed:report.obligations.filter(x=>x.positive.exit_code===0).length,negative_controls_rejected:report.obligations.filter(x=>x.negative_control.exit_code!==0).length,failed:report.obligations.filter(x=>x.status!=="passed").length};
   report.summary.source_error_directives=report.directives.length;
   report.summary.source_error_directives_passed=report.directives.filter(x=>x.status==="passed").length;
-  fs.writeFileSync(path.join(root,"parity/runs/compile-fixtures.json"),JSON.stringify(report,null,2)+"\n");
+  fs.writeFileSync(path.join(runDirectory,"compile-fixtures.json"),JSON.stringify(report,null,2)+"\n");
   console.log(report.summary);
 } finally {fs.rmSync(scratch,{recursive:true,force:true});}

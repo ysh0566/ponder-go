@@ -168,17 +168,6 @@ func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]p
 		return nil, err
 	}
 
-	decoder := protocol.Decoder{Logger: e.options.Logger}
-	chain := protocol.Object{"id": e.chain.ID, "name": e.chain.Name}
-	decoded, err := decoder.DecodeEvents(chain, callbacks, built)
-	if err != nil {
-		return nil, err
-	}
-	public := map[string]protocol.Object{}
-	for _, value := range decoded {
-		callback := value["eventCallback"].(map[string]any)
-		public[fmt.Sprint(callback["name"])+":"+fmt.Sprint(value["checkpoint"])] = value["event"].(map[string]any)
-	}
 	for _, raw := range built {
 		callback := callbacks[raw.EventCallbackIndex]
 		name := callback["name"].(string)
@@ -188,14 +177,8 @@ func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]p
 		}
 		hash, _ := raw.Transaction["hash"].(string)
 		event := Event{Name: name, Block: b, Transaction: txByHash[hash], Receipt: receiptByIndex[fmt.Sprint(raw.Transaction["transactionIndex"])], Normalized: &raw}
-		body, ok := public[name+":"+raw.Checkpoint]
-		if !ok {
-			continue
-		}
 		if callback["type"] == "contract" {
 			event.Trace = raw.Trace
-			event.Args = body["args"]
-			event.Result = body["result"]
 			if callback["filter"].(map[string]any)["hasTransactionReceipt"] != true {
 				event.Receipt = nil
 			}
@@ -204,7 +187,7 @@ func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]p
 			event.Transfer = map[string]any{"from": raw.Trace["from"], "to": raw.Trace["to"], "value": raw.Trace["value"]}
 			event.Args = event.Transfer
 		}
-		out = append(out, pending{cursor: cp, id: fmt.Sprintf("account:%d:%s:%s:%s", e.chain.ID, b.Hash, name, raw.Checkpoint), event: event})
+		out = append(out, pending{cursor: cp, id: fmt.Sprintf("account:%d:%s:%s:%s", e.chain.ID, b.Hash, name, raw.Checkpoint), event: event, callback: callback})
 	}
 	return out, nil
 }

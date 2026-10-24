@@ -43,17 +43,35 @@ The additional decoder/name vectors invoke actual pinned source functions with
 fresh synthetic ABI items. They cover overloads, named tuple/array, multi-result,
 no-result, malformed input/output, log failures and selector dedup/summary fields.
 They are supplementary, not replacements for original generated ERC20 ABI tests.
-Those original contract declarations are still unmapped until their exact
-fixtures can run. Installed Anvil0.2 transaction-tracer fallback remains explicitly
-native compatibility; it does not pass the three original ETH helper declarations
-that require the absent block-hash tracing method. Foundry1.8.5 is still pending.
+Those original contract declarations still need exact Go source mappings.
+On cloudcone2 the official Foundry1.8.5 fixture chain and original block-hash
+tracing now run successfully: eight original files pass129 declarations with
+three original skips separately on PG14.24 and PGlite0.2.13. This removes the
+historical Mac fixture blocker without adding Go source credit. The native
+older-Anvil per-transaction fallback is separate compatibility behavior and
+does not supply these original oracle results.
 
-The legacy native contract-log scheduling path still decodes through ABI.DecodeEvent
-and propagates a decode error; it has not yet been routed through the new complete
-batch decoder. Consequently full shared log/trace batch error-log ordering, full
-source event include/projection, generated-ABI original trace cases and complete
-factory/account/multichain integration remain pending. The generic Decoder API
-and connected contract-trace path are the verified scope here.
+M23 routes legacy contract logs and existing contract/account
+projections through one Decoder per block after checkpoint sorting. Malformed
+matched logs are logged/omitted and share selector deduplication and final
+summaries with trace decoding. Original raw block/log/transaction/receipt handler
+payloads are preserved. Projection copies supply absent optional quantities and
+known block/index provenance; provided invalid quantities still fail. Block JSON
+uses json.Number to avoid rounding supplied large integers. Decoder callback
+indexes are translated on local copies so existing Normalized handler metadata
+is preserved.
+
+The original factory fixture and assertions are unchanged. A first full candidate
+run exposed the missing-difficulty projection error on both backends. Minimal
+red tests also caught JSON integer rounding and callback-index mutation; the
+production fixes then passed13 focused checks including both factory backends
+and real EVM log/trace rollback and fork replacement. Final native Go and race
+each pass1645 leaves on unchanged sources; SDK/type checks and differential
+checks pass. The original verify command stopped at a missing tsc PATH, then the
+unchanged React test and remaining checks passed after the harness PATH fix.
+See docs/CLOUDCONE2.md and parity/runs/batch-22.json for the separate receipts.
+Full source include/projection, cross-block decoder batches, exact generated-ABI
+Go declarations and complete factory/account/multichain integration remain open.
 
 The RPC action additions provide chunk50 GetLogs and source-style log/transaction
 normalization, defaults, duplicate/bound validation and ordering. Native chunks

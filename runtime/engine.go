@@ -324,9 +324,10 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 }
 
 type pending struct {
-	cursor checkpoint.Checkpoint
-	id     string
-	event  Event
+	cursor   checkpoint.Checkpoint
+	id       string
+	event    Event
+	callback protocol.Object
 }
 
 func (e *Engine) process(ctx context.Context, b Block) error {
@@ -411,10 +412,6 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 				if e.Handlers[eventName] == nil {
 					continue
 				}
-				args, err := a.DecodeEvent(name, log.Topics, log.Data)
-				if err != nil {
-					return fmt.Errorf("%s decoding: %w", eventName, err)
-				}
 				txIndex, err := Number(log.TransactionIndex)
 				if err != nil {
 					return err
@@ -450,7 +447,16 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 					}
 				}
 				copyLog := log
-				events = append(events, pending{cursor: cursor, id: fmt.Sprintf("log:%d:%s:%s:%s", e.chain.ID, b.Hash, contract.Name, log.LogIndex), event: Event{Name: eventName, Args: args, Block: b, Log: &copyLog, Transaction: transaction, Receipt: receipt}})
+				item, ok := a.EventItem(name)
+				if !ok {
+					return fmt.Errorf("missing original ABI event %s", eventName)
+				}
+				raw, err := normalizedContractLog(b, copyLog, transaction, receipt, cursor)
+				if err != nil {
+					return err
+				}
+				callback := protocol.Object{"name": eventName, "type": "contract", "chain": protocol.Object{"id": e.chain.ID, "name": e.chain.Name}, "filter": protocol.Object{"type": "log"}, "abiItem": item}
+				events = append(events, pending{cursor: cursor, id: fmt.Sprintf("log:%d:%s:%s:%s", e.chain.ID, b.Hash, contract.Name, log.LogIndex), event: Event{Name: eventName, Block: b, Log: &copyLog, Transaction: transaction, Receipt: receipt, Normalized: raw}, callback: callback})
 			}
 		}
 	}
@@ -472,6 +478,10 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 	sort.SliceStable(events, func(i, j int) bool {
 		return checkpoint.MustEncode(events[i].cursor) < checkpoint.MustEncode(events[j].cursor)
 	})
+	events, err = e.decodePending(events)
+	if err != nil {
+		return err
+	}
 	if e.staged != nil {
 		ordered := make([]OrderedEvent, len(events))
 		for i, event := range events {

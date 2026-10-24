@@ -88,3 +88,10 @@ func (a ABI) DecodeEvent(name string, topics []string, data string) (any, error)
 	}
 	return DecodeEventLog(event, topics, data)
 }
+
+// EventItem returns the original ABI metadata for an event's parsed name,
+// including the distinct names assigned to overloaded events.
+func (a ABI) EventItem(name string) (Event, bool) {
+	item, ok := a.originalEvents[name]
+	return item, ok
+}

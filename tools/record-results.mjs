@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { sourceFingerprint } from "./go-source-fingerprint.mjs";
 const root = path.resolve(import.meta.dirname, "..");
 const read = (file) =>
 	JSON.parse(fs.readFileSync(path.join(root, file), "utf8"));
@@ -25,6 +26,22 @@ const goFile = exists("parity/runs/go-test.jsonl")
 	: "parity/foundation-go.jsonl";
 const go = goResults(goFile);
 const race = goResults("parity/runs/go-race.jsonl");
+const executionPaths = ["parity/runs/go-test-execution.json", "parity/runs/go-race-execution.json"];
+const executions = executionPaths.map(file => exists(file) ? read(file) : null);
+if (executions.some(Boolean)) {
+	if (executions.some(x => !x?.complete || !x?.success || x.scope !== "all_module_packages")) throw Error("Both complete module-wide Go executions are required; old or partial reports cannot substitute");
+	const currentFingerprint = sourceFingerprint(root).sha256;
+	if (executions.some(x => x.source_fingerprint?.sha256 !== currentFingerprint || x.finished_source_fingerprint?.sha256 !== currentFingerprint)) throw Error("Go and race evidence must describe the current, unchanged native sources");
+	const driverHash = crypto.createHash("sha256").update(fs.readFileSync(path.join(root,"tools/go-tests.mjs"))).digest("hex");
+	if (executions.some(x => x.driver_sha256 !== driverHash)) throw Error("Go execution driver changed after the recorded runs");
+	for (const [index, results] of [go, race].entries()) {
+		for (const pkg of executions[index].packages)
+			for (const name of pkg.listed_functions)
+				if (!results.has(`${pkg.package}:${name}`)) throw Error(`Listed Go function has no execution result: ${pkg.package}:${name}`);
+		const start = Date.parse(executions[index].started_utc), end = Date.parse(executions[index].finished_utc);
+		if ([...results.values()].some(x => Date.parse(x.Time) < start - 1000 || Date.parse(x.Time) > end + 1000)) throw Error("Go results do not belong to the recorded execution: " + executionPaths[index]);
+	}
+}
 const typedGo = goResults("parity/runs/abi-typed-go.jsonl");
 const typedRace = goResults("parity/runs/abi-typed-race.jsonl");
 const compile = exists("parity/runs/compile-fixtures.json") ? read("parity/runs/compile-fixtures.json") : null;
@@ -38,6 +55,13 @@ const oracle = read(oraclePath);
 const coreOraclePath = exists("parity/runs/core-oracle.json")
 	? "parity/runs/core-oracle.json"
 	: null;
+const fullOriginalPaths = ["parity/runs/full-original-postgres-oracle.json", "parity/runs/full-original-pglite-oracle.json"];
+if (fullOriginalPaths.some(exists) && !fullOriginalPaths.every(exists)) throw Error("Full original acceptance requires separate PG and PGlite evidence");
+const fullOriginalReports = fullOriginalPaths.filter(exists).map(path => {
+	const report = read(path), acceptance = report.ponder_acceptance;
+	if (!acceptance?.complete || acceptance.baseline.revision !== ledger.baseline.revision || !acceptance.source_context.every(f => exists(f.file) && fileHash(f.file) === f.sha256) || !acceptance.raw_reports.every(f => exists(f.file) && fileHash(f.file) === f.sha256)) throw Error("Original acceptance context changed or is incomplete: " + path);
+	return { path, report, fullOriginal: true, backend: acceptance.backend };
+});
 const oracleReports = [
 	{ path: oraclePath, report: oracle },
 	...[
@@ -53,6 +77,7 @@ const oracleReports = [
 	]
 		.filter((x) => x && exists(x))
 		.map((path) => ({ path, report: read(path) })),
+	...fullOriginalReports,
 ];
 function sdkResult(file, title) {
 	if (!exists(file)) return;
@@ -60,7 +85,9 @@ function sdkResult(file, title) {
 		for (const t of f.assertionResults ?? []) if (t.title === title) return t;
 }
 for (const test of ledger.tests) {
+	const fullBackends = {};
 	for (const selected of oracleReports) {
+		if (selected.fullOriginal && !selected.report.ponder_acceptance.sources.some(x => x.file === test.source_file && x.sha256 === test.source_sha256)) continue;
 		const originals = (selected.report.testResults ?? [])
 			.filter((x) =>
 				x.name.endsWith(test.source_file.replace("packages/core/", "")),
@@ -76,6 +103,15 @@ for (const test of ledger.tests) {
 		const original = originals[occurrence];
 		if (original)
 			test.oracle = { status: original.status, evidence: selected.path };
+		if (selected.fullOriginal && original) fullBackends[selected.backend] = { status: original.status, evidence: selected.path };
+	}
+	if (Object.keys(fullBackends).length) {
+		const results = Object.values(fullBackends), passed = results.length === 2 && results.every(x => x.status === "passed");
+		test.oracle = { status: passed ? "passed" : results.some(x => x.status === "failed") ? "failed" : results.every(x => x.status === "skipped") ? "skipped" : "blocked", evidence: fullBackends.pglite?.evidence ?? fullBackends.postgres?.evidence, mode: "unmodified_original_files_with_original_setup", full_original: true, backends: fullBackends };
+		if (passed && test.mapping?.oracle_blocker) {
+			test.resolved_historical_oracle_blocker = test.mapping.oracle_blocker;
+			test.blockers = test.blockers.filter(x => x !== test.mapping.oracle_blocker.reason);
+		}
 	}
 	if (test.source_file.endsWith("/decodeAbiParameters.test.ts") && parameterTypes?.source_sha256 === test.source_sha256)
 		test.oracle_types = {status: parameterTypes.exit_code === 0 ? "passed" : "failed", evidence:"parity/runs/parameters-typecheck.json"};
@@ -86,13 +122,13 @@ for (const test of ledger.tests) {
   const selectionFile=`parity/selected-${mode}-declarations.json`,reportFile=`parity/runs/selected-${mode}-oracle.json`;
   if(!exists(selectionFile)||!exists(reportFile))continue;
   const selection=read(selectionFile),report=read(reportFile),source=selection.cases.find(c=>c.id===test.id&&c.source_sha256===test.source_sha256&&c.test_source===test.test_source),generated=selection.generated_file??"testdata/oracle/selected-runtime.test.ts";
-  if(source&&report.success&&fileHash(generated)===selection.generated_sha256&&fs.readFileSync(path.join(root,generated),"utf8").includes(source.test_source)) {
+  if(!test.oracle?.full_original&&source&&report.success&&fileHash(generated)===selection.generated_sha256&&fs.readFileSync(path.join(root,generated),"utf8").includes(source.test_source)) {
    const result=report.testResults.flatMap(r=>r.assertionResults).find(r=>r.title===test.title);
    if(result)test.oracle={status:result.status,evidence:reportFile,mode:"selected_unchanged_source_declarations_actual_dependencies",source_selection:selectionFile,full_original_suite:{status:"blocked_before_collection",evidence:test.source_file.endsWith("/filter.test.ts")?"parity/runs/filter-oracle-blocked.json":"parity/runs/runtime-events-oracle-blocked.json",reason:"Missing generated.js; these selected original declarations have no generated ABI dependency."}};
   }
  }
 
- if(!test.mapping&&test.source_file.endsWith("/runtime/filter.test.ts")&&["isTransactionFilterMatched()","isTransactionFilterMatched() with null transaction.to","isTransferFilterMatched()"].includes(test.title)&&exists("parity/runs/selected-with-eth-oracle.json")) {
+ if(!test.oracle?.full_original&&!test.mapping&&test.source_file.endsWith("/runtime/filter.test.ts")&&["isTransactionFilterMatched()","isTransactionFilterMatched() with null transaction.to","isTransferFilterMatched()"].includes(test.title)&&exists("parity/runs/selected-with-eth-oracle.json")) {
   const report=read("parity/runs/selected-with-eth-oracle.json"),result=report.testResults.flatMap(r=>r.assertionResults).find(r=>r.title===test.title);
   if(result?.status==="failed"&&result.failureMessages.some(s=>s.includes("debug_traceBlockByHash")&&s.includes("MethodNotFound"))) {test.oracle={status:"blocked",actual_vitest_status:result.status,evidence:"parity/runs/selected-with-eth-oracle.json",reason:"Existing Anvil0.2.0 lacks debug_traceBlockByHash required by unchanged transferEth fixture; failure before assertions. Foundry1.8.5 installation remains pending.",capability_evidence:"parity/runs/anvil-trace-capabilities.json"};test.blockers.push(test.oracle.reason);}
  }
@@ -217,6 +253,8 @@ const summary = {
 		return {counting:fixture.counting,vectors:fixture.vectors.length,source_expected_exceptions:fixture.vectors.filter(x=>x.error).length,go:count(selected),race:count(selectedRace),evidence:"testdata/runtime/filter-differential.json"};
 	})() : null,
 	original_oracle: {mapped_passed:ledger.summary.oracle_passed,mapped_blocked:ledger.summary.oracle_blocked,meaning:"Original tests executed separately; only explicit differential vectors are labelled differential verification."},
+	full_original_backend_oracles: fullOriginalReports.map(x => ({backend:x.backend,evidence:x.path,scope:"Eight original source files, not complete upstream acceptance or additional Go port credit",passed:x.report.numPassedTests,failed:x.report.numFailedTests,pending:x.report.numPendingTests,source_context_hashes_verified:true})),
+	native_execution_schedule: executions.every(Boolean) ? Object.fromEntries(executions.map((x,i)=>[i===0?"go":"race",{evidence:executionPaths[i],complete:x.complete,success:x.success,policy:x.policy,packages:x.packages.length,top_level_functions:x.packages.reduce((n,p)=>n+p.listed_functions.length,0),batches:x.packages.reduce((n,p)=>n+p.batches.length,0)}])) : null,
 	type_fixtures: compile?.summary ?? null,
 	orm_type_fixtures: ormCompile?.summary ?? null,
 	type_scope: {
