@@ -1,0 +1,49 @@
+{
+  "recorded_utc": "2026-10-24T10:54:16.761031+00:00",
+  "authorization": "Parent explicitly distinguishes transport login from commit author and authorizes checking existing target access. Read-only, no permissions or credential changes.",
+  "identity_agent": "none; SSH_AUTH_SOCK removed; existing cloud-local /root/.ssh/id_rsa only; no forwarded/Mac agent operation",
+  "results": [
+    {
+      "command": [
+        "ssh",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "StrictHostKeyChecking=yes",
+        "-o",
+        "IdentityAgent=none",
+        "-o",
+        "IdentitiesOnly=yes",
+        "-o",
+        "ControlMaster=no",
+        "-o",
+        "ControlPath=none",
+        "-o",
+        "ForwardAgent=no",
+        "-o",
+        "ConnectTimeout=15",
+        "-o",
+        "ConnectionAttempts=1",
+        "-i",
+        "/root/.ssh/id_rsa",
+        "-T",
+        "git@github.com"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Hi whyareulaughing! You've successfully authenticated, but GitHub does not provide shell access.\n"
+    },
+    {
+      "command": [
+        "git",
+        "ls-remote",
+        "git@github.com:ysh0566/ponder-go.git",
+        "refs/heads/main"
+      ],
+      "exit_code": 128,
+      "stdout": "",
+      "stderr": "ERROR: Repository not found.\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists.\n"
+    }
+  ],
+  "remote_mutations": false
+}

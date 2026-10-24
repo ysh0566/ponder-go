@@ -33,7 +33,7 @@
       "evidence": [
         "parity/runs/summary.json"
       ],
-      "remaining": "292 mapped:288 native Go passed (210 source oracle also passed including4+15 selective unchanged declarations,78 fixture oracle blocked)+4 retained SDK;613 static records unimplemented. Dynamic exhaustiveness unproven. Mac paused for cloud handoff after M22; see docs/CLOUD_HANDOFF.md."
+      "remaining": "M24 verified302 mappings=298 nativeGo+4 retained SDK, all mapped target/original oracles passed;603 static records unimplemented.905 static records are not proven runtime exhaustive. Full goal continues on cloudcone2; no publish claim from a local commit."
     },
     {
       "id": "differential-harness",
@@ -51,7 +51,7 @@
         "parity/runs/differential.json",
         "testdata/runtime/filter-differential.json"
       ],
-      "remaining": "2466 foundation/factory vectors +867 filter/fragments vectors +20 protocol vectors independently verified. Continue stores/full runtime; no synthetic vector adds original test credit."
+      "remaining": "M24 verified2466 foundation/factory +867 filter/fragments +135 events +20 protocol +62 RPC supplementary vectors. All executed on Go/race as applicable; no vector adds original test credit."
     },
     {
       "id": "native-config",
@@ -149,7 +149,7 @@
       "evidence": [
         "runtime/engine_test.go"
       ],
-      "remaining": "Single-chain ABI logs/setup/block/receipts verified with Anvil. Full filters, other sources, error and retry semantics remain."
+      "remaining": "M23 single-chain legacy and staged logs/account/contract traces share one block Decoder after checkpoint sorting. Malformed ABI logs are omitted with shared dedup/summaries; valid handler rollback/retry and same-hash fork pass on PG/PGlite. Full source filters/include/config/history/planner and multichain remain."
     },
     {
       "id": "transactions",
@@ -167,7 +167,7 @@
         "parity/runs/batch-19.json",
         "docs/ACCOUNT_EVENTS.md"
       ],
-      "remaining": "Native static/wildcard single-chain account paths and normalized event construction verified; original ETH filter declarations still block on missing debug_traceBlockByHash in installed Anvil0.2. Factory targets/full config/include/history and multichain remain incomplete."
+      "remaining": "Native static/wildcard single-chain account paths, receipts and normalized event construction verified. Official Foundry1.8.5 cloud oracle now executes the unchanged ETH filter fixtures successfully; these declarations still lack exact Go mappings. Factory account targets/full config/include/history and multichain remain incomplete."
     },
     {
       "id": "native-transfers",
@@ -185,7 +185,7 @@
         "parity/runs/batch-19.json",
         "docs/ACCOUNT_EVENTS.md"
       ],
-      "remaining": "Native static/wildcard single-chain account paths and normalized event construction verified; original ETH filter declarations still block on missing debug_traceBlockByHash in installed Anvil0.2. Factory targets/full config/include/history and multichain remain incomplete."
+      "remaining": "Native static/wildcard single-chain account paths, receipts and normalized event construction verified. Official Foundry1.8.5 cloud oracle now executes the unchanged ETH filter fixtures successfully; these declarations still lack exact Go mappings. Factory account targets/full config/include/history and multichain remain incomplete."
     },
     {
       "id": "call-traces",
@@ -206,7 +206,7 @@
         "parity/runs/batch-19.json",
         "parity/runs/batch-21.json"
       ],
-      "remaining": "Single-chain contract callbacks now share matched trace indexes with account callbacks; ABI function args/results, selector-dedup error logging, actual same-hash fork/cache boundaries verified natively. Synthetic source-function vectors and real EVM fixtures do not replace original generated-ABI contract cases. Legacy native contract-log path still propagates decode errors; shared full log/trace batching, complete include/config/factory account targets and multichain remain. Existing Anvil0.2 fallback is not original ETH helper parity."
+      "remaining": "M23 contract/account trace callbacks share matched indexes and block Decoder with legacy logs. ABI args/results and dedup summaries, actual same-hash fork/cache/rollback on both backends verified. Full original eight-file oracle now passes on PG/PGlite, but generated-ABI contract declarations need exact Go mappings. Complete include/config/factory account targets, source batch scheduling and multichain remain."
     },
     {
       "id": "factory-dynamic-addresses",
@@ -239,7 +239,7 @@
         "packages/core/src/rpc/actions.ts"
       ],
       "evidence": [],
-      "remaining": "Log-handler optional receipt fetching verified; account/trace paths and async-execution-chain behavior remain."
+      "remaining": "Native contract/account log/trace receipt provenance verified on PG/PGlite. M24 block/single receipt APIs and per-RPC fallback/provenance/sorting pass focused and full race. Complete receipt/block validators, runtime planner and asynchronous-execution-chain behavior remain."
     },
     {
       "id": "block-setup",
@@ -257,19 +257,26 @@
       "id": "rpc-http",
       "status": "partial",
       "implementation_files": [
+        "rpc/actions.go",
+        "rpc/actions_differential_test.go",
+        "rpc/actions_upstream_test.go",
         "rpc/client.go",
         "rpc/client_test.go",
         "rpc/logs.go",
+        "rpc/logs_boundaries_test.go",
         "rpc/logs_upstream_test.go",
-        "rpc/logs_boundaries_test.go"
+        "rpc/retry_logs.go"
       ],
       "upstream_sources": [
         "packages/core/src/rpc/http.ts"
       ],
       "evidence": [
-        "parity/runs/batch-21.json"
+        "parity/rpc-actions-source-cases.json",
+        "parity/runs/batch-21.json",
+        "parity/runs/rpc-actions-m24/focused-race.jsonl",
+        "testdata/rpc/actions-differential.json"
       ],
-      "remaining": "HTTP retry/limits/failover plus4 additional exact rpc.actions source cases/eight assertions:chunk50 merged logs, numeric log sort, transaction sort,empty address no request. Native chunks sequential vs source Promise.all; GetLogs bypasses numeric response cache. Standardizer/planner integration, other10of16 rpc.actions declarations and complete protocol remain."
+      "remaining": "All16 rpc.actions declarations mapped and passed in M24; remaining10 retained29 original assertions. Lazy pagination, provider hints/inferred growth, per-RPC fallback, full receipt responses and log/block checks verified. Untested helpers, rpc/index source cases and complete protocol/standardizer/historical planner integration remain. Native chunk/fallback requests sequential vs source Promise.all; live provider tests unexecuted."
     },
     {
       "id": "rpc-websocket",
@@ -893,7 +900,7 @@
         "parity/runs/batch-11.json",
         "docs/DATABASE_ACTIONS.md"
       ],
-      "remaining": "All 11 actions.test.ts records mapped after the real 160-table notification source port; full original oracle remains blocked by Foundry fixture. Native staged procedures collect declared base tables, send JSON arrays on checkpoint changes, and split by 7900 UTF-8 bytes. Automatic staged runtime/migration and reorg notification scheduling, source physical partitions, views-schema channels and original DB lifecycle/store records remain incomplete."
+      "remaining": "All11 actions.test.ts records mapped; complete unchanged original file passes on both cloud PG/PGlite. Native staged primitives and automatic single-chain runtime now integrated and verified separately. Physical source partitions/views-schema channels, full multichain scheduler and original database layout/old-DB adoption remain incomplete."
     },
     {
       "id": "database-notifications",
@@ -931,7 +938,7 @@
         "parity/runs/lifecycle-boundaries-race.jsonl",
         "parity/runs/lifecycle-crash-race.jsonl"
       ],
-      "remaining": "16/18 database/index.test.ts source records mapped after versioned-sync migration. Historical-baseline recovery row fixture, camelCase/views-schema lifecycle, dev reset, permission roles and automatic staged runtime/reorg scheduler remain incomplete; full original oracle still blocked."
+      "remaining": "All18 database/index.test.ts records mapped and full unchanged file passes separately on cloud PG/PGlite. Source physical layout, camelCase/views-schema lifecycle, permission roles, full dev reset and old-database takeover remain incomplete."
     },
     {
       "id": "versioned-sync-migration",
@@ -996,7 +1003,7 @@
         "parity/runtime-source-cases.json",
         "docs/STAGED_RUNTIME.md"
       ],
-      "remaining": "Single-chain native per-block history/live scheduling only. Full original runtime/Foundry fixtures, source range batching/concurrent fetch/profile/metrics, multichain, trace/account/native-transfer and full query/SSE/CLI integration remain unimplemented. NOTIFY reconnect reads current state and later commits; it is not durable message replay."
+      "remaining": "Single-chain native per-block history/live scheduling, account/contract traces/transfers and shared ABI decoder verified. Original eight-file fixture oracle runs, but complete original runtime/source range batching/concurrent fetch/profile/metrics and multichain/query/SSE/CLI integration remain. NOTIFY reconnect reads current state and later commits; not durable replay."
     },
     {
       "id": "runtime-filter-fragments",
@@ -1024,7 +1031,7 @@
         "parity/selected-mapped-declarations.json",
         "parity/runs/batch-21.json"
       ],
-      "remaining": "32 source records mapped;14 static/genesis declarations now pass selective unchanged oracle (plus splitEvents separately); full original suite still blocked before collection by generated.js. Original deployment/mint/range/trace cases not replaced;3ETH helper declarations fail before assertions on missing block-hash method in Anvil0.2. Native log predicates and account/contract trace path are partial; full filter DSL/history planner/multichain remain.867 generated vectors give no source credit."
+      "remaining": "32 source records mapped. Full unchanged runtime/filter file now passes on both backends with official Foundry1.8.5; original deployment/mint/range/trace and ETH cases remain partly unmapped. Native predicates and source planner/config DSL/factory account/multichain integration incomplete.867 generated vectors provide no source credit."
     },
     {
       "id": "account-event-construction",
@@ -1053,7 +1060,7 @@
         "parity/runs/batch-20.json",
         "parity/runs/batch-21.json"
       ],
-      "remaining": "Six exact event source records plus generic contract decoder and connected single-chain trace path;135 supplemental event vectors separate. Four event source declarations plus15 previously mapped filter/split declarations have selective oracle; full original events suite remains generated-ABI blocked. Three unchanged ETH fixtures blocked by old Anvil missing debug_traceBlockByHash; native transaction fallback adds no source credit. Legacy contract log scheduling still uses old ABI decode/error path; complete include/factory account targets/multichain/history/query/CLI remain."
+      "remaining": "Five of11 runtime/events declarations mapped plus generic contract decoder and connected single-chain account/trace path;135 supplementary vectors separate. Full unchanged events oracle now passes on cloud PG/PGlite. Six generated-ABI contract decode/build source declarations and their type obligations remain unmapped. Shared log/trace Decoder is integrated; complete include/config/factory account/multichain/history/query/CLI remains."
     }
   ]
 }

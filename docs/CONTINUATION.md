@@ -2,17 +2,19 @@
 
 任务没有完成。先读 `AGENTS.md`、本文件、`parity/runs/summary.json`、`parity/test-ledger.json` 和 `parity/feature-ledger.json`。不要把新增集成测试或差分向量算成上游逐例移植。
 
-## 当前执行入口：cloudcone2 M23已验证，完整目标继续
+## 当前执行入口：cloudcone2 M24已验证，完整目标继续
 
-实际checkout是 `/root/ponder-go/work/ponder-go`，完整固定上游在相邻 `ponder-upstream`。全部27个原始Git提交与1916文件已校验恢复；未改历史或操作Mac。当前结果入口是 `parity/runs/batch-22.json`、`parity/runs/summary.json` 与 `docs/CLOUDCONE2.md`。下方M22是冻结Mac历史。
+实际checkout是 `/root/ponder-go/work/ponder-go`，完整固定上游在相邻 `ponder-upstream`。27个原始Git提交与1916文件已校验恢复。M23本地提交 `3e208c1b35beaa87f936a958391ca431df80c757`，M24是其普通本地后继，以Git HEAD为准。没有改历史或操作Mac。最新正式证据为 `parity/runs/batch-23.json`、`batch-23-evidence/` 与 `parity/runs/summary.json`；下方M22是冻结Mac历史。
 
-M23统一legacy日志与contract/account trace的block批次Decoder，畸形匹配日志去重记录后跳过，保持有效handler事务、重试和同交易hash重组。投影副本补全缺省数量，用json.Number保留整数，局部callback索引不改handler原数据；原factory fixture/断言未改。新增11个native叶子不增加source credit。
+M24补齐剩余10个rpc.actions原例、29个原断言，包含分页惰性/提前停止、每RPC的范围学习、失败重试/错误身份、收据fallback/provenance/排序及日志一致性。该原文件16/16现在都有精确Go映射。62个实际source函数差分向量和6个native边界用例分开，不加source credit。实现和限制见 `docs/RPC_ACTIONS.md`。
 
-完整模块按118个顶层函数、19包、42个不重复批次串行执行，Go默认timeout不变；Go/race各1645通过，零失败/skip，PG185/PGlite182分别通过，前后源码指纹一致。vet、CLI/示例build、ABI/ORM类型正反例、参数tsc、SDK4和基础差分2466均通过。第三轮verify在SDK缺tsc PATH处退出1，修复验证脚本PATH后原React类型例通过，随后差分与结果记录退出0；保留失败原报告，没有宣称整条原命令退出0。
+本轮完整verify退出0：Go/race各1723通过、0失败/skip；PG185/PGlite182分别通过。全部19包、123顶层函数、44个不重复串行批次，Go默认timeout保留，前后/最终源码指纹911文件/a1906a266e294eeac9ce4705b7c5c05acdaf2ca06546da3b51896c19299a2eb3一致。vet、CLI/示例构建、ABI/ORM正反编译、参数tsc、SDK4与基础差分2466全部通过。原core201活动/2原skip、选择性4+15、filter867/events135/protocol20及RPC62分别保留。
 
-原始固定上游8个文件在PG14.24和真实PGlite0.2.13各129通过/3原skip/0失败。官方Foundry1.8.5已核验安装，历史78个已映射oracle阻塞解除。映射仍292/905=288Go+4SDK，613未实现，静态905不保证动态穷尽。原oracle的额外通过没有充作Go移植。
+累计302/905映射=298Go+4SDK，全部执行通过，已映射原版oracle也通过；603静态记录未实现。八个原版文件在PG14.24与PGlite0.2.13各129通过/3原skip，原setup/helper/生成ABI和断言未改，Foundry1.8.5已核验安装。905不是动态穷尽证明，八文件也不是完整上游验收。M23及更早冻结证据保留，不混用跨平台通过数。
 
-当前候选验收已闭合；下一步审计并整合独立RPC草稿的剩余10个actions原例，逐项核对原输入/断言/类型再新增精确映射；草稿此前不参与本批。随后继续generated-ABI原事件、factory/account、多链三种ordering、完整查询/API/CLI/dev/templates/类型/SDK/simulation。发布认证阻塞独立保留：HTTPS无凭据、默认SSH账号不同，连接API不能指定本地commit身份；不得创建凭据、改权限或重写历史。完整目标未完成。
+发布仍阻塞。父会话显式授权区分传输账号与commit身份后，禁用转发agent、仅用既有云端SSH key做只读目标检查，返回Repository not found。ysh0566连接有blob/tree和普通ref API，但无raw commit或author/committer/时间输入，无法保留本地原SHA；远端main核实时仍9180e4f。具体证据及已有认证的非Mac环境导入Git bundle后普通快进推送的最小步骤见 `parity/runs/rpc-actions-m24/publication-check.json`。不创建凭据、增权限、改写提交或强推；本地提交不能称已发布。
+
+下一批：完整原events剩余6例、filter剩余9例的真实生成ABI/原helper/原断言采集与Go重放；trace无output的1个编译错误来自callback联合类型未收窄，需要真实public Go类型边界的正反编译验证，不能凭runtime通过给credit。独立草稿在 `.cloud-bootstrap/events-next`，均未合入或验收。另有账户分支JSON整数投影精度回归待做固定版本红绿验证。随后继续factory account目标、完整配置与历史planner、多链三种ordering、完整查询/API/CLI/dev/templates/类型/SDK/simulation；完整目标未完成。
 
 ## 当前交接入口：M22，Mac 暂停以切换云端
 

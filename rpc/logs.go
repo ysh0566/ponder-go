@@ -95,6 +95,9 @@ func StandardizeLogs(logs []map[string]any, params any) ([]map[string]any, error
 // The native implementation issues chunks sequentially; source uses Promise.all.
 // Numeric ranges bypass the immutable RPC cache.
 func (c *Client) GetLogs(ctx context.Context, input map[string]any) ([]map[string]any, error) {
+	return getLogs(ctx, c, input)
+}
+func getLogs(ctx context.Context, requester Requester, input map[string]any) ([]map[string]any, error) {
 	requests := []map[string]any{input}
 	var addresses []any
 	array := false
@@ -122,7 +125,7 @@ func (c *Client) GetLogs(ctx context.Context, input map[string]any) ([]map[strin
 	result := []map[string]any{}
 	for _, request := range requests {
 		var logs []map[string]any
-		if e := c.Call(ctx, "eth_getLogs", []any{request}, &logs); e != nil {
+		if e := requester.Call(ctx, "eth_getLogs", []any{request}, &logs); e != nil {
 			return nil, e
 		}
 		if logs == nil {

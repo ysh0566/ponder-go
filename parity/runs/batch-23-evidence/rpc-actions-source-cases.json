@@ -1,0 +1,488 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "Ten exact source records,29 original assertion expressions; source-loop assertion invocations retained.62 generated vectors and six native boundary leaves have no additional source credit.",
+  "shared_source_fixtures": [
+    "const hash =\n  \"0x1111111111111111111111111111111111111111111111111111111111111111\" as const;\nconst address = \"0x2222222222222222222222222222222222222222\" as const;\n\nconst log = {\n  blockNumber: \"0x1\",\n  logIndex: \"0x0\",\n  blockHash: hash,\n  address,\n  topics: [],\n  data: \"0x\",\n  transactionHash: hash,\n  transactionIndex: \"0x0\",\n};\n\n",
+    "const receipt = {\n  blockHash: hash,\n  blockNumber: \"0x1\",\n  contractAddress: null,\n  cumulativeGasUsed: \"0x1\",\n  effectiveGasPrice: \"0x1\",\n  from: address,\n  gasUsed: \"0x1\",\n  logs: [],\n  logsBloom: zeroLogsBloom,\n  status: \"0x1\",\n  to: address,\n  transactionHash: hash,\n  transactionIndex: \"0x0\",\n  type: \"0x0\",\n};\n\n",
+    "const nonEmptyLogsBloom = `0x${\"0\".repeat(511)}1` as const;\nconst logsRequest = {\n  method: \"eth_getLogs\",\n  params: [{ blockHash: hash }],\n} as const satisfies Extract<RequestParameters, { method: \"eth_getLogs\" }>;\nconst blockRequest = {\n  method: \"eth_getBlockByHash\",\n  params: [hash, true],\n} as const satisfies Extract<\n  RequestParameters,\n  { method: \"eth_getBlockByHash\" }\n>;\n\nconst createBlock = (block: { logsBloom: Hex }) =>\n  ({\n    hash,\n    number: \"0x1\",\n    transactions: [],\n    ...block,\n  }) as unknown as SyncBlock;\n\n"
+  ],
+  "cases": [
+    {
+      "id": "4120b7179e34951a1d4b",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "eth_getLogsWithPagination yields pages lazily and grows the range",
+      "contexts": [],
+      "test_source": "test(\"eth_getLogsWithPagination yields pages lazily and grows the range\", async () => {\n  const request = vi.fn(\n    async (\n      request: Extract<RequestParameters, { method: \"eth_getLogs\" }>,\n      _context?: Parameters<Rpc[\"request\"]>[1],\n    ) => [{ ...log, blockNumber: request.params[0].fromBlock as Hex }],\n  );\n  const rpc = { request } as unknown as Rpc;\n  const params = [\n    { address, topics: [hash], fromBlock: \"0x0\", toBlock: numberToHex(1100) },\n  ] satisfies Parameters<typeof eth_getLogsWithPagination>[1];\n  const context = { retryNullBlockRequest: false };\n  const generator = eth_getLogsWithPagination(rpc, params, context);\n\n  expect(request).not.toHaveBeenCalled();\n  expect(await generator.next()).toMatchObject({\n    done: false,\n    value: {\n      logs: [{ blockNumber: \"0x0\", removed: false }],\n      fromBlock: 0,\n      toBlock: 499,\n    },\n  });\n  expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([[0, 499]]);\n\n  const pages = await drainAsyncGenerator(generator);\n  expect(\n    pages.map(({ fromBlock, toBlock }) => [fromBlock, toBlock]),\n  ).toStrictEqual([\n    [500, 1024],\n    [1025, 1100],\n  ]);\n  expect(pages.map((page) => page.logs[0]!.blockNumber)).toStrictEqual([\n    numberToHex(500),\n    numberToHex(1025),\n  ]);\n  expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([\n    [0, 499],\n    [500, 1024],\n    [1025, 1100],\n  ]);\n  for (const [rpcRequest, requestContext] of request.mock.calls) {\n    expect(rpcRequest.params[0]).toMatchObject({ address, topics: [hash] });\n    expect(requestContext).toBe(context);\n  }\n  expect(params[0].fromBlock).toBe(\"0x0\");\n})",
+      "inputs": [
+        "request = vi.fn(\n    async (\n      request: Extract<RequestParameters, { method: \"eth_getLogs\" }>,\n      _context?: Parameters<Rpc[\"request\"]>[1],\n    ) => [{ ...log, blockNumber: request.params[0].fromBlock as Hex }],\n  )",
+        "rpc = { request } as unknown as Rpc",
+        "params = [\n    { address, topics: [hash], fromBlock: \"0x0\", toBlock: numberToHex(1100) },\n  ] satisfies Parameters<typeof eth_getLogsWithPagination>[1]",
+        "context = { retryNullBlockRequest: false }",
+        "generator = eth_getLogsWithPagination(rpc, params, context)",
+        "pages = await drainAsyncGenerator(generator)",
+        "[rpcRequest, requestContext]"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 211,
+          "text": "expect(request).not.toHaveBeenCalled()"
+        },
+        {
+          "kind": "runtime",
+          "line": 212,
+          "text": "expect(await generator.next()).toMatchObject({\n    done: false,\n    value: {\n      logs: [{ blockNumber: \"0x0\", removed: false }],\n      fromBlock: 0,\n      toBlock: 499,\n    },\n  })"
+        },
+        {
+          "kind": "runtime",
+          "line": 220,
+          "text": "expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([[0, 499]])"
+        },
+        {
+          "kind": "runtime",
+          "line": 228,
+          "text": "expect(\n    pages.map(({ fromBlock, toBlock }) => [fromBlock, toBlock]),\n  ).toStrictEqual([\n    [500, 1024],\n    [1025, 1100],\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 234,
+          "text": "expect(pages.map((page) => page.logs[0]!.blockNumber)).toStrictEqual([\n    numberToHex(500),\n    numberToHex(1025),\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 238,
+          "text": "expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([\n    [0, 499],\n    [500, 1024],\n    [1025, 1100],\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 249,
+          "text": "expect(rpcRequest.params[0]).toMatchObject({ address, topics: [hash] })"
+        },
+        {
+          "kind": "runtime",
+          "line": 250,
+          "text": "expect(requestContext).toBe(context)"
+        },
+        {
+          "kind": "runtime",
+          "line": 252,
+          "text": "expect(params[0].fromBlock).toBe(\"0x0\")"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getLogsWithPagination yields pages lazily and grows the range",
+        "source_id": "4120b7179e34951a1d4b",
+        "source_line": 197,
+        "assertions_sha256": "95bf08fdef13a368e9e5faf5d5853eeff8bca2a27bb38c81a31b981f994143da",
+        "original_assertions": 9,
+        "target_file": "rpc/actions_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCPagination/eth_getLogsWithPagination_yields_pages_lazily_and_grows_the_range",
+        "assertion_policy": "All original assertions and exact request/page ranges, laziness/consumer stop, context and error object identity, input immutability, per-RPC isolation/learning, receipt request provenance/sorting and throw/no-throw expectations retained. Source vi.fn is adapted to a Go Requester mock; async generators to iter.Seq2/Pull2; original request context to Go context plus explicit ActionOptions; Set hashes to an ordered deduplicated string slice. Go pointer error/context identity is checked directly. No type-error directives occur in these ten declarations. Receipt fallback requests currently run sequentially instead of Promise.all; full responses, request provenance and sorted results remain preserved. Original tests run unchanged separately."
+      }
+    },
+    {
+      "id": "01d74addcc7fca2e9427",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "eth_getLogsWithPagination stops fetching when the consumer stops",
+      "contexts": [],
+      "test_source": "test(\"eth_getLogsWithPagination stops fetching when the consumer stops\", async () => {\n  const request = vi.fn().mockResolvedValue([]);\n  const rpc = { request } as unknown as Rpc;\n  for await (const _logs of eth_getLogsWithPagination(rpc, [\n    { fromBlock: \"0x0\", toBlock: \"0xffff\" },\n  ])) {\n    break;\n  }\n  expect(request).toHaveBeenCalledTimes(1);\n})",
+      "inputs": [
+        "request = vi.fn().mockResolvedValue([])",
+        "rpc = { request } as unknown as Rpc",
+        "_logs"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 263,
+          "text": "expect(request).toHaveBeenCalledTimes(1)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getLogsWithPagination stops fetching when the consumer stops",
+        "source_id": "01d74addcc7fca2e9427",
+        "source_line": 255,
+        "assertions_sha256": "19977c7559fc7138d27c12a1cc6205563abb7f251bea8f987a1d18fb5337d1b4",
+        "original_assertions": 1,
+        "target_file": "rpc/actions_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCPagination/eth_getLogsWithPagination_stops_fetching_when_the_consumer_stops",
+        "assertion_policy": "All original assertions and exact request/page ranges, laziness/consumer stop, context and error object identity, input immutability, per-RPC isolation/learning, receipt request provenance/sorting and throw/no-throw expectations retained. Source vi.fn is adapted to a Go Requester mock; async generators to iter.Seq2/Pull2; original request context to Go context plus explicit ActionOptions; Set hashes to an ordered deduplicated string slice. Go pointer error/context identity is checked directly. No type-error directives occur in these ten declarations. Receipt fallback requests currently run sequentially instead of Promise.all; full responses, request provenance and sorted results remain preserved. Original tests run unchanged separately."
+      }
+    },
+    {
+      "id": "b3cd33d75b5410b432fa",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "eth_getLogsWithPagination retries suggested ranges and keeps the limit per RPC",
+      "contexts": [],
+      "test_source": "test(\"eth_getLogsWithPagination retries suggested ranges and keeps the limit per RPC\", async () => {\n  const request = vi.fn(\n    async (\n      request: Extract<RequestParameters, { method: \"eth_getLogs\" }>,\n      _context?: Parameters<Rpc[\"request\"]>[1],\n    ) => [{ ...log, blockNumber: request.params[0].fromBlock as Hex }],\n  );\n  const rpc = { request } as unknown as Rpc;\n  request.mockRejectedValueOnce({ message: \"Max range: 20\" });\n\n  await drainAsyncGenerator(\n    eth_getLogsWithPagination(rpc, [\n      { fromBlock: \"0x0\", toBlock: numberToHex(44) },\n    ]),\n  );\n  expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([\n    [0, 44],\n    [0, 19],\n    [20, 39],\n    [40, 44],\n  ]);\n\n  const otherRequest = vi.fn(\n    async (\n      _request: Extract<RequestParameters, { method: \"eth_getLogs\" }>,\n    ) => [],\n  );\n  const otherRpc = { request: otherRequest } as unknown as Rpc;\n  await drainAsyncGenerator(\n    eth_getLogsWithPagination(otherRpc, [\n      { fromBlock: numberToHex(45), toBlock: numberToHex(89) },\n    ]),\n  );\n  expect(\n    otherRequest.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([[45, 89]]);\n\n  request.mockClear();\n  await drainAsyncGenerator(\n    eth_getLogsWithPagination(rpc, [\n      { fromBlock: numberToHex(45), toBlock: numberToHex(89) },\n    ]),\n  );\n  expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([\n    [45, 64],\n    [65, 84],\n    [85, 89],\n  ]);\n})",
+      "inputs": [
+        "request = vi.fn(\n    async (\n      request: Extract<RequestParameters, { method: \"eth_getLogs\" }>,\n      _context?: Parameters<Rpc[\"request\"]>[1],\n    ) => [{ ...log, blockNumber: request.params[0].fromBlock as Hex }],\n  )",
+        "rpc = { request } as unknown as Rpc",
+        "otherRequest = vi.fn(\n    async (\n      _request: Extract<RequestParameters, { method: \"eth_getLogs\" }>,\n    ) => [],\n  )",
+        "otherRpc = { request: otherRequest } as unknown as Rpc"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 281,
+          "text": "expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([\n    [0, 44],\n    [0, 19],\n    [20, 39],\n    [40, 44],\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 304,
+          "text": "expect(\n    otherRequest.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([[45, 89]])"
+        },
+        {
+          "kind": "runtime",
+          "line": 317,
+          "text": "expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([\n    [45, 64],\n    [65, 84],\n    [85, 89],\n  ])"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getLogsWithPagination retries suggested ranges and keeps the limit per RPC",
+        "source_id": "b3cd33d75b5410b432fa",
+        "source_line": 266,
+        "assertions_sha256": "a101e28c76f9a778b80c03ec9cb1be83766669966676250ec30c58f437341d31",
+        "original_assertions": 3,
+        "target_file": "rpc/actions_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCPagination/eth_getLogsWithPagination_retries_suggested_ranges_and_keeps_the_limit_per_RPC",
+        "assertion_policy": "All original assertions and exact request/page ranges, laziness/consumer stop, context and error object identity, input immutability, per-RPC isolation/learning, receipt request provenance/sorting and throw/no-throw expectations retained. Source vi.fn is adapted to a Go Requester mock; async generators to iter.Seq2/Pull2; original request context to Go context plus explicit ActionOptions; Set hashes to an ordered deduplicated string slice. Go pointer error/context identity is checked directly. No type-error directives occur in these ten declarations. Receipt fallback requests currently run sequentially instead of Promise.all; full responses, request provenance and sorted results remain preserved. Original tests run unchanged separately."
+      }
+    },
+    {
+      "id": "d9a63902133792c2941c",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "eth_getTransactionReceipts falls back to eth_getTransactionReceipt per RPC",
+      "contexts": [],
+      "test_source": "test(\"eth_getTransactionReceipts falls back to eth_getTransactionReceipt per RPC\", async () => {\n  const request = vi.fn(async (request: RequestParameters) => {\n    if (request.method === \"eth_getBlockReceipts\") {\n      throw new Error(\"method not supported\");\n    }\n    return receipt;\n  });\n  const rpc = { request } as unknown as Rpc;\n  const params = { blockHash: hash, transactionHashes: new Set([hash]) };\n\n  await expect(eth_getTransactionReceipts(rpc, params)).resolves.toMatchObject([\n    { request: { method: \"eth_getTransactionReceipt\", params: [hash] } },\n  ]);\n  await eth_getTransactionReceipts(rpc, params);\n  expect(request.mock.calls.map(([request]) => request.method)).toStrictEqual([\n    \"eth_getBlockReceipts\",\n    \"eth_getTransactionReceipt\",\n    \"eth_getTransactionReceipt\",\n  ]);\n\n  const otherRequest = vi.fn(async () => [receipt]);\n  const otherRpc = { request: otherRequest } as unknown as Rpc;\n  await expect(\n    eth_getTransactionReceipts(otherRpc, params),\n  ).resolves.toMatchObject([\n    { request: { method: \"eth_getBlockReceipts\", params: [hash] } },\n  ]);\n  expect(otherRequest).toHaveBeenCalledTimes(1);\n})",
+      "inputs": [
+        "request = vi.fn(async (request: RequestParameters) => {\n    if (request.method === \"eth_getBlockReceipts\") {\n      throw new Error(\"method not supported\");\n    }\n    return receipt;\n  })",
+        "rpc = { request } as unknown as Rpc",
+        "params = { blockHash: hash, transactionHashes: new Set([hash]) }",
+        "otherRequest = vi.fn(async () => [receipt])",
+        "otherRpc = { request: otherRequest } as unknown as Rpc"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 356,
+          "text": "expect(eth_getTransactionReceipts(rpc, params)).resolves.toMatchObject([\n    { request: { method: \"eth_getTransactionReceipt\", params: [hash] } },\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 360,
+          "text": "expect(request.mock.calls.map(([request]) => request.method)).toStrictEqual([\n    \"eth_getBlockReceipts\",\n    \"eth_getTransactionReceipt\",\n    \"eth_getTransactionReceipt\",\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 368,
+          "text": "expect(\n    eth_getTransactionReceipts(otherRpc, params),\n  ).resolves.toMatchObject([\n    { request: { method: \"eth_getBlockReceipts\", params: [hash] } },\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 373,
+          "text": "expect(otherRequest).toHaveBeenCalledTimes(1)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getTransactionReceipts falls back to eth_getTransactionReceipt per RPC",
+        "source_id": "d9a63902133792c2941c",
+        "source_line": 346,
+        "assertions_sha256": "c3ed79d8cb5f55c2eb83c787669c5c580243c9ec3aed9abac373b99220895927",
+        "original_assertions": 4,
+        "target_file": "rpc/actions_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCReceipts/eth_getTransactionReceipts_falls_back_to_eth_getTransactionReceipt_per_RPC",
+        "assertion_policy": "All original assertions and exact request/page ranges, laziness/consumer stop, context and error object identity, input immutability, per-RPC isolation/learning, receipt request provenance/sorting and throw/no-throw expectations retained. Source vi.fn is adapted to a Go Requester mock; async generators to iter.Seq2/Pull2; original request context to Go context plus explicit ActionOptions; Set hashes to an ordered deduplicated string slice. Go pointer error/context identity is checked directly. No type-error directives occur in these ten declarations. Receipt fallback requests currently run sequentially instead of Promise.all; full responses, request provenance and sorted results remain preserved. Original tests run unchanged separately."
+      }
+    },
+    {
+      "id": "e3382cf2680ca7e2a721",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "eth_getTransactionReceipts sorts receipts by transaction index",
+      "contexts": [],
+      "test_source": "test(\"eth_getTransactionReceipts sorts receipts by transaction index\", async () => {\n  const otherHash =\n    \"0x3333333333333333333333333333333333333333333333333333333333333333\" as const;\n  const receipts = [\n    { ...receipt, transactionHash: otherHash, transactionIndex: \"0x1\" },\n    { ...receipt, transactionHash: hash, transactionIndex: \"0x0\" },\n  ];\n  const params = {\n    blockHash: hash,\n    transactionHashes: new Set([otherHash, hash]),\n  };\n\n  const request = vi.fn(async () =>\n    receipts.map((receipt) => ({ ...receipt })),\n  );\n  const rpc = { request } as unknown as Rpc;\n  const [response] = await eth_getTransactionReceipts(rpc, params);\n  expect(\n    response!.receipts.map(({ transactionIndex }) => transactionIndex),\n  ).toStrictEqual([\"0x0\", \"0x1\"]);\n\n  const fallbackRequest = vi.fn(async (request: RequestParameters) => {\n    if (request.method === \"eth_getBlockReceipts\") {\n      throw new Error(\"method not supported\");\n    }\n    return receipts.find(\n      (receipt) =>\n        receipt.transactionHash ===\n        (\n          request as Extract<\n            RequestParameters,\n            { method: \"eth_getTransactionReceipt\" }\n          >\n        ).params[0],\n    );\n  });\n  const fallbackRpc = { request: fallbackRequest } as unknown as Rpc;\n  const responses = await eth_getTransactionReceipts(fallbackRpc, params);\n  expect(\n    responses.flatMap(({ receipts }) =>\n      receipts.map(({ transactionIndex }) => transactionIndex),\n    ),\n  ).toStrictEqual([\"0x0\", \"0x1\"]);\n})",
+      "inputs": [
+        "otherHash =\n    \"0x3333333333333333333333333333333333333333333333333333333333333333\" as const",
+        "receipts = [\n    { ...receipt, transactionHash: otherHash, transactionIndex: \"0x1\" },\n    { ...receipt, transactionHash: hash, transactionIndex: \"0x0\" },\n  ]",
+        "params = {\n    blockHash: hash,\n    transactionHashes: new Set([otherHash, hash]),\n  }",
+        "request = vi.fn(async () =>\n    receipts.map((receipt) => ({ ...receipt })),\n  )",
+        "rpc = { request } as unknown as Rpc",
+        "[response] = await eth_getTransactionReceipts(rpc, params)",
+        "fallbackRequest = vi.fn(async (request: RequestParameters) => {\n    if (request.method === \"eth_getBlockReceipts\") {\n      throw new Error(\"method not supported\");\n    }\n    return receipts.find(\n      (receipt) =>\n        receipt.transactionHash ===\n        (\n          request as Extract<\n            RequestParameters,\n            { method: \"eth_getTransactionReceipt\" }\n          >\n        ).params[0],\n    );\n  })",
+        "fallbackRpc = { request: fallbackRequest } as unknown as Rpc",
+        "responses = await eth_getTransactionReceipts(fallbackRpc, params)"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 393,
+          "text": "expect(\n    response!.receipts.map(({ transactionIndex }) => transactionIndex),\n  ).toStrictEqual([\"0x0\", \"0x1\"])"
+        },
+        {
+          "kind": "runtime",
+          "line": 414,
+          "text": "expect(\n    responses.flatMap(({ receipts }) =>\n      receipts.map(({ transactionIndex }) => transactionIndex),\n    ),\n  ).toStrictEqual([\"0x0\", \"0x1\"])"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getTransactionReceipts sorts receipts by transaction index",
+        "source_id": "e3382cf2680ca7e2a721",
+        "source_line": 376,
+        "assertions_sha256": "2308732d241490a8008fbe036c2cb21567effa256933040cb8ff11193ffc2693",
+        "original_assertions": 2,
+        "target_file": "rpc/actions_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCReceipts/eth_getTransactionReceipts_sorts_receipts_by_transaction_index",
+        "assertion_policy": "All original assertions and exact request/page ranges, laziness/consumer stop, context and error object identity, input immutability, per-RPC isolation/learning, receipt request provenance/sorting and throw/no-throw expectations retained. Source vi.fn is adapted to a Go Requester mock; async generators to iter.Seq2/Pull2; original request context to Go context plus explicit ActionOptions; Set hashes to an ordered deduplicated string slice. Go pointer error/context identity is checked directly. No type-error directives occur in these ten declarations. Receipt fallback requests currently run sequentially instead of Promise.all; full responses, request provenance and sorted results remain preserved. Original tests run unchanged separately."
+      }
+    },
+    {
+      "id": "34f444b0ffd7c8c7f9fd",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "eth_getLogsWithPagination retries unfinished blocks and grows inferred ranges",
+      "contexts": [],
+      "test_source": "test(\"eth_getLogsWithPagination retries unfinished blocks and grows inferred ranges\", async () => {\n  const request = vi.fn(\n    async (\n      request: Extract<RequestParameters, { method: \"eth_getLogs\" }>,\n      _context?: Parameters<Rpc[\"request\"]>[1],\n    ) => [{ ...log, blockNumber: request.params[0].fromBlock as Hex }],\n  );\n  const rpc = { request } as unknown as Rpc;\n  request.mockResolvedValueOnce([]);\n  request.mockRejectedValueOnce({ message: \"query exceeds max results\" });\n\n  const pages = await drainAsyncGenerator(\n    eth_getLogsWithPagination(rpc, [\n      { fromBlock: \"0x0\", toBlock: numberToHex(1200) },\n    ]),\n  );\n  expect(pages[0]!.logs).toStrictEqual([]);\n  expect(pages.slice(1).map((page) => page.logs[0]!.blockNumber)).toStrictEqual(\n    [numberToHex(500), numberToHex(763), numberToHex(1039)],\n  );\n  expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([\n    [0, 499],\n    [500, 1024],\n    [500, 762],\n    [763, 1038],\n    [1039, 1200],\n  ]);\n})",
+      "inputs": [
+        "request = vi.fn(\n    async (\n      request: Extract<RequestParameters, { method: \"eth_getLogs\" }>,\n      _context?: Parameters<Rpc[\"request\"]>[1],\n    ) => [{ ...log, blockNumber: request.params[0].fromBlock as Hex }],\n  )",
+        "rpc = { request } as unknown as Rpc",
+        "pages = await drainAsyncGenerator(\n    eth_getLogsWithPagination(rpc, [\n      { fromBlock: \"0x0\", toBlock: numberToHex(1200) },\n    ]),\n  )"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 437,
+          "text": "expect(pages[0]!.logs).toStrictEqual([])"
+        },
+        {
+          "kind": "runtime",
+          "line": 438,
+          "text": "expect(pages.slice(1).map((page) => page.logs[0]!.blockNumber)).toStrictEqual(\n    [numberToHex(500), numberToHex(763), numberToHex(1039)],\n  )"
+        },
+        {
+          "kind": "runtime",
+          "line": 441,
+          "text": "expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([\n    [0, 499],\n    [500, 1024],\n    [500, 762],\n    [763, 1038],\n    [1039, 1200],\n  ])"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getLogsWithPagination retries unfinished blocks and grows inferred ranges",
+        "source_id": "34f444b0ffd7c8c7f9fd",
+        "source_line": 421,
+        "assertions_sha256": "7a2a5f8adc6cb09a206e1b19ab6131be0fa9160b4c4d4f1d2ba55c4062482c1f",
+        "original_assertions": 3,
+        "target_file": "rpc/actions_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCPagination/eth_getLogsWithPagination_retries_unfinished_blocks_and_grows_inferred_ranges",
+        "assertion_policy": "All original assertions and exact request/page ranges, laziness/consumer stop, context and error object identity, input immutability, per-RPC isolation/learning, receipt request provenance/sorting and throw/no-throw expectations retained. Source vi.fn is adapted to a Go Requester mock; async generators to iter.Seq2/Pull2; original request context to Go context plus explicit ActionOptions; Set hashes to an ordered deduplicated string slice. Go pointer error/context identity is checked directly. No type-error directives occur in these ten declarations. Receipt fallback requests currently run sequentially instead of Promise.all; full responses, request provenance and sorted results remain preserved. Original tests run unchanged separately."
+      }
+    },
+    {
+      "id": "c1cbb442facf74990b4f",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "eth_getLogsWithPagination propagates errors when retries are exhausted",
+      "contexts": [],
+      "test_source": "test(\"eth_getLogsWithPagination propagates errors when retries are exhausted\", async () => {\n  const request = vi.fn(\n    async (\n      request: Extract<RequestParameters, { method: \"eth_getLogs\" }>,\n      _context?: Parameters<Rpc[\"request\"]>[1],\n    ) => [{ ...log, blockNumber: request.params[0].fromBlock as Hex }],\n  );\n  const rpc = { request } as unknown as Rpc;\n  const error = { message: \"query exceeds max results\" };\n  request.mockRejectedValue(error);\n\n  await expect(\n    drainAsyncGenerator(\n      eth_getLogsWithPagination(rpc, [{ fromBlock: \"0x0\", toBlock: \"0x1\" }]),\n    ),\n  ).rejects.toBe(error);\n  expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([\n    [0, 1],\n    [0, 0],\n  ]);\n})",
+      "inputs": [
+        "request = vi.fn(\n    async (\n      request: Extract<RequestParameters, { method: \"eth_getLogs\" }>,\n      _context?: Parameters<Rpc[\"request\"]>[1],\n    ) => [{ ...log, blockNumber: request.params[0].fromBlock as Hex }],\n  )",
+        "rpc = { request } as unknown as Rpc",
+        "error = { message: \"query exceeds max results\" }"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 466,
+          "text": "expect(\n    drainAsyncGenerator(\n      eth_getLogsWithPagination(rpc, [{ fromBlock: \"0x0\", toBlock: \"0x1\" }]),\n    ),\n  ).rejects.toBe(error)"
+        },
+        {
+          "kind": "runtime",
+          "line": 471,
+          "text": "expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([\n    [0, 1],\n    [0, 0],\n  ])"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getLogsWithPagination propagates errors when retries are exhausted",
+        "source_id": "c1cbb442facf74990b4f",
+        "source_line": 455,
+        "assertions_sha256": "f70db0c41cc73838c565ca9a3740321207b204fb6bf4a9abe059cebfbe9486a9",
+        "original_assertions": 2,
+        "target_file": "rpc/actions_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCPagination/eth_getLogsWithPagination_propagates_errors_when_retries_are_exhausted",
+        "assertion_policy": "All original assertions and exact request/page ranges, laziness/consumer stop, context and error object identity, input immutability, per-RPC isolation/learning, receipt request provenance/sorting and throw/no-throw expectations retained. Source vi.fn is adapted to a Go Requester mock; async generators to iter.Seq2/Pull2; original request context to Go context plus explicit ActionOptions; Set hashes to an ordered deduplicated string slice. Go pointer error/context identity is checked directly. No type-error directives occur in these ten declarations. Receipt fallback requests currently run sequentially instead of Promise.all; full responses, request provenance and sorted results remain preserved. Original tests run unchanged separately."
+      }
+    },
+    {
+      "id": "123fb596bdeaaf90029a",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "eth_getLogsWithPagination uses fixed ranges and disables range retries",
+      "contexts": [],
+      "test_source": "test(\"eth_getLogsWithPagination uses fixed ranges and disables range retries\", async () => {\n  const request = vi.fn(\n    async (\n      request: Extract<RequestParameters, { method: \"eth_getLogs\" }>,\n      _context?: Parameters<Rpc[\"request\"]>[1],\n    ) => [{ ...log, blockNumber: request.params[0].fromBlock as Hex }],\n  );\n  const rpc = { request } as unknown as Rpc;\n  const context = { ethGetLogsBlockRange: 2 };\n  await drainAsyncGenerator(\n    eth_getLogsWithPagination(\n      rpc,\n      [{ fromBlock: \"0x0\", toBlock: \"0x4\" }],\n      context,\n    ),\n  );\n  expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([\n    [0, 1],\n    [2, 3],\n    [4, 4],\n  ]);\n\n  request.mockClear();\n  const error = { message: \"Max range: 1\" };\n  request.mockRejectedValueOnce(error);\n  await expect(\n    drainAsyncGenerator(\n      eth_getLogsWithPagination(\n        rpc,\n        [{ fromBlock: \"0x0\", toBlock: \"0x4\" }],\n        context,\n      ),\n    ),\n  ).rejects.toBe(error);\n  expect(request).toHaveBeenCalledTimes(1);\n})",
+      "inputs": [
+        "request = vi.fn(\n    async (\n      request: Extract<RequestParameters, { method: \"eth_getLogs\" }>,\n      _context?: Parameters<Rpc[\"request\"]>[1],\n    ) => [{ ...log, blockNumber: request.params[0].fromBlock as Hex }],\n  )",
+        "rpc = { request } as unknown as Rpc",
+        "context = { ethGetLogsBlockRange: 2 }",
+        "error = { message: \"Max range: 1\" }"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 498,
+          "text": "expect(\n    request.mock.calls.map(([request]) => [\n      hexToNumber(request.params[0].fromBlock as Hex),\n      hexToNumber(request.params[0].toBlock as Hex),\n    ]),\n  ).toStrictEqual([\n    [0, 1],\n    [2, 3],\n    [4, 4],\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 512,
+          "text": "expect(\n    drainAsyncGenerator(\n      eth_getLogsWithPagination(\n        rpc,\n        [{ fromBlock: \"0x0\", toBlock: \"0x4\" }],\n        context,\n      ),\n    ),\n  ).rejects.toBe(error)"
+        },
+        {
+          "kind": "runtime",
+          "line": 521,
+          "text": "expect(request).toHaveBeenCalledTimes(1)"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "eth_getLogsWithPagination uses fixed ranges and disables range retries",
+        "source_id": "123fb596bdeaaf90029a",
+        "source_line": 482,
+        "assertions_sha256": "ac25f79169171e076c3a47d6cc1dbd5dcba841cf1bd3542a8896a0a09112addf",
+        "original_assertions": 3,
+        "target_file": "rpc/actions_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCPagination/eth_getLogsWithPagination_uses_fixed_ranges_and_disables_range_retries",
+        "assertion_policy": "All original assertions and exact request/page ranges, laziness/consumer stop, context and error object identity, input immutability, per-RPC isolation/learning, receipt request provenance/sorting and throw/no-throw expectations retained. Source vi.fn is adapted to a Go Requester mock; async generators to iter.Seq2/Pull2; original request context to Go context plus explicit ActionOptions; Set hashes to an ordered deduplicated string slice. Go pointer error/context identity is checked directly. No type-error directives occur in these ten declarations. Receipt fallback requests currently run sequentially instead of Promise.all; full responses, request provenance and sorted results remain preserved. Original tests run unchanged separately."
+      }
+    },
+    {
+      "id": "e190ca58c5727b94eec3",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "validateLogsAndBlock allows non-empty logsBloom with no logs",
+      "contexts": [],
+      "test_source": "test(\"validateLogsAndBlock allows non-empty logsBloom with no logs\", () => {\n  expect(() =>\n    validateLogsAndBlock(\n      [],\n      createBlock({ logsBloom: nonEmptyLogsBloom }),\n      logsRequest,\n      blockRequest,\n    ),\n  ).not.toThrow();\n})",
+      "inputs": [],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 546,
+          "text": "expect(() =>\n    validateLogsAndBlock(\n      [],\n      createBlock({ logsBloom: nonEmptyLogsBloom }),\n      logsRequest,\n      blockRequest,\n    ),\n  ).not.toThrow()"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "validateLogsAndBlock allows non-empty logsBloom with no logs",
+        "source_id": "e190ca58c5727b94eec3",
+        "source_line": 545,
+        "assertions_sha256": "3d0c35e12e0022f0016c0e2c45cecb53ff62a8ef3cf2d681e41d0a9c0d5d4a17",
+        "original_assertions": 1,
+        "target_file": "rpc/actions_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCLogValidation/validateLogsAndBlock_allows_non-empty_logsBloom_with_no_logs",
+        "assertion_policy": "All original assertions and exact request/page ranges, laziness/consumer stop, context and error object identity, input immutability, per-RPC isolation/learning, receipt request provenance/sorting and throw/no-throw expectations retained. Source vi.fn is adapted to a Go Requester mock; async generators to iter.Seq2/Pull2; original request context to Go context plus explicit ActionOptions; Set hashes to an ordered deduplicated string slice. Go pointer error/context identity is checked directly. No type-error directives occur in these ten declarations. Receipt fallback requests currently run sequentially instead of Promise.all; full responses, request provenance and sorted results remain preserved. Original tests run unchanged separately."
+      }
+    },
+    {
+      "id": "6842d7fd9935f727018e",
+      "source_file": "packages/core/src/rpc/actions.test.ts",
+      "source_sha256": "a327118dd40d71b65721f8d306f7608c29ea027ba7c77cc168ec63345e109014",
+      "full_name": "validateLogsAndBlock rejects mismatched block hashes",
+      "contexts": [],
+      "test_source": "test(\"validateLogsAndBlock rejects mismatched block hashes\", () => {\n  expect(() =>\n    validateLogsAndBlock(\n      [\n        {\n          address: `0x${\"1\".repeat(40)}`,\n          blockHash: `0x${\"2\".repeat(64)}`,\n          blockNumber: \"0x1\",\n          logIndex: \"0x0\",\n          data: \"0x\",\n          topics: [],\n          transactionHash: hash,\n          transactionIndex: \"0x0\",\n          removed: false,\n        },\n      ],\n      createBlock({ logsBloom: nonEmptyLogsBloom }),\n      logsRequest,\n      blockRequest,\n    ),\n  ).toThrow(\"has a 'log.blockHash'\");\n})",
+      "inputs": [],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 557,
+          "text": "expect(() =>\n    validateLogsAndBlock(\n      [\n        {\n          address: `0x${\"1\".repeat(40)}`,\n          blockHash: `0x${\"2\".repeat(64)}`,\n          blockNumber: \"0x1\",\n          logIndex: \"0x0\",\n          data: \"0x\",\n          topics: [],\n          transactionHash: hash,\n          transactionIndex: \"0x0\",\n          removed: false,\n        },\n      ],\n      createBlock({ logsBloom: nonEmptyLogsBloom }),\n      logsRequest,\n      blockRequest,\n    ),\n  ).toThrow(\"has a 'log.blockHash'\")"
+        }
+      ],
+      "type_error_directives": [],
+      "source_state": "active",
+      "modifiers": [],
+      "parameter": null,
+      "expansion_status": "statically_expanded",
+      "mapping": {
+        "source_file": "packages/core/src/rpc/actions.test.ts",
+        "source_name": "validateLogsAndBlock rejects mismatched block hashes",
+        "source_id": "6842d7fd9935f727018e",
+        "source_line": 556,
+        "assertions_sha256": "9d70dbebd6030684bbeaed63abd43325758e7c42be270c2cb47cab0cacc11312",
+        "original_assertions": 1,
+        "target_file": "rpc/actions_upstream_test.go",
+        "go_package": "ponder.local/ponder-go/rpc",
+        "go_test": "TestUpstreamRPCLogValidation/validateLogsAndBlock_rejects_mismatched_block_hashes",
+        "assertion_policy": "All original assertions and exact request/page ranges, laziness/consumer stop, context and error object identity, input immutability, per-RPC isolation/learning, receipt request provenance/sorting and throw/no-throw expectations retained. Source vi.fn is adapted to a Go Requester mock; async generators to iter.Seq2/Pull2; original request context to Go context plus explicit ActionOptions; Set hashes to an ordered deduplicated string slice. Go pointer error/context identity is checked directly. No type-error directives occur in these ten declarations. Receipt fallback requests currently run sequentially instead of Promise.all; full responses, request provenance and sorted results remain preserved. Original tests run unchanged separately."
+      }
+    }
+  ],
+  "static_assertions": 29,
+  "source_type_error_directives": 0
+}

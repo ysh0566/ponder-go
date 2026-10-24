@@ -244,6 +244,12 @@ const summary = {
 	source_records: {statically_discovered:ledger.tests.length,mapped:ledger.summary.ported,unimplemented:ledger.summary.unimplemented,discovery_is_not_proven_runtime_exhaustive:true},
 	mapped_go: {mapped:ledger.summary.go_ports,passed_with_required_type_checks:ledger.summary.go_passed,original_oracle_also_passed:ledger.summary.go_and_original_oracle_passed,original_oracle_blocked:ledger.tests.filter(x=>x.mapping&&x.mapping.target_kind!=="retained_sdk"&&x.oracle?.status==="blocked").length},
 	retained_sdk: {mapped:ledger.summary.retained_sdk,passed:ledger.summary.sdk_passed},
+	rpc_action_differential: exists("testdata/rpc/actions-differential.json") ? (() => {
+		const fixture = read("testdata/rpc/actions-differential.json");
+		if (fixture.sources.some(x => fileHash("../ponder-upstream/" + x.file) !== x.sha256)) throw Error("RPC differential source changed");
+		const select = xs => xs.filter(x => x.Package === "ponder.local/ponder-go/rpc" && x.Test.startsWith("TestRPCActionDifferential/"));
+		return {counting: fixture.counting, vectors: fixture.cases.length, source_expected_errors: fixture.cases.filter(x => x.error).length, go: count(select(native)), race: count(select(nativeRace)), evidence: "testdata/rpc/actions-differential.json"};
+	})() : null,
 
  event_build_differential: exists("testdata/runtime/event-build-differential.json") ? (()=>{const fixture=read("testdata/runtime/event-build-differential.json"),select=xs=>xs.filter(x=>x.Package==="ponder.local/ponder-go/events"&&x.Test.startsWith("TestEventBuildDifferential/"));return {counting:fixture.counting,vectors:fixture.vectors.length,source_expected_errors:fixture.vectors.filter(v=>v.error).length,go:count(select(native)),race:count(select(nativeRace)),evidence:"testdata/runtime/event-build-differential.json"};})():null,
  selected_source_oracle: exists("parity/runs/selected-runtime-oracle.json")?{evidence:"parity/runs/selected-runtime-oracle.json",mode:"unchanged_selected_declarations_with_actual_source_dependencies",total:read("parity/runs/selected-runtime-oracle.json").numTotalTests,passed:read("parity/runs/selected-runtime-oracle.json").numPassedTests,success:read("parity/runs/selected-runtime-oracle.json").success}:null,

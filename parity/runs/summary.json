@@ -20,36 +20,52 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 292,
-    "executed": 292,
-    "passed": 292,
+    "ported": 302,
+    "executed": 302,
+    "passed": 302,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 613,
-    "go_ports": 288,
+    "unimplemented": 603,
+    "go_ports": 298,
     "retained_sdk": 4,
-    "oracle_passed": 292,
+    "oracle_passed": 302,
     "oracle_blocked": 0,
-    "go_passed": 288,
+    "go_passed": 298,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 288,
-    "target_and_original_oracle_passed": 292
+    "go_and_original_oracle_passed": 298,
+    "target_and_original_oracle_passed": 302
   },
   "source_records": {
     "statically_discovered": 905,
-    "mapped": 292,
-    "unimplemented": 613,
+    "mapped": 302,
+    "unimplemented": 603,
     "discovery_is_not_proven_runtime_exhaustive": true
   },
   "mapped_go": {
-    "mapped": 288,
-    "passed_with_required_type_checks": 288,
-    "original_oracle_also_passed": 288,
+    "mapped": 298,
+    "passed_with_required_type_checks": 298,
+    "original_oracle_also_passed": 298,
     "original_oracle_blocked": 0
   },
   "retained_sdk": {
     "mapped": 4,
     "passed": 4
+  },
+  "rpc_action_differential": {
+    "counting": "Supplementary vectors executed by unchanged pinned source functions; no original test record credit. Provider live-RPC tests remain separate.",
+    "vectors": 62,
+    "source_expected_errors": 13,
+    "go": {
+      "pass": 62,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 62,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/rpc/actions-differential.json"
   },
   "event_build_differential": {
     "counting": "Supplemental vectors from actual pinned selected declarations; not original source test credit.",
@@ -98,7 +114,7 @@
     "evidence": "testdata/runtime/filter-differential.json"
   },
   "original_oracle": {
-    "mapped_passed": 292,
+    "mapped_passed": 302,
     "mapped_blocked": 0,
     "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
   },
@@ -129,8 +145,8 @@
       "success": true,
       "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
       "packages": 19,
-      "top_level_functions": 118,
-      "batches": 42
+      "top_level_functions": 123,
+      "batches": 44
     },
     "race": {
       "evidence": "parity/runs/go-race-execution.json",
@@ -138,8 +154,8 @@
       "success": true,
       "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
       "packages": 19,
-      "top_level_functions": 118,
-      "batches": 42
+      "top_level_functions": 123,
+      "batches": 44
     }
   },
   "type_fixtures": {
@@ -222,15 +238,15 @@
   },
   "native_go": {
     "file": "parity/runs/go-test.jsonl",
-    "leaf_cases": 1645,
-    "pass": 1645,
+    "leaf_cases": 1723,
+    "pass": 1723,
     "fail": 0,
     "skip": 0
   },
   "race": {
     "file": "parity/runs/go-race.jsonl",
-    "leaf_cases": 1645,
-    "pass": 1645,
+    "leaf_cases": 1723,
+    "pass": 1723,
     "fail": 0,
     "skip": 0
   },
