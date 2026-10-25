@@ -12,6 +12,7 @@ import (
 type SourceRPCRequestCache struct {
 	cache  *ProtocolCache
 	writer *Writer
+	source *SourceSyncStore
 	chain  uint64
 	mu     sync.Mutex
 }
@@ -23,6 +24,11 @@ func (w *Writer) SourceRPCRequestCache() *SourceRPCRequestCache {
 	return &SourceRPCRequestCache{cache: w.s.protocol.Load(), writer: w, chain: w.event.Checkpoint.ChainID}
 }
 func (c *SourceRPCRequestCache) active() error {
+	if c.source != nil {
+		if err := c.source.scopeActive(context.Background()); err != nil {
+			return err
+		}
+	}
 	if c.writer != nil && c.writer.closed.Load() {
 		return &NonRetryableUserError{Message: "indexing function returned"}
 	}
@@ -66,6 +72,8 @@ func (c *SourceRPCRequestCache) CacheGet(ctx context.Context, key string) (json.
 	var results []*string
 	if c.writer != nil {
 		results, e = c.cache.getSourceRPC(ctx, c.writer.tx, c.chain, []any{request})
+	} else if c.source != nil {
+		results, e = c.source.GetRPCRawRequestResults(ctx, c.chain, []any{request})
 	} else {
 		results, e = c.cache.GetSourceRPCRawRequestResults(ctx, c.chain, []any{request})
 	}
@@ -94,6 +102,9 @@ func (c *SourceRPCRequestCache) CachePut(ctx context.Context, key string, value 
 	rows := []SourceRPCRawResult{{request, block, string(value)}}
 	if c.writer != nil {
 		return c.cache.insertSourceRPC(ctx, c.writer.tx, c.chain, rows)
+	}
+	if c.source != nil {
+		return c.source.InsertRPCRawRequestResults(ctx, c.chain, rows)
 	}
 	return c.cache.InsertSourceRPCRawRequestResults(ctx, c.chain, rows)
 }

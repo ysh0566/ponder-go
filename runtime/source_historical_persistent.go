@@ -216,10 +216,29 @@ func (s *SourceHistoricalSync) syncAddressFactory(ctx context.Context, factory f
 	return children.entries(), nil
 }
 
+// sourcePreparedHistoricalRange contains only acquired data. Preparing a range
+// never changes the database. Local scheduling can overlap its RPC work with the
+// preceding interval while committing all persisted rows in one transaction.
+type sourcePreparedHistoricalRange struct {
+	logs     []filter.Object
+	children []store.SourceFactoryChildren
+}
+
 func (s *SourceHistoricalSync) SyncBlockRangeData(ctx context.Context, span store.SourceInterval, required []store.SourceFilterInterval, factories []store.SourceFactoryInterval, database *store.SourceSyncStore) ([]filter.Object, error) {
 	if database == nil {
 		return nil, fmt.Errorf("source historical sync store required")
 	}
+	prepared, err := s.prepareBlockRangeData(ctx, span, required, factories)
+	if err != nil {
+		return nil, err
+	}
+	if err := database.InsertChildAddresses(ctx, s.chain, prepared.children); err != nil {
+		return nil, err
+	}
+	return prepared.logs, nil
+}
+
+func (s *SourceHistoricalSync) prepareBlockRangeData(ctx context.Context, span store.SourceInterval, required []store.SourceFilterInterval, factories []store.SourceFactoryInterval) (*sourcePreparedHistoricalRange, error) {
 	if _, _, err := sourceHistoricalBounds(span); err != nil {
 		return nil, err
 	}
@@ -309,10 +328,7 @@ func (s *SourceHistoricalSync) SyncBlockRangeData(ctx context.Context, span stor
 			s.base.options.Logger.Warn(map[string]any{"msg": "Detected log with empty transaction hash. This is expected for some chains like ZKsync.", "action": "fetch_block_data", "chain_id": s.chain, "number": log["blockNumber"], "hash": log["blockHash"], "logIndex": log["logIndex"]})
 		}
 	}
-	if err = database.InsertChildAddresses(ctx, s.chain, children.entries()); err != nil {
-		return nil, err
-	}
-	return deduped, nil
+	return &sourcePreparedHistoricalRange{logs: deduped, children: children.entries()}, nil
 }
 
 func (s *SourceHistoricalSync) SyncBlockData(ctx context.Context, span store.SourceInterval, required []store.SourceFilterInterval, logs []filter.Object, database *store.SourceSyncStore) (filter.Object, error) {

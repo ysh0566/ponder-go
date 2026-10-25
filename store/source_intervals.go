@@ -18,6 +18,7 @@ import (
 type SourceSyncStore struct {
 	cache              *ProtocolCache
 	maxQueryParameters int
+	bound              *sourceSyncTransaction
 }
 
 func (c *ProtocolCache) SourceSyncStore(maxQueryParameters int) (*SourceSyncStore, error) {
@@ -27,7 +28,7 @@ func (c *ProtocolCache) SourceSyncStore(maxQueryParameters int) (*SourceSyncStor
 	if maxQueryParameters < 4 {
 		return nil, fmt.Errorf("source sync query parameter budget must be at least4")
 	}
-	return &SourceSyncStore{c, maxQueryParameters}, nil
+	return &SourceSyncStore{cache: c, maxQueryParameters: maxQueryParameters}, nil
 }
 
 type SourceInterval [2]float64
@@ -82,6 +83,9 @@ func (m *SourceIntervalMap) append(key filter.Object, value SourceFragmentInterv
 }
 
 func (s *SourceSyncStore) InsertIntervals(ctx context.Context, chain uint64, intervals []SourceFilterInterval, factories []SourceFactoryInterval) error {
+	if err := s.scopeActive(ctx); err != nil {
+		return err
+	}
 	if len(intervals) == 0 && len(factories) == 0 {
 		return nil
 	}
@@ -122,9 +126,9 @@ func (s *SourceSyncStore) InsertIntervals(ctx context.Context, chain uint64, int
 			values = append(values, fmt.Sprintf("($%d,$%d,nummultirange(%s))", n+1, n+2, strings.Join(ranges, ",")))
 			args = append(args, id, chain)
 		}
-		// The source commits each batch separately; do not wrap all batches in one
-		// native transaction and hide earlier committed batches on a later failure.
-		if e := s.cache.transaction(ctx, func(tx Transaction) error {
+		// An unbound source store commits each batch separately. Only an explicit
+		// WithTransaction scope combines these writes with its surrounding work.
+		if e := s.transaction(ctx, func(tx Transaction) error {
 			return tx.Exec(ctx, "INSERT INTO "+s.cache.table("intervals")+" AS intervals(fragment_id,chain_id,blocks) VALUES"+strings.Join(values, ",")+" ON CONFLICT(fragment_id) DO UPDATE SET blocks=intervals.blocks+excluded.blocks", args...)
 		}); e != nil {
 			return e
@@ -133,6 +137,9 @@ func (s *SourceSyncStore) InsertIntervals(ctx context.Context, chain uint64, int
 	return nil
 }
 func (s *SourceSyncStore) GetIntervals(ctx context.Context, filters []filter.Object) (*SourceIntervalMap, error) {
+	if err := s.scopeActive(ctx); err != nil {
+		return nil, err
+	}
 	type part struct {
 		key, fragment filter.Object
 		ids           []string
@@ -175,7 +182,7 @@ func (s *SourceSyncStore) GetIntervals(ctx context.Context, filters []filter.Obj
 			}
 			queries = append(queries, fmt.Sprintf("SELECT range_agg(unnested.blocks)::text AS merged_blocks,'%d' AS fragment FROM (SELECT unnest(blocks) AS blocks FROM %s WHERE fragment_id IN (%s)) AS unnested", i, s.cache.table("intervals"), strings.Join(slots, ",")))
 		}
-		if e := s.cache.transaction(ctx, func(tx Transaction) error {
+		if e := s.transaction(ctx, func(tx Transaction) error {
 			rows, e := tx.Query(ctx, strings.Join(queries, " UNION ALL "), args...)
 			if e != nil {
 				return e

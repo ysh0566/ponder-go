@@ -1,0 +1,52 @@
+{
+  "source_credit": 0,
+  "mutations": {
+    "sequential": {
+      "expected_failed_tests": [
+        "TestSourceLocalHistoricalControls/postgres/range_RPC_prefetch_and_ordered_commits",
+        "TestSourceLocalHistoricalControls/pglite/range_RPC_prefetch_and_ordered_commits"
+      ],
+      "assertion_output": [
+        "source_local_controls_test.go:332: second actual eth_getLogs did not overlap blocked first interval context deadline exceeded",
+        "source_local_controls_test.go:332: second actual eth_getLogs did not overlap blocked first interval context deadline exceeded"
+      ],
+      "exit": 1
+    },
+    "swallow_error": {
+      "expected_failed_tests": [
+        "TestSourceLocalHistoricalControls/postgres/prefetch_error_preserves_prior_interval",
+        "TestSourceLocalHistoricalControls/pglite/prefetch_error_preserves_prior_interval"
+      ],
+      "assertion_output": [
+        "source_local_controls_test.go:374: [25 51] <nil>",
+        "source_local_controls_test.go:374: [25 51] <nil>"
+      ],
+      "exit": 1
+    },
+    "unbound": {
+      "expected_failed_tests": [
+        "TestSourceLocalHistoricalControls/postgres/interval_failure_rolls_back_rows",
+        "TestSourceLocalHistoricalControls/pglite/interval_failure_rolls_back_rows"
+      ],
+      "assertion_output": [
+        "source_local_controls_test.go:369: blocks count {[map[n:26]] [map[name:n]] 0} <nil> want0",
+        "source_local_controls_test.go:369: blocks count {[map[n:26]] [map[dataTypeID:25 name:n]] 0} <nil> want0"
+      ],
+      "exit": 1
+    }
+  },
+  "unmodified_green": {
+    "exit": 0,
+    "passed_leaf_tests": [
+      "TestSourceLocalHistoricalControls/postgres/range_RPC_prefetch_and_ordered_commits",
+      "TestSourceLocalHistoricalControls/postgres/interval_failure_rolls_back_rows",
+      "TestSourceLocalHistoricalControls/postgres/prefetch_error_preserves_prior_interval",
+      "TestSourceLocalHistoricalControls/pglite/range_RPC_prefetch_and_ordered_commits",
+      "TestSourceLocalHistoricalControls/pglite/interval_failure_rolls_back_rows",
+      "TestSourceLocalHistoricalControls/pglite/prefetch_error_preserves_prior_interval"
+    ]
+  },
+  "original_and_test_unchanged": true,
+  "cancellation_red": "../local-controls-focused-01/normal.jsonl: cancelled buffered queue; green in focused-02 normal/race",
+  "caveat": "Native safety mutation controls, not pinned PGlite failure equivalence. Nested go.mod excludes intentionally broken overlay copies from root go ./... package discovery."
+}

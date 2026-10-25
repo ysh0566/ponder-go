@@ -32,9 +32,9 @@
       "upstream_sources": [],
       "evidence": [
         "parity/runs/summary.json",
-        "parity/runs/batch-33.json"
+        "parity/runs/batch-35.json"
       ],
-      "remaining": "M34 verifies486/905 exact records=482Go+4SDK, all mapped source oracles passed;419unimplemented. Realtime30/203assertions,83actualcalls and46rawproviderinputs perbackendmode verified. Static discovery is not dynamic exhaustiveness."
+      "remaining": "508/905 exact original records verified; 397 unimplemented. Four runtime-index cases still lack closed native type obligations. Supplemental regressions add no source credit."
     },
     {
       "id": "differential-harness",
@@ -1250,6 +1250,25 @@
         "docs/SOURCE_REALTIME.md"
       ],
       "remaining": "30exactoriginalcases/203assertions verified onactualPG/PGlite originalsetup andnative normal/race. Native memoryAPI noDB;83publiccalls/46rawproviderinputs eachbackendmode.24sourcevectors supplementary. Fullruntime/historical/multichain scheduler, business consumer transactions, metrics/context, fullRPCgeneric andremainingmodules stayunfinished."
+    },
+    {
+      "id": "source-local-historical-m36",
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/source_local_historical.go",
+        "runtime/source_historical_persistent.go",
+        "store/source_transaction.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/historical.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/source-runtime-historical-verification.json",
+        "parity/runs/batch-35.json",
+        "docs/SOURCE_RUNTIME_HISTORICAL.md"
+      ],
+      "remaining": "11 exact local generator cases / 24 assertions verified. Three later scheduler cases remain unmapped; mislabeled single-chain omnichain source test is not genuine multichain evidence. PGlite native atomicity and cancel/error joins are explicit stronger safety semantics. Complete scheduler, logger/metrics and broader API/type behavior remain."
     }
   ]
 }

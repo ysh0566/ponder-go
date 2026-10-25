@@ -187,7 +187,7 @@ func sourceSourceColumns(table string, required []string, filters []filter.Objec
 func (s *SourceSyncStore) runSourceQuery(ctx context.Context, q *sourceQuery, limit int) ([]filter.Object, error) {
 	out := []filter.Object{}
 	sql := "select " + strings.Join(q.columns, ",") + " from " + s.cache.table(q.table) + " where " + strings.Join(q.where, " and ") + " order by " + strings.Join(q.order, ",") + " limit " + q.bind(limit)
-	err := s.cache.transaction(ctx, func(tx Transaction) error {
+	err := s.transaction(ctx, func(tx Transaction) error {
 		result, e := tx.Query(ctx, sql, q.args...)
 		if e != nil {
 			return e
@@ -240,6 +240,9 @@ func sourceLowerField(row filter.Object, key string) {
 	}
 }
 func (s *SourceSyncStore) GetEventData(ctx context.Context, args SourceEventDataArgs) (SourceEventData, error) {
+	if err := s.scopeActive(ctx); err != nil {
+		return SourceEventData{}, err
+	}
 	if args.Limit <= 0 {
 		return SourceEventData{}, fmt.Errorf("source event query requires positive limit")
 	}
