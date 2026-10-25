@@ -149,3 +149,7 @@ RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋check
 ## M32：原版同步存储与事务页处理
 
 新增38精确原例/63断言/9原生类型错误义务，累计416/905，489未实现。完整Go/race各2183、PG272/PGlite269，0fail/skip；21包157函数53批次，1031个准备后原生输入指纹贯穿两种模式。完整SyncStore原文件38、95实际调用、Map身份/顺序/字段/SQL范围/九表状态在每后端每模式比较，独立pristine38双后端与原版TS0-vs9诊断另计。9项具体错误参数编译控制的正向程序在真实原Anvil及两种后端实际执行；typed API当前只覆盖eth_call。source MD5缓存、区间rewind、真实EVM页消费/失败回滚/重放/换链均有补充证明，零额外source credit。完整full01的OOM失败、原1031输入及observer/预检失败完整保留；full02在实际关闭对照数据库后逐项执行9个独立类型程序，原始输入/断言/超时不改。后端名称分类修正也在full02前纳入。历史范围获取/来源/finality/完整调度/metrics/context/广泛JS强制转换仍需继续。见SOURCE_SYNC_STORE.md与batch-31。
+
+## M33：原版内存与持久化历史范围获取
+
+新增40精确原例/102断言/12原生类型义务，累计456/905，449未实现。完整Go/race各2379，PG313/PGlite310，0fail/skip；22包167函数56批次，1057个准备后原生输入贯穿两种模式。两个完整原文件每backend/mode136个实际公开调用，严格比较provider输入消费、标准化值、Map身份/顺序与九表；原版pristine双后端各40通过、只读TS四程序各文件0-vs6诊断。12项负向原生编译和48次对应原例Anvil上的正向程序通过。106源码向量及10运行时回归不加source credit。之前observer/对象身份/共享Actions/部分缓存控制失败与输入完整保留。完整历史/实时/多链调度及其余449原例继续；接口和边界见SOURCE_HISTORICAL.md与batch-32。

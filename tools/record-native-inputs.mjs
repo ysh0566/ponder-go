@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import {spawnSync} from "node:child_process";
 import {sourceFingerprint} from "./go-source-fingerprint.mjs";
 const root=path.resolve(import.meta.dirname,".."),fingerprint=sourceFingerprint(root);
-const prefixes=["abi/","bloom/","bridge/","checkpoint/","cmd/","config/","events/","examples/","factory/","filter/","finality/","interval/","orm/","query/","rpc/","runtime/","schema/","sdk/","sqlquery/","store/","testdata/","third_party/"];
+const prefixes=["abi/","bloom/","bridge/","checkpoint/","cmd/","config/","events/","examples/","factory/","filter/","finality/","internal/","interval/","orm/","query/","rpc/","runtime/","schema/","sdk/","sqlquery/","store/","testdata/","third_party/"];
 const listed=spawnSync("git",["ls-files","-z","--cached","--others","--exclude-standard"],{cwd:root,encoding:"utf8",maxBuffer:8*1024*1024});
 if(listed.error||listed.status!==0)throw Error("Native input inventory failed");
 const files=[...new Set(listed.stdout.split("\0").filter(f=>f&&(prefixes.some(p=>f.startsWith(p))||["go.mod","go.sum","parity/sync-migration-assets.json"].includes(f))))].sort();

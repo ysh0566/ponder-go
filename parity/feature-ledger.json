@@ -32,9 +32,9 @@
       "upstream_sources": [],
       "evidence": [
         "parity/runs/summary.json",
-        "parity/runs/batch-31.json"
+        "parity/runs/batch-32.json"
       ],
-      "remaining": "M32 verifies416/905 exact records=412Go+4SDK, all mapped source oracles passed;489unimplemented. SyncStore38/63assertions/9native type obligations and95calls perbackendmode verified. Static discovery is not dynamic exhaustiveness."
+      "remaining": "M33 verifies456/905 exact records=452Go+4SDK, all mapped source oracles passed;449unimplemented. Historical twofiles40/102assertions/12native type obligations and136actualcalls perbackendmode verified. Static discovery is not dynamic exhaustiveness."
     },
     {
       "id": "differential-harness",
@@ -1203,6 +1203,33 @@
         "docs/SOURCE_SYNC_STORE.md"
       ],
       "remaining": "38 exact original cases/63assertions/9actual type controls verified onPG/PGlite andnormal/race. Native realEVMpageconsumer/cache/rollback/replay/reorg plushash40/range12/boundary/rewind cases are supplementary. Typed request family coverseth_call; completegenericRPCschema/returninference, arbitraryJScoercions, context/metrics, historical acquisition/provenance/finality/scheduler andmultichain remain."
+    },
+    {
+      "id": "source-historical-m33",
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/source_historical_memory.go",
+        "runtime/source_historical_persistent.go",
+        "runtime/source_historical_merge.go",
+        "runtime/source_historical_block.go",
+        "runtime/source_required_intervals.go",
+        "rpc/source_block.go",
+        "rpc/source_historical_provider.go",
+        "config/source_filter_address.go",
+        "filter/source_child.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/sync-historical/in-memory.ts",
+        "packages/core/src/sync-historical/index.ts",
+        "packages/core/src/sync-historical/in-memory.test.ts",
+        "packages/core/src/sync-historical/index.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/source-historical-verification.json",
+        "parity/runs/batch-32.json",
+        "docs/SOURCE_HISTORICAL.md"
+      ],
+      "remaining": "40 exact original cases/102assertions/12actual type controls verified onPG/PGlite andnormal/race,48actualpositiveprograms.106sourcevectors+10runtimecontrols supplementary. Complete historical/realtime/multichain scheduler, finality orchestration, context/metrics, fullRPCschema/configtypeDSL andarbitraryJSsemantics remain."
     }
   ]
 }

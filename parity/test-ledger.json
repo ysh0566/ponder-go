@@ -21,20 +21,20 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 416,
-    "executed": 416,
-    "passed": 416,
+    "ported": 456,
+    "executed": 456,
+    "passed": 456,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 489,
-    "go_ports": 412,
+    "unimplemented": 449,
+    "go_ports": 452,
     "retained_sdk": 4,
-    "oracle_passed": 416,
+    "oracle_passed": 456,
     "oracle_blocked": 0,
-    "go_passed": 412,
+    "go_passed": 452,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 412,
-    "target_and_original_oracle_passed": 416
+    "go_and_original_oracle_passed": 452,
+    "target_and_original_oracle_passed": 456
   },
   "unresolved_expansion_ids": [],
   "files": [
@@ -28931,12 +28931,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "createInMemoryHistoricalSync()",
+        "source_id": "52e137a2e81b50796e81",
+        "source_line": 53,
+        "assertions_sha256": "2a65b7273d5d808c876d486a0360a6548ef445e805998cad8817a8d160b24ca4",
+        "original_assertions": 1,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/52e137a2e81b50796e81",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/52e137a2e81b50796e81",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "8b91e36fa0105cdf8ac8",
@@ -28999,12 +29039,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with log filter",
+        "source_id": "8b91e36fa0105cdf8ac8",
+        "source_line": 74,
+        "assertions_sha256": "32a36da93063761ec93aea266c3ae03131e731663e4940fd41798440f7f16fdd",
+        "original_assertions": 6,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/8b91e36fa0105cdf8ac8",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/8b91e36fa0105cdf8ac8",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "752e48dab7ef918c4fe0",
@@ -29052,12 +29132,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with log filter and transaction receipts",
+        "source_id": "752e48dab7ef918c4fe0",
+        "source_line": 120,
+        "assertions_sha256": "19c92545d1559477145bb5d421bb39bee4a9cabc43e601e91368b873bfdd5ab7",
+        "original_assertions": 3,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/752e48dab7ef918c4fe0",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/752e48dab7ef918c4fe0",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "4ed88e241ef6d778d897",
@@ -29121,12 +29241,59 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() skips transaction receipts for zero-hash logs",
+        "source_id": "4ed88e241ef6d778d897",
+        "source_line": 164,
+        "assertions_sha256": "83f0454a16e6c8f0df33da8ee9c5998334d0913aacd8df94f2f11bd07acaff41",
+        "original_assertions": 5,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/4ed88e241ef6d778d897",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/4ed88e241ef6d778d897",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/source-historical-verification.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "e7dfeb5c55b2d59da8a4",
@@ -29174,12 +29341,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() dedupes logs matched by many log filters",
+        "source_id": "e7dfeb5c55b2d59da8a4",
+        "source_line": 232,
+        "assertions_sha256": "38c924e1aaaab2ea0097a6e957d8cb2d155d105b97532bc1f490c6a3a577a52e",
+        "original_assertions": 3,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/e7dfeb5c55b2d59da8a4",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/e7dfeb5c55b2d59da8a4",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "5ee92f73f12d67fe7317",
@@ -29226,12 +29433,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with block filter",
+        "source_id": "5ee92f73f12d67fe7317",
+        "source_line": 276,
+        "assertions_sha256": "c723733b32ba32806da99dbe4e8b02ab6c7ec05c72a41f32234559929aa2eb24",
+        "original_assertions": 3,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/5ee92f73f12d67fe7317",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/5ee92f73f12d67fe7317",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "a87094ef8544772d122e",
@@ -29284,12 +29531,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with log factory",
+        "source_id": "a87094ef8544772d122e",
+        "source_line": 315,
+        "assertions_sha256": "7ede228cb9b9cf548e9d90fbd39c31fe3df1c7163c247ba42652d6d597df4654",
+        "original_assertions": 3,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/a87094ef8544772d122e",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/a87094ef8544772d122e",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "65ec070fd0607112ac94",
@@ -29348,12 +29635,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with log factory starting earlier than contract start block",
+        "source_id": "65ec070fd0607112ac94",
+        "source_line": 377,
+        "assertions_sha256": "d95fe27f1c6fb8a32a4145c59ea49e53eab21167087fba9060592c7456fd5348",
+        "original_assertions": 4,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/65ec070fd0607112ac94",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/65ec070fd0607112ac94",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "6493e2fc4786babcadbc",
@@ -29412,12 +29739,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with log factory starting earlier than crash recovery",
+        "source_id": "6493e2fc4786babcadbc",
+        "source_line": 377,
+        "assertions_sha256": "d95fe27f1c6fb8a32a4145c59ea49e53eab21167087fba9060592c7456fd5348",
+        "original_assertions": 4,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/6493e2fc4786babcadbc",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/6493e2fc4786babcadbc",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "b70f8a00d9bee56cb33c",
@@ -29462,12 +29829,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with trace factory waits for child addresses",
+        "source_id": "b70f8a00d9bee56cb33c",
+        "source_line": 435,
+        "assertions_sha256": "e3acbac907d3c730055876bae7c8bf3d1af487fe7b9f44f6d3beceee0b87d37e",
+        "original_assertions": 2,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/b70f8a00d9bee56cb33c",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/b70f8a00d9bee56cb33c",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "0e083209e2f8fe89cd51",
@@ -29512,12 +29919,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() fetches child addresses without required intervals",
+        "source_id": "0e083209e2f8fe89cd51",
+        "source_line": 485,
+        "assertions_sha256": "cecac554367f8f273e10e70e9fa1304fd173dddd99afe0c2b6c9839ce1b59f40",
+        "original_assertions": 2,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/0e083209e2f8fe89cd51",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/0e083209e2f8fe89cd51",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "7fbad8d2a48052673283",
@@ -29557,12 +30004,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with log factory and no factory interval",
+        "source_id": "7fbad8d2a48052673283",
+        "source_line": 519,
+        "assertions_sha256": "1b5d3a3c896f007259afcfa00afdee2e3a1f0e4f3e7531b2bab69c8cfac86f0c",
+        "original_assertions": 1,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/7fbad8d2a48052673283",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/7fbad8d2a48052673283",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "e7360d814bb5552f5222",
@@ -29603,12 +30090,59 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with log factory and no address",
+        "source_id": "e7360d814bb5552f5222",
+        "source_line": 562,
+        "assertions_sha256": "1b5d3a3c896f007259afcfa00afdee2e3a1f0e4f3e7531b2bab69c8cfac86f0c",
+        "original_assertions": 1,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/e7360d814bb5552f5222",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/e7360d814bb5552f5222",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/source-historical-verification.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "da3e0236d21a83248db7",
@@ -29657,12 +30191,59 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with log factory error",
+        "source_id": "da3e0236d21a83248db7",
+        "source_line": 611,
+        "assertions_sha256": "6ed1055871e531f9d8c52b0f4c9dfc7a96c8a8ed4c6e40e7ba7918ca99e3ada0",
+        "original_assertions": 2,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/da3e0236d21a83248db7",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/da3e0236d21a83248db7",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/source-historical-verification.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "f1730c928e9f0138507a",
@@ -29706,12 +30287,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with trace filter",
+        "source_id": "f1730c928e9f0138507a",
+        "source_line": 666,
+        "assertions_sha256": "c95e8bb4e6afad0306921388b850f62170f4cf9ea66a23ed1d55173a11721a6a",
+        "original_assertions": 2,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/f1730c928e9f0138507a",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/f1730c928e9f0138507a",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "2d4cc04bb5ceb9e835b1",
@@ -29758,12 +30379,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with transaction filter",
+        "source_id": "2d4cc04bb5ceb9e835b1",
+        "source_line": 718,
+        "assertions_sha256": "59862959770ecde9c94ec530a7f9a636e6a552072c1478c1495513a6d00515d0",
+        "original_assertions": 3,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/2d4cc04bb5ceb9e835b1",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/2d4cc04bb5ceb9e835b1",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "c52aac0263ce5ad1550f",
@@ -29810,12 +30471,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with transfer filter",
+        "source_id": "c52aac0263ce5ad1550f",
+        "source_line": 761,
+        "assertions_sha256": "f60b6845b8d8c410aa4b814fe83648b23c9b0f74e49193985a4ef23c376ec886",
+        "original_assertions": 3,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/c52aac0263ce5ad1550f",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/c52aac0263ce5ad1550f",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "37fcced2a60753802f4c",
@@ -29864,12 +30565,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() with many filters",
+        "source_id": "37fcced2a60753802f4c",
+        "source_line": 804,
+        "assertions_sha256": "4b2fd456b9a677a7c3fd7abeb2ea5a0d20cfc39bae8bf481ee5c6764f1a7b410",
+        "original_assertions": 3,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/37fcced2a60753802f4c",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/37fcced2a60753802f4c",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "18407c46d5bf5ef7f901",
@@ -29931,12 +30672,59 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() handles many factory addresses",
+        "source_id": "18407c46d5bf5ef7f901",
+        "source_line": 859,
+        "assertions_sha256": "af440443c7281bdae1d94bbc51cff8dd6e72ea1f2e68211aec3051d491ed0c69",
+        "original_assertions": 4,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/18407c46d5bf5ef7f901",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/18407c46d5bf5ef7f901",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/source-historical-verification.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "11f76edbd93e38b0b8c5",
@@ -29991,12 +30779,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "syncBlockData() yields ordered block data",
+        "source_id": "11f76edbd93e38b0b8c5",
+        "source_line": 933,
+        "assertions_sha256": "8c4841fd68dd7d6ca9ab070af0c321e938a01dbbbaed6c941a28cbd865055a67",
+        "original_assertions": 4,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/11f76edbd93e38b0b8c5",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/11f76edbd93e38b0b8c5",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "a025833808a3334ec1aa",
@@ -30028,12 +30856,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "mergeGeneratorIntervals()",
+        "source_id": "a025833808a3334ec1aa",
+        "source_line": 1031,
+        "assertions_sha256": "4172cc86c66ebf99ca4be8475833695b1e7e1aea6b4afd54140db38426329ecd",
+        "original_assertions": 1,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/a025833808a3334ec1aa",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/a025833808a3334ec1aa",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "acacab63db010a083c7f",
@@ -30065,12 +30933,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "mergeGeneratorIntervals() with different intervals",
+        "source_id": "acacab63db010a083c7f",
+        "source_line": 1062,
+        "assertions_sha256": "5afebe0cd54213ddf29ab5b1f02bd165c9a724d00ca54dbddd774ce9ec436084",
+        "original_assertions": 1,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/acacab63db010a083c7f",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/acacab63db010a083c7f",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "47b554b28f8c73291690",
@@ -30102,12 +31010,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+        "source_name": "mergeGeneratorIntervals() with no generators",
+        "source_id": "47b554b28f8c73291690",
+        "source_line": 1078,
+        "assertions_sha256": "4a53379218d4d20aba0533cb6bf17a1e9e09f78b6ae3bac9171ea71862140dc8",
+        "original_assertions": 1,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/in-memory/47b554b28f8c73291690",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/in-memory/47b554b28f8c73291690",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "c7847f072279f8b6b0ed",
@@ -30142,12 +31090,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "createHistoricalSync()",
+        "source_id": "c7847f072279f8b6b0ed",
+        "source_line": 56,
+        "assertions_sha256": "2a65b7273d5d808c876d486a0360a6548ef445e805998cad8817a8d160b24ca4",
+        "original_assertions": 1,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/c7847f072279f8b6b0ed",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/c7847f072279f8b6b0ed",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "e38b35ef4bed931a01f3",
@@ -30193,12 +31181,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() batches log filters with wildcard indexed topics",
+        "source_id": "e38b35ef4bed931a01f3",
+        "source_line": 77,
+        "assertions_sha256": "fb569c0fcef8f8aca06e57885b863e93eb737fe3d6c11332982b8907108afad7",
+        "original_assertions": 2,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/e38b35ef4bed931a01f3",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/e38b35ef4bed931a01f3",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "5e23f5358b620b199868",
@@ -30244,12 +31272,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with log filter",
+        "source_id": "5e23f5358b620b199868",
+        "source_line": 137,
+        "assertions_sha256": "56c933372f1b1444036a077624792b5083cb9f8faccf4cff0d0dabaa4fc271be",
+        "original_assertions": 2,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/5e23f5358b620b199868",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/5e23f5358b620b199868",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "c8c7b9eeae4ee588a54d",
@@ -30295,12 +31363,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with log filter and transaction receipts",
+        "source_id": "c8c7b9eeae4ee588a54d",
+        "source_line": 201,
+        "assertions_sha256": "582a0822cc9ae265af0ffb23258a3f74777cc31471dd05951586482c8520c883",
+        "original_assertions": 2,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/c8c7b9eeae4ee588a54d",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/c8c7b9eeae4ee588a54d",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "c5ca58c81d923d49529e",
@@ -30355,12 +31463,59 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() skips transaction receipts for zero-hash logs",
+        "source_id": "c5ca58c81d923d49529e",
+        "source_line": 268,
+        "assertions_sha256": "0e153cd11f9f518d410e5d2968efa319e87d6d04ccb0e3791e6a11b3f024e7ac",
+        "original_assertions": 3,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/c5ca58c81d923d49529e",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/c5ca58c81d923d49529e",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/source-historical-verification.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "5da3c6f0b9b2653a81f9",
@@ -30405,12 +31560,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with block filter",
+        "source_id": "5da3c6f0b9b2653a81f9",
+        "source_line": 342,
+        "assertions_sha256": "9bf7f88453e88ba1c0f7ea6c5a4d760613e7ba10b0c02f344cc5f9d4282b2ab2",
+        "original_assertions": 2,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/5da3c6f0b9b2653a81f9",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/5da3c6f0b9b2653a81f9",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "e06e2a3c88bb3fe0ef8e",
@@ -30463,12 +31658,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with log factory",
+        "source_id": "e06e2a3c88bb3fe0ef8e",
+        "source_line": 402,
+        "assertions_sha256": "49e9513b537b6954e42e6dacacdc8f08f897713bccd2770c734de9a350a7c6b6",
+        "original_assertions": 3,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/e06e2a3c88bb3fe0ef8e",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/e06e2a3c88bb3fe0ef8e",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "dcc7494a89f50d6ad7df",
@@ -30533,12 +31768,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with log factory shares parents between factories",
+        "source_id": "dcc7494a89f50d6ad7df",
+        "source_line": 475,
+        "assertions_sha256": "e7b071dd447f8a5923419933f225fe6979fa99413355ff6605a62e843812673a",
+        "original_assertions": 4,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/dcc7494a89f50d6ad7df",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/dcc7494a89f50d6ad7df",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "97a5db3271fd8a51cce8",
@@ -30593,12 +31868,59 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with log factory and no address",
+        "source_id": "97a5db3271fd8a51cce8",
+        "source_line": 577,
+        "assertions_sha256": "49e9513b537b6954e42e6dacacdc8f08f897713bccd2770c734de9a350a7c6b6",
+        "original_assertions": 3,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/97a5db3271fd8a51cce8",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/97a5db3271fd8a51cce8",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/source-historical-verification.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "9eaf4ba9f4488a48165e",
@@ -30641,12 +31963,59 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with log factory error",
+        "source_id": "9eaf4ba9f4488a48165e",
+        "source_line": 653,
+        "assertions_sha256": "2e8f5b4bebb568e26a9ecad09c5ad2cd52de4fc0ea54d8e027d47aac7955efe4",
+        "original_assertions": 1,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/9eaf4ba9f4488a48165e",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/9eaf4ba9f4488a48165e",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/source-historical-verification.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "0fa1c981c2dec7e89d5d",
@@ -30692,12 +32061,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with trace filter",
+        "source_id": "0fa1c981c2dec7e89d5d",
+        "source_line": 711,
+        "assertions_sha256": "4f0eda40287c6ccf1eccfd38111390f815583e3b3c1bb2e9f53e12d7f4d61779",
+        "original_assertions": 2,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/0fa1c981c2dec7e89d5d",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/0fa1c981c2dec7e89d5d",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "8fc41db64b6520908741",
@@ -30748,12 +32157,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with transaction filter",
+        "source_id": "8fc41db64b6520908741",
+        "source_line": 784,
+        "assertions_sha256": "62ff422f4a262b4fec47cffa47820cc8c513cc43d7c848a5b5a2f460659e4e13",
+        "original_assertions": 3,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/8fc41db64b6520908741",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/8fc41db64b6520908741",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "6a4eb173d60b39865c78",
@@ -30798,12 +32247,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with transfer filter",
+        "source_id": "6a4eb173d60b39865c78",
+        "source_line": 855,
+        "assertions_sha256": "34143c985be0930c90d8293dd71f2c94de4464062eba9adf9146acba1d12e270",
+        "original_assertions": 2,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/6a4eb173d60b39865c78",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/6a4eb173d60b39865c78",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "bff138edcd04ddcb1798",
@@ -30856,12 +32345,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with many filters",
+        "source_id": "bff138edcd04ddcb1798",
+        "source_line": 920,
+        "assertions_sha256": "1c5402321c66c7edeae185ac1213437053a2730c34be607ef02e3464f8777c19",
+        "original_assertions": 3,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/bff138edcd04ddcb1798",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/bff138edcd04ddcb1798",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "27d56af3b181c08ecad8",
@@ -30902,12 +32431,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with cache",
+        "source_id": "27d56af3b181c08ecad8",
+        "source_line": 1000,
+        "assertions_sha256": "dcdcc76d62608c47f58706e71b60b61e25ec7108a281eb7be81e036226ebb77f",
+        "original_assertions": 1,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/27d56af3b181c08ecad8",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/27d56af3b181c08ecad8",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "1f021a7b846451889eae",
@@ -30966,12 +32535,59 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "sync() with partial cache",
+        "source_id": "1f021a7b846451889eae",
+        "source_line": 1093,
+        "assertions_sha256": "b8bc242126ec72eb648e7aef7560cf0cf2d66f1f2a38e05ae8d02309b58a7d08",
+        "original_assertions": 4,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/1f021a7b846451889eae",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/1f021a7b846451889eae",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "type_directives_verification": {
+        "status": "passed",
+        "evidence": [
+          "parity/runs/compile-fixtures.json",
+          "parity/runs/source-historical-verification.json"
+        ]
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "feb4f050a5e15ba79c2f",
@@ -31019,12 +32635,52 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/sync-historical/index.test.ts",
+        "source_name": "syncAddress() handles many addresses",
+        "source_id": "feb4f050a5e15ba79c2f",
+        "source_line": 1277,
+        "assertions_sha256": "a6e5b0c48b722b5ecc310ac68e2e18031d4632fcf6e3882a51f432503b166539",
+        "original_assertions": 2,
+        "target_file": "runtime/source_historical_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestUpstreamSourceHistorical/postgres/index/feb4f050a5e15ba79c2f",
+        "backend_companion": "TestUpstreamSourceHistorical/pglite/index/feb4f050a5e15ba79c2f",
+        "assertion_policy": "Complete unchanged original two historical files: 40 expanded cases, 102 assertions and 12 exact type directives, retaining original hooks, inputs, states, RPC object identity and returned cleanup. Native memory/persistent APIs execute genuine public method sequences and captured raw provider responses, without using source normalized outputs or expected physical rows as native seeds; strict values, ordered Map/key identity, own properties, undefined/null/BigInt and all nine physical tables compare. Each type directive has a specific native negative diagnostic and actual positive program using its matching original case Anvil before cleanup; persistent programs own separate actual PG/PGlite schemas and memory programs open no database. Separate pristine files, four readonly original TypeScript programs and complete module normal/race acceptance required. 106 helper vectors and ten runtime controls add zero source credit; full scheduler/context/finality/multichain remain separate.",
+        "source_verification": "parity/runs/source-historical-verification.json"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
-      "expansion_status": "statically_expanded"
+      "expansion_status": "statically_expanded",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-pristine.json",
+        "mode": "complete_unmodified_original_files_with_original_setup",
+        "full_original": true,
+        "backends": {
+          "postgres": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-postgres/original.json"
+          },
+          "pglite": {
+            "status": "passed",
+            "evidence": "parity/runs/history-m33/pristine-2026-10-25T00-09-25-121Z-2495311-pglite/original.json"
+          }
+        }
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-historical-verification.json",
+        "meaning": "Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "0690899dc79faaa31e80",
@@ -31098,7 +32754,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31160,7 +32816,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31224,7 +32880,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31293,7 +32949,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31355,7 +33011,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31419,7 +33075,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31487,7 +33143,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -31548,7 +33204,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/blooms/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/blooms/original.json",
         "mode": "instrumented_original_file_with_call_through",
         "pristine_original_acceptance": false
       },
@@ -33880,11 +35536,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -33960,11 +35616,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -34039,11 +35695,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -34118,11 +35774,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -34197,11 +35853,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -34276,11 +35932,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -34361,11 +36017,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -34440,11 +36096,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -34519,11 +36175,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -34601,11 +36257,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -34682,11 +36338,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -34764,11 +36420,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -34861,11 +36517,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -34944,11 +36600,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -35038,11 +36694,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -35118,11 +36774,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -35198,11 +36854,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -35277,11 +36933,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -35356,11 +37012,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -35436,11 +37092,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -35516,11 +37172,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -35596,11 +37252,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -35676,11 +37332,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -35756,11 +37412,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -35836,11 +37492,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -35917,11 +37573,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -36007,11 +37663,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -36123,11 +37779,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -36204,11 +37860,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -36291,11 +37947,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -36381,11 +38037,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -36469,11 +38125,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -36558,11 +38214,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -36653,11 +38309,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -36736,11 +38392,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -36848,11 +38504,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -36938,11 +38594,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -37023,11 +38679,11 @@
         "backends": {
           "postgres": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-postgres/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-postgres/original.json"
           },
           "pglite": {
             "status": "passed",
-            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-24T21-49-34-483Z-2409356-pglite/original.json"
+            "evidence": "parity/runs/sync-store-m32/pristine-2026-10-25T00-06-00-517Z-2494646-pglite/original.json"
           }
         }
       },
@@ -50498,7 +52154,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -50584,7 +52240,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -50637,7 +52293,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -50701,7 +52357,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -50775,7 +52431,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -50834,7 +52490,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -50893,7 +52549,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -50952,7 +52608,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -51011,7 +52667,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -51070,7 +52726,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -51123,7 +52779,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -51182,7 +52838,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -51245,7 +52901,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },
@@ -51302,7 +52958,7 @@
       "expansion_status": "statically_expanded",
       "oracle": {
         "status": "passed",
-        "evidence": "parity/runs/original-captures/20261024T214656-2405508/sql-pristine/original.json",
+        "evidence": "parity/runs/original-captures/20261025T000232-2489339/sql-pristine/original.json",
         "mode": "complete_unmodified_original_file_with_original_setup",
         "full_original": true
       },

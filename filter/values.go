@@ -8,16 +8,17 @@ import (
 	"math"
 	"strconv"
 	"strings"
+
+	"ponder.local/ponder-go/internal/jsvalue"
 )
 
 type Object = map[string]any
-type undefinedValue struct{}
+type undefinedValue = jsvalue.UndefinedValue
 
 var Undefined = undefinedValue{}
 
-func (undefinedValue) MarshalJSON() ([]byte, error) { return []byte(`{"$undefined":true}`), nil }
-func IsUndefined(v any) bool                        { _, ok := v.(undefinedValue); return ok }
-func nullish(v any) bool                            { return v == nil || IsUndefined(v) }
+func IsUndefined(v any) bool { _, ok := v.(undefinedValue); return ok }
+func nullish(v any) bool     { return v == nil || IsUndefined(v) }
 func object(v any) Object {
 	if o, ok := v.(map[string]any); ok {
 		return o

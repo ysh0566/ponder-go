@@ -20,31 +20,31 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 416,
-    "executed": 416,
-    "passed": 416,
+    "ported": 456,
+    "executed": 456,
+    "passed": 456,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 489,
-    "go_ports": 412,
+    "unimplemented": 449,
+    "go_ports": 452,
     "retained_sdk": 4,
-    "oracle_passed": 416,
+    "oracle_passed": 456,
     "oracle_blocked": 0,
-    "go_passed": 412,
+    "go_passed": 452,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 412,
-    "target_and_original_oracle_passed": 416
+    "go_and_original_oracle_passed": 452,
+    "target_and_original_oracle_passed": 456
   },
   "source_records": {
     "statically_discovered": 905,
-    "mapped": 416,
-    "unimplemented": 489,
+    "mapped": 456,
+    "unimplemented": 449,
     "discovery_is_not_proven_runtime_exhaustive": true
   },
   "mapped_go": {
-    "mapped": 412,
-    "passed_with_required_type_checks": 412,
-    "original_oracle_also_passed": 412,
+    "mapped": 452,
+    "passed_with_required_type_checks": 452,
+    "original_oracle_also_passed": 452,
     "original_oracle_blocked": 0
   },
   "retained_sdk": {
@@ -114,7 +114,7 @@
     "evidence": "testdata/runtime/filter-differential.json"
   },
   "original_oracle": {
-    "mapped_passed": 416,
+    "mapped_passed": 456,
     "mapped_blocked": 0,
     "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
   },
@@ -144,18 +144,18 @@
       "complete": true,
       "success": true,
       "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
-      "packages": 21,
-      "top_level_functions": 157,
-      "batches": 53
+      "packages": 22,
+      "top_level_functions": 167,
+      "batches": 56
     },
     "race": {
       "evidence": "parity/runs/go-race-execution.json",
       "complete": true,
       "success": true,
       "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
-      "packages": 21,
-      "top_level_functions": 157,
-      "batches": 53
+      "packages": 22,
+      "top_level_functions": 167,
+      "batches": 56
     }
   },
   "type_fixtures": {
@@ -217,7 +217,7 @@
     "inline_assertions_discovered": 63,
     "inline_assertions_native_compiled": 53,
     "error_directives_discovered": 84,
-    "error_directives_native_verified": 29,
+    "error_directives_native_verified": 41,
     "error_directives_retained_sdk_verified": 1
   },
   "indexed_topic_source_verification": {
@@ -226,6 +226,18 @@
     "new_exact_source_records": 0,
     "parameter_types": 5,
     "evidence": "parity/runs/topic-source-verification.json"
+  },
+  "source_historical_verification": {
+    "source_cases": 40,
+    "source_assertions": 102,
+    "native_calls_per_backend_mode": 136,
+    "source_error_directives": 12,
+    "source_error_directives_passed": 12,
+    "backend_mode_executions": 4,
+    "file_backend_mode_executions": 8,
+    "typed_positive_executions": 48,
+    "supplementary_source_credit": 0,
+    "evidence": "parity/runs/source-historical-verification.json"
   },
   "source_sync_verification": {
     "source_cases": 38,
@@ -266,14 +278,14 @@
     "postgres": {
       "counting": "First explicit slash dialect component wins; legacy backend-tagged names remain supported. Source titles mentioning another backend do not double count. Source mappings and backend companions remain separate from source parity.",
       "go": {
-        "leaf_cases": 272,
-        "pass": 272,
+        "leaf_cases": 313,
+        "pass": 313,
         "fail": 0,
         "skip": 0
       },
       "race": {
-        "leaf_cases": 272,
-        "pass": 272,
+        "leaf_cases": 313,
+        "pass": 313,
         "fail": 0,
         "skip": 0
       },
@@ -282,14 +294,14 @@
     "pglite": {
       "counting": "First explicit slash dialect component wins; legacy backend-tagged names remain supported. Source titles mentioning another backend do not double count. Source mappings and backend companions remain separate from source parity.",
       "go": {
-        "leaf_cases": 269,
-        "pass": 269,
+        "leaf_cases": 310,
+        "pass": 310,
         "fail": 0,
         "skip": 0
       },
       "race": {
-        "leaf_cases": 269,
-        "pass": 269,
+        "leaf_cases": 310,
+        "pass": 310,
         "fail": 0,
         "skip": 0
       },
@@ -303,15 +315,15 @@
   },
   "native_go": {
     "file": "parity/runs/go-test.jsonl",
-    "leaf_cases": 2183,
-    "pass": 2183,
+    "leaf_cases": 2379,
+    "pass": 2379,
     "fail": 0,
     "skip": 0
   },
   "race": {
     "file": "parity/runs/go-race.jsonl",
-    "leaf_cases": 2183,
-    "pass": 2183,
+    "leaf_cases": 2379,
+    "pass": 2379,
     "fail": 0,
     "skip": 0
   },

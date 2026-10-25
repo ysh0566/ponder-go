@@ -1,9 +1,9 @@
 {
-  "recorded_utc": "2026-10-24T21:50:11.526Z",
+  "recorded_utc": "2026-10-25T00:10:17.664Z",
   "method": "Recorded after original capture/code generation and before native Go tests. Inputs must remain identical through normal/race and acceptance.",
   "fingerprint": {
-    "files": 1031,
-    "sha256": "8dae6bb50112f6bf40b5c122fe969005006cb35330d03a7090a740d8d0e62a5d"
+    "files": 1057,
+    "sha256": "7b132b1f137d4da4bbd7ccab6aaab71367c565953e33f286e584455217588c61"
   },
   "files": [
     {
@@ -803,6 +803,10 @@
       "sha256": "afdb3331e7ab355720b18921aa9243311d01b29c6b46fe3d3da22dec6c1e28b4"
     },
     {
+      "file": "config/source_filter_address.go",
+      "sha256": "f06be1bfc691bd3c235175b2008f2113c5872c6192fb0e967c317f51e520a656"
+    },
+    {
       "file": "config/source_indexing.go",
       "sha256": "1ad46a557394bfdecd2bad2e903f685a8d04a7593dc2a0ac7688bb68b04476ad"
     },
@@ -992,7 +996,7 @@
     },
     {
       "file": "filter/fragments.go",
-      "sha256": "12c9c492a585a8a57600fb482970bb8f65d6d1dcde27429f3c1d03dcee5e4f9b"
+      "sha256": "68901f64ecc5d0a9fb7aa8996b76b4c1f60335a763f1763964bd9f7d669beb28"
     },
     {
       "file": "filter/fragments_upstream_test.go",
@@ -1015,8 +1019,16 @@
       "sha256": "62fd7ed28e63dd127d877de864f4a660f5ce83f1901e1afd90ea84522608ee9c"
     },
     {
+      "file": "filter/source_child.go",
+      "sha256": "1c133d4cbb2b3064fceec461be7c2c4e195f3febb2daab778238dfb613e2fbcd"
+    },
+    {
+      "file": "filter/source_child_test.go",
+      "sha256": "2dead099598d20963c3f08e9c2263999e742e93299b5108910e61aee63b6855a"
+    },
+    {
       "file": "filter/values.go",
-      "sha256": "998ca06489d40b8ba5a85762a38c292c08a43da002821979b0d50c4b5ce88c69"
+      "sha256": "363889729cceb9975918d53b5e6ed5345039dcf7f9d9480f717fead351bd0b50"
     },
     {
       "file": "finality/finality.go",
@@ -1033,6 +1045,10 @@
     {
       "file": "go.sum",
       "sha256": "470957b36277fc08133c7de4e9640e014f09b1bbf89fda9a58c835600f688382"
+    },
+    {
+      "file": "internal/jsvalue/undefined.go",
+      "sha256": "2e94aa61d5503dec786e3fcce403e628c1f6e4ba9db8f2f22f26e4edf7f2ee69"
     },
     {
       "file": "interval/interval.go",
@@ -1192,7 +1208,7 @@
     },
     {
       "file": "rpc/actions.go",
-      "sha256": "e8be52ec73f7484ce158bfc6c23daa9d2192219f984293da29d6a7a0f51354a6"
+      "sha256": "17320c4ee63b99a6d6f0fafdcea35413ee9fb00264e5b112adb328681e13b32b"
     },
     {
       "file": "rpc/actions_differential_test.go",
@@ -1233,6 +1249,18 @@
     {
       "file": "rpc/scoped_cache_test.go",
       "sha256": "cd6a1ab2eeeb7002c93a59f1ea205e4e7d023b7fe1784276a619869f6204b9cf"
+    },
+    {
+      "file": "rpc/source_block.go",
+      "sha256": "244d09d62b74d2725fbe076cc0ca5b2ce411a77283ab317562eb33723cc0daa1"
+    },
+    {
+      "file": "rpc/source_block_vectors_test.go",
+      "sha256": "f21e1d783d35b2e60924db06776de4bf25bec1834d952ad429b2ef533139766d"
+    },
+    {
+      "file": "rpc/source_historical_provider.go",
+      "sha256": "8fe23994eb26d771f4a62cbbf9c22ba1f86fff11469a4fda7fb44d22e95bc4ea"
     },
     {
       "file": "rpc/source_request.go",
@@ -1355,12 +1383,68 @@
       "sha256": "6cebda1fe21ed4233be42d26b3a4dbe69f66d7bf8e46ef7a1da297126d2096a7"
     },
     {
+      "file": "runtime/source_historical_block.go",
+      "sha256": "9e0db4eb28fd76f3d440f235a62a4bae3dfc12a5fea98b4adf594d940a9282c1"
+    },
+    {
+      "file": "runtime/source_historical_live_test.go",
+      "sha256": "eaa6e50dd13863ddede825636f3842ea63b4dc9b5275b9c03ec030606f5cfbfd"
+    },
+    {
+      "file": "runtime/source_historical_memory.go",
+      "sha256": "518995f34b4f45416528c50954b26920ba6f3e7ddb07ef4c8e3bf443781069b5"
+    },
+    {
+      "file": "runtime/source_historical_memory_test.go",
+      "sha256": "37592cb8316c285441e68701a16000bbfad5205b4b5bab8939bc7b88a6f1b3ba"
+    },
+    {
+      "file": "runtime/source_historical_merge.go",
+      "sha256": "fd23f9edc4eb6a6780fcd5303a955cf6a904cf7667105df0b26f050210abba32"
+    },
+    {
+      "file": "runtime/source_historical_merge_test.go",
+      "sha256": "5a921b05b1c8c4c6d1264b689cc8f299dda2cba1e3630cf1555de08b6f4b64ee"
+    },
+    {
+      "file": "runtime/source_historical_ownership_test.go",
+      "sha256": "37c31a680a58687602f7429b5e34130c27ba1f4a72d43f9e879128041062ad07"
+    },
+    {
+      "file": "runtime/source_historical_persistent.go",
+      "sha256": "f9beb2bf821823b9ae412815d65da00535ebe9b0f73d2d3d1a8987771d7f5a21"
+    },
+    {
+      "file": "runtime/source_historical_persistent_test.go",
+      "sha256": "ad00ece0d4066cf9e21729bb812b4ddf09a947cc5e2b8f829a597557797e4a9c"
+    },
+    {
+      "file": "runtime/source_historical_physical_test.go",
+      "sha256": "bea3e8b3f25b8fa615255da7c2d32dd7fe3d3a9f1b51d83802d73c78f63c1a0f"
+    },
+    {
+      "file": "runtime/source_historical_types_test.go",
+      "sha256": "e21d26ca673f28b0ee67a109dfe4d5c5e7ed89be870bc94a14d497748f346f73"
+    },
+    {
+      "file": "runtime/source_historical_wire_test.go",
+      "sha256": "99466b71c76721b74f34bc029dfc0777ffedbe3f3c4a2c3eeb03a10318a1dae9"
+    },
+    {
       "file": "runtime/source_page.go",
       "sha256": "049ec453e90992949cef3b3fff7fc81befe8997d255a2e62a82bce0ba43306ce"
     },
     {
       "file": "runtime/source_page_test.go",
       "sha256": "df9c6ec9eaa3c9ccb7152a493ba65556b126e1bba50f3eb7002e49c56334a583"
+    },
+    {
+      "file": "runtime/source_required_intervals.go",
+      "sha256": "63e1cab85eeff41a84a6267a2450b1aeddd446cbe0aac0581863b22e41ccdba9"
+    },
+    {
+      "file": "runtime/source_required_intervals_test.go",
+      "sha256": "69a35796ce281c461cb500bbfece3eceb57a8d19e62dbad6178e39e5a0347933"
     },
     {
       "file": "runtime/staged.go",
@@ -1964,7 +2048,7 @@
     },
     {
       "file": "testdata/bloom/captured-original-blooms.json",
-      "sha256": "8a3961e779f09fb0a0fa49f1015db903ec9fa701dc457ff041f1ae20470e0089"
+      "sha256": "7a78d66dc3e550db18880e238fa6ebbba0d5231d34034d8eefd2ae4d7309c3a3"
     },
     {
       "file": "testdata/bloom/differential.json",
@@ -1995,6 +2079,10 @@
       "sha256": "15800cd063aa229f836e4773a8c774eefb03cdbad9d7949929853fce33222332"
     },
     {
+      "file": "testdata/rpc/source-block.json",
+      "sha256": "8a4eddd53f54e0a9b4639892684b05aab263c65741befe5b6006c67dc8c21677"
+    },
+    {
       "file": "testdata/rpc/source-cache.json",
       "sha256": "3362dc55f3afbd3a415780311ccadfcaeb6c1512b17b8b49c7a1c1d51ef03764"
     },
@@ -2008,11 +2096,11 @@
     },
     {
       "file": "testdata/runtime/captured-original-events.json",
-      "sha256": "41be6560628f53b4ceb410ddd28f2977e07a7ff5193784bd01bf77dd75ab039c"
+      "sha256": "e0eb30433bdbf24a87f4bc6e7079f2f5a36bde0a749fa9e7c112b6d821f68ad8"
     },
     {
       "file": "testdata/runtime/captured-original-filters.json",
-      "sha256": "e2040636113a91a715ab33947d5bdc50b469328f5ee5abcd0def9c8de63b058e"
+      "sha256": "7e315789c9f334586d9c8fe1edac8c7ca05ac73056e1f18bf42320fe218f4a42"
     },
     {
       "file": "testdata/runtime/event-build-differential.json",
@@ -2043,8 +2131,24 @@
       "sha256": "c2b16ff00af2feb0b90a9e82d7d68571a9689022910d07fc547a8bd34f4877f0"
     },
     {
+      "file": "testdata/runtime/source-child.json",
+      "sha256": "a4291451561cf6d8c51f248beeca0edd2a5832fc111563ee1463bbc238337158"
+    },
+    {
+      "file": "testdata/runtime/source-historical-merge.json",
+      "sha256": "efaded6b55332997f2f2ce5340ef33b53be3fb11491c89a5fc928cf9683e051f"
+    },
+    {
+      "file": "testdata/runtime/source-historical-types.json",
+      "sha256": "a870b012a2bb3b0d16aa9471437ac797b1e2069ae288b6d0076f006e04c25f25"
+    },
+    {
+      "file": "testdata/runtime/source-required-intervals.json",
+      "sha256": "4d15ee8ad48815f6a7ebdb93994240a450cd2147664c1afbb60c6d400c3fdd58"
+    },
+    {
       "file": "testdata/sql/captured-original-sql.json",
-      "sha256": "daaacf5c4d0bcaa19e7f9becbf1cb2ce3202deea528bdaff6f6a6747eafd37f4"
+      "sha256": "0a07c6e0336d78d6709f8814020fcb7f6e2618d1a451a4867e37cbe88ec12385"
     },
     {
       "file": "testdata/sql/source-vectors.json",
@@ -4133,6 +4237,6 @@
   ],
   "tool": {
     "file": "tools/record-native-inputs.mjs",
-    "sha256": "fe0dfc0db3717b30864ce40f8ccd97272f4ef0d0d4afd3982a4244c47baff9d8"
+    "sha256": "7f61a128b16cf94b4a2a515add5a649a6af1a1f9009b6a0feb327d24a53ba81c"
   }
 }

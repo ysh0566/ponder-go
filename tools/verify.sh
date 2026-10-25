@@ -47,6 +47,13 @@ node tools/source-range-fixtures.mjs
 node tools/source-sync-compile.mjs --write
 node tools/source-sync-types.mjs
 node tools/source-sync-pristine.mjs
+node tools/source-block-fixtures.mjs
+node tools/source-child-fixtures.mjs
+node tools/source-merge-fixtures.mjs
+node tools/source-required-fixtures.mjs
+node tools/source-historical-types.mjs
+node tools/source-historical-pristine.mjs
+node tools/source-historical-types/compile.mjs
 node tools/record-native-inputs.mjs
 go test -count=1 -json ./abi/testdata/compile/generated > parity/runs/abi-typed-go.jsonl
 go test -count=1 -race -json ./abi/testdata/compile/generated > parity/runs/abi-typed-race.jsonl
@@ -63,4 +70,5 @@ node tools/parameters-typecheck.mjs
 node tools/differential.mjs
 node tools/config-live-results.mjs
 node tools/source-sync-results.mjs
+node tools/source-historical-results.mjs
 node tools/record-results.mjs

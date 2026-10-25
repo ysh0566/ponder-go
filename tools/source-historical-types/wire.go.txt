@@ -1,0 +1,133 @@
+type historicalLivePair struct{ Key, Value any }
+type historicalLiveMap []historicalLivePair
+type historicalLiveRegistry struct{ refs map[int64]filter.Object }
+
+func newSourceLiveRegistry() *historicalLiveRegistry {
+	return &historicalLiveRegistry{refs: map[int64]filter.Object{}}
+}
+func historicalLiveNumber(value any) (float64, error) {
+	switch v := value.(type) {
+	case json.Number:
+		return v.Float64()
+	case float64:
+		return v, nil
+	case int:
+		return float64(v), nil
+	case int64:
+		return float64(v), nil
+	case uint64:
+		return float64(v), nil
+	default:
+		return 0, fmt.Errorf("not a source number: %T", value)
+	}
+}
+func historicalLiveID(value any) (int64, error) {
+	n, e := historicalLiveNumber(value)
+	if e != nil || math.Trunc(n) != n {
+		return 0, fmt.Errorf("invalid source object id")
+	}
+	return int64(n), nil
+}
+func (r *historicalLiveRegistry) restore(value any) (any, error) {
+	switch v := value.(type) {
+	case []any:
+		out := make([]any, len(v))
+		for i, item := range v {
+			x, e := r.restore(item)
+			if e != nil {
+				return nil, e
+			}
+			out[i] = x
+		}
+		return out, nil
+	case map[string]any:
+		if v["$undefined"] == true {
+			return filter.Undefined, nil
+		}
+		if text, ok := v["$bigint"].(string); ok {
+			n, ok := new(big.Int).SetString(text, 10)
+			if !ok {
+				return nil, fmt.Errorf("invalid source bigint")
+			}
+			return n, nil
+		}
+		if text, ok := v["$number"].(string); ok {
+			switch text {
+			case "NaN":
+				return math.NaN(), nil
+			case "Infinity":
+				return math.Inf(1), nil
+			case "-Infinity":
+				return math.Inf(-1), nil
+			case "-0":
+				return math.Copysign(0, -1), nil
+			}
+			return nil, fmt.Errorf("unknown source number")
+		}
+		if idValue, ok := v["$ref"]; ok {
+			id, e := historicalLiveID(idValue)
+			if e != nil {
+				return nil, e
+			}
+			object, ok := r.refs[id]
+			if !ok {
+				return nil, fmt.Errorf("source input references unbound native object %d", id)
+			}
+			return object, nil
+		}
+		if entries, ok := v["$map"].([]any); ok {
+			out := historicalLiveMap{}
+			for _, entry := range entries {
+				pair, ok := entry.([]any)
+				if !ok || len(pair) != 2 {
+					return nil, fmt.Errorf("invalid source Map entry")
+				}
+				k, e := r.restore(pair[0])
+				if e != nil {
+					return nil, e
+				}
+				x, e := r.restore(pair[1])
+				if e != nil {
+					return nil, e
+				}
+				out = append(out, historicalLivePair{k, x})
+			}
+			return out, nil
+		}
+		entries, ok := v["$object"].([]any)
+		if !ok {
+			return nil, fmt.Errorf("untagged source input object")
+		}
+		id, e := historicalLiveID(v["$id"])
+		if e != nil {
+			return nil, e
+		}
+		out, exists := r.refs[id]
+		if !exists {
+			out = filter.Object{}
+			r.refs[id] = out
+		} else {
+			for key := range out {
+				delete(out, key)
+			}
+		}
+		for _, entry := range entries {
+			pair, ok := entry.([]any)
+			if !ok || len(pair) != 2 {
+				return nil, fmt.Errorf("invalid source object entry")
+			}
+			key, ok := pair[0].(string)
+			if !ok {
+				return nil, fmt.Errorf("invalid source object key")
+			}
+			item, e := r.restore(pair[1])
+			if e != nil {
+				return nil, e
+			}
+			out[key] = item
+		}
+		return out, nil
+	default:
+		return v, nil
+	}
+}

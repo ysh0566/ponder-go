@@ -36,6 +36,12 @@ type Actions struct {
 func NewActions(requester Requester) *Actions {
 	return &Actions{requester: requester, logs: &logsMetadata{estimated: 500}}
 }
+
+// GetLogs performs one standardized request. Historical range synchronization
+// owns its separate concurrent chunk/retry policy; pagination remains RPC-owned.
+func (a *Actions) GetLogs(ctx context.Context, query map[string]any) ([]map[string]any, error) {
+	return getLogs(ctx, a.requester, query)
+}
 func (c *Client) Actions() *Actions {
 	base := c
 	for base.transport != nil {
