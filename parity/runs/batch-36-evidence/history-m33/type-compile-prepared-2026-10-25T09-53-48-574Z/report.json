@@ -1,0 +1,3200 @@
+{
+  "state": "Preparation: concrete original12type constraints, actual positive/negative builds. Positive runtime pending actual original case Anvil and each backend/mode. No source credit.",
+  "source_credit": 0,
+  "directives": [
+    {
+      "source_id": "4ed88e241ef6d778d897",
+      "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "source_body": "test(\"syncBlockData() skips transaction receipts for zero-hash logs\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n    includeTransactionReceipts: true,\n  });\n\n  const requestSpy = vi.spyOn(rpc, \"request\");\n  const request = async (request: any) => {\n    const result = await rpc.request(request);\n    if (request.method === \"eth_getLogs\") {\n      return (result as { transactionHash: string }[]).map((log) => ({\n        ...log,\n        transactionHash: zeroHash,\n      }));\n    }\n    return result;\n  };\n\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc: {\n      ...rpc,\n      // @ts-expect-error\n      request,\n    },\n    childAddress: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData).toHaveLength(1);\n  expect(blockData[0]!.logs).toHaveLength(1);\n  expect(blockData[0]!.transactions).toHaveLength(0);\n  expect(blockData[0]!.transactionReceipts).toHaveLength(0);\n\n  const receiptRequests = requestSpy.mock.calls.filter(\n    ([request]) =>\n      request.method === \"eth_getBlockReceipts\" ||\n      request.method === \"eth_getTransactionReceipt\",\n  );\n  expect(receiptRequests).toHaveLength(0);\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "zero_hash",
+      "role": "return",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/4ed88e241ef6d778d897-0-positive.go",
+        "sha256": "5db9b37054bafce4f06311850f98b2c70f48b9d28aa9838f41d44d6fdbc41cdd"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/4ed88e241ef6d778d897-0-negative.go",
+        "sha256": "995a0ef924eec57daa019a3d62177b9fac2664c98b179f33bee9f75ee016364c"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/4ed88e241ef6d778d897-0-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/4ed88e241ef6d778d897-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/4ed88e241ef6d778d897-0-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/4ed88e241ef6d778d897-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/4ed88e241ef6d778d897-0-negative.go:253:93: cannot use request (variable of type func(ctx context.Context, query map[string]any) (any, error)) as func(context.Context, map[string]any) ([]rpc.SourceLog, error) value in struct literal\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/4ed88e241ef6d778d897-0-positive",
+        "sha256": "94208bdd0c10b095c7079318a3db749f7762cf5f721121027171a98037a3b5b7"
+      }
+    },
+    {
+      "source_id": "e7360d814bb5552f5222",
+      "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "source_body": "test(\"syncBlockData() with log factory and no address\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(1);\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "no_parent",
+      "role": "parent",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/e7360d814bb5552f5222-0-positive.go",
+        "sha256": "551e4de34cfe10ed44d32164d72b4589a384308229a78e40d611420b5f65c0e9"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/e7360d814bb5552f5222-0-negative.go",
+        "sha256": "937d277cc2e55c6824ef2e0a18c848da6e22dcad938c76117c93c9fab83abd67"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/e7360d814bb5552f5222-0-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/e7360d814bb5552f5222-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/e7360d814bb5552f5222-0-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/e7360d814bb5552f5222-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/e7360d814bb5552f5222-0-negative.go:238:37: parentReader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/e7360d814bb5552f5222-0-positive",
+        "sha256": "3f82b873a9efc41ebf979103ed0564eeb920698d0858cd4719cc2dd46068e672"
+      }
+    },
+    {
+      "source_id": "da3e0236d21a83248db7",
+      "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "source_body": "test(\"syncBlockData() with log factory error\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n  // @ts-expect-error\n  // Invalid child address location causes extracting child address to throw an error\n  eventCallbacks[0].filter.address.childAddressLocation = \"topic3\";\n\n  const childAddresses = setupChildAddresses(eventCallbacks);\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: childAddresses,\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(0);\n  // @ts-expect-error\n  expect(childAddresses.get(eventCallbacks[0].filter.address.id)!.size).toBe(0);\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "bad_factory",
+      "role": "parent",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-0-positive.go",
+        "sha256": "32bb21cb3b8c5c9d870bb27ef18469ac9439bc3e2c72ef2f9d55f124e223eda9"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-0-negative.go",
+        "sha256": "882cd50d06f3728de1138f5dadf9e7efa3c98cfd8e9656a9c29555709eafdd00"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-0-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-0-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/da3e0236d21a83248db7-0-negative.go:238:37: parentReader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-0-positive",
+        "sha256": "07978d929fd51cf5d4f8613605163c38221167744473032565e862b1117ce1c0"
+      }
+    },
+    {
+      "source_id": "da3e0236d21a83248db7",
+      "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "source_body": "test(\"syncBlockData() with log factory error\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n  // @ts-expect-error\n  // Invalid child address location causes extracting child address to throw an error\n  eventCallbacks[0].filter.address.childAddressLocation = \"topic3\";\n\n  const childAddresses = setupChildAddresses(eventCallbacks);\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: childAddresses,\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(0);\n  // @ts-expect-error\n  expect(childAddresses.get(eventCallbacks[0].filter.address.id)!.size).toBe(0);\n})",
+      "directive_index": 1,
+      "directive": "// @ts-expect-error",
+      "kind": "bad_factory",
+      "role": "location",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-1-positive.go",
+        "sha256": "e522614f8c7901f5f1c82792bfda7f2b4cdf94dcbc3cfa6beb201a5d0c641905"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-1-negative.go",
+        "sha256": "705d5b40be2e9f73abbe5044d4b3d33ba231bba4c7b80e31199d610778eac833"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-1-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-1-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-1-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-1-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/da3e0236d21a83248db7-1-negative.go:243:41: locationReader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-1-positive",
+        "sha256": "533905cbb12ee2bf453b582775928e16c5b520d10bf3446f1efd100ece7b4df4"
+      }
+    },
+    {
+      "source_id": "da3e0236d21a83248db7",
+      "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "source_body": "test(\"syncBlockData() with log factory error\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n  // @ts-expect-error\n  // Invalid child address location causes extracting child address to throw an error\n  eventCallbacks[0].filter.address.childAddressLocation = \"topic3\";\n\n  const childAddresses = setupChildAddresses(eventCallbacks);\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: childAddresses,\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(0);\n  // @ts-expect-error\n  expect(childAddresses.get(eventCallbacks[0].filter.address.id)!.size).toBe(0);\n})",
+      "directive_index": 2,
+      "directive": "// @ts-expect-error",
+      "kind": "bad_factory",
+      "role": "lookup",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-2-positive.go",
+        "sha256": "cca8ad55a3d2003d5acea75345f6feb2b72ac75c0dc3cf545096cfa5734d5ee0"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-2-negative.go",
+        "sha256": "ca5738fa1fa78bf27eb81795073796ce4cc8fa68be7df1e04bc7dd6b50e442ed"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-2-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-2-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-2-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-2-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/da3e0236d21a83248db7-2-negative.go:228:25: reader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-2-positive",
+        "sha256": "bcc6d856b782da4559ca8f534a355e7d7765fe5e07c4417661463a0c87d14d77"
+      }
+    },
+    {
+      "source_id": "18407c46d5bf5ef7f901",
+      "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "source_body": "test(\"syncBlockData() handles many factory addresses\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  context.common.options.factoryAddressCountThreshold = 10;\n\n  const { address } = await deployFactory({ sender: ALICE });\n\n  for (let i = 0; i < 10; i++) {\n    await createPair({ factory: address, sender: ALICE });\n  }\n\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  const spy = vi.spyOn(rpc, \"request\");\n\n  const childAddresses = setupChildAddresses(eventCallbacks);\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: childAddresses,\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 13],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(1);\n  // @ts-expect-error\n  expect(childAddresses.get(eventCallbacks[0].filter.address.id)!.size).toBe(\n    11,\n  );\n\n  // `eth_getLogs` for the child filter is not narrowed above the threshold\n  const topic0 = (eventCallbacks[0]!.filter as LogFilter).topic0;\n  const childLogsRequests = spy.mock.calls\n    .map(([request]) => request)\n    .filter(\n      (request): request is EthGetLogsRequest =>\n        request.method === \"eth_getLogs\" &&\n        (request as EthGetLogsRequest).params[0].topics?.[0] === topic0,\n    );\n  expect(childLogsRequests.length).toBeGreaterThan(0);\n  for (const request of childLogsRequests) {\n    expect(request.params[0].address).toBeUndefined();\n  }\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "threshold",
+      "role": "lookup",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/18407c46d5bf5ef7f901-0-positive.go",
+        "sha256": "e74a0f57bb365521fa37f0c2be3c30240b8429bb8f59b2578e9f9da0d33e651d"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/18407c46d5bf5ef7f901-0-negative.go",
+        "sha256": "cf9fd3b54865a0a78965d989cd78e95ec13e149b249a6f49fa0399e91303b253"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/18407c46d5bf5ef7f901-0-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/18407c46d5bf5ef7f901-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/18407c46d5bf5ef7f901-0-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/18407c46d5bf5ef7f901-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/18407c46d5bf5ef7f901-0-negative.go:228:25: reader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/18407c46d5bf5ef7f901-0-positive",
+        "sha256": "5f01cc968d358cb9ed58acc137370bcae6de276e7bbccaf1970ce3a205beeded"
+      }
+    },
+    {
+      "source_id": "c5ca58c81d923d49529e",
+      "source_file": "packages/core/src/sync-historical/index.test.ts",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "source_body": "test(\"sync() skips transaction receipts for zero-hash logs\", async () => {\n  const { syncStore } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n    includeTransactionReceipts: true,\n  });\n\n  const requestSpy = vi.spyOn(rpc, \"request\");\n  const request = async (request: any) => {\n    const result = await rpc.request(request);\n    if (request.method === \"eth_getLogs\") {\n      return (result as { transactionHash: string }[]).map((log) => ({\n        ...log,\n        transactionHash: zeroHash,\n      }));\n    }\n    return result;\n  };\n\n  const historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc: {\n      ...rpc,\n      // @ts-expect-error\n      request,\n    },\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n\n  expect(logs).toHaveLength(1);\n  expect(logs[0]?.transactionHash).toBe(zeroHash);\n\n  const receiptRequests = requestSpy.mock.calls.filter(\n    ([request]) =>\n      request.method === \"eth_getBlockReceipts\" ||\n      request.method === \"eth_getTransactionReceipt\",\n  );\n  expect(receiptRequests).toHaveLength(0);\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "zero_hash",
+      "role": "return",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/c5ca58c81d923d49529e-0-positive.go",
+        "sha256": "e982a719d387e702de140345bb14f1075e7860f15c138ba3b28cb9af538867ae"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/c5ca58c81d923d49529e-0-negative.go",
+        "sha256": "34ad47fa2938020d05d42be7754c24684766f6c602ac6bb8e932484e3fbaf9bb"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/c5ca58c81d923d49529e-0-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/c5ca58c81d923d49529e-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/c5ca58c81d923d49529e-0-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/c5ca58c81d923d49529e-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/c5ca58c81d923d49529e-0-negative.go:253:93: cannot use request (variable of type func(ctx context.Context, query map[string]any) (any, error)) as func(context.Context, map[string]any) ([]rpc.SourceLog, error) value in struct literal\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/c5ca58c81d923d49529e-0-positive",
+        "sha256": "d04856d6f0d4326c8a7d714c273921ef605cfe89be6bd3d5e21931074056a841"
+      }
+    },
+    {
+      "source_id": "97a5db3271fd8a51cce8",
+      "source_file": "packages/core/src/sync-historical/index.test.ts",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "source_body": "test(\"sync() with log factory and no address\", async () => {\n  const { syncStore, database } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n\n  const historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  const dbLogs = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.logs).execute(),\n  );\n  const factories = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.factories).execute(),\n  );\n\n  expect(dbLogs).toHaveLength(1);\n  expect(factories).toHaveLength(1);\n\n  const intervals = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.intervals).execute(),\n  );\n\n  expect(intervals).toHaveLength(2);\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "no_parent",
+      "role": "parent",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/97a5db3271fd8a51cce8-0-positive.go",
+        "sha256": "a05c031c8303f466561934bf90a456b821565005cc48bfe23e18648ffb4db7bd"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/97a5db3271fd8a51cce8-0-negative.go",
+        "sha256": "ca6531845278c9a24f06ddf5e6c0524e9bfa01befd7e5f28c7035eb23565f633"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/97a5db3271fd8a51cce8-0-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/97a5db3271fd8a51cce8-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/97a5db3271fd8a51cce8-0-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/97a5db3271fd8a51cce8-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/97a5db3271fd8a51cce8-0-negative.go:238:37: parentReader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/97a5db3271fd8a51cce8-0-positive",
+        "sha256": "3b4dbe57a426665808641b59bac7283671062891cde47bf640b924012ca3a651"
+      }
+    },
+    {
+      "source_id": "9eaf4ba9f4488a48165e",
+      "source_file": "packages/core/src/sync-historical/index.test.ts",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "source_body": "test(\"sync() with log factory error\", async () => {\n  const { syncStore, database } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n  // @ts-expect-error\n  // Invalid child address location causes extracting child address to throw an error\n  eventCallbacks[0].filter.address.childAddressLocation = \"topic3\";\n\n  const historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n\n  const factories = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.factories).execute(),\n  );\n\n  expect(factories).toHaveLength(0);\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "bad_factory",
+      "role": "parent",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-positive.go",
+        "sha256": "65b658b48194e6754392ee466b19a6a16d89a8ff5a172820096ab374720a3a4e"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-negative.go",
+        "sha256": "4a0cf6a390f8588e35e1edeb527e7fe4b3a3c85696deb91fe964cd6cc33676d5"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-negative.go:238:37: parentReader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-positive",
+        "sha256": "5fdaee29ff42b2aeda06ee53551a00e22c3a155a1ddc8080f746f253dcf6dd7e"
+      }
+    },
+    {
+      "source_id": "9eaf4ba9f4488a48165e",
+      "source_file": "packages/core/src/sync-historical/index.test.ts",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "source_body": "test(\"sync() with log factory error\", async () => {\n  const { syncStore, database } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n  // @ts-expect-error\n  // Invalid child address location causes extracting child address to throw an error\n  eventCallbacks[0].filter.address.childAddressLocation = \"topic3\";\n\n  const historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n\n  const factories = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.factories).execute(),\n  );\n\n  expect(factories).toHaveLength(0);\n})",
+      "directive_index": 1,
+      "directive": "// @ts-expect-error",
+      "kind": "bad_factory",
+      "role": "location",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-positive.go",
+        "sha256": "040dd2c8b45010552b4ded75149f02c52dace62ba882af2ad41d3bb328dde47b"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-negative.go",
+        "sha256": "cfbc071a8933f690b6da49915fbcea409447da71b95377ab849eb02d34802e10"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-negative.go:243:41: locationReader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-positive",
+        "sha256": "64d6fcf4d2f9233b70bd19c966ba120a421b13e30cc6736c76a60d1a45ddf0dc"
+      }
+    },
+    {
+      "source_id": "1f021a7b846451889eae",
+      "source_file": "packages/core/src/sync-historical/index.test.ts",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "source_body": "test(\"sync() with partial cache\", async () => {\n  const { syncStore } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n  });\n\n  let historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  let requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  let logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  // re-instantiate `historicalSync` to reset the cached intervals\n\n  let spy = vi.spyOn(rpc, \"request\");\n\n  // @ts-expect-error\n  eventCallbacks[0]!.filter.address = [\n    // @ts-expect-error\n    eventCallbacks[0]!.filter.address,\n    zeroAddress,\n  ];\n\n  let cachedIntervals = await getCachedIntervals({\n    chain,\n    syncStore,\n    filters: eventCallbacks.map(({ filter }) => filter),\n  });\n\n  historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals,\n  });\n\n  logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  // `eth_getBlockByNumber` is skipped\n  expect(spy).toHaveBeenCalledTimes(1);\n\n  expect(spy).toHaveBeenCalledWith(\n    {\n      method: \"eth_getLogs\",\n      params: [\n        {\n          address: [zeroAddress],\n          fromBlock: \"0x1\",\n          toBlock: \"0x2\",\n          topics: [\n            \"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\",\n          ],\n        },\n      ],\n    },\n    expect.any(Object),\n  );\n\n  // re-instantiate `historicalSync` to reset the cached intervals\n\n  spy = vi.spyOn(rpc, \"request\");\n  spy.mockClear();\n\n  cachedIntervals = await getCachedIntervals({\n    chain,\n    syncStore,\n    filters: eventCallbacks.map(({ filter }) => filter),\n  });\n\n  historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  await simulateBlock();\n\n  requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals,\n  });\n  logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n  // `eth_getBlockByNumber` is skipped\n  expect(spy).toHaveBeenCalledTimes(1);\n\n  expect(spy).toHaveBeenCalledWith(\n    {\n      method: \"eth_getLogs\",\n      params: [\n        {\n          address: [address, zeroAddress],\n          fromBlock: \"0x3\",\n          toBlock: \"0x3\",\n          topics: [\n            \"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\",\n          ],\n        },\n      ],\n    },\n    expect.any(Object),\n  );\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "partial",
+      "role": "write",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/1f021a7b846451889eae-0-positive.go",
+        "sha256": "2c1ec872eb7c594c93fc2ea5ba5ccf50999737c0db037f6a82b70a6162c623ac"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/1f021a7b846451889eae-0-negative.go",
+        "sha256": "3189575e628c84b2c12051002a989a46f58faa077a9861bf7f3b51b916df74ba"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-0-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-0-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/1f021a7b846451889eae-0-negative.go:248:14: writer.SetAddress undefined (type config.SourceFilter has no field or method SetAddress)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/1f021a7b846451889eae-0-positive",
+        "sha256": "f5808a9474afdc510fc4f369849eafcede8b7f00774564b474936a4942ce3b67"
+      }
+    },
+    {
+      "source_id": "1f021a7b846451889eae",
+      "source_file": "packages/core/src/sync-historical/index.test.ts",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "source_body": "test(\"sync() with partial cache\", async () => {\n  const { syncStore } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n  });\n\n  let historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  let requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  let logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  // re-instantiate `historicalSync` to reset the cached intervals\n\n  let spy = vi.spyOn(rpc, \"request\");\n\n  // @ts-expect-error\n  eventCallbacks[0]!.filter.address = [\n    // @ts-expect-error\n    eventCallbacks[0]!.filter.address,\n    zeroAddress,\n  ];\n\n  let cachedIntervals = await getCachedIntervals({\n    chain,\n    syncStore,\n    filters: eventCallbacks.map(({ filter }) => filter),\n  });\n\n  historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals,\n  });\n\n  logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  // `eth_getBlockByNumber` is skipped\n  expect(spy).toHaveBeenCalledTimes(1);\n\n  expect(spy).toHaveBeenCalledWith(\n    {\n      method: \"eth_getLogs\",\n      params: [\n        {\n          address: [zeroAddress],\n          fromBlock: \"0x1\",\n          toBlock: \"0x2\",\n          topics: [\n            \"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\",\n          ],\n        },\n      ],\n    },\n    expect.any(Object),\n  );\n\n  // re-instantiate `historicalSync` to reset the cached intervals\n\n  spy = vi.spyOn(rpc, \"request\");\n  spy.mockClear();\n\n  cachedIntervals = await getCachedIntervals({\n    chain,\n    syncStore,\n    filters: eventCallbacks.map(({ filter }) => filter),\n  });\n\n  historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  await simulateBlock();\n\n  requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals,\n  });\n  logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n  // `eth_getBlockByNumber` is skipped\n  expect(spy).toHaveBeenCalledTimes(1);\n\n  expect(spy).toHaveBeenCalledWith(\n    {\n      method: \"eth_getLogs\",\n      params: [\n        {\n          address: [address, zeroAddress],\n          fromBlock: \"0x3\",\n          toBlock: \"0x3\",\n          topics: [\n            \"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\",\n          ],\n        },\n      ],\n    },\n    expect.any(Object),\n  );\n})",
+      "directive_index": 1,
+      "directive": "// @ts-expect-error",
+      "kind": "partial",
+      "role": "read",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/1f021a7b846451889eae-1-positive.go",
+        "sha256": "ce31aebbae992b3d3938815e26cd874f6a97aab6f2f5de085be0973885c29cfc"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/1f021a7b846451889eae-1-negative.go",
+        "sha256": "ef5545372aa7131dfe38c2b2ab5b2f6de80c7777904b58017e6b676328159592"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-1-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-1-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-1-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-1-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/1f021a7b846451889eae-1-negative.go:241:25: reader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/1f021a7b846451889eae-1-positive",
+        "sha256": "251ac70eae4645d5ab2c7cd6168c254963a2b1ae4a80d9f9608a96414e27d3a0"
+      }
+    }
+  ],
+  "production_inputs": [
+    {
+      "file": "abi/abi.go",
+      "sha256": "66b1a823e4e55340b079b0a935b290137361a1420eba71f86b77b897f7c47be4"
+    },
+    {
+      "file": "abi/event_names.go",
+      "sha256": "a8c2454cc1a289d72717057c61aad146f9b2b593eb3a83d5b3afd6c1fe507a45"
+    },
+    {
+      "file": "abi/function.go",
+      "sha256": "415799556c14710e3e181e4079ca3b44adfcb8f364d3e145c165fc84cbbf98e4"
+    },
+    {
+      "file": "abi/generated.go",
+      "sha256": "e65aeed89b8c1eab9a92aba5fa005cd4274ada779d05b843fab2d7d6194a1089"
+    },
+    {
+      "file": "abi/offset.go",
+      "sha256": "6781d8706a5ea12d0d3235b71c03bb163cd34ba8dd214a053fd04541c13a937e"
+    },
+    {
+      "file": "abi/parameters.go",
+      "sha256": "26747f9f2280d90768222d008f2049ea7a5cd586753ceb4086ec7376a4c4c77c"
+    },
+    {
+      "file": "abi/topics.go",
+      "sha256": "280a3d64a069e4f6ddc39420541183fae0ee25d0ef30ace2a0970503a397db69"
+    },
+    {
+      "file": "bloom/bloom.go",
+      "sha256": "511094f1a011bdcb0408ae78ebd3bde35e4c821d3aea5df51f0a2c39463882b4"
+    },
+    {
+      "file": "bridge/bloom-oracle.mjs",
+      "sha256": "65a2f417f19f6a1c0a9b73416732f395b036312781e0ac1339f5433544c215d0"
+    },
+    {
+      "file": "bridge/client-compat.ts",
+      "sha256": "d79759708dd9e68f68bac76e1c279ca453b51f95ed5880a8b4ae991aea396d81"
+    },
+    {
+      "file": "bridge/oracle-probe.ts",
+      "sha256": "fd7c99848fe9f0963e802a708a14bcd4404befc1127e6cd5e8a9527711ea9f95"
+    },
+    {
+      "file": "bridge/pglite.mjs",
+      "sha256": "0df10d6376eaf8dd1ccb72a1d7714342d6456335947dce0bef1d70d12a74b989"
+    },
+    {
+      "file": "checkpoint/checkpoint.go",
+      "sha256": "ca64d31bc9725ea8077a5c6b4cbb69b82abee0c70461d41b92452049f80aa713"
+    },
+    {
+      "file": "config/chain_catalog.json",
+      "sha256": "b87c9c105d0a6cd4782915a8dc1326034a70d04c460cf5432648ad06c776880f"
+    },
+    {
+      "file": "config/config.go",
+      "sha256": "015bb68aad9bd052b9d4e86e1a30eaee86dad97a7edf1abf59e72637ef9c6d2e"
+    },
+    {
+      "file": "config/source_bindings.go",
+      "sha256": "00de63d9448005c8aff014c781cf34418781ef13200ca7bf7b7cde44589ff439"
+    },
+    {
+      "file": "config/source_blocks.go",
+      "sha256": "9e5a81da5648f971e5188b8ec7bafc6bbe8d1e64832d838e2e8bb53e872c42e2"
+    },
+    {
+      "file": "config/source_build.go",
+      "sha256": "6ef3324f8c9e80675cfda171756db36c5c7c0e599a7d282db29c4915f2a9f90f"
+    },
+    {
+      "file": "config/source_callbacks.go",
+      "sha256": "afdb3331e7ab355720b18921aa9243311d01b29c6b46fe3d3da22dec6c1e28b4"
+    },
+    {
+      "file": "config/source_filter_address.go",
+      "sha256": "f06be1bfc691bd3c235175b2008f2113c5872c6192fb0e967c317f51e520a656"
+    },
+    {
+      "file": "config/source_indexing.go",
+      "sha256": "1ad46a557394bfdecd2bad2e903f685a8d04a7593dc2a0ac7688bb68b04476ad"
+    },
+    {
+      "file": "config/source_model.go",
+      "sha256": "065ce123594a9de291779b98f5cca8c7111011b29e4df643bd81b077535d8e77"
+    },
+    {
+      "file": "config/source_native.go",
+      "sha256": "99a77725b9db3ada79ad8760f97ba76b090c2b3432f66f6a2a4f26dcfe917b3a"
+    },
+    {
+      "file": "config/source_values.go",
+      "sha256": "87794bfaa4465ccec6ef33285ed7d51f8685c5c74de8113c8703b0a903956cd8"
+    },
+    {
+      "file": "config/typed_source.go",
+      "sha256": "79dc679b924567f4b08e61c33db68dde82cd367391b84476804053aba5ad5ebf"
+    },
+    {
+      "file": "events/build.go",
+      "sha256": "a891ce058da59b273393aa0a062cf97686de63bdd015a5b4d6bfe6bf33e5ac3d"
+    },
+    {
+      "file": "events/callbacks.go",
+      "sha256": "aa909c3d6df4068fcc4a15ef84bd8e9d12c97a42eec228433aec4642008f5306"
+    },
+    {
+      "file": "events/contract.go",
+      "sha256": "968920a93bc487c0770b09a79878fc1af2a2618334df7bf98f9fab98561da58d"
+    },
+    {
+      "file": "events/convert.go",
+      "sha256": "5353779f3a59ef394580d399defe5ef335814d2d37c969d42ed7fa69e3710fac"
+    },
+    {
+      "file": "events/decode.go",
+      "sha256": "9e47174e9db479b1fb458aa5f768ca8d67ff0a951fc53ed86dda9bc97451b24a"
+    },
+    {
+      "file": "events/values.go",
+      "sha256": "b370c03c4ac4542978852fa8bb180dd456dd78f3564cc16bf62432668c142020"
+    },
+    {
+      "file": "factory/factory.go",
+      "sha256": "1fffc08533dedb162949ff67035f11fbd4a7afb379c56bd8278df1f484ac26b8"
+    },
+    {
+      "file": "filter/fragments.go",
+      "sha256": "68901f64ecc5d0a9fb7aa8996b76b4c1f60335a763f1763964bd9f7d669beb28"
+    },
+    {
+      "file": "filter/log_filter.go",
+      "sha256": "3b8a8377dcfde2a1ee2b74c56a4eba51c5373fdd35d568ee648c0dc43420f698"
+    },
+    {
+      "file": "filter/match.go",
+      "sha256": "c32ed5fd5a300c146f2b26de1ef5410d9030f79046395e072985bb0dc7dd21e3"
+    },
+    {
+      "file": "filter/requests.go",
+      "sha256": "62fd7ed28e63dd127d877de864f4a660f5ce83f1901e1afd90ea84522608ee9c"
+    },
+    {
+      "file": "filter/source_child.go",
+      "sha256": "1c133d4cbb2b3064fceec461be7c2c4e195f3febb2daab778238dfb613e2fbcd"
+    },
+    {
+      "file": "filter/values.go",
+      "sha256": "363889729cceb9975918d53b5e6ed5345039dcf7f9d9480f717fead351bd0b50"
+    },
+    {
+      "file": "finality/finality.go",
+      "sha256": "d42b368ee11702a5e544d1cdf0f10d62548844460b292aabfb93dba1c2e9e3c3"
+    },
+    {
+      "file": "internal/jsvalue/undefined.go",
+      "sha256": "2e94aa61d5503dec786e3fcce403e628c1f6e4ba9db8f2f22f26e4edf7f2ee69"
+    },
+    {
+      "file": "interval/interval.go",
+      "sha256": "71d35d82d7b39a96dc1d2d1d575832902707910088c0eb4529c180239802aa48"
+    },
+    {
+      "file": "orm/generate.go",
+      "sha256": "8beb2b9971ad1365ec6bc65f3749322dacd132623b218da5770e60bff75aaafc"
+    },
+    {
+      "file": "orm/orm.go",
+      "sha256": "fd20acb1982c7307791c82757ad9119c016d842606f2280a5ddc0eb306a6920e"
+    },
+    {
+      "file": "query/http.go",
+      "sha256": "43e2d56f249bd0f88d4f8285531ed47133e629d19e955b22055a6ca38c1c38d1"
+    },
+    {
+      "file": "rpc/actions.go",
+      "sha256": "17320c4ee63b99a6d6f0fafdcea35413ee9fb00264e5b112adb328681e13b32b"
+    },
+    {
+      "file": "rpc/async.go",
+      "sha256": "2a034343680aa674381c0432e97d4288226ad1b212630c20f54e83998ee04db3"
+    },
+    {
+      "file": "rpc/client.go",
+      "sha256": "3711005721eb53dc6fd862557925fc003ba2408a79696c35ab6bb78205f377d5"
+    },
+    {
+      "file": "rpc/logs.go",
+      "sha256": "4cb76bd19a958c707b55f416c0a5d696327f3621a2dc86df41f67afb3be3a7ca"
+    },
+    {
+      "file": "rpc/retry_logs.go",
+      "sha256": "e2f95f062153256a9cf2b1947f9535d805a02fa60b05cf6cb4576d335d559205"
+    },
+    {
+      "file": "rpc/source_block.go",
+      "sha256": "7884b8eaa240cdd2c8e6f800a7d84d35add216b33a00ffda32a60ac6db87ca41"
+    },
+    {
+      "file": "rpc/source_call_traces.go",
+      "sha256": "8911526bdb891a95edfac5486e0561937bef57e9d26267a4abf0901825df1a33"
+    },
+    {
+      "file": "rpc/source_historical_provider.go",
+      "sha256": "8fe23994eb26d771f4a62cbbf9c22ba1f86fff11469a4fda7fb44d22e95bc4ea"
+    },
+    {
+      "file": "rpc/source_request.go",
+      "sha256": "fd015bfee51c0fa90a162ee255cccef19c16dc45d713262393a934a4091a284a"
+    },
+    {
+      "file": "rpc/traces.go",
+      "sha256": "30fc8866c9e7a8a6abe31fde927461c66058e6a5ca947c9521333c7c15dbc337"
+    },
+    {
+      "file": "runtime/accounts.go",
+      "sha256": "66fac615eed0f09eb0f8677592f63d4b41d62cad59cf412a25deada149c8a347"
+    },
+    {
+      "file": "runtime/bloom.go",
+      "sha256": "42888853ab161e5b1b0acbc379b1ba01a2f0f42aa5b309973081e2b7586afca2"
+    },
+    {
+      "file": "runtime/decode.go",
+      "sha256": "060102ede00b4d1a047bc4f8208e3f243620776db2166b11dda347b5ba26a28a"
+    },
+    {
+      "file": "runtime/engine.go",
+      "sha256": "97cef001d188c2b27f8e496c953197c3749b8a79bfc6cb486c72a02842bcc5a8"
+    },
+    {
+      "file": "runtime/events.go",
+      "sha256": "0a99aab0d5b8f4038a25892b1acce1b0229175b02018d430d0e92edbdf150799"
+    },
+    {
+      "file": "runtime/factory.go",
+      "sha256": "33772b34b8a96478464fc6f34867d8654ef9eb1d7cebd1ec5fe19718e7ecc578"
+    },
+    {
+      "file": "runtime/native_filter.go",
+      "sha256": "8e02cf842feb9fa611af74db31be190646b0e79cae42efb2224d78bead91e15e"
+    },
+    {
+      "file": "runtime/source.go",
+      "sha256": "65d61096a8b91802b8f35e024184866d994d81d7347204e9157201b678a38125"
+    },
+    {
+      "file": "runtime/source_event_merge.go",
+      "sha256": "1f009eaad832468a4d430d05613f7893d542a0df185074520b6c3d27d4766654"
+    },
+    {
+      "file": "runtime/source_historical_block.go",
+      "sha256": "10dd869e54c175b205be1098261f89dfeac0536c170c79643de35a50448011bc"
+    },
+    {
+      "file": "runtime/source_historical_memory.go",
+      "sha256": "69e613bb48f76c22e641b4d2389af4aff9938718558822798b9d7c7f7c2ac22c"
+    },
+    {
+      "file": "runtime/source_historical_merge.go",
+      "sha256": "fd23f9edc4eb6a6780fcd5303a955cf6a904cf7667105df0b26f050210abba32"
+    },
+    {
+      "file": "runtime/source_historical_persistent.go",
+      "sha256": "bee353d834705c9758288743fefcd0e19f4c7d10b70be39e450752075b74121b"
+    },
+    {
+      "file": "runtime/source_history_coordinator.go",
+      "sha256": "6dff27b8cd23cd1dc33daa8459f8355608f32d885871918f80d7485e6cbb75c9"
+    },
+    {
+      "file": "runtime/source_history_refetch.go",
+      "sha256": "3e4eae1e16061f79aac885cdb5b5b474e87b96290a17dfdea743b893a5ddb812"
+    },
+    {
+      "file": "runtime/source_local_historical.go",
+      "sha256": "54593111de2397a365b8906bfe6a1ccc9191136ce6c93719e606efa5eff992dd"
+    },
+    {
+      "file": "runtime/source_omnichain_checkpoint.go",
+      "sha256": "1dcfd7448fe6c21d252d43d860cf5596332d3d5c1bf9971f09bfa8bba59c102a"
+    },
+    {
+      "file": "runtime/source_page.go",
+      "sha256": "049ec453e90992949cef3b3fff7fc81befe8997d255a2e62a82bce0ba43306ce"
+    },
+    {
+      "file": "runtime/source_realtime_fetch.go",
+      "sha256": "0a6a4b9ca074c296a8f35663e621fdbc21b9c788090aab3c975f42c386ccb869"
+    },
+    {
+      "file": "runtime/source_realtime_state.go",
+      "sha256": "f07292b7aa25f79e2abfe0b82eef2902ca9a616045caed814e462ec673c78a06"
+    },
+    {
+      "file": "runtime/source_required_intervals.go",
+      "sha256": "63e1cab85eeff41a84a6267a2450b1aeddd446cbe0aac0581863b22e41ccdba9"
+    },
+    {
+      "file": "runtime/source_sync_cache.go",
+      "sha256": "548461773bd8a85c1bc5d4cc899b45d29917cf1afc548ef6c4442d0d52547b16"
+    },
+    {
+      "file": "runtime/source_sync_progress.go",
+      "sha256": "f7353de7cfab6ea27b19e99be08baeb0b375df4bbb5855f6248bf24f7b962f19"
+    },
+    {
+      "file": "runtime/staged.go",
+      "sha256": "3310ea4d7107f57b1caed1f05d2105e13f8d203d34ad6730239b5b34f391b3c5"
+    },
+    {
+      "file": "schema/schema.go",
+      "sha256": "57d6c8cf85198133cc63a03644006bcc165396291f24a2f68aa4a87e70e857ed"
+    },
+    {
+      "file": "sqlquery/cache.go",
+      "sha256": "202ad7ef8d3edbf2824738716fb25d401f65aa681748a0833e036d973bfecf97"
+    },
+    {
+      "file": "sqlquery/rules.json",
+      "sha256": "a0a839c5d753ca6fae44868e1f394982cae82c1a1b97f8eaf4cface86564d8d3"
+    },
+    {
+      "file": "sqlquery/sql.go",
+      "sha256": "d1c7bfc31d2b16cb347d7faac09c24dff361cc80876de80ef81dd2323e4bd460"
+    },
+    {
+      "file": "store/actions.go",
+      "sha256": "dd6236c41a65b5575ecaaeee81ce6492d0a5d9d1cd1dcdb9a9da5dce20f3b458"
+    },
+    {
+      "file": "store/backend.go",
+      "sha256": "d47b86923755104697cf2dda122fbf06ea953d0449d07791bf4380f9977520e8"
+    },
+    {
+      "file": "store/column_values.go",
+      "sha256": "61115d0d2a840ef163d47031d48af395941626800dafc091d325c41cd3d98b75"
+    },
+    {
+      "file": "store/copy_text.go",
+      "sha256": "fb031e7ae7ed1a93a22ca6d309aba09214613ddde1b5e0e79b9106d290d4c518"
+    },
+    {
+      "file": "store/event_rpc_cache.go",
+      "sha256": "ed93536490c795aae28e44f1a09c0acec9481eeb6f58b680a6695bd2e2d05251"
+    },
+    {
+      "file": "store/indexing.go",
+      "sha256": "8275889ae733b972bc88fa1489757b368e1a6a3ea13afc25b2d4b647f8da00d0"
+    },
+    {
+      "file": "store/lifecycle.go",
+      "sha256": "00c0e37127ad7b3313fe8dcfe8104c98ca1e7621f1a1d568fe1d4899d284f51f"
+    },
+    {
+      "file": "store/live_query.go",
+      "sha256": "9f311ef756ee5ac63b957dfd8fb53580330f7c473d151520dab9da658f726e10"
+    },
+    {
+      "file": "store/notifications.go",
+      "sha256": "dafe797ffc36f7bf83f8ea135a4e184237fe8c19c3d17b94152cfdde9d8d24b7"
+    },
+    {
+      "file": "store/orm_completion.go",
+      "sha256": "10ab9885dbfde42f050d867de375e1e2fe95ec4a60579055352246b62d3b1cca"
+    },
+    {
+      "file": "store/prefetch.go",
+      "sha256": "2a8f7ba5261186ffe994105965b9908eb8097e570563d7a156d66b3ad0e21a54"
+    },
+    {
+      "file": "store/profile.go",
+      "sha256": "d485d80e446b0c60f3d9cc94dbca6a73e6c604118e9604f7b8e4922d1ec72309"
+    },
+    {
+      "file": "store/protocol_cache.go",
+      "sha256": "eaf6986e72fd8fbed6f2dd7930bd29fd1ad90349223ec809d89772396c4a1d1d"
+    },
+    {
+      "file": "store/reorg.go",
+      "sha256": "dbf966cb2d0c1998b22133760bf44f686a66807ce74f769b4bf5bb287b9868da"
+    },
+    {
+      "file": "store/result.go",
+      "sha256": "2c2752c60659e94fd7e2a59a028720d5fe75e07d6992ff593e52c99123f5a8ad"
+    },
+    {
+      "file": "store/row_sql.go",
+      "sha256": "3a1df7e3f71fa1efa6caec6607c5ee2cfb5f940f4e789436b156575983029283"
+    },
+    {
+      "file": "store/runtime_actions.go",
+      "sha256": "e46da1b9a7504f5dc41b411550b19da4e5ac26f20dc3182b4c984d68b4622d54"
+    },
+    {
+      "file": "store/schema_objects.go",
+      "sha256": "edd387bd5fd3f94504b794ba9da40d7ed969de566dbfec9a49e5edcea0d6f325"
+    },
+    {
+      "file": "store/source_children.go",
+      "sha256": "b8f9eb50e4a0c3e5aedb885dbdb9aeceaf6f53c42252eecc6c919dc32b9fa266"
+    },
+    {
+      "file": "store/source_crud.go",
+      "sha256": "a5f2a53b0e5106723f4754f905a3af8d25569afa72c32212e06818936a0607f8"
+    },
+    {
+      "file": "store/source_intervals.go",
+      "sha256": "670feb12545f1b69a458a92e94213b99247dcb6efdea8f001a3b16653689b7bd"
+    },
+    {
+      "file": "store/source_query.go",
+      "sha256": "86bfd7f021656c6e8ae62f5741fb0f17925f246a1c24584d46b3f64d6be5208f"
+    },
+    {
+      "file": "store/source_range.go",
+      "sha256": "0b9fdfa1f67bf9fc65b6b102dfdda66f0e3142990eb111bf3004dd528c0ff36b"
+    },
+    {
+      "file": "store/source_rpc.go",
+      "sha256": "b512f347bfce5b43510ea85d16aecb569810bab35d9d5237fb4a6c133e681fbd"
+    },
+    {
+      "file": "store/source_rpc_adapter.go",
+      "sha256": "d2237cc0c8689cfc68a63ba6d24345e39bae92418b57f7e6e3f7c0e68e76a3c3"
+    },
+    {
+      "file": "store/source_rpc_cache.go",
+      "sha256": "70c8726a737c26971694b6985af0b53906d2f8e7a4b78f59723467dc99462197"
+    },
+    {
+      "file": "store/source_rpc_hash.go",
+      "sha256": "2a1f588a3f5a04d49bb5814111ffaf462768648045303965b9d7967753e034d7"
+    },
+    {
+      "file": "store/source_transaction.go",
+      "sha256": "4c15eb6e7ec48009ae0bd53ddfc6467cb62b48a20f3a5fd2cd72c5e5c17cf1af"
+    },
+    {
+      "file": "store/sql.go",
+      "sha256": "6469d482dfd960d6f7cc30ad496a2fc4d09bfdfd2c6f03945288520fcb5eac17"
+    },
+    {
+      "file": "store/store.go",
+      "sha256": "bb090b4a4fe3e7741acc0a76fa225f65e42c1fee9aa7cfdde194a53f4e6885b5"
+    },
+    {
+      "file": "store/sync.go",
+      "sha256": "8a3876e490d8adc5505f04595ade917a714189b05aa7aed00ca9fbe609a4113b"
+    },
+    {
+      "file": "store/sync_migration.go",
+      "sha256": "e5420b55a6e9a347e38e6f6ed5ae6d04d7629359c4137c55ff4a737564111662"
+    },
+    {
+      "file": "store/syncsql/copy.sql",
+      "sha256": "4a2e4796f71526784c6561b78ad37bb405d77c02894da6506a632a7e12f48d0a"
+    },
+    {
+      "file": "store/syncsql/create.sql",
+      "sha256": "7696380cc63a526f1496744857735ca265cf264e09706ec48127c028ee6dd2fa"
+    },
+    {
+      "file": "store/triggers.go",
+      "sha256": "05cbe5e5e7015e8b6bdd76d0a92aeba50a0b72b9648001bc4abb24b3cfeb2072"
+    },
+    {
+      "file": "store/values.go",
+      "sha256": "430d4dc9f2e274b1b995b8cfb30d9fb86bcbb1373ee33865fc8caae7397fbea5"
+    },
+    {
+      "file": "store/views_aliases.go",
+      "sha256": "0a7b1e91bd6b907ca089f985110eb212415a5e716cb6766c4234b66d72b4264b"
+    },
+    {
+      "file": "third_party/PG_QUERY_PATCH.md",
+      "sha256": "15400b3a1ba7aa5b7a7e4bde7082ef0bdd65a0772f9795eefb3f1ce1d5ec5e57"
+    },
+    {
+      "file": "third_party/pg_query_go/.github/workflows/ci.yml",
+      "sha256": "4c04dfded2e1193f6d37aa17d3f88dc0f15dccec97e31c0509ea6f1cf5d0cc67"
+    },
+    {
+      "file": "third_party/pg_query_go/.gitignore",
+      "sha256": "5050260db86f8d2f3c509c002582cfe36efb68328abb706193e9c5f8566c48af"
+    },
+    {
+      "file": "third_party/pg_query_go/CHANGELOG.md",
+      "sha256": "f9196fb61e348231623e6327eddb2e15ef4dc0484e2e1ee57f6031be2e855e32"
+    },
+    {
+      "file": "third_party/pg_query_go/LICENSE",
+      "sha256": "2465dfc50f21abbcfc6203c5b61cb3763d06d683d9cb9f50e13b1220329a8820"
+    },
+    {
+      "file": "third_party/pg_query_go/LICENSE.POSTGRESQL",
+      "sha256": "28e429702de70abfa1b7e4cb5d9e486bd9469f1eab5b392f704b65de09334d8d"
+    },
+    {
+      "file": "third_party/pg_query_go/Makefile",
+      "sha256": "4e59e7fea24969c1409261825873c83b84be756f831a21ff77e0cea4e1239e70"
+    },
+    {
+      "file": "third_party/pg_query_go/README.md",
+      "sha256": "f5e6acd002a846568e475e520be0246f18a6d1ea3264da2116933d7983356442"
+    },
+    {
+      "file": "third_party/pg_query_go/go.mod",
+      "sha256": "0ef9e1e131014e72cda8caaeec962fb48f19e55945d874c98ef7b24801d68838"
+    },
+    {
+      "file": "third_party/pg_query_go/go.sum",
+      "sha256": "d8f577692ceb1b6d48d211208e88ab4d4caa0e95a82c2c9ac7644d5b9ee467eb"
+    },
+    {
+      "file": "third_party/pg_query_go/makefuncs.go",
+      "sha256": "43e965e86e3f9836fc1273335c2f2fbed3b5c01343a027b645defc6bfd5a8263"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/doc.go",
+      "sha256": "81e392e045fafc176661dc80cdf03bcafc2e89a1d6d719c0116d08c291571b3e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/pg_query.h",
+      "sha256": "8e254a91bf7171d563631f042ea954b6a793cd6ff20c2cdd3d52163ef566a856"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/pg_query_enum_defs.c",
+      "sha256": "dcd30cf998f36cb3e13af65ac4132c6712e921429fb50739e3e7d0ff6888582c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/pg_query_fingerprint_conds.c",
+      "sha256": "9307f36b3376b0093e0f39e8972870cae3ad46cf4be6d086754fb9c6aafb9d6f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/pg_query_fingerprint_defs.c",
+      "sha256": "ed88834a97b8928a2960667bd022167097e1196d5e6e1d231bf9e5f9536e20d7"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/pg_query_json_helper.c",
+      "sha256": "9847270a0e57c4285cfbbf63a919eac9f62ad5ada9aa5e7c8256c8a0683e21e1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/pg_query_outfuncs_conds.c",
+      "sha256": "7ff0bbc59b121a8e756369f6286324a8df5a10489cdf22e66a8423e7e9a2f1f5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/pg_query_outfuncs_defs.c",
+      "sha256": "0ed0ed2b61b835731d0d8274417507fc27d4f03baf09834e82abd6c197c568b5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/pg_query_readfuncs_conds.c",
+      "sha256": "c1beac67c2d61c7bb9a9d59e7d434701bcfcf880d46274b655db1122cb28a5a7"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/pg_query_readfuncs_defs.c",
+      "sha256": "b697017f1ad16b47d329f4ef943d6e1dadba6dc370291a02434ca271feca3bbd"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/amapi.h",
+      "sha256": "c86a77222cac5982d8e9c4bcb6029b6c7ab3b7c3b256c1b5db8e0750732b9649"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/attmap.h",
+      "sha256": "4fa191b8537e09d310b5266df7ba7b76d4cce8c787166f2c71fa3abff412308f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/attnum.h",
+      "sha256": "33a185057bad0a8a73785030d800c5fb588e25e46348a9083be94526d37190e3"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/clog.h",
+      "sha256": "cd6c76625fff3de52ca09146ae51566e8c23e2b68ea3c95d2b8fcddd8b5bd5e6"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/commit_ts.h",
+      "sha256": "5bbfe99fe4fea90aa4cc3f7cd45cf758781b66e49cdf5e419aa56e26e3b6c0ce"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/detoast.h",
+      "sha256": "898df7387aa9ccaa3a550ed919f1497c1a4b052670b65d80fd6a29df1dd96eed"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/genam.h",
+      "sha256": "b353d585ce246ab4e8e8cd387a7b187735aa2cfc149642f714c055c82816f22e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/gin.h",
+      "sha256": "8825ce6e038d207ee95f9c08a97bf366b530ec0ccbaf674cc47226b806cb211f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/htup.h",
+      "sha256": "6bf2e8ba2d8e8927fa6238c808a0a9c3887a818833a1cca02c41553f1a15c193"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/htup_details.h",
+      "sha256": "00b88e1c5c687e1933fec1cebf7fdb68f93c9432b2149a180788dc89330fbaa2"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/itup.h",
+      "sha256": "59a1233978636194356cc7f6ee790f9c2cdd7b89950dcdd5a43655d7683e5aa4"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/parallel.h",
+      "sha256": "f77a51b24987d35322f462444a2ed19ff54c94101c82029f491fa5f488d58671"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/printtup.h",
+      "sha256": "cc4bd70cbe834c7b4f241474378ee1600ee97956dca50da103e9099cd8a266f5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/relation.h",
+      "sha256": "0ded9532ae336a2f5458ff19f7337d8e70f2725866858c332a4a5c2156cddd68"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/relscan.h",
+      "sha256": "ff306f8f69097b23ff764975608fe391f5c7ac990fbcf5905cd2ec2646769b82"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/rmgr.h",
+      "sha256": "b59d0bfcec26000de0a50fd7f04ad3b55a8638acd2925309b6eb6605417dc5ce"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/rmgrlist.h",
+      "sha256": "c701487857ac8c158b74fe9ae7845f179a6207fc017f40977eada241af968345"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/sdir.h",
+      "sha256": "290b65f103b5c607670c33b35aa77de6e413ec2ab93d157d7d416a8e57d88b28"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/skey.h",
+      "sha256": "2373dca25e57555f86433e80519cc81e8894b5da1a2b05e1d76321f13eab0d26"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/stratnum.h",
+      "sha256": "e209ba519acc7701638a521487f21fbaef7e2399018acf3ebabf9664b59504ba"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/sysattr.h",
+      "sha256": "e42f943941e223f792bf3ab57614715c0108533d05962fa879e88c5c974486df"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/table.h",
+      "sha256": "1ef0e9c24fda48d9e571723406b5cffb6a6becc36c92f903ff86e535fd232ca6"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/tableam.h",
+      "sha256": "0a4d8c8d782bb586240b322904a347708eba52fafb6d2d48168e8a9ab742e04e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/toast_compression.h",
+      "sha256": "2ae92f4bc45da32b3dc06a5be530b7cc12e16d7515bf201c1e79c58d1328fb5a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/transam.h",
+      "sha256": "f3b08adec353587e5157c69d89d6850c08cdaa3c0ac61b58fe9e6505acaf1b94"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/tsmapi.h",
+      "sha256": "1d2672ca60ca2f642bdd2eefc5a178081a97f34fa28962238d40404bc9714b46"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/tupconvert.h",
+      "sha256": "7efebcd8111996a7f6d211aa40fa911ae5fa0a19f6e7d4f1223fb74ca638aa1e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/tupdesc.h",
+      "sha256": "4a3aaebde0a68ac16cef33b8be3d355cf676afb871696ca8d3190f4d1a3ef7fb"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/tupmacs.h",
+      "sha256": "167eab06aa9abdbf9b4570cc089c0c7a4d72885a9b8de2069f4cc88aa1450460"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/twophase.h",
+      "sha256": "05bed90e141ebeb8574bc93848dd7e86725d3d899ef8fa180451030a1a5f3c0d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/xact.h",
+      "sha256": "7c136cdc936f08ec7db937b83bf008e91a717c036e025c7506cebfaff4927d60"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/xlog.h",
+      "sha256": "bcad1de36a9833177fdd8216f8eb798e2be7f3e692bdb99845b778debf7f3e1d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/xlog_internal.h",
+      "sha256": "6d48120618529876cad20ca636fd055e88603984e4000fb0c6dc3ab6749a6dcb"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/xlogbackup.h",
+      "sha256": "40e048a61910796de54d13a1f98706d3a26584f089edf102f98f2368987f0fd5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/xlogdefs.h",
+      "sha256": "ebcaf895625ec5b7a367baf05d4295e0635e0b089c4f1dd4997773ab9a9e082d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/xlogprefetcher.h",
+      "sha256": "31f114dacad187843a3783bbb800c89b70b8a243e6415b5f917b028911192527"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/xlogreader.h",
+      "sha256": "60aa2dc96aa895e070c8598f6bf4da1b451e6792fcda055f69cd7ea73575799e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/xlogrecord.h",
+      "sha256": "4d33f9b780ff4b84ccc36fefef7d5dbb7e4df23b48e833601b86c776fbe19196"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/access/xlogrecovery.h",
+      "sha256": "c794d913abc2a2dadacb07b8456b9a8ab750076df5b7083f0a4675e5fa05ccf9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/archive/archive_module.h",
+      "sha256": "d3fee157ed072850323ad879dce8e91f6f4a1467c5dd6e71c3235668a79f2dcb"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/c.h",
+      "sha256": "6e32e5b8916623d4f044c67a0b8ff18ee64c1f9a45901cb20560fd628a02b406"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/catalog.h",
+      "sha256": "4e28b928e6b37f9180e3bc16b88f3b8fc1fcb2d08b1f902b8c8c02d1caa928a2"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/catversion.h",
+      "sha256": "9741cb26fc2d337b6357f180b010d628e70822245073f992c784d5eabf1c5a5f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/dependency.h",
+      "sha256": "54cbc66a8f0702c313b76f99fe82c47d030653e2decc466b835122c1f350118a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/genbki.h",
+      "sha256": "ce75c009a7ca3e00376b864a813a9907b177f36ff7cdf4b1c26441dde5002d14"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/index.h",
+      "sha256": "ba1bea32cecebaa85e9f8d919539ad88b65861e0d1af0920734fc4ae95e6f3ba"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/indexing.h",
+      "sha256": "803d68918c718200c4c53cb9f9dd254f96058e8bf5ebf2d0221f8a30e1233b2e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/namespace.h",
+      "sha256": "a70eaec305cc2e2d62f7c47b1af2a63d51b998a125997c8423f00928e0b90b13"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/objectaccess.h",
+      "sha256": "9f45778794866f6869e635a0ea6098120ddb15c80018e891e40e1aeee90d5216"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/objectaddress.h",
+      "sha256": "2e331f99a5c79d1d8b9d56807d885dbd68cc0dba59026ef9ebb1a59b026b0b62"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_aggregate.h",
+      "sha256": "6bfa4779af2e63878d0d2cfad9e017131fc5f26db4ed397cf8db8a863be5a3f3"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_aggregate_d.h",
+      "sha256": "61b80f71c3e2d3345d2ad77a9dd829306e2f927a3a77e01d5c99b8edbea02c31"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_am.h",
+      "sha256": "927b2f2e024e2fb24482fdd19de4d8ce161d63991d59d5dfa95c58b7503273be"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_am_d.h",
+      "sha256": "261a22fa08f682be740b5e9707cec7a3b02b97f9f4add378e6783da69c0a654e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_attribute.h",
+      "sha256": "cc6b45a8d397a059fb84a0e070205559b6a298bbc0e6e98dd0951a5d5541d880"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_attribute_d.h",
+      "sha256": "ec30e626488dea777fa7bd7041e9f2cc207325b13440a48e62d1e3d583d43a70"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_authid.h",
+      "sha256": "06c47fef01f7a9c2b88c1bfa2db883e4c663e2e9c24030d2e62c5846c9e727ca"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_authid_d.h",
+      "sha256": "118e5aa659c605194322542351fa6d7a413f474273ba6b0d9ea5b1a5ccc6fcb7"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_class.h",
+      "sha256": "99fc500e4c1b4a716903246ccdce22ae088a5fbc7547b83ac70c23bfdabf383b"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_class_d.h",
+      "sha256": "11d4c69fc27d34bf4d0ca22c48d1b1285043f1ca383e3fd417362a9bbebbaa18"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_collation.h",
+      "sha256": "73074ee20903688a276f841e4d61fbb0876759d010caab3cf0276e642dbb9a5e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_collation_d.h",
+      "sha256": "832f14340934b7898484d2932c5f30566013279972cb5cc44b00b7784073c30e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_constraint.h",
+      "sha256": "f444d89c81cd53f25715a8f37be3a2e0b10bc891c72488214be0466c775df831"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_constraint_d.h",
+      "sha256": "71d08a289d1925b2de92d833bda675f5896ec3e7f7866bff1b2215ff4f48f84c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_control.h",
+      "sha256": "f5955b1477c2e99f9cbac4e6666d138ec2be19ab347aafa329f1f41e0fae73c3"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_conversion.h",
+      "sha256": "11fc8dce7ed8ed64152b3972fbca159719fba5b2cd75acacb0295b9a2aca46fc"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_conversion_d.h",
+      "sha256": "0b95c84200353dd5f3e651bb061e38bc698da4b7fa3ea6ba63d046ac31d67990"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_database.h",
+      "sha256": "797d653f1f37fcdf0b01feff2cb0d4e353affc231aa7af8a9247e61062246822"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_database_d.h",
+      "sha256": "f86770aa434b3d2ff91002acb5159fef07748e563fe2ca4d0f2d3036fc581565"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_depend.h",
+      "sha256": "7808d4b32cbeb5e4f8357ae3814607eb4cefdeae1dfcc92581cba4f4ed926974"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_depend_d.h",
+      "sha256": "b10fcb8270a900325341a973c298957429ac1823a9e0a38ecf305edce91d2a26"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_event_trigger.h",
+      "sha256": "513b721f484cab73be1e07dc3d9eed8900b386b99ca3c78631c782a61d542579"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_event_trigger_d.h",
+      "sha256": "5af6e54733cbedf41a4a332c153a12532649a9dd45d0d8b736ec79d1d995ba72"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_index.h",
+      "sha256": "04226b54192a488b2d7d76d5fef1d6b04995dfd0056f05cf9e6123275120625b"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_index_d.h",
+      "sha256": "6018e83393282725f299c21b4bb4f1f61020d783410bc155473bdd1bf2fb72aa"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_language.h",
+      "sha256": "8280da656d3b7f94bd12ff763b97d9c6ee9114216dc12b65e4dd9033768c8b63"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_language_d.h",
+      "sha256": "ec842c4fd89bdf69578658c3a586647c0b408955ce973c372036f181c942dac1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_namespace.h",
+      "sha256": "0a6b058711e95c32410652489e2518d6d70af6be6846b90b310feb721ea95f67"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_namespace_d.h",
+      "sha256": "17fc3c0ba017edf1d03de543f2fb904871f26286f445227983ce43fbd15119cf"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_opclass.h",
+      "sha256": "c6ae5dfe113c669aaf7bb80c733b305024c35837d05b4de9d40730efd92047d5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_opclass_d.h",
+      "sha256": "565cc6c0938616bb49251cabb944ea33e3f2f60ce35efbfda4924c336a9aaf05"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_operator.h",
+      "sha256": "e7d0429b6f7fff296eecf782d4489b86402e6602ec34dbe341d3ef6b0fcdcd83"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_operator_d.h",
+      "sha256": "6269b84d4c0e0f9c877f107fbec241d514b80f83bb392f436bf5be191d684ee4"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_opfamily.h",
+      "sha256": "8705e6c129bbcfb7a2d1bafccaae3e9945e6d3cd9d2de5eb79bec56384c956df"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_opfamily_d.h",
+      "sha256": "6efa46e0b881b54e62b5b898d8804161e46fdd5256a0173b97c2335da5f7dd27"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_partitioned_table.h",
+      "sha256": "6acaa76048568f33d56958afa5c12437e2f7cd5e4b0bde50bb56a1a1584fc62c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_partitioned_table_d.h",
+      "sha256": "c80bc62285cbde092f99e4d29f87685815892284f55f49dcb5dc86fac7a01522"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_proc.h",
+      "sha256": "deb57a6965ed698dc4528de7252757d4fa11b646c3a7e84bea4222a3c5c5fbbe"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_proc_d.h",
+      "sha256": "f9d0e2b0cfb9861e9b3373481d0cc1e3bfe1954992b9ce9132f3d27b67a54efb"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_publication.h",
+      "sha256": "d490279d57599ca35fddcf6245c1d6507afed8451c50bbaba7017c742f84c8b0"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_publication_d.h",
+      "sha256": "fd360247c1062a716576268553a1056368b48d36337964056940f2c479ec1c15"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_replication_origin.h",
+      "sha256": "93d69f672d616fc5f40e988a38578ecd1470ecfe4c13bd776284a7d3b8c6b942"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_replication_origin_d.h",
+      "sha256": "8512ff2e5ae3bd58940ca8c3a5e98ba98ff1330be9f3850e15ace72a87f1c4f1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_statistic.h",
+      "sha256": "20225aa890289a7d5728677f2e6a6bda4979b45985aa04a2bab70ab732546ef9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_statistic_d.h",
+      "sha256": "dd449b0baa60cf54af6f4e522b84829b5e1874e4fd2cae8409e9198e72e52ae0"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_statistic_ext.h",
+      "sha256": "3c0524e2a8a6f70b2afe4df4049b0f5dbf815d3c76e8ac5f6b57d6c26292c14a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_statistic_ext_d.h",
+      "sha256": "a4573421f287ce4241e09501ab0ab489c9972b05c706edb04101bdcde28ac085"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_transform.h",
+      "sha256": "bbb965f9cb07abe4a16fa59ab5ae68ecaa11bf887399b24cba56bb2dab26fc33"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_transform_d.h",
+      "sha256": "27ed7e4179158c97398af9b63c034b1bdbe92a821196b3b1e46d87bd704acf6f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_trigger.h",
+      "sha256": "709fdd634a4ff9659ea679c5fea7e23dd61666b8050017d4b7f2aef0e59b0b88"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_trigger_d.h",
+      "sha256": "c20930ce4df79217698a2473ac58b98dced2dbed31041060a652a1b338c98965"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_ts_config.h",
+      "sha256": "e23df54d5376bb62941c0d87b798af7f841db418950afcea67679560899d2f79"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_ts_config_d.h",
+      "sha256": "8f6c61d6fd2cda0415f99bc682ebe1bf49673c8a697f159498755d2f15812427"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_ts_dict.h",
+      "sha256": "eb059270ac52293b1ec3fb224d7ca47ddb0cc6ec63ea5978116198753f7a57e5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_ts_dict_d.h",
+      "sha256": "175bb5f937f2249b2faca4636bdb4aa7df43c657291f682440e4b1161ee62bca"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_ts_parser.h",
+      "sha256": "00ad1c4091f9c902def8f6ff573cb2ac1a52bbe0573b2073331cfe7c922dea61"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_ts_parser_d.h",
+      "sha256": "6328e2d4ea292405f2440429fbd4d28ea81ddb2e4a9ec20d7618f09612cdcaa4"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_ts_template.h",
+      "sha256": "6451cbe7df06e819d4eb8bc7f1afb0fe301b1e82fd5a212a52106a604e3aefb9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_ts_template_d.h",
+      "sha256": "69d419e94732f1414119b0f3d226d00cbb2f9110ab5c3854888d03f9b9db22fd"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_type.h",
+      "sha256": "6e5fd32ffe432d6ca640abacb99acc9a1d54ddb216dc363c3f4a2af616761d66"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/pg_type_d.h",
+      "sha256": "e606ecddb1d7c7b004f31c3240ec73961cf6008316830a2946ef2a94f8b1d165"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/catalog/storage.h",
+      "sha256": "6042619555696ebb5462de9840ab3afc10bd365bd4cecf540612338ffbf960e8"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/commands/async.h",
+      "sha256": "2aa3a9c935e05b1008f38a35597813a2e3092d7330f08c2fbaa10d773a650711"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/commands/dbcommands.h",
+      "sha256": "8a15239cd4680ce030d033c77677fd12505fa0070167b5d53d80c10b6376b356"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/commands/defrem.h",
+      "sha256": "2774cce8ecbc6a8acfe7886f6adc7bf2da9ea7b38c5d653d3f3de0dec2d6dc94"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/commands/event_trigger.h",
+      "sha256": "56cd556e8914e307d1400c3c1a89908d1e24dff88a861042cdefa13926b6e5a0"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/commands/explain.h",
+      "sha256": "eecdb37c84d097a4b6d5d4fa915c141aec640c01110ca0eedd60cf0dea9aaacf"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/commands/prepare.h",
+      "sha256": "81823cbcdbde1bfa39ee5cd43509d4b5fc09a5555fb129fa8d8d987877b0cfef"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/commands/tablespace.h",
+      "sha256": "59e467d38011be314f8b3d8ce1a1597b5981bb11faa5efdd160b062a23fcffdc"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/commands/trigger.h",
+      "sha256": "71686af19f6e52035d3c5a078c6015ef0f9aa6dcdcd09a0c8e4370524ee55836"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/commands/user.h",
+      "sha256": "07915b0338269813ec0931d1403f3b4d9e837d789aeeef73125dee3f6d197eaa"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/commands/vacuum.h",
+      "sha256": "30221f19f758dc4d07b28cd3f9d83cebbbf9f09a15e4a1b67cd7435951376cf1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/cryptohash.h",
+      "sha256": "ce4c3b7065f599909fd3c07100a1478c7e98f36f5946bcb0b23bd5881b2a7c6c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/file_perm.h",
+      "sha256": "117247623bc71a8bc270d624e1b1f29374831e9f8fa0e7dea3362ee80e05d208"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/hashfn.h",
+      "sha256": "9a636b3a9f25d00a54f88fb1122c98cd601509e903d1c8e331d9eda457c18846"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/int.h",
+      "sha256": "0bc50f5959f776180086b8bf24b157b2b210019343c19efb65d91fccb852e68a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/keywords.h",
+      "sha256": "0d246d0e258819fcb12eac96a6f14c2ad9d7320065f62e9d659e86ed939e4e0b"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/kwlookup.h",
+      "sha256": "415bb53c6037fde2f64ccedfca1e0a94d3dfd2efe4685d917fe19ccbf738be39"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/pg_prng.h",
+      "sha256": "e938914a1441ecd5f64983d6cdc13b8dace1ebcb0209e9abacc3a609a8a664f0"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/relpath.h",
+      "sha256": "5d2a55380374f7db33b5605a17a03efc437c1730095792b7e5a11cadd3b3f394"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/scram-common.h",
+      "sha256": "c97092c9bb334fcbbf7ff1199c6e0f0c43a0428d008c38a03f7f64129d965e98"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/sha2.h",
+      "sha256": "eb9d10c5dfc86768412e8355152d893c67bc9fb1f2e70c3763c9069a5e4a0601"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/string.h",
+      "sha256": "cde57564c122d3979d84e0de29aa60b6da61288e4b8a0ab514a5dd559ae3b116"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/unicode_east_asian_fw_table.h",
+      "sha256": "cd42db52420380b05745835f0e56e6863e0048f9d00c0883a84eeadfc9782d01"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/common/unicode_nonspacing_table.h",
+      "sha256": "93d193da81c0d5b7fac48c8fdb66a2182192722dcb7b5e953620d7c5651ae92a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/copyfuncs.funcs.c",
+      "sha256": "d7af2eb79e3fc98b79df14639bbed1b399046f4048bce6ba795431d6617fab12"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/copyfuncs.switch.c",
+      "sha256": "8f0884216f2479f84437709ebe44d765543ffbfaafe6d352558b93768c3a70e5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/datatype/timestamp.h",
+      "sha256": "7976c18973fd8c23633381611056de33f5578423758950e4c6739b16055a247c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/equalfuncs.funcs.c",
+      "sha256": "8561f39ddf76f34b0d49be1abcdadfecffce9d71d3ce348fb80046353f303cdb"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/equalfuncs.switch.c",
+      "sha256": "fef54d7fa3d6bcf37deb0920b3f7d6c5d7bdaaa32ec4b26ede6eb750da2b28a2"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/executor/execdesc.h",
+      "sha256": "4f8fd2d4d951250ba7b6565df8f7956f125d9874c7b7cd4993d3021c12f5e2e9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/executor/executor.h",
+      "sha256": "710493ca3f82755f415e9358e57bf76f3738fdc7641345307f23ad768f03e703"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/executor/functions.h",
+      "sha256": "2fa746b3e744476cddd1b0ec59e69f9c8fc3e827e6fa5b9805fb423cd1c291d9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/executor/instrument.h",
+      "sha256": "6419460d4de47579b2745076e2fa5f3f2dbf4e65aa258c66418849adf8d54098"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/executor/spi.h",
+      "sha256": "27dd08f9473acdce9e7091f2b8f45f642f72a6de9e80a72696d14aa387c3109f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/executor/tablefunc.h",
+      "sha256": "f7ebfa24de04704a0fb6d91358231015b5153f3c9b241fc90eb325e20ae72542"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/executor/tuptable.h",
+      "sha256": "d6d886d7aefd3e8aa8dadaff94fb35d6ce801dc565abfd6d9b6ab52a70ef0c0a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/fmgr.h",
+      "sha256": "fd781147ec3f936a4628b97c5df595b60cb06ea1756ac9966f5f3fc118827135"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/foreign/fdwapi.h",
+      "sha256": "6fd39e24d3fd5eed9ef201b78c05b2021a36d7d7b29ef93711417351078db514"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/funcapi.h",
+      "sha256": "b376055fbfae224819d785f8e7c36c33ca966ce16018919ca3fcd5264db566c1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/gram.h",
+      "sha256": "a68b20c4a1ce840a95b0a7df6f721287e1e7f284a1b10eea207f09feafb93bf1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/gramparse.h",
+      "sha256": "0da6d83c80045c71190052f748f4ee4d0e95f731dca979be735fb26bcb1a8bf8"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/jit/jit.h",
+      "sha256": "1a9176c747dcfd1ed86cf5f2c6739c55f311f9bc3ae9a9851be80620537af7ab"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/kwlist_d.h",
+      "sha256": "92f2b8c87dc3001d0fad77023070dedec6edb19f80f8df52fb64e18aa7eee693"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/lib/dshash.h",
+      "sha256": "4fee82db595800cd008e0f7f62383019f8dff5e53b2027ce41f274788f9acaa9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/lib/ilist.h",
+      "sha256": "3524251e4edd8ef97e2799f70bb15bc40ed6581bb513150a6a55df6eef667834"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/lib/pairingheap.h",
+      "sha256": "346b2b3ee1dd9e37802f5b0f6297899b9309fc6dc6d5017947c73476b14f7900"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/lib/simplehash.h",
+      "sha256": "d1c5d595e8686881d403dd715934b50fad7bc32438818cb6dd6dbfc7fb7c5328"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/lib/sort_template.h",
+      "sha256": "f3319e277ab88c0e147ad02c54d892f98e00441bb61465b170301fe198230d38"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/lib/stringinfo.h",
+      "sha256": "bde93133efdc40a5129207f4cc84968d4c38651e893df90f4a3c46c7450f4796"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/libpq/auth.h",
+      "sha256": "66c65b1a4254066bc368b56219742d0b3f21b8cad1c4cdf5bac5508414c94cd5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/libpq/crypt.h",
+      "sha256": "08fc700061b5c333e8d25f609d85adddf04a052b7ae76a908fbed71af9cbcc3d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/libpq/hba.h",
+      "sha256": "ceffd5cf601c865d2e56eb2bf40e8967e5d56744d88bb6858995b63ae2bb5253"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/libpq/libpq-be.h",
+      "sha256": "29b74059bb0439d8cef77b7cf6b61760084649fd1bb585c55ccd2d7b553b710b"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/libpq/libpq.h",
+      "sha256": "8383e644022b75f604a1456887fa3834420038a1f774e62de0d36190ab1fd3a9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/libpq/pqcomm.h",
+      "sha256": "e9a14f003dbba51778a1151a464aed328d5f453febfdbfe488ee072f97b4f632"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/libpq/pqformat.h",
+      "sha256": "1860862ce1b309a51b3a8537383cec1c887c432d765e6cae4840eba451a4ed48"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/libpq/pqsignal.h",
+      "sha256": "6062e92c80d781b59d15fb8b1a7ef57523c5bd31ae0b141bea830d688b86e3e5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/libpq/sasl.h",
+      "sha256": "01bb8d2e5c5bd4f2c8e0dd79e3cd43c649b424c2d0b285999d31262b8c95b1ba"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/libpq/scram.h",
+      "sha256": "da46cb255f7256ad0bbb68acbc255233037ecc5a3211cf2544b2bf6a7e67bcbb"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/mb/pg_wchar.h",
+      "sha256": "f31a764d1e92b1a4c5a8fc8549ecbe353e0547b15bf3a5f7f6f96ba703c7fa64"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/mb/stringinfo_mb.h",
+      "sha256": "3ab329944041e5f538fd1ea83c0f93212fc1576bb638473588ee2980c4faccb0"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/miscadmin.h",
+      "sha256": "3b1942b8df5f0ddaf0f14f8c572be67eb0d746545c29e3c6b5b81fba85fe1bad"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/bitmapset.h",
+      "sha256": "6f033cb84a4b64806a3fa6a84dce0e4447ee0e10e4655b7084e0e95d8c554541"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/execnodes.h",
+      "sha256": "30eba4ba04dc99c6e6209e12cd6fd0c8b07f6b16c56170cb6200919f3fc5d56f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/extensible.h",
+      "sha256": "b48b7d5b2d9280863b9fe3ac9eb788912b7272a63657c02169565b7cb6e2ef67"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/lockoptions.h",
+      "sha256": "9253d64e1f72c6b073973aab83c9296186c93cff763ee1415a6dee9f6210cc23"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/makefuncs.h",
+      "sha256": "be78b8fddf8481b75758be4d7461afadab4226e8b96c94f07ad5ffc8f105dc7c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/memnodes.h",
+      "sha256": "c4d7bb9207f27d09c227f01aa4b5906551b5ab4a3eeac55eee4177764e7b07aa"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/miscnodes.h",
+      "sha256": "1f2566b79703e29bd0aa39676aea91bb38ea997d2381482d42241e03f41bb1ad"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/nodeFuncs.h",
+      "sha256": "a72fdc5656a96ccb2e517233ea4cfd65195f6bfe072aa12ea7b3818c2c2bc19f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/nodes.h",
+      "sha256": "6ef3b86dbc6735756b97ebe816a28b7b2dcd693a81d21d36c0bda3bcf98b5a67"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/nodetags.h",
+      "sha256": "00b0e3a2ea5af09e3749545f2fd8818279f8f01f0cb98c43523bfe377f13b7cb"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/params.h",
+      "sha256": "9809906510980d977f5737d01e152e5299dff79c6c90706803e0b3ae4cc8cf79"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/parsenodes.h",
+      "sha256": "00d94c8c38ad8f5891d22844a1512c2542fad99536193305ded7aa74088d0c84"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/pathnodes.h",
+      "sha256": "b22d1e9d869a88df00f6f186df659f37665dad654bb4e8d811eb106b912eea18"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/pg_list.h",
+      "sha256": "77c52ac3a4f7a6531e6c1c8f807267b19c047364fe611ac642422a3031509060"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/plannodes.h",
+      "sha256": "97db47353db76326b874589a5ad0a04501cc74cd72e237e7bd956e7472c41f1f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/primnodes.h",
+      "sha256": "fc1bcb2d66d30863fe76353d430fb0b747a60f9b70084ddf212cda9351b3ed22"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/print.h",
+      "sha256": "a0c99d029b4157082b54df08b33b6e9d3dac6a9ced8c7a73e64fb295ea279dd2"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/queryjumble.h",
+      "sha256": "d92c83402a677f1a9ba17e64c8fc0bf961fa587400a606dfe37401f5f90cd656"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/replnodes.h",
+      "sha256": "b449217cf89c3f6ed3c53c07c0aab2949035891e70ab720905d765860ecad3c9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/supportnodes.h",
+      "sha256": "e9db75871df0b13f2759bb01b64ce7da767b5a45816a606f4281b60a97bce5f5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/tidbitmap.h",
+      "sha256": "f718e6abeee31c85fc4a1cd0c7fadfcaf61f12d1ded20477c1add44d10ee7e05"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/nodes/value.h",
+      "sha256": "1ad9893900cf30db91c4e1328b3c0513da0d7798c7d81fe3987ade0e527af86e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/optimizer/cost.h",
+      "sha256": "1bf303b0eef08d042def0c7d08201ed2c5ea90392a0023639682e92fa0b81f52"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/optimizer/geqo.h",
+      "sha256": "c4876c63b7a491fd53042d021d96ea9d262a1bba2612964c5fccfedd3c2c258a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/optimizer/geqo_gene.h",
+      "sha256": "36d6539f1a7b07c65ecc01278cb40eaf8172010589f9bf82f7c542c5486a786e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/optimizer/optimizer.h",
+      "sha256": "76a063a8a0b161a3ff90505d7852089d88599e94bd74dd3b32dcf58075d6c4a0"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/optimizer/paths.h",
+      "sha256": "4c5cfcfe85de1611e544d8b832fe9b4fcf0f059a0e8d7ffb4f0f5b7381fd214e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/optimizer/planmain.h",
+      "sha256": "ef7ab11fde4f276d90fef661a5afba89b9b47c1ce075c66ac385bc3b94c91111"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/analyze.h",
+      "sha256": "4bf4ba1988c90afb63a762214c242e8a173654bf290b6771e72ec1c5b657f794"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/kwlist.h",
+      "sha256": "b9db8bdeecc085e015e6e958a53545ebe0d8fbadf1094bc885ae511d32ace819"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/parse_agg.h",
+      "sha256": "7900bc68e2851fc54d4f5995a8dbd695fd654b97e82b242b3151d01ea116404d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/parse_coerce.h",
+      "sha256": "ab51cfa998d5c18dac1e054c784a4faa37eb9960a9a8b31130cc04562c876978"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/parse_expr.h",
+      "sha256": "54c358c055413ad86e0c8b3e4ee670de68ba2348bf0e692a76af94c596b839e3"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/parse_func.h",
+      "sha256": "a5623f928fd92d2bdb919234ec3e709fdf1c829b2b51e828ea3d2b5a6336783f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/parse_node.h",
+      "sha256": "2cd4d0c1de958487f718d9eb351975add3f3f566f73d940aa2b8cc1e3f078a2c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/parse_oper.h",
+      "sha256": "86bed19345bae7519583ea58fd8ff69b4f51baa5e05d1fc2dfd2576c685b3e77"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/parse_relation.h",
+      "sha256": "cef39b8ee6a719a464d872150b731e93c2865193f9db549d02f8580c5cff5404"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/parse_type.h",
+      "sha256": "d02da501152a908d2c28e11502bc9a8342f08039b925e36bee972338aaca1340"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/parser.h",
+      "sha256": "7f347ddc4e2aa87230fc4c4db2010cff544a4387a568eb9e5204866231b3495d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/parsetree.h",
+      "sha256": "41ed334ae14a77e721359d1307e0854725da68b3ce560ca1cb25e31ee488c2d1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/scanner.h",
+      "sha256": "870dbb1738e8e3ebc6f0441db9b24ac92073c1bb75a3be7bd754ba4d4557db8d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/parser/scansup.h",
+      "sha256": "17652047e64d234e847bb5d4c46f200f2b5e8c66044f5236029e9534b98c3017"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/partitioning/partdefs.h",
+      "sha256": "cb136dbc0fa985470c5e3d49d9d58d9a0d13c42dba6aeadf06a42a62964770b7"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pg_config.h",
+      "sha256": "de4b092653f82c971f60e6cfcae5b8a35586c78401e2e0b73c046fa4b22022a8"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pg_config_ext.h",
+      "sha256": "ad524b12408615b768d82461fd513b107ca6850a9e5a8584f486f2ecdbe4b678"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pg_config_manual.h",
+      "sha256": "8b0d42f19610a735f6d59230e6213d2822d808f37f3f6e2c27873ab5ca91771f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pg_config_os.h",
+      "sha256": "1926e1efb353778bbdc752f33681b8d9610605f327234493e2483ae30697a6df"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pg_getopt.h",
+      "sha256": "053ae7288089e7fe70fb27b66bf468adb536fee9d9b7603209517a6c2d35bb83"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pg_trace.h",
+      "sha256": "27d25d28134462bb4f16a6a76372b60cdd1de954ccd4eb13f3ddd94b060457d7"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pgstat.h",
+      "sha256": "a7162d3364a11c3c816470d7d84b7e9d9343e73a250230e63752edc12482bcda"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pgtime.h",
+      "sha256": "eb1d55f439ff609e99c92a11006841459eda82e1b413537250cb1c3af009c1b3"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pl_gram.h",
+      "sha256": "fbb1c9400c1645dee7cb32a181724fbb524c5b35306a46c4281a6169db215a2c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pl_reserved_kwlist.h",
+      "sha256": "1366624831dd43cbcd0452d7873a553638d9575e802178ffa0c395fd5e7f8ed8"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pl_reserved_kwlist_d.h",
+      "sha256": "69cc359f039547adb0b843d43726baf732ca8d3efac6cc04ea10ea8777e5441a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pl_unreserved_kwlist.h",
+      "sha256": "3b08d8710e677dd236f423f465f3e97305f57b0f7dbd680ce245db94eefa0e36"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/pl_unreserved_kwlist_d.h",
+      "sha256": "0d8111bda2617e6fb7c52cc5810e6f7f3d7ea49dea91da371eb90fa1c01c9df7"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/plerrcodes.h",
+      "sha256": "2676a28acc10067872a298ae06373db4921e51ca551195c7a52014ee6a33a485"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/plpgsql.h",
+      "sha256": "e58197ba9a95121975a77e38133ea21e4b6d78b5de077578640cffd0de2bdea1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port.h",
+      "sha256": "9fe4a3424125b350d17b8fd935c209a5a994941217473f784b26868449e5af99"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/atomics.h",
+      "sha256": "2129980afd247d6a5142e72fcdd17f2da10bfbecf21e3fdf9c4228fe312a1729"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/atomics/arch-arm.h",
+      "sha256": "677bf6e60ffa3c46fa5114e71dae2f76ab5ebaec14dced330bf2709ad239ebee"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/atomics/arch-hppa.h",
+      "sha256": "3f78048fa1f1687cb6fd5ba03a8588aa314f16a3c50b868fd93a1f768dcbfb91"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/atomics/arch-ppc.h",
+      "sha256": "36cc2698e181629bab9bdea2e75346f740d2c8f64117a05c42472e2a3d96d16d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/atomics/arch-x86.h",
+      "sha256": "92383c4daeef752d202807fe3f0c4e4778b586c15ef30f60c0cc065d100ec2e1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/atomics/fallback.h",
+      "sha256": "06ef2e4a705135328ae4125cea65d36ca8b66945ba27c0b96d689c0752375d54"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/atomics/generic-gcc.h",
+      "sha256": "b778bbf9ec6a247df072d4d7924a1147b44a7ca3f06f627f3148d6c2c28baa48"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/atomics/generic-msvc.h",
+      "sha256": "2e31e0995a6d0f9d1971970db037ea3bd4b1b7e78b92b9759319402a4b0b5479"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/atomics/generic-sunpro.h",
+      "sha256": "da731fb85218aa29553665fd2219b279402e6e97c7e0ec79f514638afabd711d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/atomics/generic.h",
+      "sha256": "63851ec56ff4806815e26f38f01d3e7ea4c2d724e97ff77fbb0038bd3c549ac3"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/pg_bitutils.h",
+      "sha256": "931fafd6b85c103af60910f7ce2720ad74bb91ebf5eda5866ecfaa8b2dc56561"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/pg_bswap.h",
+      "sha256": "d589a1d47b2a67c8cea66bd40b19d80accd35eedbc25e8f460ea27b3e59deb4d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/pg_crc32c.h",
+      "sha256": "2bcae54993266204a4a2af95b16c7e1482d81b0e042b18c0bef58a5b6b8beb0e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/simd.h",
+      "sha256": "3e706ca3d5732712f127fb659502119ef30d918db7a752ee15a24a8533dbfe51"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32.h",
+      "sha256": "23044a361c71345b264181b03201fae7ebf61806e089930a6337931538f6845d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32/arpa/inet.h",
+      "sha256": "858eb60cb6f28c86fb8a98534cfb609a01812f6fb1c91fe38a8c5c4ef89df543"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32/dlfcn.h",
+      "sha256": "e471aa3b828c17e177624b025aea4f8f8912df504e72b2b0d48ac2362c8e5e74"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32/grp.h",
+      "sha256": "1b144f06402b55b2e0da7ea89c86a0495d6892e288fdae8ef2aeea16f453041b"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32/netdb.h",
+      "sha256": "3c94c4086dc577fc1266edb1954c19ec5491b50e5e2c2c5edfc351e71333d354"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32/netinet/in.h",
+      "sha256": "4212e909ef8c1f466d029dbc72887ce8728206ad2d61e1bade489ed8e6059744"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32/netinet/tcp.h",
+      "sha256": "e482093144c35cacd94adf66c7194ac5fb120d982e3d359913fb4bc2ceabc231"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32/pwd.h",
+      "sha256": "18fd511359ec8eb8b080ed9c645c8c44577c93ab94f6c455de9c479e9624d510"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32/sys/resource.h",
+      "sha256": "cc0391c72d9ffe8bd8ce8f7ec2a5da381b52ef016de7efc0aee6b4dbfb65ba27"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32/sys/select.h",
+      "sha256": "027632760f2e299a57216e4e72c33cc916442888b41ecc3d008df1c4b075ee2f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32/sys/socket.h",
+      "sha256": "a595a09f921f510a8879fc241b9c19319fdeb693cec8fd131c1b256005006e73"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32/sys/un.h",
+      "sha256": "f34294ef6715eb0376b194cbba016811f3ceecc73d2c7f9d66f7f403ecfaaac7"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32/sys/wait.h",
+      "sha256": "a62b1cabbcb74119a5fbddac48dde75c134d51307cde5dfa1b63d951937f7ae8"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32_msvc/dirent.h",
+      "sha256": "93118ae88c8c72e5a630220ab1c2a79095ff2f79c98c776c50ea68322ae89f40"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32_msvc/sys/file.h",
+      "sha256": "7a166ba77879f53f46732849f10ca9bec1443838a7d448ffb07448018b2f79c2"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32_msvc/sys/param.h",
+      "sha256": "b8534136a9a409ced0f9f4d4aaa2a7353c3541bcf8ceebc5e7f12d09965c6b5a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32_msvc/sys/time.h",
+      "sha256": "ab1be6d0f3996e696bb6e4be634a18b616fd8a65282cefa605731eb87624d549"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32_msvc/unistd.h",
+      "sha256": "e89955aca9d44daddc921942cde46328414e41d81b4070c8b6534e4cf0aeb311"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32_msvc/utime.h",
+      "sha256": "36fed6886d1d7cffdc9fdc522667ff2807d01251396ff42be087ed3a84551b91"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/port/win32_port.h",
+      "sha256": "56a527fb2268d2e82f2029b4491ad35ac59a4e2948f64fc6748d5b1367b52d83"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/portability/instr_time.h",
+      "sha256": "6fe3c6600279711b51ea079c16a24372af31d8b19f36a360d376962b19b31926"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/postgres.h",
+      "sha256": "b4894a5973569b98b975a585371a2d38ee53e76aca940093a7bd76900b99d488"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/postgres_ext.h",
+      "sha256": "e65b7fc71d65af63efdb9d255f6e1657969cb16335c27d667e9c8998ca29bdff"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/postmaster/autovacuum.h",
+      "sha256": "db8f922efdf325954c4952ca3fea9a0621ef8c53bc6f4d6bf2c85bf7d3c0bc53"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/postmaster/bgworker.h",
+      "sha256": "642baaa0201e5355db86ec40653a1b7378051726acc5f7aaf3eb7ed71166abe8"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/postmaster/bgworker_internals.h",
+      "sha256": "df924df7c22cf05ef2b592cd4aa43ad7448d0b0ece85aae608aeac240fc2dbd5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/postmaster/bgwriter.h",
+      "sha256": "546bc9a41802a5dc2a85ed61b6aa224f95c228770989ad87167c316db6617f64"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/postmaster/interrupt.h",
+      "sha256": "a4c81e09451adc47e3990f7106b1dfe2f880b8a280d78401441ac00d8ed264da"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/postmaster/pgarch.h",
+      "sha256": "7182f743e0237d8588a2b16c961b0e46ecf390c331c396369a76858234e62663"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/postmaster/postmaster.h",
+      "sha256": "936ae28b0c8aadd18e46a4296756bca3f2b89deb7770ba72146ff1563942f3d2"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/postmaster/startup.h",
+      "sha256": "e7067aeb4f1ee667da00004b9ed92aa04880af5290750090ebcf103aac6ad73b"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/postmaster/syslogger.h",
+      "sha256": "c3a8bd357b1ea07523e22eed2da7bc49277bc5160fb3febc1eacbb4e69c06812"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/postmaster/walwriter.h",
+      "sha256": "24322fab1b38528141f3b57ba390e32747660d3633a3ab968afc6d595851a06e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/regex/regex.h",
+      "sha256": "b475dd1ee16f148f2ace1205e4fca6079ab1ce6fc8ace8bef80d7e40bc8a3334"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/replication/logicallauncher.h",
+      "sha256": "ea0c091a388270bc256a8c84d6a389b63897968467784b86d2ac0c22fb861130"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/replication/logicalproto.h",
+      "sha256": "dfecefee411c6448fd9f366d4f2a458dbb4bd95616306a1b214457302a7b46ed"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/replication/logicalworker.h",
+      "sha256": "23d2709b368c43c5991b9507e2874c2b007852c69bf2de80b118b57f4a1da32a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/replication/origin.h",
+      "sha256": "427dc49b2bb0afedc78134d5bc94506d5b0136f927556e90b8a9173e4ae8287d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/replication/reorderbuffer.h",
+      "sha256": "6e7aa0dabe47fa097a099cd1cec75de450ec9c62b6305cb2722d9820081f4945"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/replication/slot.h",
+      "sha256": "2c5a58a65dd7b48b2a4bbea16b01cfe551a489ad136d3456d30afd1fe699d4f7"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/replication/syncrep.h",
+      "sha256": "2f03c7dce2e072a29f14101f5f0e406705a6a12a5415bc8bc43e40b3f02c5d52"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/replication/walreceiver.h",
+      "sha256": "ba74acf2d2a95247d0717795133cfc92a7fae97ea706102100968a2b9045d558"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/replication/walsender.h",
+      "sha256": "7d619b080e739509e4d8733ffc84fcd94c157a0ab59fa3246c2a4ab9d56588e4"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/rewrite/prs2lock.h",
+      "sha256": "903733bf19fe9b8e6cdbfc91481ff2ac0f3edfa101c4dfdeeeb965ca6377e997"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/rewrite/rewriteHandler.h",
+      "sha256": "fd9318b7ccc9dde33c4372a25d031402f68b63270f423cba99878e3bc3df4db5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/rewrite/rewriteManip.h",
+      "sha256": "ab38641c336d6cdb5879857f15178e8c849568d23a03e6ede720e317f149e624"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/rewrite/rewriteSupport.h",
+      "sha256": "b84213706c83ad2261b2acfce6fc93fdd7ce88e884243ca1f93747b01ac09470"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/backendid.h",
+      "sha256": "a4ab19fded44cffe8aaef569766ef4527b3a39e80626ca03e27c2b142a2c2314"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/block.h",
+      "sha256": "889d85d47ef5d377e6e49129b99f8537e9a627ef78f768f0974a83fdbb2c883d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/buf.h",
+      "sha256": "6c08735e47d4c3eca85deec05028377ac1def74bc8c2eefa32cf369ee6db79dd"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/bufmgr.h",
+      "sha256": "47df41d018b9649bc6a26fe8c316e4a1a26e837a28496fa6b23fdac9f71a99c4"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/bufpage.h",
+      "sha256": "2bba251374a847a91389fa43b7b8180095f6a0ba25aa298f4973554ed2686328"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/condition_variable.h",
+      "sha256": "2247f0c3d9a6c1bfdec556b439f295b9db6089e0a5c41d4b8ba4bc08ab8baa2c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/dsm.h",
+      "sha256": "8ca7b19869f17d7342f2a17eca06814476e0b0a5b143bb88c62d24a23fcca935"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/dsm_impl.h",
+      "sha256": "570d001dace6673f7090b7a2f8919213a867b40489a0b81fa24f1398cef255ca"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/fd.h",
+      "sha256": "78179a8c3a9d4f7edcdf9a45a8e4319e445a210b5ec664d3673e168529358ff3"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/fileset.h",
+      "sha256": "ddcad552843f9611271119178d6a55eaecfadd4cba8efda801be8c188661c24d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/ipc.h",
+      "sha256": "723a567a3507217580aa37c8b585c829e314044d94a8aeb9cbcc10fd24ddf86e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/item.h",
+      "sha256": "f6c42c0e60ddf7519397fbaeabc77e6eae1756b32c3005a63f1dd7f4bac89b4e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/itemid.h",
+      "sha256": "9cd585a906ff9e9ebd54b75646d0ee02af30ce8a3944037bc5327f0bafba5199"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/itemptr.h",
+      "sha256": "aa1c4a59cb1046dd8ccc9b53837765ad34e9c546454771f0b9b6d7068a4f5a0e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/large_object.h",
+      "sha256": "9f057e0770fdd91c483df50f63e57cd1053a40ff7966ec77e2a9871116375811"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/latch.h",
+      "sha256": "81e0d045b668ef97c2be9514f9b39b46c29a11777f69c08aaa22882a5c2b8d9a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/lmgr.h",
+      "sha256": "8446c58a7c7f10da492d032841816d4e732af936de28aef0fd22c305ccdd9aaf"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/lock.h",
+      "sha256": "cdf3e7041366071960da34244d6b81890cd7b011715fad26f8acf418e2f52a66"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/lockdefs.h",
+      "sha256": "9b27bb67907d9b8805a0385241ec75f630d1481c6df9c25bafb1280edacaf9c8"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/lwlock.h",
+      "sha256": "172881bcd04210cff85fbc841f4c696f1e8e4fba4dfce6d35a4a7b8dc2756463"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/lwlocknames.h",
+      "sha256": "07e5f5979231051fffcc4f17e0e9a9ccdafbd08d49078569d4a6b82d7e776a47"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/off.h",
+      "sha256": "0ce855fdd86fbf44cb01cd252a9174ac1eb87a2aec0ce5364a05223f3a9be1ad"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/pg_sema.h",
+      "sha256": "b150fabe5c972677526ff0cdaa61aaff06b23a0ad8d633072d36debe397275c0"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/pg_shmem.h",
+      "sha256": "6dcf535b2d618ffcc3f732d30f1436e5ab5b6a03e822792c7d051b59cf740173"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/pmsignal.h",
+      "sha256": "30193e5feda3655860082e02571205ed6029cf8f5515c10641c04ef45a70e26b"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/predicate.h",
+      "sha256": "459ab6faa3ffd55a962fec7c975bc18d8ee1f9159595d88459126c272426a862"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/proc.h",
+      "sha256": "ac5ca1a00af12828680c6ff2bc7150bbd48548d51ecab2aef80168e8aa63220c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/procarray.h",
+      "sha256": "764fa876f0b7bcf76e7c244d9928ec786032dfb5cd46e22790a2c19532fa62b8"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/proclist_types.h",
+      "sha256": "0923ce2ca38934b4733ee5d3e9deb1c62593170c1e9b88b9525a9a2dd21b213a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/procsignal.h",
+      "sha256": "1154192cced2d2ed1dfa0f18b050901724058fa0d0d744a1f884956f4768e169"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/relfilelocator.h",
+      "sha256": "73d12e2275a115b5019432c6f40a2992f3684b83b3dd93a396c792dccc2f2a16"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/s_lock.h",
+      "sha256": "c2cacb8eafe87258321233e094cf318b163ba705bb0c30d9fc56fdab16d1b977"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/sharedfileset.h",
+      "sha256": "c4eee72eb6c10b89dccd65d8d17c2e82d42195d1baac2d7763c64e3922ea5af0"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/shm_mq.h",
+      "sha256": "8deb9b114e6499858e52aa5ab877031cd7bd88f5c35634f301d11a56b8c4f797"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/shm_toc.h",
+      "sha256": "9c2ddd7739bf6be5b3e440144459464ffb4fadd5b67bf858ff06577e5605e551"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/shmem.h",
+      "sha256": "29f030168b4cd31df53370b85f562546b61fb432c1647737d303fe3f20590159"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/sinval.h",
+      "sha256": "f6b50e3a30dfc81647d531d54cb2bd0dcaa5f057fef8780646f35fc609ea23f5"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/sinvaladt.h",
+      "sha256": "bcc3f64d9ff1c2c55a1a18caba17f9cfa06946ecb26150bf31a317f1c03f1386"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/smgr.h",
+      "sha256": "f9a7873f657eee723badbcb839be19ad758acb9c3d17ccea7878ef278354fbf6"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/spin.h",
+      "sha256": "04a564e0d0d8255b7ab28c20fca48f43a02850608f827822e4ec1bb2c9b41fbc"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/standby.h",
+      "sha256": "d02c23e3cd6dd1b81ab0f8dfa60fc24211e1aa2ec0b3af7f3d0c464807d36552"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/standbydefs.h",
+      "sha256": "0c9659d32e1d2dfccf1d8fa43290df1c24a2783032dedc25f708841ad27d8059"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/storage/sync.h",
+      "sha256": "124df0b7477e32ec4d3f8e9496620f016eb399123a6709faa812df0cd38cd8e8"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/tcop/cmdtag.h",
+      "sha256": "959a3d1365b49cda06664d5ab5996605d9287c45118ef224d960b3f9d4063828"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/tcop/cmdtaglist.h",
+      "sha256": "a14f43f4c58a641da9458c5be1af87fd7e271764e6e284b7dc699d2abb939095"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/tcop/deparse_utility.h",
+      "sha256": "bfdeb0dadec891939fa1b67e0e0d48951e066e229b734414e5a5cc9b9a068b2d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/tcop/dest.h",
+      "sha256": "a7d9ccb1c22dc0836f9b8e76018dc57eb229562f6f4b6f7eba23f06e6f17c7f1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/tcop/fastpath.h",
+      "sha256": "485dd4f9e5b978da9f225aac34b8cb7bcb5c7c75cf13bf57bb35bb35403c9004"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/tcop/pquery.h",
+      "sha256": "5951ab55dc827d52ecf7971489c99f34590db3719e306970cef68ee6943c1436"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/tcop/tcopprot.h",
+      "sha256": "666c7a2d09c5c2427b57b0efbf79604e4583863674febb57fd4ec92d1477c270"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/tcop/utility.h",
+      "sha256": "06b1fecb402ce6690c752059fb52b5ce6b5e9a267caa57d266f46079a0539f46"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/tsearch/ts_cache.h",
+      "sha256": "699f0a44f638c60f152f3b2b9284930f5609cc3c0e3a1b45fa5cff0cb47f8ae4"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/acl.h",
+      "sha256": "91bec5a8711b0704ee3b0b2c24fb48d5559e294c55fa9c3669a951354035ffd9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/aclchk_internal.h",
+      "sha256": "e95ad7b91de235d58ae65c584e36d6954064ea2c5f5e2a0aff417f5ce4bce917"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/array.h",
+      "sha256": "f2ed8a7780277386dd43754d5671b30dfbf811068ffbdaf7022973973ef44ba9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/backend_progress.h",
+      "sha256": "e311d29a926a8da0c09a848d1678298878c5adbad041eab0322406b41cb106a6"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/backend_status.h",
+      "sha256": "6d9e88c02fd3dfeb116a1ae567ea21b5f50ce6650e6332a4c0286ed9d9b2054b"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/builtins.h",
+      "sha256": "539f3102a7035ae312699ac53cb7b7d88267837ec45184a449e4303505927b5c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/bytea.h",
+      "sha256": "4bda086e1d36b16a04a864835e0ce67ecd856a102525043543fbce1c187c4937"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/catcache.h",
+      "sha256": "986350e4102626ed1d0e962e518b2c17f4642dbf14b1da1402e7b3fb49ef4e38"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/date.h",
+      "sha256": "edff5eb23eaf67218a99db7fe691987bd7a59a1e1b4e9ebca4999b141209a70e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/datetime.h",
+      "sha256": "0e0e845c37a4c547c6ea37fefd000022fcee1782340ded1834594bb58d079709"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/datum.h",
+      "sha256": "1797c5ad165daf2fe12a0d2c9c77adf25b798910b06ce14cf7f56b423b7f9b37"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/dsa.h",
+      "sha256": "927059d0e76a24bdc4418ebbfebed1b7e5acf7430e826a0765f6a8f2f45244ab"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/elog.h",
+      "sha256": "db5590b9a7329014f2302b96f887c6927754ae66aef8d4597d2b2771c5624bbe"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/errcodes.h",
+      "sha256": "f0ac8bb9dd9b78631a70882c1e33a43b2d168542f15e7701dbeb16c125bd9e46"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/expandeddatum.h",
+      "sha256": "d388cfb17f04e3968a93b9c4fc4793020cfa1452d30e5fa33a8aef3f8a025a74"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/expandedrecord.h",
+      "sha256": "82bfadac0b26ff2c24bf4211553198cfa8f44ac7246f2637eb6ac9f3754c146d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/float.h",
+      "sha256": "beaaadf5ccbbaa85b7d635f0bddf0949f375fec7c35d1904b270b166592ec5f1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/fmgroids.h",
+      "sha256": "aaed0e58370c0e5be926e7f96fade79abba0089fbd4ec68e9bcdf0a8469b2ea0"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/fmgrprotos.h",
+      "sha256": "7fbf1536f1143125ae328361328c0f61dbd8ba4e89d34d6e3f4df79418cbfed0"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/fmgrtab.h",
+      "sha256": "72bcd56276e95ed5541687e674e79a5905f4fb43fe7a52622366373f210c66ae"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/guc.h",
+      "sha256": "85d0ca82caf9e28bdf10fd3fb588450b226aba6a8ae27097aee1434f183dfbc6"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/guc_hooks.h",
+      "sha256": "c1f98b2067121129ae84076e5c9d72cd498f25c1c0c7a9841efb237781aa8071"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/guc_tables.h",
+      "sha256": "5732eaeb89961388dd486a1e6559d998e181a95c03d4d0070f9ce5e67e8a2848"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/hsearch.h",
+      "sha256": "19f2328a7cc7998c7609fa68bb91645787781084acafbd369183a0598abb5563"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/inval.h",
+      "sha256": "22654f9721252bad4bd865df550479378d2362fbed6bc3e78e62dfa50150dd80"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/logtape.h",
+      "sha256": "21410067f0c991cffb4fc0b5f09c104f1276976f587cca66b61f53f51341f628"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/lsyscache.h",
+      "sha256": "e995bf77c47c53f50982af9b6f849e23aa0ec09aeef54ffc83f6a165d15eb8e1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/memdebug.h",
+      "sha256": "e7460f45b1c55e4f793900aa3b371079b611b08d48b44824445a5e654a985459"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/memutils.h",
+      "sha256": "65bf8dcef59a32aea09b441c84b0f92ef6ef363ad51bd4ab0c6657e59ef34ef4"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/memutils_internal.h",
+      "sha256": "603707beecc1ce2ee6bc6a2b3f8736b09d6d6c59c8444b00de63f18b5bcdf0c1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/memutils_memorychunk.h",
+      "sha256": "5de6e0fb09377634d64c4f0d36456490af5f75349653a3d647468af75a1dd320"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/numeric.h",
+      "sha256": "8bb1c2f5cf374956bef17a8ba6c2df76dabf1e8ae825e343b6c7a16dfcadc425"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/palloc.h",
+      "sha256": "e1caad33544081f7c26846cc6d8467a7a993a23e2c44d6077416ee3349358bc9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/partcache.h",
+      "sha256": "1114f9569cd3ac5712187220e87a4ad0b5679a4c8503d413c196b7d69ea1ad14"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/pg_locale.h",
+      "sha256": "5d1d9969a4d84a4c433d7c8472c3ec75cee01c7f74011fb05b3c861c5444b112"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/pgstat_internal.h",
+      "sha256": "2c05f9de6533dd494c5231db634291de5b00db47dc5ede3b2ae7fbc720956b92"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/plancache.h",
+      "sha256": "0e14b3b32d9313ead2ed20eeb3e1ce7bc5875c2bbca8fc0fdc8367c423328622"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/portal.h",
+      "sha256": "6337a77b61bde45253fb59c25f523160124fd70df9b1f50ceafc0296df4ef342"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/probes.h",
+      "sha256": "3f87fbd490b995cd6feb59714ea54c4765375a18738f52e9552429f261dd1195"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/ps_status.h",
+      "sha256": "f42ff0128b3d2b33b2e2e4db731676a2fb4f46c39a1cd5d4aee7201df52b09b9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/queryenvironment.h",
+      "sha256": "6f41e625f11e9e83f34085ec3606be0ffe22c0cd3501c26ba56a3a6c4fd26572"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/regproc.h",
+      "sha256": "69468fbeec8e583b5161cd86922cf87db444b55b2cd920521bc12b3444f34b75"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/rel.h",
+      "sha256": "da416f3a09b98315195042548148698fe9fd2f8402b8777ab2f71250036524e8"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/relcache.h",
+      "sha256": "32dc1548f882a9d760c2be53b6ac7483c7423851d347921dcf1f451c88bb76e9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/reltrigger.h",
+      "sha256": "8efa4d266f26c4fcc37958609d118c38ebf391b1b74d5ce95f18a1b26f3a696e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/resowner.h",
+      "sha256": "970f10742a62a2aecf5d876da30d89e032ccb57b61d0ec5dfa2e5393347826d0"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/ruleutils.h",
+      "sha256": "fc3af94577dd224d99f31c3d1b5ef09b2a35df3164da9d3713f707d56b19bb54"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/sharedtuplestore.h",
+      "sha256": "35df9d2adaf12cca5b34a0f53aad7ca3221d6e2d06028bbd375e85f9f0fa3b8c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/snapmgr.h",
+      "sha256": "0aae50eda6a070dee9628723b763e43afaf118a1b27b3beec61e4948d3391ab2"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/snapshot.h",
+      "sha256": "abbd853abf2d8dc2fd2e258e116180a240bf99f052e6f51e2a6158f651547a0a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/sortsupport.h",
+      "sha256": "50c7855eb2c913babb607453c24e72a9ef2e6b1e9471d13f4ce284f3d757e9c7"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/syscache.h",
+      "sha256": "8d8b022240e7a32177fc2c113311c44a0f3b033ddbd30ab664a10f2e760f344f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/timeout.h",
+      "sha256": "ab2867fad73a7ec0c0f750aba90bb0aa4baaeef347a8255f783d81923e61eee3"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/timestamp.h",
+      "sha256": "2a461d6e4a897aa10736a2eb5ef99f68400f2779232d26832c7edabd7a46e332"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/tuplesort.h",
+      "sha256": "d54c78cf4216f78748eeeb3456bd8a1dcfc94e45ebf51fb4557516c8b40b4408"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/tuplestore.h",
+      "sha256": "2dd40af1f01caae8217f200c9cc1c872a2078f6c8b2c825ff820eb08f275400a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/typcache.h",
+      "sha256": "dad6476bfbc6a40152262f2110cd291797e7c0c842269367ac10ca3b606dc46a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/varlena.h",
+      "sha256": "baca5df4e7113f64ecc40dd2a29612406b2242beb6a785a4c8c8f2d1806dde11"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/wait_event.h",
+      "sha256": "8896d30fa4860884518dba9186448e688e658d2895c28d5fb1f12b23106fa5fe"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/utils/xml.h",
+      "sha256": "5c11fe6a473d6699ec475cdb32e041297c5fb378d2352f6d783e51c88833da4a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/postgres/varatt.h",
+      "sha256": "4d82654a8af7149e67888fb410d49046c60f225b973bba9452374e8f67b97133"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/protobuf-c.h",
+      "sha256": "3c06432ca3233a730e7b20afc1bc5750dd3f8c298db9c99b5df03dc6e1a4740c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/protobuf-c/protobuf-c.h",
+      "sha256": "3c06432ca3233a730e7b20afc1bc5750dd3f8c298db9c99b5df03dc6e1a4740c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/protobuf/pg_query.pb-c.h",
+      "sha256": "31dffad855cb709203183ef03a435edfef6f5aa0d8d5412f7c785082ae829338"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/protobuf/pg_query.pb.h",
+      "sha256": "33d61e82f5f1289d53b9113225f5c569ec6a2cad7603b98a96a1aa4f3d1d4185"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/xxhash.h",
+      "sha256": "7a15f72484e64cbf828d51e7429f43f5b8ccb52da8825b1ed79b9f27de5dec92"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/include/xxhash/xxhash.h",
+      "sha256": "7a15f72484e64cbf828d51e7429f43f5b8ccb52da8825b1ed79b9f27de5dec92"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/parser.go",
+      "sha256": "b2dc761c4f585bd3c4fed1a9bee2d16a53a7e77d22f06997aebb50df849ddb1c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query.c",
+      "sha256": "80f2c6537bad8d69636e1517175f36c5465d93cf45aa821f265b23185f957e28"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query.pb-c.c",
+      "sha256": "7464bcb8f028a422b158a52138ac6fb4e23ba9a981ceb88164de1be7dca48be6"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_deparse.c",
+      "sha256": "dbaee462e006ab7471f9172754ddb5a3b10a0d256fe0f00ca2d0468f9267a167"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_fingerprint.c",
+      "sha256": "bd958b04929fa86049952bc500a4a165c65a563daad08a83f745ee552d03f3f3"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_fingerprint.h",
+      "sha256": "d1dfa957128c530ba2a80ed7750d14268f0e55825065f9f63d9f22c3a10153cf"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_internal.h",
+      "sha256": "7cd76f1a2e83a5719f9d0b6821e5546a8531e775230f17e55118ffd827f21559"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_json_plpgsql.c",
+      "sha256": "04fe9edf84f20399a8f695e09f314bb0d9d4c957b99b02215a7a1c094fb15bca"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_json_plpgsql.h",
+      "sha256": "4e9a6206b1064114faefb01f4e82d859c0976f6a307efb14efd6a9b2b3d54dce"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_normalize.c",
+      "sha256": "4cbc352e541330aca5d82408a3548ce4d9f3276cb1367ca0d53049a2107a6bfe"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_outfuncs.h",
+      "sha256": "14170d579245eb15b853e73215d92b3d165a248b7f982917938a490492a8aa00"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_outfuncs_json.c",
+      "sha256": "8ca4b1faf79b10039a6650eb55d37d8071076244d6260d0572610006b09968b8"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_outfuncs_protobuf.c",
+      "sha256": "3654c6d8afb0def5214b3a630653f1e2c19ca3725481a07378cc5a91471a81b7"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_parse.c",
+      "sha256": "e0db3559fa356942cc255f061adf5d91a51b98cab88e2d55480fdafd231ccc9d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_parse_plpgsql.c",
+      "sha256": "9cbd9065392686abc5812886cfacbcb74a3e0cc47a4b0402e50feba685b4bfcd"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_readfuncs.h",
+      "sha256": "fcb11c4d71cfba92064883ed2152c0287f16e79c8f2c586bae3496f7678db3a9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_readfuncs_protobuf.c",
+      "sha256": "32b52aba7c3d6a74badc12b06699acddeb0aa4bc197a8e52e4dfbe334e512287"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_scan.c",
+      "sha256": "6bcbb320e94b95995bcca10be6b8dad9332d9ac81688cae9dff91515612c69a4"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/pg_query_split.c",
+      "sha256": "4ec417b094a2727567e72519987f6128c2ee579fc50a3568ec6c05fbfac5eadc"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/postgres_deparse.c",
+      "sha256": "ff36c2edba056fa82c5059f4447a33b4b2d084f4a613cdef5fb3922c9c239d24"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/postgres_deparse.h",
+      "sha256": "8623f3226d4c547f3a1460a4c9586a23aa7c235448e85d180e1e3e76057fbd98"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/protobuf-c.c",
+      "sha256": "4ff2afde88ecd4ea063c808c65a4eec11fba6b5eb8e53a8ee6185867b795a50d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_catalog_namespace.c",
+      "sha256": "8904683fce1be91f7e6b9168dbd6ace55eb0dd422094a221d1bb9ba049dde6ad"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_catalog_pg_proc.c",
+      "sha256": "3955c4c35464bf7ab809616c0beff73b1ad2910c0fdce2f2f882baf3e015d430"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_commands_define.c",
+      "sha256": "00a5e484605ddbc12498a8817793a3862a33b5955b12bdf18827564135e56f0c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_nodes_bitmapset.c",
+      "sha256": "c28b8a72bf6ee1400e46e7779213441cde0e31ea77afcb90e6623609fdf7ddd1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_nodes_copyfuncs.c",
+      "sha256": "70fe5de5e823b0e83c43a67d31d16f70090d40b7ecc835e23617ee98ea8b8872"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_nodes_equalfuncs.c",
+      "sha256": "7abeddf18bb3a83411dd2390b4d5aa37bf5dcb5f7e637ed24aec49a60dd00e40"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_nodes_extensible.c",
+      "sha256": "08b3466358fcc9971e98d50d8d4c77045948ff2c216ae3f6f330f302ec160cbc"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_nodes_list.c",
+      "sha256": "2e0fbdd11b85e6b558f28616570ee4a55782c04073bca7cb325f74c8366bf926"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_nodes_makefuncs.c",
+      "sha256": "12182653aa537e1f6fff7fd9e079d3b848ed94714fded0570b5067811b6f7a40"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_nodes_nodeFuncs.c",
+      "sha256": "f4ee91f5631754b56a89812a9b5a7e6a58a2ac1e80101f0b437c3369cba921bf"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_nodes_nodes.c",
+      "sha256": "6813887f578540968c7d73d7f1c0fcaefbae5a8366e413db546292a4d96038cb"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_nodes_value.c",
+      "sha256": "8eb30e30e6ec036774f9ca06e8bc1062a94d173b04d9025ed08fd3488eb9c17c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_parser_gram.c",
+      "sha256": "3ec54ac01d16c52fa8fe4e7fe7871c73eed2babefc7691d4805fc8c14415e649"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_parser_parser.c",
+      "sha256": "fdb901a9b29c5fbad497a908536874eed87b7bc71f623c14465b3ef6ad5ff7eb"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_parser_scan.c",
+      "sha256": "6b6a6ab350ea588f62003d084577ec84f8dc3f05a5312411bf72967e77cb617a"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_parser_scansup.c",
+      "sha256": "d5f25bc303adcb2123bf8d6e6836ade1ec601ae5221aed59a4315b446b4b8a3c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_storage_ipc_ipc.c",
+      "sha256": "bd9380b8557a138c168e93d31b2896051456ddd0803942c2cb2dfd2a6ef1e181"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_tcop_postgres.c",
+      "sha256": "4076f2c4cefe6202c0e020136c57813f031f9e033394b496dbc332daa3f4e02b"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_activity_pgstat_database.c",
+      "sha256": "31fa5f1e21ee7a5a767d3ad470852539363ddb0fda11d95fdd1b45acc801853f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_adt_datum.c",
+      "sha256": "c26cd6391d071bd3827b6f797ac7fc88e1c98c7129100816fbf4f8218fc51dae"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_adt_expandeddatum.c",
+      "sha256": "f7790bfcf2c8e01406bebbad67ae945af7bb5e00443405bf080360834bf7017c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_adt_format_type.c",
+      "sha256": "179f94aa0f9376ccd643a8fe70ee2ec8899797a2b6ae182bb1778c8c6ca60bca"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_adt_numutils.c",
+      "sha256": "61b275bcf510e68b478330c72e1b2f784e74c0d25858c56114c03bca9680a009"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_adt_ruleutils.c",
+      "sha256": "913f2217f97a12501abe791cc1e0ba48e860807ed9ab869ad0f6bbf822cf61dc"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_error_assert.c",
+      "sha256": "ed3ed87077ea00a07aacab1fec5304be389f5a8f2e418b58d8dc4371fe7cc9f8"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_error_elog.c",
+      "sha256": "51a7fcaddabbcab5a55d52a0930e8a361a4183900d907ce15d9b385ff4a2dc21"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_fmgr_fmgr.c",
+      "sha256": "68e9d731850f4396c647ce5caa29925962d4bc4c7278bac1d624b2396b3568ad"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_init_globals.c",
+      "sha256": "1815997aa2016521e2364faf71bebc40fac160cecf845648602c03efb8137cb2"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_mb_mbutils.c",
+      "sha256": "00e39c94d01a664bb5baa043a34ddbfb81bde24e9dc3f7e37819ea2168c9b319"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_misc_guc_tables.c",
+      "sha256": "a0018cae761d4a44100802c104dac5af51e2e69226ada7254305c25ea0b7e552"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_mmgr_alignedalloc.c",
+      "sha256": "3b03a2eb3bde12dd82c68b89830d4d298bc3ee0f93f21c1065ced7628f16f06c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_mmgr_aset.c",
+      "sha256": "a4ab6b02823568faec6a953000469de2ccea806870ce85fe45332017cecdefc7"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_mmgr_generation.c",
+      "sha256": "e289328a7839a955d2faf6fe1cb2085a2fb059dc957e2fd77d3c297538acce99"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_mmgr_mcxt.c",
+      "sha256": "9235157e62540c435407215499354d40f5fd146415732c65171f5723f9105ce6"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_backend_utils_mmgr_slab.c",
+      "sha256": "994a670b7cd791bfdb96d2037673841589a5d2bfcafcbaa58bb617a65c8e77d3"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_common_encnames.c",
+      "sha256": "c8646d70dc69fa50480b4cc82b8dc37823aace8c53f7369f7df58c0d2b4c82e3"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_common_hashfn.c",
+      "sha256": "d16ae55dfd13c9464333be396d070a0bc10afc4c616ff1e2fa3363dadd154609"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_common_keywords.c",
+      "sha256": "dbe4742aef3196aa38b752d79e1373439e23046ff64247e23660595a239c6717"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_common_kwlist_d.h",
+      "sha256": "ad840bf0804d4b886a2a7b0ba2e1b90ec11b2b61a48cf2726dfc280e4f8459d4"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_common_kwlookup.c",
+      "sha256": "6247eb253a89fe580a156bba6af34ceae09f6e2693e19445a5319a1c4d99293d"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_common_psprintf.c",
+      "sha256": "724459784c0ffae41ec1aa52b6ca8c9975eac734b6a3339f9befbb81e7135e09"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_common_stringinfo.c",
+      "sha256": "3d5cad635347dd78b90ff8f1eea00f96c36c92282bee52fb7cb210463b6b35e1"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_common_wchar.c",
+      "sha256": "3728983e08c95eeab73c45dab4032754eb55844fce8164498d99130f3319c101"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_pl_plpgsql_src_pl_comp.c",
+      "sha256": "3d7a90db1910a6946edf308b7ffee6b67abce1339e81d389182ab4801d7f92cc"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_pl_plpgsql_src_pl_funcs.c",
+      "sha256": "67d0089390ffd9b799e83bad839b7ecba7d0c8c4609cadcf889ad4f93f477412"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_pl_plpgsql_src_pl_gram.c",
+      "sha256": "063dfcded8b70ab411e6e690a8926a22e5486916e1190a7856c966314847a5ea"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_pl_plpgsql_src_pl_handler.c",
+      "sha256": "35bfe62794ee580bbaa02372c18fa20c93fe1115029df2718b0950111599ae6f"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_pl_plpgsql_src_pl_reserved_kwlist_d.h",
+      "sha256": "f40c14ac80242f1950532b176c0eab76447e3f93a87bc5c1c0611d8495380561"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_pl_plpgsql_src_pl_scanner.c",
+      "sha256": "e6e0c6e1b1a270e40bea9ca138efa4a8c4353422967d7f44fdaefcd92b83d21e"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_pl_plpgsql_src_pl_unreserved_kwlist_d.h",
+      "sha256": "edc286977822c94c574bbce3ae71d3cf5b710e6d7508e1a8faecd8f936e6bb54"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_port_pg_bitutils.c",
+      "sha256": "d1bb7b44a71fe17fbb18fdda343e0e5dffa5ba4e8716d8b9d3b15cb79b42e5d9"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_port_pgstrcasecmp.c",
+      "sha256": "99107c9fa0b4c0d180c04f98395c0382bde1c372c2e4f0fb09741bba6ad44042"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_port_qsort.c",
+      "sha256": "0b8f6dbb55899d09b5ca8a15b0357c5518b02c43f66a47b207600e71d5625829"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_port_snprintf.c",
+      "sha256": "5c037ccc39a5b6986401f7c6263658136a9e4154d24322a3a6e4ae178eb7d4fe"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_port_strerror.c",
+      "sha256": "f371360b2689198312dec37794b6c4d5000077a002668b3657298b155ba726bd"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/src_port_strlcpy.c",
+      "sha256": "6c964f95a052db8a482c228a2683435ccb7cd1f50e5a35ceefa3f43cb4de021c"
+    },
+    {
+      "file": "third_party/pg_query_go/parser/xxhash.c",
+      "sha256": "343f463d6fe389cc4c0647531cf7536246da1dfb9e894aa19b1d69002182e41a"
+    },
+    {
+      "file": "third_party/pg_query_go/pg_query.go",
+      "sha256": "95634e22bcd54e4daafe4c7bc028570f3bf0b618cd0a2e507e56d36d0bd97a5a"
+    },
+    {
+      "file": "third_party/pg_query_go/pg_query.pb.go",
+      "sha256": "2fe960252b09d6d85bfda95af2ff6421f0c16e58e7ae79a79e1cf419ebbff6f9"
+    }
+  ],
+  "complete": true,
+  "success": true,
+  "inputs": [
+    {
+      "file": "tools/source-historical-types/compile.mjs",
+      "sha256": "fe6e26653f29696268e89efb19fe49065e389778d30f8a5aea11580d2c9ae372"
+    },
+    {
+      "file": "tools/source-historical-types/program.go.txt",
+      "sha256": "da02faee14fc75468557e09c8a145d771d6fe9255a7a5d9283f1603c836840d0"
+    },
+    {
+      "file": "tools/source-historical-types/wire.go.txt",
+      "sha256": "78fb9078a7d9aa921ba7beb9df284194c16b14d452b0447c93f0aaf90990c629"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/sync-historical/in-memory.test.ts",
+      "sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/sync-historical/index.test.ts",
+      "sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76"
+    }
+  ]
+}

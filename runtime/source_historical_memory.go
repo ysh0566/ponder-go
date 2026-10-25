@@ -140,7 +140,8 @@ func sourceHistoricalBounds(span store.SourceInterval) (uint64, uint64, error) {
 func (s *SourceInMemoryHistoricalSync) SyncBlockData(ctx context.Context, required []store.SourceFilterInterval, factories []store.SourceFactoryInterval) iter.Seq2[store.SourceEventData, error] {
 	return func(yield func(store.SourceEventData, error) bool) {
 		ctx, cancel := context.WithCancel(ctx)
-		defer cancel()
+		var acquisitions sync.WaitGroup
+		defer func() { cancel(); acquisitions.Wait() }()
 		fail := func(err error) { yield(store.SourceEventData{}, err) }
 		options := &rpc.ActionOptions{EthGetLogsBlockRange: s.options.EthGetLogsBlockRange, Logger: s.options.Logger}
 		factoryOrder := []string{}
@@ -439,11 +440,50 @@ func (s *SourceInMemoryHistoricalSync) SyncBlockData(ctx context.Context, requir
 					logsMu.Unlock()
 				}
 				future := make(chan blockResult, 1)
-				go func(number uint64, filters, logs []filter.Object) {
-					data, err := fetchSourceHistoricalBlock(ctx, s.requester, s.actions, s.children, filters, number, logs, options)
-					future <- blockResult{data, err}
+				// JavaScript syncBlock runs through its first await before returning
+				// a promise. Admit that prefix here, not in a scheduled goroutine.
+				acquisitionCtx, cancelAcquisition := context.WithCancel(ctx)
+				var admittedBlock func() (map[string]any, error)
+				var admittedTraces func() ([]rpc.CallTrace, error)
+				async, supported := s.requester.(rpc.AsyncRequester)
+				if supported {
+					admittedBlock, supported = s.actions.BeginSourceBlockByNumber(acquisitionCtx, Hex(number), true)
+				}
+				if supported && blockLogs == nil {
+					shouldTrace := false
+					for _, f := range filters {
+						if (f["type"] == "trace" || f["type"] == "transfer") && filter.IsBlockInFilter(f, float64(number)) {
+							shouldTrace = true
+						}
+					}
+					if shouldTrace {
+						var raw []map[string]any
+						pendingTrace := async.BeginCall(acquisitionCtx, "debug_traceBlockByNumber", []any{Hex(number), map[string]any{"tracer": "callTracer"}}, &raw)
+						admittedTraces = func() ([]rpc.CallTrace, error) {
+							if err := <-pendingTrace; err != nil {
+								return nil, err
+							}
+							if raw == nil {
+								return nil, fmt.Errorf("Received invalid empty debug_traceBlockByNumber response.")
+							}
+							return rpc.FlattenCallTraces(raw)
+						}
+					}
+				}
+				complete := func() {
+					defer cancelAcquisition()
+					data, err := continueSourceHistoricalAcquisition(acquisitionCtx, cancelAcquisition, s.requester, s.actions, s.children, filters, number, blockLogs, options, true, admittedBlock, admittedTraces)
+					future <- blockResult{data.SourceEventData, err}
 					close(future)
-				}(number, filters, blockLogs)
+				}
+				if supported {
+					acquisitions.Add(1)
+					go func() { defer acquisitions.Done(); complete() }()
+				} else {
+					// A synchronous-only requester stays supported, but cannot
+					// promise asynchronous admission or parallel throughput.
+					complete()
+				}
 				pending = append(pending, future)
 				if len(pending) >= 100 && !emit() {
 					return

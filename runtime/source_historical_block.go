@@ -164,6 +164,18 @@ func fetchSourceHistoricalBlock(ctx context.Context, requester rpc.Requester, ac
 // Acquisition retains raw RPC objects for the actual source cache writer and
 // independently converts the memory stream through the shared event helpers.
 func fetchSourceHistoricalAcquisition(ctx context.Context, requester rpc.Requester, actions *rpc.Actions, children *SourceHistoricalChildren, filters []filter.Object, number uint64, blockLogs []filter.Object, options *rpc.ActionOptions, forceBlock bool) (sourceHistoricalAcquisition, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	return continueSourceHistoricalAcquisition(ctx, cancel, requester, actions, children, filters, number, blockLogs, options, forceBlock, nil, nil)
+}
+
+func continueSourceHistoricalAcquisition(ctx context.Context, cancel context.CancelFunc, requester rpc.Requester, actions *rpc.Actions, children *SourceHistoricalChildren, filters []filter.Object, number uint64, blockLogs []filter.Object, options *rpc.ActionOptions, forceBlock bool, admittedBlock func() (map[string]any, error), admittedTraces func() ([]rpc.CallTrace, error)) (sourceHistoricalAcquisition, error) {
+	getBlock := func() (map[string]any, error) {
+		if admittedBlock != nil {
+			return admittedBlock()
+		}
+		return actions.GetSourceBlockByNumber(ctx, Hex(number), true)
+	}
 	result := sourceHistoricalAcquisition{SourceEventData: store.SourceEventData{Blocks: []filter.Object{}, Transactions: []filter.Object{}, TransactionReceipts: []filter.Object{}, Logs: []filter.Object{}, Traces: []filter.Object{}, Cursor: float64(number)}}
 	kinds := map[string][]filter.Object{}
 	for _, f := range filters {
@@ -178,7 +190,7 @@ func fetchSourceHistoricalAcquisition(ctx context.Context, requester rpc.Request
 	logs := []map[string]any{}
 	zeroHash := "0x" + strings.Repeat("0", 64)
 	if blockLogs != nil {
-		block, err = actions.GetSourceBlockByNumber(ctx, blockNumber, true)
+		block, err = getBlock()
 		if err != nil {
 			return result, err
 		}
@@ -226,6 +238,9 @@ func fetchSourceHistoricalAcquisition(ctx context.Context, requester rpc.Request
 	traces := []rpc.CallTrace{}
 	if shouldTrace {
 		fetchTraces := func() ([]rpc.CallTrace, error) {
+			if admittedTraces != nil {
+				return admittedTraces()
+			}
 			var raw []map[string]any
 			if err := requester.Call(ctx, "debug_traceBlockByNumber", []any{blockNumber, map[string]any{"tracer": "callTracer"}}, &raw); err != nil {
 				return nil, err
@@ -236,17 +251,21 @@ func fetchSourceHistoricalAcquisition(ctx context.Context, requester rpc.Request
 			return rpc.FlattenCallTraces(raw)
 		}
 		if block == nil {
-			var wg sync.WaitGroup
-			var blockErr, traceErr error
-			wg.Add(2)
-			go func() { defer wg.Done(); block, blockErr = actions.GetSourceBlockByNumber(ctx, blockNumber, true) }()
-			go func() { defer wg.Done(); traces, traceErr = fetchTraces() }()
-			wg.Wait()
-			if blockErr != nil {
-				return result, blockErr
+			// Promise.all rejects on the first failure, not block/trace index.
+			// Cancel its sibling and join both owners before returning so no
+			// response object is still being written after acquisition exits.
+			completed := make(chan error, 2)
+			go func() { var err error; block, err = getBlock(); completed <- err }()
+			go func() { var err error; traces, err = fetchTraces(); completed <- err }()
+			var firstError error
+			for i := 0; i < 2; i++ {
+				if err := <-completed; err != nil && firstError == nil {
+					firstError = err
+					cancel()
+				}
 			}
-			if traceErr != nil {
-				return result, traceErr
+			if firstError != nil {
+				return result, firstError
 			}
 		} else {
 			traces, err = fetchTraces()
@@ -319,7 +338,7 @@ func fetchSourceHistoricalAcquisition(ctx context.Context, requester rpc.Request
 		if !needed {
 			return result, nil
 		}
-		block, err = actions.GetSourceBlockByNumber(ctx, blockNumber, true)
+		block, err = getBlock()
 		if err != nil {
 			return result, err
 		}

@@ -1,0 +1,437 @@
+package runtime
+
+import (
+	"context"
+	"fmt"
+	"strings"
+	"sync"
+
+	protocol "ponder.local/ponder-go/events"
+	"ponder.local/ponder-go/filter"
+	"ponder.local/ponder-go/rpc"
+	"ponder.local/ponder-go/store"
+)
+
+type SourceFactoryChildren struct {
+	ID      string
+	Entries []filter.ChildAddress
+}
+type sourceHistoricalChildSet struct {
+	entries []filter.ChildAddress
+	indices map[string]int
+}
+
+// SourceHistoricalChildren preserves factory/address insertion order and the
+// earliest birth block. Access is shared by concurrent factory/block fetches.
+type SourceHistoricalChildren struct {
+	mu     sync.RWMutex
+	order  []string
+	values map[string]*sourceHistoricalChildSet
+}
+
+func NewSourceHistoricalChildren(input []SourceFactoryChildren) *SourceHistoricalChildren {
+	result := &SourceHistoricalChildren{order: []string{}, values: map[string]*sourceHistoricalChildSet{}}
+	for _, factory := range input {
+		result.Ensure(factory.ID)
+		for _, entry := range factory.Entries {
+			result.Upsert(factory.ID, entry)
+		}
+	}
+	return result
+}
+func (c *SourceHistoricalChildren) Ensure(id string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if _, ok := c.values[id]; !ok {
+		c.order = append(c.order, id)
+		c.values[id] = &sourceHistoricalChildSet{entries: []filter.ChildAddress{}, indices: map[string]int{}}
+	}
+}
+func (c *SourceHistoricalChildren) Upsert(id string, entry filter.ChildAddress) bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	set, ok := c.values[id]
+	if !ok {
+		panic("source child factory is not initialized")
+	}
+	if index, ok := set.indices[entry.Address]; ok {
+		if set.entries[index].Block > entry.Block {
+			set.entries[index].Block = entry.Block
+			return true
+		}
+		return false
+	}
+	set.indices[entry.Address] = len(set.entries)
+	set.entries = append(set.entries, entry)
+	return true
+}
+func (c *SourceHistoricalChildren) Entries(id string) ([]filter.ChildAddress, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	set, ok := c.values[id]
+	if !ok {
+		return nil, false
+	}
+	return append([]filter.ChildAddress{}, set.entries...), true
+}
+func (c *SourceHistoricalChildren) Snapshot() []SourceFactoryChildren {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	result := []SourceFactoryChildren{}
+	for _, id := range c.order {
+		result = append(result, SourceFactoryChildren{id, append([]filter.ChildAddress{}, c.values[id].entries...)})
+	}
+	return result
+}
+func sourceHistoricalProperty(object filter.Object, key string) any {
+	value, ok := object[key]
+	if !ok {
+		return filter.Undefined
+	}
+	return value
+}
+func sourceHistoricalTransactions(block filter.Object) ([]filter.Object, error) {
+	switch values := block["transactions"].(type) {
+	case []map[string]any:
+		return values, nil
+	case []any:
+		result := []filter.Object{}
+		for _, value := range values {
+			object, ok := value.(map[string]any)
+			if !ok {
+				return nil, fmt.Errorf("source transaction object required")
+			}
+			result = append(result, object)
+		}
+		return result, nil
+	default:
+		return nil, fmt.Errorf("source block transactions required")
+	}
+}
+func sourceHistoricalFactoryMatch(addressFilter, address any, block uint64, children *SourceHistoricalChildren) (bool, error) {
+	if !filter.IsAddressFactory(addressFilter) {
+		return true, nil
+	}
+	factory := addressFilter.(map[string]any)
+	id, _ := factory["id"].(string)
+	if children == nil {
+		return false, fmt.Errorf("source factory child map required")
+	}
+	entries, ok := children.Entries(id)
+	if !ok {
+		return false, fmt.Errorf("source factory child map not initialized: %s", id)
+	}
+	if address == nil {
+		address = filter.Undefined
+	}
+	return filter.IsAddressMatched(address, float64(block), entries), nil
+}
+func sourceHistoricalFactoryEndsMatch(f filter.Object, from, to any, block uint64, children *SourceHistoricalChildren) (bool, error) {
+	matched, err := sourceHistoricalFactoryMatch(sourceHistoricalProperty(f, "fromAddress"), from, block, children)
+	if err != nil || !matched {
+		return false, err
+	}
+	return sourceHistoricalFactoryMatch(sourceHistoricalProperty(f, "toAddress"), to, block, children)
+}
+
+type sourceHistoricalHashSet struct {
+	values []string
+	seen   map[string]bool
+}
+
+func newSourceHistoricalHashSet() *sourceHistoricalHashSet {
+	return &sourceHistoricalHashSet{values: []string{}, seen: map[string]bool{}}
+}
+func (s *sourceHistoricalHashSet) add(hash string) {
+	if !s.seen[hash] {
+		s.seen[hash] = true
+		s.values = append(s.values, hash)
+	}
+}
+
+type sourceHistoricalAcquisition struct {
+	store.SourceEventData
+	RawBlock                                         filter.Object
+	RawTransactions, RawTransactionReceipts, RawLogs []filter.Object
+	RawTraces                                        []store.SourceTraceInput
+}
+
+func fetchSourceHistoricalBlock(ctx context.Context, requester rpc.Requester, actions *rpc.Actions, children *SourceHistoricalChildren, filters []filter.Object, number uint64, blockLogs []filter.Object, options *rpc.ActionOptions) (store.SourceEventData, error) {
+	result, err := fetchSourceHistoricalAcquisition(ctx, requester, actions, children, filters, number, blockLogs, options, true)
+	return result.SourceEventData, err
+}
+
+// Acquisition retains raw RPC objects for the actual source cache writer and
+// independently converts the memory stream through the shared event helpers.
+func fetchSourceHistoricalAcquisition(ctx context.Context, requester rpc.Requester, actions *rpc.Actions, children *SourceHistoricalChildren, filters []filter.Object, number uint64, blockLogs []filter.Object, options *rpc.ActionOptions, forceBlock bool) (sourceHistoricalAcquisition, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	return continueSourceHistoricalAcquisition(ctx, cancel, requester, actions, children, filters, number, blockLogs, options, forceBlock, nil, nil)
+}
+
+func continueSourceHistoricalAcquisition(ctx context.Context, cancel context.CancelFunc, requester rpc.Requester, actions *rpc.Actions, children *SourceHistoricalChildren, filters []filter.Object, number uint64, blockLogs []filter.Object, options *rpc.ActionOptions, forceBlock bool, admittedBlock func() (map[string]any, error), admittedTraces func() ([]rpc.CallTrace, error)) (sourceHistoricalAcquisition, error) {
+	getBlock := func() (map[string]any, error) {
+		if admittedBlock != nil {
+			return admittedBlock()
+		}
+		return actions.GetSourceBlockByNumber(ctx, Hex(number), true)
+	}
+	result := sourceHistoricalAcquisition{SourceEventData: store.SourceEventData{Blocks: []filter.Object{}, Transactions: []filter.Object{}, TransactionReceipts: []filter.Object{}, Logs: []filter.Object{}, Traces: []filter.Object{}, Cursor: float64(number)}}
+	kinds := map[string][]filter.Object{}
+	for _, f := range filters {
+		kind, _ := f["type"].(string)
+		kinds[kind] = append(kinds[kind], f)
+	}
+	var block map[string]any
+	var err error
+	blockNumber := Hex(number)
+	blockRequest := rpc.ActionRequest{Method: "eth_getBlockByNumber", Params: []any{blockNumber, true}}
+	requiredTransactions, requiredReceipts := newSourceHistoricalHashSet(), newSourceHistoricalHashSet()
+	logs := []map[string]any{}
+	zeroHash := "0x" + strings.Repeat("0", 64)
+	if blockLogs != nil {
+		block, err = getBlock()
+		if err != nil {
+			return result, err
+		}
+		for _, log := range blockLogs {
+			matched := false
+			for _, f := range kinds["log"] {
+				if !filter.IsLogFilterMatched(f, log) {
+					continue
+				}
+				factoryMatched, err := sourceHistoricalFactoryMatch(sourceHistoricalProperty(f, "address"), sourceHistoricalProperty(log, "address"), number, children)
+				if err != nil {
+					return result, err
+				}
+				if !factoryMatched {
+					continue
+				}
+				matched = true
+				hash, _ := log["transactionHash"].(string)
+				if hash != zeroHash {
+					requiredTransactions.add(hash)
+					if f["hasTransactionReceipt"] == true {
+						requiredReceipts.add(hash)
+						break
+					}
+				}
+			}
+			if matched {
+				logs = append(logs, log)
+			}
+		}
+		if len(logs) > 0 {
+			if err = rpc.ValidateLogsAndBlock(logs, block, rpc.ActionRequest{Method: "eth_getLogs", Params: []any{map[string]any{"fromBlock": blockNumber, "toBlock": blockNumber}}}, blockRequest); err != nil {
+				return result, err
+			}
+		}
+	}
+	shouldTrace := false
+	for _, kind := range []string{"trace", "transfer"} {
+		for _, f := range kinds[kind] {
+			if filter.IsBlockInFilter(f, float64(number)) {
+				shouldTrace = true
+			}
+		}
+	}
+	traces := []rpc.CallTrace{}
+	if shouldTrace {
+		fetchTraces := func() ([]rpc.CallTrace, error) {
+			if admittedTraces != nil {
+				return admittedTraces()
+			}
+			var raw []map[string]any
+			if err := requester.Call(ctx, "debug_traceBlockByNumber", []any{blockNumber, map[string]any{"tracer": "callTracer"}}, &raw); err != nil {
+				return nil, err
+			}
+			if raw == nil {
+				return nil, fmt.Errorf("Received invalid empty debug_traceBlockByNumber response.")
+			}
+			return rpc.FlattenCallTraces(raw)
+		}
+		if block == nil {
+			// Promise.all rejects on the first failure, not block/trace index.
+			// Cancel its sibling and join both owners before returning so no
+			// response object is still being written after acquisition exits.
+			completed := make(chan error, 2)
+			go func() { var err error; block, err = getBlock(); completed <- err }()
+			go func() { var err error; traces, err = fetchTraces(); completed <- err }()
+			var firstError error
+			for i := 0; i < 2; i++ {
+				if err := <-completed; err != nil && firstError == nil {
+					firstError = err
+					// intentional rejected wait-all mutation: no sibling cancel
+				}
+			}
+			if firstError != nil {
+				return result, firstError
+			}
+		} else {
+			traces, err = fetchTraces()
+			if err != nil {
+				return result, err
+			}
+		}
+		selected := []rpc.CallTrace{}
+		for _, trace := range traces {
+			matched := false
+			for _, f := range kinds["transfer"] {
+				basic, err := filter.IsTransferFilterMatched(f, trace.Trace, map[string]any{"number": number})
+				if err != nil {
+					return result, err
+				}
+				if !basic {
+					continue
+				}
+				factoryMatched, err := sourceHistoricalFactoryEndsMatch(f, sourceHistoricalProperty(trace.Trace, "from"), sourceHistoricalProperty(trace.Trace, "to"), number, children)
+				if err != nil {
+					return result, err
+				}
+				if !factoryMatched {
+					continue
+				}
+				matched = true
+				requiredTransactions.add(trace.TransactionHash)
+				if f["hasTransactionReceipt"] == true {
+					requiredReceipts.add(trace.TransactionHash)
+					break
+				}
+			}
+			for _, f := range kinds["trace"] {
+				if !filter.IsTraceFilterMatched(f, trace.Trace, map[string]any{"number": number}) {
+					continue
+				}
+				factoryMatched, err := sourceHistoricalFactoryEndsMatch(f, sourceHistoricalProperty(trace.Trace, "from"), sourceHistoricalProperty(trace.Trace, "to"), number, children)
+				if err != nil {
+					return result, err
+				}
+				if !factoryMatched {
+					continue
+				}
+				matched = true
+				requiredTransactions.add(trace.TransactionHash)
+				if f["hasTransactionReceipt"] == true {
+					requiredReceipts.add(trace.TransactionHash)
+					break
+				}
+			}
+			if matched {
+				selected = append(selected, trace)
+			}
+		}
+		traces = selected
+		if len(traces) > 0 {
+			if err = rpc.ValidateSourceTracesAndBlock(traces, block, rpc.ActionRequest{Method: "debug_traceBlockByNumber", Params: []any{blockNumber, map[string]any{"tracer": "callTracer"}}}, blockRequest); err != nil {
+				return result, err
+			}
+		}
+	}
+	if block == nil {
+		needed := forceBlock
+		for _, f := range kinds["block"] {
+			needed = needed || filter.IsBlockFilterMatched(f, filter.Object{"number": number})
+		}
+		for _, f := range kinds["transaction"] {
+			needed = needed || filter.IsBlockInFilter(f, float64(number))
+		}
+		if !needed {
+			return result, nil
+		}
+		block, err = getBlock()
+		if err != nil {
+			return result, err
+		}
+	}
+	allTransactions, err := sourceHistoricalTransactions(block)
+	if err != nil {
+		return result, err
+	}
+	transactions := []filter.Object{}
+	byHash := map[string]filter.Object{}
+	for _, transaction := range allTransactions {
+		hash, _ := transaction["hash"].(string)
+		matched := requiredTransactions.seen[hash]
+		for _, f := range kinds["transaction"] {
+			if !filter.IsTransactionFilterMatched(f, transaction) {
+				continue
+			}
+			factoryMatched, err := sourceHistoricalFactoryEndsMatch(f, sourceHistoricalProperty(transaction, "from"), sourceHistoricalProperty(transaction, "to"), number, children)
+			if err != nil {
+				return result, err
+			}
+			if !factoryMatched {
+				continue
+			}
+			requiredReceipts.add(hash)
+			matched = true
+		}
+		if matched {
+			transactions = append(transactions, transaction)
+			byHash[hash] = transaction
+		}
+	}
+	if len(transactions) > 0 {
+		if err = rpc.ValidateSourceTransactionsAndBlock(block, blockRequest); err != nil {
+			return result, err
+		}
+	}
+	responses, err := actions.GetTransactionReceipts(ctx, block["hash"].(string), requiredReceipts.values, options)
+	if err != nil {
+		return result, err
+	}
+	receipts := []filter.Object{}
+	for _, response := range responses {
+		if err = rpc.ValidateSourceReceiptsAndBlock(response.Receipts, block, response.Request, blockRequest); err != nil {
+			return result, err
+		}
+		for _, receipt := range response.Receipts {
+			hash, _ := receipt["transactionHash"].(string)
+			if requiredReceipts.seen[hash] {
+				receipts = append(receipts, receipt)
+			}
+		}
+	}
+	result.RawBlock, result.RawTransactions, result.RawTransactionReceipts, result.RawLogs = block, transactions, receipts, logs
+	result.RawTraces = []store.SourceTraceInput{}
+	for _, trace := range traces {
+		result.RawTraces = append(result.RawTraces, store.SourceTraceInput{Trace: filter.Object{"transactionHash": trace.TransactionHash, "trace": trace.Trace}, Block: block, Transaction: byHash[trace.TransactionHash]})
+	}
+	if !forceBlock {
+		return result, nil
+	}
+	normalized, err := protocol.SyncBlockToInternal(block)
+	if err != nil {
+		return result, err
+	}
+	result.Blocks = append(result.Blocks, normalized)
+	for _, log := range logs {
+		normalized, err := protocol.SyncLogToInternal(log)
+		if err != nil {
+			return result, err
+		}
+		result.Logs = append(result.Logs, normalized)
+	}
+	for _, transaction := range transactions {
+		normalized, err := protocol.SyncTransactionToInternal(transaction)
+		if err != nil {
+			return result, err
+		}
+		result.Transactions = append(result.Transactions, normalized)
+	}
+	for _, receipt := range receipts {
+		normalized, err := protocol.SyncTransactionReceiptToInternal(receipt)
+		if err != nil {
+			return result, err
+		}
+		result.TransactionReceipts = append(result.TransactionReceipts, normalized)
+	}
+	for _, trace := range traces {
+		normalized, err := protocol.SyncTraceToInternal(map[string]any{"transactionHash": trace.TransactionHash, "trace": trace.Trace}, block, byHash[trace.TransactionHash])
+		if err != nil {
+			return result, err
+		}
+		result.Traces = append(result.Traces, normalized)
+	}
+	return result, nil
+}

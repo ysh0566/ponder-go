@@ -1,3 +1,4 @@
+import {multichainTargets,multichainProbeNames} from './source-runtime-multichain-evidence.mjs';
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -92,7 +93,9 @@ const runtimeIndexVerificationFile = "parity/runs/source-runtime-index-verificat
 const runtimeIndexVerification = exists(runtimeIndexVerificationFile) ? read(runtimeIndexVerificationFile) : null;
 const runtimeHistoricalVerificationFile = "parity/runs/source-runtime-historical-verification.json";
 const runtimeHistoricalVerification = exists(runtimeHistoricalVerificationFile) ? read(runtimeHistoricalVerificationFile) : null;
-if(!runDir&&[syncVerification,historicalVerification,realtimeVerification,configCompile,runtimeIndexVerification,runtimeHistoricalVerification].some(proof=>proof?.environment_adapted))throw Error("Adapted canonical verification requires an explicit --run-dir; historical native logs cannot substitute");
+const runtimeMultichainVerificationFile = "parity/runs/source-runtime-multichain-verification.json";
+const runtimeMultichainVerification = exists(runtimeMultichainVerificationFile) ? read(runtimeMultichainVerificationFile) : null;
+if(!runDir&&[syncVerification,historicalVerification,realtimeVerification,configCompile,runtimeIndexVerification,runtimeHistoricalVerification,runtimeMultichainVerification].some(proof=>proof?.environment_adapted))throw Error("Adapted canonical verification requires an explicit --run-dir; historical native logs cannot substitute");
 function proofArchive(verification, execution) {
 	return runDir ? loadArchive(execution?.context_archive ?? verification.context_archive ?? fullRun.context_archive) : null;
 }
@@ -151,6 +154,28 @@ if(runtimeHistoricalVerification){
   for(const record of execution.cases){
    const source=selected.find(test=>test.id===record.source_id),prefix="TestSourceRuntimeHistoricalOriginal/"+execution.backend;
    if(!source||!runtimeHistoricalIDs.has(source.id)||seen.has(source.id)||execution.native_test_prefix!==prefix||record.go_test!==prefix+"/"+source.title.replaceAll(/\s/g,"_")||record.native_type_obligations!==0||results.get(`ponder.local/ponder-go/runtime:${record.go_test}`)?.Action!=="pass")throw Error("Runtime historical native case missing or changed");
+   seen.add(source.id);
+  }
+ }
+}
+
+const runtimeMultichainIDs = new Set(multichainTargets);
+if (runDir && ledger.tests.some(test=>test.mapping&&runtimeMultichainIDs.has(test.id)&&test.source_file==="packages/core/src/runtime/historical.test.ts")&&!runtimeMultichainVerification)throw Error("Runtime multichain mappings require current complete evidence");
+if(runtimeMultichainVerification){
+ const v=runtimeMultichainVerification;validateCurrentProof(v,"runtime-multichain");
+ const selected=ledger.tests.filter(test=>test.source_file==="packages/core/src/runtime/historical.test.ts");
+ if(!v.complete||v.success!==true||v.scope!=="complete_module_source_runtime_multichain"||v.summary.source_cases!==14||v.summary.source_assertions!==29||v.summary.targeted_cases!==3||v.summary.supplemental_probe_cases!==multichainProbeNames.length||v.summary.supplementary_source_credit!==0||v.summary.targeted_assertions!==5||v.summary.source_error_directives!==0||v.executions.length!==4||v.inputs.some(ref=>!proofValid(ref,v)))throw Error("Incomplete runtime multichain evidence");
+ const combinations=new Set();
+ for(const execution of v.executions){
+  const combination=execution.mode+"/"+execution.backend;
+  if(!["normal/postgres","normal/pglite","race/postgres","race/pglite"].includes(combination)||combinations.has(combination)||[execution.log,execution.native,execution.capture,execution.original,execution.result,execution.supplemental_probe,execution.supplemental_result,execution.supplemental_original,execution.supplemental_context,...execution.supplemental_source_context,...execution.source_context].some(ref=>!proofValid(ref,v,execution)))throw Error("Runtime multichain execution/context differs");
+  combinations.add(combination);
+  const results=execution.mode==="normal"?go:race,seen=new Set();
+  if(!Array.isArray(execution.supplemental_cases)||JSON.stringify(execution.supplemental_cases.map(c=>c.name))!==JSON.stringify(multichainProbeNames)||new Set(execution.supplemental_cases.map(c=>c.name)).size!==execution.supplemental_cases.length||execution.supplemental_cases.some(c=>c.source_credit!==0||c.go_test!=="TestSourceRuntimeMultichainProbes/"+execution.backend+"/"+c.name.replaceAll(/\s/g,"_")||results.get(`ponder.local/ponder-go/runtime:${c.go_test}`)?.Action!=="pass"))throw Error("Runtime multichain supplemental native coverage missing");
+  if(execution.cases?.length!==3)throw Error("Runtime multichain requires exactly three native cases");
+  for(const record of execution.cases){
+   const source=selected.find(test=>test.id===record.source_id),prefix="TestSourceRuntimeMultichainOriginal/"+execution.backend;
+   if(!source||!runtimeMultichainIDs.has(source.id)||seen.has(source.id)||execution.native_test_prefix!==prefix||record.go_test!==prefix+"/"+source.title.replaceAll(/\s/g,"_")||record.native_type_obligations!==0||results.get(`ponder.local/ponder-go/runtime:${record.go_test}`)?.Action!=="pass")throw Error("Runtime multichain native case missing or changed");
    seen.add(source.id);
   }
  }
@@ -387,9 +412,13 @@ for (const test of ledger.tests) {
    if (!test.mapping && test.type_error_directives.length) test.remaining_native_type_obligations=test.type_error_directives.length;
   }
  }
- if(runDir&&test.source_file==="packages/core/src/runtime/historical.test.ts"&&runtimeHistoricalVerification){
+ if(runDir&&runtimeHistoricalIDs.has(test.id)&&test.source_file==="packages/core/src/runtime/historical.test.ts"&&runtimeHistoricalVerification){
   currentLiveOracle(test,runtimeHistoricalVerification,runtimeHistoricalVerificationFile,4);
   if(runtimeHistoricalIDs.has(test.id))test.runtime_validation={status:"passed",evidence:runtimeHistoricalVerificationFile,run_dir:runDir,meaning:"Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."};
+ }
+ if(runDir&&runtimeMultichainIDs.has(test.id)&&runtimeMultichainVerification){
+  currentLiveOracle(test,runtimeMultichainVerification,runtimeMultichainVerificationFile,4);
+  test.runtime_validation={status:"passed",evidence:runtimeMultichainVerificationFile,run_dir:runDir,meaning:"Three original single-chain coordinator cases, five assertions, both real backends and complete native modes. Separate genuine multi-chain and helper probes earn zero source credit. Outer indexing transactions and realtime cutover remain out of scope."};
  }
  if(runDir&&test.source_file==="packages/core/src/runtime/index.test.ts"&&runtimeIndexVerification){
   currentLiveOracle(test,runtimeIndexVerification,runtimeIndexVerificationFile,4);
@@ -586,6 +615,7 @@ const summary = {
  source_realtime_verification:realtimeVerification?{...realtimeVerification.summary,evidence:"parity/runs/source-realtime-verification.json"}:null,
  source_historical_verification:historicalVerification?{...historicalVerification.summary,evidence:"parity/runs/source-historical-verification.json"}:null,
  source_sync_verification:syncVerification?{...syncVerification.summary,evidence:"parity/runs/source-sync-verification.json"}:null,
+ source_runtime_multichain_verification:runtimeMultichainVerification?{...runtimeMultichainVerification.summary,evidence:runtimeMultichainVerificationFile,environment_adapted:true,pristine_file:false}:null,
  source_runtime_historical_verification:runtimeHistoricalVerification?{...runtimeHistoricalVerification.summary,evidence:runtimeHistoricalVerificationFile,environment_adapted:true,pristine_file:false}:null,
  source_runtime_index_verification:runtimeIndexVerification?{...runtimeIndexVerification.summary,evidence:runtimeIndexVerificationFile,environment_adapted:runtimeIndexVerification.environment_adapted,pristine_file:runtimeIndexVerification.pristine_file,native_type_obligations_passed:0}:null,
  sql_source_verification:sqlVerification?{...sqlVerification.summary,evidence:"parity/runs/sql-source-verification.json"}:null,

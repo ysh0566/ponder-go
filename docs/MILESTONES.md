@@ -173,3 +173,12 @@ Anvil loopback 与客户端 Node 预编译为启动层适配，不是 pristine �
 完整 `runtime-historical-m36/full-verify-01` 28 阶段退出 0；normal/race 各 2863 节点 / 2634 叶用例、0 测试失败/跳过，PG386/PGlite383；22包187函数61批，1084文件指纹 `30751da01517a8e7aa5f23d84a517de18da4807ac9722f72b8d6aa3426995dcf` 全程一致。新7规范证明重建，当前映射原版 oracle 508/508。
 
 新增首11个 historical 原例/24断言/14调用/24RPC，累计508/905（504Go+4SDK），397未实现。完整14原例两后端通过；后3调度原例仍无native映射，单链的“omnichain”标题不证明多链。真实RPC预取、按序原子提交、缓存零RPC、分页checkpoint、恢复重取与共享身份均对照。事务独立批提交保持；补充失败/取消/overlay红→绿零额外credit。PGlite原版无真实QB事务，native更强原子性和取消join是明确扩展；全量metrics/logger、多链及其余原例继续。证据新batch-35，旧batch-34保留；详见SOURCE_RUNTIME_HISTORICAL.md。
+
+
+## M37：多链历史提取、catchup 与 refetch（本地完整验收通过，待发布复核）
+
+`runtime-multichain-m37/full-verify-01` 35 阶段退出 0；normal/race 各 2983 节点 / 2736 叶用例，0 测试失败/跳过；PG405/PGlite402；22 包、202 顶层函数、65 个串行不重叠批次。1096 文件指纹 `740fa67bb628fa820aa991b8ed31889c12af9a54b06fa081e6409fdf17bee639` 与 33 个工具 hash 全程一致。8 个当前规范证明重建；core201（保留2个原 pending）、client3/3、React 与类型控制通过。
+
+新增最后3个 historical 原例/5断言/0类型义务，累计511/905（507Go+4SDK），394未实现。原完整14例双后端通过；16补充探针及两个嵌套首错控制零credit。实现 completion-order Multichain、global-boundary Omnichain pending/catchup、Isolated、按原跨链位置 refetch 与 checkpoint聚合；不是外层运行循环、handler事务或实时切换。
+
+复核修正 refresh 标准化/同步注册/首错取消，并修正旧内存获取的预取注册和 block/trace首错边界。严格原始请求消费、真实 safe-crash SQL、九表、共享身份及恢复控制保留；初期失败、两种wait-all反例、错误Commit门控中断、采集与汇总命令误用均保留。source与native取消/原子性差异明确说明，不扩大等价或原例credit。新batch-36保留旧batch-35，详情见SOURCE_RUNTIME_MULTICHAIN与CONTINUATION。

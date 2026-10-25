@@ -1,0 +1,470 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "run_dir": "parity/runs/runtime-multichain-m37/full-verify-01",
+  "environment_adapted": true,
+  "pristine_file": false,
+  "full_verification": {
+    "file": "parity/runs/runtime-multichain-m37/full-verify-01/result.json",
+    "sha256": "3f6b65112dccd6ec59c66283f6b2a1290bd64bce13e55ce19bcf667579f773cb"
+  },
+  "context_archive": {
+    "file": "parity/runs/runtime-multichain-m37/full-verify-01/context-archive.json",
+    "sha256": "cf893182a64eec02cbe9d0582f5d5b7610c866714a13963d066b2c41b47a7d26"
+  },
+  "prepared_native_inputs": {
+    "file": "parity/runs/runtime-multichain-m37/full-verify-01/prepared-native-inputs.json",
+    "sha256": "216e3abf031b971563bb4fcb1160c3968d2ef6abc641b636c856b4525b84b9a0"
+  },
+  "counting": "Only exact source mappings count toward upstream parity. Native regression cases and generated differential vectors are separate evidence.",
+  "parity": {
+    "source_files": 104,
+    "test_declarations": 897,
+    "expanded_static_records": 905,
+    "unresolved_expansion_records": 0,
+    "assertion_expressions": 1905,
+    "type_records": 73,
+    "inline_type_assertions": 63,
+    "type_error_directives": 84,
+    "source_states": {
+      "active": 893,
+      "skip": 10,
+      "todo": 2,
+      "expected_failure": 0
+    },
+    "ported": 511,
+    "executed": 515,
+    "passed": 511,
+    "failed": 0,
+    "blocked": 0,
+    "unimplemented": 394,
+    "go_ports": 507,
+    "retained_sdk": 4,
+    "oracle_passed": 511,
+    "oracle_blocked": 0,
+    "go_passed": 507,
+    "sdk_passed": 4,
+    "go_and_original_oracle_passed": 507,
+    "target_and_original_oracle_passed": 511,
+    "current_original_oracle_passed": 511,
+    "historical_only_original_oracles": 0,
+    "runtime_passed_type_pending": 4
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 511,
+    "unimplemented": 394,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 507,
+    "passed_with_required_type_checks": 507,
+    "original_oracle_also_passed": 507,
+    "original_oracle_blocked": 0
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "rpc_action_differential": {
+    "counting": "Supplementary vectors executed by unchanged pinned source functions; no original test record credit. Provider live-RPC tests remain separate.",
+    "vectors": 62,
+    "source_expected_errors": 13,
+    "go": {
+      "pass": 62,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 62,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/rpc/actions-differential.json"
+  },
+  "event_build_differential": {
+    "counting": "Supplemental vectors from actual pinned selected declarations; not original source test credit.",
+    "vectors": 135,
+    "source_expected_errors": 8,
+    "go": {
+      "pass": 135,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 135,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/runtime/event-build-differential.json"
+  },
+  "selected_source_oracle": {
+    "evidence": "parity/runs/selected-runtime-oracle.json",
+    "verification_period": "historical",
+    "current_status": "historical_only",
+    "mode": "unchanged_selected_declarations_with_actual_source_dependencies",
+    "total": 4,
+    "passed": 4,
+    "success": true
+  },
+  "selected_existing_oracle": {
+    "evidence": "parity/runs/selected-mapped-oracle.json",
+    "verification_period": "historical",
+    "current_status": "historical_only",
+    "mode": "unchanged_already_mapped_filter_genesis_split_declarations",
+    "total": 15,
+    "passed": 15,
+    "success": true
+  },
+  "filter_fragment_differential": {
+    "counting": "Synthetic differential vectors only; no source-test credit.",
+    "vectors": 867,
+    "source_expected_exceptions": 4,
+    "go": {
+      "pass": 867,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 867,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/runtime/filter-differential.json"
+  },
+  "original_oracle": {
+    "mapped_passed": 511,
+    "mapped_blocked": 0,
+    "current_mapped_passed": 511,
+    "historical_only_mapped": 0,
+    "meaning": "Original execution and native execution are separate evidence. Historical-only references are not current-run source passes; only explicit differential vectors are labelled differential verification."
+  },
+  "full_original_backend_oracles": [],
+  "current_remaining_original_backend_oracles": [
+    {
+      "backend": "postgres",
+      "evidence": "parity/runs/runtime-multichain-m37/full-verify-01/remaining-mapped-original-postgres.json",
+      "scope": "Nine complete original source files covering remaining mapped cases; unmapped cases add no port credit",
+      "environment_adapted": true,
+      "pristine_file": false,
+      "passed": 135,
+      "failed": 0,
+      "pending": 3,
+      "context_archive": {
+        "file": "parity/runs/runtime-multichain-m37/full-verify-01/context-archive.json",
+        "sha256": "cf893182a64eec02cbe9d0582f5d5b7610c866714a13963d066b2c41b47a7d26"
+      }
+    },
+    {
+      "backend": "pglite",
+      "evidence": "parity/runs/runtime-multichain-m37/full-verify-01/remaining-mapped-original-pglite.json",
+      "scope": "Nine complete original source files covering remaining mapped cases; unmapped cases add no port credit",
+      "environment_adapted": true,
+      "pristine_file": false,
+      "passed": 135,
+      "failed": 0,
+      "pending": 3,
+      "context_archive": {
+        "file": "parity/runs/runtime-multichain-m37/full-verify-01/context-archive.json",
+        "sha256": "cf893182a64eec02cbe9d0582f5d5b7610c866714a13963d066b2c41b47a7d26"
+      }
+    }
+  ],
+  "native_execution_schedule": {
+    "go": {
+      "evidence": "parity/runs/runtime-multichain-m37/full-verify-01/native/go-test-execution.json",
+      "complete": true,
+      "success": true,
+      "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
+      "packages": 22,
+      "top_level_functions": 202,
+      "batches": 65
+    },
+    "race": {
+      "evidence": "parity/runs/runtime-multichain-m37/full-verify-01/native/go-race-execution.json",
+      "complete": true,
+      "success": true,
+      "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
+      "packages": 22,
+      "top_level_functions": 202,
+      "batches": 65
+    }
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "orm_type_fixtures": {
+    "source_error_directives": 6,
+    "source_error_directives_passed": 6,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  },
+  "event_type_fixtures": {
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1,
+    "failed": 0
+  },
+  "bloom_type_fixtures": {
+    "source_error_directives": 2,
+    "source_error_directives_passed": 2,
+    "failed": 0
+  },
+  "config_builder": {
+    "source_cases": 40,
+    "active_runtime_cases": 39,
+    "original_skip": 1,
+    "source_assertion_expressions": 94,
+    "active_assertion_expressions": 92,
+    "fully_mapped": 39,
+    "mapped_assertion_expressions": 92,
+    "source_error_directives": 10,
+    "source_error_directives_passed": 10,
+    "source_error_directives_remaining": 0
+  },
+  "bloom_differential": {
+    "counting": "Supplementary actual-source vectors; zero exact source declaration credit. Explicit dynamic adapter cases do not claim valid typed topic0 inputs.",
+    "vectors": 497,
+    "source_expected_errors": 0,
+    "go": {
+      "pass": 7,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 7,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/bloom/differential.json"
+  },
+  "type_scope": {
+    "dedicated_source_records": 73,
+    "dedicated_retained_sdk_passed": 1,
+    "inline_assertions_discovered": 63,
+    "inline_assertions_native_compiled": 53,
+    "error_directives_discovered": 84,
+    "error_directives_native_verified": 41,
+    "error_directives_retained_sdk_verified": 1,
+    "error_directives_source_language_verified_native_pending": 6
+  },
+  "indexed_topic_source_verification": {
+    "source_vectors": 50,
+    "source_expected_errors": 6,
+    "new_exact_source_records": 0,
+    "parameter_types": 5,
+    "evidence": "parity/runs/topic-source-verification.json"
+  },
+  "source_realtime_verification": {
+    "source_cases": 30,
+    "source_assertions": 203,
+    "source_error_directives": 0,
+    "backend_mode_executions": 4,
+    "native_calls_per_backend_mode": 83,
+    "raw_provider_inputs_per_backend_mode": 46,
+    "original_preparation_requests_per_backend_mode": 3,
+    "supplementary_source_vectors": 24,
+    "supplementary_source_credit": 0,
+    "native_memory_api_no_database": true,
+    "evidence": "parity/runs/source-realtime-verification.json"
+  },
+  "source_historical_verification": {
+    "source_cases": 40,
+    "source_assertions": 102,
+    "native_calls_per_backend_mode": 136,
+    "source_error_directives": 12,
+    "source_error_directives_passed": 12,
+    "backend_mode_executions": 4,
+    "file_backend_mode_executions": 8,
+    "typed_positive_executions": 48,
+    "supplementary_source_credit": 0,
+    "evidence": "parity/runs/source-historical-verification.json"
+  },
+  "source_sync_verification": {
+    "source_cases": 38,
+    "source_assertions": 63,
+    "native_calls_per_backend_mode": 95,
+    "source_error_directives": 9,
+    "source_error_directives_passed": 9,
+    "backend_mode_executions": 4,
+    "supplementary_source_credit": 0,
+    "evidence": "parity/runs/source-sync-verification.json"
+  },
+  "source_runtime_multichain_verification": {
+    "source_cases": 14,
+    "source_assertions": 29,
+    "targeted_cases": 3,
+    "targeted_assertions": 5,
+    "source_error_directives": 0,
+    "complete_mapping_candidates": 3,
+    "earlier_separately_mapped_cases": 11,
+    "supplemental_probe_cases": 16,
+    "supplementary_source_credit": 0,
+    "evidence": "parity/runs/source-runtime-multichain-verification.json",
+    "environment_adapted": true,
+    "pristine_file": false
+  },
+  "source_runtime_historical_verification": {
+    "source_cases": 14,
+    "source_assertions": 29,
+    "targeted_cases": 11,
+    "targeted_assertions": 24,
+    "source_error_directives": 0,
+    "complete_mapping_candidates": 11,
+    "unimplemented_source_cases": 3,
+    "supplementary_source_credit": 0,
+    "evidence": "parity/runs/source-runtime-historical-verification.json",
+    "environment_adapted": true,
+    "pristine_file": false
+  },
+  "source_runtime_index_verification": {
+    "source_cases": 15,
+    "source_assertions": 30,
+    "source_error_directives": 6,
+    "runtime_passed_cases": 15,
+    "complete_mapping_candidates": 11,
+    "native_type_pending_cases": 4,
+    "native_type_obligations_verified": 0,
+    "supplementary_source_credit": 0,
+    "evidence": "parity/runs/source-runtime-index-verification.json",
+    "environment_adapted": true,
+    "pristine_file": false,
+    "native_type_obligations_passed": 0
+  },
+  "sql_source_verification": {
+    "source_cases": 14,
+    "source_assertions": 19,
+    "source_error_directives": 0,
+    "captured_operations": 38,
+    "actual_relational_inputs": 8,
+    "source_vectors": 61,
+    "source_parser_version": 160001,
+    "evidence": "parity/runs/sql-source-verification.json"
+  },
+  "typed_abi_runtime": {
+    "file": "parity/runs/runtime-multichain-m37/full-verify-01/abi-generated-normal.log",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0,
+    "counting": "Supplementary typed decoder execution; not additional source test records."
+  },
+  "typed_abi_race": {
+    "file": "parity/runs/runtime-multichain-m37/full-verify-01/abi-generated-race.log",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "First explicit slash dialect component wins; legacy backend-tagged names remain supported. Source titles mentioning another backend do not double count. Source mappings and backend companions remain separate from source parity.",
+      "go": {
+        "leaf_cases": 405,
+        "pass": 405,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 405,
+        "pass": 405,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/runtime-multichain-m37/full-verify-01/native/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "First explicit slash dialect component wins; legacy backend-tagged names remain supported. Source titles mentioning another backend do not double count. Source mappings and backend companions remain separate from source parity.",
+      "go": {
+        "leaf_cases": 402,
+        "pass": 402,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 402,
+        "pass": 402,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/runtime-multichain-m37/full-verify-01/native/go-test.jsonl"
+    }
+  },
+  "simulation": {
+    "seed_space": "unbounded",
+    "status": "unimplemented",
+    "executed_seeds": 0
+  },
+  "native_go": {
+    "file": "parity/runs/runtime-multichain-m37/full-verify-01/native/go-test.jsonl",
+    "leaf_cases": 2736,
+    "pass": 2736,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/runtime-multichain-m37/full-verify-01/native/go-race.jsonl",
+    "leaf_cases": 2736,
+    "pass": 2736,
+    "fail": 0,
+    "skip": 0
+  },
+  "foundation_oracle": {
+    "file": "parity/runs/foundation-oracle.json",
+    "verification_period": "historical",
+    "current_status": "historical_only",
+    "total": 34,
+    "passed": 34,
+    "failed": 0
+  },
+  "core_oracle": {
+    "file": "parity/runs/runtime-multichain-m37/full-verify-01/core-oracle.json",
+    "mode": "isolated_complete_source_files",
+    "execution": "isolated complete source files without application global setup",
+    "isolated": true,
+    "full_original_file": true,
+    "environment_adapted": false,
+    "pristine_file": false,
+    "original_application_setup": false,
+    "configuration": "tools/oracle.config.mjs",
+    "verification_period": "current",
+    "total": 203,
+    "passed": 201,
+    "failed": 0
+  },
+  "client": {
+    "file": "parity/runs/runtime-multichain-m37/full-verify-01/sdk-client.json",
+    "numTotalTests": 3,
+    "numPassedTests": 3,
+    "numFailedTests": 0
+  },
+  "react": true,
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.25.0 linux/amd64",
+    "node": "v24.20.0",
+    "differences": []
+  }
+}

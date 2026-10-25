@@ -6,6 +6,7 @@ import (
 	"iter"
 	"math"
 	"math/big"
+	"reflect"
 	"sync"
 	"time"
 
@@ -15,6 +16,29 @@ import (
 	"ponder.local/ponder-go/rpc"
 	"ponder.local/ponder-go/store"
 )
+
+// SourceLocalHistoricalStore exposes the existing store capabilities consumed by
+// local extraction. Implementations retain transaction ownership: WithTransaction
+// passes the same concrete transaction-bound source store to its callback.
+type SourceLocalHistoricalStore interface {
+	GetEventData(context.Context, store.SourceEventDataArgs) (store.SourceEventData, error)
+	GetSafeCrashRecoveryBlock(context.Context, uint64, int64) (*store.SourceRecoveryBlock, error)
+	WithTransaction(context.Context, func(*store.SourceSyncStore) error) error
+}
+
+var _ SourceLocalHistoricalStore = (*store.SourceSyncStore)(nil)
+
+func sourceLocalStoreMissing(s SourceLocalHistoricalStore) bool {
+	if s == nil {
+		return true
+	}
+	value := reflect.ValueOf(s)
+	switch value.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
+		return value.IsNil()
+	}
+	return false
+}
 
 // SourceLocalHistoricalOptions connects the source-shaped acquisition, progress,
 // callback and store APIs. Progress and callback maps retain their identities.
@@ -30,7 +54,7 @@ type SourceLocalHistoricalOptions struct {
 	Children        *SourceHistoricalChildren
 	Progress        *SourceSyncProgress
 	CachedIntervals []store.SourceIntervalEntry
-	Store           *store.SourceSyncStore
+	Store           SourceLocalHistoricalStore
 	From, To        string
 	Limit           int
 	IsCatchup       bool
@@ -245,7 +269,7 @@ func LocalSourceSync(ctx context.Context, o SourceLocalHistoricalOptions) iter.S
 			}
 			first = math.Max(first, float64(current)+1)
 		}
-		if o.Store == nil {
+		if sourceLocalStoreMissing(o.Store) {
 			fail(fmt.Errorf("source historical sync store required"))
 			return
 		}
@@ -372,7 +396,7 @@ func LocalSourceEvents(ctx context.Context, o SourceLocalHistoricalOptions) iter
 			fail(e)
 			return
 		}
-		if o.Store == nil || o.Children == nil {
+		if sourceLocalStoreMissing(o.Store) || o.Children == nil {
 			fail(fmt.Errorf("source historical store and children required"))
 			return
 		}

@@ -39,7 +39,12 @@ func TestSourceHistoricalMemoryBound(t *testing.T) {
 	consumer := make(chan struct{})
 	first := make(chan store.SourceEventData, 1)
 	finished := make(chan error, 1)
-	rpc := sourceHistoricalTestRequester(func(ctx context.Context, method string, params, out any) error {
+	rpc := &sourceAdmissionRequester{admit: func(method string, params any) {
+		if method == "eth_getBlockByNumber" {
+			number, _ := sourceHistoricalNumber(params.([]any)[0])
+			requests <- number
+		}
+	}, finish: sourceHistoricalTestRequester(func(ctx context.Context, method string, params, out any) error {
 		if method != "eth_getBlockByNumber" {
 			return fmt.Errorf("unexpected request %s", method)
 		}
@@ -47,7 +52,6 @@ func TestSourceHistoricalMemoryBound(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		requests <- number
 		if number == 1 {
 			select {
 			case <-release:
@@ -56,7 +60,7 @@ func TestSourceHistoricalMemoryBound(t *testing.T) {
 			}
 		}
 		return sourceHistoricalTestResult(filter.Object{"hash": fmt.Sprintf("0x%064x", number), "parentHash": fmt.Sprintf("0x%064x", number-1), "number": Hex(number), "timestamp": Hex(number), "logsBloom": "0x", "transactions": []any{}}, out)
-	})
+	})}
 	s, err := NewSourceInMemoryHistoricalSync(rpc, nil, NewSourceHistoricalChildren(nil), SourceHistoricalOptions{})
 	if err != nil {
 		t.Fatal(err)
