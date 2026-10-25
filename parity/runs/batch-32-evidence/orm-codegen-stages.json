@@ -1,0 +1,65 @@
+{
+  "format_version": 1,
+  "started_utc": "2026-10-25T00:02:51.517Z",
+  "stages": [
+    {
+      "stage": "build",
+      "command": [
+        "go",
+        "build",
+        "-o",
+        "/root/ponder-go/work/ponder-go/.parity-build/ponder-codegen",
+        "./cmd/ponder"
+      ],
+      "timeout_ms": 300000,
+      "elapsed_ms": 5899,
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "stage": "strict",
+      "command": [
+        "/root/ponder-go/work/ponder-go/.parity-build/ponder-codegen",
+        "codegen",
+        "--typed",
+        "--schema",
+        "orm/testdata/strict/model.json",
+        "--out",
+        "orm/testdata/strict/models.go",
+        "--package",
+        "strict"
+      ],
+      "timeout_ms": 45000,
+      "elapsed_ms": 20,
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "stage": "nullable",
+      "command": [
+        "/root/ponder-go/work/ponder-go/.parity-build/ponder-codegen",
+        "codegen",
+        "--typed",
+        "--schema",
+        "orm/testdata/nullable/model.json",
+        "--out",
+        "orm/testdata/nullable/models.go",
+        "--package",
+        "nullable"
+      ],
+      "timeout_ms": 45000,
+      "elapsed_ms": 47,
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

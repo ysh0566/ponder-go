@@ -1,0 +1,43 @@
+{
+  "recorded_utc": "2026-10-25T00:01:37.187344+00:00",
+  "state": "Actual focused source/backend/native type checks only. Complete native fullverification and sourceproof/mappings still required.",
+  "source_credit": 0,
+  "steps": [
+    {
+      "step": "live-race-02",
+      "command": [
+        "python3",
+        "/root/ponder-go/.cloud-bootstrap/history-next/m33/focused.py",
+        "live-race-02",
+        "go",
+        "test",
+        "-count=1",
+        "-race",
+        "-json",
+        "-run",
+        "^TestUpstreamSourceHistorical$",
+        "./runtime"
+      ],
+      "exit_code": 0,
+      "log": "parity/runs/history-m33/live-race-02-driver.txt"
+    },
+    {
+      "step": "pristine-original-01",
+      "command": [
+        "node",
+        "tools/source-historical-pristine.mjs"
+      ],
+      "exit_code": 0,
+      "log": "parity/runs/history-m33/pristine-original-01-driver.txt"
+    },
+    {
+      "step": "source-types-01",
+      "command": [
+        "node",
+        "tools/source-historical-types.mjs"
+      ],
+      "exit_code": 0,
+      "log": "parity/runs/history-m33/source-types-01-driver.txt"
+    }
+  ]
+}

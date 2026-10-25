@@ -2,17 +2,17 @@
 
 固定 `ponder-sh/ponder@17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`（核心 `0.18.2`）的本地 Go 复刻，**仍在实现，不是全功能完成版**。
 
-完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。既定私有仓库为 [ysh0566/ponder-go](https://github.com/ysh0566/ponder-go)。云端 M23–M31 已保留原 SHA 依次普通快进发布，上一已核验发布基线为 M31 `5c4be485caa8155f3516c2f1a84693aa737059aa`，后续发布以 Git 远端和验收回执为准；[M23–M25证明](parity/runs/account-factory-m26/publication-results.json) 、[M26证明](parity/runs/bloom-m27/m26-publication.json) 和 [M28证明](parity/runs/config-types-m29/m28-publication.json) 及 [M29证明](parity/runs/sql-m30/m29-publication.json) 及 [M30证明](parity/runs/topics-m31/m30-publication.json) 及 [M31证明](parity/runs/sync-store-m32/m31-publication.json) 保存 SHA/tree/身份。没有部署或 PR。
+完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。既定私有仓库为 [ysh0566/ponder-go](https://github.com/ysh0566/ponder-go)。云端 M23–M32 已保留原 SHA 依次普通快进发布，上一已核验发布基线为 M32 `cb17241a1d2d5d8a337af025c6a9e6e0801db202`，后续发布以 Git 远端和验收回执为准；[M23–M25证明](parity/runs/account-factory-m26/publication-results.json) 、[M26证明](parity/runs/bloom-m27/m26-publication.json) 和 [M28证明](parity/runs/config-types-m29/m28-publication.json) 及 [M29证明](parity/runs/sql-m30/m29-publication.json) 及 [M30证明](parity/runs/topics-m31/m30-publication.json) 及 [M31证明](parity/runs/sync-store-m32/m31-publication.json) 及 [M32证明](parity/runs/history-m33/m32-publication.json) 保存 SHA/tree/身份。没有部署或 PR。
 
 目前已有可运行的单链路径：本地 Ethereum RPC → 静态或 factory 动态合约日志/receipt → Go handler → PostgreSQL 事务写入、journal、checkpoint → SQL HTTP/SSE。Anvil 重组后可以撤销并重新索引。默认单链 runtime 已写入版本化规范化缓存的 block/transaction/log/receipt；冷重开禁用缓存的重组也清理已归属缓存。PostgreSQL 与真实 PGlite 分别验证；没有 SQLite 替代实现。
 
 ## 当前验证与计数
 
-最新已验证基线为 M32：[验收记录](parity/runs/batch-31.json)、[冻结证据](parity/runs/batch-31-evidence/) 和 [summary.json](parity/runs/summary.json)。配置全部39个活动原例/92断言及全部10项原生类型错误义务通过，原始skip保留未映射。发现、移植、执行、通过分别登记；补充验证不加source credit。
+最新已验证基线为 M33：[验收记录](parity/runs/batch-32.json)、[冻结证据](parity/runs/batch-32-evidence/) 和 [summary.json](parity/runs/summary.json)。配置全部39个活动原例/92断言及全部10项原生类型错误义务通过，原始skip保留未映射。发现、移植、执行、通过分别登记；补充验证不加source credit。
 
 - 104 个原测试文件、897 个声明、905 条静态展开记录；包含73条专门类型测试、63个内联类型断言和84条类型错误指令。
-- 已精确映射并通过416条：412条Go与4条保留SDK，原版oracle均通过；489条静态记录未实现。
-- M32 Go/race各2183通过、0失败/skip；PG272/PGlite269分别通过。21包、157顶层函数、每模式53个不重复串行批次，Go默认timeout保留。
+- 已精确映射并通过456条：452条Go与4条保留SDK，原版oracle均通过；449条静态记录未实现。
+- M33 Go/race各2379通过、0失败/skip；PG313/PGlite310分别通过。22包、167顶层函数、每模式56个不重复串行批次，Go默认timeout保留。
 - ABI53条内联类型义务及53个额外负控制、ORM6条原错误义务及6个额外负控制、callback union1条及bloom2条原错误义务分别通过真实编译检查。更广的源码类型兼容仍在范围内。
 - events11/11与filter23/23已映射。完整原文件保留真实生成ABI/helper和未改断言，通过call-through采集后由Go重放；采集与pristine原版验收分开标注。此前八文件PG/PGlite原版验收各129通过、3个原skip，未冒称全部上游验收。
 - 补充差分2466基础/factory、867filter/fragments、135events、20协议编码、62RPC、497bloom分别计数。额外Go集成/故障/进程测试不加原例credit。
@@ -68,7 +68,7 @@ Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地�
 
 未取得计划 PDF 的本地可读副本：Library 已解析给定文件，但所提供下载经指定 helper 两次失败；未伪造本地文件。实现以完整委托范围和固定源码为依据。
 
-当前416条精确映射均有源码 oracle 通过；此前数据库/profile所需 Foundry 与生成 fixture 已按授权准备，八文件PG/PGlite验收结果和完整events/filter采集分别保留。489条静态记录仍未实现，不能将 Go 通过外推为全部源码验收。
+当前456条精确映射均有源码 oracle 通过；此前数据库/profile所需 Foundry 与生成 fixture 已按授权准备，八文件PG/PGlite验收结果和完整events/filter采集分别保留。449条静态记录仍未实现，不能将 Go 通过外推为全部源码验收。
 
 原生 `NewLifecycle` 已实现新影子启动、build ID 校验、heartbeat 租约、带 fencing 的业务/同步写入和事务恢复；新增8条生命周期源例及真实进程退出验证。恢复返回 safe checkpoint 并保留 latest，NewStaged 自动协调私有恢复游标及安装 capture。自动单链 staged runtime 已接入生命周期和实时事务；完整多链调度、真实旧版接管、dev reset 和角色权限仍待实现。接口与边界见 [DATABASE_LIFECYCLE.md](docs/DATABASE_LIFECYCLE.md)。
 
@@ -103,3 +103,5 @@ M30补齐SQL工具函数14精确原例/19断言/38真实调用，含8条实际Dr
 M31修复indexed topic的显式undefined标量wildcard，以及string/bytes的OR数组中null/undefined编码；50个实际源码向量与32个真实EVM/PG/PGlite/cache回归通过，新增精确映射0。旧代码失败与同输入证明保留。见[Indexed topics](docs/INDEXED_TOPICS.md)。
 
 原版同步存储的区间、factory子地址、协议CRUD、事件分页及MD5 RPC缓存新增38条精确映射、63个断言和9项原生类型义务；PG/PGlite与normal/race共四次完整原文件对照，每次95个实际Go调用。`ReadSourcePage` / `DispatchSourceEvents` 已通过真实EVM事务失败、重放和换分支回归；范围获取、区块来源和finality仍由调度器负责。接口与验收边界见 [SOURCE_SYNC_STORE.md](docs/SOURCE_SYNC_STORE.md)。
+
+M33补齐内存与持久化历史范围获取的两个完整原文件：40条精确原例、102断言、12项原生类型错误义务，每后端每模式136个公开调用；实际48次类型正向程序使用各自原例的存活Anvil。100块预取、factory分页/最终drain、RPC状态所有权和原版标准化另有116项补充验证，不加source credit。完整历史/实时/多链调度仍需继续。见 [SOURCE_HISTORICAL.md](docs/SOURCE_HISTORICAL.md)。

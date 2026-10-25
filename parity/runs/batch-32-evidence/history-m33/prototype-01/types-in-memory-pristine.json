@@ -1,0 +1,70 @@
+{
+  "state": "Read-only actual diagnostics, not native type/source acceptance. Multiple original diagnostics per annotation remain distinct; no assumed one-to-one diagnostic count.",
+  "kind": "in-memory",
+  "mode": "pristine",
+  "typescript": "5.4.5",
+  "selected": [
+    {
+      "id": "4ed88e241ef6d778d897",
+      "line": 164,
+      "directives": [
+        "// @ts-expect-error"
+      ],
+      "body": "test(\"syncBlockData() skips transaction receipts for zero-hash logs\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n    includeTransactionReceipts: true,\n  });\n\n  const requestSpy = vi.spyOn(rpc, \"request\");\n  const request = async (request: any) => {\n    const result = await rpc.request(request);\n    if (request.method === \"eth_getLogs\") {\n      return (result as { transactionHash: string }[]).map((log) => ({\n        ...log,\n        transactionHash: zeroHash,\n      }));\n    }\n    return result;\n  };\n\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc: {\n      ...rpc,\n      // @ts-expect-error\n      request,\n    },\n    childAddress: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData).toHaveLength(1);\n  expect(blockData[0]!.logs).toHaveLength(1);\n  expect(blockData[0]!.transactions).toHaveLength(0);\n  expect(blockData[0]!.transactionReceipts).toHaveLength(0);\n\n  const receiptRequests = requestSpy.mock.calls.filter(\n    ([request]) =>\n      request.method === \"eth_getBlockReceipts\" ||\n      request.method === \"eth_getTransactionReceipt\",\n  );\n  expect(receiptRequests).toHaveLength(0);\n})"
+    },
+    {
+      "id": "e7360d814bb5552f5222",
+      "line": 562,
+      "directives": [
+        "// @ts-expect-error"
+      ],
+      "body": "test(\"syncBlockData() with log factory and no address\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(1);\n})"
+    },
+    {
+      "id": "da3e0236d21a83248db7",
+      "line": 611,
+      "directives": [
+        "// @ts-expect-error",
+        "// @ts-expect-error",
+        "// @ts-expect-error"
+      ],
+      "body": "test(\"syncBlockData() with log factory error\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n  // @ts-expect-error\n  // Invalid child address location causes extracting child address to throw an error\n  eventCallbacks[0].filter.address.childAddressLocation = \"topic3\";\n\n  const childAddresses = setupChildAddresses(eventCallbacks);\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: childAddresses,\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(0);\n  // @ts-expect-error\n  expect(childAddresses.get(eventCallbacks[0].filter.address.id)!.size).toBe(0);\n})"
+    },
+    {
+      "id": "18407c46d5bf5ef7f901",
+      "line": 859,
+      "directives": [
+        "// @ts-expect-error"
+      ],
+      "body": "test(\"syncBlockData() handles many factory addresses\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  context.common.options.factoryAddressCountThreshold = 10;\n\n  const { address } = await deployFactory({ sender: ALICE });\n\n  for (let i = 0; i < 10; i++) {\n    await createPair({ factory: address, sender: ALICE });\n  }\n\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  const spy = vi.spyOn(rpc, \"request\");\n\n  const childAddresses = setupChildAddresses(eventCallbacks);\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: childAddresses,\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 13],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(1);\n  // @ts-expect-error\n  expect(childAddresses.get(eventCallbacks[0].filter.address.id)!.size).toBe(\n    11,\n  );\n\n  // `eth_getLogs` for the child filter is not narrowed above the threshold\n  const topic0 = (eventCallbacks[0]!.filter as LogFilter).topic0;\n  const childLogsRequests = spy.mock.calls\n    .map(([request]) => request)\n    .filter(\n      (request): request is EthGetLogsRequest =>\n        request.method === \"eth_getLogs\" &&\n        (request as EthGetLogsRequest).params[0].topics?.[0] === topic0,\n    );\n  expect(childLogsRequests.length).toBeGreaterThan(0);\n  for (const request of childLogsRequests) {\n    expect(request.params[0].address).toBeUndefined();\n  }\n})"
+    }
+  ],
+  "actual": [],
+  "other": [],
+  "effective_options": {
+    "rootDir": "/root/ponder-go/work/ponder-upstream",
+    "utils_entry": "/root/ponder-go/work/ponder-upstream/packages/utils/src/index.ts"
+  },
+  "sources": [
+    {
+      "file": "/root/ponder-go/.cloud-bootstrap/history-next/m33/audit-types.mjs",
+      "sha256": "e2d20a83bdba0c2ab00ae8afea4d6df42f5872f50763267bd95ead258c09cac5"
+    },
+    {
+      "file": "/root/ponder-go/work/ponder-upstream/packages/core/src/sync-historical/in-memory.test.ts",
+      "sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc"
+    },
+    {
+      "file": "/root/ponder-go/work/ponder-upstream/packages/core/tsconfig.json",
+      "sha256": "21745dcb1e01934c37b902f730ae40fa3daa63f39944ffdeea860278caf85f6c"
+    },
+    {
+      "file": "/root/ponder-go/work/ponder-upstream/packages/utils/src/index.ts",
+      "sha256": "c4ba739226f5fd160c07a5d956e2dc703f937148aa43101d8f7a0668405ae8d7"
+    },
+    {
+      "file": "/root/ponder-go/work/ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    }
+  ]
+}

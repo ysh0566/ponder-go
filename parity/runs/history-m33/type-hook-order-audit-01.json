@@ -1,0 +1,14 @@
+{
+  "state": "Actual installed Vitest executes afterEach hooks before cleanup functions returned by setupAnvil/setupCleanup. Individual type hooks can use the original case contracts before the original revert cleanup.",
+  "runner": {
+    "file": "/root/ponder-go/work/ponder-upstream/node_modules/.pnpm/vitest@5.0.2_@edge-runtime+vm@3.2.0_@types+node@22.20.1_vite@8.3.1_@types+node@22.20.1_jiti@2.4.2_tsx@4.19.2_yaml@2.3.4_/node_modules/vitest/dist/chunks/run.C5UmxDPh.js",
+    "sha256": "890fef0254ad442f55902adc9a7d0e639bb9ba5a78ef4fc53a30f10f1aa9f77c"
+  },
+  "afterEach_line": 3892,
+  "returned_cleanup_line": 3893,
+  "excerpt": [
+    "\t\t\t\t\tawait $(\"test.afterEach\", () => callSuiteHook(suite, test, \"afterEach\", runner, [test.context, suite]));",
+    "\t\t\t\t\tif (beforeEachCleanups.length) await $(\"test.cleanup\", () => callCleanupHooks(runner, beforeEachCleanups));"
+  ],
+  "source_credit": 0
+}

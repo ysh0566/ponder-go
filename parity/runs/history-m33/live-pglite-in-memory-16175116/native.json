@@ -1,0 +1,578 @@
+{
+  "backend": "pglite",
+  "cases": [
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "52e137a2e81b50796e81",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "createInMemoryHistoricalSync()"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 2
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "8b91e36fa0105cdf8ac8",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log filter"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"eth_getBlockReceipts\",[\"0x368876f70e884cbb4f7918cb972f158ea9baaa7cbf389fefcb0dd7f3e43102f2\"]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "752e48dab7ef918c4fe0",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log filter and transaction receipts"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 2
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "4ed88e241ef6d778d897",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() skips transaction receipts for zero-hash logs"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "e7dfeb5c55b2d59da8a4",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() dedupes logs matched by many log filters"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "5ee92f73f12d67fe7317",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with block filter"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\"],\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "a87094ef8544772d122e",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log factory"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x0\",\"toBlock\":\"0x0\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x1\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x2\",\"toBlock\":\"0x2\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\"],\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 6
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "65ec070fd0607112ac94",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log factory starting earlier than contract start block"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x0\",\"toBlock\":\"0x0\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x1\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x2\",\"toBlock\":\"0x2\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\"],\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 6
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "6493e2fc4786babcadbc",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log factory starting earlier than crash recovery"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x1\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"debug_traceBlockByNumber\",[\"0x1\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x2\",\"toBlock\":\"0x2\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"debug_traceBlockByNumber\",[\"0x2\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"debug_traceBlockByNumber\",[\"0x3\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 9
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "b70f8a00d9bee56cb33c",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with trace factory waits for child addresses"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 1
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "0e083209e2f8fe89cd51",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() fetches child addresses without required intervals"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\"],\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 2
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "7fbad8d2a48052673283",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log factory and no factory interval"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\"],\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "e7360d814bb5552f5222",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log factory and no address"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 1
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "da3e0236d21a83248db7",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log factory error"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]",
+            "[\"debug_traceBlockByNumber\",[\"0x2\",{\"tracer\":\"callTracer\"}]]",
+            "[\"debug_traceBlockByNumber\",[\"0x1\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"debug_traceBlockByNumber\",[\"0x3\",{\"tracer\":\"callTracer\"}]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 6
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "f1730c928e9f0138507a",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with trace filter"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockReceipts\",[\"0xd3ccaf809e1ed0aa7070cae0d9ae81da6144f603839df4c6aedd51f36d5948e5\"]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 2
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "2d4cc04bb5ceb9e835b1",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with transaction filter"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"debug_traceBlockByNumber\",[\"0x1\",{\"tracer\":\"callTracer\"}]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 2
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "c52aac0263ce5ad1550f",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with transfer filter"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "37fcced2a60753802f4c",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with many filters"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0xd\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"fromBlock\":\"0x1\",\"toBlock\":\"0xd\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0xd\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "18407c46d5bf5ef7f901",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() handles many factory addresses"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"eth_getBlockReceipts\",[\"0x57544a556ec27130eaeea1f31913929bdfbe17d930c0804b49a7517bd0703619\"]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]",
+            "[\"eth_getBlockReceipts\",[\"0x05c90d8dc3d0c8dc0410b2a2eb0962e60d01369443ede6b3bda74149a1cf7f2e\"]]",
+            "[\"eth_getBlockReceipts\",[\"0xb8ffff16d2a9efbfed95752183e0f7b1a18a00297495f17ea039da7d84d06a98\"]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 8
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "11f76edbd93e38b0b8c5",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() yields ordered block data"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "merge",
+          "physical_compared": false,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "a025833808a3334ec1aa",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "mergeGeneratorIntervals()"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "merge",
+          "physical_compared": false,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "acacab63db010a083c7f",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "mergeGeneratorIntervals() with different intervals"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "merge",
+          "physical_compared": false,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "47b554b28f8c73291690",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "mergeGeneratorIntervals() with no generators"
+    }
+  ],
+  "kind": "in-memory",
+  "original_exit_error": "\u003cnil\u003e",
+  "source_credit": 0,
+  "state": "Actual full original historical public calls, raw provider replay, independent native acquisition/cache; native types/full acceptance pending, zero source credit"
+}

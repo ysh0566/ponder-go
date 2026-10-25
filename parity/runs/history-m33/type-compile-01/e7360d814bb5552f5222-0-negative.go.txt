@@ -1,0 +1,494 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"math"
+	"math/big"
+	"net/url"
+	"os"
+	"reflect"
+
+	"ponder.local/ponder-go/config"
+	"ponder.local/ponder-go/filter"
+	"ponder.local/ponder-go/rpc"
+	native "ponder.local/ponder-go/runtime"
+	"ponder.local/ponder-go/schema"
+	"ponder.local/ponder-go/store"
+	"sync"
+	"time"
+)
+
+const sourceCaseID = "e7360d814bb5552f5222"
+const sourceDirective = 0
+const controlKind = "no_parent"
+
+type historicalLivePair struct{ Key, Value any }
+type historicalLiveMap []historicalLivePair
+type historicalLiveRegistry struct{ refs map[int64]filter.Object }
+
+func newSourceLiveRegistry() *historicalLiveRegistry {
+	return &historicalLiveRegistry{refs: map[int64]filter.Object{}}
+}
+func historicalLiveNumber(value any) (float64, error) {
+	switch v := value.(type) {
+	case json.Number:
+		return v.Float64()
+	case float64:
+		return v, nil
+	case int:
+		return float64(v), nil
+	case int64:
+		return float64(v), nil
+	case uint64:
+		return float64(v), nil
+	default:
+		return 0, fmt.Errorf("not a source number: %T", value)
+	}
+}
+func historicalLiveID(value any) (int64, error) {
+	n, e := historicalLiveNumber(value)
+	if e != nil || math.Trunc(n) != n {
+		return 0, fmt.Errorf("invalid source object id")
+	}
+	return int64(n), nil
+}
+func (r *historicalLiveRegistry) restore(value any) (any, error) {
+	switch v := value.(type) {
+	case []any:
+		out := make([]any, len(v))
+		for i, item := range v {
+			x, e := r.restore(item)
+			if e != nil {
+				return nil, e
+			}
+			out[i] = x
+		}
+		return out, nil
+	case map[string]any:
+		if v["$undefined"] == true {
+			return filter.Undefined, nil
+		}
+		if text, ok := v["$bigint"].(string); ok {
+			n, ok := new(big.Int).SetString(text, 10)
+			if !ok {
+				return nil, fmt.Errorf("invalid source bigint")
+			}
+			return n, nil
+		}
+		if text, ok := v["$number"].(string); ok {
+			switch text {
+			case "NaN":
+				return math.NaN(), nil
+			case "Infinity":
+				return math.Inf(1), nil
+			case "-Infinity":
+				return math.Inf(-1), nil
+			case "-0":
+				return math.Copysign(0, -1), nil
+			}
+			return nil, fmt.Errorf("unknown source number")
+		}
+		if idValue, ok := v["$ref"]; ok {
+			id, e := historicalLiveID(idValue)
+			if e != nil {
+				return nil, e
+			}
+			object, ok := r.refs[id]
+			if !ok {
+				return nil, fmt.Errorf("source input references unbound native object %d", id)
+			}
+			return object, nil
+		}
+		if entries, ok := v["$map"].([]any); ok {
+			out := historicalLiveMap{}
+			for _, entry := range entries {
+				pair, ok := entry.([]any)
+				if !ok || len(pair) != 2 {
+					return nil, fmt.Errorf("invalid source Map entry")
+				}
+				k, e := r.restore(pair[0])
+				if e != nil {
+					return nil, e
+				}
+				x, e := r.restore(pair[1])
+				if e != nil {
+					return nil, e
+				}
+				out = append(out, historicalLivePair{k, x})
+			}
+			return out, nil
+		}
+		entries, ok := v["$object"].([]any)
+		if !ok {
+			return nil, fmt.Errorf("untagged source input object")
+		}
+		id, e := historicalLiveID(v["$id"])
+		if e != nil {
+			return nil, e
+		}
+		out, exists := r.refs[id]
+		if !exists {
+			out = filter.Object{}
+			r.refs[id] = out
+		} else {
+			for key := range out {
+				delete(out, key)
+			}
+		}
+		for _, entry := range entries {
+			pair, ok := entry.([]any)
+			if !ok || len(pair) != 2 {
+				return nil, fmt.Errorf("invalid source object entry")
+			}
+			key, ok := pair[0].(string)
+			if !ok {
+				return nil, fmt.Errorf("invalid source object key")
+			}
+			item, e := r.restore(pair[1])
+			if e != nil {
+				return nil, e
+			}
+			out[key] = item
+		}
+		return out, nil
+	default:
+		return v, nil
+	}
+}
+
+type phase struct {
+	Kind            string               `json:"kind"`
+	Constructor     any                  `json:"constructor"`
+	Span            store.SourceInterval `json:"span"`
+	SyncRange       bool                 `json:"sync_range"`
+	SyncBlock       bool                 `json:"sync_block"`
+	InsertIntervals bool                 `json:"insert_intervals"`
+}
+type payload struct {
+	CaseID    string  `json:"case_id"`
+	Backend   string  `json:"backend"`
+	Callbacks any     `json:"callbacks"`
+	Phases    []phase `json:"phases"`
+}
+type recordedRPC struct {
+	base     rpc.Requester
+	mu       sync.Mutex
+	requests []map[string]any
+}
+
+func (r *recordedRPC) Call(ctx context.Context, method string, params, out any) error {
+	r.mu.Lock()
+	r.requests = append(r.requests, map[string]any{"method": method, "params": filter.RPCValue(params)})
+	r.mu.Unlock()
+	return r.base.Call(ctx, method, params, out)
+}
+func (r *recordedRPC) Count() int { r.mu.Lock(); defer r.mu.Unlock(); return len(r.requests) }
+func must(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+func object(value any) map[string]any {
+	v, ok := value.(map[string]any)
+	if !ok {
+		panic(fmt.Sprintf("object required, got%T", value))
+	}
+	return v
+}
+func number(value any) float64 { n, err := historicalLiveNumber(value); must(err); return n }
+func decode(value any) any {
+	r := newSourceLiveRegistry()
+	result, err := r.restore(value)
+	must(err)
+	return result
+}
+func childrenFrom(value any) *native.SourceHistoricalChildren {
+	pairs, ok := value.(historicalLiveMap)
+	if !ok {
+		panic("original constructor childMap required")
+	}
+	result := []native.SourceFactoryChildren{}
+	for _, pair := range pairs {
+		item := native.SourceFactoryChildren{ID: pair.Key.(string), Entries: []filter.ChildAddress{}}
+		entries, ok := pair.Value.(historicalLiveMap)
+		if !ok {
+			panic("original childaddresses must be Map")
+		}
+		for _, entry := range entries {
+			item.Entries = append(item.Entries, filter.ChildAddress{Address: entry.Key.(string), Block: uint64(number(entry.Value))})
+		}
+		result = append(result, item)
+	}
+	return native.NewSourceHistoricalChildren(result)
+}
+func factoryID(callback config.SourceEventCallback) string {
+	reader := callback.Filter.(config.SourceLogFilter)
+	address, err := reader.Address()
+	must(err)
+	factory, ok := address.(config.SourceFactoryAddress)
+	if !ok {
+		panic("original callback must use factory")
+	}
+	return factory.ID()
+}
+func configure(callback config.SourceEventCallback, base *rpc.SourceHistoricalProvider) rpc.Requester {
+	parentReader := callback.Filter
+	parentAddress, err := parentReader.Address()
+	must(err)
+	parentFactory := parentAddress.(config.SourceFactoryAddress)
+	must(parentFactory.SetParentAddress(config.SourceWildcardAddress{}))
+	return base
+}
+func mutatePartial(callback config.SourceEventCallback) {
+
+}
+func openBackend(ctx context.Context, backend string) store.Backend {
+	if backend == "pglite" {
+		result, err := store.OpenPGlite(ctx, "memory://")
+		must(err)
+		return result
+	}
+	if backend != "postgres" {
+		panic("original backend required")
+	}
+	address := os.Getenv("PONDER_TEST_POSTGRES")
+	parsed, err := url.Parse(address)
+	must(err)
+	if parsed.Hostname() != "127.0.0.1" || parsed.Port() != "53398" || parsed.Path != "/ponder_test" {
+		panic("dedicated taskPG required")
+	}
+	result, err := store.OpenPostgres(ctx, address)
+	must(err)
+	return result
+}
+func required(ctx context.Context, f filter.Object, span store.SourceInterval, source *store.SourceSyncStore) ([]store.SourceFilterInterval, []store.SourceFactoryInterval) {
+	filters := []filter.Object{f}
+	var cached []store.SourceIntervalEntry
+	if source == nil {
+		var err error
+		cached, err = native.EmptySourceCachedIntervals(filters)
+		must(err)
+	} else {
+		value, err := source.GetIntervals(ctx, filters)
+		must(err)
+		cached = value.Entries()
+	}
+	intervals, factories, err := native.RequiredSourceIntervals(filters, span, cached)
+	must(err)
+	return intervals, factories
+}
+func main() {
+	ctx := context.Background()
+	var input payload
+	decoder := json.NewDecoder(os.Stdin)
+	decoder.UseNumber()
+	must(decoder.Decode(&input))
+	if input.CaseID != sourceCaseID || len(input.Phases) == 0 {
+		panic("exact original case/phases required")
+	}
+	callbacks, ok := decode(input.Callbacks).([]any)
+	if !ok || len(callbacks) == 0 {
+		panic("genuine original callbacks before mutation required")
+	}
+	rawCallback := object(callbacks[0])
+	initialFilter := object(rawCallback["filter"])
+	if initialFilter["type"] != "log" {
+		panic("original typecase logcallback required")
+	}
+	compiled, err := config.CompileSourceFilter(initialFilter)
+	must(err)
+	callback := config.SourceEventCallback{Name: rawCallback["name"].(string), Type: rawCallback["type"].(string), Filter: compiled}
+	before := callback.Filter.Value()
+	beforeJSON, err := json.Marshal(before)
+	must(err)
+	firstCtor := object(decode(input.Phases[0].Constructor))
+	endpoint, ok := firstCtor["endpoint"].(string)
+	if !ok {
+		panic("original liveAnvil endpoint required")
+	}
+	parsed, err := url.Parse(endpoint)
+	must(err)
+	if parsed.Hostname() != "127.0.0.1" || parsed.Port() != "8545" || parsed.Path != "/1" {
+		panic("only original taskAnvil accepted")
+	}
+	client := rpc.New(endpoint)
+	client.RequestsPerSecond = 0
+	client.Retries = 0
+	recording := &recordedRPC{base: client, requests: []map[string]any{}}
+	base, err := rpc.NewSourceHistoricalProvider(recording, rpc.SourceHistoricalOverrides{})
+	must(err)
+	requester := configure(callback, base)
+	actions := rpc.NewActions(requester)
+	var backend store.Backend
+	var source *store.SourceSyncStore
+	var cache *store.ProtocolCache
+	namespace := ""
+	if input.Phases[0].Kind == "persistent" {
+		backend = openBackend(ctx, input.Backend)
+		defer backend.Close()
+		namespace = fmt.Sprintf("ponder_go_hist_type_%x", time.Now().UnixNano())
+		db, err := store.New(ctx, backend, schema.Schema{Tables: []schema.Table{{Name: "audit", Columns: []schema.Column{{Name: "id", Type: "text", Primary: true}}}}}, namespace, schema.Multichain)
+		must(err)
+		cache, err = db.EnableProtocolCache(ctx)
+		must(err)
+		source, err = cache.SourceSyncStore(0)
+		must(err)
+	}
+	if controlKind == "no_parent" || controlKind == "bad_factory" {
+		after := callback.Filter.Value()
+		if reflect.DeepEqual(before, after) {
+			panic("actual callback setter did not mutate consumer")
+		}
+		afterBeforeJSON, err := json.Marshal(before)
+		must(err)
+		if string(afterBeforeJSON) != string(beforeJSON) {
+			panic("detached before snapshot changed")
+		}
+	}
+	outcomes := []map[string]any{}
+	var lastChildren *native.SourceHistoricalChildren
+	for index, phase := range input.Phases {
+		if controlKind == "partial" && index == 1 {
+			mutatePartial(callback)
+			if reflect.DeepEqual(before, callback.Filter.Value()) {
+				panic("typed actual callback was not changed")
+			}
+		}
+		ctor := object(decode(phase.Constructor))
+		chain := object(ctor["chain"])
+		chainID := uint64(number(chain["id"]))
+		rawOptions := object(ctor["options"])
+		options := native.SourceHistoricalOptions{FactoryAddressCountThreshold: int(number(rawOptions["factoryAddressCountThreshold"]))}
+		if value := chain["ethGetLogsBlockRange"]; value != nil && !filter.IsUndefined(value) {
+			n := uint64(number(value))
+			options.EthGetLogsBlockRange = &n
+		}
+		children := childrenFrom(ctor["children"])
+		lastChildren = children
+		intervals, factories := required(ctx, callback.Filter.Value(), phase.Span, source)
+		start := recording.Count()
+		logCount, transactionCount, receiptCount, blockCount := 0, 0, 0, 0
+		if phase.Kind == "memory" {
+			syncer, err := native.NewSourceInMemoryHistoricalSync(requester, actions, children, options)
+			must(err)
+			if !phase.SyncBlock {
+				panic("original memory call missing")
+			}
+			for data, err := range syncer.SyncBlockData(ctx, intervals, factories) {
+				must(err)
+				logCount += len(data.Logs)
+				transactionCount += len(data.Transactions)
+				receiptCount += len(data.TransactionReceipts)
+				blockCount += len(data.Blocks)
+			}
+		} else {
+			syncer, err := native.NewSourceHistoricalSync(chainID, requester, actions, children, options)
+			must(err)
+			logs := []filter.Object{}
+			if phase.SyncRange {
+				logs, err = syncer.SyncBlockRangeData(ctx, phase.Span, intervals, factories, source)
+				must(err)
+			}
+			logCount = len(logs)
+			if phase.SyncBlock {
+				block, err := syncer.SyncBlockData(ctx, phase.Span, intervals, logs, source)
+				must(err)
+				if block != nil {
+					blockCount = 1
+				}
+			}
+			if phase.InsertIntervals {
+				must(source.InsertIntervals(ctx, chainID, intervals, factories))
+			}
+			if controlKind == "zero_hash" {
+				rows, err := cache.Rows(ctx, "transactions", chainID, uint64(phase.Span[0]), uint64(phase.Span[1]))
+				must(err)
+				transactionCount = len(rows.Rows)
+				rows, err = cache.Rows(ctx, "transaction_receipts", chainID, uint64(phase.Span[0]), uint64(phase.Span[1]))
+				must(err)
+				receiptCount = len(rows.Rows)
+			}
+		}
+		count := recording.Count() - start
+		if controlKind == "partial" && index == 1 {
+			if count != 1 || logCount != 0 || blockCount != 0 {
+				panic("partial cache did not fetch only missing address")
+			}
+			recording.mu.Lock()
+			request := recording.requests[start]
+			recording.mu.Unlock()
+			if request["method"] != "eth_getLogs" {
+				panic("completed block was refetched")
+			}
+			params := request["params"].([]any)
+			query := object(params[0])
+			if !reflect.DeepEqual(query["address"], []any{"0x0000000000000000000000000000000000000000"}) {
+				panic("wrong recovered partial-cache address")
+			}
+			if query["fromBlock"] != fmt.Sprintf("0x%x", uint64(phase.Span[0])) || query["toBlock"] != fmt.Sprintf("0x%x", uint64(phase.Span[1])) {
+				panic("wrong partial cache range")
+			}
+		}
+		if controlKind == "partial" && index > 1 && count != 0 {
+			panic("fully cached final phase made RPC calls")
+		}
+		outcomes = append(outcomes, map[string]any{"logs": logCount, "transactions": transactionCount, "receipts": receiptCount, "blocks": blockCount, "requests": count, "interval_inserted": phase.InsertIntervals})
+	}
+	if controlKind == "zero_hash" {
+		for _, outcome := range outcomes {
+			if outcome["logs"] != 1 || outcome["transactions"] != 0 || outcome["receipts"] != 0 {
+				panic("zeroHash original remaining behavior failed")
+			}
+		}
+		recording.mu.Lock()
+		for _, request := range recording.requests {
+			if request["method"] == "eth_getBlockReceipts" || request["method"] == "eth_getTransactionReceipt" {
+				panic("receipt request for zeroHash log")
+			}
+		}
+		recording.mu.Unlock()
+	}
+	if controlKind == "no_parent" {
+		if outcomes[0]["logs"] != 1 {
+			panic("original no-parent log outcome failed")
+		}
+	}
+	if controlKind == "bad_factory" {
+		id := factoryID(callback)
+		entries, ok := lastChildren.Entries(id)
+		if !ok || len(entries) != 0 || outcomes[0]["logs"] != 0 {
+			panic("original invalidlocation catch behavior failed")
+		}
+	}
+	if controlKind == "threshold" {
+		id := factoryID(callback)
+		entries, ok := lastChildren.Entries(id)
+		if !ok || len(entries) != 11 || outcomes[0]["logs"] != 1 {
+			panic("original factory11 outcome failed")
+		}
+		topic := callback.Filter.Value()["topic0"]
+		matched := 0
+		recording.mu.Lock()
+		for _, request := range recording.requests {
+			if request["method"] != "eth_getLogs" {
+				continue
+			}
+			query := object(request["params"].([]any)[0])
+			topics, ok := query["topics"].([]any)
+			if !ok || len(topics) == 0 || topics[0] != topic {
+				continue
+			}
+			matched++
+			if _, exists := query["address"]; exists {
+				panic("factory threshold did not omit address")
+			}
+		}
+		recording.mu.Unlock()
+		if matched == 0 {
+			panic("original threshold childrequest missing")
+		}
+	}
+	must(json.NewEncoder(os.Stdout).Encode(map[string]any{"passed": true, "source_id": sourceCaseID, "directive_index": sourceDirective, "backend": input.Backend, "namespace": namespace, "endpoint": endpoint, "outcomes": outcomes, "callback_mutated": !reflect.DeepEqual(before, callback.Filter.Value())}))
+}

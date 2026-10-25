@@ -265,11 +265,11 @@ func DecodeFragment(id string) (any, error) {
 }
 
 func RecoverFilter(base Object, fragments []Object) Object {
-	o := clone(base)
 	kind := str(get(base, "type"))
 	if kind == "block" {
-		return o
+		return base
 	}
+	o := clone(base)
 	recoverAddress := func(key string) any {
 		v := get(base, key)
 		if _, ok := arr(v); !ok {
@@ -303,6 +303,9 @@ func RecoverFilter(base Object, fragments []Object) Object {
 	return o
 }
 func RecoverFactory(base Object, fragments []Object) Object {
+	if _, ok := arr(get(base, "address")); !ok {
+		return base
+	}
 	o := clone(base)
 	if _, ok := arr(get(base, "address")); ok {
 		xs := []any{}

@@ -1,0 +1,72 @@
+package filter
+
+import (
+	"encoding/json"
+	"os"
+	"testing"
+)
+
+func restoreSourceChildVector(value any) any {
+	switch v := value.(type) {
+	case []any:
+		out := make([]any, len(v))
+		for i, value := range v {
+			out[i] = restoreSourceChildVector(value)
+		}
+		return out
+	case map[string]any:
+		if v["$undefined"] == true {
+			return Undefined
+		}
+		pairs, ok := v["$object"].([]any)
+		if !ok {
+			panic("invalid original child marker")
+		}
+		out := map[string]any{}
+		for _, pair := range pairs {
+			entry := pair.([]any)
+			out[entry[0].(string)] = restoreSourceChildVector(entry[1])
+		}
+		return out
+	default:
+		return v
+	}
+}
+func TestSourceChildAddressVectors(t *testing.T) {
+	raw, err := os.ReadFile("/root/ponder-go/.cloud-bootstrap/history-next/m33/child-vectors.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture struct {
+		Cases []struct {
+			Name   string
+			Args   any
+			Result string
+			Error  *struct{ Name, Message string }
+		}
+	}
+	if err = json.Unmarshal(raw, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	if len(fixture.Cases) != 25 {
+		t.Fatal("all25 actual source vectors required")
+	}
+	for _, c := range fixture.Cases {
+		t.Run(c.Name, func(t *testing.T) {
+			args := restoreSourceChildVector(c.Args).(map[string]any)
+			result, err := GetSourceChildAddress(args["log"].(map[string]any), args["factory"].(map[string]any))
+			if c.Error != nil {
+				if err == nil {
+					t.Fatal("source extraction error accepted", result, c.Error)
+				}
+				if c.Error.Name != "TypeError" || err.Error() != c.Error.Message {
+					t.Fatal("source extraction error", err, c.Error)
+				}
+			} else {
+				if err != nil || result != c.Result {
+					t.Fatal("source child address", result, err, c.Result)
+				}
+			}
+		})
+	}
+}

@@ -1,0 +1,811 @@
+{
+  "backend": "pglite",
+  "cases": [
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "c7847f072279f8b6b0ed",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "createHistoricalSync()"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x9eb95e4b47aeccb131f20ae7af33a29832499067\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[[\"0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925\",\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "e38b35ef4bed931a01f3",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() batches log filters with wildcard indexed topics"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "5e23f5358b620b199868",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with log filter"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "c8c7b9eeae4ee588a54d",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with log filter and transaction receipts"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0xdc64a140aa3e981100a9beca4e685f962f0cf6c9\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "c5ca58c81d923d49529e",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() skips transaction receipts for zero-hash logs"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 3
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "5da3c6f0b9b2653a81f9",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with block filter"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x0165878a594ca255338adfa4d48449f69242eb8f\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "e06e2a3c88bb3fe0ef8e",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with log factory"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":[\"0x8a791620dd6260079bf849dc5567adc3f2fdc318\",\"0x610178da211fef7d417bc0e6fed39f05609ad788\"],\"fromBlock\":\"0x1\",\"toBlock\":\"0x11\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":[\"0x8acd85898458400f7db866d53fcff6f0d49741ff\",\"0x6f1216d1bfe15c98520ca1434fc1d9d57ac95321\"],\"fromBlock\":\"0x1\",\"toBlock\":\"0x11\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 2
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/getIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/getChildAddresses",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/getChildAddresses",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "dcc7494a89f50d6ad7df",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with log factory shares parents between factories"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "97a5db3271fd8a51cce8",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with log factory and no address"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "9eaf4ba9f4488a48165e",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with log factory error"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"debug_traceBlockByNumber\",[\"0x1\",{\"tracer\":\"callTracer\"}]]",
+            "[\"debug_traceBlockByNumber\",[\"0x2\",{\"tracer\":\"callTracer\"}]]",
+            "[\"debug_traceBlockByNumber\",[\"0x3\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 6
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "0fa1c981c2dec7e89d5d",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with trace filter"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockReceipts\",[\"0xb323e85b34b70f3aab45e57a6483e7ebbe8ee42e939ea2b6fe8715b3ae603a58\"]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 2
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "8fc41db64b6520908741",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with transaction filter"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"debug_traceBlockByNumber\",[\"0x1\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 2
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "6a4eb173d60b39865c78",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with transfer filter"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0xa85233c63b9ee964add6f2cffe00fd84eb32338f\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 2
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "bff138edcd04ddcb1798",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with many filters"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x7a2088a1bfc9d81c55368ae168c2c02570cb814f\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/getIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "27d56af3b181c08ecad8",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with cache"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0xc5a5c42992decbae36851359345fe25997f5c42d\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/getIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":[\"0x0000000000000000000000000000000000000000\"],\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/getIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":[\"0xc5a5c42992decbae36851359345fe25997f5c42d\",\"0x0000000000000000000000000000000000000000\"],\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "1f021a7b846451889eae",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with partial cache"
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0xe6e340d132b5f46d1e472debcd681b2abc16e57e\",\"fromBlock\":\"0x1\",\"toBlock\":\"0xd\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "complete": false,
+      "errors": [
+        "historical case mismatch"
+      ],
+      "id": "feb4f050a5e15ba79c2f",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "syncAddress() handles many addresses"
+    }
+  ],
+  "kind": "index",
+  "original_exit_error": "exit status 1",
+  "source_credit": 0,
+  "state": "Actual full original historical public calls, raw provider replay, independent native acquisition/cache; native types/full acceptance pending, zero source credit"
+}

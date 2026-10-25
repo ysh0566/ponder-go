@@ -1,0 +1,1155 @@
+{
+  "state": "Twelve actual isolated source vectors, including original three helper inputs; no native execution or exact mappings.",
+  "typescript": "5.4.5",
+  "sources": [
+    {
+      "file": "/root/ponder-go/.cloud-bootstrap/history-next/m33/merge-source.mjs",
+      "sha256": "46419b460279040a1a1234009cf0dcda8e11ab67e0173fe9c0211b661b44ae7c"
+    },
+    {
+      "file": "/root/ponder-go/work/ponder-upstream/packages/core/src/sync-historical/in-memory.ts",
+      "sha256": "d0fbaa6e79696a25e9ebd416574103ee5ada60fe84eaba2abc2904745584ed03"
+    },
+    {
+      "file": "/root/ponder-go/work/ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    }
+  ],
+  "cases": [
+    {
+      "name": "original/common-range",
+      "generators": [
+        {
+          "interval": [
+            1,
+            10
+          ],
+          "yields": [
+            [
+              1,
+              4
+            ],
+            [
+              5,
+              10
+            ]
+          ]
+        },
+        {
+          "interval": [
+            1,
+            10
+          ],
+          "yields": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              7,
+              10
+            ]
+          ]
+        }
+      ],
+      "result": [
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          10
+        ]
+      ],
+      "trace": [
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            1,
+            4
+          ]
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            1,
+            2
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            3,
+            6
+          ]
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            1,
+            2
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            5,
+            10
+          ]
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            3,
+            4
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            7,
+            10
+          ]
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            5,
+            6
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_done",
+          "index": 0
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_done",
+          "index": 1
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            7,
+            10
+          ]
+        }
+      ]
+    },
+    {
+      "name": "original/different-ranges",
+      "generators": [
+        {
+          "interval": [
+            1,
+            5
+          ],
+          "yields": [
+            [
+              1,
+              5
+            ]
+          ]
+        },
+        {
+          "interval": [
+            3,
+            10
+          ],
+          "yields": [
+            [
+              3,
+              10
+            ]
+          ]
+        }
+      ],
+      "result": [
+        [
+          1,
+          5
+        ],
+        [
+          6,
+          10
+        ]
+      ],
+      "trace": [
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            1,
+            5
+          ]
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            3,
+            10
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_done",
+          "index": 0
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            1,
+            5
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_done",
+          "index": 1
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            6,
+            10
+          ]
+        }
+      ]
+    },
+    {
+      "name": "original/empty",
+      "generators": [],
+      "result": [],
+      "trace": []
+    },
+    {
+      "name": "empty-generator",
+      "generators": [
+        {
+          "interval": [
+            1,
+            10
+          ],
+          "yields": []
+        }
+      ],
+      "result": [],
+      "trace": [
+        {
+          "kind": "generator_done",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "name": "empty-and-live",
+      "generators": [
+        {
+          "interval": [
+            -5,
+            10
+          ],
+          "yields": []
+        },
+        {
+          "interval": [
+            2,
+            8
+          ],
+          "yields": [
+            [
+              2,
+              8
+            ]
+          ]
+        }
+      ],
+      "result": [
+        [
+          -5,
+          8
+        ]
+      ],
+      "trace": [
+        {
+          "kind": "generator_done",
+          "index": 0
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            2,
+            8
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_done",
+          "index": 1
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            -5,
+            8
+          ]
+        }
+      ]
+    },
+    {
+      "name": "same-ends",
+      "generators": [
+        {
+          "interval": [
+            1,
+            10
+          ],
+          "yields": [
+            [
+              1,
+              4
+            ],
+            [
+              5,
+              10
+            ]
+          ]
+        },
+        {
+          "interval": [
+            1,
+            10
+          ],
+          "yields": [
+            [
+              1,
+              4
+            ],
+            [
+              5,
+              10
+            ]
+          ]
+        }
+      ],
+      "result": [
+        [
+          1,
+          4
+        ],
+        [
+          5,
+          10
+        ]
+      ],
+      "trace": [
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            1,
+            4
+          ]
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            1,
+            4
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            5,
+            10
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            5,
+            10
+          ]
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            1,
+            4
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_done",
+          "index": 0
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_done",
+          "index": 1
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            5,
+            10
+          ]
+        }
+      ]
+    },
+    {
+      "name": "gapped-ranges",
+      "generators": [
+        {
+          "interval": [
+            1,
+            3
+          ],
+          "yields": [
+            [
+              1,
+              3
+            ]
+          ]
+        },
+        {
+          "interval": [
+            7,
+            9
+          ],
+          "yields": [
+            [
+              7,
+              9
+            ]
+          ]
+        }
+      ],
+      "result": [
+        [
+          1,
+          3
+        ],
+        [
+          4,
+          9
+        ]
+      ],
+      "trace": [
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            1,
+            3
+          ]
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            7,
+            9
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_done",
+          "index": 0
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            1,
+            3
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_done",
+          "index": 1
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            4,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "name": "reverse-key-order",
+      "generators": [
+        {
+          "interval": [
+            7,
+            9
+          ],
+          "yields": [
+            [
+              7,
+              9
+            ]
+          ]
+        },
+        {
+          "interval": [
+            1,
+            3
+          ],
+          "yields": [
+            [
+              1,
+              3
+            ]
+          ]
+        }
+      ],
+      "result": [
+        [
+          1,
+          3
+        ],
+        [
+          4,
+          9
+        ]
+      ],
+      "trace": [
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            7,
+            9
+          ]
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            1,
+            3
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_done",
+          "index": 1
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            1,
+            3
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_done",
+          "index": 0
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            4,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "name": "stale-end",
+      "generators": [
+        {
+          "interval": [
+            1,
+            10
+          ],
+          "yields": [
+            [
+              1,
+              4
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              5,
+              10
+            ]
+          ]
+        }
+      ],
+      "result": [
+        [
+          1,
+          4
+        ],
+        [
+          5,
+          10
+        ]
+      ],
+      "trace": [
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            1,
+            4
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            1,
+            2
+          ]
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            1,
+            4
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            5,
+            10
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_done",
+          "index": 0
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            5,
+            10
+          ]
+        }
+      ]
+    },
+    {
+      "name": "negative",
+      "generators": [
+        {
+          "interval": [
+            -10,
+            -1
+          ],
+          "yields": [
+            [
+              -10,
+              -4
+            ],
+            [
+              -3,
+              -1
+            ]
+          ]
+        },
+        {
+          "interval": [
+            -8,
+            0
+          ],
+          "yields": [
+            [
+              -8,
+              -5
+            ],
+            [
+              -4,
+              0
+            ]
+          ]
+        }
+      ],
+      "result": [
+        [
+          -10,
+          -5
+        ],
+        [
+          -4,
+          -4
+        ],
+        [
+          -3,
+          -1
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "trace": [
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            -10,
+            -4
+          ]
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            -8,
+            -5
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            -4,
+            0
+          ]
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            -10,
+            -5
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            -3,
+            -1
+          ]
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            -4,
+            -4
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_done",
+          "index": 0
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            -3,
+            -1
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_done",
+          "index": 1
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "three-generators",
+      "generators": [
+        {
+          "interval": [
+            1,
+            5
+          ],
+          "yields": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              5
+            ]
+          ]
+        },
+        {
+          "interval": [
+            2,
+            7
+          ],
+          "yields": [
+            [
+              2,
+              3
+            ],
+            [
+              4,
+              7
+            ]
+          ]
+        },
+        {
+          "interval": [
+            3,
+            9
+          ],
+          "yields": [
+            [
+              3,
+              8
+            ],
+            [
+              9,
+              9
+            ]
+          ]
+        }
+      ],
+      "result": [
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          9,
+          9
+        ]
+      ],
+      "trace": [
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            1,
+            2
+          ]
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            2,
+            3
+          ]
+        },
+        {
+          "kind": "generator_yield",
+          "index": 2,
+          "interval": [
+            3,
+            8
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            3,
+            5
+          ]
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            1,
+            2
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_yield",
+          "index": 1,
+          "interval": [
+            4,
+            7
+          ]
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            3,
+            3
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_done",
+          "index": 0
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            4,
+            5
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 1
+        },
+        {
+          "kind": "generator_done",
+          "index": 1
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            6,
+            7
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 2
+        },
+        {
+          "kind": "generator_yield",
+          "index": 2,
+          "interval": [
+            9,
+            9
+          ]
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            8,
+            8
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 2
+        },
+        {
+          "kind": "generator_done",
+          "index": 2
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            9,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fractional",
+      "generators": [
+        {
+          "interval": [
+            0.5,
+            2.5
+          ],
+          "yields": [
+            [
+              0.5,
+              1.5
+            ],
+            [
+              2,
+              2.5
+            ]
+          ]
+        }
+      ],
+      "result": [
+        [
+          0.5,
+          1.5
+        ],
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "trace": [
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            0.5,
+            1.5
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_yield",
+          "index": 0,
+          "interval": [
+            2,
+            2.5
+          ]
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            0.5,
+            1.5
+          ]
+        },
+        {
+          "kind": "generator_resume",
+          "index": 0
+        },
+        {
+          "kind": "generator_done",
+          "index": 0
+        },
+        {
+          "kind": "consumer",
+          "interval": [
+            2.5,
+            2.5
+          ]
+        }
+      ]
+    }
+  ]
+}

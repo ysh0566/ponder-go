@@ -1,0 +1,1001 @@
+{
+  "state": "Actual isolated child extraction25 vectors; no native comparison/mapping credit.",
+  "typescript": "5.4.5",
+  "sources": [
+    {
+      "file": "tools/source-child-fixtures.mjs",
+      "sha256": "c01faf6ab140c290d2eb1c7e7ef2dfa387f7cd9a0fede828441ea23b76487fbf"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/runtime/filter.ts",
+      "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+    },
+    {
+      "file": "../ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    }
+  ],
+  "cases": [
+    {
+      "name": "valid/topic1",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "topic1"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "valid/topic2",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "topic2"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "valid/topic3",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "topic3"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "valid/offset0",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "offset0"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "valid/offset32",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "offset32"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "missing-topic3/0",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  []
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "topic3"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot read properties of undefined (reading 'substring')"
+      }
+    },
+    {
+      "name": "missing-topic3/1",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "topic3"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot read properties of undefined (reading 'substring')"
+      }
+    },
+    {
+      "name": "missing-topic3/2",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "topic3"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot read properties of undefined (reading 'substring')"
+      }
+    },
+    {
+      "name": "missing-topic3/3",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "topic3"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot read properties of undefined (reading 'substring')"
+      }
+    },
+    {
+      "name": "topic-value/undefined",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    {
+                      "$undefined": true
+                    }
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "topic1"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot read properties of undefined (reading 'substring')"
+      }
+    },
+    {
+      "name": "topic-value/null",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    null
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "topic1"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot read properties of null (reading 'substring')"
+      }
+    },
+    {
+      "name": "topic-value/number",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    1
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "topic1"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "log.topics[topicIndex].substring is not a function"
+      }
+    },
+    {
+      "name": "topic-value/empty",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    ""
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "topic1"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0x"
+    },
+    {
+      "name": "topic-value/short",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "topic1"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0x"
+    },
+    {
+      "name": "data-value/undefined",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  {
+                    "$undefined": true
+                  }
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "offset0"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot read properties of undefined (reading 'substring')"
+      }
+    },
+    {
+      "name": "data-value/null",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  null
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "offset0"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot read properties of null (reading 'substring')"
+      }
+    },
+    {
+      "name": "data-value/number",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  1
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "offset0"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "log.data.substring is not a function"
+      }
+    },
+    {
+      "name": "data-value/empty",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  ""
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "offset0"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0x"
+    },
+    {
+      "name": "data-value/short",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "offset0"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0x"
+    },
+    {
+      "name": "location/offset-20",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "offset-20"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0x0x000000000000000000000000"
+    },
+    {
+      "name": "location/offset1.5",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "offset1.5"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "location/offsetfoo",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "offsetfoo"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0x"
+    },
+    {
+      "name": "location/unknown",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  "unknown"
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "result": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "location/undefined",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  {
+                    "$undefined": true
+                  }
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot read properties of undefined (reading 'startsWith')"
+      }
+    },
+    {
+      "name": "location/null",
+      "args": {
+        "$object": [
+          [
+            "log",
+            {
+              "$object": [
+                [
+                  "topics",
+                  [
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  ]
+                ],
+                [
+                  "data",
+                  "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              ]
+            }
+          ],
+          [
+            "factory",
+            {
+              "$object": [
+                [
+                  "childAddressLocation",
+                  null
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot read properties of null (reading 'startsWith')"
+      }
+    }
+  ]
+}

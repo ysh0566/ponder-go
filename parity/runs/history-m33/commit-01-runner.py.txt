@@ -1,0 +1,19 @@
+from pathlib import Path
+import json,hashlib,subprocess,os,datetime
+root=Path('/root/ponder-go/work/ponder-go');base=Path('/root/ponder-go/.cloud-bootstrap');parent='cb17241a1d2d5d8a337af025c6a9e6e0801db202';identity='ysh0566 <19503475+ysh0566@users.noreply.github.com>'
+assert(root/'parity/runs/history-m33/full-verify-01.exit').read_text().strip()=='0'
+batch=json.loads((root/'parity/runs/batch-32.json').read_text());assert batch['milestone']=='M33'and batch['native_go']['pass']==batch['race']['pass']==2379
+for e in batch['frozen_evidence']:assert hashlib.sha256((root/e['file']).read_bytes()).hexdigest()==e['sha256']
+env=os.environ.copy();env.update({'GIT_AUTHOR_NAME':'ysh0566','GIT_AUTHOR_EMAIL':'19503475+ysh0566@users.noreply.github.com','GIT_COMMITTER_NAME':'ysh0566','GIT_COMMITTER_EMAIL':'19503475+ysh0566@users.noreply.github.com'})
+for k in ['GIT_AUTHOR_DATE','GIT_COMMITTER_DATE']:env.pop(k,None)
+def run(args):
+ r=subprocess.run(args,cwd=root,env=env,text=True,capture_output=True)
+ if r.returncode:raise RuntimeError(json.dumps({'command':args,'exit_code':r.returncode,'stdout':r.stdout,'stderr':r.stderr}))
+ return r.stdout.strip()
+assert run(['git','rev-parse','HEAD'])==parent
+run(['git','diff','--check']);run(['git','add','-A']);run(['git','diff','--cached','--check'])
+run(['git','-c','user.name=ysh0566','-c','user.email=19503475+ysh0566@users.noreply.github.com','commit','-m','feat: port historical acquisition with original backend and type proofs'])
+sha=run(['git','rev-parse','HEAD']);tree=run(['git','show','-s','--format=%T',sha]);assert run(['git','show','-s','--format=%P%n%an <%ae>%n%cn <%ce>',sha]).splitlines()==[parent,identity,identity];assert not run(['git','status','--porcelain'])
+fsck=run(['git','fsck','--full','--no-reflogs']);(base/'m33-fsck.txt').write_text(fsck+'\n')
+bundle=base/'ponder-go-M33.bundle';assert not bundle.exists();run(['git','bundle','create',str(bundle),'refs/heads/main','^'+parent]);command=['git','bundle','verify',str(bundle)];v=subprocess.run(command,cwd=root,env=env,text=True,capture_output=True);(base/'m33-bundle-verification.json').write_text(json.dumps({'command':command,'exit_code':v.returncode,'stdout':v.stdout,'stderr':v.stderr},indent=2)+'\n');assert v.returncode==0
+receipt={'milestone':'M33','commit':sha,'tree':tree,'parent':parent,'author_committer':identity,'clean_worktree':True,'normal_go':2379,'race':2379,'source_mapped':456,'unimplemented':449,'published':False,'fsck_exit':0,'bundle':{'path':str(bundle),'sha256':hashlib.sha256(bundle.read_bytes()).hexdigest(),'prerequisite':parent},'recorded_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()};(base/'m33-commit.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt))

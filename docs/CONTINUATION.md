@@ -4,7 +4,19 @@
 
 
 
-## 当前执行入口：M32已验证，完整目标继续
+## 当前执行入口：M33已验证，完整目标继续
+
+batch-32.json/batch-32-evidence 与 history-m33/full-verify-01 实际退出0。Go/race各2379，PG313/PGlite310，0fail/skip；22包、167函数，每模式56个不重复串行批次，默认timeout保留。原生输入1057/7b132b1f137d4da4bbd7ccab6aaab71367c565953e33f286e584455217588c61在准备后冻结，贯穿两种完整模式。精确映射456/905=452Go+4SDK，全部映射原版oracle通过；449未实现。
+
+新增sync-historical/in-memory23及index17共40展开原例/102断言/12原生类型义务。原完整文件、hooks、Anvil、输入、断言、状态、RPC对象身份与返回cleanup保留。每后端每模式136个实际公开调用：Go独立消费原始provider输入并比较标准化结果/Map身份顺序/字段存在性与九张实际物理表。原版输出和预期SQL行未用于填充Go。pristine各后端40通过；四个只读TS程序各文件0-vs6诊断。12组具体负向Go编译与正向程序在四种backend/mode中实际执行，共48次；程序使用对应原例的Anvil，内存接口不建库，持久化接口用独立PG/PGlite schema。Go对照库先关闭，每项程序有独立afterEach，原例返回cleanup随后执行。
+
+106个实际源码向量与10项运行时回归零额外credit，覆盖异步next-before-yield、100块预取、factory共享分页与最终drain、真实EVM/五表持久化、provider分页学习及receipt fallback所有权。原recover对象身份11红灯、共享Actions两红灯、旧Proxy身份重置、初始case_id/cleanup连带失败和部分缓存正向程序误断言的失败输入与报告均保留，正式normal05/race02及完整验收通过后才映射。具体接口和边界见SOURCE_HISTORICAL.md。
+
+上一实际发布M32 cb17241a1d2d5d8a337af025c6a9e6e0801db202，tree 8ad7dce5f84298c2b8935f6f5f87c0be7ddbc234，证明history-m33/m32-publication.json。M33只允许作为该SHA普通后继发布，指定ysh0566 author/committer并核验实际远端。已有默认repo/read:org/gist授权和GH_CONFIG_DIR持续有效，不重复登录或权限询问；不读token、不改全局helper、不force/改历史、不接触Mac/业务库、不建PR。
+
+接着实现完整runtime历史/实时/多链调度。runtime/index15原例/30断言/6类型义务、runtime/historical14原例/29断言和sync-realtime30原例/203断言仍未映射；M33的RequiredSourceIntervals补充向量不能冒充这些原例。固定源码runtime/historical.ts还包括omnichain/isolated/catchup/refetch/crashrecovery等完整范围。保留已有页处理与事务引擎，继续其他查询/GraphQL/API/CLI/dev/templates/完整类型/SDK/simulation。整体目标未完成，不能停在此里程碑。
+
+## M32历史已验证基线
 
 batch-31.json/batch-31-evidence及sync-store-m32/full-verify-02实际退出0。Go/race各2183，PG272/PGlite269，0fail/skip；21包157函数，每模式53个不重复批次，默认timeout保留。原生输入1031/8dae6bb50112f6bf40b5c122fe969005006cb35330d03a7090a740d8d0e62a5d在准备后、native前冻结，贯穿两种模式。精确映射416/905=412Go+4SDK，全部映射原版oracle通过；489未实现。
 

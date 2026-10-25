@@ -1,0 +1,467 @@
+package runtime
+
+import (
+	"context"
+	"fmt"
+	"iter"
+	"math"
+	"sort"
+	"strconv"
+	"sync"
+
+	"ponder.local/ponder-go/filter"
+	"ponder.local/ponder-go/rpc"
+	"ponder.local/ponder-go/store"
+)
+
+type SourceHistoricalOptions struct {
+	FactoryAddressCountThreshold int
+	EthGetLogsBlockRange         *uint64
+	Logger                       rpc.ActionLogger
+}
+
+type SourceInMemoryHistoricalSync struct {
+	requester rpc.Requester
+	actions   *rpc.Actions
+	children  *SourceHistoricalChildren
+	options   SourceHistoricalOptions
+}
+
+// NewSourceInMemoryHistoricalSync retains the actual RPC object's pagination
+// and receipt metadata when a Client is supplied. Equal endpoints do not merge
+// independently constructed RPC objects.
+func NewSourceInMemoryHistoricalSync(requester rpc.Requester, actions *rpc.Actions, children *SourceHistoricalChildren, options SourceHistoricalOptions) (*SourceInMemoryHistoricalSync, error) {
+	if requester == nil || children == nil {
+		return nil, fmt.Errorf("source historical RPC and child map are required")
+	}
+	if actions == nil {
+		if client, ok := requester.(*rpc.Client); ok {
+			actions = client.Actions()
+		} else {
+			actions = rpc.NewActions(requester)
+		}
+	}
+	if options.FactoryAddressCountThreshold == 0 {
+		options.FactoryAddressCountThreshold = 1000
+	}
+	return &SourceInMemoryHistoricalSync{requester, actions, children, options}, nil
+}
+
+type sourceAsyncStep[T any] struct {
+	value T
+	err   error
+	done  bool
+}
+
+// Each next operation queues behind the preceding operation synchronously.
+// This preserves async-generator ownership when several filters request pages
+// from one factory. A buffered result lets prefetched work finish independently
+// of a consumer that has returned early.
+type sourceAsyncIterator[T any] struct {
+	mu     sync.Mutex
+	tail   chan struct{}
+	next   func() (T, error, bool)
+	stop   func()
+	ctx    context.Context
+	cancel context.CancelFunc
+}
+
+func newSourceAsyncIterator[T any](ctx context.Context, seq func(context.Context) iter.Seq2[T, error]) *sourceAsyncIterator[T] {
+	owned, cancel := context.WithCancel(ctx)
+	next, stop := iter.Pull2(seq(owned))
+	tail := make(chan struct{})
+	close(tail)
+	return &sourceAsyncIterator[T]{tail: tail, next: next, stop: stop, ctx: owned, cancel: cancel}
+}
+func (g *sourceAsyncIterator[T]) Next() <-chan sourceAsyncStep[T] {
+	g.mu.Lock()
+	previous := g.tail
+	complete := make(chan struct{})
+	g.tail = complete
+	g.mu.Unlock()
+	result := make(chan sourceAsyncStep[T], 1)
+	go func() {
+		defer close(complete)
+		defer close(result)
+		select {
+		case <-previous:
+		case <-g.ctx.Done():
+			result <- sourceAsyncStep[T]{err: g.ctx.Err()}
+			return
+		}
+		if err := g.ctx.Err(); err != nil {
+			result <- sourceAsyncStep[T]{err: err}
+			return
+		}
+		value, err, ok := g.next()
+		result <- sourceAsyncStep[T]{value: value, err: err, done: !ok}
+	}()
+	return result
+}
+func (g *sourceAsyncIterator[T]) Close() {
+	g.cancel()
+	g.mu.Lock()
+	last := g.tail
+	g.mu.Unlock()
+	<-last
+	g.stop()
+}
+func sourceAwaitStep[T any](ctx context.Context, task <-chan sourceAsyncStep[T]) sourceAsyncStep[T] {
+	select {
+	case step := <-task:
+		return step
+	case <-ctx.Done():
+		return sourceAsyncStep[T]{err: ctx.Err()}
+	}
+}
+
+func sourceHistoricalNumber(value any) (uint64, error) {
+	text, ok := value.(string)
+	if !ok || len(text) < 3 || text[:2] != "0x" {
+		return 0, fmt.Errorf("source historical RPC quantity required: %v", value)
+	}
+	return strconv.ParseUint(text[2:], 16, 64)
+}
+func sourceHistoricalBounds(span store.SourceInterval) (uint64, uint64, error) {
+	for _, value := range span {
+		if math.IsNaN(value) || math.IsInf(value, 0) || math.Trunc(value) != value || value < 0 || value > 9007199254740991 {
+			return 0, 0, fmt.Errorf("source historical block must be a nonnegative safe integer: %v", value)
+		}
+	}
+	return uint64(span[0]), uint64(span[1]), nil
+}
+
+// SyncBlockData preserves lazy factory pages, merged next-before-yield
+// acquisition and the source's bound of 100 fetched, unconsumed block promises.
+func (s *SourceInMemoryHistoricalSync) SyncBlockData(ctx context.Context, required []store.SourceFilterInterval, factories []store.SourceFactoryInterval) iter.Seq2[store.SourceEventData, error] {
+	return func(yield func(store.SourceEventData, error) bool) {
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+		fail := func(err error) { yield(store.SourceEventData{}, err) }
+		options := &rpc.ActionOptions{EthGetLogsBlockRange: s.options.EthGetLogsBlockRange, Logger: s.options.Logger}
+		factoryOrder := []string{}
+		factoryIntervals := map[string]store.SourceFactoryInterval{}
+		for _, item := range factories {
+			if _, _, err := sourceHistoricalBounds(item.Interval); err != nil {
+				fail(err)
+				return
+			}
+			id, _ := item.Factory["id"].(string)
+			if previous, ok := factoryIntervals[id]; ok {
+				item.Interval = store.SourceInterval{math.Min(previous.Interval[0], item.Interval[0]), math.Max(previous.Interval[1], item.Interval[1])}
+			} else {
+				factoryOrder = append(factoryOrder, id)
+			}
+			factoryIntervals[id] = item
+		}
+		var progressMu sync.RWMutex
+		progress := map[string]float64{}
+		pages := map[string]*sourceAsyncIterator[uint64]{}
+		for _, id := range factoryOrder {
+			item := factoryIntervals[id]
+			if _, ok := s.children.Entries(id); !ok {
+				fail(fmt.Errorf("source factory child map not initialized: %s", id))
+				return
+			}
+			progress[id] = item.Interval[0] - 1
+			pages[id] = newSourceAsyncIterator(ctx, func(ctx context.Context) iter.Seq2[uint64, error] {
+				return func(yield func(uint64, error) bool) {
+					query := filter.Object{"address": sourceHistoricalProperty(item.Factory, "address"), "topics": []any{item.Factory["eventSelector"]}, "fromBlock": Hex(uint64(item.Interval[0])), "toBlock": Hex(uint64(item.Interval[1]))}
+					for page, err := range s.actions.GetLogsWithPagination(ctx, filter.RPCValue(query).(filter.Object), options) {
+						if err != nil {
+							yield(0, err)
+							return
+						}
+						for _, log := range page.Logs {
+							if !filter.IsLogFactoryMatched(item.Factory, log) {
+								continue
+							}
+							address, err := filter.GetSourceChildAddress(log, item.Factory)
+							if err != nil {
+								if !filter.IsUndefined(sourceHistoricalProperty(item.Factory, "address")) {
+									yield(0, err)
+									return
+								}
+								if s.options.Logger != nil {
+									s.options.Logger.Debug(map[string]any{"msg": "Failed to extract child address from log matched by factory using the provided ABI item", "factory": item.Factory["sourceId"], "block_number": log["blockNumber"], "log_index": log["logIndex"], "data": log["data"], "topics": log["topics"]})
+								}
+								continue
+							}
+							number, err := sourceHistoricalNumber(log["blockNumber"])
+							if err != nil {
+								yield(0, err)
+								return
+							}
+							s.children.Upsert(id, filter.ChildAddress{Address: address, Block: number})
+						}
+						if !yield(page.ToBlock, nil) {
+							return
+						}
+					}
+				}
+			})
+		}
+		defer func() {
+			for _, id := range factoryOrder {
+				pages[id].Close()
+			}
+		}()
+		paginate := func(span store.SourceInterval, ids []string) iter.Seq2[store.SourceInterval, error] {
+			return func(yield func(store.SourceInterval, error) bool) {
+				for cursor := span[0]; cursor <= span[1]; {
+					behind := []string{}
+					end := span[1]
+					progressMu.RLock()
+					for _, id := range ids {
+						if p, ok := progress[id]; ok {
+							if p < cursor {
+								behind = append(behind, id)
+							}
+							end = math.Min(end, p)
+						}
+					}
+					progressMu.RUnlock()
+					if len(behind) > 0 {
+						waiting := make([]<-chan sourceAsyncStep[uint64], len(behind))
+						for i, id := range behind {
+							waiting[i] = pages[id].Next()
+						}
+						var wg sync.WaitGroup
+						errors := make(chan error, len(behind))
+						for i, id := range behind {
+							wg.Add(1)
+							go func(i int, id string) {
+								defer wg.Done()
+								step := sourceAwaitStep(ctx, waiting[i])
+								if step.err != nil {
+									errors <- step.err
+									return
+								}
+								p := float64(step.value)
+								if step.done {
+									p = math.Inf(1)
+								}
+								progressMu.Lock()
+								progress[id] = p
+								progressMu.Unlock()
+							}(i, id)
+						}
+						wg.Wait()
+						close(errors)
+						for err := range errors {
+							yield(store.SourceInterval{}, err)
+							return
+						}
+						continue
+					}
+					if !yield(store.SourceInterval{cursor, end}, nil) {
+						return
+					}
+					cursor = end + 1
+				}
+			}
+		}
+		var logsMu sync.Mutex
+		perBlockLogs := map[uint64]map[uint64]filter.Object{}
+		generators := []SourceIntervalGenerator{}
+		owned := []*sourceAsyncIterator[store.SourceInterval]{}
+		defer func() {
+			cancel()
+			for _, generator := range owned {
+				generator.Close()
+			}
+		}()
+		for _, item := range required {
+			if _, _, err := sourceHistoricalBounds(item.Interval); err != nil {
+				fail(err)
+				return
+			}
+			generator := newSourceAsyncIterator(ctx, func(ctx context.Context) iter.Seq2[store.SourceInterval, error] {
+				return func(yield func(store.SourceInterval, error) bool) {
+					ids := []string{}
+					for _, factory := range filter.GetFilterFactories(item.Filter) {
+						id, _ := factory["id"].(string)
+						ids = append(ids, id)
+					}
+					for span, err := range paginate(item.Interval, ids) {
+						if err != nil {
+							yield(store.SourceInterval{}, err)
+							return
+						}
+						if item.Filter["type"] != "log" {
+							if !yield(span, nil) {
+								return
+							}
+							continue
+						}
+						address := sourceHistoricalProperty(item.Filter, "address")
+						if filter.IsAddressFactory(address) {
+							factory := address.(filter.Object)
+							entries, ok := s.children.Entries(factory["id"].(string))
+							if !ok {
+								yield(store.SourceInterval{}, fmt.Errorf("source factory child map missing"))
+								return
+							}
+							if len(entries) == 0 {
+								if !yield(span, nil) {
+									return
+								}
+								continue
+							}
+							address = filter.Undefined
+							if len(entries) < s.options.FactoryAddressCountThreshold {
+								addresses := []any{}
+								for _, entry := range entries {
+									addresses = append(addresses, entry.Address)
+								}
+								address = addresses
+							}
+						}
+						topics := []any{sourceHistoricalProperty(item.Filter, "topic0")}
+						for _, key := range []string{"topic1", "topic2", "topic3"} {
+							value := sourceHistoricalProperty(item.Filter, key)
+							if filter.IsUndefined(value) {
+								value = nil
+							}
+							topics = append(topics, value)
+						}
+						for len(topics) > 0 && topics[len(topics)-1] == nil {
+							topics = topics[:len(topics)-1]
+						}
+						query := filter.Object{"address": address, "topics": topics, "fromBlock": Hex(uint64(span[0])), "toBlock": Hex(uint64(span[1]))}
+						for page, err := range s.actions.GetLogsWithPagination(ctx, filter.RPCValue(query).(filter.Object), options) {
+							if err != nil {
+								yield(store.SourceInterval{}, err)
+								return
+							}
+							for _, log := range page.Logs {
+								number, err := sourceHistoricalNumber(log["blockNumber"])
+								if err != nil {
+									yield(store.SourceInterval{}, err)
+									return
+								}
+								index, err := sourceHistoricalNumber(log["logIndex"])
+								if err != nil {
+									yield(store.SourceInterval{}, err)
+									return
+								}
+								logsMu.Lock()
+								if perBlockLogs[number] == nil {
+									perBlockLogs[number] = map[uint64]filter.Object{}
+								}
+								perBlockLogs[number][index] = log
+								logsMu.Unlock()
+							}
+							if !yield(store.SourceInterval{float64(page.FromBlock), float64(page.ToBlock)}, nil) {
+								return
+							}
+						}
+					}
+				}
+			})
+			owned = append(owned, generator)
+			generators = append(generators, SourceIntervalGenerator{Interval: item.Interval, Next: func(ctx context.Context) <-chan SourceIntervalStep {
+				future := generator.Next()
+				result := make(chan SourceIntervalStep, 1)
+				go func() {
+					defer close(result)
+					step := sourceAwaitStep(ctx, future)
+					result <- SourceIntervalStep{Interval: step.value, Done: step.done, Err: step.err}
+				}()
+				return result
+			}})
+		}
+		type blockResult struct {
+			data store.SourceEventData
+			err  error
+		}
+		pending := []<-chan blockResult{}
+		emit := func() bool {
+			select {
+			case result := <-pending[0]:
+				pending = pending[1:]
+				if result.err != nil {
+					fail(result.err)
+					return false
+				}
+				return yield(result.data, nil)
+			case <-ctx.Done():
+				fail(ctx.Err())
+				return false
+			}
+		}
+		for span, err := range MergeSourceGeneratorIntervals(ctx, generators) {
+			if err != nil {
+				fail(err)
+				return
+			}
+			for number := uint64(span[0]); number <= uint64(span[1]); number++ {
+				logsMu.Lock()
+				indexLogs, hasLogs := perBlockLogs[number]
+				logsMu.Unlock()
+				needed := hasLogs
+				filters := []filter.Object{}
+				for _, item := range required {
+					if float64(number) < item.Interval[0] || float64(number) > item.Interval[1] {
+						continue
+					}
+					filters = append(filters, item.Filter)
+					switch item.Filter["type"] {
+					case "log":
+					case "block":
+						if filter.IsBlockFilterMatched(item.Filter, filter.Object{"number": number}) {
+							needed = true
+						}
+					default:
+						needed = true
+					}
+				}
+				if !needed {
+					continue
+				}
+				var blockLogs []filter.Object
+				if hasLogs {
+					indices := []uint64{}
+					logsMu.Lock()
+					for index := range indexLogs {
+						indices = append(indices, index)
+					}
+					sort.Slice(indices, func(i, j int) bool { return indices[i] < indices[j] })
+					blockLogs = []filter.Object{}
+					for _, index := range indices {
+						blockLogs = append(blockLogs, indexLogs[index])
+					}
+					delete(perBlockLogs, number)
+					logsMu.Unlock()
+				}
+				future := make(chan blockResult, 1)
+				go func(number uint64, filters, logs []filter.Object) {
+					data, err := fetchSourceHistoricalBlock(ctx, s.requester, s.actions, s.children, filters, number, logs, options)
+					future <- blockResult{data, err}
+					close(future)
+				}(number, filters, blockLogs)
+				pending = append(pending, future)
+				if len(pending) >= 100 && !emit() {
+					return
+				}
+			}
+		}
+		for len(pending) > 0 {
+			if !emit() {
+				return
+			}
+		}
+		for _, id := range factoryOrder {
+			for {
+				step := sourceAwaitStep(ctx, pages[id].Next())
+				if step.err != nil {
+					fail(step.err)
+					return
+				}
+				if step.done {
+					break
+				}
+			}
+		}
+	}
+}

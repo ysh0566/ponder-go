@@ -1,0 +1,70 @@
+{
+  "state": "Read-only actual diagnostics, not native type/source acceptance. Multiple original diagnostics per annotation remain distinct; no assumed one-to-one diagnostic count.",
+  "kind": "index",
+  "mode": "pristine",
+  "typescript": "5.4.5",
+  "selected": [
+    {
+      "id": "c5ca58c81d923d49529e",
+      "line": 268,
+      "directives": [
+        "// @ts-expect-error"
+      ],
+      "body": "test(\"sync() skips transaction receipts for zero-hash logs\", async () => {\n  const { syncStore } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n    includeTransactionReceipts: true,\n  });\n\n  const requestSpy = vi.spyOn(rpc, \"request\");\n  const request = async (request: any) => {\n    const result = await rpc.request(request);\n    if (request.method === \"eth_getLogs\") {\n      return (result as { transactionHash: string }[]).map((log) => ({\n        ...log,\n        transactionHash: zeroHash,\n      }));\n    }\n    return result;\n  };\n\n  const historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc: {\n      ...rpc,\n      // @ts-expect-error\n      request,\n    },\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n\n  expect(logs).toHaveLength(1);\n  expect(logs[0]?.transactionHash).toBe(zeroHash);\n\n  const receiptRequests = requestSpy.mock.calls.filter(\n    ([request]) =>\n      request.method === \"eth_getBlockReceipts\" ||\n      request.method === \"eth_getTransactionReceipt\",\n  );\n  expect(receiptRequests).toHaveLength(0);\n})"
+    },
+    {
+      "id": "97a5db3271fd8a51cce8",
+      "line": 577,
+      "directives": [
+        "// @ts-expect-error"
+      ],
+      "body": "test(\"sync() with log factory and no address\", async () => {\n  const { syncStore, database } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n\n  const historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  const dbLogs = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.logs).execute(),\n  );\n  const factories = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.factories).execute(),\n  );\n\n  expect(dbLogs).toHaveLength(1);\n  expect(factories).toHaveLength(1);\n\n  const intervals = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.intervals).execute(),\n  );\n\n  expect(intervals).toHaveLength(2);\n})"
+    },
+    {
+      "id": "9eaf4ba9f4488a48165e",
+      "line": 653,
+      "directives": [
+        "// @ts-expect-error",
+        "// @ts-expect-error"
+      ],
+      "body": "test(\"sync() with log factory error\", async () => {\n  const { syncStore, database } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n  // @ts-expect-error\n  // Invalid child address location causes extracting child address to throw an error\n  eventCallbacks[0].filter.address.childAddressLocation = \"topic3\";\n\n  const historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n\n  const factories = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.factories).execute(),\n  );\n\n  expect(factories).toHaveLength(0);\n})"
+    },
+    {
+      "id": "1f021a7b846451889eae",
+      "line": 1093,
+      "directives": [
+        "// @ts-expect-error",
+        "// @ts-expect-error"
+      ],
+      "body": "test(\"sync() with partial cache\", async () => {\n  const { syncStore } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n  });\n\n  let historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  let requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  let logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  // re-instantiate `historicalSync` to reset the cached intervals\n\n  let spy = vi.spyOn(rpc, \"request\");\n\n  // @ts-expect-error\n  eventCallbacks[0]!.filter.address = [\n    // @ts-expect-error\n    eventCallbacks[0]!.filter.address,\n    zeroAddress,\n  ];\n\n  let cachedIntervals = await getCachedIntervals({\n    chain,\n    syncStore,\n    filters: eventCallbacks.map(({ filter }) => filter),\n  });\n\n  historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals,\n  });\n\n  logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  // `eth_getBlockByNumber` is skipped\n  expect(spy).toHaveBeenCalledTimes(1);\n\n  expect(spy).toHaveBeenCalledWith(\n    {\n      method: \"eth_getLogs\",\n      params: [\n        {\n          address: [zeroAddress],\n          fromBlock: \"0x1\",\n          toBlock: \"0x2\",\n          topics: [\n            \"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\",\n          ],\n        },\n      ],\n    },\n    expect.any(Object),\n  );\n\n  // re-instantiate `historicalSync` to reset the cached intervals\n\n  spy = vi.spyOn(rpc, \"request\");\n  spy.mockClear();\n\n  cachedIntervals = await getCachedIntervals({\n    chain,\n    syncStore,\n    filters: eventCallbacks.map(({ filter }) => filter),\n  });\n\n  historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  await simulateBlock();\n\n  requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals,\n  });\n  logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n  // `eth_getBlockByNumber` is skipped\n  expect(spy).toHaveBeenCalledTimes(1);\n\n  expect(spy).toHaveBeenCalledWith(\n    {\n      method: \"eth_getLogs\",\n      params: [\n        {\n          address: [address, zeroAddress],\n          fromBlock: \"0x3\",\n          toBlock: \"0x3\",\n          topics: [\n            \"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\",\n          ],\n        },\n      ],\n    },\n    expect.any(Object),\n  );\n})"
+    }
+  ],
+  "actual": [],
+  "other": [],
+  "effective_options": {
+    "rootDir": "/root/ponder-go/work/ponder-upstream",
+    "utils_entry": "/root/ponder-go/work/ponder-upstream/packages/utils/src/index.ts"
+  },
+  "sources": [
+    {
+      "file": "/root/ponder-go/.cloud-bootstrap/history-next/m33/audit-types.mjs",
+      "sha256": "e2d20a83bdba0c2ab00ae8afea4d6df42f5872f50763267bd95ead258c09cac5"
+    },
+    {
+      "file": "/root/ponder-go/work/ponder-upstream/packages/core/src/sync-historical/index.test.ts",
+      "sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76"
+    },
+    {
+      "file": "/root/ponder-go/work/ponder-upstream/packages/core/tsconfig.json",
+      "sha256": "21745dcb1e01934c37b902f730ae40fa3daa63f39944ffdeea860278caf85f6c"
+    },
+    {
+      "file": "/root/ponder-go/work/ponder-upstream/packages/utils/src/index.ts",
+      "sha256": "c4ba739226f5fd160c07a5d956e2dc703f937148aa43101d8f7a0668405ae8d7"
+    },
+    {
+      "file": "/root/ponder-go/work/ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    }
+  ]
+}

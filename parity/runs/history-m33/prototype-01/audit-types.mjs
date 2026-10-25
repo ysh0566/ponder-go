@@ -1,0 +1,15 @@
+// One original compiler program per process. No original files are written.
+import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import {createRequire} from 'node:module';
+const root='/root/ponder-go/work/ponder-go',upstream=path.resolve(root,'../ponder-upstream'),require=createRequire(upstream+'/packages/core/package.json'),ts=require('typescript');
+const kind=process.argv.find(a=>a.startsWith('--kind='))?.slice(7),mode=process.argv.find(a=>a.startsWith('--mode='))?.slice(7);
+if(!['in-memory','index'].includes(kind)||!['pristine','stripped'].includes(mode))throw Error('Explicit original kind/mode required');
+const relative='packages/core/src/sync-historical/'+kind+'.test.ts',file=upstream+'/'+relative,original=fs.readFileSync(file,'utf8'),ledger=JSON.parse(fs.readFileSync(root+'/parity/test-ledger.json','utf8'));
+const selected=ledger.tests.filter(t=>t.source_file===relative&&t.type_error_directives.length);if(selected.reduce((n,t)=>n+t.type_error_directives.length,0)!==6)throw Error('Changed exact six directive inventory');
+const parsed=ts.getParsedCommandLineOfConfigFile(upstream+'/packages/core/tsconfig.json',{noEmit:true,incremental:false},{...ts.sys,onUnRecoverableConfigFileDiagnostic:d=>{throw Error(ts.flattenDiagnosticMessageText(d.messageText,'\n'))}});
+const options={...parsed.options,rootDir:upstream,paths:{...parsed.options.paths,'@ponder/utils':[upstream+'/packages/utils/src/index.ts']}};
+const text=mode==='pristine'?original:original.replaceAll('@ts-expect-error','@port-type-audit'),host=ts.createCompilerHost(options),read=host.readFile;host.readFile=f=>path.resolve(f)===file?text:read(f);
+const program=ts.createProgram({rootNames:[file],options,host});
+const diagnostics=ts.getPreEmitDiagnostics(program).map(d=>({file:d.file?.fileName??null,start:d.start??null,line:d.file&&d.start!==undefined?d.file.getLineAndCharacterOfPosition(d.start).line+1:null,code:d.code,message:ts.flattenDiagnosticMessageText(d.messageText,'\n'),source_id:d.file?.fileName===file?selected.find(t=>d.start>=t.start&&d.start<t.end)?.id:null}));
+const actual=diagnostics.filter(d=>d.file===file),other=diagnostics.filter(d=>d.file!==file),hash=file=>({file,sha256:crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex')});
+const report={state:'Read-only actual diagnostics, not native type/source acceptance. Multiple original diagnostics per annotation remain distinct; no assumed one-to-one diagnostic count.',kind,mode,typescript:ts.version,selected:selected.map(t=>({id:t.id,line:t.line,directives:t.type_error_directives,body:t.test_source})),actual,other,effective_options:{rootDir:upstream,utils_entry:upstream+'/packages/utils/src/index.ts'},sources:[import.meta.filename,file,upstream+'/packages/core/tsconfig.json',upstream+'/packages/utils/src/index.ts',upstream+'/pnpm-lock.yaml'].map(hash)};
+fs.writeFileSync(import.meta.dirname+'/types-'+kind+'-'+mode+'.json',JSON.stringify(report,null,2)+'\n');console.log({kind,mode,actual:actual.length,other:other.length,codes:actual.map(d=>d.code)});

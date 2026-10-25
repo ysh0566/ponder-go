@@ -1,0 +1,130 @@
+package rpc
+
+import (
+	"encoding/json"
+	"errors"
+	"os"
+	"reflect"
+	"testing"
+
+	"ponder.local/ponder-go/filter"
+)
+
+func restoreSourceBlockVector(value any) any {
+	switch v := value.(type) {
+	case []any:
+		result := make([]any, len(v))
+		for i, value := range v {
+			result[i] = restoreSourceBlockVector(value)
+		}
+		return result
+	case map[string]any:
+		if v["$undefined"] == true {
+			return filter.Undefined
+		}
+		if pairs, ok := v["$object"].([]any); ok {
+			result := map[string]any{}
+			for _, pair := range pairs {
+				entry := pair.([]any)
+				result[entry[0].(string)] = restoreSourceBlockVector(entry[1])
+			}
+			return result
+		}
+		panic("invalid isolated source block marker")
+	default:
+		return v
+	}
+}
+func TestSourceBlockVectors(t *testing.T) {
+	raw, err := os.ReadFile("/root/ponder-go/.cloud-bootstrap/history-next/m33/block-vectors.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture struct {
+		Cases []struct {
+			Name, Method        string
+			Args, Result, After any
+			Error               *struct {
+				Name, Message string
+				Meta          any
+			}
+		}
+	}
+	if err = json.Unmarshal(raw, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	if len(fixture.Cases) != 44 {
+		t.Fatal("all44 actual source vectors required")
+	}
+	normalize := func(value any) any {
+		data, err := json.Marshal(value)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var out any
+		if err = json.Unmarshal(data, &out); err != nil {
+			t.Fatal(err)
+		}
+		return out
+	}
+	object := func(value any) map[string]any { return value.(map[string]any) }
+	request := func(value any) ActionRequest {
+		v := object(value)
+		return ActionRequest{v["method"].(string), v["params"].([]any)}
+	}
+	objects := func(value any) []map[string]any {
+		result := []map[string]any{}
+		for _, row := range value.([]any) {
+			result = append(result, object(row))
+		}
+		return result
+	}
+	for _, c := range fixture.Cases {
+		t.Run(c.Name, func(t *testing.T) {
+			args := restoreSourceBlockVector(c.Args).([]any)
+			var actual any = filter.Undefined
+			var err error
+			switch c.Method {
+			case "standardizeBlock":
+				actual, err = StandardizeSourceBlock(object(args[0]), request(args[1]))
+			case "validateTransactionsAndBlock":
+				err = ValidateSourceTransactionsAndBlock(object(args[0]), request(args[1]))
+			case "validateTracesAndBlock":
+				traces := []CallTrace{}
+				for _, v := range objects(args[0]) {
+					traces = append(traces, CallTrace{TransactionHash: v["transactionHash"].(string)})
+				}
+				err = ValidateSourceTracesAndBlock(traces, object(args[1]), request(args[2]), request(args[3]))
+			case "validateReceiptsAndBlock":
+				err = ValidateSourceReceiptsAndBlock(objects(args[0]), object(args[1]), request(args[2]), request(args[3]))
+			default:
+				t.Fatal("unknown actual source operation", c.Method)
+			}
+			if c.Error != nil {
+				if err == nil {
+					t.Fatal("actual source error accepted", c.Error)
+				}
+				name := "Error"
+				var meta any = filter.Undefined
+				var provider *ProviderError
+				if errors.As(err, &provider) {
+					name = "RpcProviderError"
+					meta = provider.Meta
+				}
+				if name != c.Error.Name || err.Error() != c.Error.Message || !reflect.DeepEqual(normalize(meta), normalize(restoreSourceBlockVector(c.Error.Meta))) {
+					t.Fatal("source error class/message/meta", name, err, meta, c.Error)
+				}
+			} else {
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !reflect.DeepEqual(normalize(actual), normalize(restoreSourceBlockVector(c.Result))) {
+					t.Fatal("source result", actual, c.Result)
+				}
+			}
+			if !reflect.DeepEqual(normalize(args), normalize(restoreSourceBlockVector(c.After))) {
+				t.Fatal("source mutation state", args, c.After)
+			}
+		})
+	}
+}

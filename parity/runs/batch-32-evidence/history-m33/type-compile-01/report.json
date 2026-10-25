@@ -1,0 +1,666 @@
+{
+  "state": "Preparation: concrete original12type constraints, actual positive/negative builds. Positive runtime pending actual original case Anvil and each backend/mode. No source credit.",
+  "source_credit": 0,
+  "directives": [
+    {
+      "source_id": "4ed88e241ef6d778d897",
+      "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "source_body": "test(\"syncBlockData() skips transaction receipts for zero-hash logs\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n    includeTransactionReceipts: true,\n  });\n\n  const requestSpy = vi.spyOn(rpc, \"request\");\n  const request = async (request: any) => {\n    const result = await rpc.request(request);\n    if (request.method === \"eth_getLogs\") {\n      return (result as { transactionHash: string }[]).map((log) => ({\n        ...log,\n        transactionHash: zeroHash,\n      }));\n    }\n    return result;\n  };\n\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc: {\n      ...rpc,\n      // @ts-expect-error\n      request,\n    },\n    childAddress: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData).toHaveLength(1);\n  expect(blockData[0]!.logs).toHaveLength(1);\n  expect(blockData[0]!.transactions).toHaveLength(0);\n  expect(blockData[0]!.transactionReceipts).toHaveLength(0);\n\n  const receiptRequests = requestSpy.mock.calls.filter(\n    ([request]) =>\n      request.method === \"eth_getBlockReceipts\" ||\n      request.method === \"eth_getTransactionReceipt\",\n  );\n  expect(receiptRequests).toHaveLength(0);\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "zero_hash",
+      "role": "return",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/4ed88e241ef6d778d897-0-positive.go",
+        "sha256": "fdc6e871f81dc9d6287ed6ea8e9f06be9ea8faefd75b1542ed15eaf96fff591f"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/4ed88e241ef6d778d897-0-negative.go",
+        "sha256": "968f14ca88e71bf036ec5bfa95a7c914063496bf5f3064bef7742775608782e0"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/4ed88e241ef6d778d897-0-positive",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/4ed88e241ef6d778d897-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/4ed88e241ef6d778d897-0-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/4ed88e241ef6d778d897-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/4ed88e241ef6d778d897-0-negative.go:253:93: cannot use request (variable of type func(ctx context.Context, query map[string]any) (any, error)) as func(context.Context, map[string]any) ([]rpc.SourceLog, error) value in struct literal\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/4ed88e241ef6d778d897-0-positive",
+        "sha256": "14b09a8b5294f29002e779ca95a216b22608a39b9ec0116361e447b6398ccfe5"
+      }
+    },
+    {
+      "source_id": "e7360d814bb5552f5222",
+      "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "source_body": "test(\"syncBlockData() with log factory and no address\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(1);\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "no_parent",
+      "role": "parent",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/e7360d814bb5552f5222-0-positive.go",
+        "sha256": "e7327bb24980810795ba07950589321c5c80f647856549f877d87130fcd9e779"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/e7360d814bb5552f5222-0-negative.go",
+        "sha256": "9eaef86f6569f61da3446c6722a0520b410fd4ddd51dd8ed88d8f23c1fa1e787"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/e7360d814bb5552f5222-0-positive",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/e7360d814bb5552f5222-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/e7360d814bb5552f5222-0-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/e7360d814bb5552f5222-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/e7360d814bb5552f5222-0-negative.go:238:37: parentReader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/e7360d814bb5552f5222-0-positive",
+        "sha256": "2560007576e6f006838e05f9cf6a01ea86e6ce08d2ea6d7d200f1d9a255294ba"
+      }
+    },
+    {
+      "source_id": "da3e0236d21a83248db7",
+      "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "source_body": "test(\"syncBlockData() with log factory error\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n  // @ts-expect-error\n  // Invalid child address location causes extracting child address to throw an error\n  eventCallbacks[0].filter.address.childAddressLocation = \"topic3\";\n\n  const childAddresses = setupChildAddresses(eventCallbacks);\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: childAddresses,\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(0);\n  // @ts-expect-error\n  expect(childAddresses.get(eventCallbacks[0].filter.address.id)!.size).toBe(0);\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "bad_factory",
+      "role": "parent",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-0-positive.go",
+        "sha256": "78c5221e89fdd348243556e1a9f5a9ef4ecfe419506c7951d92603ff4cd97c8c"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-0-negative.go",
+        "sha256": "54d7f1913c2226c3cbc9e8abd60a8e2806b772952cc03e78e531ea53e8c0cb15"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-0-positive",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-0-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/da3e0236d21a83248db7-0-negative.go:238:37: parentReader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-0-positive",
+        "sha256": "4b949a0a2ffd9fdd4f4a41286241fe36b899cccbc50cd823071f815fcd5367bf"
+      }
+    },
+    {
+      "source_id": "da3e0236d21a83248db7",
+      "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "source_body": "test(\"syncBlockData() with log factory error\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n  // @ts-expect-error\n  // Invalid child address location causes extracting child address to throw an error\n  eventCallbacks[0].filter.address.childAddressLocation = \"topic3\";\n\n  const childAddresses = setupChildAddresses(eventCallbacks);\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: childAddresses,\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(0);\n  // @ts-expect-error\n  expect(childAddresses.get(eventCallbacks[0].filter.address.id)!.size).toBe(0);\n})",
+      "directive_index": 1,
+      "directive": "// @ts-expect-error",
+      "kind": "bad_factory",
+      "role": "location",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-1-positive.go",
+        "sha256": "d2d92fe5e7d0a0a6465636ffe4b6b41f63e5c09000d45c79694f81fc59836edc"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-1-negative.go",
+        "sha256": "6295cb9e611b1566616981ed60598f76501ba98f6aa381f0181824e6dd75257d"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-1-positive",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-1-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-1-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-1-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/da3e0236d21a83248db7-1-negative.go:243:41: locationReader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-1-positive",
+        "sha256": "e64bc23f0f13b5e734e2173491eb4691e4c87bf1a66eb95b15832327d92e114f"
+      }
+    },
+    {
+      "source_id": "da3e0236d21a83248db7",
+      "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "source_body": "test(\"syncBlockData() with log factory error\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n  // @ts-expect-error\n  // Invalid child address location causes extracting child address to throw an error\n  eventCallbacks[0].filter.address.childAddressLocation = \"topic3\";\n\n  const childAddresses = setupChildAddresses(eventCallbacks);\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: childAddresses,\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(0);\n  // @ts-expect-error\n  expect(childAddresses.get(eventCallbacks[0].filter.address.id)!.size).toBe(0);\n})",
+      "directive_index": 2,
+      "directive": "// @ts-expect-error",
+      "kind": "bad_factory",
+      "role": "lookup",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-2-positive.go",
+        "sha256": "ebf3511d3fec12d22cbae1aa417570fecfdebad8c1166574bfddd71ccd017c77"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-2-negative.go",
+        "sha256": "58fda54d464dc835641ffd09362e9bbe07c5da0fa95872d54a966a742744e0a5"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-2-positive",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-2-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-2-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/da3e0236d21a83248db7-2-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/da3e0236d21a83248db7-2-negative.go:228:25: reader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/da3e0236d21a83248db7-2-positive",
+        "sha256": "ebef554916c3c8ed0072b10aa183843ed2495f178d99beb77fbd95964660fd1e"
+      }
+    },
+    {
+      "source_id": "18407c46d5bf5ef7f901",
+      "source_file": "packages/core/src/sync-historical/in-memory.test.ts",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "source_body": "test(\"syncBlockData() handles many factory addresses\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  context.common.options.factoryAddressCountThreshold = 10;\n\n  const { address } = await deployFactory({ sender: ALICE });\n\n  for (let i = 0; i < 10; i++) {\n    await createPair({ factory: address, sender: ALICE });\n  }\n\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  const spy = vi.spyOn(rpc, \"request\");\n\n  const childAddresses = setupChildAddresses(eventCallbacks);\n  const historicalSync = createInMemoryHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddress: childAddresses,\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 13],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const blockData = await drainAsyncGenerator(\n    historicalSync.syncBlockData({\n      requiredIntervals: requiredIntervals.intervals,\n      requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    }),\n  );\n\n  expect(blockData.flatMap(({ logs }) => logs)).toHaveLength(1);\n  // @ts-expect-error\n  expect(childAddresses.get(eventCallbacks[0].filter.address.id)!.size).toBe(\n    11,\n  );\n\n  // `eth_getLogs` for the child filter is not narrowed above the threshold\n  const topic0 = (eventCallbacks[0]!.filter as LogFilter).topic0;\n  const childLogsRequests = spy.mock.calls\n    .map(([request]) => request)\n    .filter(\n      (request): request is EthGetLogsRequest =>\n        request.method === \"eth_getLogs\" &&\n        (request as EthGetLogsRequest).params[0].topics?.[0] === topic0,\n    );\n  expect(childLogsRequests.length).toBeGreaterThan(0);\n  for (const request of childLogsRequests) {\n    expect(request.params[0].address).toBeUndefined();\n  }\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "threshold",
+      "role": "lookup",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/18407c46d5bf5ef7f901-0-positive.go",
+        "sha256": "5113a1adf9480c584511c7922589d7e59cef2646cb30601011e1eeddf8ee9efa"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/18407c46d5bf5ef7f901-0-negative.go",
+        "sha256": "dddc62ba2d429c39112a6ebbb5947b1b38c4bbd18788ad5adb911673f8b51482"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/18407c46d5bf5ef7f901-0-positive",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/18407c46d5bf5ef7f901-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/18407c46d5bf5ef7f901-0-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/18407c46d5bf5ef7f901-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/18407c46d5bf5ef7f901-0-negative.go:228:25: reader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/18407c46d5bf5ef7f901-0-positive",
+        "sha256": "07e74a3ed7429d6de57383b58969be594d39e6d3cb570d79c2523a33a3a02fef"
+      }
+    },
+    {
+      "source_id": "c5ca58c81d923d49529e",
+      "source_file": "packages/core/src/sync-historical/index.test.ts",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "source_body": "test(\"sync() skips transaction receipts for zero-hash logs\", async () => {\n  const { syncStore } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n    includeTransactionReceipts: true,\n  });\n\n  const requestSpy = vi.spyOn(rpc, \"request\");\n  const request = async (request: any) => {\n    const result = await rpc.request(request);\n    if (request.method === \"eth_getLogs\") {\n      return (result as { transactionHash: string }[]).map((log) => ({\n        ...log,\n        transactionHash: zeroHash,\n      }));\n    }\n    return result;\n  };\n\n  const historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc: {\n      ...rpc,\n      // @ts-expect-error\n      request,\n    },\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n\n  expect(logs).toHaveLength(1);\n  expect(logs[0]?.transactionHash).toBe(zeroHash);\n\n  const receiptRequests = requestSpy.mock.calls.filter(\n    ([request]) =>\n      request.method === \"eth_getBlockReceipts\" ||\n      request.method === \"eth_getTransactionReceipt\",\n  );\n  expect(receiptRequests).toHaveLength(0);\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "zero_hash",
+      "role": "return",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/c5ca58c81d923d49529e-0-positive.go",
+        "sha256": "577e18489e7d583d3dd076bfcade4fc54d971b969ad0e43ad1e61547dacf6711"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/c5ca58c81d923d49529e-0-negative.go",
+        "sha256": "1a8e8f3dbc191d914424cca54d05282a35c305f7b997239676c4927154169784"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/c5ca58c81d923d49529e-0-positive",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/c5ca58c81d923d49529e-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/c5ca58c81d923d49529e-0-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/c5ca58c81d923d49529e-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/c5ca58c81d923d49529e-0-negative.go:253:93: cannot use request (variable of type func(ctx context.Context, query map[string]any) (any, error)) as func(context.Context, map[string]any) ([]rpc.SourceLog, error) value in struct literal\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/c5ca58c81d923d49529e-0-positive",
+        "sha256": "bbf97dad39404c05826fbe0c8bd4a488d7bd42bf602453cde91ecdf2bd8b5383"
+      }
+    },
+    {
+      "source_id": "97a5db3271fd8a51cce8",
+      "source_file": "packages/core/src/sync-historical/index.test.ts",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "source_body": "test(\"sync() with log factory and no address\", async () => {\n  const { syncStore, database } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n\n  const historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  const logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  const dbLogs = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.logs).execute(),\n  );\n  const factories = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.factories).execute(),\n  );\n\n  expect(dbLogs).toHaveLength(1);\n  expect(factories).toHaveLength(1);\n\n  const intervals = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.intervals).execute(),\n  );\n\n  expect(intervals).toHaveLength(2);\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "no_parent",
+      "role": "parent",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/97a5db3271fd8a51cce8-0-positive.go",
+        "sha256": "bc09884b1e0057d62aaf4bd47516a11528183b5d28c66681d831344de78b1466"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/97a5db3271fd8a51cce8-0-negative.go",
+        "sha256": "3e13625eb85a6794f1639bee383e31a4695d18eb54fa137ec766cdaa80e94f55"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/97a5db3271fd8a51cce8-0-positive",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/97a5db3271fd8a51cce8-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/97a5db3271fd8a51cce8-0-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/97a5db3271fd8a51cce8-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/97a5db3271fd8a51cce8-0-negative.go:238:37: parentReader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/97a5db3271fd8a51cce8-0-positive",
+        "sha256": "b6b6ed01464e2aaea6e010de93cc40fcda053ba384599bc64dac158f86b410cd"
+      }
+    },
+    {
+      "source_id": "9eaf4ba9f4488a48165e",
+      "source_file": "packages/core/src/sync-historical/index.test.ts",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "source_body": "test(\"sync() with log factory error\", async () => {\n  const { syncStore, database } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n  // @ts-expect-error\n  // Invalid child address location causes extracting child address to throw an error\n  eventCallbacks[0].filter.address.childAddressLocation = \"topic3\";\n\n  const historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n\n  const factories = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.factories).execute(),\n  );\n\n  expect(factories).toHaveLength(0);\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "bad_factory",
+      "role": "parent",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-positive.go",
+        "sha256": "20a7f057f24f64442993b88bb9773c1952338ce8b1f411bd479a2d82e12890dc"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-negative.go",
+        "sha256": "384c9ed9db414c5525a1e4994a7beae4a37054c299607366554c2ecc7cb9d8c9"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-positive",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-negative.go:238:37: parentReader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/9eaf4ba9f4488a48165e-0-positive",
+        "sha256": "807ab7b766fad44b79efd43aa4d99ddc939c006c4f1980a991ed957f0653f57f"
+      }
+    },
+    {
+      "source_id": "9eaf4ba9f4488a48165e",
+      "source_file": "packages/core/src/sync-historical/index.test.ts",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "source_body": "test(\"sync() with log factory error\", async () => {\n  const { syncStore, database } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployFactory({ sender: ALICE });\n  const { address: pair } = await createPair({\n    factory: address,\n    sender: ALICE,\n  });\n  await swapPair({\n    pair,\n    amount0Out: 1n,\n    amount1Out: 1n,\n    to: ALICE,\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getPairWithFactoryIndexingBuild({\n    address,\n  });\n\n  // @ts-expect-error\n  eventCallbacks[0].filter.address.address = undefined;\n  // @ts-expect-error\n  // Invalid child address location causes extracting child address to throw an error\n  eventCallbacks[0].filter.address.childAddressLocation = \"topic3\";\n\n  const historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  const requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n\n  const factories = await database.syncQB.wrap((db) =>\n    db.select().from(ponderSyncSchema.factories).execute(),\n  );\n\n  expect(factories).toHaveLength(0);\n})",
+      "directive_index": 1,
+      "directive": "// @ts-expect-error",
+      "kind": "bad_factory",
+      "role": "location",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-positive.go",
+        "sha256": "c13789d471a0a0c3675dd61cf02f73ccfaa7b142d56e4723e64c49aec25c0e5c"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-negative.go",
+        "sha256": "8e61fff367737200fdf37ebac6dda8b3089d0d31acaed86c7f540d241e12594c"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-positive",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-negative.go:243:41: locationReader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/9eaf4ba9f4488a48165e-1-positive",
+        "sha256": "6175ae8b00be98a153e9df54b6dd378c0466959ffa61d691d849504bb83122a9"
+      }
+    },
+    {
+      "source_id": "1f021a7b846451889eae",
+      "source_file": "packages/core/src/sync-historical/index.test.ts",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "source_body": "test(\"sync() with partial cache\", async () => {\n  const { syncStore } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n  });\n\n  let historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  let requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  let logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  // re-instantiate `historicalSync` to reset the cached intervals\n\n  let spy = vi.spyOn(rpc, \"request\");\n\n  // @ts-expect-error\n  eventCallbacks[0]!.filter.address = [\n    // @ts-expect-error\n    eventCallbacks[0]!.filter.address,\n    zeroAddress,\n  ];\n\n  let cachedIntervals = await getCachedIntervals({\n    chain,\n    syncStore,\n    filters: eventCallbacks.map(({ filter }) => filter),\n  });\n\n  historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals,\n  });\n\n  logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  // `eth_getBlockByNumber` is skipped\n  expect(spy).toHaveBeenCalledTimes(1);\n\n  expect(spy).toHaveBeenCalledWith(\n    {\n      method: \"eth_getLogs\",\n      params: [\n        {\n          address: [zeroAddress],\n          fromBlock: \"0x1\",\n          toBlock: \"0x2\",\n          topics: [\n            \"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\",\n          ],\n        },\n      ],\n    },\n    expect.any(Object),\n  );\n\n  // re-instantiate `historicalSync` to reset the cached intervals\n\n  spy = vi.spyOn(rpc, \"request\");\n  spy.mockClear();\n\n  cachedIntervals = await getCachedIntervals({\n    chain,\n    syncStore,\n    filters: eventCallbacks.map(({ filter }) => filter),\n  });\n\n  historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  await simulateBlock();\n\n  requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals,\n  });\n  logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n  // `eth_getBlockByNumber` is skipped\n  expect(spy).toHaveBeenCalledTimes(1);\n\n  expect(spy).toHaveBeenCalledWith(\n    {\n      method: \"eth_getLogs\",\n      params: [\n        {\n          address: [address, zeroAddress],\n          fromBlock: \"0x3\",\n          toBlock: \"0x3\",\n          topics: [\n            \"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\",\n          ],\n        },\n      ],\n    },\n    expect.any(Object),\n  );\n})",
+      "directive_index": 0,
+      "directive": "// @ts-expect-error",
+      "kind": "partial",
+      "role": "write",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/1f021a7b846451889eae-0-positive.go",
+        "sha256": "7559536188219aa7a42ce61358fa3167d0231323d6ec060721e8b6df8708b36f"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/1f021a7b846451889eae-0-negative.go",
+        "sha256": "dd25348adc37feb4e3447c3e617a716899a56e30ab7d0a644ea4524e5cca3673"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-0-positive",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-0-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-0-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-0-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/1f021a7b846451889eae-0-negative.go:248:14: writer.SetAddress undefined (type config.SourceFilter has no field or method SetAddress)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/1f021a7b846451889eae-0-positive",
+        "sha256": "6d71de77849054315a001a0ff6f6ec1165e3242b2804579d558e3e5b1eca7129"
+      }
+    },
+    {
+      "source_id": "1f021a7b846451889eae",
+      "source_file": "packages/core/src/sync-historical/index.test.ts",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "source_body": "test(\"sync() with partial cache\", async () => {\n  const { syncStore } = await setupDatabaseServices();\n\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks } = getErc20IndexingBuild({\n    address,\n  });\n\n  let historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  let requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals: setupCachedIntervals(eventCallbacks),\n  });\n  let logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  // re-instantiate `historicalSync` to reset the cached intervals\n\n  let spy = vi.spyOn(rpc, \"request\");\n\n  // @ts-expect-error\n  eventCallbacks[0]!.filter.address = [\n    // @ts-expect-error\n    eventCallbacks[0]!.filter.address,\n    zeroAddress,\n  ];\n\n  let cachedIntervals = await getCachedIntervals({\n    chain,\n    syncStore,\n    filters: eventCallbacks.map(({ filter }) => filter),\n  });\n\n  historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 2],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals,\n  });\n\n  logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n\n  await historicalSync.syncBlockData({\n    interval: [1, 2],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n\n  // `eth_getBlockByNumber` is skipped\n  expect(spy).toHaveBeenCalledTimes(1);\n\n  expect(spy).toHaveBeenCalledWith(\n    {\n      method: \"eth_getLogs\",\n      params: [\n        {\n          address: [zeroAddress],\n          fromBlock: \"0x1\",\n          toBlock: \"0x2\",\n          topics: [\n            \"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\",\n          ],\n        },\n      ],\n    },\n    expect.any(Object),\n  );\n\n  // re-instantiate `historicalSync` to reset the cached intervals\n\n  spy = vi.spyOn(rpc, \"request\");\n  spy.mockClear();\n\n  cachedIntervals = await getCachedIntervals({\n    chain,\n    syncStore,\n    filters: eventCallbacks.map(({ filter }) => filter),\n  });\n\n  historicalSync = createHistoricalSync({\n    common: context.common,\n    chain,\n    rpc,\n    childAddresses: setupChildAddresses(eventCallbacks),\n  });\n\n  await simulateBlock();\n\n  requiredIntervals = getRequiredIntervalsWithFilters({\n    interval: [1, 3],\n    filters: eventCallbacks.map(({ filter }) => filter),\n    cachedIntervals,\n  });\n  logs = await historicalSync.syncBlockRangeData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    requiredFactoryIntervals: requiredIntervals.factoryIntervals,\n    syncStore,\n  });\n  await historicalSync.syncBlockData({\n    interval: [1, 3],\n    requiredIntervals: requiredIntervals.intervals,\n    logs,\n    syncStore,\n  });\n  await syncStore.insertIntervals({\n    intervals: requiredIntervals.intervals,\n    factoryIntervals: requiredIntervals.factoryIntervals,\n    chainId: chain.id,\n  });\n  // `eth_getBlockByNumber` is skipped\n  expect(spy).toHaveBeenCalledTimes(1);\n\n  expect(spy).toHaveBeenCalledWith(\n    {\n      method: \"eth_getLogs\",\n      params: [\n        {\n          address: [address, zeroAddress],\n          fromBlock: \"0x3\",\n          toBlock: \"0x3\",\n          topics: [\n            \"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\",\n          ],\n        },\n      ],\n    },\n    expect.any(Object),\n  );\n})",
+      "directive_index": 1,
+      "directive": "// @ts-expect-error",
+      "kind": "partial",
+      "role": "read",
+      "positive_source": {
+        "file": ".parity-build/source-historical-types/1f021a7b846451889eae-1-positive.go",
+        "sha256": "e9410d6d82f482bfa6b375e66e8d1f54228937daab77b43b936261a13d01c923"
+      },
+      "negative_source": {
+        "file": ".parity-build/source-historical-types/1f021a7b846451889eae-1-negative.go",
+        "sha256": "dea09a2f4737d5156a66a9f6373e9028143ac8577e42d8400d8e256974eb657e"
+      },
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-ldflags=-s -w",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-1-positive",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-1-positive.go"
+        ],
+        "exit_code": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "error": null
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-1-negative",
+          "/root/ponder-go/work/ponder-go/.parity-build/source-historical-types/1f021a7b846451889eae-1-negative.go"
+        ],
+        "exit_code": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/source-historical-types/1f021a7b846451889eae-1-negative.go:241:25: reader.Address undefined (type config.SourceFilter has no field or method Address)\n",
+        "error": null
+      },
+      "specific_negative_diagnostic": true,
+      "status": "runtime_pending",
+      "positive_binary": {
+        "file": ".parity-build/source-historical-types/1f021a7b846451889eae-1-positive",
+        "sha256": "1edf1f055672893926ad5a142606345b58f6f85a53b8064cd8cadae347438a69"
+      }
+    }
+  ],
+  "complete": true,
+  "success": true,
+  "inputs": [
+    {
+      "file": "../../.cloud-bootstrap/history-next/m33/compile-types.mjs",
+      "sha256": "88990d2005d11de2c0d618205ed28d2d7a59b6de11a82d67a80a1cedc9b9bd9f"
+    },
+    {
+      "file": "../../.cloud-bootstrap/history-next/m33/type-program.go.txt",
+      "sha256": "f34092fb57da06676cb26750e295d32ece558eaee3a920447b881f0417ddbe51"
+    },
+    {
+      "file": "../../.cloud-bootstrap/history-next/m33/type-wire.go.part.txt",
+      "sha256": "78fb9078a7d9aa921ba7beb9df284194c16b14d452b0447c93f0aaf90990c629"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/sync-historical/in-memory.test.ts",
+      "sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/sync-historical/index.test.ts",
+      "sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76"
+    }
+  ]
+}

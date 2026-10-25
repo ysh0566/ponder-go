@@ -1,0 +1,38 @@
+// Observe complete unchanged original bodies. Raw provider responses and genuine
+// public method arguments are inputs; historical results never seed native state.
+import fs from 'node:fs';import path from 'node:path';import {spawnSync}from'node:child_process';import {beforeEach,afterEach,afterAll,vi}from'vitest';
+import * as memory from '@/sync-historical/in-memory.js';
+import * as persistent from '@/sync-historical/index.js';
+import * as syncSource from '@/sync-store/index.js';
+import * as tables from '@/sync-store/schema.js';
+const root=process.env.PONDER_PORT_ROOT,endpoint=process.env.PONDER_HISTORICAL_ENDPOINT;if(!root||!endpoint)throw Error('Explicit historical native root/endpoint required');
+const ledger=JSON.parse(fs.readFileSync(path.join(root,'parity/test-ledger.json'),'utf8'));const selected=ledger.tests.filter((t:any)=>t.source_file.includes('/sync-historical/'));if(selected.length!==40)throw Error('All40 original historical cases required');
+let current:any,objects:WeakMap<object,number>,nextID=0;const completed:any[]=[];
+function id(value:object){let found=objects.get(value);if(found===undefined){found=++nextID;objects.set(value,found)};return found}
+function mark(value:any):any{const expanded=new Set<object>();function walk(v:any):any{if(v===undefined)return{$undefined:true};if(typeof v==='bigint')return{$bigint:String(v)};if(typeof v==='number'&&!Number.isFinite(v))return{$number:String(v)};if(Array.isArray(v))return v.map(walk);if(v instanceof Map)return{$map:[...v].map(([k,v])=>[walk(k),walk(v)])};if(v&&typeof v==='object'){const n=id(v);if(expanded.has(v))return{$ref:n};expanded.add(v);return{$id:n,$object:Object.entries(v).map(([k,v])=>[k,walk(v)])}};return v};return walk(value)}
+function post(route:string,body:any){const program='let s="";for await(const c of process.stdin)s+=c;const r=await fetch(process.argv[1],{method:"POST",body:s});if(!r.ok)throw Error(await r.text());';const r=spawnSync(process.execPath,['--input-type=module','-e',program,endpoint+route],{input:JSON.stringify(body),encoding:'utf8'});if(r.error||r.status!==0)throw Error('Native historical comparison failed: '+(r.error?.message??r.stderr));}
+const physicalTables=['intervals','factories','factoryAddresses','blocks','logs','transactions','transactionReceipts','traces','rpcRequestResults']as const;
+async function physical(){if(!current.qb)return undefined;const result:any={};for(const name of physicalTables){const rows=await current.qb.wrap((db:any)=>db.select().from(tables[name]));result[name]=rows.map((row:any)=>Object.fromEntries(Object.entries(row).map(([key,value])=>[key,typeof value==='bigint'?{$bigint:String(value)}:value])))};return result}
+function send(operation:string,args:any,result:any,extra:any={}){const call={case_id:current.id,sequence:current.sequence++,operation,args,result,...extra};post('/call',call);current.calls.push(call)}
+const createMemory=memory.createInMemoryHistoricalSync,createPersistent=persistent.createHistoricalSync,merge=memory.mergeGeneratorIntervals,createStore=syncSource.createSyncStore;
+beforeEach(ctx=>{
+ const file=ctx.task.file.filepath.replaceAll('\\','/');const test=selected.find((t:any)=>file.endsWith(t.source_file.replace('packages/core/',''))&&t.full_name===ctx.task.name);if(!test)throw Error('Unknown original historical case '+ctx.task.name);
+ current={...test,sequence:0,calls:[],providers:[],depth:0,instances:0};objects=new WeakMap();nextID=0;post('/start',{case_id:test.id});
+ const construct=(kind:string,create:any,args:any)=>{
+  const instance=++current.instances,rpcID=id(args.rpc),children=args.childAddress??args.childAddresses,childID=id(children);
+  const rawRequest=args.rpc.request.bind(args.rpc);const observed=new Proxy(args.rpc,{get(target,key,receiver){if(key!=='request')return Reflect.get(target,key,receiver);return async(...values:any[])=>{const entry:any={request:mark(values[0])};const capture=current.providers;capture.push(entry);try{const value=await rawRequest(...values);entry.response=mark(value);return value}catch(error:any){entry.error={name:error.name,message:error.message,code:error.code};throw error}}}});
+  const before=mark({instance,rpcID,childID,chain:{id:args.chain.id,name:args.chain.name,ethGetLogsBlockRange:args.chain.ethGetLogsBlockRange},options:{factoryAddressCountThreshold:args.common.options.factoryAddressCountThreshold},children});
+  const value=create({...args,rpc:observed});send('construct/'+kind,before,mark(true));
+  for(const method of kind==='memory'?['syncBlockData']:['syncBlockRangeData','syncBlockData']){
+   const original=value[method].bind(value);
+   if(kind==='memory')value[method]=function(parameters:any){const before=mark({instance,...parameters});return(async function*(){const results:any[]=[],start=current.providers.length;current.depth++;try{for await(const data of original(parameters)){results.push(data);yield data}}finally{current.depth--};send('memory/syncBlockData',before,mark(results),{providers:current.providers.slice(start),children:mark(children)})})()};
+   else value[method]=async function(parameters:any){const before=mark({instance,...parameters,syncStore:undefined}),start=current.providers.length;current.depth++;let result;try{result=await original(parameters)}finally{current.depth--};send('persistent/'+method,before,mark(result),{providers:current.providers.slice(start),children:mark(children),physical_rows:await physical()});return result};
+  };return value;
+ };
+ vi.spyOn(memory,'createInMemoryHistoricalSync').mockImplementation((args:any)=>construct('memory',createMemory,args));
+ vi.spyOn(persistent,'createHistoricalSync').mockImplementation((args:any)=>construct('persistent',createPersistent,args));
+ vi.spyOn(syncSource,'createSyncStore').mockImplementation((args:any)=>{const store=createStore(args);current.qb=args.qb;send('store/create',mark({}),mark(true));for(const method of ['insertIntervals','getIntervals','getChildAddresses']as const){const fn=store[method];vi.spyOn(store,method).mockImplementation((async(parameters:any,context:any)=>{const external=current.depth===0,before=external?mark(parameters):undefined;const result=await(fn as any)(parameters,context);if(external)send('store/'+method,before,mark(result),{physical_rows:await physical()});return result})as any)};return store});
+ vi.spyOn(memory,'mergeGeneratorIntervals').mockImplementation((generators:any)=>{const input:any[]=[],calls:number[]=[],wrapped=new Map();for(const [key,generator]of generators){const index=input.length;input.push({interval:key.interval,steps:[]});wrapped.set(key,{async next(){calls.push(index);const step=await generator.next();input[index].steps.push(step);return step}})};return(async function*(){const result=[];for await(const interval of merge(wrapped as any)){result.push(interval);yield interval};send('merge',mark({generators:input,calls}),mark(result))})()});
+});
+afterEach(async()=>{if(!current||!current.calls.length)throw Error('Missing original/native historical calls');post('/case',{...current,qb:undefined,providers:undefined,physical_rows:await physical()});completed.push({...current,qb:undefined,providers:undefined});current=undefined});
+afterAll(()=>{const expected=selected.filter((t:any)=>t.source_file.endsWith(process.env.PONDER_HISTORICAL_KIND+'.test.ts'));if(completed.length!==expected.length)throw Error('Incomplete original historical file');const destination=process.env.PONDER_HISTORICAL_CAPTURE;if(!destination)throw Error('Capture destination required');fs.writeFileSync(destination,JSON.stringify({state:'Actual full original public calls and raw provider inputs. Native type acceptance remains separately required.',cases:completed},null,2)+'\n')});
