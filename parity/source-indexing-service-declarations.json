@@ -63,13 +63,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing/index.test.ts",
+        "source_name": "createIndexing()",
+        "source_id": "8095ab8a2c6db72422f9",
+        "source_line": 62,
+        "assertions_sha256": "dd7458e8c6da35d53f7ce6f868990581fde4c9f7ebf1c15581b1b44b3ea7f13d",
+        "original_assertions": 1,
+        "target_file": "indexing/source_parity_test.go",
+        "go_package": "ponder.local/ponder-go/indexing",
+        "go_test": "TestSourceIndexingService/postgres/8095ab8a2c6db72422f9",
+        "backend_companion": "TestSourceIndexingService/pglite/8095ab8a2c6db72422f9",
+        "source_fixture": "testdata/indexing/source-indexing-service-live.json.gz",
+        "source_verification": "parity/runs/source-indexing-service-verification.json",
+        "assertion_policy": "Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "d30405de5e5c29732267",
@@ -105,13 +167,75 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing/index.test.ts",
+        "source_name": "processSetupEvents() empty",
+        "source_id": "d30405de5e5c29732267",
+        "source_line": 122,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original_assertions": 0,
+        "target_file": "indexing/source_parity_test.go",
+        "go_package": "ponder.local/ponder-go/indexing",
+        "go_test": "TestSourceIndexingService/postgres/d30405de5e5c29732267",
+        "backend_companion": "TestSourceIndexingService/pglite/d30405de5e5c29732267",
+        "source_fixture": "testdata/indexing/source-indexing-service-live.json.gz",
+        "source_verification": "parity/runs/source-indexing-service-verification.json",
+        "assertion_policy": "Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "9bcd2ee96096cf0baae4",
@@ -173,13 +297,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing/index.test.ts",
+        "source_name": "processSetupEvents()",
+        "source_id": "9bcd2ee96096cf0baae4",
+        "source_line": 181,
+        "assertions_sha256": "2b5b06062cabbe5c51d3beba0a0aa81b2751e0d43431e5ffd0a0469e07cfacfb",
+        "original_assertions": 5,
+        "target_file": "indexing/source_parity_test.go",
+        "go_package": "ponder.local/ponder-go/indexing",
+        "go_test": "TestSourceIndexingService/postgres/9bcd2ee96096cf0baae4",
+        "backend_companion": "TestSourceIndexingService/pglite/9bcd2ee96096cf0baae4",
+        "source_fixture": "testdata/indexing/source-indexing-service-live.json.gz",
+        "source_verification": "parity/runs/source-indexing-service-verification.json",
+        "assertion_policy": "Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "9ae03f6604b78323700e",
@@ -269,13 +455,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing/index.test.ts",
+        "source_name": "processEvent()",
+        "source_id": "9ae03f6604b78323700e",
+        "source_line": 259,
+        "assertions_sha256": "c052925f1dcdf077e4bc7ef57c4e28824762f28192057856d129bce05112cd0a",
+        "original_assertions": 10,
+        "target_file": "indexing/source_parity_test.go",
+        "go_package": "ponder.local/ponder-go/indexing",
+        "go_test": "TestSourceIndexingService/postgres/9ae03f6604b78323700e",
+        "backend_companion": "TestSourceIndexingService/pglite/9ae03f6604b78323700e",
+        "source_fixture": "testdata/indexing/source-indexing-service-live.json.gz",
+        "source_verification": "parity/runs/source-indexing-service-verification.json",
+        "assertion_policy": "Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "b6127c0d47d2bb8fd1da",
@@ -321,13 +569,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing/index.test.ts",
+        "source_name": "processEvents eventCount",
+        "source_id": "b6127c0d47d2bb8fd1da",
+        "source_line": 357,
+        "assertions_sha256": "53fb5e5f35149f3d4fd6ae43e135df6db5b53a7d90d0d10421a5af6149988364",
+        "original_assertions": 1,
+        "target_file": "indexing/source_parity_test.go",
+        "go_package": "ponder.local/ponder-go/indexing",
+        "go_test": "TestSourceIndexingService/postgres/b6127c0d47d2bb8fd1da",
+        "backend_companion": "TestSourceIndexingService/pglite/b6127c0d47d2bb8fd1da",
+        "source_fixture": "testdata/indexing/source-indexing-service-live.json.gz",
+        "source_verification": "parity/runs/source-indexing-service-verification.json",
+        "assertion_policy": "Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "0fae55812c46f74f1566",
@@ -375,13 +685,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing/index.test.ts",
+        "source_name": "executeSetup() context.client",
+        "source_id": "0fae55812c46f74f1566",
+        "source_line": 443,
+        "assertions_sha256": "69180a23343b8de838a5eb6dc306bf129888c119a74f2fdcaaabe65068085114",
+        "original_assertions": 2,
+        "target_file": "indexing/source_parity_test.go",
+        "go_package": "ponder.local/ponder-go/indexing",
+        "go_test": "TestSourceIndexingService/postgres/0fae55812c46f74f1566",
+        "backend_companion": "TestSourceIndexingService/pglite/0fae55812c46f74f1566",
+        "source_fixture": "testdata/indexing/source-indexing-service-live.json.gz",
+        "source_verification": "parity/runs/source-indexing-service-verification.json",
+        "assertion_policy": "Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "d7d1c6e399576ff940b3",
@@ -430,13 +802,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing/index.test.ts",
+        "source_name": "executeSetup() context.db",
+        "source_id": "d7d1c6e399576ff940b3",
+        "source_line": 519,
+        "assertions_sha256": "31d6bcf8b0faca6b07700ab182b61a987b52b7be61d168fa1c9d6533fd031827",
+        "original_assertions": 2,
+        "target_file": "indexing/source_parity_test.go",
+        "go_package": "ponder.local/ponder-go/indexing",
+        "go_test": "TestSourceIndexingService/postgres/d7d1c6e399576ff940b3",
+        "backend_companion": "TestSourceIndexingService/pglite/d7d1c6e399576ff940b3",
+        "source_fixture": "testdata/indexing/source-indexing-service-live.json.gz",
+        "source_verification": "parity/runs/source-indexing-service-verification.json",
+        "assertion_policy": "Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "968bb8a7d0476d79c8fb",
@@ -479,13 +913,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing/index.test.ts",
+        "source_name": "executeSetup() metrics",
+        "source_id": "968bb8a7d0476d79c8fb",
+        "source_line": 599,
+        "assertions_sha256": "79164236d7a0568c4b5e462e7796ebf2204d6a56668d890183e0208f45558648",
+        "original_assertions": 1,
+        "target_file": "indexing/source_parity_test.go",
+        "go_package": "ponder.local/ponder-go/indexing",
+        "go_test": "TestSourceIndexingService/postgres/968bb8a7d0476d79c8fb",
+        "backend_companion": "TestSourceIndexingService/pglite/968bb8a7d0476d79c8fb",
+        "source_fixture": "testdata/indexing/source-indexing-service-live.json.gz",
+        "source_verification": "parity/runs/source-indexing-service-verification.json",
+        "assertion_policy": "Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "d75ae6d953a7bb8ea73c",
@@ -536,11 +1032,67 @@
       "discovered": true,
       "port_status": "unimplemented",
       "mapping": null,
-      "execution_status": "not_run",
+      "execution_status": "executed",
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "runtime_status": "passed",
+      "execution_evidence": "parity/runs/source-indexing-service-verification.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "remaining_native_type_obligations": 1,
+      "type_directives_verification": {
+        "status": "pending",
+        "native_verified": 0,
+        "obligations": 1,
+        "meaning": "Exact TS obligations are missing mockRejectedValue on normal callback (two cases), and deletion of required transaction.maxPriorityFeePerGas (one case). Runtime execution is not static-equivalence proof."
+      },
+      "parity_status": "runtime_passed_type_obligations_pending"
     },
     {
       "id": "584d162581ce27033006",
@@ -591,13 +1143,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing/index.test.ts",
+        "source_name": "processEvents() context.client",
+        "source_id": "584d162581ce27033006",
+        "source_line": 729,
+        "assertions_sha256": "e9644b875a8556ef5b91905e45fd965dbb766989ebc850dd4de4c565cc10d0a8",
+        "original_assertions": 2,
+        "target_file": "indexing/source_parity_test.go",
+        "go_package": "ponder.local/ponder-go/indexing",
+        "go_test": "TestSourceIndexingService/postgres/584d162581ce27033006",
+        "backend_companion": "TestSourceIndexingService/pglite/584d162581ce27033006",
+        "source_fixture": "testdata/indexing/source-indexing-service-live.json.gz",
+        "source_verification": "parity/runs/source-indexing-service-verification.json",
+        "assertion_policy": "Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "71d417e2bb1b5285447b",
@@ -644,13 +1258,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing/index.test.ts",
+        "source_name": "processEvents() context.db",
+        "source_id": "71d417e2bb1b5285447b",
+        "source_line": 819,
+        "assertions_sha256": "05b298f5b08890d2da9f4621b15e3db738dbd079a4ce501157df314ee1d20f3e",
+        "original_assertions": 1,
+        "target_file": "indexing/source_parity_test.go",
+        "go_package": "ponder.local/ponder-go/indexing",
+        "go_test": "TestSourceIndexingService/postgres/71d417e2bb1b5285447b",
+        "backend_companion": "TestSourceIndexingService/pglite/71d417e2bb1b5285447b",
+        "source_fixture": "testdata/indexing/source-indexing-service-live.json.gz",
+        "source_verification": "parity/runs/source-indexing-service-verification.json",
+        "assertion_policy": "Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "26932124c42fde4c8e04",
@@ -696,13 +1372,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing/index.test.ts",
+        "source_name": "processEvents() metrics",
+        "source_id": "26932124c42fde4c8e04",
+        "source_line": 908,
+        "assertions_sha256": "79164236d7a0568c4b5e462e7796ebf2204d6a56668d890183e0208f45558648",
+        "original_assertions": 1,
+        "target_file": "indexing/source_parity_test.go",
+        "go_package": "ponder.local/ponder-go/indexing",
+        "go_test": "TestSourceIndexingService/postgres/26932124c42fde4c8e04",
+        "backend_companion": "TestSourceIndexingService/pglite/26932124c42fde4c8e04",
+        "source_fixture": "testdata/indexing/source-indexing-service-live.json.gz",
+        "source_verification": "parity/runs/source-indexing-service-verification.json",
+        "assertion_policy": "Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "afb6150d1f928a58bf24",
@@ -756,11 +1494,67 @@
       "discovered": true,
       "port_status": "unimplemented",
       "mapping": null,
-      "execution_status": "not_run",
+      "execution_status": "executed",
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "runtime_status": "passed",
+      "execution_evidence": "parity/runs/source-indexing-service-verification.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "remaining_native_type_obligations": 1,
+      "type_directives_verification": {
+        "status": "pending",
+        "native_verified": 0,
+        "obligations": 1,
+        "meaning": "Exact TS obligations are missing mockRejectedValue on normal callback (two cases), and deletion of required transaction.maxPriorityFeePerGas (one case). Runtime execution is not static-equivalence proof."
+      },
+      "parity_status": "runtime_passed_type_obligations_pending"
     },
     {
       "id": "772c4096d1ac5227fc45",
@@ -805,13 +1599,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/indexing/index.test.ts",
+        "source_name": "processEvents() error with missing event object properties",
+        "source_id": "772c4096d1ac5227fc45",
+        "source_line": 1065,
+        "assertions_sha256": "d5534adef8ac33312552c8b2104c656623d8418c7b742b1acdd5d2ad4d897178",
+        "original_assertions": 1,
+        "target_file": "indexing/source_parity_test.go",
+        "go_package": "ponder.local/ponder-go/indexing",
+        "go_test": "TestSourceIndexingService/postgres/772c4096d1ac5227fc45",
+        "backend_companion": "TestSourceIndexingService/pglite/772c4096d1ac5227fc45",
+        "source_fixture": "testdata/indexing/source-indexing-service-live.json.gz",
+        "source_verification": "parity/runs/source-indexing-service-verification.json",
+        "assertion_policy": "Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "8a08a48e2a99b23fa016",
@@ -867,11 +1723,67 @@
       "discovered": true,
       "port_status": "unimplemented",
       "mapping": null,
-      "execution_status": "not_run",
+      "execution_status": "executed",
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "meaning": "All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner and last eight client facade cases remain out of scope."
+      },
+      "runtime_status": "passed",
+      "execution_evidence": "parity/runs/source-indexing-service-verification.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl"
+      },
+      "remaining_native_type_obligations": 1,
+      "type_directives_verification": {
+        "status": "pending",
+        "native_verified": 0,
+        "obligations": 1,
+        "meaning": "Exact TS obligations are missing mockRejectedValue on normal callback (two cases), and deletion of required transaction.maxPriorityFeePerGas (one case). Runtime execution is not static-equivalence proof."
+      },
+      "parity_status": "runtime_passed_type_obligations_pending"
     },
     {
       "id": "9614c3868c45f1ab5064",
@@ -920,7 +1832,43 @@
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      }
     },
     {
       "id": "f62a1b73602a98909575",
@@ -969,7 +1917,43 @@
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      }
     },
     {
       "id": "8244ed823366e5a1da54",
@@ -1018,7 +2002,43 @@
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      }
     },
     {
       "id": "ee3742b77c929d94a8ed",
@@ -1067,7 +2087,43 @@
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      }
     },
     {
       "id": "4dfbaabe2e3b99f00b8d",
@@ -1116,7 +2172,43 @@
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      }
     },
     {
       "id": "175d1d5d0afe91cc20a1",
@@ -1171,7 +2263,43 @@
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      }
     },
     {
       "id": "de123b064923c7ffd321",
@@ -1221,7 +2349,43 @@
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      }
     },
     {
       "id": "4204e282e98522f9eefa",
@@ -1271,7 +2435,43 @@
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-indexing-service-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json"
+          }
+        ]
+      }
     }
   ]
 }

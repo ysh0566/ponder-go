@@ -264,3 +264,80 @@ func TestColumnIncludeSourceOrder(t *testing.T) {
 		t.Fatal("transaction receipt duplicated")
 	}
 }
+
+// Supplemental reflection tests do not represent additional original cases.
+func TestPropertyViewDescriptorTargetSeparation(t *testing.T) {
+	for _, component := range []string{"block", "transaction", "transactionReceipt", "trace"} {
+		t.Run(component, func(t *testing.T) {
+			body := Object{"extra": "underlying"}
+			for _, key := range accessDefaultColumns[component] {
+				body[key] = key
+			}
+			view, pattern, handler, resets := newAccessTestView(t, component, body)
+			view.onAccess = func(string, string, string) { t.Fatal("reflection performed a getter") }
+			for _, key := range append(view.Keys(), "extra", "absent") {
+				if _, present := view.GetOwnPropertyDescriptor(key); present {
+					t.Fatalf("underlying property %s leaked into target descriptors", key)
+				}
+			}
+			if keys := view.ObjectKeys(); len(keys) != 0 || keys == nil {
+				t.Fatalf("initial Object.keys = %#v", keys)
+			}
+			view.onAccess = nil
+			key := view.Keys()[0]
+			if err := view.Set(key, "changed"); err != nil {
+				t.Fatal(err)
+			}
+			if err := view.Set("newExtra", "value"); err != nil {
+				t.Fatal(err)
+			}
+			if err := view.Delete(key); err != nil {
+				t.Fatal(err)
+			}
+			before := append([]string{}, (*pattern["Token:Transfer"].columns(component))...)
+			view.Bind("Token:Transfer", Object{key: "replacement"})
+			view.SetDisabled(true)
+			view.onAccess = func(string, string, string) { t.Fatal("reflection performed a getter") }
+			if len(view.ObjectKeys()) != 0 {
+				t.Fatal("mutation, rebind, or disable changed target descriptors")
+			}
+			for _, key := range []string{key, "newExtra"} {
+				if _, present := view.GetOwnPropertyDescriptor(key); present {
+					t.Fatal("underlying mutation created target descriptor")
+				}
+			}
+			if !reflect.DeepEqual(before, *pattern["Token:Transfer"].columns(component)) || handler.err != nil || *resets != 0 {
+				t.Fatal("reflection altered profiling or error state")
+			}
+		})
+	}
+}
+
+func TestPropertyViewObjectKeysUsesTargetDescriptorFilter(t *testing.T) {
+	view, pattern, handler, resets := newAccessTestView(t, "transaction", Object{"gas": "underlying"})
+	// White-box mechanism probe, not a supported DefineOwnProperty operation:
+	// seed configurable target descriptors to distinguish genuine filtering from
+	// a hardcoded empty result or enumeration of the underlying object.
+	view.targetDescriptors["gas"] = PropertyDescriptor{Value: "target", Writable: true, Enumerable: true, Configurable: true}
+	view.targetDescriptors["from"] = PropertyDescriptor{Value: "first", Enumerable: true, Configurable: true}
+	view.targetDescriptors["hash"] = PropertyDescriptor{Value: "hidden", Enumerable: false, Configurable: true}
+	view.targetDescriptors["extra"] = PropertyDescriptor{Value: "not in ownKeys", Enumerable: true, Configurable: true}
+	view.onAccess = func(string, string, string) { t.Fatal("reflection performed a getter") }
+	if got := view.ObjectKeys(); !reflect.DeepEqual(got, []string{"from", "gas"}) {
+		t.Fatalf("ownKeys order plus descriptor filtering = %v", got)
+	}
+	descriptor, ok := view.GetOwnPropertyDescriptor("gas")
+	if !ok || descriptor.Value != "target" || !descriptor.Writable || !descriptor.Configurable {
+		t.Fatalf("wrong target descriptor: %#v, %v", descriptor, ok)
+	}
+	descriptor.Enumerable = false
+	descriptor.Value = "modified copy"
+	if got, _ := view.GetOwnPropertyDescriptor("gas"); !got.Enumerable || got.Value != "target" {
+		t.Fatal("returned descriptor mutation escaped into target")
+	}
+	keys := view.ObjectKeys()
+	keys[0] = "changed"
+	if view.ObjectKeys()[0] != "from" || len(pattern["Token:Transfer"].Transaction) != 0 || handler.err != nil || *resets != 0 {
+		t.Fatal("reflection escaped mutable keys or changed access state")
+	}
+}

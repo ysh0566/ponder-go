@@ -1,0 +1,73 @@
+{
+  "complete": true,
+  "success": false,
+  "acceptance_credit": 0,
+  "run_dir": "parity/runs/indexing-actions-m39/full-verify-01",
+  "finished_utc": "2026-10-25T12:57:14.537Z",
+  "stages": 54,
+  "passed_stages": 52,
+  "failed_stages": [
+    "go-normal",
+    "go-race"
+  ],
+  "reason": "Two existing M38 expected cache-envelope mappings preserve checksum address text while the new canonical cache key lowercases request values. Exact raw RPC request assertion remains independent. No assertion was edited during this run.",
+  "execution_control": "Original non-TTY exec was isolated from later PID namespaces; selective parent pause was unavailable. Parent explicitly authorized unchanged full normal/race diagnostic completion. No test child or PostgreSQL process was interrupted.",
+  "failure_input_archive": {
+    "file": "parity/runs/indexing-actions-m39/full-verify-01/failure-inputs/manifest.json",
+    "sha256": "e82daf7a86ec3b4fb96d1e8e9a98c4cb084932bf7fb8d47ca22438927139d84c"
+  },
+  "modes": {
+    "normal": {
+      "log": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-01/native/go-test.jsonl",
+        "sha256": "c050770fec757687df06ff437b415a287acb6d42aa11ae8cf445765bbf468e46"
+      },
+      "passed_nodes": 3142,
+      "failures": [
+        {
+          "test": "TestSourceIndexingServiceCache/delayed-cache-insert-success",
+          "package": "ponder.local/ponder-go/indexing"
+        },
+        {
+          "test": "TestSourceIndexingServiceCache/delayed-cache-insert-failure",
+          "package": "ponder.local/ponder-go/indexing"
+        },
+        {
+          "test": "TestSourceIndexingServiceCache",
+          "package": "ponder.local/ponder-go/indexing"
+        },
+        {
+          "test": null,
+          "package": "ponder.local/ponder-go/indexing"
+        }
+      ],
+      "data_race_warnings": 0
+    },
+    "race": {
+      "log": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-01/native/go-race.jsonl",
+        "sha256": "a98166043ba879872247ee2d2afe9a7127443e45e6df3f20cbd42ca78165966d"
+      },
+      "passed_nodes": 3142,
+      "failures": [
+        {
+          "test": "TestSourceIndexingServiceCache/delayed-cache-insert-success",
+          "package": "ponder.local/ponder-go/indexing"
+        },
+        {
+          "test": "TestSourceIndexingServiceCache/delayed-cache-insert-failure",
+          "package": "ponder.local/ponder-go/indexing"
+        },
+        {
+          "test": "TestSourceIndexingServiceCache",
+          "package": "ponder.local/ponder-go/indexing"
+        },
+        {
+          "test": null,
+          "package": "ponder.local/ponder-go/indexing"
+        }
+      ],
+      "data_race_warnings": 0
+    }
+  }
+}

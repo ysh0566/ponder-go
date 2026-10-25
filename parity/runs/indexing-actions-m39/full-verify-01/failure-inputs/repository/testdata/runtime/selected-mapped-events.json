@@ -1,0 +1,397 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "method": "Selective unchanged source declarations and actual source helper implementations; loopback endpoint adaptation; actual Anvil version is recorded in parity/runs/tool-versions.txt. This selective run is distinct from complete original-file acceptance.",
+  "sources": [
+    {
+      "file": "packages/core/src/_test/setup.ts",
+      "sha256": "266fd6d21510c2f90ea7b47d2631c2218eafe149b1f680acbefd07b502932e2d"
+    },
+    {
+      "file": "packages/core/src/_test/utils.ts",
+      "sha256": "c82853764e17721ff80d6a669362ac6b6f6a17cfe634dd33fbac4fc97bff4d23"
+    },
+    {
+      "file": "packages/core/src/_test/simulate.ts",
+      "sha256": "12df0b2c2c3ddf8353bc4e193de9fe88803742f367469951c27dfda9316fd501"
+    },
+    {
+      "file": "packages/core/src/runtime/events.ts",
+      "sha256": "00c6728ed56c9f8a41bd427d5de4488d942e260558a4e4ce6eb98654946d7a8f"
+    },
+    {
+      "file": "packages/core/src/runtime/filter.ts",
+      "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+    },
+    {
+      "file": "packages/core/src/rpc/actions.ts",
+      "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+    },
+    {
+      "file": "packages/core/src/rpc/index.ts",
+      "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+    },
+    {
+      "file": "packages/core/src/runtime/filter.test.ts",
+      "sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b"
+    }
+  ],
+  "cases": [
+    {
+      "id": "dcb5e73908e894a2b815",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "getChildAddress() topics",
+      "source_name": "getChildAddress() topics",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "factory = {\n    type: \"log\",\n    childAddressLocation: \"topic1\",\n  } as unknown as LogFactory",
+        "log = {\n    topics: [\n      null,\n      \"0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556\",\n    ],\n  } as unknown as SyncLog"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 71,
+          "text": "expect(getChildAddress({ log, factory })).toBe(\n    \"0xa21a16ec22a940990922220e4ab5bf4c2310f556\",\n  )"
+        }
+      ],
+      "test_source": "test(\"getChildAddress() topics\", () => {\n  const factory = {\n    type: \"log\",\n    childAddressLocation: \"topic1\",\n  } as unknown as LogFactory;\n  const log = {\n    topics: [\n      null,\n      \"0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556\",\n    ],\n  } as unknown as SyncLog;\n\n  expect(getChildAddress({ log, factory })).toBe(\n    \"0xa21a16ec22a940990922220e4ab5bf4c2310f556\",\n  );\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "8b843d8b055a534d8600",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "getChildAddress() offset",
+      "source_name": "getChildAddress() offset",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "factory = {\n    type: \"log\",\n    childAddressLocation: \"offset32\",\n  } as unknown as LogFactory",
+        "log = {\n    data: \"0x0000000000000000000000000000000000000000000000000000000017d435c9000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556\",\n  } as unknown as SyncLog"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 85,
+          "text": "expect(getChildAddress({ log, factory })).toBe(\n    \"0xa21a16ec22a940990922220e4ab5bf4c2310f556\",\n  )"
+        }
+      ],
+      "test_source": "test(\"getChildAddress() offset\", () => {\n  const factory = {\n    type: \"log\",\n    childAddressLocation: \"offset32\",\n  } as unknown as LogFactory;\n  const log = {\n    data: \"0x0000000000000000000000000000000000000000000000000000000017d435c9000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556\",\n  } as unknown as SyncLog;\n\n  expect(getChildAddress({ log, factory })).toBe(\n    \"0xa21a16ec22a940990922220e4ab5bf4c2310f556\",\n  );\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "ad3050b801ac9f9e4a4b",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "isBlockFilterMatched",
+      "source_name": "isBlockFilterMatched",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "{ eventCallbacks } = getBlocksIndexingBuild({\n    interval: 1,\n  })",
+        "filter = eventCallbacks[0]!.filter as BlockFilter",
+        "rpcBlock = await eth_getBlockByNumber(rpc, [\"0x0\", true])",
+        "isMatched = isBlockFilterMatched({\n    filter,\n    block: rpcBlock,\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 177,
+          "text": "expect(isMatched).toBe(true)"
+        },
+        {
+          "kind": "runtime",
+          "line": 186,
+          "text": "expect(isMatched).toBe(false)"
+        }
+      ],
+      "test_source": "test(\"isBlockFilterMatched\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { eventCallbacks } = getBlocksIndexingBuild({\n    interval: 1,\n  });\n\n  const filter = eventCallbacks[0]!.filter as BlockFilter;\n\n  const rpcBlock = await eth_getBlockByNumber(rpc, [\"0x0\", true]);\n\n  let isMatched = isBlockFilterMatched({\n    filter,\n    block: rpcBlock,\n  });\n  expect(isMatched).toBe(true);\n\n  filter.interval = 2;\n  filter.offset = 1;\n\n  isMatched = isBlockFilterMatched({\n    filter,\n    block: rpcBlock,\n  });\n  expect(isMatched).toBe(false);\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "81d93c6efbaaa64aa4e8",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "mergeLogFiltersToBlockRequest returns undefined for no inputs",
+      "source_name": "mergeLogFiltersToBlockRequest returns undefined for no inputs",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 548,
+          "text": "expect(mergeLogFiltersToBlockRequest({ logFilters: [], factories: [] })).toBe(\n    undefined,\n  )"
+        }
+      ],
+      "test_source": "test(\"mergeLogFiltersToBlockRequest returns undefined for no inputs\", () => {\n  expect(mergeLogFiltersToBlockRequest({ logFilters: [], factories: [] })).toBe(\n    undefined,\n  );\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "297ff86a54e9010cbb83",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "mergeLogFiltersToBlockRequest returns one log filter",
+      "source_name": "mergeLogFiltersToBlockRequest returns one log filter",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "filter = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_ADDRESS_A,\n    topic0: REQUEST_TOPIC_A,\n    topic2: REQUEST_TOPIC_B,\n  } satisfies LogFilter"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 561,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({ logFilters: [filter], factories: [] }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_A],\n    topics: [[REQUEST_TOPIC_A], null, [REQUEST_TOPIC_B]],\n  })"
+        }
+      ],
+      "test_source": "test(\"mergeLogFiltersToBlockRequest returns one log filter\", () => {\n  const filter = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_ADDRESS_A,\n    topic0: REQUEST_TOPIC_A,\n    topic2: REQUEST_TOPIC_B,\n  } satisfies LogFilter;\n\n  expect(\n    mergeLogFiltersToBlockRequest({ logFilters: [filter], factories: [] }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_A],\n    topics: [[REQUEST_TOPIC_A], null, [REQUEST_TOPIC_B]],\n  });\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "bc00255fef95d9272b16",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "mergeLogFiltersToBlockRequest unions addresses and topics",
+      "source_name": "mergeLogFiltersToBlockRequest unions addresses and topics",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "filterA = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_ADDRESS_A,\n    topic0: REQUEST_TOPIC_A,\n    topic1: REQUEST_TOPIC_C,\n  } satisfies LogFilter",
+        "filterB = {\n    ...EMPTY_LOG_FILTER,\n    address: [REQUEST_ADDRESS_A, REQUEST_ADDRESS_B],\n    topic0: REQUEST_TOPIC_B,\n    topic1: [REQUEST_TOPIC_C, REQUEST_TOPIC_A],\n  } satisfies LogFilter"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 583,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filterA, filterB],\n      factories: [],\n    }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_A, REQUEST_ADDRESS_B],\n    topics: [\n      [REQUEST_TOPIC_A, REQUEST_TOPIC_B],\n      [REQUEST_TOPIC_C, REQUEST_TOPIC_A],\n    ],\n  })"
+        }
+      ],
+      "test_source": "test(\"mergeLogFiltersToBlockRequest unions addresses and topics\", () => {\n  const filterA = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_ADDRESS_A,\n    topic0: REQUEST_TOPIC_A,\n    topic1: REQUEST_TOPIC_C,\n  } satisfies LogFilter;\n  const filterB = {\n    ...EMPTY_LOG_FILTER,\n    address: [REQUEST_ADDRESS_A, REQUEST_ADDRESS_B],\n    topic0: REQUEST_TOPIC_B,\n    topic1: [REQUEST_TOPIC_C, REQUEST_TOPIC_A],\n  } satisfies LogFilter;\n\n  expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filterA, filterB],\n      factories: [],\n    }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_A, REQUEST_ADDRESS_B],\n    topics: [\n      [REQUEST_TOPIC_A, REQUEST_TOPIC_B],\n      [REQUEST_TOPIC_C, REQUEST_TOPIC_A],\n    ],\n  });\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "3c2b8cc0a9fc66f15c4a",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "mergeLogFiltersToBlockRequest matches all values if one input matches all values",
+      "source_name": "mergeLogFiltersToBlockRequest matches all values if one input matches all values",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "filterA = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_ADDRESS_A,\n    topic0: REQUEST_TOPIC_A,\n    topic1: REQUEST_TOPIC_C,\n  } satisfies LogFilter",
+        "filterB = {\n    ...EMPTY_LOG_FILTER,\n    address: undefined,\n    topic0: REQUEST_TOPIC_B,\n  } satisfies LogFilter"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 610,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filterA, filterB],\n      factories: [],\n    }),\n  ).toStrictEqual({\n    address: undefined,\n    topics: [[REQUEST_TOPIC_A, REQUEST_TOPIC_B]],\n  })"
+        }
+      ],
+      "test_source": "test(\"mergeLogFiltersToBlockRequest matches all values if one input matches all values\", () => {\n  const filterA = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_ADDRESS_A,\n    topic0: REQUEST_TOPIC_A,\n    topic1: REQUEST_TOPIC_C,\n  } satisfies LogFilter;\n  const filterB = {\n    ...EMPTY_LOG_FILTER,\n    address: undefined,\n    topic0: REQUEST_TOPIC_B,\n  } satisfies LogFilter;\n\n  expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filterA, filterB],\n      factories: [],\n    }),\n  ).toStrictEqual({\n    address: undefined,\n    topics: [[REQUEST_TOPIC_A, REQUEST_TOPIC_B]],\n  });\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "87aa9c053835c17a0bdf",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "mergeLogFiltersToBlockRequest matches all addresses for a factory log filter",
+      "source_name": "mergeLogFiltersToBlockRequest matches all addresses for a factory log filter",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "filter = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_FACTORY,\n    topic0: REQUEST_TOPIC_A,\n  } satisfies LogFilter"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 628,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filter],\n      factories: [REQUEST_FACTORY],\n    }),\n  ).toStrictEqual({\n    address: undefined,\n    topics: [[REQUEST_TOPIC_A, REQUEST_TOPIC_C]],\n  })"
+        }
+      ],
+      "test_source": "test(\"mergeLogFiltersToBlockRequest matches all addresses for a factory log filter\", () => {\n  const filter = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_FACTORY,\n    topic0: REQUEST_TOPIC_A,\n  } satisfies LogFilter;\n\n  expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filter],\n      factories: [REQUEST_FACTORY],\n    }),\n  ).toStrictEqual({\n    address: undefined,\n    topics: [[REQUEST_TOPIC_A, REQUEST_TOPIC_C]],\n  });\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "063b2ef6ce1710b5e907",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "mergeLogFiltersToBlockRequest includes factories without log filters",
+      "source_name": "mergeLogFiltersToBlockRequest includes factories without log filters",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 640,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [],\n      factories: [REQUEST_FACTORY],\n    }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_B],\n    topics: [[REQUEST_TOPIC_C]],\n  })"
+        }
+      ],
+      "test_source": "test(\"mergeLogFiltersToBlockRequest includes factories without log filters\", () => {\n  expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [],\n      factories: [REQUEST_FACTORY],\n    }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_B],\n    topics: [[REQUEST_TOPIC_C]],\n  });\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "10f0068f97080c079808",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "mergeLogFiltersToBlockRequest unions factory and log filter addresses",
+      "source_name": "mergeLogFiltersToBlockRequest unions factory and log filter addresses",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "filter = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_ADDRESS_A,\n    topic0: REQUEST_TOPIC_A,\n    topic1: REQUEST_TOPIC_B,\n  } satisfies LogFilter"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 659,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filter],\n      factories: [REQUEST_FACTORY],\n    }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_A, REQUEST_ADDRESS_B],\n    topics: [[REQUEST_TOPIC_A, REQUEST_TOPIC_C]],\n  })"
+        }
+      ],
+      "test_source": "test(\"mergeLogFiltersToBlockRequest unions factory and log filter addresses\", () => {\n  const filter = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_ADDRESS_A,\n    topic0: REQUEST_TOPIC_A,\n    topic1: REQUEST_TOPIC_B,\n  } satisfies LogFilter;\n\n  expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filter],\n      factories: [REQUEST_FACTORY],\n    }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_A, REQUEST_ADDRESS_B],\n    topics: [[REQUEST_TOPIC_A, REQUEST_TOPIC_C]],\n  });\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "60183027e2d8b2084d58",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "mergeLogFiltersToBlockRequest matches all addresses for a factory without an address",
+      "source_name": "mergeLogFiltersToBlockRequest matches all addresses for a factory without an address",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "filter = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_ADDRESS_A,\n    topic0: REQUEST_TOPIC_A,\n  } satisfies LogFilter"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 677,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filter],\n      factories: [{ ...REQUEST_FACTORY, address: undefined }],\n    }),\n  ).toStrictEqual({\n    address: undefined,\n    topics: [[REQUEST_TOPIC_A, REQUEST_TOPIC_C]],\n  })"
+        }
+      ],
+      "test_source": "test(\"mergeLogFiltersToBlockRequest matches all addresses for a factory without an address\", () => {\n  const filter = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_ADDRESS_A,\n    topic0: REQUEST_TOPIC_A,\n  } satisfies LogFilter;\n\n  expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filter],\n      factories: [{ ...REQUEST_FACTORY, address: undefined }],\n    }),\n  ).toStrictEqual({\n    address: undefined,\n    topics: [[REQUEST_TOPIC_A, REQUEST_TOPIC_C]],\n  });\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "163687e53f937f38bdc3",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "mergeLogFiltersToBlockRequest ignores inputs with an empty address list",
+      "source_name": "mergeLogFiltersToBlockRequest ignores inputs with an empty address list",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "filter = {\n    ...EMPTY_LOG_FILTER,\n    address: [],\n    topic0: REQUEST_TOPIC_A,\n  } satisfies LogFilter"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 695,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filter],\n      factories: [{ ...REQUEST_FACTORY, address: [] }],\n    }),\n  ).toBe(undefined)"
+        }
+      ],
+      "test_source": "test(\"mergeLogFiltersToBlockRequest ignores inputs with an empty address list\", () => {\n  const filter = {\n    ...EMPTY_LOG_FILTER,\n    address: [],\n    topic0: REQUEST_TOPIC_A,\n  } satisfies LogFilter;\n\n  expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [filter],\n      factories: [{ ...REQUEST_FACTORY, address: [] }],\n    }),\n  ).toBe(undefined);\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "2f13a001ab8416f18cce",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "mergeLogFiltersToBlockRequest matches all addresses above ADDRESS_CHUNK_SIZE",
+      "source_name": "mergeLogFiltersToBlockRequest matches all addresses above ADDRESS_CHUNK_SIZE",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "addresses = Array.from(\n    { length: ADDRESS_CHUNK_SIZE + 1 },\n    (_, i) => `0x${i.toString(16).padStart(40, \"0\")}` as Address,\n  )",
+        "filter = {\n    ...EMPTY_LOG_FILTER,\n    address: addresses,\n    topic0: REQUEST_TOPIC_A,\n  } satisfies LogFilter"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 714,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({ logFilters: [filter], factories: [] }),\n  ).toStrictEqual({ address: undefined, topics: [[REQUEST_TOPIC_A]] })"
+        },
+        {
+          "kind": "runtime",
+          "line": 718,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [{ ...filter, address: addresses.slice(1) }],\n      factories: [],\n    })?.address,\n  ).toHaveLength(ADDRESS_CHUNK_SIZE)"
+        }
+      ],
+      "test_source": "test(\"mergeLogFiltersToBlockRequest matches all addresses above ADDRESS_CHUNK_SIZE\", () => {\n  const addresses = Array.from(\n    { length: ADDRESS_CHUNK_SIZE + 1 },\n    (_, i) => `0x${i.toString(16).padStart(40, \"0\")}` as Address,\n  );\n  const filter = {\n    ...EMPTY_LOG_FILTER,\n    address: addresses,\n    topic0: REQUEST_TOPIC_A,\n  } satisfies LogFilter;\n\n  expect(\n    mergeLogFiltersToBlockRequest({ logFilters: [filter], factories: [] }),\n  ).toStrictEqual({ address: undefined, topics: [[REQUEST_TOPIC_A]] });\n\n  expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: [{ ...filter, address: addresses.slice(1) }],\n      factories: [],\n    })?.address,\n  ).toHaveLength(ADDRESS_CHUNK_SIZE);\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "68d640b52be58334d6d2",
+      "source_file": "packages/core/src/runtime/filter.test.ts",
+      "source_sha256": "5e0f0ea0b651c6b795ec3558e768836c8045dced6b16933ee9dbb1ee5a4f177b",
+      "title": "mergeLogFiltersToBlockRequest matches all topics above ADDRESS_CHUNK_SIZE",
+      "source_name": "mergeLogFiltersToBlockRequest matches all topics above ADDRESS_CHUNK_SIZE",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "topics = Array.from(\n    { length: ADDRESS_CHUNK_SIZE + 1 },\n    (_, i) => `0x${i.toString(16).padStart(64, \"0\")}` as Hex,\n  )",
+        "filter = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_ADDRESS_A,\n    topic0: REQUEST_TOPIC_A,\n    topic1: topics,\n  } satisfies LogFilter"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 738,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({ logFilters: [filter], factories: [] }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_A],\n    topics: [[REQUEST_TOPIC_A]],\n  })"
+        },
+        {
+          "kind": "runtime",
+          "line": 745,
+          "text": "expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: topics.map((topic0) => ({ ...filter, topic0, topic1: null })),\n      factories: [],\n    }),\n  ).toStrictEqual({ address: [REQUEST_ADDRESS_A], topics: undefined })"
+        }
+      ],
+      "test_source": "test(\"mergeLogFiltersToBlockRequest matches all topics above ADDRESS_CHUNK_SIZE\", () => {\n  const topics = Array.from(\n    { length: ADDRESS_CHUNK_SIZE + 1 },\n    (_, i) => `0x${i.toString(16).padStart(64, \"0\")}` as Hex,\n  );\n  const filter = {\n    ...EMPTY_LOG_FILTER,\n    address: REQUEST_ADDRESS_A,\n    topic0: REQUEST_TOPIC_A,\n    topic1: topics,\n  } satisfies LogFilter;\n\n  expect(\n    mergeLogFiltersToBlockRequest({ logFilters: [filter], factories: [] }),\n  ).toStrictEqual({\n    address: [REQUEST_ADDRESS_A],\n    topics: [[REQUEST_TOPIC_A]],\n  });\n\n  expect(\n    mergeLogFiltersToBlockRequest({\n      logFilters: topics.map((topic0) => ({ ...filter, topic0, topic1: null })),\n      factories: [],\n    }),\n  ).toStrictEqual({ address: [REQUEST_ADDRESS_A], topics: undefined });\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    },
+    {
+      "id": "a196548313391b06c82d",
+      "source_file": "packages/core/src/runtime/events.test.ts",
+      "source_sha256": "2dcb977ece55d48934dbf6c15cf99f21109860710f5d4a7ee922ba030fad19a2",
+      "title": "splitEvents()",
+      "source_name": "splitEvents()",
+      "source_state": "active",
+      "contexts": [],
+      "inputs": [
+        "events = [\n    {\n      chain: { id: 1 },\n      checkpoint: \"0\",\n      event: {\n        block: {\n          hash: \"0x1\",\n          timestamp: 1,\n          number: 1n,\n        },\n      },\n    },\n    {\n      chain: { id: 1 },\n      checkpoint: \"0\",\n      event: {\n        block: {\n          hash: \"0x2\",\n          timestamp: 2,\n          number: 2n,\n        },\n      },\n    },\n  ] as unknown as Event[]",
+        "result = splitEvents(events)"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 68,
+          "text": "expect(result).toMatchInlineSnapshot(`\n    [\n      {\n        \"chainId\": 1,\n        \"checkpoint\": \"000000000100000000000000010000000000000001999999999999999999999999999999999\",\n        \"events\": [\n          {\n            \"chain\": {\n              \"id\": 1,\n            },\n            \"checkpoint\": \"0\",\n            \"event\": {\n              \"block\": {\n                \"hash\": \"0x1\",\n                \"number\": 1n,\n                \"timestamp\": 1,\n              },\n            },\n          },\n        ],\n      },\n      {\n        \"chainId\": 1,\n        \"checkpoint\": \"000000000200000000000000010000000000000002999999999999999999999999999999999\",\n        \"events\": [\n          {\n            \"chain\": {\n              \"id\": 1,\n            },\n            \"checkpoint\": \"0\",\n            \"event\": {\n              \"block\": {\n                \"hash\": \"0x2\",\n                \"number\": 2n,\n                \"timestamp\": 2,\n              },\n            },\n          },\n        ],\n      },\n    ]\n  `)"
+        }
+      ],
+      "test_source": "test(\"splitEvents()\", async () => {\n  const events = [\n    {\n      chain: { id: 1 },\n      checkpoint: \"0\",\n      event: {\n        block: {\n          hash: \"0x1\",\n          timestamp: 1,\n          number: 1n,\n        },\n      },\n    },\n    {\n      chain: { id: 1 },\n      checkpoint: \"0\",\n      event: {\n        block: {\n          hash: \"0x2\",\n          timestamp: 2,\n          number: 2n,\n        },\n      },\n    },\n  ] as unknown as Event[];\n\n  const result = splitEvents(events);\n\n  expect(result).toMatchInlineSnapshot(`\n    [\n      {\n        \"chainId\": 1,\n        \"checkpoint\": \"000000000100000000000000010000000000000001999999999999999999999999999999999\",\n        \"events\": [\n          {\n            \"chain\": {\n              \"id\": 1,\n            },\n            \"checkpoint\": \"0\",\n            \"event\": {\n              \"block\": {\n                \"hash\": \"0x1\",\n                \"number\": 1n,\n                \"timestamp\": 1,\n              },\n            },\n          },\n        ],\n      },\n      {\n        \"chainId\": 1,\n        \"checkpoint\": \"000000000200000000000000010000000000000002999999999999999999999999999999999\",\n        \"events\": [\n          {\n            \"chain\": {\n              \"id\": 1,\n            },\n            \"checkpoint\": \"0\",\n            \"event\": {\n              \"block\": {\n                \"hash\": \"0x2\",\n                \"number\": 2n,\n                \"timestamp\": 2,\n              },\n            },\n          },\n        ],\n      },\n    ]\n  `);\n})",
+      "calls": [],
+      "instrumentation_after_each_state": "pass"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+package rpc
+
+import (
+	"fmt"
+	"ponder.local/ponder-go/internal/jsvalue"
+)
+
+// FlattenSourceCallTraces mutates source provider frames in place. The existing
+// native FlattenCallTraces route continues to own its independent cloned frames.
+// Source traversal completes before standardization, preserving mutation order
+// when a later required property fails validation.
+func FlattenSourceCallTraces(input []map[string]any, request ActionRequest) ([]CallTrace, error) {
+	type pendingTrace struct {
+		hash  any
+		frame map[string]any
+	}
+	pending := []pendingTrace{}
+	var walk func([]map[string]any, any, bool, []int) error
+	walk = func(frames []map[string]any, hash any, hasParent bool, parentPath []int) error {
+		for index, frame := range frames {
+			if frame == nil {
+				return fmt.Errorf("invalid source trace frame")
+			}
+			if !jsvalue.IsUndefined(sourceRPCProperty(frame, "error")) {
+				continue
+			}
+			path := []int{}
+			if hasParent {
+				path = append(append([]int{}, parentPath...), index)
+			}
+			frame["traceAddress"] = path
+			pending = append(pending, pendingTrace{hash, frame})
+			calls := sourceRPCProperty(frame, "calls")
+			if calls == nil || jsvalue.IsUndefined(calls) || calls == false {
+				continue
+			}
+			var children []map[string]any
+			switch values := calls.(type) {
+			case []map[string]any:
+				children = values
+			case []any:
+				children = []map[string]any{}
+				for _, value := range values {
+					child, ok := value.(map[string]any)
+					if !ok {
+						return fmt.Errorf("invalid source child trace")
+					}
+					children = append(children, child)
+				}
+			default:
+				return fmt.Errorf("invalid source trace calls")
+			}
+			if err := walk(children, hash, true, path); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	for _, entry := range input {
+		frame, ok := entry["result"].(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("invalid source call tracer result")
+		}
+		if err := walk([]map[string]any{frame}, sourceRPCProperty(entry, "txHash"), false, nil); err != nil {
+			return nil, err
+		}
+	}
+	result := []CallTrace{}
+	for _, entry := range pending {
+		if jsvalue.IsUndefined(entry.hash) {
+			return nil, providerError("Invalid RPC response: 'trace.transactionHash' is a required property", request.Method, request.Params)
+		}
+		hash, ok := entry.hash.(string)
+		if !ok {
+			return nil, fmt.Errorf("source typed trace transaction hash must be string")
+		}
+		for _, key := range []string{"type", "from", "input"} {
+			if jsvalue.IsUndefined(sourceRPCProperty(entry.frame, key)) {
+				return nil, providerError(fmt.Sprintf("Invalid RPC response: 'trace.%s' is a required property", key), request.Method, request.Params)
+			}
+		}
+		for _, key := range []string{"gas", "gasUsed"} {
+			if jsvalue.IsUndefined(sourceRPCProperty(entry.frame, key)) {
+				entry.frame[key] = "0x0"
+			}
+		}
+		result = append(result, CallTrace{TransactionHash: hash, Trace: entry.frame})
+	}
+	return result, nil
+}

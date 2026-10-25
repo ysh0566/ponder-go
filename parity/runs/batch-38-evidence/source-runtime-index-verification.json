@@ -1,0 +1,726 @@
+{
+  "complete": true,
+  "success": true,
+  "scope": "complete_module_source_runtime_index",
+  "run_dir": "parity/runs/indexing-actions-m39/full-verify-02",
+  "environment_adapted": true,
+  "pristine_file": false,
+  "summary": {
+    "source_cases": 15,
+    "source_assertions": 30,
+    "source_error_directives": 6,
+    "runtime_passed_cases": 15,
+    "complete_mapping_candidates": 11,
+    "native_type_pending_cases": 4,
+    "native_type_obligations_verified": 0,
+    "supplementary_source_credit": 0
+  },
+  "full_verification": {
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/result.json",
+    "sha256": "41440774979bab261568fc2e22fb18ca2db314a438b9789b8b39d91db6c6d7ac"
+  },
+  "prepared_native_inputs": {
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/prepared-native-inputs.json",
+    "sha256": "3dacc85e2a7c62680b798d2987a97a4eefdbfaebaa7c666983646566f9ab268a"
+  },
+  "context_archive": {
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/context-archive.json",
+    "sha256": "327cd9184fb0ff951d123feaa0792bfb06cf12b3320555102186d6aa1c4fe156"
+  },
+  "source_types": {
+    "file": "parity/runs/source-runtime-index-types.json",
+    "sha256": "aa4dabdb9adcf649114495455394fcd0b19b7859ec554b0b2a4e534f447ba6b2"
+  },
+  "executions": [
+    {
+      "mode": "normal",
+      "backend": "postgres",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "f2217665390b66eeefdf",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getLocalSyncProgress()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "902707265a2f99df393f",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getLocalSyncProgress()_future_end_block",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "928495e24f9b9eec3013",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getCachedBlock()_no_cached_intervals",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "c429e0be63d1e2a5621c",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getCachedBlock()_with_cache",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "4096c895c425e67b73c8",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getCachedBlock()_with_incomplete_cache",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "0ad0d344d7cb00ef36b7",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getCachedBlock()_with_multiple_filters",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "02613908644ac30deaea",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getCachedBlock()_with_factory",
+          "runtime_passed": true,
+          "native_type_obligations": 2,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "cfc3d65d78ce2707a366",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervals()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "f6920d1d20a903b4f5a4",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervalsWithFilters()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "1469b5672695375f7fe2",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervalsWithFilters()_with_factory",
+          "runtime_passed": true,
+          "native_type_obligations": 1,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "34b296bcde7be28a3324",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervalsWithFilters()_with_factory_and_missing_parent",
+          "runtime_passed": true,
+          "native_type_obligations": 1,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "82f711b0ecef2ba1a7c9",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervals()_with_factory",
+          "runtime_passed": true,
+          "native_type_obligations": 2,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "489c3d1a0dd13ea3e901",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/mergeAsyncGeneratorsWithEventOrder()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "d083d94dc3d8e4ae3d9e",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/historical_events_match_realtime_events",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "c4cb917df935980a68d3",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getChildAddresses()_returns_empty_for_cacheRpcRequests:_false",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        }
+      ],
+      "native_calls": 28,
+      "log": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-test.jsonl",
+        "sha256": "6f2c1021c0cf73abad1cd392a3260dff9350ecc00fd95d8313784ee98c413422"
+      },
+      "native": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-test.jsonl",
+        "sha256": "6f2c1021c0cf73abad1cd392a3260dff9350ecc00fd95d8313784ee98c413422"
+      },
+      "native_test_prefix": "TestSourceRuntimeIndexFullFile/postgres",
+      "capture": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-postgres/calls.json",
+        "sha256": "d1c8978ad43aba3f5f0c10cd8254467b8a92074fba0b2f15b4a8dbab83d08e37"
+      },
+      "original": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-postgres/original.json",
+        "sha256": "77897f17bb826c217d86dbefb38dea9587aef5863a8b063a133c2911c3203e60"
+      },
+      "result": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-postgres/result.json",
+        "sha256": "d1e9ef8866c0e747e9cf0fccc405d1965380a1eff7c598835d7864480b44f939"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-runtime-index-original.mjs",
+          "sha256": "4ff1d5860882bf81976e63b094643ca03948dae93e1d30e783b3bde7da786ebc"
+        },
+        {
+          "file": "tools/source-runtime-index-live.setup.ts",
+          "sha256": "3f92691e9004aacaed189ca294d92e9a6bbf0da04988db17f59b5258285ba0b4"
+        },
+        {
+          "file": "tools/source-runtime-index-live.config.mjs",
+          "sha256": "15cc2affcaa2402aa99c469dcb0984a62b99adb86eb62955b95a717471abf879"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-postgres/context-archive.json",
+        "sha256": "e555a150155846c9bd43872eebd49f11c22a2a7c452a7323cad828a13af16b2d"
+      }
+    },
+    {
+      "mode": "normal",
+      "backend": "pglite",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "f2217665390b66eeefdf",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getLocalSyncProgress()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "902707265a2f99df393f",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getLocalSyncProgress()_future_end_block",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "928495e24f9b9eec3013",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getCachedBlock()_no_cached_intervals",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "c429e0be63d1e2a5621c",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getCachedBlock()_with_cache",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "4096c895c425e67b73c8",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getCachedBlock()_with_incomplete_cache",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "0ad0d344d7cb00ef36b7",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getCachedBlock()_with_multiple_filters",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "02613908644ac30deaea",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getCachedBlock()_with_factory",
+          "runtime_passed": true,
+          "native_type_obligations": 2,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "cfc3d65d78ce2707a366",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervals()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "f6920d1d20a903b4f5a4",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervalsWithFilters()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "1469b5672695375f7fe2",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervalsWithFilters()_with_factory",
+          "runtime_passed": true,
+          "native_type_obligations": 1,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "34b296bcde7be28a3324",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervalsWithFilters()_with_factory_and_missing_parent",
+          "runtime_passed": true,
+          "native_type_obligations": 1,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "82f711b0ecef2ba1a7c9",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervals()_with_factory",
+          "runtime_passed": true,
+          "native_type_obligations": 2,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "489c3d1a0dd13ea3e901",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/mergeAsyncGeneratorsWithEventOrder()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "d083d94dc3d8e4ae3d9e",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/historical_events_match_realtime_events",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "c4cb917df935980a68d3",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getChildAddresses()_returns_empty_for_cacheRpcRequests:_false",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        }
+      ],
+      "native_calls": 28,
+      "log": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-test.jsonl",
+        "sha256": "6f2c1021c0cf73abad1cd392a3260dff9350ecc00fd95d8313784ee98c413422"
+      },
+      "native": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-test.jsonl",
+        "sha256": "6f2c1021c0cf73abad1cd392a3260dff9350ecc00fd95d8313784ee98c413422"
+      },
+      "native_test_prefix": "TestSourceRuntimeIndexFullFile/pglite",
+      "capture": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-pglite/calls.json",
+        "sha256": "f87abbc06ffb503a07fa45c2d16193211dd74de1a38f5320f9cbe592641a35b2"
+      },
+      "original": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-pglite/original.json",
+        "sha256": "9a357b7eadffbb1bb5f8afa953b5266d1fa65026cf595270cc904758df06d9cb"
+      },
+      "result": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-pglite/result.json",
+        "sha256": "514566b1105c3ebe352b92577801983fbe68ed002594c6049f59f149e88911a1"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-runtime-index-original.mjs",
+          "sha256": "4ff1d5860882bf81976e63b094643ca03948dae93e1d30e783b3bde7da786ebc"
+        },
+        {
+          "file": "tools/source-runtime-index-live.setup.ts",
+          "sha256": "3f92691e9004aacaed189ca294d92e9a6bbf0da04988db17f59b5258285ba0b4"
+        },
+        {
+          "file": "tools/source-runtime-index-live.config.mjs",
+          "sha256": "15cc2affcaa2402aa99c469dcb0984a62b99adb86eb62955b95a717471abf879"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-pglite/context-archive.json",
+        "sha256": "e1ad304a3da49a1328ca5661ad24d410cb2e97e3a5a925607707b8d536c87ca8"
+      }
+    },
+    {
+      "mode": "race",
+      "backend": "postgres",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "f2217665390b66eeefdf",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getLocalSyncProgress()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "902707265a2f99df393f",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getLocalSyncProgress()_future_end_block",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "928495e24f9b9eec3013",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getCachedBlock()_no_cached_intervals",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "c429e0be63d1e2a5621c",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getCachedBlock()_with_cache",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "4096c895c425e67b73c8",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getCachedBlock()_with_incomplete_cache",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "0ad0d344d7cb00ef36b7",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getCachedBlock()_with_multiple_filters",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "02613908644ac30deaea",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getCachedBlock()_with_factory",
+          "runtime_passed": true,
+          "native_type_obligations": 2,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "cfc3d65d78ce2707a366",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervals()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "f6920d1d20a903b4f5a4",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervalsWithFilters()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "1469b5672695375f7fe2",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervalsWithFilters()_with_factory",
+          "runtime_passed": true,
+          "native_type_obligations": 1,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "34b296bcde7be28a3324",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervalsWithFilters()_with_factory_and_missing_parent",
+          "runtime_passed": true,
+          "native_type_obligations": 1,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "82f711b0ecef2ba1a7c9",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervals()_with_factory",
+          "runtime_passed": true,
+          "native_type_obligations": 2,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "489c3d1a0dd13ea3e901",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/mergeAsyncGeneratorsWithEventOrder()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "d083d94dc3d8e4ae3d9e",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/historical_events_match_realtime_events",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "c4cb917df935980a68d3",
+          "go_test": "TestSourceRuntimeIndexFullFile/postgres/getChildAddresses()_returns_empty_for_cacheRpcRequests:_false",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        }
+      ],
+      "native_calls": 28,
+      "log": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-race.jsonl",
+        "sha256": "397bc6225c183120da98275b1a411e183e8b090b041ae2b85a14d886af486d57"
+      },
+      "native": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-race.jsonl",
+        "sha256": "397bc6225c183120da98275b1a411e183e8b090b041ae2b85a14d886af486d57"
+      },
+      "native_test_prefix": "TestSourceRuntimeIndexFullFile/postgres",
+      "capture": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-postgres/calls.json",
+        "sha256": "d1c8978ad43aba3f5f0c10cd8254467b8a92074fba0b2f15b4a8dbab83d08e37"
+      },
+      "original": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-postgres/original.json",
+        "sha256": "77897f17bb826c217d86dbefb38dea9587aef5863a8b063a133c2911c3203e60"
+      },
+      "result": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-postgres/result.json",
+        "sha256": "d1e9ef8866c0e747e9cf0fccc405d1965380a1eff7c598835d7864480b44f939"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-runtime-index-original.mjs",
+          "sha256": "4ff1d5860882bf81976e63b094643ca03948dae93e1d30e783b3bde7da786ebc"
+        },
+        {
+          "file": "tools/source-runtime-index-live.setup.ts",
+          "sha256": "3f92691e9004aacaed189ca294d92e9a6bbf0da04988db17f59b5258285ba0b4"
+        },
+        {
+          "file": "tools/source-runtime-index-live.config.mjs",
+          "sha256": "15cc2affcaa2402aa99c469dcb0984a62b99adb86eb62955b95a717471abf879"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-postgres/context-archive.json",
+        "sha256": "e555a150155846c9bd43872eebd49f11c22a2a7c452a7323cad828a13af16b2d"
+      }
+    },
+    {
+      "mode": "race",
+      "backend": "pglite",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "f2217665390b66eeefdf",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getLocalSyncProgress()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "902707265a2f99df393f",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getLocalSyncProgress()_future_end_block",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "928495e24f9b9eec3013",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getCachedBlock()_no_cached_intervals",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "c429e0be63d1e2a5621c",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getCachedBlock()_with_cache",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "4096c895c425e67b73c8",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getCachedBlock()_with_incomplete_cache",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "0ad0d344d7cb00ef36b7",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getCachedBlock()_with_multiple_filters",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "02613908644ac30deaea",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getCachedBlock()_with_factory",
+          "runtime_passed": true,
+          "native_type_obligations": 2,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "cfc3d65d78ce2707a366",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervals()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "f6920d1d20a903b4f5a4",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervalsWithFilters()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "1469b5672695375f7fe2",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervalsWithFilters()_with_factory",
+          "runtime_passed": true,
+          "native_type_obligations": 1,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "34b296bcde7be28a3324",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervalsWithFilters()_with_factory_and_missing_parent",
+          "runtime_passed": true,
+          "native_type_obligations": 1,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "82f711b0ecef2ba1a7c9",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervals()_with_factory",
+          "runtime_passed": true,
+          "native_type_obligations": 2,
+          "native_type_status": "pending"
+        },
+        {
+          "source_id": "489c3d1a0dd13ea3e901",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/mergeAsyncGeneratorsWithEventOrder()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "d083d94dc3d8e4ae3d9e",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/historical_events_match_realtime_events",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "c4cb917df935980a68d3",
+          "go_test": "TestSourceRuntimeIndexFullFile/pglite/getChildAddresses()_returns_empty_for_cacheRpcRequests:_false",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        }
+      ],
+      "native_calls": 28,
+      "log": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-race.jsonl",
+        "sha256": "397bc6225c183120da98275b1a411e183e8b090b041ae2b85a14d886af486d57"
+      },
+      "native": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-race.jsonl",
+        "sha256": "397bc6225c183120da98275b1a411e183e8b090b041ae2b85a14d886af486d57"
+      },
+      "native_test_prefix": "TestSourceRuntimeIndexFullFile/pglite",
+      "capture": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-pglite/calls.json",
+        "sha256": "f87abbc06ffb503a07fa45c2d16193211dd74de1a38f5320f9cbe592641a35b2"
+      },
+      "original": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-pglite/original.json",
+        "sha256": "9a357b7eadffbb1bb5f8afa953b5266d1fa65026cf595270cc904758df06d9cb"
+      },
+      "result": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-pglite/result.json",
+        "sha256": "514566b1105c3ebe352b92577801983fbe68ed002594c6049f59f149e88911a1"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-runtime-index-original.mjs",
+          "sha256": "4ff1d5860882bf81976e63b094643ca03948dae93e1d30e783b3bde7da786ebc"
+        },
+        {
+          "file": "tools/source-runtime-index-live.setup.ts",
+          "sha256": "3f92691e9004aacaed189ca294d92e9a6bbf0da04988db17f59b5258285ba0b4"
+        },
+        {
+          "file": "tools/source-runtime-index-live.config.mjs",
+          "sha256": "15cc2affcaa2402aa99c469dcb0984a62b99adb86eb62955b95a717471abf879"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/source-pglite/context-archive.json",
+        "sha256": "e1ad304a3da49a1328ca5661ad24d410cb2e97e3a5a925607707b8d536c87ca8"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "tools/source-runtime-index-results.mjs",
+      "sha256": "2bb5baae0a371ff93d7c9ef8167609bc4872e63c065aecb4c2b66ee71db9ea11"
+    },
+    {
+      "file": "runtime/source_index_live_test.go",
+      "sha256": "ac5b34a7cb3fa74a0095cf406927fc7f0bfc06c07bf5f1eeaa75e448a1c268cf"
+    },
+    {
+      "file": "runtime/source_sync_progress.go",
+      "sha256": "f7353de7cfab6ea27b19e99be08baeb0b375df4bbb5855f6248bf24f7b962f19"
+    },
+    {
+      "file": "runtime/source_event_merge.go",
+      "sha256": "1f009eaad832468a4d430d05613f7893d542a0df185074520b6c3d27d4766654"
+    },
+    {
+      "file": "runtime/source_sync_cache.go",
+      "sha256": "548461773bd8a85c1bc5d4cc899b45d29917cf1afc548ef6c4442d0d52547b16"
+    },
+    {
+      "file": "rpc/async.go",
+      "sha256": "2a034343680aa674381c0432e97d4288226ad1b212630c20f54e83998ee04db3"
+    },
+    {
+      "file": "testdata/runtime/source-runtime-index-live.json",
+      "sha256": "0a7da50f3d74d8d854553c6e266ae6240effb04afb980fd8779c25a34c83be46"
+    },
+    {
+      "file": "parity/runs/runtime-index-progress-order-source/probe.json",
+      "sha256": "892113647b9e42670168f232785ae9e200946a018c3fa31889c999011d55d078"
+    }
+  ]
+}

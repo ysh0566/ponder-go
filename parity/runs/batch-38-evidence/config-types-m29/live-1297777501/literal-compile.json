@@ -1,0 +1,229 @@
+{
+  "state": "Compile-only controls; actual original live native positive execution required before source credit",
+  "definition": {
+    "Package": "sourcebindings",
+    "Chains": [
+      "mainnet"
+    ],
+    "ABI": [
+      {
+        "name": "Event0",
+        "type": "event",
+        "inputs": [
+          {
+            "type": "bytes32",
+            "name": "arg",
+            "indexed": true
+          }
+        ]
+      }
+    ]
+  },
+  "generated": {
+    "file": "config/testdata/sourcebindings/bindings.go",
+    "sha256": "ac78b14ed8d131747bb0293dfcdc9fd0817c7b5b60f14bb58c97a13176c5c2ef"
+  },
+  "generator": {
+    "build": {
+      "command": [
+        "go",
+        "build",
+        "-o",
+        "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/config-types/literals/source-codegen",
+        "./cmd/source-codegen"
+      ],
+      "exit_code": 0,
+      "error": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    "execute": {
+      "command": [
+        "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/config-types/literals/source-codegen",
+        "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/config-types/literals/bindings.json",
+        "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/config-types/literals/bindings.go"
+      ],
+      "exit_code": 0,
+      "error": null,
+      "stdout": "",
+      "stderr": ""
+    }
+  },
+  "directives": [
+    {
+      "source_id": "af7907267becd4bf907c",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "source_error_directive": "// @ts-expect-error",
+      "source_directive_index": 0,
+      "mode": "literal-chain",
+      "status": "compiled_runtime_pending",
+      "positive": {
+        "file": "config/testdata/compile/literals/chain-positive.go",
+        "sha256": "cffe62b2064eea32ea5cd491919c8ccec682a4909f767de5f6eaab4c16cabae3"
+      },
+      "negative": {
+        "file": "config/testdata/compile/literals/chain-negative.go.txt",
+        "sha256": "d044d0de28aa0a31b51d655ec18509f891dff549d8e393b6e29692d55116bf43"
+      },
+      "positive_binary": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/config-types/literals/chain-positive",
+      "original_input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "chain": "mainnetz",
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              }
+            ],
+            "address": "0x0000000000000000000000000000000000000001"
+          }
+        }
+      },
+      "positive_control": "Only unknown generated Mainnetz reference becomes actual Mainnet derived from original chain definitions",
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/config-types/literals/chain-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/config/testdata/compile/literals/chain-positive.go"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/config-types/literals/chain-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/config-types/literals/chain-negative.go"
+        ],
+        "exit_code": 1,
+        "error": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/config-types/literals/chain-negative.go:4:134: bindings.Chains.Mainnetz undefined (type struct{Mainnet sourcebindings.Chain} has no field or method Mainnetz)\n"
+      }
+    },
+    {
+      "source_id": "b40ef8e8610beacf808b",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "source_error_directive": "// @ts-expect-error",
+      "source_directive_index": 0,
+      "mode": "literal-event",
+      "status": "compiled_runtime_pending",
+      "positive": {
+        "file": "config/testdata/compile/literals/event-positive.go",
+        "sha256": "c0397bacae705e714303fc9b027d9218ee428d60c1df7dabc70b2e621c78d0e7"
+      },
+      "negative": {
+        "file": "config/testdata/compile/literals/event-negative.go.txt",
+        "sha256": "38a6b894b593f398410ee2af7ade064d1032d976c271cb9cec39c7b4bd26b377"
+      },
+      "positive_binary": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/config-types/literals/event-positive",
+      "original_input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "chain": "mainnet",
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              }
+            ],
+            "filter": {
+              "event": "Event2",
+              "args": {
+                "arg": "0x"
+              }
+            }
+          }
+        }
+      },
+      "positive_control": "Only Event2 becomes actual Event0 from original ABI; original args.arg=0x is preserved and must still produce runtime byte-size validation",
+      "build_positive": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/config-types/literals/event-positive",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/config/testdata/compile/literals/event-positive.go"
+        ],
+        "exit_code": 0,
+        "error": null,
+        "stdout": "",
+        "stderr": ""
+      },
+      "build_negative": {
+        "command": [
+          "go",
+          "build",
+          "-o",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/config-types/literals/event-negative",
+          "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/.parity-build/config-types/literals/event-negative.go"
+        ],
+        "exit_code": 1,
+        "error": null,
+        "stdout": "",
+        "stderr": "# command-line-arguments\n.parity-build/config-types/literals/event-negative.go:4:188: bindings.Events.Event2 undefined (type struct{Event0 sourcebindings.Event} has no field or method Event2)\n"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "config/source_bindings.go",
+      "sha256": "00de63d9448005c8aff014c781cf34418781ef13200ca7bf7b7cde44589ff439"
+    },
+    {
+      "file": "config/typed_source.go",
+      "sha256": "79dc679b924567f4b08e61c33db68dde82cd367391b84476804053aba5ad5ebf"
+    },
+    {
+      "file": "cmd/source-codegen/main.go",
+      "sha256": "00a8ab6acd1e429fd5b20f3146cc915fddadf303ca9c153b9aa00dbdd300edd5"
+    },
+    {
+      "file": "tools/config-literal-compile-fixtures.mjs",
+      "sha256": "2e290b5d8286de24b5e861929231470d76d133470b91895a9f3a97edbbb85b05"
+    }
+  ],
+  "corrected_event_source_error": {
+    "name": "AbiEncodingBytesSizeMismatchError",
+    "message": "Size of bytes \"0x\" (bytes0) does not match expected size (bytes32).\n\nVersion: viem@2.35.0"
+  },
+  "summary": {
+    "source_error_directives": 2,
+    "compiled": 2,
+    "failed": 0,
+    "positive_runtime_verified": 0
+  }
+}

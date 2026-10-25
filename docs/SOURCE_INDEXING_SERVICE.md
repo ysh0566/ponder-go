@@ -145,3 +145,16 @@ current proof. Only twelve complete original cases were mapped: formal coverage
 is 523/905, not full parity. The three service static gaps and four earlier
 runtime-index static gaps remain unmapped. See batch-37 and summary for frozen
 hashes; this local accepted candidate still requires parent publication review.
+
+
+## M39 update to the historical M38 limits
+
+M38's accepted execution and original mapping boundaries above remain historical.
+Current M39 replays all 23 reflection steps using actual separate-target descriptor
+queries and enumerable filtering. Strict standalone AsyncCache prepared admission
+is implemented; generic synchronous CachePut fallback remains weaker. This does
+not establish source/native concurrent cache-read visibility, commit-order or
+batch-insert grouping equivalence. The last eight original action cases have a
+separate bounded proof, not full cachedViemClient profiling/prefetch/LRU or the
+entire client.test.ts suite. Three exact M38 static gaps remain unmapped. See
+SOURCE_INDEXING_ACTIONS.md and the current canonical proofs for scope and results.

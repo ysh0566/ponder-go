@@ -90,6 +90,17 @@ var accessRequiredColumns = map[string][]string{
 	"log":                strings.Fields("address data logIndex removed topics"),
 }
 
+// PropertyDescriptor describes a string-keyed own data property of the proxy
+// target, not of its currently bound event object. Descriptor queries are a
+// read-only reflection surface; defining descriptors and symbol reflection are
+// not exposed by PropertyView.
+type PropertyDescriptor struct {
+	Value        any
+	Writable     bool
+	Enumerable   bool
+	Configurable bool
+}
+
 // PropertyView is a stable proxy identity whose binding changes between
 // historical callbacks. Like the source proxy, retaining it retains the view,
 // not a snapshot of its current underlying event. It is not safe for concurrent
@@ -102,6 +113,10 @@ type PropertyView struct {
 	eventName  string
 	underlying Object
 	disabled   bool
+	// The source target initially contains only the Node inspect symbol. Its
+	// string descriptor table is separate from underlying and remains empty
+	// under the supported Get/Set/Delete/Bind operations.
+	targetDescriptors map[string]PropertyDescriptor
 	// onAccess is an optional package diagnostic observer at the actual tracking
 	// point, before presence validation; repeated accesses remain observable.
 	onAccess func(eventName, component, key string)
@@ -114,7 +129,7 @@ func NewPropertyView(component string, pattern ColumnAccessPattern, handler Retr
 	if pattern == nil || reset == nil || isNilAccessHandler(handler) {
 		return nil, fmt.Errorf("event proxy requires a column pattern, retryable error handler, and reset callback")
 	}
-	return &PropertyView{component: component, pattern: pattern, handler: handler, reset: reset}, nil
+	return &PropertyView{component: component, pattern: pattern, handler: handler, reset: reset, targetDescriptors: map[string]PropertyDescriptor{}}, nil
 }
 
 func isNilAccessHandler(handler RetryableErrorHandler) bool {
@@ -205,6 +220,28 @@ func (v *PropertyView) Has(key string) bool {
 // view's default set.
 func (v *PropertyView) Keys() []string {
 	return append([]string{}, accessDefaultColumns[v.component]...)
+}
+
+// GetOwnPropertyDescriptor mirrors the source proxy's untrapped string-keyed
+// descriptor query. In particular, an underlying event property does not create
+// a target descriptor. The returned descriptor is a value copy (its Value, like
+// a JavaScript descriptor value, may itself reference an object).
+func (v *PropertyView) GetOwnPropertyDescriptor(key string) (PropertyDescriptor, bool) {
+	descriptor, present := v.targetDescriptors[key]
+	return descriptor, present
+}
+
+// ObjectKeys mirrors Object.keys: enumerate virtual own keys, then retain only
+// keys with enumerable own target descriptors. Neither enumeration nor querying
+// descriptors performs Get, records column access, or invalidates the profile.
+func (v *PropertyView) ObjectKeys() []string {
+	keys := []string{}
+	for _, key := range v.Keys() {
+		if descriptor, present := v.GetOwnPropertyDescriptor(key); present && descriptor.Enumerable {
+			keys = append(keys, key)
+		}
+	}
+	return keys
 }
 
 // Inspect performs the same all-column reads as the source custom inspection

@@ -4,6 +4,20 @@
 
 
 
+## 当前执行入口：M39 客户端子集完整验收通过，待父级发布复核
+
+已发布基线为 M38 `3809b5a510a3d01a82119f06b6fe6435ab545a9d`。M39 full-verify-02 于 2026-10-25 13:39:39 UTC 完整退出 0，54 阶段全绿；10 个规范 collector 均显式输出并接受当前证明。正式覆盖 531/905 = 527 Go + 4 SDK，374 未实现；原 523 条映射逐字不变，恰好新增最后 8 个 indexing/index.test.ts 客户端原例、9 断言、0 TS 指令。三项 M38 TS-only mock-property/delete 与四项 M35 runtime 类型缺口仍 unmapped。
+
+原文件完整 23 例在 PG/PGlite 通过；原 ABI/options/event 和真实 RPC tape 驱动 native 两后端重放，返回/参数/缓存行实际比较，不用预期结果播种数据库。真实 11 步 supplemental/10 RPC 覆盖部分缓存、duplicates/order、allowFailure、分块首错后仍执行后块、encoding-zero-data 与 immutable/empty exclusion；零新增 credit。normal/race 各 3146 节点/2870 叶例，0 fail/skip，PG450/PGlite446；23 包、245 顶层函数、每模式76串行批次，原 timeout 保留。1126 输入指纹 `c7072ab0bc5c10e615442065f6ec8ae1a2da8263d3a18a39b91727f71c878fb0` 与77工具hash全程一致。
+
+PropertyView 的独立 target descriptor/enumerable 过滤现在重放源23步；没有硬编码空Object.keys，也不提供任意 DefineOwnProperty/symbol descriptor。缓存仅闭合 `NewStrictClientSet` 要求 rpc.AsyncCache capability 时的真实 standalone prepared-row queue admission；不是 concrete-type 检查。绑定 Writer/SourceSyncStore 不暴露 async；同步 custom fallback 时序更弱。并发 cache-read visibility、commit-order、source批量insert与native逐child调用grouping不声称等价；native Store mutex 串行化read/write，PGlite共享backend mutex的Begin等待不支持context中断。M38 held-completion探针不是实际源DB延迟insert/concurrent-get证明。typed revert/zero-data含义不等于完整Viem wrapper/custom-error解码/消息；ABI.Parse匿名tuple编码仍有限。完整profile/prefetch/LRU、indexing/client.test.ts、outer runner/readiness/cutover仍未完成。
+
+full01 已完整保留为失败诊断：normal/race 仅旧M38预期cache-envelope未lowercase两叶失败，其余52阶段通过。源fixture与raw RPC比较不改，只独立修正该预期边界并增加mixed-case literal控制，经独立复核和focused双模式双后端后重新full02。修改前已归档1126native输入+77工具等共1215文件/62MB到full01/failure-inputs，原失败报告不覆盖。新冻结batch38，旧batch37不变；当前未提交/推送，父级复核后才允许普通后继发布。
+
+沿用 env.sh、pinned .bin/tsc5.4.5、同exec PG55432和5GiB硬停；10个canonical collectors必须显式 --output。当前只读PG盘点见 scratch `m39-postfull01-pg-inventory.json`：测试库约3.34GB、13029个非系统schema，未删除或压缩；这是测试残留诊断，不授权批量清库。详见 `SOURCE_INDEXING_ACTIONS.md`。
+
+以下 M38 待发布文字保留为历史记录，不代表当前发布状态或当前新增能力。
+
 ## 当前执行入口：M38 索引 handler 服务完整验收通过，待父级发布复核
 
 已发布基线 M37 为 `869b3d0742a4303a67cccba99e980d50599684bb`，原 M37 待发布段落保留为历史记录。当前正式覆盖为 523/905（519 Go + 4 SDK），382 未实现；七例 runtime 通过但类型义务未闭合仍 unmapped。新 `indexing` 包独立于 legacy 单链 Engine；只实现 setup/historical/realtime handler 边界，不包含外层 run*、自动多链事务、ready、realtime cutover 或 triggers。

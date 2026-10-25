@@ -2,18 +2,18 @@
 
 固定 `ponder-sh/ponder@17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`（核心 `0.18.2`）的本地 Go 复刻，**仍在实现，不是全功能完成版**。
 
-完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。既定私有仓库为 [ysh0566/ponder-go](https://github.com/ysh0566/ponder-go)。云端 M23–M33 已保留原 SHA 依次普通快进发布，上一已核验发布基线为 M37 `869b3d0742a4303a67cccba99e980d50599684bb`，后续发布以 Git 远端和验收回执为准；[M23–M25证明](parity/runs/account-factory-m26/publication-results.json) 、[M26证明](parity/runs/bloom-m27/m26-publication.json) 和 [M28证明](parity/runs/config-types-m29/m28-publication.json) 及 [M29证明](parity/runs/sql-m30/m29-publication.json) 及 [M30证明](parity/runs/topics-m31/m30-publication.json) 及 [M31证明](parity/runs/sync-store-m32/m31-publication.json) 及 [M32证明](parity/runs/history-m33/m32-publication.json) 及 [M33证明](parity/runs/realtime-m34/m33-publication.json) 保存 SHA/tree/身份。没有部署或 PR。
+完整 Git 基线保留于相邻的 `../ponder-upstream`，处于固定提交的 detached HEAD。既定私有仓库为 [ysh0566/ponder-go](https://github.com/ysh0566/ponder-go)。云端 M23–M33 已保留原 SHA 依次普通快进发布，上一已核验发布基线为 M38 `3809b5a510a3d01a82119f06b6fe6435ab545a9d`，后续发布以 Git 远端和验收回执为准；[M23–M25证明](parity/runs/account-factory-m26/publication-results.json) 、[M26证明](parity/runs/bloom-m27/m26-publication.json) 和 [M28证明](parity/runs/config-types-m29/m28-publication.json) 及 [M29证明](parity/runs/sql-m30/m29-publication.json) 及 [M30证明](parity/runs/topics-m31/m30-publication.json) 及 [M31证明](parity/runs/sync-store-m32/m31-publication.json) 及 [M32证明](parity/runs/history-m33/m32-publication.json) 及 [M33证明](parity/runs/realtime-m34/m33-publication.json) 保存 SHA/tree/身份。没有部署或 PR。
 
 目前已有可运行的单链路径：本地 Ethereum RPC → 静态或 factory 动态合约日志/receipt → Go handler → PostgreSQL 事务写入、journal、checkpoint → SQL HTTP/SSE。Anvil 重组后可以撤销并重新索引。默认单链 runtime 已写入版本化规范化缓存的 block/transaction/log/receipt；冷重开禁用缓存的重组也清理已归属缓存。PostgreSQL 与真实 PGlite 分别验证；没有 SQLite 替代实现。
 
 ## 当前验证与计数
 
-最新本地已验证基线为 M38（待发布复核）：[验收记录](parity/runs/batch-37.json)、[冻结证据](parity/runs/batch-37-evidence/) 和 [summary.json](parity/runs/summary.json)。配置全部39个活动原例/92断言及全部10项原生类型错误义务通过，原始skip保留未映射。发现、移植、执行、通过分别登记；补充验证不加source credit。
+最新本地已验证基线为 M39（待发布复核）：[验收记录](parity/runs/batch-38.json)、[冻结证据](parity/runs/batch-38-evidence/) 和 [summary.json](parity/runs/summary.json)。配置全部39个活动原例/92断言及全部10项原生类型错误义务通过，原始skip保留未映射。发现、移植、执行、通过分别登记；补充验证不加source credit。
 
 - 104 个原测试文件、897 个声明、905 条静态展开记录；包含73条专门类型测试、63个内联类型断言和84条类型错误指令。
-- 已精确映射并通过523条：519条Go与4条保留SDK，当前原版oracle均通过；382条静态记录未实现。另有7条runtime已通过但原生类型义务未闭合，仍不计正式映射。
-- M38 Go/race各2807叶用例（3070节点）通过、0测试失败/skip；PG430/PGlite426分别通过。23包、226顶层函数、每模式71个不重复串行批次，Go默认timeout保留。完整46阶段使用明确启动适配，不是pristine；独立handler服务新增12原例，外层完整多链运行仍未完成。
-- [索引服务边界](docs/SOURCE_INDEXING_SERVICE.md)：前15原例/33断言runtime全部通过，3项TS义务仍未映射；显式PropertyView不是透明JS Proxy。Object.keys descriptor与异步cache插入调用前缀仍有公开缺口，源sync表快照仅归档；不声称完整client facade或外层runner已完成。
+- 已精确映射并通过531条：527条Go与4条保留SDK，当前原版oracle均通过；374条静态记录未实现。另有7条runtime已通过但原生类型义务未闭合，仍不计正式映射。
+- M39 Go/race各2870叶用例（3146节点）通过、0测试失败/skip；PG450/PGlite446分别通过。23包、245顶层函数、每模式76个不重复串行批次，Go默认timeout保留。完整54阶段和10个canonical collectors通过；明确启动适配，不是pristine。新增8个客户端原例/9断言，外层完整多链运行仍未完成。
+- [索引服务边界](docs/SOURCE_INDEXING_SERVICE.md)：前15原例/33断言runtime全部通过，3项TS义务仍未映射；显式PropertyView不是透明JS Proxy。[M39客户端边界](docs/SOURCE_INDEXING_ACTIONS.md)补齐最后8原例并重放23步descriptor反射。只闭合strict standalone AsyncCache的prepared-admission前缀；同步fallback、并发缓存read visibility、commit order仍不等价，源sync表快照仅归档。不声称profile/prefetch/LRU、全client.test.ts或外层runner完成。
 - ABI53条内联类型义务及53个额外负控制、ORM6条原错误义务及6个额外负控制、callback union1条及bloom2条原错误义务分别通过真实编译检查。更广的源码类型兼容仍在范围内。
 - events11/11与filter23/23已映射。完整原文件保留真实生成ABI/helper和未改断言，通过call-through采集后由Go重放；采集与pristine原版验收分开标注。此前八文件PG/PGlite原版验收各129通过、3个原skip，未冒称全部上游验收。
 - 补充差分2466基础/factory、867filter/fragments、135events、20协议编码、62RPC、497bloom分别计数。额外Go集成/故障/进程测试不加原例credit。
@@ -23,15 +23,15 @@
 
 ## 验证
 
-当前云端工具为Go1.25.0、Node24.22.1、pnpm12.10.1、Vitest5.0.2、Foundry/Anvil1.8.5、PG14.24和真实PGlite0.2.13，M38 实际版本记录在 `parity/runs/indexing-service-m38/tool-versions.txt`（旧 `parity/runs/tool-versions.txt` 为历史快照）。当前专用PG仅监听127.0.0.1:55432，数据在任务云目录；此前Mac Docker/Anvil0.2环境为冻结历史。只复用任务数据库，不能连接业务库。
+当前云端工具为Go1.25.0、Node24.22.1、pnpm12.10.1、Vitest5.0.2、Foundry/Anvil1.8.5、PG14.24和真实PGlite0.2.13，M39 实际版本记录在 `parity/runs/indexing-actions-m39/tool-versions.txt`（旧 `parity/runs/tool-versions.txt` 为历史快照）。当前专用PG仅监听127.0.0.1:55432，数据在任务云目录；此前Mac Docker/Anvil0.2环境为冻结历史。只复用任务数据库，不能连接业务库。
 
 ```sh
 source /workspace/scratch/fac5abfa4c9e/ponder-cloud/env.sh
 export PATH="$(realpath ../ponder-upstream)/node_modules/.bin:$PATH"
 # 新目录名必需；服务与客户端在同一 exec，tsc 固定为 5.4.5。
 bash /workspace/scratch/fac5abfa4c9e/ponder-cloud/with-postgres.sh \
-  node tools/runtime-historical-full-verify.mjs \
-  --output=parity/runs/runtime-historical-m36/full-verify-NEW
+  node tools/indexing-actions-full-verify.mjs \
+  --output=parity/runs/indexing-actions-m39/full-verify-NEW
 ```
 
 脚本先生成原例/差分fixture和ABI/ORM/callback编译证明，再列出全部Go包及顶层测试，按每组4函数串行执行normal/race，保存完整执行计划和前后源码指纹。此分组适应云端内存，原测试体及Go默认timeout不改。随后执行vet、CLI/示例构建、原版core201活动用例/2原skip、选择性4+15声明、完整events/filter采集、参数类型、SDK及差分。云端并行工作须用任务 `flock` 串行化重测试。缺PG变量时单独Go测试会标记相关集成未运行；完整脚本直接拒绝缺失变量。

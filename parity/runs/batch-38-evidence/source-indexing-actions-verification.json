@@ -1,0 +1,869 @@
+{
+  "complete": true,
+  "success": true,
+  "scope": "complete_module_source_indexing_actions",
+  "run_dir": "parity/runs/indexing-actions-m39/full-verify-02",
+  "environment_adapted": true,
+  "pristine_file": false,
+  "summary": {
+    "source_cases": 23,
+    "source_assertions": 42,
+    "targeted_cases": 8,
+    "targeted_assertions": 9,
+    "source_error_directives": 0,
+    "complete_mapping_candidates": 8,
+    "supplementary_source_credit": 0,
+    "proxy_source_operations": 23,
+    "proxy_native_operations": 23,
+    "cache_admission_capability": "standalone_async_source_rpc_cache",
+    "legacy_sync_cache_prefix_gap": true,
+    "cache_read_visibility_equivalence": false
+  },
+  "supplemental_tests": [
+    "TestSourceIndexingCacheKeyBoundary",
+    "TestClientRealCacheAdmissionLifecycle",
+    "TestStrictClientRejectsSynchronousOnlyCache",
+    "TestActionEmptyRetryPolicy",
+    "TestActionCacheCanonicalizationAndEmptyExclusion",
+    "TestContractABIEncodingAndSelection",
+    "TestContractABIAmbiguousOverloads",
+    "TestContractABITupleArraysAndSignedBounds",
+    "TestContractABIResultShapesAndZeroData",
+    "TestContractABIUnnamedTupleResult",
+    "TestContractABINumericWidthsAndInputSnapshot",
+    "TestSourceIndexingActionsProbes",
+    "TestSourceIndexingServiceProxy"
+  ],
+  "admission_scenarios": [
+    "success",
+    "late-error",
+    "caller-cancel",
+    "client-close",
+    "adapter-close",
+    "business-rollback"
+  ],
+  "store_tests": [
+    "TestSourceRPCAsyncAdmission",
+    "TestSourceRPCAsyncValidation",
+    "TestSourceRPCAsyncCallerCancellation",
+    "TestSourceRPCAsyncBackends"
+  ],
+  "store_scenarios": [
+    "prepared_snapshot_and_real_rows",
+    "delayed_write_native_read_visibility",
+    "close_timeout_retains_ownership_and_rolls_back",
+    "bound_adapters_remain_synchronous_and_rollback",
+    "late_real_sql_error"
+  ],
+  "limitations": {
+    "cache_admission": "NewStrictClientSet requires rpc.AsyncCache capability; production standalone AsyncSourceRPCRequestCache implements prepared admission. Transaction-bound adapters reject async construction; source sync cache commits independently of business rollback. NewClientSet synchronous-only fallback retains weaker invocation-prefix timing. Native Store mutex serializes an executing write/read; source-vs-native concurrent cache-read visibility is not established. No real delayed source DB insertion/concurrent-read transcript is claimed; the M38 synthetic held-completion evidence is separate. PGlite cross-Store Backend.Begin waits shared backend mutex non-contextually, in addition to in-flight IO limits. No source commit-order or full concurrency parity claim.",
+    "action_scope": "Typed revert data/status and zero-data causes, not full Viem wrapper/custom-error decode/message parity. Ten total empty-data attempts with125ms exponential/source message predicate; other not-found actions unsupported. AsyncRequester BeginCall enables chunk admission/all-settled; sync-only custom requester prefix is weaker. Existing ABI.Parse anonymous tuple encoding limitation remains. Source batched insert grouping versus native per-child calls not claimed equivalent.",
+    "prefetch_profile_lru": "Not implemented or claimed; eight bounded public action originals only.",
+    "static_gaps": "The three previous indexing TS-only obligations remain unmapped; no unrelated Go compiler tests substitute.",
+    "rpc_boundary": "Actual source RPC request/response tapes replay the transport boundary; no native EVM implementation claimed."
+  },
+  "full_verification": {
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/result.json",
+    "sha256": "41440774979bab261568fc2e22fb18ca2db314a438b9789b8b39d91db6c6d7ac"
+  },
+  "prepared_native_inputs": {
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/prepared-native-inputs.json",
+    "sha256": "3dacc85e2a7c62680b798d2987a97a4eefdbfaebaa7c666983646566f9ab268a"
+  },
+  "context_archive": {
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/context-archive.json",
+    "sha256": "327cd9184fb0ff951d123feaa0792bfb06cf12b3320555102186d6aa1c4fe156"
+  },
+  "previous_handler_proof": {
+    "file": "parity/runs/source-indexing-service-verification.json",
+    "sha256": "b935aa70cd5e72236640d2f700bab4a4735a354478836209581cde3c6b974e2e"
+  },
+  "source_only": {
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-verification.json",
+    "sha256": "566211294688ff9a84c442c6f342f17d2c478feaa9d2c45b0547516c2cb2670b"
+  },
+  "executions": [
+    {
+      "mode": "normal",
+      "backend": "postgres",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "9614c3868c45f1ab5064",
+          "go_test": "TestSourceIndexingActions/postgres/9614c3868c45f1ab5064",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "f62a1b73602a98909575",
+          "go_test": "TestSourceIndexingActions/postgres/f62a1b73602a98909575",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "8244ed823366e5a1da54",
+          "go_test": "TestSourceIndexingActions/postgres/8244ed823366e5a1da54",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "ee3742b77c929d94a8ed",
+          "go_test": "TestSourceIndexingActions/postgres/ee3742b77c929d94a8ed",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4dfbaabe2e3b99f00b8d",
+          "go_test": "TestSourceIndexingActions/postgres/4dfbaabe2e3b99f00b8d",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "175d1d5d0afe91cc20a1",
+          "go_test": "TestSourceIndexingActions/postgres/175d1d5d0afe91cc20a1",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "de123b064923c7ffd321",
+          "go_test": "TestSourceIndexingActions/postgres/de123b064923c7ffd321",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4204e282e98522f9eefa",
+          "go_test": "TestSourceIndexingActions/postgres/4204e282e98522f9eefa",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        }
+      ],
+      "artifact": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/indexing-actions-normal.json",
+        "sha256": "983378de6231a0224a1ffccc7c7166a8d62c9e45248ec4c1584159531e254ea7"
+      },
+      "probe_artifact": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/indexing-actions-probes-normal.json",
+        "sha256": "fc50c3e4e8cf735b660dffdbaaf3c752b56615c0a2046187f92b43ba67a4ddde"
+      },
+      "log": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-test.jsonl",
+        "sha256": "6f2c1021c0cf73abad1cd392a3260dff9350ecc00fd95d8313784ee98c413422"
+      },
+      "native": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-test.jsonl",
+        "sha256": "6f2c1021c0cf73abad1cd392a3260dff9350ecc00fd95d8313784ee98c413422"
+      },
+      "capture": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-postgres/calls.json.gz",
+        "sha256": "81a8eb44b1be23f31bc36747529fb30f064e59b99514651522c4bfcc2b5d6d6c"
+      },
+      "original": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-postgres/original.json",
+        "sha256": "050b4d6fddc36ae962a5579fca93b341ddafd64571c7e79788abfc37b978838e"
+      },
+      "result": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-postgres/result.json",
+        "sha256": "35895fbeb3a35d79abb581d6ea3e95376d93dd2e532a771af7f4a0fd1f301a48"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-indexing-actions-original.mjs",
+          "sha256": "e6a4f72e5c54c116e7da408503916aa758fa8e6afb89f106da7edfaddee3677a"
+        },
+        {
+          "file": "tools/source-indexing-actions-live.setup.ts",
+          "sha256": "e6f4c0f7b21a95b463f423a4088e94ff3714f0ace40ed94e2538483259c84e49"
+        },
+        {
+          "file": "tools/source-indexing-actions-live.config.mjs",
+          "sha256": "adc08dbc09a7365f0eed2fa2643a9209bf7eebac4ec5da4fe041661c6f8973ed"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-postgres/context-archive.json",
+        "sha256": "399dfc4f461ae356386be18c9e547658722d16f202ab601e27cd7ccc46c33c7d"
+      },
+      "probe": {
+        "capture": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-postgres/calls.json",
+          "sha256": "65c2732741dee22f61ce83760ef9c6182d52651f37019d5473746e87b8e68424"
+        },
+        "result": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-postgres/result.json",
+          "sha256": "2dba6af5e1537d2bc2ab0a00471fe3af5bd825ef184ea5df129ecafbaa9e2db4"
+        },
+        "original": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-postgres/original.json",
+          "sha256": "fdfd9379044e21297f2d6c52e159cdcf6bc9f137903661f457fde70b05c51896"
+        },
+        "context_archive": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-postgres/context-archive.json",
+          "sha256": "f2f37e33a31af0af11607a67148b15aa7f2f8076f5435a8f7991511d48165e96"
+        },
+        "source_context": [
+          {
+            "file": "tools/source-indexing-actions-probes.mjs",
+            "sha256": "1a2935f994e1472cb93a4ddfaba2a937fad7f83c9a2c08752f60bf07ba919c4e"
+          },
+          {
+            "file": "tools/source-indexing-actions-probes.test.ts",
+            "sha256": "afb141595ab24103187d99893ca98a53d3181fab275ebf857e126b738429b272"
+          },
+          {
+            "file": "tools/source-indexing-actions-probes.config.mjs",
+            "sha256": "1d565965dab14981c329a53e651e5d8dbf81c5c1dcb2083d733293833e292eaa"
+          },
+          {
+            "file": "tools/source-realtime-rpc-observer.mjs",
+            "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+          },
+          {
+            "file": "tools/loopback-adapter.mjs",
+            "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+          },
+          {
+            "file": "tools/loopback-context.mjs",
+            "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "normal",
+      "backend": "pglite",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "9614c3868c45f1ab5064",
+          "go_test": "TestSourceIndexingActions/pglite/9614c3868c45f1ab5064",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "f62a1b73602a98909575",
+          "go_test": "TestSourceIndexingActions/pglite/f62a1b73602a98909575",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "8244ed823366e5a1da54",
+          "go_test": "TestSourceIndexingActions/pglite/8244ed823366e5a1da54",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "ee3742b77c929d94a8ed",
+          "go_test": "TestSourceIndexingActions/pglite/ee3742b77c929d94a8ed",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4dfbaabe2e3b99f00b8d",
+          "go_test": "TestSourceIndexingActions/pglite/4dfbaabe2e3b99f00b8d",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "175d1d5d0afe91cc20a1",
+          "go_test": "TestSourceIndexingActions/pglite/175d1d5d0afe91cc20a1",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "de123b064923c7ffd321",
+          "go_test": "TestSourceIndexingActions/pglite/de123b064923c7ffd321",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4204e282e98522f9eefa",
+          "go_test": "TestSourceIndexingActions/pglite/4204e282e98522f9eefa",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        }
+      ],
+      "artifact": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/indexing-actions-normal.json",
+        "sha256": "983378de6231a0224a1ffccc7c7166a8d62c9e45248ec4c1584159531e254ea7"
+      },
+      "probe_artifact": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/indexing-actions-probes-normal.json",
+        "sha256": "fc50c3e4e8cf735b660dffdbaaf3c752b56615c0a2046187f92b43ba67a4ddde"
+      },
+      "log": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-test.jsonl",
+        "sha256": "6f2c1021c0cf73abad1cd392a3260dff9350ecc00fd95d8313784ee98c413422"
+      },
+      "native": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-test.jsonl",
+        "sha256": "6f2c1021c0cf73abad1cd392a3260dff9350ecc00fd95d8313784ee98c413422"
+      },
+      "capture": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-pglite/calls.json.gz",
+        "sha256": "81a8eb44b1be23f31bc36747529fb30f064e59b99514651522c4bfcc2b5d6d6c"
+      },
+      "original": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-pglite/original.json",
+        "sha256": "dfc525131fc5fa2864332cd5413af4ba4a05954c8763f24dd4332c1614ff2f78"
+      },
+      "result": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-pglite/result.json",
+        "sha256": "9430de2c315aa0be1a52ec88e120c21ed48eae281bf427b6450dd5d35d39accb"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-indexing-actions-original.mjs",
+          "sha256": "e6a4f72e5c54c116e7da408503916aa758fa8e6afb89f106da7edfaddee3677a"
+        },
+        {
+          "file": "tools/source-indexing-actions-live.setup.ts",
+          "sha256": "e6f4c0f7b21a95b463f423a4088e94ff3714f0ace40ed94e2538483259c84e49"
+        },
+        {
+          "file": "tools/source-indexing-actions-live.config.mjs",
+          "sha256": "adc08dbc09a7365f0eed2fa2643a9209bf7eebac4ec5da4fe041661c6f8973ed"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-pglite/context-archive.json",
+        "sha256": "e015d65681ed02b37a7301ad78414e9d5ced729ed0b2a3a18ea11001a4765c89"
+      },
+      "probe": {
+        "capture": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-pglite/calls.json",
+          "sha256": "65c2732741dee22f61ce83760ef9c6182d52651f37019d5473746e87b8e68424"
+        },
+        "result": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-pglite/result.json",
+          "sha256": "a1bced8eec4ae2f923ff5833c6fa0e8ac5f985476122b34d2aa8f3cb170dadd1"
+        },
+        "original": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-pglite/original.json",
+          "sha256": "36d04e6891a035ef341251d8667a668ab022263eead0b81c2e30d13f4cde1d7b"
+        },
+        "context_archive": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-pglite/context-archive.json",
+          "sha256": "191c24755a032083c5fd3e40e6f978f859bb022488a88f7799f0833154f54d65"
+        },
+        "source_context": [
+          {
+            "file": "tools/source-indexing-actions-probes.mjs",
+            "sha256": "1a2935f994e1472cb93a4ddfaba2a937fad7f83c9a2c08752f60bf07ba919c4e"
+          },
+          {
+            "file": "tools/source-indexing-actions-probes.test.ts",
+            "sha256": "afb141595ab24103187d99893ca98a53d3181fab275ebf857e126b738429b272"
+          },
+          {
+            "file": "tools/source-indexing-actions-probes.config.mjs",
+            "sha256": "1d565965dab14981c329a53e651e5d8dbf81c5c1dcb2083d733293833e292eaa"
+          },
+          {
+            "file": "tools/source-realtime-rpc-observer.mjs",
+            "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+          },
+          {
+            "file": "tools/loopback-adapter.mjs",
+            "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+          },
+          {
+            "file": "tools/loopback-context.mjs",
+            "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "race",
+      "backend": "postgres",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "9614c3868c45f1ab5064",
+          "go_test": "TestSourceIndexingActions/postgres/9614c3868c45f1ab5064",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "f62a1b73602a98909575",
+          "go_test": "TestSourceIndexingActions/postgres/f62a1b73602a98909575",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "8244ed823366e5a1da54",
+          "go_test": "TestSourceIndexingActions/postgres/8244ed823366e5a1da54",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "ee3742b77c929d94a8ed",
+          "go_test": "TestSourceIndexingActions/postgres/ee3742b77c929d94a8ed",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4dfbaabe2e3b99f00b8d",
+          "go_test": "TestSourceIndexingActions/postgres/4dfbaabe2e3b99f00b8d",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "175d1d5d0afe91cc20a1",
+          "go_test": "TestSourceIndexingActions/postgres/175d1d5d0afe91cc20a1",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "de123b064923c7ffd321",
+          "go_test": "TestSourceIndexingActions/postgres/de123b064923c7ffd321",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4204e282e98522f9eefa",
+          "go_test": "TestSourceIndexingActions/postgres/4204e282e98522f9eefa",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        }
+      ],
+      "artifact": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/indexing-actions-race.json",
+        "sha256": "983378de6231a0224a1ffccc7c7166a8d62c9e45248ec4c1584159531e254ea7"
+      },
+      "probe_artifact": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/indexing-actions-probes-race.json",
+        "sha256": "fc50c3e4e8cf735b660dffdbaaf3c752b56615c0a2046187f92b43ba67a4ddde"
+      },
+      "log": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-race.jsonl",
+        "sha256": "397bc6225c183120da98275b1a411e183e8b090b041ae2b85a14d886af486d57"
+      },
+      "native": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-race.jsonl",
+        "sha256": "397bc6225c183120da98275b1a411e183e8b090b041ae2b85a14d886af486d57"
+      },
+      "capture": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-postgres/calls.json.gz",
+        "sha256": "81a8eb44b1be23f31bc36747529fb30f064e59b99514651522c4bfcc2b5d6d6c"
+      },
+      "original": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-postgres/original.json",
+        "sha256": "050b4d6fddc36ae962a5579fca93b341ddafd64571c7e79788abfc37b978838e"
+      },
+      "result": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-postgres/result.json",
+        "sha256": "35895fbeb3a35d79abb581d6ea3e95376d93dd2e532a771af7f4a0fd1f301a48"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-indexing-actions-original.mjs",
+          "sha256": "e6a4f72e5c54c116e7da408503916aa758fa8e6afb89f106da7edfaddee3677a"
+        },
+        {
+          "file": "tools/source-indexing-actions-live.setup.ts",
+          "sha256": "e6f4c0f7b21a95b463f423a4088e94ff3714f0ace40ed94e2538483259c84e49"
+        },
+        {
+          "file": "tools/source-indexing-actions-live.config.mjs",
+          "sha256": "adc08dbc09a7365f0eed2fa2643a9209bf7eebac4ec5da4fe041661c6f8973ed"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-postgres/context-archive.json",
+        "sha256": "399dfc4f461ae356386be18c9e547658722d16f202ab601e27cd7ccc46c33c7d"
+      },
+      "probe": {
+        "capture": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-postgres/calls.json",
+          "sha256": "65c2732741dee22f61ce83760ef9c6182d52651f37019d5473746e87b8e68424"
+        },
+        "result": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-postgres/result.json",
+          "sha256": "2dba6af5e1537d2bc2ab0a00471fe3af5bd825ef184ea5df129ecafbaa9e2db4"
+        },
+        "original": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-postgres/original.json",
+          "sha256": "fdfd9379044e21297f2d6c52e159cdcf6bc9f137903661f457fde70b05c51896"
+        },
+        "context_archive": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-postgres/context-archive.json",
+          "sha256": "f2f37e33a31af0af11607a67148b15aa7f2f8076f5435a8f7991511d48165e96"
+        },
+        "source_context": [
+          {
+            "file": "tools/source-indexing-actions-probes.mjs",
+            "sha256": "1a2935f994e1472cb93a4ddfaba2a937fad7f83c9a2c08752f60bf07ba919c4e"
+          },
+          {
+            "file": "tools/source-indexing-actions-probes.test.ts",
+            "sha256": "afb141595ab24103187d99893ca98a53d3181fab275ebf857e126b738429b272"
+          },
+          {
+            "file": "tools/source-indexing-actions-probes.config.mjs",
+            "sha256": "1d565965dab14981c329a53e651e5d8dbf81c5c1dcb2083d733293833e292eaa"
+          },
+          {
+            "file": "tools/source-realtime-rpc-observer.mjs",
+            "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+          },
+          {
+            "file": "tools/loopback-adapter.mjs",
+            "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+          },
+          {
+            "file": "tools/loopback-context.mjs",
+            "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "race",
+      "backend": "pglite",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "9614c3868c45f1ab5064",
+          "go_test": "TestSourceIndexingActions/pglite/9614c3868c45f1ab5064",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "f62a1b73602a98909575",
+          "go_test": "TestSourceIndexingActions/pglite/f62a1b73602a98909575",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "8244ed823366e5a1da54",
+          "go_test": "TestSourceIndexingActions/pglite/8244ed823366e5a1da54",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "ee3742b77c929d94a8ed",
+          "go_test": "TestSourceIndexingActions/pglite/ee3742b77c929d94a8ed",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4dfbaabe2e3b99f00b8d",
+          "go_test": "TestSourceIndexingActions/pglite/4dfbaabe2e3b99f00b8d",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "175d1d5d0afe91cc20a1",
+          "go_test": "TestSourceIndexingActions/pglite/175d1d5d0afe91cc20a1",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "de123b064923c7ffd321",
+          "go_test": "TestSourceIndexingActions/pglite/de123b064923c7ffd321",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4204e282e98522f9eefa",
+          "go_test": "TestSourceIndexingActions/pglite/4204e282e98522f9eefa",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        }
+      ],
+      "artifact": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/indexing-actions-race.json",
+        "sha256": "983378de6231a0224a1ffccc7c7166a8d62c9e45248ec4c1584159531e254ea7"
+      },
+      "probe_artifact": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/indexing-actions-probes-race.json",
+        "sha256": "fc50c3e4e8cf735b660dffdbaaf3c752b56615c0a2046187f92b43ba67a4ddde"
+      },
+      "log": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-race.jsonl",
+        "sha256": "397bc6225c183120da98275b1a411e183e8b090b041ae2b85a14d886af486d57"
+      },
+      "native": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-race.jsonl",
+        "sha256": "397bc6225c183120da98275b1a411e183e8b090b041ae2b85a14d886af486d57"
+      },
+      "capture": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-pglite/calls.json.gz",
+        "sha256": "81a8eb44b1be23f31bc36747529fb30f064e59b99514651522c4bfcc2b5d6d6c"
+      },
+      "original": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-pglite/original.json",
+        "sha256": "dfc525131fc5fa2864332cd5413af4ba4a05954c8763f24dd4332c1614ff2f78"
+      },
+      "result": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-pglite/result.json",
+        "sha256": "9430de2c315aa0be1a52ec88e120c21ed48eae281bf427b6450dd5d35d39accb"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-indexing-actions-original.mjs",
+          "sha256": "e6a4f72e5c54c116e7da408503916aa758fa8e6afb89f106da7edfaddee3677a"
+        },
+        {
+          "file": "tools/source-indexing-actions-live.setup.ts",
+          "sha256": "e6f4c0f7b21a95b463f423a4088e94ff3714f0ace40ed94e2538483259c84e49"
+        },
+        {
+          "file": "tools/source-indexing-actions-live.config.mjs",
+          "sha256": "adc08dbc09a7365f0eed2fa2643a9209bf7eebac4ec5da4fe041661c6f8973ed"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-source-pglite/context-archive.json",
+        "sha256": "e015d65681ed02b37a7301ad78414e9d5ced729ed0b2a3a18ea11001a4765c89"
+      },
+      "probe": {
+        "capture": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-pglite/calls.json",
+          "sha256": "65c2732741dee22f61ce83760ef9c6182d52651f37019d5473746e87b8e68424"
+        },
+        "result": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-pglite/result.json",
+          "sha256": "a1bced8eec4ae2f923ff5833c6fa0e8ac5f985476122b34d2aa8f3cb170dadd1"
+        },
+        "original": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-pglite/original.json",
+          "sha256": "36d04e6891a035ef341251d8667a668ab022263eead0b81c2e30d13f4cde1d7b"
+        },
+        "context_archive": {
+          "file": "parity/runs/indexing-actions-m39/full-verify-02/actions-probes-pglite/context-archive.json",
+          "sha256": "191c24755a032083c5fd3e40e6f978f859bb022488a88f7799f0833154f54d65"
+        },
+        "source_context": [
+          {
+            "file": "tools/source-indexing-actions-probes.mjs",
+            "sha256": "1a2935f994e1472cb93a4ddfaba2a937fad7f83c9a2c08752f60bf07ba919c4e"
+          },
+          {
+            "file": "tools/source-indexing-actions-probes.test.ts",
+            "sha256": "afb141595ab24103187d99893ca98a53d3181fab275ebf857e126b738429b272"
+          },
+          {
+            "file": "tools/source-indexing-actions-probes.config.mjs",
+            "sha256": "1d565965dab14981c329a53e651e5d8dbf81c5c1dcb2083d733293833e292eaa"
+          },
+          {
+            "file": "tools/source-realtime-rpc-observer.mjs",
+            "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+          },
+          {
+            "file": "tools/loopback-adapter.mjs",
+            "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+          },
+          {
+            "file": "tools/loopback-context.mjs",
+            "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+          }
+        ]
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "tools/indexing-actions-path-guards.test.mjs",
+      "sha256": "f9e5650f90804acda23bb8220e068f04ce4595c7dd85ce156d148e6127d9b4c6"
+    },
+    {
+      "file": "tools/indexing-actions-acceptance.mjs",
+      "sha256": "2a8da42f24cd6675e4afdc794d2871226739f887ef561f5573cb9828a09da392"
+    },
+    {
+      "file": "tools/indexing-actions-full-verify.mjs",
+      "sha256": "8c0df6b42bd6af88d3e9b5b89e8991098fb60d750140bbc424c5fdf15a338bae"
+    },
+    {
+      "file": "tools/source-indexing-actions-results.mjs",
+      "sha256": "69a3048ca3eb439022fd10cca0945c428a51b55a4e0cd2e5e19ae28c4be11d09"
+    },
+    {
+      "file": "tools/source-indexing-actions-map.mjs",
+      "sha256": "5552d74df44d7b69783520e8a56284de6efd868a17790d72b7303d1438d98953"
+    },
+    {
+      "file": "tools/source-indexing-actions-original.mjs",
+      "sha256": "e6a4f72e5c54c116e7da408503916aa758fa8e6afb89f106da7edfaddee3677a"
+    },
+    {
+      "file": "tools/source-indexing-actions-live.config.mjs",
+      "sha256": "adc08dbc09a7365f0eed2fa2643a9209bf7eebac4ec5da4fe041661c6f8973ed"
+    },
+    {
+      "file": "tools/source-indexing-actions-live.setup.ts",
+      "sha256": "e6f4c0f7b21a95b463f423a4088e94ff3714f0ace40ed94e2538483259c84e49"
+    },
+    {
+      "file": "tools/source-indexing-actions-fixture.mjs",
+      "sha256": "3c222d7236ea9f2ec0692ad8db11eb3f462fd796caabd0d30f0242084dee1136"
+    },
+    {
+      "file": "tools/source-indexing-actions-collect.mjs",
+      "sha256": "1a2e8132ed0c7155295dc5f740f7f780aa35fd316b37f738cc3421d4ab289ff7"
+    },
+    {
+      "file": "tools/source-indexing-actions-evidence.mjs",
+      "sha256": "ed2ebbdc2112788ab8d43af7f48f9aa9677baca0c44ef8d66a775beec63509c7"
+    },
+    {
+      "file": "tools/source-indexing-actions-evidence.test.mjs",
+      "sha256": "bf38dabcb2abcbc55e053fa2d0c02345e07ee54f3462050127ef9db2df262d0f"
+    },
+    {
+      "file": "tools/source-indexing-actions-probes.mjs",
+      "sha256": "1a2935f994e1472cb93a4ddfaba2a937fad7f83c9a2c08752f60bf07ba919c4e"
+    },
+    {
+      "file": "tools/source-indexing-actions-probes.config.mjs",
+      "sha256": "1d565965dab14981c329a53e651e5d8dbf81c5c1dcb2083d733293833e292eaa"
+    },
+    {
+      "file": "tools/source-indexing-actions-probes.test.ts",
+      "sha256": "afb141595ab24103187d99893ca98a53d3181fab275ebf857e126b738429b272"
+    },
+    {
+      "file": "tools/source-indexing-actions-probe-fixture.mjs",
+      "sha256": "1daa7af9af85e891a566f2104f3259e5b3a22db264bc91145073ec1385702f58"
+    },
+    {
+      "file": "testdata/indexing/source-indexing-actions-live.json.gz",
+      "sha256": "a1ea63d6d65b4cb257ea6723c23bff417c83774b3343bbea8e077d8a38d6b7ae"
+    },
+    {
+      "file": "testdata/indexing/source-indexing-actions-probes.json.gz",
+      "sha256": "94ecb5b3b901abb901870745d9ab4c810a5f02f25be83c622bb6b90fdd734594"
+    },
+    {
+      "file": "indexing/client.go",
+      "sha256": "2c5f9ef6412ab45bb4b1357a5a5f96d98e94372da5e5af33ff6e11b7a4491206"
+    },
+    {
+      "file": "indexing/client_actions.go",
+      "sha256": "026f304b3f549453f9318a2f9691b0bb03f287ef0ce3bb2cea1579f5f99ea8dc"
+    },
+    {
+      "file": "indexing/client_multicall.go",
+      "sha256": "824115a69f37c33429fb812aaf60a32cf36e9a5d6c201a4d292d563111ab66b2"
+    },
+    {
+      "file": "indexing/client_abi.go",
+      "sha256": "8e173a806156bc7fd8a79f3fedf161c39222a22397c53c50cbefbc5645605f0d"
+    },
+    {
+      "file": "indexing/source_actions_test.go",
+      "sha256": "3ce015ac4d78af3dfc66ce6c38e2d930b460f1a56e4946df90d94a114cb2d838"
+    },
+    {
+      "file": "indexing/source_actions_probes_test.go",
+      "sha256": "a4e699c7b8f2533cc17474076e802b14cecb35960aba7bac6bdd96c5045fce4f"
+    },
+    {
+      "file": "indexing/client_admission_integration_test.go",
+      "sha256": "ef73d723df30900c70c2e808485c800c315836c2b3c48a8f8c7c99d0fbc04582"
+    },
+    {
+      "file": "indexing/client_actions_test.go",
+      "sha256": "4754301a7ee0ee6ca7ea6974b0faaa17d731c81173f429855b7d7da89159f46c"
+    },
+    {
+      "file": "indexing/client_abi_test.go",
+      "sha256": "54eda7913b6c7706eeec89c7167e049ca68af536484a042c2e97d83d191d15c5"
+    },
+    {
+      "file": "store/source_rpc_async.go",
+      "sha256": "0851ee189d9e475061b6b4fb497920db22f2f79b3bd87d5e97524a387f909e51"
+    },
+    {
+      "file": "store/source_rpc_async_test.go",
+      "sha256": "b0ed2bafbee1b7c8aa5098fca39ec80a638f8a5684edf79280c69e4f7f5f0fd1"
+    },
+    {
+      "file": "parity/source-indexing-actions-cases.json",
+      "sha256": "c5b49346bdf7bbb19a9101b1833e5ac08facee77c4177c26040f56038298fed0"
+    }
+  ]
+}

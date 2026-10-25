@@ -191,3 +191,12 @@ Anvil loopback 与客户端 Node 预编译为启动层适配，不是 pristine �
 源 Proxy23步/native22支持操作与 Object.keys descriptor gap、缓存写 invocation-prefix scheduling gap 均公开保留；对应 supplemental 零credit，不假称精确全轨迹等价。九张源 sync 表快照 archival-only。实际 M37提取/Decode→handler→真实业务写/rollback 仅证明组成边界；外层 runner、atomicmultichain调度、ready/realtimecutover、last8clientfacade 等仍未完成。
 
 完整full-verify-02于2026-10-25 11:43:06UTC通过46阶段；normal/race各3070节点/2807叶用例、0测试fail/skip，PG430/PGlite426，23包226函数71批次。1114文件指纹c13f65c6c3fde1a89b80e2ab256a892ef795323f64de46535735dd6e40552ec3与61工具hash一致；9canonical证明接受。full01目录guard失败保留，8条最小allowlist修正+115控制经独立复核后完整重跑；新batch37，不覆盖batch36。
+
+
+## M39 — 有界索引客户端动作、严格缓存admission与descriptor补齐（本地验收，待发布）
+
+基于已发布3809b5a510a3d01a82119f06b6fe6435ab545a9d。完整原23例两源后端通过，最后8客户端原例/9断言/0TS指令实际native两后端normal/race重放；旧523映射不改，正式531/905（527Go+4SDK），374剩余，7项旧类型缺口继续unmapped。真实11步/10RPC缓存/错误/分块probe与ABI/队列生命周期/23步descriptor反射均零credit。
+
+full-verify-02于2026-10-25 13:39:39UTC通过54阶段，10canonical collectors接受。normal/race各3146节点/2870叶、0fail/skip，PG450/PGlite446；23包245函数76批次。1126输入c7072ab0bc5c10e615442065f6ec8ae1a2da8263d3a18a39b91727f71c878fb0、77工具hash一致。full01失败仅旧测试adapter expectedkey未canonicalize，两叶双模式失败；原fixture/rawRPC断言保留，修正经独立复核后全新重跑。full01修改前1215输入已归档；冻结batch38保留batch37。
+
+严格standalone AsyncCache仅保证prepared-row同步admission；legacy同步fallback、源/native并发read visibility、commit-order与batchinsert调用分组不等价，绑定事务adapter无async。PGlite共享backend锁/IO取消限制保留。typed error含义不等于完整Viem包装/customerror解码，ABI.Parse匿名tuple编码有限。无profile/prefetch/LRU、全client.test.ts、外层runner/readiness/cutover完成声明。详见SOURCE_INDEXING_ACTIONS.md。
