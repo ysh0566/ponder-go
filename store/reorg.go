@@ -21,7 +21,8 @@ func (s *Store) RevertAndRewind(ctx context.Context, target checkpoint.Checkpoin
 	return s.revert(ctx, target, true, false)
 }
 
-func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind, runtimeResume bool) error {
+func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind, runtimeResume bool, quiet ...bool) error {
+	silent := runtimeResume || (len(quiet) != 0 && quiet[0])
 	if s.staged && len(s.Schema.Tables) == 0 && !runtimeResume {
 		return nil
 	}
@@ -53,9 +54,11 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 			if e = (&Actions{s}).singleRuntimeChain(ctx, tx, target.ChainID); e != nil {
 				return e
 			}
-			if e = tx.Exec(ctx, `SET LOCAL "ponder_go.suppress_notify"='1'`); e != nil {
-				return e
-			}
+		}
+	}
+	if silent {
+		if e = tx.Exec(ctx, `SET LOCAL "ponder_go.suppress_notify"='1'`); e != nil {
+			return e
 		}
 	}
 	if e = s.eventContext(ctx, tx, encoded, target.ChainID, true); e != nil {
@@ -128,7 +131,7 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 	for name := range changed {
 		tables = append(tables, name)
 	}
-	if !runtimeResume {
+	if !silent {
 		s.notify(tables)
 	}
 	return nil

@@ -218,3 +218,12 @@ full-verify-01于2026-10-25 15:13:03.642UTC通过62阶段，11个显式canonical
 constructor-owned PG两池/namespace families及两条独立固定连接、PGlite双进程/持久目录避免handler内cache读死锁；排他ownership、连接死亡fail-closed、继承flock跨Go父退出保留和重开经验证。稳定服务/数据库/client identity通过私有ctx capability绑定不可变writer/cache；成功commit保留快照，rollback/flush/uncertain commit清行/buffer但保留profiles。正常revoke不cancel独立cache工作；显式readonly prefetch与单一保留close任务拥有完整cancel/join边界。
 
 真实双后端setup/history缓存hit/miss、业务/journal/checkpoint rollback、pending/取消/晚SQL失败、close/reopen和bounded close通过。源真实createIndexing/cache/userQB探针零credit；源PGlite同实例callback-only事务与native双目录真实SQL原子性有意不同，不外推并发read visibility/commit-order/grouping等价。全量旧oracle仅运行于SHOW data_directory核验的新M41测试cluster；旧cluster/历史schema未作维护。详情见INDEPENDENT_INDEXING_STORAGE.md；新batch40保留batch39。M42仍需原子多链setup/checkpoint和有限runner；未完成MarkReady/realtime/cutover。
+
+
+## M42 — 多链原子setup与历史group primitives（完整本地验收，待发布）
+
+基线M41 `b2bad8f76956bf681177dd701742a253b9eaf072`。full-verify-03于2026-10-25 19:38:14.379UTC通过69阶段、13canonical collectors及summary，fresh fixture停止exit0。normal/race各3405节点/3087叶、0fail/skip；23包288函数87批次。1156输入95062ec28dce44addc309dabf2bf7c580f22876767de0e9d500991dc11c875c6、119工具hash保持一致。正式543/905不变，362剩余，零原例/断言/类型credit。
+
+一SQL事务/稳定binding承载全部setup，原callback顺序与逐段flush/seal归属；完整初始metadata/cursor与业务一起提交。单链历史group在多链DB验证durable配置/cursor，显式flush后封journal、更新metadata并prune；空group与durable replay、commit不确定边界、静默global-suffix rollback与session invalidation均验证。真正源码双链6场景、双后端持久状态、缓存独立性、两项红→绿shortcut controls及因果无通知/取消join证明均为补充证据。source PGlite callback-only rollback差异明确保留。
+
+full01 cleanup测试缺陷及full02 summary stage guard缺口和修改前输入均完整归档，独立复核后完整full03重验，无改旧manifest冒充成功。新batch41不改旧batch40；无outer runner、M37提取/refetch协调、ready或realtime/cutover完成声明。旧schema/目录未维护；详情见MULTICHAIN_ATOMIC_PRIMITIVES.md。

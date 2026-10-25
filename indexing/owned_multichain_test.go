@@ -1,0 +1,607 @@
+package indexing
+
+import (
+	"context"
+	"database/sql"
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"math/big"
+	"reflect"
+	"strings"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"ponder.local/ponder-go/checkpoint"
+	"ponder.local/ponder-go/rpc"
+	"ponder.local/ponder-go/store"
+)
+
+func multiCP(chain, block uint64) checkpoint.Checkpoint {
+	return checkpoint.Block(block, chain, block, true)
+}
+func multiInitial() []InitialChainCheckpoint {
+	return []InitialChainCheckpoint{
+		{ChainID: 1, Start: checkpoint.MustEncode(checkpoint.Block(3, 1, 3, false)), Finalized: checkpoint.MustEncode(multiCP(1, 2))},
+		{ChainID: 2, Start: checkpoint.MustEncode(checkpoint.Block(1, 2, 1, false)), Finalized: checkpoint.MustEncode(multiCP(2, 4))},
+	}
+}
+func multiBuild(handler Handler) (Options, []Object, Object) {
+	chains := []Object{{"id": 1, "name": "one", "cacheRpcRequests": true}, {"id": 2, "name": "two", "cacheRpcRequests": true}}
+	cb := Object{"name": "Token:block", "fn": handler, "filter": Object{"type": "block", "include": DefaultFilterInclude("block", false)}}
+	return Options{Build: Build{Chains: chains, Contracts: []Object{{}, {}}, EventCallbacks: [][]Object{{cb}}, IndexingFunctions: []Object{{"name": "Token:block"}, {"name": "Token:setup"}}}, Errors: &ErrorState{}}, chains, cb
+}
+func multiFixture(t *testing.T, dialect string, options Options) ownedFixture {
+	req := admissionRequester(func(_ context.Context, _ string, _ any, out any) error { return json.Unmarshal([]byte(`"0x2a"`), out) })
+	f := newOwnedFixture(t, dialect, options, req)
+	f.options.Requesters = []rpc.Requester{req, req}
+	return f
+}
+func multiEvent(chain, cb Object, block uint64) Object {
+	id, _ := clientInteger(chain["id"])
+	return Object{"type": "block", "chain": chain, "eventCallback": cb, "checkpoint": checkpoint.MustEncode(multiCP(id.Uint64(), block)), "event": Object{"block": Object{"number": new(big.Int).SetUint64(block)}}}
+}
+func TestOwnedMultichainAtomicSetup(t *testing.T) {
+	for _, dialect := range []string{"postgres", "pglite"} {
+		t.Run(dialect, func(t *testing.T) {
+			for _, fail := range []bool{false, true} {
+				t.Run(fmt.Sprint("second_chain_failure=", fail), func(t *testing.T) {
+					ctx := context.Background()
+					var owner *Owned
+					var old context.Context
+					var argsIdentity *HandlerArgs
+					order := []uint64{}
+					h := Handler(func(run context.Context, args *HandlerArgs) error {
+						if argsIdentity == nil {
+							argsIdentity = args
+						} else if argsIdentity != args || args.Context.DB != owner.Database() {
+							return errors.New("unstable facade")
+						}
+						old = run
+						id, _ := clientInteger(args.Context.Chain["id"])
+						order = append(order, id.Uint64())
+						if _, e := args.Context.Client.GetBalance(run, "0xabc"); e != nil {
+							return e
+						}
+						if e := owner.Clients().WaitCacheWrites(run); e != nil {
+							return e
+						}
+						if fail && id.Uint64() == 2 {
+							return &store.NonRetryableUserError{Message: "second chain failed"}
+						}
+						row, e := args.Context.DB.Find(run, "account", store.Row{"id": "shared"})
+						if e != nil {
+							return e
+						}
+						if row == nil {
+							_, e = args.Context.DB.InsertOne(run, "account", store.Row{"id": "shared", "balance": big.NewInt(1)}, store.Conflict{})
+							return e
+						}
+						_, e = args.Context.DB.Update(run, "account", store.Row{"id": "shared"}, store.Row{"balance": big.NewInt(int64(len(order)))})
+						return e
+					})
+					options, chains, _ := multiBuild(h)
+					options.Build.SetupCallbacks = [][]Object{{{"name": "Token:setup", "chain": chains[0], "block": 91, "fn": h}, {"name": "Token:setup", "chain": chains[1], "block": 92, "fn": h}}, {{"name": "Token:setup", "chain": chains[0], "block": 93, "fn": h}, {"name": "Token:setup", "chain": chains[0], "block": 94, "fn": h}}}
+					fixture := multiFixture(t, dialect, options)
+					var rpcCalls atomic.Int64
+					req := admissionRequester(func(_ context.Context, _ string, _ any, out any) error {
+						rpcCalls.Add(1)
+						return json.Unmarshal([]byte(`"0x2a"`), out)
+					})
+					fixture.options.Requesters = []rpc.Requester{req, req}
+					owner = fixture.start(t)
+					err := owner.InitializeMultichain(ctx, multiInitial())
+					if (err != nil) != fail {
+						t.Fatal(err)
+					}
+					wantOrder := []uint64{1, 2, 1, 1}
+					if fail {
+						wantOrder = []uint64{1, 2}
+					}
+					if !reflect.DeepEqual(order, wantOrder) {
+						t.Fatal(order)
+					}
+					states, e := owner.Checkpoints(ctx)
+					if e != nil {
+						t.Fatal(e)
+					}
+					rows, e := owner.storage.BusinessActions().Select(ctx, "account")
+					if e != nil {
+						t.Fatal(e)
+					}
+					if fail {
+						if len(states) != 0 || len(rows) != 0 {
+							t.Fatal("partial setup", states, rows)
+						}
+					} else {
+						if len(states) != 2 || len(rows) != 1 || fmt.Sprint(rows[0]["balance"]) != "4" {
+							t.Fatal(states, rows)
+						}
+						if states[0].LatestCheckpoint != multiInitial()[0].Finalized || states[1].LatestCheckpoint != multiInitial()[1].Start {
+							t.Fatal("setup RPC block conflated with sync checkpoint", states)
+						}
+					}
+					if _, e = owner.Database().Find(old, "account", store.Row{"id": "shared"}); e == nil {
+						t.Fatal("old binding alive")
+					}
+					if old.Err() != nil {
+						t.Fatal("normal end canceled independent work")
+					}
+					// Reopen the actual same persistent directories/schemas and inspect durable rows.
+					if e = owner.Close(ctx); e != nil {
+						t.Fatal(e)
+					}
+					owner = fixture.start(t)
+					states, e = owner.Checkpoints(ctx)
+					if e != nil {
+						t.Fatal(e)
+					}
+					if fail && len(states) != 0 {
+						t.Fatal(states)
+					}
+					if !fail && len(states) != 2 {
+						t.Fatal(states)
+					}
+					count := rpcCalls.Load()
+					for i, block := range []int64{91, 92} {
+						client, e := owner.Clients().GetClient(chains[i])
+						if e != nil {
+							t.Fatal(e)
+						}
+						if _, e = client.GetBalance(ctx, "0xabc", BalanceOptions{BlockNumber: big.NewInt(block)}); e != nil {
+							t.Fatal(e)
+						}
+					}
+					if rpcCalls.Load() != count {
+						t.Fatal("independent setup cache lost across rollback/reopen", count, rpcCalls.Load())
+					}
+
+				})
+			}
+		})
+	}
+}
+
+type multiFaultBackend struct {
+	store.Backend
+	mode string
+}
+type multiFaultTx struct {
+	store.Transaction
+	mode string
+}
+
+var multiInjected = errors.New("M42 controlled failure")
+
+func (b *multiFaultBackend) Begin(ctx context.Context) (store.Transaction, error) {
+	tx, e := b.Backend.Begin(ctx)
+	if e != nil {
+		return nil, e
+	}
+	return &multiFaultTx{tx, b.mode}, nil
+}
+func (tx *multiFaultTx) Exec(ctx context.Context, q string, args ...any) error {
+	if tx.mode == "metadata" && strings.Contains(q, "_ponder_go_progress") && (strings.HasPrefix(q, "INSERT") || strings.HasPrefix(q, "UPDATE")) {
+		return multiInjected
+	}
+	if tx.mode == "flush" && strings.HasPrefix(q, "INSERT INTO") && strings.Contains(q, `"account"`) {
+		return multiInjected
+	}
+	if tx.mode == "seal" && strings.HasPrefix(q, "UPDATE") && strings.Contains(q, "_ponder_go_journal") {
+		return multiInjected
+	}
+	return tx.Transaction.Exec(ctx, q, args...)
+}
+func (tx *multiFaultTx) Commit(ctx context.Context) error {
+	if tx.mode == "commit" {
+		return multiInjected
+	}
+	if tx.mode == "lost_ack" {
+		if e := tx.Transaction.Commit(ctx); e != nil {
+			return e
+		}
+		return multiInjected
+	}
+	return tx.Transaction.Commit(ctx)
+}
+
+func TestOwnedMultichainHistoricalDurability(t *testing.T) {
+	for _, dialect := range []string{"postgres", "pglite"} {
+		t.Run(dialect, func(t *testing.T) {
+			for _, mode := range []string{"success", "second_event", "sticky", "refetch", "flush", "seal", "metadata", "commit", "lost_ack"} {
+				t.Run(mode, func(t *testing.T) {
+					ctx := context.Background()
+					calls := 0
+					var owner *Owned
+					var stale context.Context
+					h := Handler(func(run context.Context, args *HandlerArgs) error {
+						calls++
+						stale = run
+						if calls == 2 {
+							switch mode {
+							case "second_event":
+								return &store.NonRetryableUserError{Message: "second event"}
+							case "sticky":
+								owner.service.options.Errors.SetRetryableError(multiInjected)
+								return nil
+							case "refetch":
+								return &InvalidEventAccessError{Message: "refetch required"}
+							}
+						}
+						_, e := args.Context.DB.InsertOne(run, "account", store.Row{"id": fmt.Sprint(calls), "balance": big.NewInt(int64(calls))}, store.Conflict{})
+						return e
+					})
+					options, chains, cb := multiBuild(h)
+					fixture := multiFixture(t, dialect, options)
+					owner = fixture.start(t)
+					if e := owner.InitializeMultichain(ctx, multiInitial()); e != nil {
+						t.Fatal(e)
+					}
+					before, e := owner.Checkpoints(ctx)
+					if e != nil {
+						t.Fatal(e)
+					}
+					base := owner.storage.BusinessStore().Backend
+					if mode == "flush" || mode == "seal" || mode == "metadata" || mode == "commit" || mode == "lost_ack" {
+						owner.storage.BusinessStore().Backend = &multiFaultBackend{base, mode}
+					}
+					events := []Object{multiEvent(chains[0], cb, 5), multiEvent(chains[0], cb, 6)}
+					applied, err := owner.HistoricalGroup(ctx, multiCP(1, 6), events, nil)
+					owner.storage.BusinessStore().Backend = base
+					if mode == "success" {
+						if err != nil || !applied {
+							t.Fatal(applied, err)
+						}
+					} else if err == nil {
+						t.Fatal("injection was not observed", mode)
+					}
+					var uncertain *store.CommitOutcomeUnknownError
+					if (mode == "commit" || mode == "lost_ack") != errors.As(err, &uncertain) {
+						t.Fatal("wrong transaction error boundary", err)
+					}
+					rows, e := owner.storage.BusinessActions().Select(ctx, "account")
+					if e != nil {
+						t.Fatal(e)
+					}
+					states, e := owner.Checkpoints(ctx)
+					if e != nil {
+						t.Fatal(e)
+					}
+					committed := mode == "success" || mode == "lost_ack"
+					if committed {
+						if len(rows) != 2 || states[0].LatestCheckpoint != checkpoint.MustEncode(multiCP(1, 6)) {
+							t.Fatal(rows, states)
+						}
+					} else if len(rows) != 0 || !reflect.DeepEqual(states, before) {
+						t.Fatal("partial group persisted", rows, states)
+					}
+					if stale != nil {
+						if _, e = owner.Database().Find(stale, "account", store.Row{"id": "1"}); e == nil {
+							t.Fatal("stale capability survived")
+						}
+					}
+					if mode == "second_event" || mode == "sticky" || mode == "refetch" {
+						if owner.Service().Metrics().Completed["Token:block"] != 0 || owner.Service().EventCount()["Token:block"] != 1 || owner.Service().ColumnAccessPattern()["Token:block"].Count != 1 {
+							t.Fatal("attempt/profile rollback policy", owner.Service().Metrics(), owner.Service().EventCount())
+						}
+					}
+					if committed {
+						n := calls
+						if applied, e = owner.HistoricalGroup(ctx, multiCP(1, 6), events, nil); e != nil || applied || calls != n {
+							t.Fatal("committed replay reran", applied, e, calls, n)
+						}
+					}
+					// Empty second-chain group advances durable state without fake callbacks.
+					n := calls
+					if applied, e = owner.HistoricalGroup(ctx, multiCP(2, 7), nil, nil); e != nil || !applied || calls != n {
+						t.Fatal("empty group", applied, e, calls, n)
+					}
+					if e = owner.Close(ctx); e != nil {
+						t.Fatal(e)
+					}
+					owner = fixture.start(t)
+					states, e = owner.Checkpoints(ctx)
+					if e != nil || len(states) != 2 || states[1].LatestCheckpoint != checkpoint.MustEncode(multiCP(2, 7)) {
+						t.Fatal("reopen", states, e)
+					}
+					if committed {
+						n = calls
+						if applied, e = owner.HistoricalGroup(ctx, multiCP(1, 6), events, nil); e != nil || applied || calls != n {
+							t.Fatal("durable replay", applied, e)
+						}
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestOwnedMultichainSetupTransactionFailures(t *testing.T) {
+	for _, dialect := range []string{"postgres", "pglite"} {
+		t.Run(dialect, func(t *testing.T) {
+			for _, mode := range []string{"flush", "seal", "metadata", "commit", "lost_ack"} {
+				t.Run(mode, func(t *testing.T) {
+					ctx := context.Background()
+					calls := 0
+					h := Handler(func(run context.Context, args *HandlerArgs) error {
+						calls++
+						_, e := args.Context.DB.InsertOne(run, "account", store.Row{"id": fmt.Sprint(calls), "balance": big.NewInt(1)}, store.Conflict{})
+						return e
+					})
+					options, chains, _ := multiBuild(h)
+					options.Build.SetupCallbacks = [][]Object{{{"name": "Token:setup", "chain": chains[0], "fn": h}, {"name": "Token:setup", "chain": chains[1], "fn": h}}}
+					f := multiFixture(t, dialect, options)
+					o := f.start(t)
+					base := o.storage.BusinessStore().Backend
+					o.storage.BusinessStore().Backend = &multiFaultBackend{base, mode}
+					err := o.InitializeMultichain(ctx, multiInitial())
+					o.storage.BusinessStore().Backend = base
+					if err == nil {
+						t.Fatal("missing injected failure")
+					}
+					rows, e := o.storage.BusinessActions().Select(ctx, "account")
+					if e != nil {
+						t.Fatal(e)
+					}
+					states, e := o.Checkpoints(ctx)
+					if e != nil {
+						t.Fatal(e)
+					}
+					if mode == "lost_ack" {
+						if len(rows) != 2 || len(states) != 2 {
+							t.Fatal(rows, states)
+						}
+					} else if len(rows) != 0 || len(states) != 0 {
+						t.Fatal("partial setup", rows, states)
+					}
+					// Failed bindings must not poison later transactions or retain dirty rows.
+					if mode != "lost_ack" {
+						if e = o.InitializeMultichain(ctx, multiInitial()); e != nil {
+							t.Fatal("retry after known rollback", e)
+						}
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestOwnedMultichainCancellationWithPrefetch(t *testing.T) {
+	for _, dialect := range []string{"postgres", "pglite"} {
+		t.Run(dialect, func(t *testing.T) {
+			ctx, cancelAll := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancelAll()
+			entered, finished, handlerEntered := make(chan struct{}), make(chan struct{}), make(chan struct{})
+			var rpcCalls atomic.Int64
+			req := admissionRequester(func(run context.Context, _ string, _ any, out any) error {
+				if rpcCalls.Add(1) > 2 {
+					close(entered)
+					<-run.Done()
+					close(finished)
+					return run.Err()
+				}
+				return json.Unmarshal([]byte(`"0x`+strings.Repeat("0", 63)+`1"`), out)
+			})
+			abi := actionTestABI(t, `[{"type":"function","name":"value","stateMutability":"view","inputs":[],"outputs":[{"type":"uint256"}]}]`)
+			contract := ContractCall{ABI: abi, Address: "0x0000000000000000000000000000000000000001", FunctionName: "value"}
+			calls := 0
+			h := Handler(func(run context.Context, args *HandlerArgs) error {
+				calls++
+				if calls == 3 {
+					close(handlerEntered)
+				}
+				if _, e := args.Context.Client.ReadContract(run, contract); e != nil {
+					return e
+				}
+				_, e := args.Context.DB.InsertOne(run, "account", store.Row{"id": fmt.Sprint(calls), "balance": big.NewInt(1)}, store.Conflict{})
+				return e
+			})
+			options, chains, cb := multiBuild(h)
+			f := multiFixture(t, dialect, options)
+			f.options.Requesters = []rpc.Requester{req, req}
+			o, e := f.open(ctx, f.options)
+			if e != nil {
+				t.Fatal(e)
+			}
+			// Cancellation can destroy PostgreSQL's fixed owner connection;
+			// fail closed and reopen instead of reconnecting stale caches.
+			closeOwned := func() error {
+				closeCtx, closeCancel := context.WithTimeout(context.Background(), 15*time.Second)
+				defer closeCancel()
+				e := o.Close(closeCtx)
+				if e != nil && !(dialect == "postgres" && onlyClosedConnectionErrors(e)) {
+					return e
+				}
+				o.mu.Lock()
+				done := o.closeDone
+				o.mu.Unlock()
+				select {
+				case <-done:
+					return nil
+				default:
+					return errors.New("Close returned before owned cleanup joined")
+				}
+			}
+			t.Cleanup(func() {
+				if e := closeOwned(); e != nil {
+					t.Error(e)
+				}
+			})
+			if e := o.InitializeMultichain(ctx, multiInitial()); e != nil {
+				t.Fatal(e)
+			}
+			if _, e := o.HistoricalGroup(ctx, multiCP(1, 6), []Object{multiEvent(chains[0], cb, 5), multiEvent(chains[0], cb, 6)}, nil); e != nil {
+				t.Fatal(e)
+			}
+			if len(o.Clients().Profiles("Token:block")) == 0 {
+				t.Fatal("real handlers did not learn profile")
+			}
+			run, cancel := context.WithCancel(ctx)
+			defer cancel()
+			event := multiEvent(chains[0], cb, 7)
+			if e := o.Clients().Prefetch(run, []Object{event}); e != nil {
+				t.Fatal(e)
+			}
+			select {
+			case <-entered:
+			case <-ctx.Done():
+				t.Fatal("prefetch not admitted", ctx.Err())
+			}
+			done := make(chan error, 1)
+			go func() { _, e := o.HistoricalGroup(run, multiCP(1, 7), []Object{event}, nil); done <- e }()
+			select {
+			case <-handlerEntered:
+			case <-ctx.Done():
+				t.Fatal(ctx.Err())
+			}
+			cancel()
+			if e := <-done; !errors.Is(e, context.Canceled) {
+				t.Fatal("cancellation did not rollback", e)
+			}
+			select {
+			case <-finished:
+			case <-ctx.Done():
+				t.Fatal("prefetch not joined", ctx.Err())
+			}
+			if len(o.Clients().Profiles("Token:block")) == 0 {
+				t.Fatal("cancellation discarded learned profile")
+			}
+			states, e := o.Checkpoints(ctx)
+			if e != nil {
+				if dialect != "postgres" || (!errors.Is(e, driver.ErrBadConn) && !errors.Is(e, sql.ErrConnDone)) {
+					t.Fatal(e)
+				}
+				if _, e = o.Checkpoints(ctx); e == nil {
+					t.Fatal("lost owner connection silently reconnected")
+				}
+			}
+			if e = closeOwned(); e != nil {
+				t.Fatal(e)
+			}
+			o.Clients().mu.RLock()
+			n := len(o.Clients().lookupPending) + len(o.Clients().prefetchPending) + len(o.Clients().pending)
+			o.Clients().mu.RUnlock()
+			if n != 0 {
+				t.Fatal("close abandoned prefetch", n)
+			}
+			reopened := f.start(t)
+			states, e = reopened.Checkpoints(ctx)
+			if e != nil || states[0].LatestCheckpoint != checkpoint.MustEncode(multiCP(1, 6)) {
+				t.Fatal(states, e)
+			}
+			rows, e := reopened.storage.BusinessActions().Select(ctx, "account")
+			if e != nil || len(rows) != 2 {
+				t.Fatal(rows, e)
+			}
+			// Deliberately cancel the operation parent before repeated close and
+			// t.Cleanup. Cleanup gets its own healthy bounded context every time.
+			cancelAll()
+			if ctx.Err() != context.Canceled {
+				t.Fatal("operation context was not canceled")
+			}
+			if e := closeOwned(); e != nil {
+				t.Fatal("healthy cleanup under canceled operation context", e)
+			}
+
+		})
+	}
+}
+
+func TestOwnedMultichainValidationAndRevertInvalidation(t *testing.T) {
+	for _, dialect := range []string{"postgres", "pglite"} {
+		t.Run(dialect, func(t *testing.T) {
+			ctx := context.Background()
+			calls := 0
+			h := Handler(func(context.Context, *HandlerArgs) error { calls++; return nil })
+			options, chains, cb := multiBuild(h)
+			f := multiFixture(t, dialect, options)
+			o := f.start(t)
+			bad := multiInitial()
+			bad[0].Start = checkpoint.MustEncode(multiCP(1, 3))
+			if e := o.InitializeMultichain(ctx, bad); e == nil {
+				t.Fatal("invalid start tail accepted")
+			}
+			bad = multiInitial()
+			bad[1] = bad[0]
+			if e := o.InitializeMultichain(ctx, bad); e == nil {
+				t.Fatal("duplicate initial chain accepted")
+			}
+			if calls != 0 {
+				t.Fatal("validation dispatched handlers")
+			}
+			if e := o.InitializeMultichain(ctx, multiInitial()); e != nil {
+				t.Fatal(e)
+			}
+			for _, chain := range []uint64{1, 2} {
+				if e := o.Batch(ctx, chain, true, func(run context.Context, _ *Service, w *store.Writer) error {
+					if chain == 1 {
+						if _, e := o.Database().InsertOne(run, "account", store.Row{"id": "shared", "balance": big.NewInt(1)}, store.Conflict{}); e != nil {
+							return e
+						}
+					} else {
+						if _, e := o.Database().Update(run, "account", store.Row{"id": "shared"}, store.Row{"balance": big.NewInt(2)}); e != nil {
+							return e
+						}
+					}
+					if e := w.CommitBlock(run, "account", multiCP(chain, 5+chain)); e != nil {
+						return e
+					}
+					return w.AdvanceLatest(run, multiCP(chain, 5+chain))
+				}); e != nil {
+					t.Fatal(e)
+				}
+			}
+			if e := o.RevertBusiness(ctx, multiCP(1, 2)); e != nil {
+				t.Fatal(e)
+			}
+			if e := o.Database().WithReadOnly(ctx, 1, func(run context.Context) error {
+				row, e := o.Database().Find(run, "account", store.Row{"id": "shared"})
+				if e == nil && row != nil {
+					return fmt.Errorf("revert retained cached row %v", row)
+				}
+				return e
+			}); e != nil {
+				t.Fatal(e)
+			}
+			if e := o.RevertBusiness(ctx, multiCP(1, 1)); e == nil {
+				t.Fatal("safe-prefix refusal lost")
+			}
+			if _, e := o.HistoricalGroup(ctx, multiCP(1, 8), []Object{multiEvent(chains[0], cb, 2)}, nil); e == nil {
+				t.Fatal("overlapping durable cursor event accepted")
+			}
+			if _, e := o.HistoricalGroup(ctx, multiCP(1, 8), []Object{multiEvent(chains[0], cb, 8), multiEvent(chains[0], cb, 7)}, nil); e == nil {
+				t.Fatal("unordered events accepted")
+			}
+			if calls != 0 {
+				t.Fatal("invalid group dispatched handlers")
+			}
+			if e := o.Close(ctx); e != nil {
+				t.Fatal(e)
+			}
+			// Reopen same physical storage with a mismatched second configured chain.
+			f.options.Service.Build.Chains = []Object{chains[0], {"id": 2, "name": "renamed", "cacheRpcRequests": true}}
+			o = f.start(t)
+			if _, e := o.HistoricalGroup(ctx, multiCP(1, 8), nil, nil); e == nil {
+				t.Fatal("partial durable chain configuration validation")
+			}
+		})
+	}
+}
+
+// Check every joined leaf; never hide an unrelated cleanup error.
+func onlyClosedConnectionErrors(err error) bool {
+	if err == nil {
+		return true
+	}
+	if many, ok := err.(interface{ Unwrap() []error }); ok {
+		for _, e := range many.Unwrap() {
+			if !onlyClosedConnectionErrors(e) {
+				return false
+			}
+		}
+		return true
+	}
+	return errors.Is(err, sql.ErrConnDone) || errors.Is(err, driver.ErrBadConn)
+}

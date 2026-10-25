@@ -9,7 +9,7 @@ const arg=name=>process.argv.find(a=>a.startsWith('--'+name+'='))?.slice(name.le
 const backend=arg('backend'), destination=arg('output');
 if(!['postgres','pglite'].includes(backend)||!destination)throw Error('Explicit backend and new output required');
 const output=path.resolve(root,destination);
-if(!['runtime-multichain-m37','indexing-service-m38','indexing-actions-m39','indexing-profile-m40','independent-storage-m41'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json'))throw Error('New runtime-historical evidence directory required');
+if(!['runtime-multichain-m37','indexing-service-m38','indexing-actions-m39','indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json'))throw Error('New runtime-historical evidence directory required');
 fs.mkdirSync(output,{recursive:true});
 const report={complete:false,success:false,source_credit:0,backend,pristine_file:false,environment_adapted:true,execution:'original full file with explicit loopback Anvil startup adapter and capture observers',started_utc:new Date().toISOString()};
 const save=()=>fs.writeFileSync(output+'/result.json',JSON.stringify(report,null,2)+'\n');save();

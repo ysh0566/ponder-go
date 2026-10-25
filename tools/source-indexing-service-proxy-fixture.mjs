@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import {assertIndexingServiceProxyCapture} from './source-indexing-service-evidence.mjs';
 const root=path.resolve(import.meta.dirname,'..'),arg=name=>process.argv.find(a=>a.startsWith('--'+name+'='))?.slice(name.length+3);
 const input=arg('input'),output=arg('output');
-if(!input||!output||!['indexing-service-m38','indexing-actions-m39','indexing-profile-m40','independent-storage-m41'].some(stage=>path.resolve(root,input).startsWith(root+'/parity/runs/'+stage+'/'))||!path.resolve(root,output).startsWith(root+'/testdata/indexing/source-indexing-service'))throw Error('Explicit scoped --input and --output required');
+if(!input||!output||!['indexing-service-m38','indexing-actions-m39','indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>path.resolve(root,input).startsWith(root+'/parity/runs/'+stage+'/'))||!path.resolve(root,output).startsWith(root+'/testdata/indexing/source-indexing-service'))throw Error('Explicit scoped --input and --output required');
 const hash=file=>({file:path.relative(root,path.resolve(root,file)),sha256:crypto.createHash('sha256').update(fs.readFileSync(path.resolve(root,file))).digest('hex')});
 const read=file=>JSON.parse(fs.readFileSync(path.resolve(root,file)));
 const result=read(input+'/result.json'),capture=read(input+'/calls.json'),original=read(input+'/original.json');

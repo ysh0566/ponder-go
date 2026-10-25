@@ -1,3 +1,4 @@
+import {atomicMultichainStages} from './multichain-atomic-acceptance.mjs';
 import {independentStorageStages} from './independent-storage-acceptance.mjs';
 import {indexingProfileStages} from './indexing-profile-acceptance.mjs';
 import {indexingActionsStages,indexingActionsSupplementalTests,indexingActionsAdmissionScenarios} from './indexing-actions-acceptance.mjs';
@@ -13,7 +14,7 @@ const root=path.resolve(import.meta.dirname,'..');
 const arg=name=>process.argv.find(a=>a.startsWith('--'+name+'='))?.slice(name.length+3);
 if(!arg('run-dir')||!arg('output'))throw Error('Explicit --run-dir and --output required');
 const directory=path.resolve(root,arg('run-dir')),relative=path.relative(root,directory),destination=path.resolve(root,arg('output'));
-if(!['indexing-service-m38','indexing-actions-m39','indexing-profile-m40','independent-storage-m41'].some(stage=>relative.startsWith('parity/runs/'+stage+'/'))||!destination.startsWith(root+'/parity/runs/'))throw Error('Scoped M38 run and evidence output required');
+if(!['indexing-service-m38','indexing-actions-m39','indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>relative.startsWith('parity/runs/'+stage+'/'))||!destination.startsWith(root+'/parity/runs/'))throw Error('Scoped M38 run and evidence output required');
 const read=file=>JSON.parse(fs.readFileSync(path.resolve(root,file),'utf8'));
 const compressed=file=>JSON.parse(gunzipSync(fs.readFileSync(path.resolve(root,file))));
 const hash=file=>({file:path.relative(root,path.resolve(root,file)),sha256:crypto.createHash('sha256').update(fs.readFileSync(path.resolve(root,file))).digest('hex')});
@@ -27,7 +28,7 @@ const goJSON=value=>{
  return quote(value);
 };
 
-const isM39=['indexing-actions-m39','indexing-profile-m40','independent-storage-m41'].some(stage=>relative.startsWith('parity/runs/'+stage+'/'));
+const isM39=['indexing-actions-m39','indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>relative.startsWith('parity/runs/'+stage+'/'));
 const full=read(directory+'/result.json'),fingerprint=sourceFingerprint(root);
 check(full.complete&&full.success&&full.environment_adapted&&full.pristine_file===false&&full.source_manifest_verified_after,'Complete successful adapted aggregate required');
 check(equal(full.native_inputs,fingerprint)&&equal(full.finished_native_inputs,fingerprint),'Current native inputs differ');
@@ -39,9 +40,10 @@ check(equal(prepared.fingerprint,fingerprint)&&prepared.files.every(valid)&&prep
 const harness=['tools/manifest.mjs','tools/source-indexing-service-cache.mjs','tools/source-indexing-service-cache.config.mjs','tools/source-indexing-service-cache.test.ts','tools/source-indexing-service-cache-fixture.mjs','tools/source-indexing-service-cache-evidence.test.mjs','tools/indexing-service-full-verify.mjs','tools/source-indexing-service-results.mjs','tools/source-indexing-service-map.mjs','tools/source-indexing-service-collect.mjs','tools/source-indexing-service-proxy.mjs','tools/source-indexing-service-proxy.config.mjs','tools/source-indexing-service-proxy.test.ts','tools/source-indexing-service-proxy-fixture.mjs','tools/source-indexing-service-proxy-evidence.test.mjs','tools/source-indexing-service-original.mjs','tools/source-indexing-service-live.config.mjs','tools/source-indexing-service-live.setup.ts','tools/source-indexing-service-fixture.mjs','tools/source-indexing-service-evidence.mjs','tools/source-indexing-service-evidence.test.mjs','tools/go-source-fingerprint.mjs','tools/record-native-inputs.mjs','tools/record-results.mjs','tools/source-sync-results.mjs','tools/source-historical-results.mjs','tools/source-realtime-results.mjs','tools/config-live-results.mjs','tools/sql-source-results.mjs','tools/source-runtime-index-results.mjs','tools/source-runtime-historical-results.mjs','tools/source-runtime-multichain-results.mjs'];
 check(full.harness_inputs?.every(valid)&&harness.every(file=>full.harness_inputs.some(ref=>ref.file===file)),'Complete current acceptance harness required');
 const requiredCommands=['runtime-historical-evidence-controls','remaining-mapped-original-postgres','remaining-mapped-original-pglite','runtime-index-source-postgres','runtime-index-source-pglite','runtime-historical-source-postgres','runtime-historical-source-pglite','runtime-historical-log-order-postgres','runtime-historical-log-order-pglite','runtime-historical-fixture','sync-type-controls','historical-type-controls','sdk-client-build','prepared-native-inputs','abi-generated-normal','abi-generated-race','go-normal','go-race','go-vet','cli-build','erc20-build','core-oracle','parameters-types','sync-types','historical-types','runtime-index-types','sdk-client-tests','sdk-react-types','runtime-multichain-evidence-controls','runtime-multichain-source-postgres','runtime-multichain-source-pglite','runtime-multichain-probes-postgres','runtime-multichain-probes-pglite','runtime-multichain-fixture','runtime-multichain-probe-fixture','indexing-service-evidence-controls','indexing-service-source-postgres','indexing-service-source-pglite','indexing-service-fixture','indexing-service-source-collect','indexing-service-proxy-source','indexing-service-proxy-fixture','indexing-service-proxy-evidence-controls','indexing-service-cache-source','indexing-service-cache-fixture','indexing-service-cache-evidence-controls'];
-if(['indexing-actions-m39','indexing-profile-m40','independent-storage-m41'].some(stage=>relative.startsWith('parity/runs/'+stage+'/')))requiredCommands.push(...indexingActionsStages);
-if(['indexing-profile-m40','independent-storage-m41'].some(stage=>relative.startsWith('parity/runs/'+stage+'/')))requiredCommands.push(...indexingProfileStages);
-if(relative.startsWith('parity/runs/independent-storage-m41/'))requiredCommands.push(...independentStorageStages);
+if(['indexing-actions-m39','indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>relative.startsWith('parity/runs/'+stage+'/')))requiredCommands.push(...indexingActionsStages);
+if(['indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>relative.startsWith('parity/runs/'+stage+'/')))requiredCommands.push(...indexingProfileStages);
+if(['independent-storage-m41','multichain-atomic-m42'].some(stage=>relative.startsWith('parity/runs/'+stage+'/')))requiredCommands.push(...independentStorageStages);
+if(relative.startsWith('parity/runs/multichain-atomic-m42/'))requiredCommands.push(...atomicMultichainStages);
 check(full.commands.length===requiredCommands.length&&requiredCommands.every(name=>full.commands.filter(c=>c.name===name&&c.exit_code===0).length===1),'Missing, duplicate or failed aggregate stage');
 const declarations=read('parity/test-ledger.json').tests.filter(c=>c.source_file==='packages/core/src/indexing/index.test.ts');
 const selected=declarations.filter(c=>indexingServiceTargets.includes(c.id));

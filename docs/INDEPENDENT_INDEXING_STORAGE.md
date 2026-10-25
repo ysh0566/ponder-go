@@ -1,5 +1,7 @@
 # Independently owned sync storage and reusable indexing bindings (M41)
 
+M42 now adds bounded atomic setup/group primitives on this foundation; see [MULTICHAIN_ATOMIC_PRIMITIVES.md](MULTICHAIN_ATOMIC_PRIMITIVES.md). The exclusions below describe the M41 proof itself; the outer runner/readiness/cutover remain unfinished.
+
 This stage supplies storage ownership and finite transaction bindings. It is **not** the outer historical or realtime runner, atomic multichain setup/checkpoint initialization, readiness, trigger cutover, or automatic recovery coordination. Existing single-chain runtime restrictions remain. New integration tests/probes are supplemental, not additional original-source test credit.
 
 ## Source anchors and the intentional native difference
