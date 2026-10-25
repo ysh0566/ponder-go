@@ -1,0 +1,62 @@
+{
+  "state": "Actual separate pristine and external virtual-source compilation only. Native source30 comparison/runtime/integration/full normal/race and exact mappings remain pending.",
+  "complete": true,
+  "steps": [
+    {
+      "step": "external_prototype_compile",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-overlay",
+        "/root/ponder-go/.cloud-bootstrap/history-next/m34/prototype-overlay-01.json",
+        "-run",
+        "^$",
+        "./runtime"
+      ],
+      "exit_code": -15,
+      "log": "parity/runs/realtime-m34/prototype-compile-01.txt",
+      "inputs": [
+        {
+          "file": "/root/ponder-go/.cloud-bootstrap/history-next/m34/source_realtime_state.go.txt",
+          "sha256": "f03a0c24297eddcd06b04f26d31cd950bd179162fab2ddbce6192b8a5781e95d"
+        },
+        {
+          "file": "/root/ponder-go/.cloud-bootstrap/history-next/m34/source_realtime_fetch.go.txt",
+          "sha256": "2d6811b7acb8141d1b165016fa3dc0db72777e6f72366c7b78a5b0e0bcba1ac0"
+        },
+        {
+          "file": "/root/ponder-go/.cloud-bootstrap/history-next/m34/source_call_traces.go.txt",
+          "sha256": "569cab868e6056f0e67e2d76424349bb6abe83e6c6674e493420a6352f5da227"
+        },
+        {
+          "file": "/root/ponder-go/.cloud-bootstrap/history-next/m34/source_trace_identity_test.go.txt",
+          "sha256": "45de99535eb8496bb561853258adb387597a29871b051f3d6a7043ecd6da40ec"
+        },
+        {
+          "file": "/root/ponder-go/.cloud-bootstrap/history-next/m34/source_historical_wire_extended_test.go.txt",
+          "sha256": "6347b827972484dba7587503955e9396e55c3bb3fb745a9f8f940812239d611c"
+        },
+        {
+          "file": "/root/ponder-go/.cloud-bootstrap/history-next/m34/source_realtime_live_test.go.txt",
+          "sha256": "97f6406aa03472de59d31dd37e7512269d6f6aed8d4add67182d36c9ac339732"
+        },
+        {
+          "file": "/root/ponder-go/.cloud-bootstrap/history-next/m34/prototype-overlay-01.json",
+          "sha256": "609aa61fc85491a8502e0c2c2fdd4d3186a5dbbad9c00ade33d75f5ae0c6c8f0"
+        }
+      ]
+    },
+    {
+      "step": "separate_pristine_original",
+      "command": [
+        "node",
+        "tools/source-realtime-pristine.mjs"
+      ],
+      "exit_code": 0,
+      "log": "parity/runs/realtime-m34/pristine-original-01-driver.txt"
+    }
+  ],
+  "success": false,
+  "finished_utc": "2026-10-25T01:14:14.596949+00:00"
+}

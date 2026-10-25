@@ -1,0 +1,3678 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "counting": "Only exact source mappings count toward upstream parity. Native regression cases and generated differential vectors are separate evidence.",
+  "parity": {
+    "source_files": 104,
+    "test_declarations": 897,
+    "expanded_static_records": 905,
+    "unresolved_expansion_records": 0,
+    "assertion_expressions": 1905,
+    "type_records": 73,
+    "inline_type_assertions": 63,
+    "type_error_directives": 84,
+    "source_states": {
+      "active": 893,
+      "skip": 10,
+      "todo": 2,
+      "expected_failure": 0
+    },
+    "ported": 486,
+    "executed": 486,
+    "passed": 486,
+    "failed": 0,
+    "blocked": 0,
+    "unimplemented": 419,
+    "go_ports": 482,
+    "retained_sdk": 4,
+    "oracle_passed": 486,
+    "oracle_blocked": 0,
+    "go_passed": 482,
+    "sdk_passed": 4,
+    "go_and_original_oracle_passed": 482,
+    "target_and_original_oracle_passed": 486
+  },
+  "source_records": {
+    "statically_discovered": 905,
+    "mapped": 486,
+    "unimplemented": 419,
+    "discovery_is_not_proven_runtime_exhaustive": true
+  },
+  "mapped_go": {
+    "mapped": 482,
+    "passed_with_required_type_checks": 482,
+    "original_oracle_also_passed": 482,
+    "original_oracle_blocked": 0
+  },
+  "retained_sdk": {
+    "mapped": 4,
+    "passed": 4
+  },
+  "rpc_action_differential": {
+    "counting": "Supplementary vectors executed by unchanged pinned source functions; no original test record credit. Provider live-RPC tests remain separate.",
+    "vectors": 62,
+    "source_expected_errors": 13,
+    "go": {
+      "pass": 62,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 62,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/rpc/actions-differential.json"
+  },
+  "event_build_differential": {
+    "counting": "Supplemental vectors from actual pinned selected declarations; not original source test credit.",
+    "vectors": 135,
+    "source_expected_errors": 8,
+    "go": {
+      "pass": 135,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 135,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/runtime/event-build-differential.json"
+  },
+  "selected_source_oracle": {
+    "evidence": "parity/runs/selected-runtime-oracle.json",
+    "mode": "unchanged_selected_declarations_with_actual_source_dependencies",
+    "total": 4,
+    "passed": 4,
+    "success": true
+  },
+  "selected_existing_oracle": {
+    "evidence": "parity/runs/selected-mapped-oracle.json",
+    "mode": "unchanged_already_mapped_filter_genesis_split_declarations",
+    "total": 15,
+    "passed": 15,
+    "success": true
+  },
+  "filter_fragment_differential": {
+    "counting": "Synthetic differential vectors only; no source-test credit.",
+    "vectors": 867,
+    "source_expected_exceptions": 4,
+    "go": {
+      "pass": 867,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 867,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/runtime/filter-differential.json"
+  },
+  "original_oracle": {
+    "mapped_passed": 486,
+    "mapped_blocked": 0,
+    "meaning": "Original tests executed separately; only explicit differential vectors are labelled differential verification."
+  },
+  "full_original_backend_oracles": [
+    {
+      "backend": "postgres",
+      "evidence": "parity/runs/full-original-postgres-oracle.json",
+      "scope": "Eight original source files, not complete upstream acceptance or additional Go port credit",
+      "passed": 129,
+      "failed": 0,
+      "pending": 3,
+      "source_context_hashes_verified": true
+    },
+    {
+      "backend": "pglite",
+      "evidence": "parity/runs/full-original-pglite-oracle.json",
+      "scope": "Eight original source files, not complete upstream acceptance or additional Go port credit",
+      "passed": 129,
+      "failed": 0,
+      "pending": 3,
+      "source_context_hashes_verified": true
+    }
+  ],
+  "native_execution_schedule": {
+    "go": {
+      "evidence": "parity/runs/go-test-execution.json",
+      "complete": true,
+      "success": true,
+      "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
+      "packages": 22,
+      "top_level_functions": 170,
+      "batches": 56
+    },
+    "race": {
+      "evidence": "parity/runs/go-race-execution.json",
+      "complete": true,
+      "success": true,
+      "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout. Two disk-full PostgreSQL batches retried with unchanged inputs; accepted log contains only real successful disjoint invocation segments, failed raw attempts remain immutable and explicitly referenced.",
+      "packages": 22,
+      "top_level_functions": 170,
+      "batches": 56
+    }
+  },
+  "type_fixtures": {
+    "inline_source_type_obligations": 53,
+    "positive_passed": 53,
+    "negative_controls_rejected": 53,
+    "failed": 0,
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1
+  },
+  "orm_type_fixtures": {
+    "source_error_directives": 6,
+    "source_error_directives_passed": 6,
+    "supplemental_negative_controls": 6,
+    "supplemental_rejected": 6,
+    "failed": 0
+  },
+  "event_type_fixtures": {
+    "source_error_directives": 1,
+    "source_error_directives_passed": 1,
+    "failed": 0
+  },
+  "bloom_type_fixtures": {
+    "source_error_directives": 2,
+    "source_error_directives_passed": 2,
+    "failed": 0
+  },
+  "config_builder": {
+    "source_cases": 40,
+    "active_runtime_cases": 39,
+    "original_skip": 1,
+    "source_assertion_expressions": 94,
+    "active_assertion_expressions": 92,
+    "fully_mapped": 39,
+    "mapped_assertion_expressions": 92,
+    "source_error_directives": 10,
+    "source_error_directives_passed": 10,
+    "source_error_directives_remaining": 0
+  },
+  "bloom_differential": {
+    "counting": "Supplementary actual-source vectors; zero exact source declaration credit. Explicit dynamic adapter cases do not claim valid typed topic0 inputs.",
+    "vectors": 497,
+    "source_expected_errors": 0,
+    "go": {
+      "pass": 7,
+      "fail": 0,
+      "skip": 0
+    },
+    "race": {
+      "pass": 7,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidence": "testdata/bloom/differential.json"
+  },
+  "type_scope": {
+    "dedicated_source_records": 73,
+    "dedicated_retained_sdk_passed": 1,
+    "inline_assertions_discovered": 63,
+    "inline_assertions_native_compiled": 53,
+    "error_directives_discovered": 84,
+    "error_directives_native_verified": 41,
+    "error_directives_retained_sdk_verified": 1
+  },
+  "indexed_topic_source_verification": {
+    "source_vectors": 50,
+    "source_expected_errors": 6,
+    "new_exact_source_records": 0,
+    "parameter_types": 5,
+    "evidence": "parity/runs/topic-source-verification.json"
+  },
+  "source_realtime_verification": {
+    "source_cases": 30,
+    "source_assertions": 203,
+    "source_error_directives": 0,
+    "backend_mode_executions": 4,
+    "native_calls_per_backend_mode": 83,
+    "raw_provider_inputs_per_backend_mode": 46,
+    "original_preparation_requests_per_backend_mode": 3,
+    "supplementary_source_vectors": 24,
+    "supplementary_source_credit": 0,
+    "native_memory_api_no_database": true,
+    "evidence": "parity/runs/source-realtime-verification.json"
+  },
+  "source_historical_verification": {
+    "source_cases": 40,
+    "source_assertions": 102,
+    "native_calls_per_backend_mode": 136,
+    "source_error_directives": 12,
+    "source_error_directives_passed": 12,
+    "backend_mode_executions": 4,
+    "file_backend_mode_executions": 8,
+    "typed_positive_executions": 48,
+    "supplementary_source_credit": 0,
+    "evidence": "parity/runs/source-historical-verification.json"
+  },
+  "source_sync_verification": {
+    "source_cases": 38,
+    "source_assertions": 63,
+    "native_calls_per_backend_mode": 95,
+    "source_error_directives": 9,
+    "source_error_directives_passed": 9,
+    "backend_mode_executions": 4,
+    "supplementary_source_credit": 0,
+    "evidence": "parity/runs/source-sync-verification.json"
+  },
+  "sql_source_verification": {
+    "source_cases": 14,
+    "source_assertions": 19,
+    "source_error_directives": 0,
+    "captured_operations": 38,
+    "actual_relational_inputs": 8,
+    "source_vectors": 61,
+    "source_parser_version": 160001,
+    "evidence": "parity/runs/sql-source-verification.json"
+  },
+  "typed_abi_runtime": {
+    "file": "parity/runs/abi-typed-go.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0,
+    "counting": "Supplementary typed decoder execution; not additional source test records."
+  },
+  "typed_abi_race": {
+    "file": "parity/runs/abi-typed-race.jsonl",
+    "leaf_cases": 53,
+    "pass": 53,
+    "fail": 0,
+    "skip": 0
+  },
+  "backend_execution": {
+    "postgres": {
+      "counting": "First explicit slash dialect component wins; legacy backend-tagged names remain supported. Source titles mentioning another backend do not double count. Source mappings and backend companions remain separate from source parity.",
+      "go": {
+        "leaf_cases": 343,
+        "pass": 343,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 343,
+        "pass": 343,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    },
+    "pglite": {
+      "counting": "First explicit slash dialect component wins; legacy backend-tagged names remain supported. Source titles mentioning another backend do not double count. Source mappings and backend companions remain separate from source parity.",
+      "go": {
+        "leaf_cases": 340,
+        "pass": 340,
+        "fail": 0,
+        "skip": 0
+      },
+      "race": {
+        "leaf_cases": 340,
+        "pass": 340,
+        "fail": 0,
+        "skip": 0
+      },
+      "evidence": "parity/runs/go-test.jsonl"
+    }
+  },
+  "simulation": {
+    "seed_space": "unbounded",
+    "status": "unimplemented",
+    "executed_seeds": 0
+  },
+  "native_go": {
+    "file": "parity/runs/go-test.jsonl",
+    "leaf_cases": 2463,
+    "pass": 2463,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/go-race.jsonl",
+    "leaf_cases": 2463,
+    "pass": 2463,
+    "fail": 0,
+    "skip": 0
+  },
+  "foundation_oracle": {
+    "file": "parity/runs/foundation-oracle.json",
+    "total": 34,
+    "passed": 34,
+    "failed": 0
+  },
+  "core_oracle": {
+    "file": "parity/runs/core-oracle.json",
+    "total": 203,
+    "passed": 201,
+    "failed": 0
+  },
+  "client": {
+    "file": "parity/client-original.json",
+    "numTotalTests": 3,
+    "numPassedTests": 3,
+    "numFailedTests": 0
+  },
+  "react": true,
+  "differential": {
+    "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "seed": "0x17c6d5ba",
+    "counting": "Generated differential vectors, not transplanted upstream tests.",
+    "vectors": 2466,
+    "operations": {
+      "encode": 400,
+      "decode": 400,
+      "union": 400,
+      "intersection": 400,
+      "difference": 400,
+      "chunks": 400,
+      "factory": 66
+    },
+    "passed": 2466,
+    "failed": 0,
+    "go": "go version go1.25.0 linux/amd64",
+    "node": "v24.20.0",
+    "differences": []
+  },
+  "milestone": "M34",
+  "status": "verified_subset_project_incomplete",
+  "recorded_utc": "2026-10-25T03:02:17.525171+00:00",
+  "based_on": "87555af3c8aba8f41154926238ceaa7bf1138649",
+  "new_exact_source_records": 30,
+  "new_original_assertions": 203,
+  "new_original_type_error_obligations": 0,
+  "native_leaf_delta": 84,
+  "native_delta_breakdown": {
+    "complete_original_realtime_backend_cases": 60,
+    "trace_source_vectors": 12,
+    "realtime_source_controls": 12
+  },
+  "native_source_fingerprint": {
+    "files": 1065,
+    "sha256": "f6a0342703f5fd7b5e7d8a3ce6ee36771281f3597c639d2656aae26ba36f825a"
+  },
+  "implementation": [
+    {
+      "file": "parity/mappings.json",
+      "sha256": "fb5c88982f5de683d85f65f40052acd1c95cafd269777adb36664022c569fbfc"
+    },
+    {
+      "file": "rpc/source_call_traces.go",
+      "sha256": "8911526bdb891a95edfac5486e0561937bef57e9d26267a4abf0901825df1a33"
+    },
+    {
+      "file": "runtime/source_historical_wire_test.go",
+      "sha256": "6347b827972484dba7587503955e9396e55c3bb3fb745a9f8f940812239d611c"
+    },
+    {
+      "file": "runtime/source_realtime_controls_test.go",
+      "sha256": "9f38955d291ab6a236b2d2c48cfef2d50508b0c8bcfb7b65cebebc7524e28f6b"
+    },
+    {
+      "file": "runtime/source_realtime_fetch.go",
+      "sha256": "0a6a4b9ca074c296a8f35663e621fdbc21b9c788090aab3c975f42c386ccb869"
+    },
+    {
+      "file": "runtime/source_realtime_live_test.go",
+      "sha256": "ea97eac9d3b1bbadee5e34fd6c3792dc2631da23216cd039783290b44c5ea152"
+    },
+    {
+      "file": "runtime/source_realtime_state.go",
+      "sha256": "f07292b7aa25f79e2abfe0b82eef2902ca9a616045caed814e462ec673c78a06"
+    },
+    {
+      "file": "runtime/source_trace_identity_test.go",
+      "sha256": "dbaa85fb9f85435bdf47f0cff09c3f612db37be67e704c58f186e144dd3ec7c7"
+    },
+    {
+      "file": "testdata/rpc/source-trace-identity.json",
+      "sha256": "9b4728d939d1ccff6e90d815faa08b22c7d5523e00dfa0122bfd325d0fed1749"
+    },
+    {
+      "file": "testdata/runtime/source-realtime-controls.json",
+      "sha256": "2779194926d4ece48ff47a2667d9ac902af54abf96cacaf0f454d439b4da06bf"
+    },
+    {
+      "file": "tools/compiler-cache-cutover.mjs",
+      "sha256": "1934e3514ae3a1ac1b1380e5dad96d95fb1bdd671d32ca21a22a7037e94f24f4"
+    },
+    {
+      "file": "tools/record-results.mjs",
+      "sha256": "f83cdd569c457ad5ab9b0a6f8c0fb0564856f250adc3b7d1f7fcf73a270c4050"
+    },
+    {
+      "file": "tools/source-realtime-controls.mjs",
+      "sha256": "8899d95219bfdf2d70c6cbca6a46db3e33467319d4b6d61d8399e4cd7bc34d1c"
+    },
+    {
+      "file": "tools/source-realtime-live.config.mjs",
+      "sha256": "3c256f525bfca0b9a360d9172d4e9eb08303d77db20dc4072dc7445f5879aebe"
+    },
+    {
+      "file": "tools/source-realtime-live.setup.ts",
+      "sha256": "8ba3f4d63b6cd3211da175bd258f2f729c81399f771cf1c4e17e791924a7d341"
+    },
+    {
+      "file": "tools/source-realtime-module-loader.mjs",
+      "sha256": "310180cd2b1ced6a765bf6b913e18c81a321bd1f3de639aa91d4b11477710901"
+    },
+    {
+      "file": "tools/source-realtime-observer-probe.mjs",
+      "sha256": "4e1b3a51e4f366ca28177aecb5c55659dfda1da947ae546c86ac4d4bef118ba8"
+    },
+    {
+      "file": "tools/source-realtime-original.mjs",
+      "sha256": "f741e32ecf9e0522c7964f5e6e33f9ba59495b2651c68962ab1050e1ccfa4d16"
+    },
+    {
+      "file": "tools/source-realtime-pristine.mjs",
+      "sha256": "5d78b09b8f10323a9802bb0d79c69bfb39b4730ba1ecbadd078c40aad18588b9"
+    },
+    {
+      "file": "tools/source-realtime-results.mjs",
+      "sha256": "b67d3ffa705d40084e6464e8e854e4f0907507324ea75893d0650ae33ec06c55"
+    },
+    {
+      "file": "tools/source-realtime-rpc-observer.mjs",
+      "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+    },
+    {
+      "file": "tools/source-trace-fixtures.mjs",
+      "sha256": "a4cf9e79fd0ac2fc56b0a5bbcdaf84370dd837c50b1e6f88214261acf426f67b"
+    },
+    {
+      "file": "tools/verify.sh",
+      "sha256": "d9d49885045da3fd1f539fa2cc61f79c39916fb19b88b09a94ce89b53e5cf6fe"
+    }
+  ],
+  "prepared_input_proof": "parity/runs/prepared-native-inputs.json",
+  "complete_preparation_input_audit": "parity/runs/realtime-m34/preparation-all-native-inputs-01.json",
+  "frozen_evidence": [
+    {
+      "file": "parity/runs/batch-33-evidence/parity/client-original.json",
+      "sha256": "55a77ef15aa145e8564ce7f7d673ecef17801eb320bcb26d16ae305a183bd8bc",
+      "bytes": 1267,
+      "copied_from": "parity/client-original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/parity/feature-ledger.json",
+      "sha256": "893adc63f69df52b1efdb4e8f75e52531e4672db79a7867f550559cdea73378e",
+      "bytes": 52186,
+      "copied_from": "parity/feature-ledger.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/parity/mappings.json",
+      "sha256": "fb5c88982f5de683d85f65f40052acd1c95cafd269777adb36664022c569fbfc",
+      "bytes": 579886,
+      "copied_from": "parity/mappings.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/parity/react-original-typecheck-supported.json",
+      "sha256": "67f8feec0c1155c32450ac3c1b5e727819f579fdd61f563df7499fe0e0505836",
+      "bytes": 887,
+      "copied_from": "parity/react-original-typecheck-supported.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/abi-codegen-stages.json",
+      "sha256": "92712c44ac0b36de0680ea33a469c99a43899af34911ce7eeadd1a7aca8b34d6",
+      "bytes": 833,
+      "copied_from": "parity/runs/abi-codegen-stages.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/abi-typed-go.jsonl",
+      "sha256": "db11c700b80eafe780d5801927e6e9e3c82f108211bea767c8f45cd03e12aca1",
+      "bytes": 49117,
+      "copied_from": "parity/runs/abi-typed-go.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/abi-typed-race.jsonl",
+      "sha256": "e8cf1892e3edf966a6a56825ebd33a925f8ac49f2de2b1436409b49b325e09c8",
+      "bytes": 49129,
+      "copied_from": "parity/runs/abi-typed-race.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/bloom-compile-fixtures.json",
+      "sha256": "29265ae1582bac435b2ad4fb8c5c34cb0fa2e9dce0e38f268c03815fcd897da3",
+      "bytes": 4852,
+      "copied_from": "parity/runs/bloom-compile-fixtures.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/compile-fixtures.json",
+      "sha256": "c2bfab43654609f82ba2a1d744622ca44df6f757a710554a169e9223042c86fe",
+      "bytes": 72943,
+      "copied_from": "parity/runs/compile-fixtures.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-live-verification.json",
+      "sha256": "4e1a6f1dd7ae6029c4545a976660abd81d402b7089a62af768ca6e732ec8cc5c",
+      "bytes": 158434,
+      "copied_from": "parity/runs/config-live-verification.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-m28/pristine-2026-10-25T01-40-32-576Z-2568167/bindings.jsonl",
+      "sha256": "ec629998fd4c3fdcd8c014747e6f40270c1b325ee292f1c0043d86fef5c8b006",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-m28/pristine-2026-10-25T01-40-32-576Z-2568167/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-m28/pristine-2026-10-25T01-40-32-576Z-2568167/original.json",
+      "sha256": "9577d6d5fcd2dac7f612819c9a19a4c4a0b9786f6fc35190d6c8d1f82f036f0d",
+      "bytes": 11164,
+      "copied_from": "parity/runs/config-m28/pristine-2026-10-25T01-40-32-576Z-2568167/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-m28/pristine-2026-10-25T01-40-32-576Z-2568167/output.txt",
+      "sha256": "22f370b61bf8a3d2f74e3505eb1869b9aba896db22d70c4f99c34c0082efdb17",
+      "bytes": 327,
+      "copied_from": "parity/runs/config-m28/pristine-2026-10-25T01-40-32-576Z-2568167/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-oracle.json",
+      "sha256": "647cf1d60bc2aef46e6e8de76e7200f47dcd8783ebe0ac1af1e9c828c0aa41e5",
+      "bytes": 2649,
+      "copied_from": "parity/runs/config-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2474755511/bindings.jsonl",
+      "sha256": "1cd3b48c4808c7022feed35cc16d7a408ba3a6b15aaa0c8a50d75c680e12e2bb",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-types-m29/live-2474755511/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2474755511/block-filter-compile.json",
+      "sha256": "3027a24d8b2955c3e0c74d263e89c174d0c25f0a524a17a5697da96816cba6c9",
+      "bytes": 1968,
+      "copied_from": "parity/runs/config-types-m29/live-2474755511/block-filter-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2474755511/calls.json",
+      "sha256": "57ac9e01200e1128d976daf5f8692fdc3504b7d38449cda1647f56e1c9ac2f0d",
+      "bytes": 2657802,
+      "copied_from": "parity/runs/config-types-m29/live-2474755511/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2474755511/literal-compile.json",
+      "sha256": "c95fbedc47f2bfc9427245a3c5892e6ca77402a376eb27d19988c4f464a329b8",
+      "bytes": 7532,
+      "copied_from": "parity/runs/config-types-m29/live-2474755511/literal-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2474755511/native.json",
+      "sha256": "692f76012d02a35299d702c9fe7b964b26fcda7b6ca50126497888c7a9a17742",
+      "bytes": 2652772,
+      "copied_from": "parity/runs/config-types-m29/live-2474755511/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2474755511/original.json",
+      "sha256": "8aac64196500b4d23c7b1978f184cd98115ab99ae83cdcd6bc5892d1077f2b66",
+      "bytes": 11158,
+      "copied_from": "parity/runs/config-types-m29/live-2474755511/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2474755511/output.txt",
+      "sha256": "c7ab7a0b1d98d18940402b919a94ce329287fc15cef74ab673bddddc502d0f02",
+      "bytes": 307,
+      "copied_from": "parity/runs/config-types-m29/live-2474755511/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2474755511/typed-compile.json",
+      "sha256": "939e9f8d9d2c884fb5528b19a658d04b3b967e9d9e864812eabd1129f3832527",
+      "bytes": 23943,
+      "copied_from": "parity/runs/config-types-m29/live-2474755511/typed-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2606510244/bindings.jsonl",
+      "sha256": "650d9a1590025997cdcfa9873d9e7f88193bb043579748c5f04f80af21df0bf5",
+      "bytes": 102,
+      "copied_from": "parity/runs/config-types-m29/live-2606510244/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2606510244/block-filter-compile.json",
+      "sha256": "3027a24d8b2955c3e0c74d263e89c174d0c25f0a524a17a5697da96816cba6c9",
+      "bytes": 1968,
+      "copied_from": "parity/runs/config-types-m29/live-2606510244/block-filter-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2606510244/calls.json",
+      "sha256": "fdcdaad3795e550a83050271cf5381dd2b2aae0d5884eb5077e2dcd9eb9b393e",
+      "bytes": 2657802,
+      "copied_from": "parity/runs/config-types-m29/live-2606510244/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2606510244/literal-compile.json",
+      "sha256": "c95fbedc47f2bfc9427245a3c5892e6ca77402a376eb27d19988c4f464a329b8",
+      "bytes": 7532,
+      "copied_from": "parity/runs/config-types-m29/live-2606510244/literal-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2606510244/native.json",
+      "sha256": "1f4aff38dd74660afdfb5ceade2a543aafdd6b78685b31132837b39b69445695",
+      "bytes": 2652772,
+      "copied_from": "parity/runs/config-types-m29/live-2606510244/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2606510244/original.json",
+      "sha256": "a37c52f1aac1e180cc30a8089137bbfafb146038301e35faf99351845c0f4e7c",
+      "bytes": 11163,
+      "copied_from": "parity/runs/config-types-m29/live-2606510244/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2606510244/output.txt",
+      "sha256": "d6bc9c6b2b5e1c05c7626a671ebc57873bcd735a01956655fedf39281b5d3b27",
+      "bytes": 307,
+      "copied_from": "parity/runs/config-types-m29/live-2606510244/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/config-types-m29/live-2606510244/typed-compile.json",
+      "sha256": "939e9f8d9d2c884fb5528b19a658d04b3b967e9d9e864812eabd1129f3832527",
+      "bytes": 23943,
+      "copied_from": "parity/runs/config-types-m29/live-2606510244/typed-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/core-oracle.json",
+      "sha256": "d91df7f052e93a75a40fa402fefd8b9bf9fef9ecb4888c758e398c1a773bd130",
+      "bytes": 49625,
+      "copied_from": "parity/runs/core-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/differential-inputs.jsonl",
+      "sha256": "1f1d921d15a078d51fc2964f00d705349709ed55a3498d52bcc846fbe63ce952",
+      "bytes": 246158,
+      "copied_from": "parity/runs/differential-inputs.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/differential.json",
+      "sha256": "b3e76a40cc1f9a715a77364adf7b4fa9a21e4a77ce7f6052095c3dfc0fdddaf2",
+      "bytes": 469,
+      "copied_from": "parity/runs/differential.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/event-compile-fixtures.json",
+      "sha256": "84309324fd1007e5969ccd904c4e5ed5d31c7d1c80cf013f228754126d85ac25",
+      "bytes": 2522,
+      "copied_from": "parity/runs/event-compile-fixtures.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/foundation-oracle.json",
+      "sha256": "7699157b1641781987913d3b003cd86a3589640909686887bfb64d10483720a0",
+      "bytes": 9122,
+      "copied_from": "parity/runs/foundation-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/full-original-pglite-oracle.json",
+      "sha256": "5d22579ef01dd88ee9d1122b18f8a253c55546ddb74b0ebc529edc2fc2a8f1ba",
+      "bytes": 55647,
+      "copied_from": "parity/runs/full-original-pglite-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/full-original-postgres-oracle.json",
+      "sha256": "0655723634454be1fb41b15f02e75041645ff0a3beb8fef4104c064672ee88af",
+      "bytes": 54574,
+      "copied_from": "parity/runs/full-original-postgres-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/go-race-execution.json",
+      "sha256": "1814d3d3f9518f7314fbe9b084036df7a6242adea374367a84b3ab77e51f92cd",
+      "bytes": 53714,
+      "copied_from": "parity/runs/go-race-execution.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/go-race.jsonl",
+      "sha256": "c0f5d972baecf00f47dff04c437d4c1d54b4d661f2257fcbca4eab4a87315945",
+      "bytes": 2187999,
+      "copied_from": "parity/runs/go-race.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/go-test-execution.json",
+      "sha256": "5bd2b012ba17944d61abaaee9cc1b9ad950b6ec16f8ca24994d00d7381ae6cb3",
+      "bytes": 47561,
+      "copied_from": "parity/runs/go-test-execution.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/go-test.jsonl",
+      "sha256": "b0e4b53699b1d86136e6d29d94102801bcde0aab9e70f858126ae9b44a7f3d46",
+      "bytes": 2187809,
+      "copied_from": "parity/runs/go-test.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/go-vet.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "copied_from": "parity/runs/go-vet.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-2087190941/bindings.jsonl",
+      "sha256": "a84bbc81d623887317e370cc1e9c90590e47fc2dce704013178e48ba54c339d6",
+      "bytes": 102,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-2087190941/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-2087190941/calls.json",
+      "sha256": "d060db7569fbbd8fefa9410ae5e7720dd58fd4bb73c1e8f32ded390a63666235",
+      "bytes": 1182326,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-2087190941/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-2087190941/calls.json.requests.jsonl",
+      "sha256": "88e0e3afd9995af5d19141ef4e9041c5d84de59c62c016273cc2554fb7f67035",
+      "bytes": 844177,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-2087190941/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-2087190941/native.json",
+      "sha256": "d879890fc2a175edab9b6e2d668942044558eefdf92bcf01026031855a7562c4",
+      "bytes": 33369,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-2087190941/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-2087190941/original.json",
+      "sha256": "46fec43512aefe66488aeeb52531bc34c0aa2873ca0221de215f777a372f4bc0",
+      "bytes": 6272,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-2087190941/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-2087190941/output.txt",
+      "sha256": "e91d7ba31c390d7d76689b590961ffae8e6688046334a65b8899a8e380bcd8da",
+      "bytes": 319,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-2087190941/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-2087190941/parent-output.txt",
+      "sha256": "751c6a6bf068bbdcc33d718c49c34af73167d79af0008dfe3dddc00cd27b44c0",
+      "bytes": 194,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-2087190941/parent-output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-2087190941/result.json",
+      "sha256": "c032c633ec89cea0b6f88dc382dfcb04d77104b55b5634d5c62ad0c3df4474f4",
+      "bytes": 6159,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-2087190941/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-3549756890/bindings.jsonl",
+      "sha256": "d90688e82cafb7e7b6485e2ee992cfefbd4c5c77f4792e0b8b3adf5de64c8ae3",
+      "bytes": 102,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-3549756890/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-3549756890/calls.json",
+      "sha256": "745e92ae5abe64a77bbf4fc849c3b77bf5e9567c5fb8dac75fe43e479f595422",
+      "bytes": 1182326,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-3549756890/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-3549756890/calls.json.requests.jsonl",
+      "sha256": "281b08c9324a666319bcf424b07e401ec92129edc2c1899abc41ed6ce93c20cb",
+      "bytes": 844177,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-3549756890/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-3549756890/native.json",
+      "sha256": "0194677077a9efd59195d723a1beb4f267a84dd16046251e6eb3b4d8d2c105d6",
+      "bytes": 33369,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-3549756890/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-3549756890/original.json",
+      "sha256": "e6b69d6f8198c6e8ae55180e93248d241c950f7da01d0298f199f0e31ca400bd",
+      "bytes": 6272,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-3549756890/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-3549756890/output.txt",
+      "sha256": "7895872e2e789dcca17f9f164c06ae470167602137ddea5a38d9e93872d9c07a",
+      "bytes": 319,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-3549756890/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-3549756890/parent-output.txt",
+      "sha256": "5304f795be2f5d9204cb5b54c1e49b2d1f55b6a691c9e246a46c730e161d9c1b",
+      "bytes": 194,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-3549756890/parent-output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-in-memory-3549756890/result.json",
+      "sha256": "a2a902ec4c44a78a09a5b9f3ceaca196c123e3335af593c5bedb514e29df090b",
+      "bytes": 6159,
+      "copied_from": "parity/runs/history-m33/live-pglite-in-memory-3549756890/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1315581995/bindings.jsonl",
+      "sha256": "dc907d40a92419853048f997290d6455f8f88ef51ff1d8b59a8623ca1194a43b",
+      "bytes": 102,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1315581995/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1315581995/calls.json",
+      "sha256": "bee6bc70d3816018322f0a53c1964a229d35964ea6fc7149f7128f392fa15ef0",
+      "bytes": 1311931,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1315581995/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1315581995/calls.json.requests.jsonl",
+      "sha256": "40aebf30ab59d305f164b014cc7eaa68b27a56b5923cc2b591936b6141493316",
+      "bytes": 1069308,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1315581995/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1315581995/native.json",
+      "sha256": "1c274d8c0834d5bfef44e2aa63d85e55d918747e4c0d9d34d9b62b6cb7a6433c",
+      "bytes": 38264,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1315581995/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1315581995/original.json",
+      "sha256": "e054d7afc1708a67e7a3eaafe8895421ad783c81dcf42c1f4905dfd476a4d399",
+      "bytes": 4340,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1315581995/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1315581995/output.txt",
+      "sha256": "8051a1dca9a0c840a2cab1e80bbb5e020e6d3235c89ea4f15e8f7fc9d0117472",
+      "bytes": 315,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1315581995/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1315581995/parent-output.txt",
+      "sha256": "b5ba5098026a2550de003b238bb5be7465dead50a95d74f6f9278c4e13f3a284",
+      "bytes": 186,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1315581995/parent-output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1315581995/result.json",
+      "sha256": "4f84b2e16bc528dd1304d887d429fd189aa9dcc255d40e53d2a0293abf1b3ead",
+      "bytes": 6139,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1315581995/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1731102731/bindings.jsonl",
+      "sha256": "3990267157f1a6f2c24abf8021442c8b67e32380e601f894341fe86cd28feb96",
+      "bytes": 102,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1731102731/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1731102731/calls.json",
+      "sha256": "96b1fae7a4ea3eea363a5420e179b0fd8c05669adfc02e09978b045c7a45a68d",
+      "bytes": 1311931,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1731102731/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1731102731/calls.json.requests.jsonl",
+      "sha256": "6190cf6bbc838dc47bcb5851ef56f9bcf9251ee3d1fcf1bc8927448e240a9094",
+      "bytes": 1069308,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1731102731/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1731102731/native.json",
+      "sha256": "31faf094c3724e23599ed64e4dfd62db6bb9f7371c13080ed85b86afac36bdaa",
+      "bytes": 38264,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1731102731/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1731102731/original.json",
+      "sha256": "04aadae0cde2413b5f54608ae1316e13a98045bc00cf737f4f4dd2e2196dab0b",
+      "bytes": 4340,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1731102731/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1731102731/output.txt",
+      "sha256": "e0064886b6f9e899a0b8ce02ad010b32e69a85c7139f7da74ac36d2f124b919b",
+      "bytes": 315,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1731102731/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1731102731/parent-output.txt",
+      "sha256": "aaa7f44d7cc576507c7b109a981867984989b6336aab2f87a57f3d82832c6ff1",
+      "bytes": 186,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1731102731/parent-output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-pglite-index-1731102731/result.json",
+      "sha256": "fb8a0c19d87d0e837dfc759bbd185ea557a1857de0c318cb047cbe80096625c8",
+      "bytes": 6139,
+      "copied_from": "parity/runs/history-m33/live-pglite-index-1731102731/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-1797453650/bindings.jsonl",
+      "sha256": "140092b4b16b08afb31b3389730145c0096c52d97a5bd847ec9c5b84f41ccaf5",
+      "bytes": 102,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-1797453650/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-1797453650/calls.json",
+      "sha256": "9bd00e65a5b7dc7b4b1af406eaaad84b6a95b9b187a782c03b5cd754840bdf94",
+      "bytes": 1182326,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-1797453650/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-1797453650/calls.json.requests.jsonl",
+      "sha256": "5f39ef842d6599b26d1129d14c337b8a1f6f7cd3e594fd2dde67d57fe62d9303",
+      "bytes": 844189,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-1797453650/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-1797453650/native.json",
+      "sha256": "e2682dfa9684194c11dfac6cc5b7e5d976a8d9789d99b8789dabc86662e3e958",
+      "bytes": 33407,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-1797453650/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-1797453650/original.json",
+      "sha256": "58c03ccecae759c010533bd460599f886b2d1496e2d7dc5c8a5c0ff579b97f22",
+      "bytes": 6280,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-1797453650/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-1797453650/output.txt",
+      "sha256": "89c2159339dd8cbef2e3366d7fe347f991a35c92819f2278aba75e8e817a1fb9",
+      "bytes": 321,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-1797453650/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-1797453650/parent-output.txt",
+      "sha256": "488509bfe99e93b16735ba610768eb67f13145bad69d730260efc6bcbb10e2d5",
+      "bytes": 198,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-1797453650/parent-output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-1797453650/result.json",
+      "sha256": "1ab6fa940ca4114251f2559e0bf0d58908485b49f4e029173c4efd850b1b7ca1",
+      "bytes": 6163,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-1797453650/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-3460341353/bindings.jsonl",
+      "sha256": "3fcf51c9ea8f62de7a1ca597c9cc2dd3be39b57b94526e5e585e3614b62f1ad4",
+      "bytes": 102,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-3460341353/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-3460341353/calls.json",
+      "sha256": "626cf395134698714783d46155a542f2cf741abc33076bb63fe7976ffec18144",
+      "bytes": 1182326,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-3460341353/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-3460341353/calls.json.requests.jsonl",
+      "sha256": "0a320b05835fb5e5453356c552393280dad08399699c99e390e87bf219851c1c",
+      "bytes": 844189,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-3460341353/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-3460341353/native.json",
+      "sha256": "55521961fa9f24637b8d232b830e9ce95275052556e7db1556723e37fe4ff986",
+      "bytes": 33407,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-3460341353/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-3460341353/original.json",
+      "sha256": "05b72294f3be3e64485bae67fd6ea61ecca50af2a61f4138f4c1cd34e1c55052",
+      "bytes": 6281,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-3460341353/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-3460341353/output.txt",
+      "sha256": "47fc8106b29c32a1a0f6c25ca64e9a7c68d683de8855b29932e4871f21d8039c",
+      "bytes": 321,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-3460341353/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-3460341353/parent-output.txt",
+      "sha256": "1d4861e701b8c64ab3fe700bc0a8bb76a6510b46a65f7acae8dacb72827c0089",
+      "bytes": 198,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-3460341353/parent-output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-in-memory-3460341353/result.json",
+      "sha256": "1c7be1dd362b9c6f17dce529889de5a34c4c1d5d072efd49cf8256e263e48090",
+      "bytes": 6163,
+      "copied_from": "parity/runs/history-m33/live-postgres-in-memory-3460341353/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-2849851325/bindings.jsonl",
+      "sha256": "477cddd7b8636a130b8307f1bb690cfbf8997cb47f031e47c90432ddddefd53a",
+      "bytes": 102,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-2849851325/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-2849851325/calls.json",
+      "sha256": "57cb61c342db1f0d5e7c11762b0cf06bc081bf8b5d8679e9b652dfb689d3e604",
+      "bytes": 1311931,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-2849851325/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-2849851325/calls.json.requests.jsonl",
+      "sha256": "4de54670e3d117d30555e91bfd4a655366be68dd1994ca03e6f841fcec051d26",
+      "bytes": 1069320,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-2849851325/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-2849851325/native.json",
+      "sha256": "716db4f1e28126e0154036866cc4de32515db3eacdaf62435e663c28fbd57206",
+      "bytes": 38302,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-2849851325/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-2849851325/original.json",
+      "sha256": "52e23697f4649a2486b17191de0fe7d9e71d4b4a9fbb2de4ebcaf9ca2668abec",
+      "bytes": 4348,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-2849851325/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-2849851325/output.txt",
+      "sha256": "0be1f4810d59ee614575affec2f9125833be66cac53112504cc897a060f253c3",
+      "bytes": 317,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-2849851325/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-2849851325/parent-output.txt",
+      "sha256": "c41c58bd4aeb22864a6107382452083a35209111c240369413a34807a483775b",
+      "bytes": 190,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-2849851325/parent-output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-2849851325/result.json",
+      "sha256": "a7419483a31742bed403bcd77a3d9560b338f627265bd437d6733aec9badbe29",
+      "bytes": 6143,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-2849851325/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-3700512987/bindings.jsonl",
+      "sha256": "8cf38934e9fa7c170f28fc4b6303cc9cf4282a28f7b2137400c1236866206bde",
+      "bytes": 102,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-3700512987/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-3700512987/calls.json",
+      "sha256": "3f97795b962631b6389ec044c3066ee77900140a76d46a6948079ab099a2d3f9",
+      "bytes": 1311931,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-3700512987/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-3700512987/calls.json.requests.jsonl",
+      "sha256": "8551caf3aa29db77bf00014758b64ef085eb31f6d440467e6efb80c6ef7d3251",
+      "bytes": 1069320,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-3700512987/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-3700512987/native.json",
+      "sha256": "b521ab4202b4e24468da35637fd3eca8236b3705dc2408510c61c2b7c66b5ab7",
+      "bytes": 38302,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-3700512987/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-3700512987/original.json",
+      "sha256": "cd3a627cd15014688c3529b6a9cde60b6ccd2f29770ea028ed281831be57c155",
+      "bytes": 4355,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-3700512987/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-3700512987/output.txt",
+      "sha256": "ce90d50b83fa84c56ed6225a7c8fdc6ee7a6dba4880b896ec2c57b4a97027b4f",
+      "bytes": 317,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-3700512987/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-3700512987/parent-output.txt",
+      "sha256": "695ea875998dadc704198f76b9312cd117513237ec2cee7353e670d81c8ee9f7",
+      "bytes": 190,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-3700512987/parent-output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/live-postgres-index-3700512987/result.json",
+      "sha256": "220618094123f49b39420da42c4fb5efc3c14fc1f5524635312f5a3fc355bb54",
+      "bytes": 6143,
+      "copied_from": "parity/runs/history-m33/live-postgres-index-3700512987/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-pglite/bindings.jsonl",
+      "sha256": "9a540f4be8dc7a72eeb4d98cf76dff26c6bf13f9a0783bee56793783877c6642",
+      "bytes": 102,
+      "copied_from": "parity/runs/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-pglite/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-pglite/original.json",
+      "sha256": "f483ea5475b41e29e435cb811f3385ca6a512bab4b3252bf7e12092b1e6ac762",
+      "bytes": 10163,
+      "copied_from": "parity/runs/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-pglite/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-pglite/output.txt",
+      "sha256": "9609a6e82ba9c90aaa788e59e0e794b8179dd3e067142ee2eec7cd06ccb5b745",
+      "bytes": 335,
+      "copied_from": "parity/runs/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-pglite/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-pglite/result.json",
+      "sha256": "027bfc2706c163c24ab8e607c7cb3274229dc5cf638a55827449ee612a17fa97",
+      "bytes": 5760,
+      "copied_from": "parity/runs/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-pglite/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-postgres/bindings.jsonl",
+      "sha256": "91c5ffa31fbc63abe56ee9fa0bdf0ee616577466653bb9a6d28b49360af8c1ce",
+      "bytes": 102,
+      "copied_from": "parity/runs/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-postgres/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-postgres/original.json",
+      "sha256": "b04e09dede3f3a3fd0997ffbb9bdcfef7d689d09ba46fd2f4e31a9449c568090",
+      "bytes": 10157,
+      "copied_from": "parity/runs/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-postgres/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-postgres/output.txt",
+      "sha256": "d4f9ff2442c2021920a837f1645ad6e57e52c34c89c280f5a0f9bc19d088d353",
+      "bytes": 337,
+      "copied_from": "parity/runs/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-postgres/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-postgres/result.json",
+      "sha256": "d0c4afe0953790115be93bed8040d3efcbcafc67ff4bfa6883d74ab977b4e098",
+      "bytes": 5766,
+      "copied_from": "parity/runs/history-m33/pristine-2026-10-25T01-46-13-634Z-2570062-postgres/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/18407c46d5bf5ef7f901-0-negative.go.txt",
+      "sha256": "e0c9bb6659c983650ce844f5d7c961d50ed3b051bf2eec282a8177ecb067e662",
+      "bytes": 16016,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/18407c46d5bf5ef7f901-0-negative.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/18407c46d5bf5ef7f901-0-positive.go.txt",
+      "sha256": "b08bcd0015e8217c3691370071c5d02ea39b2fa5b7cd2e4c47331698e7306791",
+      "bytes": 16041,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/18407c46d5bf5ef7f901-0-positive.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/1f021a7b846451889eae-0-negative.go.txt",
+      "sha256": "b468a2e289a4750459ed630fb5c454fa30512c0bf928b40e6402a844aec43066",
+      "bytes": 16398,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/1f021a7b846451889eae-0-negative.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/1f021a7b846451889eae-0-positive.go.txt",
+      "sha256": "559a93088bfcf9065336aad43863a27beebd69fc1c3773dfad05828c60aee055",
+      "bytes": 16423,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/1f021a7b846451889eae-0-positive.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/1f021a7b846451889eae-1-negative.go.txt",
+      "sha256": "1b5db258e2bbb90a4e6489301511424d53749f12a7704f595c99d3b921946523",
+      "bytes": 16398,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/1f021a7b846451889eae-1-negative.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/1f021a7b846451889eae-1-positive.go.txt",
+      "sha256": "b070e781e3e54bb2b936a26ba64cb80a7fd01cafa1bfba9b7dfa886ca448b077",
+      "bytes": 16423,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/1f021a7b846451889eae-1-positive.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/4ed88e241ef6d778d897-0-negative.go.txt",
+      "sha256": "f272ee9a5b6515cacfad68e91590c4326a41e609995bbf1ad5af8acba176adfb",
+      "bytes": 16600,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/4ed88e241ef6d778d897-0-negative.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/4ed88e241ef6d778d897-0-positive.go.txt",
+      "sha256": "49edd995d2a8c21108beeeed69ac0cd3004f5fdd6eac9b091b8b4b57a1e75945",
+      "bytes": 16612,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/4ed88e241ef6d778d897-0-positive.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/97a5db3271fd8a51cce8-0-negative.go.txt",
+      "sha256": "518c7c0296073ec7a8b63dad78d927b8331eb18e44f57c60cb76c797953b743c",
+      "bytes": 16263,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/97a5db3271fd8a51cce8-0-negative.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/97a5db3271fd8a51cce8-0-positive.go.txt",
+      "sha256": "bd6809f5e155bbcaba2f4dbe97a10bc6672ac1e29f86ab0646a2f292021de92b",
+      "bytes": 16288,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/97a5db3271fd8a51cce8-0-positive.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/9eaf4ba9f4488a48165e-0-negative.go.txt",
+      "sha256": "b940ff98bf7f53a695414b03c0cb45ca6d45f365759ddb24e7a32296d02bcc9e",
+      "bytes": 16509,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/9eaf4ba9f4488a48165e-0-negative.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/9eaf4ba9f4488a48165e-0-positive.go.txt",
+      "sha256": "613dea5854157ee86d369a528c7a51a12a6874ce51351593bbb752edbdcc3933",
+      "bytes": 16534,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/9eaf4ba9f4488a48165e-0-positive.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/9eaf4ba9f4488a48165e-1-negative.go.txt",
+      "sha256": "71577bde3965c2eabad7fe871152946f004811f640c12686a8c21b53781e6e89",
+      "bytes": 16509,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/9eaf4ba9f4488a48165e-1-negative.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/9eaf4ba9f4488a48165e-1-positive.go.txt",
+      "sha256": "5cf1d0d48d898e914ab269ba5d294a70be522b59a283b02fd5532459020062ae",
+      "bytes": 16534,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/9eaf4ba9f4488a48165e-1-positive.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/c5ca58c81d923d49529e-0-negative.go.txt",
+      "sha256": "37f7be3714c5a5a1e7f68f142c9447c53f68afc40e6bb688e2cb5643004316a0",
+      "bytes": 16600,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/c5ca58c81d923d49529e-0-negative.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/c5ca58c81d923d49529e-0-positive.go.txt",
+      "sha256": "048266d59b8b2103a549ed06be5bc1d16ec59d7de10f8537d192282caed5b287",
+      "bytes": 16612,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/c5ca58c81d923d49529e-0-positive.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/da3e0236d21a83248db7-0-negative.go.txt",
+      "sha256": "135aa136ffea4f4856fdc94b43a98d135c60859325e46e85d41f9e628409faba",
+      "bytes": 16509,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/da3e0236d21a83248db7-0-negative.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/da3e0236d21a83248db7-0-positive.go.txt",
+      "sha256": "3dbbfb934ff4677fcdeaf642fffa81b2ddc300e6acef70b8f503dc2f5e96853a",
+      "bytes": 16534,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/da3e0236d21a83248db7-0-positive.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/da3e0236d21a83248db7-1-negative.go.txt",
+      "sha256": "be9ccfb2905ef3ba07b13d3f973c65a919f27b79763a4a6de3ec51fbc3cbc2c4",
+      "bytes": 16509,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/da3e0236d21a83248db7-1-negative.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/da3e0236d21a83248db7-1-positive.go.txt",
+      "sha256": "be597eaeb6cc3e0f4a39a9607733c71e71b26fd78353eb1b49afa34a4b1b847f",
+      "bytes": 16534,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/da3e0236d21a83248db7-1-positive.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/da3e0236d21a83248db7-2-negative.go.txt",
+      "sha256": "6e11f670272f5299f6d40ed85f7cccd914484811e5f0d514681e2ad2a6a5bf5b",
+      "bytes": 16509,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/da3e0236d21a83248db7-2-negative.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/da3e0236d21a83248db7-2-positive.go.txt",
+      "sha256": "828358ff18c41d8a42e8c9817a67c93e3787a1f39e3230f34cfa9a092a3826ca",
+      "bytes": 16534,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/da3e0236d21a83248db7-2-positive.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/e7360d814bb5552f5222-0-negative.go.txt",
+      "sha256": "16d0bed6cebfe59188387aad8027c0ad42a64e5acbc06096675ffc4fd13a4f0c",
+      "bytes": 16263,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/e7360d814bb5552f5222-0-negative.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/e7360d814bb5552f5222-0-positive.go.txt",
+      "sha256": "45e69c16c239e0a5aead4a0d868d6c57f3e1ac37dcc956f986b815d9648be704",
+      "bytes": 16288,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/e7360d814bb5552f5222-0-positive.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/report.json",
+      "sha256": "eaba3ae68907a7c234db593cf05bef9c325e20c66aad8cc735ec3b5d7489c96a",
+      "bytes": 161432,
+      "copied_from": "parity/runs/history-m33/type-compile-prepared-2026-10-25T01-46-44-484Z/report.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/types-2026-10-25T01-43-30-346Z-2569691/in-memory-pristine.json",
+      "sha256": "6edd9e1b98b3ee9a106ffe165dcdda5aa757e7eb9ae6edea74fbb65a1efe488e",
+      "bytes": 1620,
+      "copied_from": "parity/runs/history-m33/types-2026-10-25T01-43-30-346Z-2569691/in-memory-pristine.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/types-2026-10-25T01-43-30-346Z-2569691/in-memory-pristine.txt",
+      "sha256": "bdd0fd3ae0c9cc0688ee8d5658fc73da510579c3ff626ed0a7a10a2cc0fa3298",
+      "bytes": 86,
+      "copied_from": "parity/runs/history-m33/types-2026-10-25T01-43-30-346Z-2569691/in-memory-pristine.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/types-2026-10-25T01-43-30-346Z-2569691/in-memory-stripped.json",
+      "sha256": "cf68b7a6299403270c58e5f7fa7c8f1be637d52bae3791e4ce004e675cca0589",
+      "bytes": 21186,
+      "copied_from": "parity/runs/history-m33/types-2026-10-25T01-43-30-346Z-2569691/in-memory-stripped.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/types-2026-10-25T01-43-30-346Z-2569691/in-memory-stripped.txt",
+      "sha256": "414bd118993df2bfebe08421035511c9422b736729745a11727267644abfa7a0",
+      "bytes": 86,
+      "copied_from": "parity/runs/history-m33/types-2026-10-25T01-43-30-346Z-2569691/in-memory-stripped.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/types-2026-10-25T01-43-30-346Z-2569691/index-pristine.json",
+      "sha256": "dcb553a45e370d4c095e666500b1839445ee870a011cb7e3809b38b7acbbcb1a",
+      "bytes": 1612,
+      "copied_from": "parity/runs/history-m33/types-2026-10-25T01-43-30-346Z-2569691/index-pristine.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/types-2026-10-25T01-43-30-346Z-2569691/index-pristine.txt",
+      "sha256": "0107f2d0fae9803b224d5f17c737133ef4309c51e05752344349163a4daf3bdb",
+      "bytes": 72,
+      "copied_from": "parity/runs/history-m33/types-2026-10-25T01-43-30-346Z-2569691/index-pristine.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/types-2026-10-25T01-43-30-346Z-2569691/index-stripped.json",
+      "sha256": "a60bfe8b826d1a7973c307be96df434e21f1d31e612fb24445728131984d8708",
+      "bytes": 21156,
+      "copied_from": "parity/runs/history-m33/types-2026-10-25T01-43-30-346Z-2569691/index-stripped.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/history-m33/types-2026-10-25T01-43-30-346Z-2569691/index-stripped.txt",
+      "sha256": "a48912a00ba674cd0aba90ec6fa3b6a5fd9d0978d6efec8b8cee2e7447f05dcb",
+      "bytes": 72,
+      "copied_from": "parity/runs/history-m33/types-2026-10-25T01-43-30-346Z-2569691/index-stripped.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/blooms/bindings.jsonl",
+      "sha256": "794c69784f1f04837df4a859696c3bc2c3f3d47d05b0062235b26accef0e283a",
+      "bytes": 51,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/blooms/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/blooms/calls.json",
+      "sha256": "6ea833cbed59a4e5f5df51d41b7e0ca45b79b9dbe563acb3ce13cd5f8757301e",
+      "bytes": 182779,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/blooms/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/blooms/original.json",
+      "sha256": "be3eba5637b0baa340153990469b7708ecef2556d32de19325c3ba9693841b70",
+      "bytes": 2693,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/blooms/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/blooms/output.txt",
+      "sha256": "0858e7074fb2f72badefeabe624f1292ebe38f207ed5faf421bb9871ab12adba",
+      "bytes": 129,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/blooms/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/blooms/result.json",
+      "sha256": "13b04fe5220cea184bb0110795ab4b6e25f68f84c5afa3592d547a50e98344c4",
+      "bytes": 1181,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/blooms/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/events/bindings.jsonl",
+      "sha256": "2b5ab8b47cd8a0870eafb1718a7b72042c1d76c2f86488231069989ddb988145",
+      "bytes": 51,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/events/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/events/calls.json",
+      "sha256": "e34c93b5f8155a3fa00ad7b5b3015aea156f766913183a4b8dd954302a0b0193",
+      "bytes": 608384,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/events/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/events/original.json",
+      "sha256": "9c1534a177c9aaec64a044ea1d4056403bf10c5de2c6ba19ff2b1237d13aa116",
+      "bytes": 2980,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/events/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/events/output.txt",
+      "sha256": "25970850c045a0743f2990b91155bf9a7769e8866298b49c1a757610c95fedfb",
+      "bytes": 129,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/events/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/events/result.json",
+      "sha256": "e02c4bab1a15614c024145965c1d022ee9b54908d6430f48ca387ac984460dd5",
+      "bytes": 1171,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/events/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/filters/bindings.jsonl",
+      "sha256": "0832057866b746c5a99ca187dce2fe35076ab11007b9c9329a9310551410658c",
+      "bytes": 102,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/filters/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/filters/calls.json",
+      "sha256": "0bd3cb884a0ad1173a03898a08bd3745524a301099296e34a69f597398f5026a",
+      "bytes": 199707,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/filters/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/filters/original.json",
+      "sha256": "f5bc6ed4dee5bfaf33039fefdbc72ea5b6cac7f55f9c4aaf7fb4cc123a9fc0f6",
+      "bytes": 6676,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/filters/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/filters/output.txt",
+      "sha256": "8b1f95f16a59027b2a72d3ecd83b3ead1de54fe74b8b996dd0abe3fbd3dc6758",
+      "bytes": 324,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/filters/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/filters/result.json",
+      "sha256": "8138f46ee6992a77b4f2c4e2ad6165a1b1b18266da5fcc3d5e105da23424013b",
+      "bytes": 1175,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/filters/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/sql-pristine/bindings.jsonl",
+      "sha256": "51900dee993add7fdc7190ca7804a36bcf5760630c0a4764e5ee673d33b08ce7",
+      "bytes": 51,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/sql-pristine/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/sql-pristine/original.json",
+      "sha256": "9d851b6de10b677b8967f8c5c923957aee2426ddb4c19612a2ee83415abe5dc2",
+      "bytes": 3834,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/sql-pristine/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/sql-pristine/output.txt",
+      "sha256": "729b3fe0ad01ded7808002978355ad77a9d5dcb716db17edc4af08b97086d7fd",
+      "bytes": 135,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/sql-pristine/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/sql-pristine/result.json",
+      "sha256": "d0e1ac3e9e3e66a3f849665498cc85bc97454a452ccdc251fd9176890545031a",
+      "bytes": 3192,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/sql-pristine/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/sql/bindings.jsonl",
+      "sha256": "4b182b2f37248a863669c65def4065bd4aaa67851a57a3b0cbe95da654b42e88",
+      "bytes": 51,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/sql/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/sql/calls.json",
+      "sha256": "72db2d1df1cb9d483dce133f91a6bf97e822cf9a7b60f7cc4f2ac4471d75250e",
+      "bytes": 101693,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/sql/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/sql/original.json",
+      "sha256": "79090abaa99144bb0bd5774e4111110af273d58a6f75acdc2861b9878d6cc6aa",
+      "bytes": 3841,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/sql/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/sql/output.txt",
+      "sha256": "74e69a2cb7130c9a5646aa28f025b802903c50d2a9fe1c1f904c91c03e3f42c1",
+      "bytes": 126,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/sql/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/original-captures/20261025T013707-2562281/sql/result.json",
+      "sha256": "42c45badf6834a816d8284b6fda26bc20623813678026412f90093d4480ee7f3",
+      "bytes": 3717,
+      "copied_from": "parity/runs/original-captures/20261025T013707-2562281/sql/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/orm-codegen-stages.json",
+      "sha256": "43ef86b30face7f59dc3f3a3b807132cdf780bc4f29504961553c3be577af3c2",
+      "bytes": 1436,
+      "copied_from": "parity/runs/orm-codegen-stages.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/orm-compile-fixtures.json",
+      "sha256": "02431cfafa8fcbd626861918ac3f171fbbcaf980ead04f150bbf2f8a25f63272",
+      "bytes": 13363,
+      "copied_from": "parity/runs/orm-compile-fixtures.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/parameters-typecheck.json",
+      "sha256": "92c5c2a30ff31db3f5dea19de6564d9ca1ea58336682f70137a6be4443157bcb",
+      "bytes": 589,
+      "copied_from": "parity/runs/parameters-typecheck.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/prepared-native-inputs.json",
+      "sha256": "587c68ecf06e57938830f6e21605e93c89ef0d2badf7533e21485a2c28d95a47",
+      "bytes": 176930,
+      "copied_from": "parity/runs/prepared-native-inputs.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/cache-selector-recovery-01.json",
+      "sha256": "f3ae6c1284fa462ca107b0c9a7acdae31df837f1d0255669ff410f20d60409d2",
+      "bytes": 962,
+      "copied_from": "parity/runs/realtime-m34/cache-selector-recovery-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/compiler-cache-before-preparation-1792892189538.json",
+      "sha256": "c253f98390e3941a88bf1789ffa11fe1683778c181c329dec8c452d59fbbddf0",
+      "bytes": 527323,
+      "copied_from": "parity/runs/realtime-m34/compiler-cache-before-preparation-1792892189538.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/compiler-cache-normal-to-race-1792894803568.json",
+      "sha256": "5192a03ab11a244e1403a456d95f63cad61a036d7e24ad76c1d10314aeacb070",
+      "bytes": 935067,
+      "copied_from": "parity/runs/realtime-m34/compiler-cache-normal-to-race-1792894803568.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/controls-normal-01.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/realtime-m34/controls-normal-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/controls-normal-01.jsonl",
+      "sha256": "81d8d8dadc5c387ecc0ee7e65832af409821e22bb6ddf92a573e1aaf18eb1662",
+      "bytes": 11798,
+      "copied_from": "parity/runs/realtime-m34/controls-normal-01.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/focused-01-mutable-inputs.json",
+      "sha256": "28b278a49b0f57bc1f949a954d5516e96c28148aa8f32fa75aae0aba5a1acc67",
+      "bytes": 1307,
+      "copied_from": "parity/runs/realtime-m34/focused-01-mutable-inputs.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/focused-01-mutable-inputs/parity/runs/realtime-m34/observer-identity-proof.json",
+      "sha256": "18221687466f3ee693b1b2042c11d18ef8c584fa7b6b2602f01f965fe2b34b8e",
+      "bytes": 1501,
+      "copied_from": "parity/runs/realtime-m34/focused-01-mutable-inputs/parity/runs/realtime-m34/observer-identity-proof.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/focused-01-mutable-inputs/parity/runs/realtime-m34/observer-identity-proof.txt",
+      "sha256": "871bc5fa3b61e0a1543d3da3207cdf3ecd4575c0a1f4b794ab6d4ea5b30d44e7",
+      "bytes": 1455,
+      "copied_from": "parity/runs/realtime-m34/focused-01-mutable-inputs/parity/runs/realtime-m34/observer-identity-proof.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/focused-01-mutable-inputs/parity/runs/source-realtime-pristine.json",
+      "sha256": "6379994fcf045d7953861aca8899e677b32c64451c360e4d800091b10e57c441",
+      "bytes": 13284,
+      "copied_from": "parity/runs/realtime-m34/focused-01-mutable-inputs/parity/runs/source-realtime-pristine.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/focused-01-mutable-inputs/testdata/runtime/source-historical-types.json",
+      "sha256": "a870b012a2bb3b0d16aa9471437ac797b1e2069ae288b6d0076f006e04c25f25",
+      "bytes": 161001,
+      "copied_from": "parity/runs/realtime-m34/focused-01-mutable-inputs/testdata/runtime/source-historical-types.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/focused-mode-recovery-01.json",
+      "sha256": "4af33bd186d8b0677f8ee52cc557803bdfc74b6cc8590f34627ea2afbc9e9dc1",
+      "bytes": 1616,
+      "copied_from": "parity/runs/realtime-m34/focused-mode-recovery-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/focused-verification-01.json",
+      "sha256": "d491de54ff6a0f396bdb9bbab00c766899d9e3e8eb0ef4094dbc1128afee61b4",
+      "bytes": 42240,
+      "copied_from": "parity/runs/realtime-m34/focused-verification-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/frozen-identical-dedup-01.json",
+      "sha256": "2b013357b0b264b0afecce9942a60be1db3f6747ee01d7249ca3d8c3cbc66ffc",
+      "bytes": 303915,
+      "copied_from": "parity/runs/realtime-m34/frozen-identical-dedup-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/frozen-identical-dedup-plan-01.json",
+      "sha256": "1bf146fbad178378ade3b3f6fe0fb2225980988e04803798553318b986a17c12",
+      "bytes": 303477,
+      "copied_from": "parity/runs/realtime-m34/frozen-identical-dedup-plan-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/full-01-infrastructure-failure/go-race-execution.json",
+      "sha256": "64f87699e964e58186be7363c6d34a73b2a4c061644a1a15ae2086f88a5b8a7a",
+      "bytes": 48749,
+      "copied_from": "parity/runs/realtime-m34/full-01-infrastructure-failure/go-race-execution.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/full-01-infrastructure-failure/go-race.jsonl",
+      "sha256": "bc8196f9fe243bfd01eafbac03d4e3700ca0e0e9b8dd316a1b5459b2cb72b569",
+      "bytes": 2190008,
+      "copied_from": "parity/runs/realtime-m34/full-01-infrastructure-failure/go-race.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/full-01-infrastructure-failure/go-test-execution.json",
+      "sha256": "5bd2b012ba17944d61abaaee9cc1b9ad950b6ec16f8ca24994d00d7381ae6cb3",
+      "bytes": 47561,
+      "copied_from": "parity/runs/realtime-m34/full-01-infrastructure-failure/go-test-execution.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/full-01-infrastructure-failure/prepared-native-inputs.json",
+      "sha256": "587c68ecf06e57938830f6e21605e93c89ef0d2badf7533e21485a2c28d95a47",
+      "bytes": 176930,
+      "copied_from": "parity/runs/realtime-m34/full-01-infrastructure-failure/prepared-native-inputs.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/full-verify-01.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2,
+      "copied_from": "parity/runs/realtime-m34/full-verify-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/full-verify-01.txt",
+      "sha256": "3a4c52493116b43058e0ec182ca0ca7d6d838f6983c90ce5f2f722ef218057e2",
+      "bytes": 35056,
+      "copied_from": "parity/runs/realtime-m34/full-verify-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/full-verify-02-queue-stop-01.exit",
+      "sha256": "f5bde7eb9f6c71611dc5726e8aca3eb4eba3e386da49e0a4ed5c295a90a73a0d",
+      "bytes": 4,
+      "copied_from": "parity/runs/realtime-m34/full-verify-02-queue-stop-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/full-verify-02-queue-stop-01.txt",
+      "sha256": "03bf150145928dbff29243d2246cc07a341fd5f626cf3ca4b83f27851402b630",
+      "bytes": 212,
+      "copied_from": "parity/runs/realtime-m34/full-verify-02-queue-stop-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/full-verify-02.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/realtime-m34/full-verify-02.exit"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/full-verify-02.json",
+      "sha256": "993f6d1c31c397d994530a8561c25455fc3302671afd6c8dc45b877f56b006bb",
+      "bytes": 39951,
+      "copied_from": "parity/runs/realtime-m34/full-verify-02.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/full-verify-02.txt",
+      "sha256": "f2eda0e15add39149507152cf5793bdecb0058083ab386ba9033072b8e345ee4",
+      "bytes": 603,
+      "copied_from": "parity/runs/realtime-m34/full-verify-02.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-normal-01-results.json",
+      "sha256": "8140564e601fd75bc3a50aa05f2c384f573ff27ac6e545f5430abd145cf97af8",
+      "bytes": 718,
+      "copied_from": "parity/runs/realtime-m34/live-normal-01-results.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-normal-01.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2,
+      "copied_from": "parity/runs/realtime-m34/live-normal-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-normal-01.jsonl",
+      "sha256": "3b418a7561f68ad408665a9de64cfc312890d1923922f17bc293945a9f3a815e",
+      "bytes": 57596,
+      "copied_from": "parity/runs/realtime-m34/live-normal-01.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-normal-02-results.json",
+      "sha256": "bb89ac29c36777f16d4c344ddc6f7ae8c04ad32959e2b1c0ee6e7f3fbdb54eae",
+      "bytes": 717,
+      "copied_from": "parity/runs/realtime-m34/live-normal-02-results.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-normal-02.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/realtime-m34/live-normal-02.exit"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-normal-02.jsonl",
+      "sha256": "e63ea7d4370b573c115463a3272a24486c484e5e72b66d48e3945183989c9b9d",
+      "bytes": 53914,
+      "copied_from": "parity/runs/realtime-m34/live-normal-02.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-normal-03-results.json",
+      "sha256": "60d85e68eb60cbee691d098a9b6096ba5921b36c96fd45d3759f90849ab04e75",
+      "bytes": 763,
+      "copied_from": "parity/runs/realtime-m34/live-normal-03-results.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-normal-03.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/realtime-m34/live-normal-03.exit"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-normal-03.jsonl",
+      "sha256": "0b52e94b190e539cc1afb28e94cb9ce4fd6fe59aa70cedb19e324372fa814b86",
+      "bytes": 65223,
+      "copied_from": "parity/runs/realtime-m34/live-normal-03.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2047173154/bindings.jsonl",
+      "sha256": "7b9376275212eff793c8824b235e7f8441ede489846b64df0a3bbb0cdaebfc2d",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2047173154/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2047173154/calls.json",
+      "sha256": "9504ec2d0e936ad7d35a1e0ce787f75f4ce43b11d0c02d4cbf6b3926b49818a9",
+      "bytes": 2064242,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2047173154/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2047173154/calls.json.requests.jsonl",
+      "sha256": "a7e125ab9c438812dfdf7e16780b3fa82fdf506897fbe6792bbfe872dbc03ccb",
+      "bytes": 1705926,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2047173154/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2047173154/driver.txt",
+      "sha256": "b0b10eee976878316c6329335984eb58ae135aba580feb87840e64881fe317a9",
+      "bytes": 164,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2047173154/driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2047173154/native.json",
+      "sha256": "c141d992d8a60c49ebbd56e06e23b501b6e8dedbd9135cd12590f0b61fea964c",
+      "bytes": 35657,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2047173154/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2047173154/original.json",
+      "sha256": "ea9b75d9715856e223a1bdc4fcf8e08e8768e4ae6468c7bb2495ed145df83910",
+      "bytes": 8008,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2047173154/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2047173154/output.txt",
+      "sha256": "299255ffa90362b51e6bdc3ac78a493c2c09ac96954f3a240137c96ccab7a7dd",
+      "bytes": 310,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2047173154/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2047173154/result.json",
+      "sha256": "15ef68374db927ea0b0a581e3dbc4c76db48502c7dde864e010411af9352732a",
+      "bytes": 6630,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2047173154/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2049163804/bindings.jsonl",
+      "sha256": "4f5b3880e8239f86201e76853193e3a25b2a131f2eac0d7608c38dcb80b4672c",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2049163804/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2049163804/calls.json",
+      "sha256": "f16e148ece117b607c23a1748fa3e02d900cdaa2b90e224266ee7ca932788efb",
+      "bytes": 2013386,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2049163804/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2049163804/calls.json.requests.jsonl",
+      "sha256": "339943573281e9f61a208821a21b93242bf47d337dc8f521ffaf34bf6c4c923c",
+      "bytes": 1658880,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2049163804/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2049163804/driver.txt",
+      "sha256": "f4505434b7dbd845de1dad3be9524056fa8fcb6bf0cd20239c2ed8e47edd802c",
+      "bytes": 164,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2049163804/driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2049163804/native.json",
+      "sha256": "ba511a13465adc4a1a60191505b9d190b5f5f450db789b7c00e902c5c655d81c",
+      "bytes": 35657,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2049163804/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2049163804/original.json",
+      "sha256": "f22137d6d72c2fb32b98d9c689f64a0f887f8c7044100c634018ff042fc667cc",
+      "bytes": 8018,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2049163804/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2049163804/output.txt",
+      "sha256": "9be0d23fbd22a0f17f0151d1a7324cb177769d14fda30506c70b628976bf742d",
+      "bytes": 310,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2049163804/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2049163804/result.json",
+      "sha256": "77f8c44039d85cf0a718f566930b9eb9133dfa8cde656055541706f19ee0406b",
+      "bytes": 6630,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2049163804/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2264349150/bindings.jsonl",
+      "sha256": "c188399e8c892a75cd131d9c50a56e6b24d206d7ed570e63cab33b1fc283e1bf",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2264349150/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2264349150/calls.json",
+      "sha256": "475cf728298efb3af5dcdf610f05bf24dd7f590f21790f2ad042c62038b12a37",
+      "bytes": 2013386,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2264349150/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2264349150/calls.json.requests.jsonl",
+      "sha256": "7c512a4d97d7cfddd4d1d49c9c4c4a12b580580c146c90de918e398a31f8a6c0",
+      "bytes": 1658880,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2264349150/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2264349150/driver.txt",
+      "sha256": "469cbc292e42497f208ff1fd8af9a2bcc451cf4a16bc418627808cc09d8d40a6",
+      "bytes": 164,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2264349150/driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2264349150/native.json",
+      "sha256": "e429e3133a7a7fe04ccb7c6717a42bb8b2be52c12ad7854797c83fb6df55016d",
+      "bytes": 35657,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2264349150/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2264349150/original.json",
+      "sha256": "892d7e14c502e36029b1f49ed9a1436b1db5a673d2ca7e66073eaf34488151d7",
+      "bytes": 8025,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2264349150/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2264349150/output.txt",
+      "sha256": "046ca2796d357bfea81bf4bc3dd3f1f2722a8f4fd8020ad22dda5c3ad45981b5",
+      "bytes": 310,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2264349150/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-2264349150/result.json",
+      "sha256": "970cbdf8ae0f9aee4dfd62d83fcaa39a089822cf13c727fb417abbf12a8c38a2",
+      "bytes": 6630,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-2264349150/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-292226723/bindings.jsonl",
+      "sha256": "923e8336fa1a787b04953788c520b629044fbc110173c524d1acf1b1c58c41d2",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-292226723/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-292226723/calls.json",
+      "sha256": "e68a4ba63342957c914020debc8ff8899ac46f033f6b98e97d5cb79d28f3a873",
+      "bytes": 1900178,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-292226723/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-292226723/calls.json.requests.jsonl",
+      "sha256": "3e69586932122bd6e53943f9facd82c06df55fe1d88a0065ea3ad5cdea5084d6",
+      "bytes": 1586648,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-292226723/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-292226723/driver.txt",
+      "sha256": "c32164f92bc541f08aee5703030081da54533e4800fc468553f08f2389b6987a",
+      "bytes": 164,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-292226723/driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-292226723/native.json",
+      "sha256": "952f9762a1b5440b78a5a53824ca4a368ac339d2c511a6664f2ef7b211ead42d",
+      "bytes": 34356,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-292226723/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-292226723/original.json",
+      "sha256": "2f915f96d111b9531dfadbb5b40f4b09790556a83082b147fcd60e93399822b1",
+      "bytes": 10377,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-292226723/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-292226723/output.txt",
+      "sha256": "d463354f62b0a8c56449481261e320f4df2f1aa76015d6c31c516531e0df3755",
+      "bytes": 309,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-292226723/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-292226723/result.json",
+      "sha256": "ed4e19f915b95ab7d8f9a1ddda1efdab9c03d6a6346a78904553cb0ead2b676e",
+      "bytes": 6630,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-292226723/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-3386984939/bindings.jsonl",
+      "sha256": "55e225fee2e5e75d330d5ccb09738cf8361a532fdad5baec1520e88a3de48411",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-3386984939/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-3386984939/calls.json",
+      "sha256": "8df5e85f28f6471467a0f098224dc20ed6b451f8f5557e7cbf928a036a9cd13b",
+      "bytes": 2013386,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-3386984939/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-3386984939/calls.json.requests.jsonl",
+      "sha256": "1500504aacd685d642022742fa01a7b8c2042d5fc3a32ab2d24e7617b1393dcd",
+      "bytes": 1658880,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-3386984939/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-3386984939/driver.txt",
+      "sha256": "ec75585890bde7bc694a2d58f2c5d615b96517ae3d1d0522703c3d9fd60c36d5",
+      "bytes": 164,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-3386984939/driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-3386984939/native.json",
+      "sha256": "9f32305e6de65ae51c4de15f316bc0aff9fe9ac8fc13b781f530f3cbdf6c3329",
+      "bytes": 35657,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-3386984939/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-3386984939/original.json",
+      "sha256": "2189765cfa8fa33aa2d5f2425c89b1cd49844851b64c4810c5c808ddd114f4d3",
+      "bytes": 8006,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-3386984939/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-3386984939/output.txt",
+      "sha256": "37b31c8290fa10c34bf76a48667e89501fda7b9b28eb54ea842902b26998abc8",
+      "bytes": 310,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-3386984939/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-3386984939/result.json",
+      "sha256": "67063b312904b731fbdd74592928d052072858da562e567631f2cda3064b8f9e",
+      "bytes": 6630,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-3386984939/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-379491091/bindings.jsonl",
+      "sha256": "638ac0c17afe79ae72fd4116380c2c15dfc3c4b72aa661c557ae9960fbb5fb66",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-379491091/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-379491091/calls.json",
+      "sha256": "6b84721f0b8bf745cf8017d3576f637b65c2f8edd1309fc75d7d0a239a5783f1",
+      "bytes": 2064242,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-379491091/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-379491091/calls.json.requests.jsonl",
+      "sha256": "22db986bb452f6c78d87059bc3f5fb2e4111ac98fd63ef1cfc9af482ed01cc2a",
+      "bytes": 1705926,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-379491091/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-379491091/driver.txt",
+      "sha256": "d43fb7cab4e7582769a2da5399dc1d40da7c8782ef600c3a215a89503876d87f",
+      "bytes": 163,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-379491091/driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-379491091/native.json",
+      "sha256": "2bb0bd33b24f00c5b54ce6d5db7560ae3758b3fb4e806310b19f25c16bf2c38f",
+      "bytes": 35657,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-379491091/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-379491091/original.json",
+      "sha256": "b88bdf114b46708f3c8fbe4e341c8e7032c0b3d1d78de08da670f7bd1ff6af6c",
+      "bytes": 8022,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-379491091/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-379491091/output.txt",
+      "sha256": "eae7c3baeeee515e7ba3a1d908a0073b784ddd8e713f97ba4e085f5bb6b19bc2",
+      "bytes": 309,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-379491091/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-pglite-379491091/result.json",
+      "sha256": "943af0cf606c0b14456c858b2fb8cd124881845760744bdca87f80bf979c2411",
+      "bytes": 6629,
+      "copied_from": "parity/runs/realtime-m34/live-pglite-379491091/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1360205778/bindings.jsonl",
+      "sha256": "48d87442b12d66e1872fbd59376c4b4f2204a3d2bee2123dfad987dbaa675d4e",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1360205778/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1360205778/calls.json",
+      "sha256": "c70004f69922fcf8c60116322da57275d3af12be8668f5a1ba4edf816a1aafa3",
+      "bytes": 2013386,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1360205778/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1360205778/calls.json.requests.jsonl",
+      "sha256": "da734c7e9340e92e17f51db41338e06ebe31d6f9bcbfdec9402a34ced60d6133",
+      "bytes": 1658880,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1360205778/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1360205778/driver.txt",
+      "sha256": "924d3058811ac49a8c9ab31b26f0e5717235d53aa2d3d485e00df43f839ae0fd",
+      "bytes": 168,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1360205778/driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1360205778/native.json",
+      "sha256": "b82e4aaaf04b9c6eb5a283364dd8488efe85a2db5fbf60db5250cc55e55472df",
+      "bytes": 35659,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1360205778/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1360205778/original.json",
+      "sha256": "bc373ea0c3854b976a78c502efa9f927b3a023454c99d2d73033f2186edb1c8a",
+      "bytes": 8025,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1360205778/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1360205778/output.txt",
+      "sha256": "f7fac2a5a470bf4be88cccdad302df0381d1f5cdb9313b9f60800c955c5b707c",
+      "bytes": 312,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1360205778/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1360205778/result.json",
+      "sha256": "d595dc97175de43122ca1a3f87c105794a673db9df58443f603ba33f3ca37b82",
+      "bytes": 6634,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1360205778/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-152869426/bindings.jsonl",
+      "sha256": "8be5235d21cde35f2bfc4db125cb772cd6e19c465632b0efe46c2cf0a33904b8",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-152869426/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-152869426/calls.json",
+      "sha256": "fd13e44512738a035cf41d8074d6259715cb91391bfda84735c203625360b834",
+      "bytes": 2064242,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-152869426/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-152869426/calls.json.requests.jsonl",
+      "sha256": "dae13cbcdb37271ecd6ead1668ae3a64b1ad913eea9bcbeadfb66b62220775ce",
+      "bytes": 1705926,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-152869426/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-152869426/driver.txt",
+      "sha256": "b1144547033a56ea54551cfa12d076e40a8feef259f4f2e27df9f1ff73366f9d",
+      "bytes": 167,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-152869426/driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-152869426/native.json",
+      "sha256": "960a4c18fc132e41955466a5d2458d4a38b8c37a1041e67737480d3d4991bc94",
+      "bytes": 35659,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-152869426/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-152869426/original.json",
+      "sha256": "63d5d4733406434eb564adf89d8c0406f0f5f42fe2e5a20cf934b1fe8500651e",
+      "bytes": 8008,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-152869426/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-152869426/output.txt",
+      "sha256": "f2bfb0e6b183c512ae17a3b31dc16fc8ea8e039ba635c384fe5f4f78b8cf5281",
+      "bytes": 311,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-152869426/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-152869426/result.json",
+      "sha256": "c4d172523b3f656e0c90a1bc2c2017995b82f854ae9d9d7fe82262b93e396a7f",
+      "bytes": 6633,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-152869426/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1832436508/bindings.jsonl",
+      "sha256": "880aac212a7e611fd5061bcd01a4b828c871cdebe21bbd596e69553652183a13",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1832436508/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1832436508/calls.json",
+      "sha256": "cfa8cc4911086a244e15950deabcd5ede665e3341f36201afea37127c879713c",
+      "bytes": 2013386,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1832436508/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1832436508/calls.json.requests.jsonl",
+      "sha256": "36629787702b9e0815c85f93b7fc63e1c6c678e6f3c4ecb336250dfec3efc12e",
+      "bytes": 1658880,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1832436508/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1832436508/driver.txt",
+      "sha256": "da053363e342bfe340443fa3aa8d978ecc8790b49324e99140e68ba7c89ab5b3",
+      "bytes": 168,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1832436508/driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1832436508/native.json",
+      "sha256": "511e143fb291df0c2f0193c3080a392f5b2994591977548a16de21e3f3074f15",
+      "bytes": 35659,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1832436508/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1832436508/original.json",
+      "sha256": "011dd4b50992ad7b0a3df0409e64c175e1e2c5df1c6b72942a2dbde114b17b8a",
+      "bytes": 8032,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1832436508/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1832436508/output.txt",
+      "sha256": "8f31825d85bbe2ec43dd6dc11fc583b3fcd8c4772256a98ba7e1fd7d54900fe2",
+      "bytes": 312,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1832436508/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-1832436508/result.json",
+      "sha256": "e1a2db0c4a5040dc7687fb7bda5561f7cc4d05630b3ad137fb7115143034346a",
+      "bytes": 6634,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-1832436508/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3172671785/bindings.jsonl",
+      "sha256": "d32a483edb10343b4d220b32c4476d36e581d7db80d52b62622337ef9c93dfaf",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3172671785/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3172671785/calls.json",
+      "sha256": "c63411368a7367c82f72d5b594acc48e2a6853e023acee61e7e0591d251bb315",
+      "bytes": 1900178,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3172671785/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3172671785/calls.json.requests.jsonl",
+      "sha256": "49cb740db58a10244d92c9f54c0417f7fa91518dc47b1edbe57277377247de7a",
+      "bytes": 1586648,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3172671785/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3172671785/driver.txt",
+      "sha256": "5b8eb105ba89d3efcf0297fc4f8b2d53179b7c8caa1f6a9689077293dcbc5d87",
+      "bytes": 169,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3172671785/driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3172671785/native.json",
+      "sha256": "ee8d1f4cc7e6b42aacc3ab5596cf4b78c8c38e346bcad661641afbbdca8c4a20",
+      "bytes": 34358,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3172671785/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3172671785/original.json",
+      "sha256": "0abfdc9b3e8fbf901be797b25899a6d9d3e393e838adc2e5dca597fe01dfdb69",
+      "bytes": 10362,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3172671785/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3172671785/output.txt",
+      "sha256": "74049498a745c3e1cdcf6b406033fb7be613f51659c5232c412d326ca4877f83",
+      "bytes": 312,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3172671785/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3172671785/result.json",
+      "sha256": "74eeb16563927c5fc809ecfd731728162836630d686817e526812d3e2c18a371",
+      "bytes": 6635,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3172671785/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3203317450/bindings.jsonl",
+      "sha256": "9404ade8b6fba2ada0ac1447fcdac203c0f0ccb516bf03ddfda9360da41e5e5e",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3203317450/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3203317450/calls.json",
+      "sha256": "8626d7fb268e90531dde6fa58283fe78831a9dcab54197e9560b98c8c4967483",
+      "bytes": 2013386,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3203317450/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3203317450/calls.json.requests.jsonl",
+      "sha256": "910f43e3fff5ea8114812465e34dc4e7e1f1df25ff7bb385df7e98f5a114e33c",
+      "bytes": 1658880,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3203317450/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3203317450/driver.txt",
+      "sha256": "29ef1d8dac8e3bfc7fe3b42eaab6b93c6e6d0e6ab741036a9824b96de7fcaa45",
+      "bytes": 168,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3203317450/driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3203317450/native.json",
+      "sha256": "905ebffad2286a0c9206954379b212c077eac701aecf00ab2b7becd08931bf26",
+      "bytes": 35659,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3203317450/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3203317450/original.json",
+      "sha256": "9bafa08a77ceff949f07b7af2857530ec0ea8bc39ff059779fa6dc1e70e794d7",
+      "bytes": 8022,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3203317450/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3203317450/output.txt",
+      "sha256": "001d97b7a540b13f63c1ae57c17bade0162dde905bad9706be1b484156cab57b",
+      "bytes": 312,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3203317450/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-3203317450/result.json",
+      "sha256": "64f9a5cfa1b5703ee14cd888a35458d5392ba5f6ce039a59d3fa95bbfa31cec5",
+      "bytes": 6634,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-3203317450/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-8697700/bindings.jsonl",
+      "sha256": "af7af7f0dc8a7dd58782224a328518affe642f8caea05d3c81435898e72859b1",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-8697700/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-8697700/calls.json",
+      "sha256": "74a163cb093b3b0dbc1d9a463528425710991c806ed98a6db19622e2aef35c05",
+      "bytes": 2064242,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-8697700/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-8697700/calls.json.requests.jsonl",
+      "sha256": "8a21b78ce018c532bddb18021405549c9cb8beca9ac708016728f267405ea004",
+      "bytes": 1705926,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-8697700/calls.json.requests.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-8697700/driver.txt",
+      "sha256": "61421da7a7b3ebb01b0505008d39f96da3d0a06a25bc249f4ca32a38f2c5d3e6",
+      "bytes": 165,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-8697700/driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-8697700/native.json",
+      "sha256": "9777021ddeb922cc7bd5ba977a6231ca7dd5ce5b5a8035c18e21509737c12d0f",
+      "bytes": 35659,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-8697700/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-8697700/original.json",
+      "sha256": "d2432962d75f8131227c6ddc087a3a4ec1ea425ffbdc5f7e20512f50c769779a",
+      "bytes": 7997,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-8697700/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-8697700/output.txt",
+      "sha256": "497b4afa65efa33db32207365215fd61c05d2cebbe10115947a2bac4a02f3932",
+      "bytes": 309,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-8697700/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-postgres-8697700/result.json",
+      "sha256": "65d945f38b6686e2cb9dfcdef7b8643fd4dbd04be0b384975d760d9fded04e92",
+      "bytes": 6631,
+      "copied_from": "parity/runs/realtime-m34/live-postgres-8697700/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-race-01-results.json",
+      "sha256": "961cf671e1542dd70e5d4a4d6f8635941c29383abce25e7fb7f7f25d06c9adbc",
+      "bytes": 765,
+      "copied_from": "parity/runs/realtime-m34/live-race-01-results.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-race-01.exit",
+      "sha256": "4b883e04ed1a2af32c21811a12f2ccc766a1d73040b533ae4bcdfad8aca74293",
+      "bytes": 3,
+      "copied_from": "parity/runs/realtime-m34/live-race-01.exit"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-race-01.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "copied_from": "parity/runs/realtime-m34/live-race-01.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-race-02-results.json",
+      "sha256": "1a68cc5e482d93ac2a049d95b40906f313bc918e875b4e7f096c8271da5905b4",
+      "bytes": 782,
+      "copied_from": "parity/runs/realtime-m34/live-race-02-results.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-race-02.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/realtime-m34/live-race-02.exit"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/live-race-02.jsonl",
+      "sha256": "920435ce88eca65802678b22f0cadfac6bd58cd820b64d49737ae3c0f4c130d1",
+      "bytes": 76162,
+      "copied_from": "parity/runs/realtime-m34/live-race-02.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/m33-bundle-verification.json",
+      "sha256": "835662c00d40a7c9682065e32c6836c6180b7af860d432c728cc465714a34f11",
+      "bytes": 398,
+      "copied_from": "parity/runs/realtime-m34/m33-bundle-verification.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/m33-commit.json",
+      "sha256": "004120e5b64994ba1aa7bedf8363cb19586c8017313287694c151132ce83077c",
+      "bytes": 900,
+      "copied_from": "parity/runs/realtime-m34/m33-commit.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/m33-publication.json",
+      "sha256": "ee24b60fe70f71bee531a2b6a7a862cd9df0cf54d738370fd24b30d3f0340b77",
+      "bytes": 2276,
+      "copied_from": "parity/runs/realtime-m34/m33-publication.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/observer-identity-proof.json",
+      "sha256": "18221687466f3ee693b1b2042c11d18ef8c584fa7b6b2602f01f965fe2b34b8e",
+      "bytes": 1501,
+      "copied_from": "parity/runs/realtime-m34/observer-identity-proof.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/observer-identity-proof.txt",
+      "sha256": "871bc5fa3b61e0a1543d3da3207cdf3ecd4575c0a1f4b794ab6d4ea5b30d44e7",
+      "bytes": 1455,
+      "copied_from": "parity/runs/realtime-m34/observer-identity-proof.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/old-completed-runs-identical-links-01.json",
+      "sha256": "dac15871135f0560813098ba790ec08fa497ab4e6035d858cf51cbf47c29e763",
+      "bytes": 389091,
+      "copied_from": "parity/runs/realtime-m34/old-completed-runs-identical-links-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/orphan-compiler-cleanup-02.json",
+      "sha256": "a419e8621df3c87a687a03dd997433a31eb8069195351db0a5ffbb8cf8a1f251",
+      "bytes": 4574,
+      "copied_from": "parity/runs/realtime-m34/orphan-compiler-cleanup-02.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/preflight-01.json",
+      "sha256": "1bd7dd1ba3ed51520773d6c4b7b098c7fa17a0de1fd4f0aff74123604c467ee6",
+      "bytes": 180917,
+      "copied_from": "parity/runs/realtime-m34/preflight-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/preflight-focus-01.json",
+      "sha256": "160cb8c4316b66254fe1968721f5ac4cbc6a583eefa6ee73872dc1138c121351",
+      "bytes": 10031,
+      "copied_from": "parity/runs/realtime-m34/preflight-focus-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/preparation-all-native-inputs-01.json",
+      "sha256": "2af01fe2c062fd815b91689b19bedeb062bd57e9bd5dc640aabd3523577dca9a",
+      "bytes": 1986,
+      "copied_from": "parity/runs/realtime-m34/preparation-all-native-inputs-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/preparation-monitor-01.json",
+      "sha256": "d607395b8f6638dad1ce360c79d553f0e2046b70c261005d477b1246ca63f427",
+      "bytes": 1962,
+      "copied_from": "parity/runs/realtime-m34/preparation-monitor-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-pglite/bindings.jsonl",
+      "sha256": "eb381e10b6e7453709da97c4c0034566906e55c17def0fb088dd55f59534fa57",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-pglite/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-pglite/original.json",
+      "sha256": "fefd98229b9b5518e443138d542fde19d4ab8e196e2d63b57ef3dc67177f11b5",
+      "bytes": 8032,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-pglite/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-pglite/output.txt",
+      "sha256": "41cc8b3082caeb75af5e7129aa681b1a80effa3400a15c1886b05b1b54e9b268",
+      "bytes": 336,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-pglite/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-pglite/result.json",
+      "sha256": "966ee10b3fa555c9768fb82b722a7b8544e7a91fb2c50b11808cd106bde8d25c",
+      "bytes": 5788,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-pglite/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-postgres/bindings.jsonl",
+      "sha256": "6f8ab25697a6d9c55f61a297a7c8de77c5afffd56f03b65339c2d8555ea8c1a3",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-postgres/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-postgres/original.json",
+      "sha256": "a1ea053880c5932f6e8d76b38b83753e51f8435699d519458bc60de65b4c3e23",
+      "bytes": 8005,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-postgres/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-postgres/output.txt",
+      "sha256": "e2e3bef96fcb2c02435357d6f2ff36624b78d34a2a43a86282fdee77fb52b3f0",
+      "bytes": 338,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-postgres/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-postgres/result.json",
+      "sha256": "224527a7bfea16f2d45736aa51da98bd2c54f1467449b767adbb1782bec8d9dc",
+      "bytes": 5794,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-13-42-491Z-2542672-postgres/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-pglite/bindings.jsonl",
+      "sha256": "08a22a0fccc56bb5413f143a3431720672b0f41febb27ab0a2956211fc873c07",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-pglite/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-pglite/original.json",
+      "sha256": "c6519089b42056750b44b43fde673852a5ead7f9f248c5f41d578fb900d6b43f",
+      "bytes": 8030,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-pglite/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-pglite/output.txt",
+      "sha256": "49a72b11de964794c1413d59238a6dbad068e6dea765d5c5d1678e287a9cd5aa",
+      "bytes": 336,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-pglite/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-pglite/result.json",
+      "sha256": "6cd1fcb2c30a09c45e208f598b1069af97cff412906f0f11df0716ddf443cd85",
+      "bytes": 5788,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-pglite/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-postgres/bindings.jsonl",
+      "sha256": "e86ff0dd04790e83054a3ac1f8ca9aa86abee01e8c6b024af789c150f93cd8f2",
+      "bytes": 102,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-postgres/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-postgres/original.json",
+      "sha256": "46c9a3a6ca4d409de8d0b8269d84090368f9feab1f084a8a2f2266dcd3bc571b",
+      "bytes": 8026,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-postgres/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-postgres/output.txt",
+      "sha256": "b61f67d413a58d2db3d8a14e4c1dc407cfe88d076c2798dc9d0228a48553f5ea",
+      "bytes": 338,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-postgres/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-postgres/result.json",
+      "sha256": "53088a0c16043ab5819d8d9407c8f7f8f2596543dde6e1569352baffdc671f65",
+      "bytes": 5794,
+      "copied_from": "parity/runs/realtime-m34/pristine-2026-10-25T01-47-28-783Z-2571460-postgres/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/pristine-original-01-driver.txt",
+      "sha256": "37652fbf79b8958348b0ca135ce35b964b4ee601d9c61c9d8ec3c80fb0f2f76b",
+      "bytes": 236,
+      "copied_from": "parity/runs/realtime-m34/pristine-original-01-driver.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/PLAN.md",
+      "sha256": "e68048ad09cf313c71bcbf1eb0d2eef0f243b44675e8da6c2c210b63cd31a0d5",
+      "bytes": 10704,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/PLAN.md"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/after-m33-attempt-01-results.json",
+      "sha256": "bcc5db5b54d4c23b1961113e0d799a3bbc3cedba217d1c3553764b48baf22600",
+      "bytes": 2419,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/after-m33-attempt-01-results.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/after-m33-results-prerequisite-stop-01.json",
+      "sha256": "7f62b66ff8c7a072003e08654c0702c77bb90a491779c48f2c2b64764e53d0c6",
+      "bytes": 147,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/after-m33-results-prerequisite-stop-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/after-m33-results-prerequisite-stop-02.json",
+      "sha256": "7f62b66ff8c7a072003e08654c0702c77bb90a491779c48f2c2b64764e53d0c6",
+      "bytes": 147,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/after-m33-results-prerequisite-stop-02.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/after-m33-results.json",
+      "sha256": "70b7f2917baea54d51fe0bee855bb288f3eac7b910b037dfaba1ed7cbbc3b9d5",
+      "bytes": 5563,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/after-m33-results.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/after-m33.py",
+      "sha256": "018784e3fcc57aadab51cd84e277e00b20e55e66eb171d3eb397d245a8733e7a",
+      "bytes": 6070,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/after-m33.py"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/apply-focus-prerequisite-stop-03.json",
+      "sha256": "90be457450742e5cb088995a2b0c1773e16b2be4e57b08c64ad963b3f13e7743",
+      "bytes": 129,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/apply-focus-prerequisite-stop-03.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/apply-focus-results-prerequisite-stop-01.json",
+      "sha256": "90be457450742e5cb088995a2b0c1773e16b2be4e57b08c64ad963b3f13e7743",
+      "bytes": 129,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/apply-focus-results-prerequisite-stop-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/apply-focus-results-prerequisite-stop-02.json",
+      "sha256": "90be457450742e5cb088995a2b0c1773e16b2be4e57b08c64ad963b3f13e7743",
+      "bytes": 129,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/apply-focus-results-prerequisite-stop-02.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/apply-focus.py",
+      "sha256": "c24d12b53d851c80d728a7c98406c3d4bfe62921947ad3831dee841259a7c6de",
+      "bytes": 6656,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/apply-focus.py"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/live-setup-syntax-01.json",
+      "sha256": "f624ca8716650cf65168499a3ef4b1f68f056f2543097bcb579ccb28084e187a",
+      "bytes": 390,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/live-setup-syntax-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/live-setup-syntax-02.json",
+      "sha256": "0f29fa65cbd8c7a1403c1aaaa8bdadc7935ef08615b4603140b4ee4cfacbd6a7",
+      "bytes": 413,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/live-setup-syntax-02.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/live-setup-syntax-03.json",
+      "sha256": "43d2997d5715615e1f08aec64075d35809e5e5ed1b600ed034bfa7d2bc63e566",
+      "bytes": 336,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/live-setup-syntax-03.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/observer-probe-01.json",
+      "sha256": "0cd50b6efe009d972ee109da3de15e7889f3bf4da5c50a839e97758e890c4ae8",
+      "bytes": 1620,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/observer-probe-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/observer-probe-01.txt",
+      "sha256": "fffcaf77fdff9071f158785a516763e6f89a414f1fabbf836f2ae9fab20a5e8d",
+      "bytes": 1574,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/observer-probe-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/probe-observer.mjs",
+      "sha256": "0cd86487ffb144bea0dd4bb2197a24c9e914c29475bf8d312877acd1022f3a4f",
+      "bytes": 4883,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/probe-observer.mjs"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/prototype-overlay-01.json",
+      "sha256": "609aa61fc85491a8502e0c2c2fdd4d3186a5dbbad9c00ade33d75f5ae0c6c8f0",
+      "bytes": 969,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/prototype-overlay-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/realtime-rpc-observer.mjs",
+      "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88",
+      "bytes": 1056,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/realtime-rpc-observer.mjs"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/retry-prototype-02.py",
+      "sha256": "346c77d8f16f71407aa7d18f8785b945c47dfe17634084e262517f315baf8b60",
+      "bytes": 4152,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/retry-prototype-02.py"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source-realtime-live.config.mjs.txt",
+      "sha256": "3c256f525bfca0b9a360d9172d4e9eb08303d77db20dc4072dc7445f5879aebe",
+      "bytes": 227,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source-realtime-live.config.mjs.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source-realtime-live.setup.ts.txt",
+      "sha256": "6fb966b86205dee85f3350950735c1be02c269c19968b34ac610e35c3ae79203",
+      "bytes": 7776,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source-realtime-live.setup.ts.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source-realtime-original.mjs.txt",
+      "sha256": "f741e32ecf9e0522c7964f5e6e33f9ba59495b2651c68962ab1050e1ccfa4d16",
+      "bytes": 5035,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source-realtime-original.mjs.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source-realtime-pristine.mjs.txt",
+      "sha256": "5d78b09b8f10323a9802bb0d79c69bfb39b4730ba1ecbadd078c40aad18588b9",
+      "bytes": 4772,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source-realtime-pristine.mjs.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source-trace-fixtures.mjs",
+      "sha256": "bb3e55b4b5d3df0089d78c3a62f333508e8151d858421a9be5403b5981710140",
+      "bytes": 4753,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source-trace-fixtures.mjs"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source-trace-identity-01.json",
+      "sha256": "f06db5d0861677f5bc3293d252049eca05327dcbd3ef5484a88efc8f628cca58",
+      "bytes": 67384,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source-trace-identity-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source-trace-identity-audit-01.json",
+      "sha256": "26239359e81341eaa2414b69a985f07940d6b04ddc999576be32a84a2a22556a",
+      "bytes": 3458,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source-trace-identity-audit-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source-trace-vectors-01.txt",
+      "sha256": "b6ed2845b68ad94bed52cc3dedcf1f2e2e4aa42dbf9c2275bcaa3e3bf1a0f6a2",
+      "bytes": 45,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source-trace-vectors-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source_call_traces.go.txt",
+      "sha256": "569cab868e6056f0e67e2d76424349bb6abe83e6c6674e493420a6352f5da227",
+      "bytes": 3018,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source_call_traces.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source_historical_wire_extended_test.go.txt",
+      "sha256": "6347b827972484dba7587503955e9396e55c3bb3fb745a9f8f940812239d611c",
+      "bytes": 12772,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source_historical_wire_extended_test.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source_realtime_fetch.go.txt",
+      "sha256": "2d6811b7acb8141d1b165016fa3dc0db72777e6f72366c7b78a5b0e0bcba1ac0",
+      "bytes": 15190,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source_realtime_fetch.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source_realtime_live_test.go.txt",
+      "sha256": "97f6406aa03472de59d31dd37e7512269d6f6aed8d4add67182d36c9ac339732",
+      "bytes": 17750,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source_realtime_live_test.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source_realtime_state.go.txt",
+      "sha256": "f03a0c24297eddcd06b04f26d31cd950bd179162fab2ddbce6192b8a5781e95d",
+      "bytes": 13506,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source_realtime_state.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source_trace_identity_old_test.go.txt",
+      "sha256": "9ef61bc7767c6c45da3810ed100c5db73bd890e1d1521d4779d9b2253a036044",
+      "bytes": 2852,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source_trace_identity_old_test.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/source_trace_identity_test.go.txt",
+      "sha256": "45de99535eb8496bb561853258adb387597a29871b051f3d6a7043ecd6da40ec",
+      "bytes": 2874,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/source_trace_identity_test.go.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/trace-new-overlay-01.json",
+      "sha256": "609aa61fc85491a8502e0c2c2fdd4d3186a5dbbad9c00ade33d75f5ae0c6c8f0",
+      "bytes": 969,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/trace-new-overlay-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-01/trace-old-overlay-01.json",
+      "sha256": "2e18acd25378119ba10253bbe77a32e4cf8195d73928e63e7923233d2066e3d3",
+      "bytes": 973,
+      "copied_from": "parity/runs/realtime-m34/prototype-01/trace-old-overlay-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-compile-01.txt",
+      "sha256": "a53c0ffcee3544db1ed2d2b1c04633bda550734409af19ddb5677d1100699e7d",
+      "bytes": 608,
+      "copied_from": "parity/runs/realtime-m34/prototype-compile-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/prototype-compile-02.txt",
+      "sha256": "bf185464ccb7424a1a8e1b60a84d811ce38c066297e139338aa111911cf83de7",
+      "bytes": 61,
+      "copied_from": "parity/runs/realtime-m34/prototype-compile-02.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-compile-space-recovery-02.json",
+      "sha256": "78fb070637ac4db3fb8adddac121096fd8b8ffdeaea2dc17a6bd5ec594b22253",
+      "bytes": 121969,
+      "copied_from": "parity/runs/realtime-m34/race-compile-space-recovery-02.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/aggregation.json",
+      "sha256": "cc4340c4dd840b4e76537d7bc610ce182aacf7231c2381469cf80920b32981df",
+      "bytes": 33983,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/aggregation.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-01.jsonl",
+      "sha256": "5b7e6269a151d99a653efdfb3b3258a888dd30078c047d98c1fd6177db8c8b22",
+      "bytes": 22408,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-01.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-02.jsonl",
+      "sha256": "528981c3a28c7d1cb6f2d2949a73420724a01862409f499afe987aac7c76bd7f",
+      "bytes": 114867,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-02.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-03.jsonl",
+      "sha256": "7e96734127bfe2dee903391d0c2fb416af476e50db246e51c4c78a163a1c9f3e",
+      "bytes": 14158,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-03.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-04.jsonl",
+      "sha256": "10666dfa5598280eca68b130ac01e0f0893ff0ff44872e6d46b2f97f0ad0e9a7",
+      "bytes": 16622,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-04.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-05.jsonl",
+      "sha256": "5b01065a7c5aae15d9beed11394f2fd9a70a09d820327d9454fc5cb7f3b7a771",
+      "bytes": 417,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-05.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-06.jsonl",
+      "sha256": "7a5ae60b8911b9291eb9a132f87a0258a778bbafde478d0295c64398def4cc9c",
+      "bytes": 421,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-06.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-07.jsonl",
+      "sha256": "031bc97a97d0631b52f3157e540b530c7eeb133ea24097f1bd448d9f2bc6b524",
+      "bytes": 397,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-07.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-08.jsonl",
+      "sha256": "dbee49dc80b9b015bb2d0165899b107eaafda521815b4ab395a932d3d160595d",
+      "bytes": 429,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-08.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-09.jsonl",
+      "sha256": "300fecbf8f9a6efe68cf5dfb37e8622106214b581e722b316e6d29a03fa222a5",
+      "bytes": 58054,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-09.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-10.jsonl",
+      "sha256": "f3d40e3908f667b4bb5554d235e9af8664b44cc2b646dcae6cfa7b1513a68f02",
+      "bytes": 122994,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-10.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-11.jsonl",
+      "sha256": "b5ecfab03970d99e0763df284540f20d07227fd58c5086977067aae9787bcb31",
+      "bytes": 413,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-11.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-12.jsonl",
+      "sha256": "3d1c09bb0448d8aa2ae97db92546efcb42098ac103b2e0f1ebcbd64a857985d8",
+      "bytes": 7128,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-12.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-13.jsonl",
+      "sha256": "beb10d9b23ea906e5659d6ff8b36e05f26047a848faa6bb0f75070e9f46ecb75",
+      "bytes": 712604,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-13.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-14.jsonl",
+      "sha256": "9c5425f2c744ff5e6a2c8059ed32d6f241d7b411b57efc2644cab521de6a219e",
+      "bytes": 30246,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-14.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-15.jsonl",
+      "sha256": "0554beeaf12812aa01b0fd29f9c44c8aca22d449c3e429651d549a960db46cd7",
+      "bytes": 7149,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-15.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-16.jsonl",
+      "sha256": "d4f681abff71df02b32aec99a2401da4935e31b2818faf06e103fca9b647c7c7",
+      "bytes": 421,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-16.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-17.jsonl",
+      "sha256": "63ee6e862bec4eb674981ea146557eb5ca7831d95c09016baba92759f4091a31",
+      "bytes": 17784,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-17.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-18.jsonl",
+      "sha256": "f43525651838105de02b20a8bf51faf6275dbc1411f0350b2439ff26ffe31606",
+      "bytes": 5460,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-18.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-19.jsonl",
+      "sha256": "d02092db2c9483a3cc656645c21c75d92e52fdfdfd6ef88a668437515db7ecb6",
+      "bytes": 2386,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-19.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-20.jsonl",
+      "sha256": "ebd13a545b673510fe397967ba2a978fca9646f128796b7728cde248b2cc8df4",
+      "bytes": 8907,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-20.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-21.jsonl",
+      "sha256": "d9100324c92b38c8d08895623e9d0e30c97d68235d2e7b5f1bf6719df3e43c63",
+      "bytes": 64910,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-21.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-22.jsonl",
+      "sha256": "7a96da5f5f69a16ee948ce4a451fa0d60d7c66a15b9005a9f12e53fd54fa99a4",
+      "bytes": 5092,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-22.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-23.jsonl",
+      "sha256": "4e089614ed950ba31888b57a65fc3b7542c3f5e176b1f271437db061924ad194",
+      "bytes": 9032,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-23.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-24.jsonl",
+      "sha256": "46a1f45f75ef374b02f8e0bed3dc63f7d331b6f6be660f98230bf84460318de3",
+      "bytes": 37239,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-24.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-25.jsonl",
+      "sha256": "42446d6634d1c3280470eb246a163aa0a9f81422b3ecf704d037f45099964728",
+      "bytes": 17586,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-25.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-26.jsonl",
+      "sha256": "7b06619476714ffb70067b9d3a1d9879106b5c7ca5ed090b09ebc39d0118e032",
+      "bytes": 22454,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-26.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-27.jsonl",
+      "sha256": "bc8a6653e5de0d4f44298612beddfe5aa55954aac1851e0bc0602dd1ee0f4eaa",
+      "bytes": 6625,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-27.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-28.jsonl",
+      "sha256": "9544e0aeab0e84519a7afbe814f5163d2e4751817063f628020b8fd5d4a4b5e0",
+      "bytes": 11743,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-28.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-29.jsonl",
+      "sha256": "9f00b343c3e3dfb73d504ae607e98886df8dda78bcde9b0670bc5ee03f285286",
+      "bytes": 29275,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-29.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-30.jsonl",
+      "sha256": "91b8ae1b8e03b0b19030c8e2ddfa03408f587ec799de58bc36c050ade7c4924e",
+      "bytes": 103066,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-30.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-31.jsonl",
+      "sha256": "fde6a4338969147f37c653964fd45e3fb18a4908a7bc0648d4b8520d0d6923e9",
+      "bytes": 16947,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-31.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-32.jsonl",
+      "sha256": "1f7ef4cd77054d07348731b2d0b45e2913358efb244d14292217fab35f036bc0",
+      "bytes": 20359,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-32.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-33.jsonl",
+      "sha256": "ba16d1e713cedc0517465dbae1427bd5acba82a527b1eb6f4884c907450502b4",
+      "bytes": 91466,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-33.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-34.jsonl",
+      "sha256": "ea656b8283c6988531dad5ba5c2a99c085e39e6b7d25b4e57993eb770bedba76",
+      "bytes": 9403,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-34.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-35.jsonl",
+      "sha256": "5eb0843a2290fa87203377624e007ce0ed119ae556273feb03bd059802670ea7",
+      "bytes": 17935,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-35.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-36.jsonl",
+      "sha256": "45cd85ba5a88c8b788cf4866efc260c50fbd7e6187b732dca2ba261509f30511",
+      "bytes": 20966,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-36.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-37.jsonl",
+      "sha256": "11fbf039d8f5acfd2f95091599ee005f3f5157d1e85fb658c445f9365b61512b",
+      "bytes": 64195,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-37.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-38.jsonl",
+      "sha256": "a3c7289965298a7c67297f9306cb5f952f5a8c5582b77fe08c62083955715723",
+      "bytes": 26275,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-38.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-39.jsonl",
+      "sha256": "b5b8bb403287e2eec794566927c13e7a5dad755d4280af7c1951393a9b5fc82c",
+      "bytes": 32681,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-39.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-40.jsonl",
+      "sha256": "f2753bd9b8bca587ab573a50c4a49db9ea26d59a98286c7fc9c968c59ff05a66",
+      "bytes": 27569,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-40.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-41.jsonl",
+      "sha256": "f4ea95c6769c0deaf25269576929c12ef9881ac7a9ad282039ce71e13cda10b2",
+      "bytes": 29900,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-41.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-42.jsonl",
+      "sha256": "f312d3f0862a5270f6d15ecb2822b770e8d71deb5162852084b1a648b784870a",
+      "bytes": 19732,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-42.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-43.jsonl",
+      "sha256": "ca35025259c2fb0d8b0ebc09adef5d692f9bb389a16529963339fb3628f5c711",
+      "bytes": 8595,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-43.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-44.jsonl",
+      "sha256": "96340f8cb1cb6f49fc297abb00d249e8e8b2b261b5576d6fca410ca53515ca5d",
+      "bytes": 22331,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-44.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-45.jsonl",
+      "sha256": "c27e98c5b41f5bae6046e9d18f30623f71d89c4bab238b02e83cde654bc421b7",
+      "bytes": 12465,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-45.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-46.jsonl",
+      "sha256": "33515726c41a351de1318c123d841921edc4748de595a6d5aea789b266bfc805",
+      "bytes": 15079,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-46.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-47.jsonl",
+      "sha256": "8cf5a532f19eb7372324ae3bd5ff7b5ef03399c882aeb530b840b00f5f618a90",
+      "bytes": 14738,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-47.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-48.jsonl",
+      "sha256": "7888c0fd7b12c5e8699b3b220975deada159b09df4ddd172bf06c5e078d4237d",
+      "bytes": 11845,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-48.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-49.jsonl",
+      "sha256": "7e69edeadb056153d9f86cdcb86ed98e58c64dbf82ee6279d3dbb17b60cd6a67",
+      "bytes": 43630,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-49.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-50.jsonl",
+      "sha256": "18a85b2125ddf464a698b47b8d829fc03c2d1354fd30f29a6a40c8def0fdb321",
+      "bytes": 15595,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-50.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-51.jsonl",
+      "sha256": "e80ecc4c468528baa73fe89a8a0952353d98d2fd37a5e4d7cd3436558fa37958",
+      "bytes": 16546,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-51.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-52.jsonl",
+      "sha256": "a08f730ed565598a3dfe960868431583a2b8980403f26f97263e1193fb484770",
+      "bytes": 113391,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-52.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-53.jsonl",
+      "sha256": "28239d97995a10860805d08ff78ef37fecf3cffabb650e5896821e9d7d2332fb",
+      "bytes": 23588,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-53.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-54.jsonl",
+      "sha256": "8c1fe6cda70ecaf77369c3daa33f8846aefd6f1489e1bc33823bbbeee41ff543",
+      "bytes": 27099,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-54.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-55.jsonl",
+      "sha256": "cfdd88978f1fa4df6902a6791fbb15f690646012d868bcdffa726e24a18e1f86",
+      "bytes": 17172,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-55.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/chunks/batch-56.jsonl",
+      "sha256": "a660fc068da4bbb03d3235ceb8e3e0ea5e6a6de0c6176020262e4be1cde86898",
+      "bytes": 18210,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/chunks/batch-56.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/retry-batch-25.jsonl",
+      "sha256": "42446d6634d1c3280470eb246a163aa0a9f81422b3ecf704d037f45099964728",
+      "bytes": 17586,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/retry-batch-25.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/retry-batch-25.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/retry-batch-25.stderr.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/retry-batch-29.jsonl",
+      "sha256": "9f00b343c3e3dfb73d504ae607e98886df8dda78bcde9b0670bc5ee03f285286",
+      "bytes": 29275,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/retry-batch-29.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/race-recovery-01/retry-batch-29.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "copied_from": "parity/runs/realtime-m34/race-recovery-01/retry-batch-29.stderr.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/readonly-module-dedup-01.json",
+      "sha256": "bb01f391c0e90139ae06d3a47e2453cf7afe482002d9f045fb49568b81b2d793",
+      "bytes": 233,
+      "copied_from": "parity/runs/realtime-m34/readonly-module-dedup-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/readonly-module-dedup-plan-01.json",
+      "sha256": "e1b4949da0f50809d865d3944c33449acecfcfdb1fdb79173779f2692b068d39",
+      "bytes": 1729932,
+      "copied_from": "parity/runs/realtime-m34/readonly-module-dedup-plan-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/resume-config-live-results-01.txt",
+      "sha256": "8aea4dbfdabd96d41eb713e8d95f3d0a30a7e901916d820b817ab6d313ae9568",
+      "bytes": 308,
+      "copied_from": "parity/runs/realtime-m34/resume-config-live-results-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/resume-record-results-01.txt",
+      "sha256": "f4a6c092df3f2468381a946aea87b766d255925fb022c9f668ed1a625de4ec09",
+      "bytes": 892,
+      "copied_from": "parity/runs/realtime-m34/resume-record-results-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/resume-source-historical-results-01.txt",
+      "sha256": "26cc5e36c19cf14557eecf4213ef61f3f0e71a61be55ee2b226c0dc5020d614b",
+      "bytes": 288,
+      "copied_from": "parity/runs/realtime-m34/resume-source-historical-results-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/resume-source-realtime-results-01.txt",
+      "sha256": "8f2ebf3a3e06f62f89858964f7c2381601a24bd64221140e1c423759a7ef3c9d",
+      "bytes": 352,
+      "copied_from": "parity/runs/realtime-m34/resume-source-realtime-results-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/resume-source-sync-results-01.txt",
+      "sha256": "05f5b2df1addde00cca00524e68d08ba8381401856d38da57bd57e9b1d61eb63",
+      "bytes": 216,
+      "copied_from": "parity/runs/realtime-m34/resume-source-sync-results-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/source-trace-preparation-01.txt",
+      "sha256": "b6ed2845b68ad94bed52cc3dedcf1f2e2e4aa42dbf9c2275bcaa3e3bf1a0f6a2",
+      "bytes": 45,
+      "copied_from": "parity/runs/realtime-m34/source-trace-preparation-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/task-postgres-wal-size-01.txt",
+      "sha256": "4f6a9d667ad10bf2c64d5d71f28749d12ca2334601e254086832022872f00219",
+      "bytes": 70,
+      "copied_from": "parity/runs/realtime-m34/task-postgres-wal-size-01.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/trace-new-01.jsonl",
+      "sha256": "964befd27164e8aeca79c0fdafef7dbb30d24b561183e0085ca226efabe0ab0c",
+      "bytes": 11431,
+      "copied_from": "parity/runs/realtime-m34/trace-new-01.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/trace-normal-02.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2,
+      "copied_from": "parity/runs/realtime-m34/trace-normal-02.exit"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/trace-normal-02.jsonl",
+      "sha256": "07f3134b866bed3932f6479998a028992e55ccad10eeaef4dee4c519be903a26",
+      "bytes": 11431,
+      "copied_from": "parity/runs/realtime-m34/trace-normal-02.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/trace-old-01.jsonl",
+      "sha256": "1c19d9412171e8fbf8cdf5325c6da590996ed73e7699e351b145776678ff8bc6",
+      "bytes": 26043,
+      "copied_from": "parity/runs/realtime-m34/trace-old-01.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/unused-forge-compression-01.json",
+      "sha256": "9a5483cfda6e9037d40d5c3383f4a966ece39969549ac13d9227120a5ea1cdf8",
+      "bytes": 1061,
+      "copied_from": "parity/runs/realtime-m34/unused-forge-compression-01.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/unused-tools-compression-01-failure.json",
+      "sha256": "7d4e894576d6d54d4dc95ca986be8eecc24842e678a4c5609616cbff109cefbc",
+      "bytes": 260,
+      "copied_from": "parity/runs/realtime-m34/unused-tools-compression-01-failure.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/unused-tools-compression-02.json",
+      "sha256": "60d8b397dd7e8e8a52559f990f4fb984e2ae824babae55c9ba80aef6ed03c03c",
+      "bytes": 1587,
+      "copied_from": "parity/runs/realtime-m34/unused-tools-compression-02.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/selected-mapped-oracle.json",
+      "sha256": "2cfe969e9d3a1cbb18f5e529da2505afa5462e6503b71c298bcbb072165a0549",
+      "bytes": 5136,
+      "copied_from": "parity/runs/selected-mapped-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/selected-runtime-oracle.json",
+      "sha256": "da05ce1d36c549a0ada1a915cb4f098f46071a76315a569f93e49248d7f76e48",
+      "bytes": 1671,
+      "copied_from": "parity/runs/selected-runtime-oracle.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/source-historical-pristine.json",
+      "sha256": "90ebc81d4c71b454afde8374f34989ecd85a158de306ceda014be29ecad53b3c",
+      "bytes": 13210,
+      "copied_from": "parity/runs/source-historical-pristine.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/source-historical-types.json",
+      "sha256": "c88aa291242736d38bb343b27bdb81265d65bc9bd17e16ac12884b14156ab0e7",
+      "bytes": 47898,
+      "copied_from": "parity/runs/source-historical-types.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/source-historical-verification.json",
+      "sha256": "cacb5cd59efed35ae9fa71d1cfa4f55ce75abc572b5a30c0db8bf1a4013a284a",
+      "bytes": 284159,
+      "copied_from": "parity/runs/source-historical-verification.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/source-realtime-pristine.json",
+      "sha256": "48230f14569cba682f09fbbbfeb5a2767e4ff97ecfe7590e02772133af1373e3",
+      "bytes": 13284,
+      "copied_from": "parity/runs/source-realtime-pristine.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/source-realtime-verification.json",
+      "sha256": "d0b6e80679d311f84dd96c0611eb839a74c1a649a9b36cc87bb537b49f41e16c",
+      "bytes": 41757,
+      "copied_from": "parity/runs/source-realtime-verification.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/source-sync-pristine.json",
+      "sha256": "749796d2690bbdd960f5d89a416cc42823bf051594b7719e484cf5d3b7bac38c",
+      "bytes": 7150,
+      "copied_from": "parity/runs/source-sync-pristine.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/source-sync-types.json",
+      "sha256": "458e971f639a79b8c250c8fd5e62177472c604dce612da67d643767f70fa8be3",
+      "bytes": 9113,
+      "copied_from": "parity/runs/source-sync-types.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/source-sync-verification.json",
+      "sha256": "53224355c90040a35ded8a8e0e2adeda8d984c1581fbb0ec9710cc2db92bc679",
+      "bytes": 101290,
+      "copied_from": "parity/runs/source-sync-verification.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sql-original-pristine.json",
+      "sha256": "d0e1ac3e9e3e66a3f849665498cc85bc97454a452ccdc251fd9176890545031a",
+      "bytes": 3192,
+      "copied_from": "parity/runs/sql-original-pristine.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sql-rules.json",
+      "sha256": "48abfe9a3a488a72daf4ecafb34536b6f3b9376f8d414c93cb5a94180a90f57d",
+      "bytes": 392,
+      "copied_from": "parity/runs/sql-rules.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sql-source-verification.json",
+      "sha256": "dfc169618371613dc530662fab8abb1dd8d92764b67fda1be0c2156fe414f1f0",
+      "bytes": 9305,
+      "copied_from": "parity/runs/sql-source-verification.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/summary.json",
+      "sha256": "712390701b58593003c0565912658a857ce8f4c857788105bea1b2cea5d3ba45",
+      "bytes": 11654,
+      "copied_from": "parity/runs/summary.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-2747558326/bindings.jsonl",
+      "sha256": "039449e6a687110cbc6c33aafa78a43b1b12778d75d8243216fb281b1f03d4ce",
+      "bytes": 102,
+      "copied_from": "parity/runs/sync-store-m32/live-2747558326/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-2747558326/calls.json",
+      "sha256": "e4bdf5db2d154c87a406bc1956eb9eaa38c07f5b2e399aa460e37f60e08b2ace",
+      "bytes": 5902411,
+      "copied_from": "parity/runs/sync-store-m32/live-2747558326/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-2747558326/native.json",
+      "sha256": "7b3b035e11ef9a9fc617f3f6300cd935225bae13e5c3035f4bec0bbb0908e2d8",
+      "bytes": 1217318,
+      "copied_from": "parity/runs/sync-store-m32/live-2747558326/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-2747558326/original.json",
+      "sha256": "cd8f43465cb263ab2197d9eadf4fa2dda6aed3eacf7a64dea6e6f0d497de6d63",
+      "bytes": 9342,
+      "copied_from": "parity/runs/sync-store-m32/live-2747558326/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-2747558326/output.txt",
+      "sha256": "091e860dc254de0fa21dfe5b9cda79396485df9906096c1c7966075130194c48",
+      "bytes": 305,
+      "copied_from": "parity/runs/sync-store-m32/live-2747558326/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-2747558326/parent-output.txt",
+      "sha256": "d3d6d67cef3390082226bd52097f64df860549b001a62a4b882d742637409998",
+      "bytes": 3009,
+      "copied_from": "parity/runs/sync-store-m32/live-2747558326/parent-output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-2747558326/result.json",
+      "sha256": "d89db9117ec69f4c92fb7683ae4fe68d4f75adc75b4df57e5d33c7c912ffa3f3",
+      "bytes": 3117,
+      "copied_from": "parity/runs/sync-store-m32/live-2747558326/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-3179624119/bindings.jsonl",
+      "sha256": "ae8cb66f6a32ae0cdae219ff00eda8d1ad98362d4621b6e507c496138029090f",
+      "bytes": 102,
+      "copied_from": "parity/runs/sync-store-m32/live-3179624119/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-3179624119/calls.json",
+      "sha256": "177e31928f960c2bec2490dff7fa6b07a74cc224d8a78aceba0a53651c932cca",
+      "bytes": 5902411,
+      "copied_from": "parity/runs/sync-store-m32/live-3179624119/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-3179624119/native.json",
+      "sha256": "6e9af5612340e22cadd94678ff1c900e392b67d61cd72d88c2eef88d12216fa8",
+      "bytes": 1184003,
+      "copied_from": "parity/runs/sync-store-m32/live-3179624119/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-3179624119/original.json",
+      "sha256": "75446d1a01d92f1cefc60b5a1abad917b79c456502921dc55a409b424e3a5576",
+      "bytes": 9337,
+      "copied_from": "parity/runs/sync-store-m32/live-3179624119/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-3179624119/output.txt",
+      "sha256": "a43bc81f9e34a52ed146dae0ff843a4836b586455bc52c42a95633b46de088a2",
+      "bytes": 305,
+      "copied_from": "parity/runs/sync-store-m32/live-3179624119/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-3179624119/parent-output.txt",
+      "sha256": "8e69b7e35b715cb3f3389b216105574f045f96d381872dcfdbeefef3295b1a78",
+      "bytes": 3007,
+      "copied_from": "parity/runs/sync-store-m32/live-3179624119/parent-output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-3179624119/result.json",
+      "sha256": "9a4a7e0375b6bbe6731064f34ce5b7e0e40e14dd0da99059455d5cc616c4025f",
+      "bytes": 3115,
+      "copied_from": "parity/runs/sync-store-m32/live-3179624119/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-658470214/bindings.jsonl",
+      "sha256": "3f1100bb7436a8178fc02202af1fb9f031107fde38bf06538e60b0d581f6ee16",
+      "bytes": 102,
+      "copied_from": "parity/runs/sync-store-m32/live-658470214/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-658470214/calls.json",
+      "sha256": "93d66e5aad8a896de9a66199b595569ae26a15edeb746e303ffd240df3fd27cb",
+      "bytes": 5902411,
+      "copied_from": "parity/runs/sync-store-m32/live-658470214/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-658470214/native.json",
+      "sha256": "8a966f38f9a23b41a851556410f0d2d4c9f7827ac8cf53f0e4082628a9b5a6a1",
+      "bytes": 1184003,
+      "copied_from": "parity/runs/sync-store-m32/live-658470214/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-658470214/original.json",
+      "sha256": "0b3935962c1592bdb5e4025d4b6e16326f9af1445b565bc48800fb15457aa72b",
+      "bytes": 9350,
+      "copied_from": "parity/runs/sync-store-m32/live-658470214/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-658470214/output.txt",
+      "sha256": "ce11b7e5cc2f073537fb1c1f43753173f3f548fc34f2db86fdc6430e9ecfde5c",
+      "bytes": 304,
+      "copied_from": "parity/runs/sync-store-m32/live-658470214/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-658470214/parent-output.txt",
+      "sha256": "edfcd47f4c50e9a5c4d24db701e75869d099bc3d12c77242ab92097bf6057752",
+      "bytes": 3006,
+      "copied_from": "parity/runs/sync-store-m32/live-658470214/parent-output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-658470214/result.json",
+      "sha256": "0cea642f67af0d45238fc9beb79a441064876d26ef53f83f65bc38e233c54f94",
+      "bytes": 3114,
+      "copied_from": "parity/runs/sync-store-m32/live-658470214/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-659880301/bindings.jsonl",
+      "sha256": "df5c62934a1bbb4b59a22987f1df3f1928ed9b29d06f21cc6ae6353a513dd847",
+      "bytes": 102,
+      "copied_from": "parity/runs/sync-store-m32/live-659880301/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-659880301/calls.json",
+      "sha256": "c487cf4ccee7c4a242395dddb00c220345e211faa4b7dfb5791c35d8d3dd0bd4",
+      "bytes": 5902411,
+      "copied_from": "parity/runs/sync-store-m32/live-659880301/calls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-659880301/native.json",
+      "sha256": "bf306fe6c5ec0188fb4b5863a7514fb6f1fb6eff914a9f14d12ce073876640a2",
+      "bytes": 1217318,
+      "copied_from": "parity/runs/sync-store-m32/live-659880301/native.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-659880301/original.json",
+      "sha256": "85d2f37f147b6db4089bdc4916d5f063142c6373fe8f730590c8a5c225816b5e",
+      "bytes": 9334,
+      "copied_from": "parity/runs/sync-store-m32/live-659880301/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-659880301/output.txt",
+      "sha256": "834282b7634c4a3b2491e652934a4eb8c2eefde4fddf427ac3c0531b7f496601",
+      "bytes": 304,
+      "copied_from": "parity/runs/sync-store-m32/live-659880301/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-659880301/parent-output.txt",
+      "sha256": "d5d04dd96b24b3b3530bdb20cd740f4f30ab2176c4408f14594a06eaaacdaa65",
+      "bytes": 3008,
+      "copied_from": "parity/runs/sync-store-m32/live-659880301/parent-output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/live-659880301/result.json",
+      "sha256": "05a67e5e9271d292dd78629250c3a2511627d08a060fec2e674361b106dad4ce",
+      "bytes": 3116,
+      "copied_from": "parity/runs/sync-store-m32/live-659880301/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-pglite/bindings.jsonl",
+      "sha256": "5b86b1d98dd73523ac13ec6871842ead2c075d739997f58293c1dac34ae330e2",
+      "bytes": 102,
+      "copied_from": "parity/runs/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-pglite/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-pglite/original.json",
+      "sha256": "9e89beee6e842d6c234ba2b9ee42dac0eab6e1aa97f94d691a560defca103a1e",
+      "bytes": 9341,
+      "copied_from": "parity/runs/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-pglite/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-pglite/output.txt",
+      "sha256": "ac3f422e654a74d5bd977c3264d6644825bce25882c5b087ea2f9ed8be0a9793",
+      "bytes": 338,
+      "copied_from": "parity/runs/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-pglite/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-pglite/result.json",
+      "sha256": "2fd90140b4209e75c4d10d2bb3fd5dcd02649999627f599a78eb8b78d5ac54c3",
+      "bytes": 2983,
+      "copied_from": "parity/runs/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-pglite/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-postgres/bindings.jsonl",
+      "sha256": "444b3770dd8c68df90b547c3dc528995c20396472b098040df4da13bd195ab64",
+      "bytes": 102,
+      "copied_from": "parity/runs/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-postgres/bindings.jsonl"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-postgres/original.json",
+      "sha256": "21738c70da5b320e2b2d164f9dfcf601833b6dea81009f67079a340aecd7c40f",
+      "bytes": 9335,
+      "copied_from": "parity/runs/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-postgres/original.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-postgres/output.txt",
+      "sha256": "9a4072bca1fd8e83f2aef09642e6db9bdb328f5651e1f6e4f56fef2ea7b4bfb0",
+      "bytes": 340,
+      "copied_from": "parity/runs/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-postgres/output.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-postgres/result.json",
+      "sha256": "464aeb4d07debbf006c8ccb6e35f6517d42713b34eec4d1829292ba1bd7afe67",
+      "bytes": 2989,
+      "copied_from": "parity/runs/sync-store-m32/pristine-2026-10-25T01-42-55-420Z-2569367-postgres/result.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/sync-store-m32/type-compile.json",
+      "sha256": "9433624564a84fa7292153ae5076133bcecdd3188498a6a8f502cf9f7d458089",
+      "bytes": 23770,
+      "copied_from": "parity/runs/sync-store-m32/type-compile.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/tool-versions.txt",
+      "sha256": "05fc9ce42c402ed89c3498ba4bad4ca779e40ecd04eb938b8602e6c2a868a6fa",
+      "bytes": 233,
+      "copied_from": "parity/runs/tool-versions.txt"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/topic-source-verification.json",
+      "sha256": "58dae03f1d3b948f5d7384bf90473e40df3955bb13e0433b6bcc33cc239e1f85",
+      "bytes": 4309,
+      "copied_from": "parity/runs/topic-source-verification.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/parity/test-ledger.json",
+      "sha256": "f9ef81f8e4457babab9aadcf226a811dda11e3d24fb62a3e73572e656726724f",
+      "bytes": 3671642,
+      "copied_from": "parity/test-ledger.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/abi/topics-source.json",
+      "sha256": "ac01a3718d9b668cf28bd6e945de58b52701bd8e926983e571195dcb0ccacc9b",
+      "bytes": 29394,
+      "copied_from": "testdata/abi/topics-source.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/bloom/captured-original-blooms.json",
+      "sha256": "6ea833cbed59a4e5f5df51d41b7e0ca45b79b9dbe563acb3ce13cd5f8757301e",
+      "bytes": 182779,
+      "copied_from": "testdata/bloom/captured-original-blooms.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/rpc/source-block.json",
+      "sha256": "8a4eddd53f54e0a9b4639892684b05aab263c65741befe5b6006c67dc8c21677",
+      "bytes": 183898,
+      "copied_from": "testdata/rpc/source-block.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/rpc/source-cache.json",
+      "sha256": "3362dc55f3afbd3a415780311ccadfcaeb6c1512b17b8b49c7a1c1d51ef03764",
+      "bytes": 28061,
+      "copied_from": "testdata/rpc/source-cache.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/rpc/source-range.json",
+      "sha256": "b62f83aa3d4f4b095335e1b4251a669c40460d7f71ff2dd581e7eeedc086b97e",
+      "bytes": 4572,
+      "copied_from": "testdata/rpc/source-range.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/rpc/source-trace-identity.json",
+      "sha256": "9b4728d939d1ccff6e90d815faa08b22c7d5523e00dfa0122bfd325d0fed1749",
+      "bytes": 67286,
+      "copied_from": "testdata/rpc/source-trace-identity.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/runtime/captured-original-events.json",
+      "sha256": "e34c93b5f8155a3fa00ad7b5b3015aea156f766913183a4b8dd954302a0b0193",
+      "bytes": 608384,
+      "copied_from": "testdata/runtime/captured-original-events.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/runtime/captured-original-filters.json",
+      "sha256": "0bd3cb884a0ad1173a03898a08bd3745524a301099296e34a69f597398f5026a",
+      "bytes": 199707,
+      "copied_from": "testdata/runtime/captured-original-filters.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/runtime/source-child.json",
+      "sha256": "a4291451561cf6d8c51f248beeca0edd2a5832fc111563ee1463bbc238337158",
+      "bytes": 25785,
+      "copied_from": "testdata/runtime/source-child.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/runtime/source-historical-merge.json",
+      "sha256": "efaded6b55332997f2f2ce5340ef33b53be3fb11491c89a5fc928cf9683e051f",
+      "bytes": 19454,
+      "copied_from": "testdata/runtime/source-historical-merge.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/runtime/source-historical-types.json",
+      "sha256": "eaba3ae68907a7c234db593cf05bef9c325e20c66aad8cc735ec3b5d7489c96a",
+      "bytes": 161432,
+      "copied_from": "testdata/runtime/source-historical-types.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/runtime/source-realtime-controls.json",
+      "sha256": "2779194926d4ece48ff47a2667d9ac902af54abf96cacaf0f454d439b4da06bf",
+      "bytes": 86835,
+      "copied_from": "testdata/runtime/source-realtime-controls.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/runtime/source-required-intervals.json",
+      "sha256": "4d15ee8ad48815f6a7ebdb93994240a450cd2147664c1afbb60c6d400c3fdd58",
+      "bytes": 261189,
+      "copied_from": "testdata/runtime/source-required-intervals.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/sql/captured-original-sql.json",
+      "sha256": "72db2d1df1cb9d483dce133f91a6bf97e822cf9a7b60f7cc4f2ac4471d75250e",
+      "bytes": 101693,
+      "copied_from": "testdata/sql/captured-original-sql.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/testdata/sql/source-vectors.json",
+      "sha256": "50e4178047b196152dd6e67c1a12d5ac8a93be2486ebb812ef4d6b1ae8914fb3",
+      "bytes": 48987,
+      "copied_from": "testdata/sql/source-vectors.json"
+    },
+    {
+      "file": "parity/runs/batch-33-evidence/realtime-m34/post-full-cache-reclamation-01.json",
+      "sha256": "7c4fc812772b311650771fc11224a12f974a62b24e26ee2c0fa4903815c8f7c2",
+      "bytes": 440,
+      "copied_from": "parity/runs/realtime-m34/post-full-cache-reclamation-01.json"
+    }
+  ],
+  "commands": [
+    {
+      "command": "GOFLAGS=-p=1 GOMAXPROCS=2 flock <task-heavy-test-lock> ./tools/verify.sh",
+      "exit_code": 1,
+      "log": "parity/runs/realtime-m34/full-verify-01.txt",
+      "exit_receipt": "parity/runs/realtime-m34/full-verify-01.exit",
+      "note": "Complete normal0 and all prerace verification0; race had two SQLSTATE53100 disk-full PostgreSQL batches, raw failure retained."
+    },
+    {
+      "command": "python3 /root/ponder-go/.cloud-bootstrap/history-next/m34/resume-full.py",
+      "exit_code": 0,
+      "log": "parity/runs/realtime-m34/full-verify-02.txt",
+      "exit_receipt": "parity/runs/realtime-m34/full-verify-02.exit",
+      "note": "Same1065 preparedinputs. Retry only two affected fullbatches;56real successful disjoint command stdout parts aggregated verbatim, all58actualattempts/oldfailure retained;all remaining strict collectors0. Default timeouts retained."
+    }
+  ],
+  "published": false,
+  "race_recovery": {
+    "aggregation": "parity/runs/realtime-m34/race-recovery-01/aggregation.json",
+    "accepted_commands": 56,
+    "actual_attempts": 58,
+    "retained_failed_batches": 2
+  },
+  "scope_limits": [
+    "486/905 exact mappings=482Go+4SDK; all mapped original oracles passed;419static records remain unimplemented.",
+    "Realtime complete original file30/203assertions/zero type directives;83publiccalls and46rawproviderinputs eachbackend/mode.3actual external original preparation requests separately recorded. Native memory API opens noDB while originalPG/PGlite hooks retain actual distinct databases.",
+    "Actual consumer iterator steps, independent native state/input mutation/Map/Set order and raw object/frame identity/ownproperties/Error name-message-code and parent warnings compared. Original source assertions unchanged; only extra native comparison clock duration excluded.",
+    "24actualsourcevectors supplementary, zero additionalsourcecredit. Oldclonehelper10red/2green, newinplacehelper12green. RPC identity/late once-mock/parallel observer proof separate.",
+    "First observer preparationRPC rejection, normal03 missing trace selection plus successful12-case supplement, and race01 SIGINT -2 before tests after disk0 are retained with input fingerprints. Readonly module dedup EXDEV appliedzero; unusedcast/chisel/Forge losslessly compressed; compiler-only recovery and failed self-reference guard recorded.",
+    "Complete runtime historical/realtime/multichain scheduling, business consumer transaction coordination, metrics/context, fullRPCgeneric/configDSL/SDK andremainingAPI/CLI/dev/templates/simulation remain within the original incomplete task."
+  ]
+}

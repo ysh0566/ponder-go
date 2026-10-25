@@ -54,11 +54,14 @@ node tools/source-required-fixtures.mjs
 node tools/source-historical-types.mjs
 node tools/source-historical-pristine.mjs
 node tools/source-historical-types/compile.mjs
+node tools/source-trace-fixtures.mjs
+node tools/source-realtime-controls.mjs
+node tools/source-realtime-observer-probe.mjs
+node tools/source-realtime-pristine.mjs
 node tools/record-native-inputs.mjs
 go test -count=1 -json ./abi/testdata/compile/generated > parity/runs/abi-typed-go.jsonl
 go test -count=1 -race -json ./abi/testdata/compile/generated > parity/runs/abi-typed-race.jsonl
 node tools/go-tests.mjs
-node tools/go-tests.mjs --race
 go vet ./... > parity/runs/go-vet.txt 2>&1
 go build -o bin/ponder ./cmd/ponder
 go build -o bin/erc20 ./examples/erc20
@@ -68,7 +71,10 @@ node tools/parameters-typecheck.mjs
 (cd sdk/typescript/client && CI=1 ./node_modules/.bin/vitest run --configLoader native --reporter=json --outputFile="$PWD/../../../parity/client-original.json")
 (cd sdk/typescript/react && CI=1 ./node_modules/.bin/vitest run --typecheck.only --configLoader native --reporter=json --outputFile="$PWD/../../../parity/react-original-typecheck-supported.json")
 node tools/differential.mjs
+node tools/compiler-cache-cutover.mjs --phase=normal-to-race
+node tools/go-tests.mjs --race
 node tools/config-live-results.mjs
 node tools/source-sync-results.mjs
 node tools/source-historical-results.mjs
+node tools/source-realtime-results.mjs
 node tools/record-results.mjs

@@ -1,0 +1,167 @@
+{
+  "state": "Independent marker-graph audit verifies actual output frame IDs belong to original raw source input graph; the generator flag alone is not the proof. Native identity/mutation tests remain pending.",
+  "fixture": {
+    "file": "/root/ponder-go/.cloud-bootstrap/history-next/m34/source-trace-identity-01.json",
+    "sha256": "f06db5d0861677f5bc3293d252049eca05327dcbd3ef5484a88efc8f628cca58"
+  },
+  "passed": true,
+  "cases": [
+    {
+      "name": "root_defaults",
+      "source_input_object_ids": [
+        1,
+        2
+      ],
+      "frames": [
+        {
+          "frame_id": 2,
+          "actually_reachable_in_input_marker_graph": true
+        }
+      ]
+    },
+    {
+      "name": "nested_reverted_sibling_index",
+      "source_input_object_ids": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "frames": [
+        {
+          "frame_id": 2,
+          "actually_reachable_in_input_marker_graph": true
+        },
+        {
+          "frame_id": 5,
+          "actually_reachable_in_input_marker_graph": true
+        }
+      ]
+    },
+    {
+      "name": "explicit_undefined_error",
+      "source_input_object_ids": [
+        1,
+        2,
+        3
+      ],
+      "frames": [
+        {
+          "frame_id": 2,
+          "actually_reachable_in_input_marker_graph": true
+        },
+        {
+          "frame_id": 3,
+          "actually_reachable_in_input_marker_graph": true
+        }
+      ]
+    },
+    {
+      "name": "explicit_undefined_defaults",
+      "source_input_object_ids": [
+        1,
+        2
+      ],
+      "frames": [
+        {
+          "frame_id": 2,
+          "actually_reachable_in_input_marker_graph": true
+        }
+      ]
+    },
+    {
+      "name": "missing_hash_mutates_before_rejection",
+      "source_input_object_ids": [
+        1,
+        2,
+        3
+      ],
+      "frames": []
+    },
+    {
+      "name": "missing_type_completes_traversal",
+      "source_input_object_ids": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "frames": []
+    },
+    {
+      "name": "missing_from_child_after_root_defaults",
+      "source_input_object_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "frames": []
+    },
+    {
+      "name": "missing_input",
+      "source_input_object_ids": [
+        1,
+        2
+      ],
+      "frames": []
+    },
+    {
+      "name": "shared_frame_across_roots",
+      "source_input_object_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "frames": [
+        {
+          "frame_id": 2,
+          "actually_reachable_in_input_marker_graph": true
+        },
+        {
+          "frame_id": 3,
+          "actually_reachable_in_input_marker_graph": true
+        },
+        {
+          "frame_id": 2,
+          "actually_reachable_in_input_marker_graph": true
+        },
+        {
+          "frame_id": 3,
+          "actually_reachable_in_input_marker_graph": true
+        }
+      ]
+    },
+    {
+      "name": "empty_response",
+      "source_input_object_ids": [],
+      "frames": []
+    },
+    {
+      "name": "explicit_null_error_excludes_subtree",
+      "source_input_object_ids": [
+        1,
+        2,
+        3
+      ],
+      "frames": []
+    },
+    {
+      "name": "null_gas_retained",
+      "source_input_object_ids": [
+        1,
+        2
+      ],
+      "frames": [
+        {
+          "frame_id": 2,
+          "actually_reachable_in_input_marker_graph": true
+        }
+      ]
+    }
+  ],
+  "source_credit": 0
+}

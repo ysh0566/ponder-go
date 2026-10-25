@@ -11,8 +11,19 @@ import (
 
 	"encoding/json"
 	"ponder.local/ponder-go/filter"
+	"ponder.local/ponder-go/rpc"
 	"ponder.local/ponder-go/store"
 )
+
+type historicalLiveSet []any
+type historicalLiveSourceError struct {
+	Name, Message string
+	Code          *int
+}
+
+func (e *historicalLiveSourceError) Error() string           { return e.Message }
+func (e *historicalLiveSourceError) SourceErrorName() string { return e.Name }
+func (e *historicalLiveSourceError) SourceErrorCode() *int   { return e.Code }
 
 type historicalLivePair struct{ Key, Value any }
 type historicalLiveMap []historicalLivePair
@@ -57,6 +68,31 @@ func (r *historicalLiveRegistry) restore(value any) (any, error) {
 		}
 		return out, nil
 	case map[string]any:
+		if value, ok := v["$error"].(map[string]any); ok {
+			result := &historicalLiveSourceError{}
+			result.Name, _ = value["name"].(string)
+			result.Message, _ = value["message"].(string)
+			if raw, ok := value["code"]; ok {
+				n, err := historicalLiveID(raw)
+				if err != nil {
+					return nil, err
+				}
+				code := int(n)
+				result.Code = &code
+			}
+			return result, nil
+		}
+		if values, ok := v["$set"].([]any); ok {
+			result := historicalLiveSet{}
+			for _, value := range values {
+				restored, err := r.restore(value)
+				if err != nil {
+					return nil, err
+				}
+				result = append(result, restored)
+			}
+			return result, nil
+		}
 		if v["$undefined"] == true {
 			return filter.Undefined, nil
 		}
@@ -155,6 +191,48 @@ func (r *historicalLiveRegistry) compare(actual, expected any, location string) 
 		return fmt.Errorf("%s: %s (native %T=%v, source %T=%v)", location, reason, actual, actual, expected, expected)
 	}
 	if object, ok := expected.(map[string]any); ok {
+		if values, ok := object["$set"].([]any); ok {
+			set, ok := actual.(historicalLiveSet)
+			if !ok || len(set) != len(values) {
+				return fail("Set size/kind differs")
+			}
+			for i, value := range values {
+				if err := r.compare(set[i], value, fmt.Sprintf("%s.Set[%d]", location, i)); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+		if value, ok := object["$error"].(map[string]any); ok {
+			native, ok := actual.(error)
+			if !ok {
+				return fail("Error value missing")
+			}
+			name := "Error"
+			if named, ok := native.(interface{ SourceErrorName() string }); ok {
+				name = named.SourceErrorName()
+			} else if _, ok := native.(*rpc.ProviderError); ok {
+				name = "RpcProviderError"
+			}
+			if value["name"] != name || value["message"] != native.Error() {
+				return fail("Error name/message differs")
+			}
+			var code *int
+			if coded, ok := native.(interface{ SourceErrorCode() *int }); ok {
+				code = coded.SourceErrorCode()
+			}
+			raw, exists := value["code"]
+			if exists != (code != nil) {
+				return fail("Error code presence differs")
+			}
+			if exists {
+				n, err := historicalLiveID(raw)
+				if err != nil || int64(*code) != n {
+					return fail("Error code differs")
+				}
+			}
+			return nil
+		}
 		if object["$undefined"] == true {
 			if !filter.IsUndefined(actual) {
 				return fail("undefined differs")

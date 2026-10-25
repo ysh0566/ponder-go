@@ -1,0 +1,2720 @@
+{
+  "state": "Actual complete pinned realtime source module loaded with actual dependencies. Supplementary controls only; zero original-test credit.",
+  "source_credit": 0,
+  "cases": [
+    {
+      "name": "consumer_owns_acceptance_callback",
+      "input": {
+        "kind": "callback",
+        "chain": {
+          "id": 1,
+          "name": "controls",
+          "reorgWindow": 1000,
+          "pollingInterval": 60000
+        },
+        "finalized": {
+          "number": "0x0",
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "0x0",
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "transactions": []
+        },
+        "blocks": [
+          {
+            "number": "0x1",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "0x1",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          },
+          {
+            "number": "0x2",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000002",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "timestamp": "0x2",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          }
+        ],
+        "filters": [],
+        "attempts": 0,
+        "killed": false,
+        "provider_mode": "blocks"
+      },
+      "result": {
+        "events": [
+          {
+            "type": "block",
+            "number": 1,
+            "has_callback": true,
+            "matched": false
+          }
+        ],
+        "checks": {
+          "before_duplicate": [
+            true
+          ]
+        },
+        "callbacks": [
+          true,
+          false
+        ],
+        "warnings": [],
+        "requests": [],
+        "unfinalized": [
+          1
+        ]
+      }
+    },
+    {
+      "name": "return_defers_finality_and_releases_lock",
+      "input": {
+        "kind": "early_return",
+        "chain": {
+          "id": 1,
+          "name": "controls",
+          "reorgWindow": 0,
+          "pollingInterval": 60000
+        },
+        "finalized": {
+          "number": "0x0",
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "0x0",
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "transactions": []
+        },
+        "blocks": [
+          {
+            "number": "0x1",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "0x1",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          },
+          {
+            "number": "0x2",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000002",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "timestamp": "0x2",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          }
+        ],
+        "filters": [],
+        "attempts": 0,
+        "killed": false,
+        "provider_mode": "blocks"
+      },
+      "result": {
+        "events": [
+          {
+            "type": "block",
+            "number": 1,
+            "has_callback": true,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 2,
+            "has_callback": true,
+            "matched": false
+          },
+          {
+            "type": "finalize",
+            "number": 2
+          }
+        ],
+        "checks": {
+          "retained_before_next": [
+            1
+          ]
+        },
+        "callbacks": [
+          false,
+          true
+        ],
+        "warnings": [],
+        "requests": [],
+        "unfinalized": []
+      }
+    },
+    {
+      "name": "distant_tip_fetches_49_intermediate_blocks",
+      "input": {
+        "kind": "missing",
+        "chain": {
+          "id": 1,
+          "name": "controls",
+          "reorgWindow": 1000,
+          "pollingInterval": 60000
+        },
+        "finalized": {
+          "number": "0x0",
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "0x0",
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "transactions": []
+        },
+        "blocks": [
+          {
+            "number": "0x50",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000050",
+            "parentHash": "0x000000000000000000000000000000000000000000000000000000000000004f",
+            "timestamp": "0x50",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          }
+        ],
+        "filters": [],
+        "attempts": 0,
+        "killed": false,
+        "provider_mode": "blocks"
+      },
+      "result": {
+        "events": [
+          {
+            "type": "block",
+            "number": 1,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 2,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 3,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 4,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 5,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 6,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 7,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 8,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 9,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 10,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 11,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 12,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 13,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 14,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 15,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 16,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 17,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 18,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 19,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 20,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 21,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 22,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 23,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 24,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 25,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 26,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 27,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 28,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 29,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 30,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 31,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 32,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 33,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 34,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 35,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 36,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 37,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 38,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 39,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 40,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 41,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 42,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 43,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 44,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 45,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 46,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 47,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 48,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 49,
+            "has_callback": false,
+            "matched": false
+          }
+        ],
+        "checks": {},
+        "callbacks": [
+          false
+        ],
+        "warnings": [],
+        "requests": [
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x10",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x11",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x12",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x13",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x14",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x15",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x16",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x17",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x18",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x19",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1a",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1b",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1c",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1d",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1e",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1f",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x20",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x21",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x22",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x23",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x24",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x25",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x26",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x27",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x28",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x29",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2a",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2b",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2c",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2d",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2e",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2f",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x3",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x30",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x31",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x4",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x5",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x6",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x7",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x8",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x9",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0xa",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0xb",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0xc",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0xd",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0xe",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0xf",
+              true
+            ]
+          }
+        ],
+        "unfinalized": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49
+        ]
+      }
+    },
+    {
+      "name": "exact_distance_50_includes_original_tip",
+      "input": {
+        "kind": "missing",
+        "chain": {
+          "id": 1,
+          "name": "controls",
+          "reorgWindow": 1000,
+          "pollingInterval": 60000
+        },
+        "finalized": {
+          "number": "0x0",
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "0x0",
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "transactions": []
+        },
+        "blocks": [
+          {
+            "number": "0x32",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000032",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000031",
+            "timestamp": "0x32",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          }
+        ],
+        "filters": [],
+        "attempts": 0,
+        "killed": false,
+        "provider_mode": "blocks"
+      },
+      "result": {
+        "events": [
+          {
+            "type": "block",
+            "number": 1,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 2,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 3,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 4,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 5,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 6,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 7,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 8,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 9,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 10,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 11,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 12,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 13,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 14,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 15,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 16,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 17,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 18,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 19,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 20,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 21,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 22,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 23,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 24,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 25,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 26,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 27,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 28,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 29,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 30,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 31,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 32,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 33,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 34,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 35,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 36,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 37,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 38,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 39,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 40,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 41,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 42,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 43,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 44,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 45,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 46,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 47,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 48,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 49,
+            "has_callback": false,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 50,
+            "has_callback": true,
+            "matched": false
+          }
+        ],
+        "checks": {},
+        "callbacks": [],
+        "warnings": [],
+        "requests": [
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x10",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x11",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x12",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x13",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x14",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x15",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x16",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x17",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x18",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x19",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1a",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1b",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1c",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1d",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1e",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x1f",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x20",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x21",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x22",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x23",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x24",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x25",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x26",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x27",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x28",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x29",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2a",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2b",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2c",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2d",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2e",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x2f",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x3",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x30",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x31",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x4",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x5",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x6",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x7",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x8",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0x9",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0xa",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0xb",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0xc",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0xd",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0xe",
+              true
+            ]
+          },
+          {
+            "method": "eth_getBlockByNumber",
+            "params": [
+              "0xf",
+              true
+            ]
+          }
+        ],
+        "unfinalized": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50
+        ]
+      }
+    },
+    {
+      "name": "strict_ten_minute_boundary",
+      "input": {
+        "kind": "retry",
+        "chain": {
+          "id": 1,
+          "name": "controls",
+          "reorgWindow": 1000,
+          "pollingInterval": 60000
+        },
+        "finalized": {
+          "number": "0x0",
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "0x0",
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "transactions": []
+        },
+        "blocks": [
+          {
+            "number": "0x1",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "0x1",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          },
+          {
+            "number": "0x2",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000002",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "timestamp": "0x2",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          }
+        ],
+        "filters": [],
+        "attempts": 11,
+        "killed": false,
+        "provider_mode": "blocks"
+      },
+      "result": {
+        "events": [],
+        "checks": {
+          "thrown_at": [
+            11
+          ],
+          "same_error": [
+            true
+          ],
+          "errors": [
+            {
+              "name": "Error",
+              "message": "retry error"
+            }
+          ]
+        },
+        "callbacks": [],
+        "warnings": [
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 0,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 1,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 2,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 3,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 4,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 5,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 6,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 7,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 8,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 9,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 10,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          }
+        ],
+        "requests": [],
+        "unfinalized": []
+      }
+    },
+    {
+      "name": "minimum_ten_retries",
+      "input": {
+        "kind": "retry",
+        "chain": {
+          "id": 1,
+          "name": "controls",
+          "reorgWindow": 1000,
+          "pollingInterval": 70000
+        },
+        "finalized": {
+          "number": "0x0",
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "0x0",
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "transactions": []
+        },
+        "blocks": [
+          {
+            "number": "0x1",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "0x1",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          },
+          {
+            "number": "0x2",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000002",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "timestamp": "0x2",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          }
+        ],
+        "filters": [],
+        "attempts": 10,
+        "killed": false,
+        "provider_mode": "blocks"
+      },
+      "result": {
+        "events": [],
+        "checks": {
+          "thrown_at": [
+            10
+          ],
+          "same_error": [
+            true
+          ],
+          "errors": [
+            {
+              "name": "Error",
+              "message": "retry error"
+            }
+          ]
+        },
+        "callbacks": [],
+        "warnings": [
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 0,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 1,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 2,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 3,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 4,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 5,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 6,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 7,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 8,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 9,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          }
+        ],
+        "requests": [],
+        "unfinalized": []
+      }
+    },
+    {
+      "name": "zero_polling_interval_never_times_out",
+      "input": {
+        "kind": "retry",
+        "chain": {
+          "id": 1,
+          "name": "controls",
+          "reorgWindow": 1000,
+          "pollingInterval": 0
+        },
+        "finalized": {
+          "number": "0x0",
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "0x0",
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "transactions": []
+        },
+        "blocks": [
+          {
+            "number": "0x1",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "0x1",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          },
+          {
+            "number": "0x2",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000002",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "timestamp": "0x2",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          }
+        ],
+        "filters": [],
+        "attempts": 12,
+        "killed": false,
+        "provider_mode": "blocks"
+      },
+      "result": {
+        "events": [],
+        "checks": {
+          "thrown_at": [],
+          "same_error": [],
+          "errors": []
+        },
+        "callbacks": [],
+        "warnings": [
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 0,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 1,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 2,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 3,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 4,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 5,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 6,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 7,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 8,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 9,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 10,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 11,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          }
+        ],
+        "requests": [],
+        "unfinalized": []
+      }
+    },
+    {
+      "name": "shutdown_preempts_warning_and_retry",
+      "input": {
+        "kind": "retry",
+        "chain": {
+          "id": 1,
+          "name": "controls",
+          "reorgWindow": 1000,
+          "pollingInterval": 60000
+        },
+        "finalized": {
+          "number": "0x0",
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "0x0",
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "transactions": []
+        },
+        "blocks": [
+          {
+            "number": "0x1",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "0x1",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          },
+          {
+            "number": "0x2",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000002",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "timestamp": "0x2",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          }
+        ],
+        "filters": [],
+        "attempts": 1,
+        "killed": true,
+        "provider_mode": "blocks"
+      },
+      "result": {
+        "events": [],
+        "checks": {
+          "thrown_at": [
+            1
+          ],
+          "same_error": [
+            false
+          ],
+          "errors": [
+            {
+              "name": "ShutdownError",
+              "message": ""
+            }
+          ]
+        },
+        "callbacks": [],
+        "warnings": [],
+        "requests": [],
+        "unfinalized": []
+      }
+    },
+    {
+      "name": "successful_sync_resets_retry_count",
+      "input": {
+        "kind": "reset",
+        "chain": {
+          "id": 1,
+          "name": "controls",
+          "reorgWindow": 1000,
+          "pollingInterval": 60000
+        },
+        "finalized": {
+          "number": "0x0",
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "0x0",
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "transactions": []
+        },
+        "blocks": [
+          {
+            "number": "0x1",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "0x1",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          },
+          {
+            "number": "0x2",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000002",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "timestamp": "0x2",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          }
+        ],
+        "filters": [],
+        "attempts": 0,
+        "killed": false,
+        "provider_mode": "blocks"
+      },
+      "result": {
+        "events": [
+          {
+            "type": "block",
+            "number": 1,
+            "has_callback": true,
+            "matched": false
+          }
+        ],
+        "checks": {
+          "thrown_at": []
+        },
+        "callbacks": [],
+        "warnings": [
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 0,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 1,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 2,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 3,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 4,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 5,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 6,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 7,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 8,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 0,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          },
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "retry_count": 1,
+            "error": {
+              "name": "Error",
+              "message": "retry error"
+            }
+          }
+        ],
+        "requests": [],
+        "unfinalized": [
+          1
+        ]
+      }
+    },
+    {
+      "name": "duplicate_hash_while_original_fetch_waits",
+      "input": {
+        "kind": "concurrent_duplicate",
+        "chain": {
+          "id": 1,
+          "name": "controls",
+          "reorgWindow": 1000,
+          "pollingInterval": 60000
+        },
+        "finalized": {
+          "number": "0x0",
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "0x0",
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "transactions": []
+        },
+        "blocks": [
+          {
+            "number": "0x1",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "0x1",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          },
+          {
+            "number": "0x2",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000002",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "timestamp": "0x2",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          }
+        ],
+        "filters": [
+          {
+            "type": "log",
+            "chainId": 1,
+            "hasTransactionReceipt": false
+          }
+        ],
+        "attempts": 0,
+        "killed": false,
+        "provider_mode": "wait"
+      },
+      "result": {
+        "events": [
+          {
+            "type": "block",
+            "number": 1,
+            "has_callback": true,
+            "matched": false
+          }
+        ],
+        "checks": {
+          "before_release": [
+            false
+          ]
+        },
+        "callbacks": [
+          false,
+          true
+        ],
+        "warnings": [],
+        "requests": [
+          {
+            "method": "eth_getLogs",
+            "params": [
+              {
+                "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000001"
+              }
+            ]
+          }
+        ],
+        "unfinalized": [
+          1
+        ]
+      }
+    },
+    {
+      "name": "reconcile_lock_held_across_yield",
+      "input": {
+        "kind": "serialized",
+        "chain": {
+          "id": 1,
+          "name": "controls",
+          "reorgWindow": 0,
+          "pollingInterval": 60000
+        },
+        "finalized": {
+          "number": "0x0",
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "0x0",
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "transactions": []
+        },
+        "blocks": [
+          {
+            "number": "0x1",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "0x1",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          },
+          {
+            "number": "0x2",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000002",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "timestamp": "0x2",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          }
+        ],
+        "filters": [],
+        "attempts": 0,
+        "killed": false,
+        "provider_mode": "blocks"
+      },
+      "result": {
+        "events": [
+          {
+            "type": "block",
+            "number": 1,
+            "has_callback": true,
+            "matched": false
+          },
+          {
+            "type": "block",
+            "number": 2,
+            "has_callback": true,
+            "matched": false
+          },
+          {
+            "type": "finalize",
+            "number": 2
+          }
+        ],
+        "checks": {
+          "second_waited": true
+        },
+        "callbacks": [
+          true
+        ],
+        "warnings": [],
+        "requests": [],
+        "unfinalized": []
+      }
+    },
+    {
+      "name": "provider_error_keeps_latest_fetched_hash",
+      "input": {
+        "kind": "failure_duplicate",
+        "chain": {
+          "id": 1,
+          "name": "controls",
+          "reorgWindow": 1000,
+          "pollingInterval": 60000
+        },
+        "finalized": {
+          "number": "0x0",
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "0x0",
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "transactions": []
+        },
+        "blocks": [
+          {
+            "number": "0x1",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "0x1",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          },
+          {
+            "number": "0x2",
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000002",
+            "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "timestamp": "0x2",
+            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "transactions": []
+          }
+        ],
+        "filters": [
+          {
+            "type": "log",
+            "chainId": 1,
+            "hasTransactionReceipt": false
+          }
+        ],
+        "attempts": 0,
+        "killed": false,
+        "provider_mode": "reject"
+      },
+      "result": {
+        "events": [],
+        "checks": {},
+        "callbacks": [
+          false,
+          false
+        ],
+        "warnings": [
+          {
+            "msg": "Failed to fetch latest block",
+            "chain": "controls",
+            "chain_id": 1,
+            "number": 1,
+            "hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "retry_count": 0,
+            "error": {
+              "name": "Error",
+              "message": "provider failure"
+            }
+          }
+        ],
+        "requests": [
+          {
+            "method": "eth_getLogs",
+            "params": [
+              {
+                "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000001"
+              }
+            ]
+          }
+        ],
+        "unfinalized": []
+      }
+    }
+  ],
+  "sources": [
+    {
+      "file": "tools/source-realtime-controls.mjs",
+      "sha256": "8899d95219bfdf2d70c6cbca6a46db3e33467319d4b6d61d8399e4cd7bc34d1c"
+    },
+    {
+      "file": "tools/source-realtime-module-loader.mjs",
+      "sha256": "310180cd2b1ced6a765bf6b913e18c81a321bd1f3de639aa91d4b11477710901"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/sync-realtime/index.ts",
+      "sha256": "c1afb00c60b50922b17ca87ea11def9143436d60978c6fa108fc30fcafa91fd2"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/internal/errors.ts",
+      "sha256": "2787d27ee1b5318aa48cddf41016f2780da3c28ba5fc867410746fb55a205276"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/rpc/actions.ts",
+      "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/index.ts",
+      "sha256": "c4ba739226f5fd160c07a5d956e2dc703f937148aa43101d8f7a0668405ae8d7"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/getLogsRetryHelper.ts",
+      "sha256": "3d43ce4548ba5db33457e88bb4f15076f6522dbdc1f3d532caf65e9109068c9f"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/loadBalance.ts",
+      "sha256": "b99f59c393c9c17361ad4972093f81448be74d07403c2ffedec55fa4785ef59a"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/mergeAbis.ts",
+      "sha256": "ff4fa11f210c7344c9d66821724d539fce79100d3538060c1ce8adaabf34b122"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/rateLimit.ts",
+      "sha256": "c65c16482acbcffdee3048cb700108683eb0ef9fadd2d447a5512f32612e809b"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/utils/queue.ts",
+      "sha256": "d2ad41ed0f65fae80871d2d78d7f5afc8426de2bf1bcdc43801c348cbb389d00"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/utils/promiseWithResolvers.ts",
+      "sha256": "85d139d5b9e06c5d9547af202c6369741c2b64c4ac8163ac093ef1b08c885d7b"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/replaceBigInts.ts",
+      "sha256": "01194487018a9bf4f6001ccdd1a371a22d3d7f8363045a0ef74247146fc3a238"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/sync-realtime/bloom.ts",
+      "sha256": "9ef282a3a7175b95f7964b6ee33a3d746d52f9c3ebee7db66c91ebe33b95e794"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/runtime/filter.ts",
+      "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/rpc/index.ts",
+      "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/queue.ts",
+      "sha256": "71d0498d004a9de43bd3bfd3091190077b86a651f62af50ede1c2b60a68c7c46"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/promiseWithResolvers.ts",
+      "sha256": "85d139d5b9e06c5d9547af202c6369741c2b64c4ac8163ac093ef1b08c885d7b"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/timer.ts",
+      "sha256": "c66dda4ac86e29b589a83043774fc222c7327eac31acc5d3153ca4be6d3bc619"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/wait.ts",
+      "sha256": "834947a11fe0550313307eeb68cf9ebcff6cd19913604a2f49eab614f892bdcd"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/rpc/http.ts",
+      "sha256": "bcd40aad1f370fa116caa9a2502cdb92807185334cac1b7ef995e9d5362e58ec"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/lowercase.ts",
+      "sha256": "0aa78833df2cdf1c9f517c636f979de22f8cb308e4bb52bb0747ec198fd12385"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/chunk.ts",
+      "sha256": "cf687c6fc45d937e375cd122221aefec0974e057f7b7962144b4d878f4f15e0f"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/pg.ts",
+      "sha256": "b3eb6af63da10e1714f6a16358a36a7125913746c5830d520b5c2349012ae28e"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/runtime/fragments.ts",
+      "sha256": "598f0605739d2348adc6a39e8d0fc9cd30bb1c996b132f6f642b1e6024bdf77f"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/dedupe.ts",
+      "sha256": "ecba745be6172e75021e553749d487b87f4f704b205a8c1f6261bb3ac2ddb1bf"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/finality.ts",
+      "sha256": "31017109c892bb593d0656ac79afc35df3b9fffddf7286705f7e69cfc6f1ff70"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/mutex.ts",
+      "sha256": "215b19bf2cdfe5ef712e2f15b19b059ad7045b89de7a25406068895385754fc2"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/range.ts",
+      "sha256": "fa793bc1aa7af16efd5322c65c5381d6b63397d818e54d34d421c34d1526bfd1"
+    },
+    {
+      "file": "../ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    }
+  ]
+}

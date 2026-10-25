@@ -32,9 +32,9 @@
       "upstream_sources": [],
       "evidence": [
         "parity/runs/summary.json",
-        "parity/runs/batch-32.json"
+        "parity/runs/batch-33.json"
       ],
-      "remaining": "M33 verifies456/905 exact records=452Go+4SDK, all mapped source oracles passed;449unimplemented. Historical twofiles40/102assertions/12native type obligations and136actualcalls perbackendmode verified. Static discovery is not dynamic exhaustiveness."
+      "remaining": "M34 verifies486/905 exact records=482Go+4SDK, all mapped source oracles passed;419unimplemented. Realtime30/203assertions,83actualcalls and46rawproviderinputs perbackendmode verified. Static discovery is not dynamic exhaustiveness."
     },
     {
       "id": "differential-harness",
@@ -1230,6 +1230,26 @@
         "docs/SOURCE_HISTORICAL.md"
       ],
       "remaining": "40 exact original cases/102assertions/12actual type controls verified onPG/PGlite andnormal/race,48actualpositiveprograms.106sourcevectors+10runtimecontrols supplementary. Complete historical/realtime/multichain scheduler, finality orchestration, context/metrics, fullRPCschema/configtypeDSL andarbitraryJSsemantics remain."
+    },
+    {
+      "id": "source-realtime-m34",
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/source_realtime_state.go",
+        "runtime/source_realtime_fetch.go",
+        "rpc/source_call_traces.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/sync-realtime/index.ts",
+        "packages/core/src/sync-realtime/index.test.ts",
+        "packages/core/src/rpc/actions.ts"
+      ],
+      "evidence": [
+        "parity/runs/source-realtime-verification.json",
+        "parity/runs/batch-33.json",
+        "docs/SOURCE_REALTIME.md"
+      ],
+      "remaining": "30exactoriginalcases/203assertions verified onactualPG/PGlite originalsetup andnative normal/race. Native memoryAPI noDB;83publiccalls/46rawproviderinputs eachbackendmode.24sourcevectors supplementary. Fullruntime/historical/multichain scheduler, business consumer transactions, metrics/context, fullRPCgeneric andremainingmodules stayunfinished."
     }
   ]
 }
