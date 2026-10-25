@@ -42,6 +42,10 @@ type Client struct {
 	actions           *Actions
 	concurrencyMu     sync.Mutex
 	requestSlots      chan struct{}
+	asyncMu           sync.Mutex
+	asyncPending      []*asyncCallTask
+	asyncRunning      bool
+	asyncStarted      atomic.Bool
 }
 
 // ConfigureConcurrency sets the shared transport limit before its first call.
@@ -56,7 +60,7 @@ func (c *Client) ConfigureConcurrency(limit int) error {
 	}
 	base.concurrencyMu.Lock()
 	defer base.concurrencyMu.Unlock()
-	if base.next.Load() != 0 || base.requestSlots != nil {
+	if base.next.Load() != 0 || base.requestSlots != nil || base.asyncStarted.Load() {
 		return fmt.Errorf("RPC concurrency must be configured before requests")
 	}
 	base.requestSlots = make(chan struct{}, limit)
@@ -123,6 +127,13 @@ func (c *Client) CallCached(ctx context.Context, method string, params any, out 
 	return c.call(ctx, true, method, params, out)
 }
 func (c *Client) call(ctx context.Context, cached bool, method string, params any, out any) error {
+	return c.callWithAdmission(ctx, cached, method, params, out, nil)
+}
+
+func (c *Client) callWithAdmission(ctx context.Context, cached bool, method string, params any, out any, admitted *callAdmission) error {
+	if admitted != nil {
+		defer admitted.release()
+	}
 	base := c
 	for base.transport != nil {
 		base = base.transport
@@ -140,18 +151,27 @@ func (c *Client) call(ctx context.Context, cached bool, method string, params an
 			return json.Unmarshal(raw, out)
 		}
 	}
-	release, err := base.acquireRequest(ctx)
-	if err != nil {
-		return err
+	if admitted == nil {
+		release, err := base.acquireRequest(ctx)
+		if err != nil {
+			return err
+		}
+		defer release()
 	}
-	defer release()
 	var last error
 	for attempt := 0; attempt <= base.Retries; attempt++ {
-		if e := base.wait(ctx); e != nil {
-			return e
+		var id uint64
+		var url string
+		if attempt == 0 && admitted != nil {
+			id = admitted.id
+			url = admitted.url
+		} else {
+			if e := base.wait(ctx); e != nil {
+				return e
+			}
+			id = base.next.Add(1)
+			url = base.URLs[(id-1)%uint64(len(base.URLs))]
 		}
-		id := base.next.Add(1)
-		url := base.URLs[(id-1)%uint64(len(base.URLs))]
 		request := map[string]any{"jsonrpc": "2.0", "id": id, "method": method, "params": params}
 		data, _ := json.Marshal(request)
 		raw, e := base.request(ctx, url, data)

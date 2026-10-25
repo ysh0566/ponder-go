@@ -157,3 +157,12 @@ RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋check
 ## M34：原版实时获取与内存协调
 
 新增30精确原例/203断言/0类型义务，累计486/905，419未实现。完整Go/race各2463，PG343/PGlite340，0fail/skip；22包170函数56批次，1065个准备后原生输入贯穿两种模式。每backend/mode83个实际公开调用、46个原始provider请求，严格比较独立状态、输入修改、Map/Set顺序及原始对象/frame身份和警告；3个原测试准备请求另记。实际消费者步骤驱动Go，原版输出不作native种子。完整pristine双后端各30，24个源码补充向量均通过且零额外credit。初轮采集范围/漏选trace名/磁盘编译中断与输入保留。完整runtime/多链调度与其他419原例继续；接口/边界见SOURCE_REALTIME.md与batch-33。
+
+
+## M35：运行时索引辅助 API、启动适配与完整回归（本地验收通过，发布待核验）
+
+`batch-34.json` / `batch-34-evidence` 对应 `runtime-index-m35/full-verify-04`，22 阶段完整退出 0。普通与 race 各 2783 测试节点 / 2565 叶用例，0 失败/跳过；PostgreSQL 各 358、PGlite 各 355。183 顶层函数分 60 个不重复批次，原 timeout 不变。1078 原生输入的准备/结束/当前 SHA256 均为 `23d113072444ffa0e81955676d47430adef5097b5e1441bf63dcb70dbf2cfdea`。
+
+新增 runtime/index 11 条完整映射/24 断言，累计 497/905 = 493 Go + 4 SDK；408 未实现。原文件全部 15 例/30 断言在两个原版后端及 Go normal/race 四种组合通过，但 4 例含 6 个 Map 推断指令仍无闭合原生类型证明，保持未映射。AsyncRequester 同步 FIFO admission、缓存/稀疏区间、事件归并和对象身份补充检查不增加 source credit。完整历史/多链调度不在本批完成范围。
+
+Anvil loopback 与客户端 Node 预编译为启动层适配，不是 pristine 原版运行。旧失败/中断、编译器 PATH 修复、映射 hash 序列化修复及历史采集 harness sidecar 的严格反例保留。历史 capture 只接受固定 M34 commit/blob 的原始字节；本轮原版双后端及当前原生输入证据仍分别验证。绝对 root 与编译二进制 hash 带来的异机复验限制见 CONTINUATION/SOURCE_RUNTIME_INDEX。旧 batch-33 不覆盖；本地完成不等于已发布或项目全量完成。

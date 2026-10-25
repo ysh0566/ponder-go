@@ -1,0 +1,60 @@
+go-race: ponder.local/ponder-go/abi TestUpstreamEventLog,TestFunctionEntriesPreserveDuplicatesAndCollisions,TestReusableOutput,TestTypedGenerationGuards
+go-race: ponder.local/ponder-go/abi TestUpstreamOffset,TestUpstreamParameters,TestIndexedTopicsSource
+go-race: ponder.local/ponder-go/bloom TestUpstreamBloom,TestBloomDifferential
+go-race: ponder.local/ponder-go/checkpoint TestUpstreamCheckpoint,TestEncodingBounds
+go-race: ponder.local/ponder-go/cmd/abi-codegen no test functions
+go-race: ponder.local/ponder-go/cmd/parity-probe no test functions
+go-race: ponder.local/ponder-go/cmd/ponder no test functions
+go-race: ponder.local/ponder-go/cmd/source-codegen no test functions
+go-race: ponder.local/ponder-go/config TestAccountFactoryValidation,TestUpstreamConfigRuntime,TestTypedSourceMissingSelection
+go-race: ponder.local/ponder-go/events TestEventBuildDifferential,TestUpstreamContractEventConstruction,TestUpstreamEventConstruction
+go-race: ponder.local/ponder-go/examples/erc20 no test functions
+go-race: ponder.local/ponder-go/factory TestUpstreamFactory
+go-race: ponder.local/ponder-go/filter TestUpstreamBlockFilter,TestFilterDifferential,TestUpstreamFilters,TestUpstreamFragments
+go-race: ponder.local/ponder-go/filter TestUpstreamRemainingFilters,TestSourceChildAddressVectors
+go-race: ponder.local/ponder-go/finality TestUpstreamFinality
+go-race: ponder.local/ponder-go/internal/jsvalue no test functions
+go-race: ponder.local/ponder-go/interval TestUpstreamInterval
+go-race: ponder.local/ponder-go/orm TestGenerateModels,TestTypedJSON,TestTypedRuntime,TestTypedNullable
+go-race: ponder.local/ponder-go/orm TestTypedEagerSQL
+go-race: ponder.local/ponder-go/query TestOriginalClientCompatibility,TestSuperJSON,TestSQLValidationHTTP
+go-race: ponder.local/ponder-go/rpc TestRPCActionDifferential,TestRPCActionBoundaries,TestUpstreamRPCPagination,TestUpstreamRPCReceipts
+go-race: ponder.local/ponder-go/rpc TestUpstreamRPCLogValidation,TestAsyncRPCAdmission,TestAsyncRPCRetryCompatibility,TestRetryAndCache
+go-race: ponder.local/ponder-go/rpc TestInvalidParamsIsNotRetried,TestRateLimitCancellation,TestConfiguredConcurrency,TestRPCLogBoundaries
+go-race: ponder.local/ponder-go/rpc TestUpstreamRPCLogs,TestScopedCacheSharesTransport,TestScopedCacheSharesRateLimit,TestSourceBlockVectors
+go-race: ponder.local/ponder-go/rpc TestUpstreamTraceActions
+go-race: ponder.local/ponder-go/runtime TestAccountFactoryConfiguration,TestAccountFactoryRuntime,TestAccountProjectionPreservesLargeBlockQuantity,TestAccountTransferRuntime
+go-race: ponder.local/ponder-go/runtime TestRuntimeBloomEnvelope,TestRuntimeBloom,TestContractLogAndTraceBatch,TestContractLogProjection
+go-race: ponder.local/ponder-go/runtime TestDecodePendingPreservesNormalizedCallbackIndex,TestContractTraceRuntime,TestAnvilPostgresVertical,TestAnvilPGliteVertical
+go-race: ponder.local/ponder-go/runtime TestStagedAnvilVertical,TestUpstreamSplitEvents,TestFactoryRuntime,TestFilterWideRequestBloomFalsePositiveRuntime
+go-race: ponder.local/ponder-go/runtime TestFilterFactoryBirthAndReorg,TestFilterWideRequestRuntime,TestGeneratedSourceRuntime,TestIndexedTopicDynamicORRuntime
+go-race: ponder.local/ponder-go/runtime TestIndexedTopicSourceRuntime,TestSourceConfigurationRuntime,TestSourceEventOrderOriginal,TestSourceEventOrderControls
+go-race: ponder.local/ponder-go/runtime TestSourceFactoryRuntime,TestUpstreamSourceHistorical,TestSourceHistoricalMemoryBound,TestSourceHistoricalFactoryDrain
+go-race: ponder.local/ponder-go/runtime TestSourceHistoricalMemoryLive,TestSourceHistoricalMergeVectors,TestSourceHistoricalProviderOwnership,TestSourceHistoricalPersistentLive
+go-race: ponder.local/ponder-go/runtime TestSourceRuntimeIndexFullFile,TestSourceRuntimeIndexEvidenceCompleteness,TestSourceRuntimeIndexPureDeclarations,TestSourcePageRuntime
+go-race: ponder.local/ponder-go/runtime TestSourceRealtimeControls,TestUpstreamSourceRealtime,TestSourceRequiredIntervalVectors,TestSourceSyncCacheOwnership
+go-race: ponder.local/ponder-go/runtime TestSourceLocalSyncProgressAssertions,TestSourceLocalSyncProgressSameHeightIdentity,TestSourceLocalSyncProgressControls,TestSourceSyncProgressMethods
+go-race: ponder.local/ponder-go/runtime TestSourceSyncProgressRPC,TestSourceTraceIdentityVectors,TestStagedRuntimePersistence,TestStagedHandlerFailureAndReconnect
+go-race: ponder.local/ponder-go/runtime TestStagedHandoffAdvancingHead,TestStagedAutomaticFinality,TestStagedRollbackKeepsPublicLatest,TestStagedEmptySchema
+go-race: ponder.local/ponder-go/runtime TestStagedRuntimeProcessCrash,TestStagedSetupRollback,TestTypedSourceRuntime
+go-race: ponder.local/ponder-go/schema TestUpstreamSchema
+go-race: ponder.local/ponder-go/sqlquery TestSQLCacheBehavior,TestSQLSourceDifferential,TestUpstreamSQLQuery
+go-race: ponder.local/ponder-go/store TestStagedActionGuards,TestStagedGlobalSuffixAndIsolated,TestStagedActionCrashRecovery,TestUpstreamStagedDataActions
+go-race: ponder.local/ponder-go/store TestUpstreamStagedActions,TestUpstreamDatabaseActions,TestUpstreamIndexingDelete,TestUpstreamCache
+go-race: ponder.local/ponder-go/store TestUpstreamCopyText,TestLifecycleBoundaries,TestLifecycleProcessCrash,TestUpstreamRemainingLifecycle
+go-race: ponder.local/ponder-go/store TestHistoricalSafeSealing,TestViewsSchemaBoundaries,TestUpstreamDatabaseLifecycle,TestLiveQueryCommitBoundary
+go-race: ponder.local/ponder-go/store TestLiveQueryUTF8Payload,TestUpstreamNormalize,TestDatabaseNotifications,TestUpstreamLiveQueryNotify
+go-race: ponder.local/ponder-go/store TestORMEventAtomicity,TestORMBatchChunks,TestORMNullAndFlushRecovery,TestORMRawSQLVisibility
+go-race: ponder.local/ponder-go/store TestORMJSONNullCharacterUndo,TestStorageVersionRejectsOldJournal,TestORMBytesPrimaryKey,TestUpstreamORMColumns
+go-race: ponder.local/ponder-go/store TestUpstreamInsertThen,TestUpstreamFullSQL,TestUpstreamORMDefaults,TestUpstreamORMFoundUpdate
+go-race: ponder.local/ponder-go/store TestUpstreamORMJSONBigInt,TestUpstreamORMDelete,TestUpstreamORMErrors,TestORMIsolatedComposite
+go-race: ponder.local/ponder-go/store TestUpstreamORMClosed,TestUpstreamORM,TestBridgeStartupReportsProcessFailure,TestProfileAcrossRollbackAndReorg
+go-race: ponder.local/ponder-go/store TestCacheMemoryBudget,TestUpstreamCacheEviction,TestNativeProfilePrefetch,TestCacheConcurrentReadModifyWrite
+go-race: ponder.local/ponder-go/store TestProfileNativeBranches,TestUpstreamProfile,TestProtocolEncodingDifferential,TestProtocolCacheBoundaries
+go-race: ponder.local/ponder-go/store TestProtocolColdRewind,TestProtocolDisabledOwnership,TestReorgCrashRecovery,TestSchemaObjects
+go-race: ponder.local/ponder-go/store TestInitialSafeFailureAtomicity,TestInitialSafeProcessCrash,TestUpstreamFilterBlockRange,TestSourceFilterBlockRangeVectors
+go-race: ponder.local/ponder-go/store TestSourceRPCBoundaries,TestUpstreamSourceRPCCache,TestSourceRPCVectors,TestUpstreamSourceSyncStore
+go-race: ponder.local/ponder-go/store TestSourceIntervalRewind,TestSQLWriteBoundaries,TestSQLParserCacheInvalidation,TestRawSQLJournal
+go-race: ponder.local/ponder-go/store TestUpstreamSQLCases,TestPGliteStore,TestPostgresStore,TestCrashRecovery
+go-race: ponder.local/ponder-go/store TestPGliteCancelledCommit,TestSyncMigrationSQLAssets,TestSyncMigrationBoundaries,TestSyncMigrationProcessCrash
+go-race: ponder.local/ponder-go/store TestUpstreamSyncMigration

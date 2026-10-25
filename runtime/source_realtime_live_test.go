@@ -521,6 +521,12 @@ func TestUpstreamSourceRealtime(t *testing.T) {
 				nativeCases = append(nativeCases, map[string]any{"id": record.ID, "source_sha256": record.SourceSHA, "complete": state.complete, "calls": state.calls, "errors": state.errors, "actual_memory_api_no_database": true})
 			}
 			report := map[string]any{"state": "Actual complete original source realtime public calls/provider inputs, independent native state/warnings/Set/frame identities. Exact mappings and complete module acceptance pending; no source credit.", "backend": backend, "cases": nativeCases, "original_exit_error": fmt.Sprint(runError), "source_credit": 0}
+			if os.Getenv("PONDER_UPSTREAM_ROOT") != "" {
+				report["environment_adapted"] = true
+				report["pristine_file"] = false
+				report["source_credit"] = 0
+				report["state"] = "ENVIRONMENT-ADAPTED startup; NOT pristine. " + report["state"].(string)
+			}
 			raw, err := json.MarshalIndent(report, "", "  ")
 			if err != nil {
 				t.Fatal(err)

@@ -1,0 +1,1656 @@
+{
+  "method": "Existing native live comparisons with explicitly environment-adapted startup; NOT pristine execution",
+  "source_credit": 0,
+  "pristine_file": false,
+  "complete": true,
+  "success": true,
+  "preparation": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-sync-compile.mjs",
+        "--write"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-historical-types/compile.mjs"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "command": [
+    "go",
+    "test",
+    "-json",
+    "-count=1",
+    "-p=1",
+    "./config",
+    "./store",
+    "./runtime",
+    "-run",
+    "^(TestUpstreamConfigRuntime|TestUpstreamSourceSyncStore|TestUpstreamSourceHistorical|TestUpstreamSourceRealtime)$"
+  ],
+  "exit_code": 0,
+  "signal": null,
+  "tests": [
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_builds_topics_for_multiple_events",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_handles_overloaded_event_signatures_and_combines_topics",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_handles_multiple_addresses",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_creates_a_source_for_each_chain_for_multi-chain_contracts",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_throw_useful_error_for_common_0.11_migration_mistakes",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_builds_topics_for_event_filter",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_builds_topics_for_multiple_event_filters",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_overrides_default_values_with_chain-specific_values",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_handles_chain_name_shortcut",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_validates_chain_name",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildConfig()_handles_chains_not_found_in_viem",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_validates_event_filter_event_name_must_be_present_in_ABI",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_validates_address_empty_string",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_validates_empty_contract_address_array",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_validates_empty_account_address_array",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_validates_empty_factory_address_array",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_validates_address_prefix",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_validates_address_length",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_coerces_NaN_startBlock_to_undefined",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_coerces_`latest`_to_number",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_includeTransactionReceipts",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_includeCallTraces",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_includeCallTraces_with_factory",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_coerces_NaN_endBlock_to_undefined",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_account_source",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_block_source",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_coerces_undefined_factory_interval_to_source_interval",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_validates_factory_interval",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_validates_start_and_end_block",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_returns_chain,_rpc,_and_finalized_block",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildConfig()_uses_the_configured_reorg_window",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildConfig()_defaults_the_reorg_window_to_180_seconds",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildConfig()_accepts_a_reorg_window_of_%s_seconds/0",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildConfig()_accepts_a_reorg_window_of_%s_seconds/600",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildConfig()_rejects_an_invalid_reorg_window_of_%s/-1",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildConfig()_rejects_an_invalid_reorg_window_of_%s/1.5",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildConfig()_rejects_an_invalid_reorg_window_of_%s/601",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildConfig()_rejects_an_invalid_reorg_window_of_%s/{\"$special\":\"NaN\"}",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime/buildIndexingFunctions()_hyperliquid_evm",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/config",
+      "test": "TestUpstreamConfigRuntime",
+      "action": "pass",
+      "elapsed": 23.74
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/636bfc01afd801a670dc",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/c12fc3149ef4402cf8df",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/b014452a31f3b997dbdb",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/c5668e40fe84e5e823a5",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/88a33184361c7c182064",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/ce9f73f3f9e38ca99341",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/72a27fceb92d0ab81739",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/107c53cf98b0bbd5285c",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/656dad4076e7b37c2ec1",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/754d2078e6d578aef893",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/3b4389ea29d738041191",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/32fdd001d8bc65cded9b",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/84ae11072d595a275f6c",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/408388a1c02da5da8944",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/388c83d444233941df2a",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/771e20e00ad99dbf84dc",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/00dd79b910bb6be5f667",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/b55340b2ff46ccae7235",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/8c10c3ca8a3394029eb4",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/8683047cdbc693e88685",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/9cc3baf6025b2a009172",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/f95ec8fcf741dc1865e2",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/6aaf62e61797aa8bf657",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/5fe2601e7290d84c5a9f",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/be279a95e355cb4191f5",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/a16711a3a6e76744d0aa",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/c46e1df17fa5bfee9795",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/35fa3687369a82eb852a",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/193f55295e2361cf2b41",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/ff257083ef21ee8cc242",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/e6371eaeefd3b771b447",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/c0f123371d9c1ad8a280",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/fda5598cc2c6e23487af",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/2c4db344f334a5d41da8",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/89faac19a9c5997ed3df",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/39614052712174085334",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/eb4c1f53f2780fd39c2d",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres/ee6fa3c92b4990682be8",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/postgres",
+      "action": "pass",
+      "elapsed": 25.85
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/636bfc01afd801a670dc",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/c12fc3149ef4402cf8df",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/b014452a31f3b997dbdb",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/c5668e40fe84e5e823a5",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/88a33184361c7c182064",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/ce9f73f3f9e38ca99341",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/72a27fceb92d0ab81739",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/107c53cf98b0bbd5285c",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/656dad4076e7b37c2ec1",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/754d2078e6d578aef893",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/3b4389ea29d738041191",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/32fdd001d8bc65cded9b",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/84ae11072d595a275f6c",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/408388a1c02da5da8944",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/388c83d444233941df2a",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/771e20e00ad99dbf84dc",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/00dd79b910bb6be5f667",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/b55340b2ff46ccae7235",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/8c10c3ca8a3394029eb4",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/8683047cdbc693e88685",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/9cc3baf6025b2a009172",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/f95ec8fcf741dc1865e2",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/6aaf62e61797aa8bf657",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/5fe2601e7290d84c5a9f",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/be279a95e355cb4191f5",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/a16711a3a6e76744d0aa",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/c46e1df17fa5bfee9795",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/35fa3687369a82eb852a",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/193f55295e2361cf2b41",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/ff257083ef21ee8cc242",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/e6371eaeefd3b771b447",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/c0f123371d9c1ad8a280",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/fda5598cc2c6e23487af",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/2c4db344f334a5d41da8",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/89faac19a9c5997ed3df",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/39614052712174085334",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/eb4c1f53f2780fd39c2d",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite/ee6fa3c92b4990682be8",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore/pglite",
+      "action": "pass",
+      "elapsed": 33.05
+    },
+    {
+      "package": "ponder.local/ponder-go/store",
+      "test": "TestUpstreamSourceSyncStore",
+      "action": "pass",
+      "elapsed": 59.14
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/52e137a2e81b50796e81",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/8b91e36fa0105cdf8ac8",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/752e48dab7ef918c4fe0",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/4ed88e241ef6d778d897",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/e7dfeb5c55b2d59da8a4",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/5ee92f73f12d67fe7317",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/a87094ef8544772d122e",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/65ec070fd0607112ac94",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/6493e2fc4786babcadbc",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/b70f8a00d9bee56cb33c",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/0e083209e2f8fe89cd51",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/7fbad8d2a48052673283",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/e7360d814bb5552f5222",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/da3e0236d21a83248db7",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/f1730c928e9f0138507a",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/2d4cc04bb5ceb9e835b1",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/c52aac0263ce5ad1550f",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/37fcced2a60753802f4c",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/18407c46d5bf5ef7f901",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/11f76edbd93e38b0b8c5",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/a025833808a3334ec1aa",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/acacab63db010a083c7f",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory/47b554b28f8c73291690",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/in-memory",
+      "action": "pass",
+      "elapsed": 9.66
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/c7847f072279f8b6b0ed",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/e38b35ef4bed931a01f3",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/5e23f5358b620b199868",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/c8c7b9eeae4ee588a54d",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/c5ca58c81d923d49529e",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/5da3c6f0b9b2653a81f9",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/e06e2a3c88bb3fe0ef8e",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/dcc7494a89f50d6ad7df",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/97a5db3271fd8a51cce8",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/9eaf4ba9f4488a48165e",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/0fa1c981c2dec7e89d5d",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/8fc41db64b6520908741",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/6a4eb173d60b39865c78",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/bff138edcd04ddcb1798",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/27d56af3b181c08ecad8",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/1f021a7b846451889eae",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index/feb4f050a5e15ba79c2f",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres/index",
+      "action": "pass",
+      "elapsed": 17.52
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/postgres",
+      "action": "pass",
+      "elapsed": 27.17
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/52e137a2e81b50796e81",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/8b91e36fa0105cdf8ac8",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/752e48dab7ef918c4fe0",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/4ed88e241ef6d778d897",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/e7dfeb5c55b2d59da8a4",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/5ee92f73f12d67fe7317",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/a87094ef8544772d122e",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/65ec070fd0607112ac94",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/6493e2fc4786babcadbc",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/b70f8a00d9bee56cb33c",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/0e083209e2f8fe89cd51",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/7fbad8d2a48052673283",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/e7360d814bb5552f5222",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/da3e0236d21a83248db7",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/f1730c928e9f0138507a",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/2d4cc04bb5ceb9e835b1",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/c52aac0263ce5ad1550f",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/37fcced2a60753802f4c",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/18407c46d5bf5ef7f901",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/11f76edbd93e38b0b8c5",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/a025833808a3334ec1aa",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/acacab63db010a083c7f",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory/47b554b28f8c73291690",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/in-memory",
+      "action": "pass",
+      "elapsed": 10.15
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/c7847f072279f8b6b0ed",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/e38b35ef4bed931a01f3",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/5e23f5358b620b199868",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/c8c7b9eeae4ee588a54d",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/c5ca58c81d923d49529e",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/5da3c6f0b9b2653a81f9",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/e06e2a3c88bb3fe0ef8e",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/dcc7494a89f50d6ad7df",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/97a5db3271fd8a51cce8",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/9eaf4ba9f4488a48165e",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/0fa1c981c2dec7e89d5d",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/8fc41db64b6520908741",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/6a4eb173d60b39865c78",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/bff138edcd04ddcb1798",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/27d56af3b181c08ecad8",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/1f021a7b846451889eae",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index/feb4f050a5e15ba79c2f",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite/index",
+      "action": "pass",
+      "elapsed": 38.06
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical/pglite",
+      "action": "pass",
+      "elapsed": 48.21
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceHistorical",
+      "action": "pass",
+      "elapsed": 75.65
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/fba380c787db24838542",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/95ee95f48d7b5d1b0b0b",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/45c6b11ad9b7328e1220",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/e01564092f0accde1ec7",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/5300e3d5472f40a8bd74",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/3f6962873b0434ff9434",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/d7b119bd8e3b1b2cda9a",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/af4a4f27848bd282932a",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/64dcb5030ffe6b7b2e46",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/6f5904bd62a06a0d6ddf",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/5310b5b192b0e050fcff",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/f2e898be3577c67b8117",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/cc3780451fe94d585b88",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/2860778de85b2e4a6c67",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/15040280be4072fbf228",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/6ca87ae914c976b80add",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/977f6facd9647ad23ade",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/c8a47145c3b773858970",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/b75f5a2bbe6083610f0f",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/ac8e00d8b09330f095eb",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/d9df26a77bc56ebd83bd",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/e2364fb5a88b6f04ebc6",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/bb9848a9e914a5b8c19a",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/dc4499adf8a8daecca48",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/99963a78ad41d532832b",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/a93408f2e301ba20ec8f",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/3c960650f90c316fa101",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/1b00563884f1499ea9d1",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/7a448b0bbf6eaf79b5e3",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres/c8085b7f81f76c8306ea",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/postgres",
+      "action": "pass",
+      "elapsed": 17.13
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/fba380c787db24838542",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/95ee95f48d7b5d1b0b0b",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/45c6b11ad9b7328e1220",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/e01564092f0accde1ec7",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/5300e3d5472f40a8bd74",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/3f6962873b0434ff9434",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/d7b119bd8e3b1b2cda9a",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/af4a4f27848bd282932a",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/64dcb5030ffe6b7b2e46",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/6f5904bd62a06a0d6ddf",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/5310b5b192b0e050fcff",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/f2e898be3577c67b8117",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/cc3780451fe94d585b88",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/2860778de85b2e4a6c67",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/15040280be4072fbf228",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/6ca87ae914c976b80add",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/977f6facd9647ad23ade",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/c8a47145c3b773858970",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/b75f5a2bbe6083610f0f",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/ac8e00d8b09330f095eb",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/d9df26a77bc56ebd83bd",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/e2364fb5a88b6f04ebc6",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/bb9848a9e914a5b8c19a",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/dc4499adf8a8daecca48",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/99963a78ad41d532832b",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/a93408f2e301ba20ec8f",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/3c960650f90c316fa101",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/1b00563884f1499ea9d1",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/7a448b0bbf6eaf79b5e3",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite/c8085b7f81f76c8306ea",
+      "action": "pass",
+      "elapsed": 0
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime/pglite",
+      "action": "pass",
+      "elapsed": 15.92
+    },
+    {
+      "package": "ponder.local/ponder-go/runtime",
+      "test": "TestUpstreamSourceRealtime",
+      "action": "pass",
+      "elapsed": 33.08
+    }
+  ],
+  "original_sources_unchanged": true,
+  "finished_utc": "2026-10-25T05:40:23.452Z"
+}

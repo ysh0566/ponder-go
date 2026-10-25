@@ -19,7 +19,7 @@ func main(){
  if !strings.HasPrefix(input.Namespace,"ponder_go_src_type_"){panic("task namespace required")}
  endpoint,err:=url.Parse(input.RPCURL);if err!=nil||(endpoint.Hostname()!="127.0.0.1"&&endpoint.Hostname()!="localhost"){panic("task loopback RPC required")}
  ctx:=context.Background();var backend store.Backend
- if input.Backend=="postgres"{database,parseErr:=url.Parse(input.DatabaseURL);if parseErr!=nil||database.Hostname()!="127.0.0.1"||database.Port()!="53398"||database.Path!="/ponder_test"{panic("explicit task PostgreSQL required")};backend,err=store.OpenPostgres(ctx,input.DatabaseURL)}else if input.Backend=="pglite"{backend,err=store.OpenPGlite(ctx,"memory://")}else{panic("explicit backend required")};if err!=nil{panic(err)};defer backend.Close()
+ if input.Backend=="postgres"{database,parseErr:=url.Parse(input.DatabaseURL);if parseErr!=nil||database.Hostname()!="127.0.0.1"||(database.Port()!="53398"&&!(os.Getenv("PONDER_UPSTREAM_ROOT")!=""&&database.Port()=="55432"))||database.Path!="/ponder_test"{panic("explicit task PostgreSQL required")};backend,err=store.OpenPostgres(ctx,input.DatabaseURL)}else if input.Backend=="pglite"{backend,err=store.OpenPGlite(ctx,"memory://")}else{panic("explicit backend required")};if err!=nil{panic(err)};defer backend.Close()
  model:=schema.Schema{Tables:[]schema.Table{{Name:"type_probe",Columns:[]schema.Column{{Name:"id",Type:"text",Primary:true}}}}}
  db,err:=store.New(ctx,backend,model,input.Namespace,schema.Multichain);if err!=nil{panic(err)};cache,err:=db.EnableProtocolCache(ctx);if err!=nil{panic(err)};source,err:=cache.SourceSyncStore(0);if err!=nil{panic(err)}
  req:=rpc.SourceCallRequest{Params:rpc.SourceCallParameters{Transaction:map[string]any{}}}

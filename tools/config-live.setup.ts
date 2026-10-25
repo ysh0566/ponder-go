@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {spawnSync} from "node:child_process";
 import {beforeEach,afterEach,afterAll,vi} from "vitest";
-import * as source from "../../ponder-upstream/packages/core/src/build/config.ts";
+import * as source from "@/build/config.js";
 const root=path.resolve(import.meta.dirname,"..");
 const ledger=JSON.parse(fs.readFileSync(path.join(root,"parity/test-ledger.json"),"utf8"));
 const selected=ledger.tests.filter((t:any)=>t.source_file==="packages/core/src/build/config.test.ts");

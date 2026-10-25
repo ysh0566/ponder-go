@@ -4,7 +4,19 @@
 
 
 
-## 当前执行入口：M34已验证，完整目标继续
+## 当前执行入口：M35 本地验收通过，待普通提交发布，完整目标继续
+
+完整 `runtime-index-m35/full-verify-04` 于 2026-10-25 07:47:30 UTC 退出 0，22 个阶段全部通过。普通/race 各 2783 个测试节点，按汇总口径各 2565 个叶用例；22 包、183 个顶层函数、每模式 60 个不重叠批次，0 失败/跳过。PostgreSQL 各 358 叶用例，PGlite 各 355。1078 文件输入指纹 `23d113072444ffa0e81955676d47430adef5097b5e1441bf63dcb70dbf2cfdea` 在准备后、两模式结束及汇总时完全相同。React 类型 1/1、client 3/3、core 201（保留 2 个原有 pending）均通过。
+
+正式映射 497/905 = 493 Go + 4 SDK，497 项均有本轮原版执行通过；408 项尚未实现。runtime/index 原文件 15 例/30 断言在两个真实后端均通过，四种 native backend/mode 全部执行。仅 11 例/24 断言新增正式 credit；其余 4 例含 6 个 TypeScript Map 推断指令，运行时通过但原生类型边界未完成，保持未映射。动态 `filter.Object` 不能冒充闭合静态联合类型。补充并发、对象身份、重试、取消和环境适配不增加原例 credit。
+
+本次启动层结果明确为 environment-adapted，非 pristine：Anvil 使用官方显式 loopback 端口；客户端先编译同一 TypeScript 再用 Node 执行，原输入/断言/SSE/只读检查不变。full01 端口配置失败、full02 平台中断、full03 缺少 PATH 中的 tsc 均保留，不拼接为通过；full04 从头完整通过。新增 pinned TypeScript 5.4.5 fail-fast 预检。历史 SQL/events/filter/bloom 采集只通过固定已发布 M34 commit/blob 的 sidecar 复核旧 harness 字节，不将历史结果当当前运行；当前原版双后端证据仍必需。
+
+活跃 checkout 在 assistant cloud 的 writable recovery workspace；原 shared checkout、失败记录及旧 batch-33 不改。证据含绝对 execution/project/upstream root 和临时编译产物的 hash，所以冻结归档可做静态审计，不承诺另一目录直接复跑验收器。迁移后应准备 pinned upstream/工具/类型程序并生成新的 run/context，不能改写旧路径伪装原执行。归档不发布缓存、依赖安装、可执行二进制或认证材料。发布前需检查 batch-34 证据闭包、作者/提交者及远端 main 仍为 `d9b2ae852a735a7e4d7c66a940d55d5f3e924400`；只允许普通 fast-forward，不 force，不改历史，不建 PR/部署。
+
+下一步继续 runtime/historical 原 14 例/29 断言及完整 historical/omnichain/isolated/catchup/refetch/crash-recovery 调度，再推进查询、GraphQL、API、CLI/dev/templates、完整类型与 SDK/simulation。整体任务未完成。当前仅本地已验收；实际发布结果须另核对远端，不从此文档推断。
+
+## M34 历史已验证基线
 
 batch-33.json/batch-33-evidence 与 realtime-m34/full-verify-02 恢复验收实际退出0。Go/race各2463，PG343/PGlite340，0fail/skip；22包、170函数，每模式56个不重复串行批次，默认timeout保留。1065/f6a0342703f5fd7b5e7d8a3ce6ee36771281f3597c639d2656aae26ba36f825a准备后原生输入贯穿完整normal/race。精确映射486/905=482Go+4SDK，全部映射原版oracle通过；419未实现。
 

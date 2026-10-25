@@ -1,0 +1,41 @@
+{
+  "method": "Complete original source files with environment-adapted startup, NOT pristine execution or native parity",
+  "source_credit": 0,
+  "pristine_file": false,
+  "backend": "postgres",
+  "complete": true,
+  "success": true,
+  "files": [
+    "src/build/config.test.ts",
+    "src/sync-store/index.test.ts",
+    "src/sync-historical/in-memory.test.ts",
+    "src/sync-historical/index.test.ts",
+    "src/sync-realtime/index.test.ts"
+  ],
+  "command": [
+    "vitest",
+    "run",
+    "--config",
+    "vite.config.ts",
+    "--configLoader",
+    "native",
+    "--maxWorkers=2",
+    "src/build/config.test.ts",
+    "src/sync-store/index.test.ts",
+    "src/sync-historical/in-memory.test.ts",
+    "src/sync-historical/index.test.ts",
+    "src/sync-realtime/index.test.ts",
+    "--reporter=json",
+    "--outputFile=/workspace/shared/ponder-migration/work/ponder-go/parity/runs/loopback-source-2026-10-25T05-28-32-277Z/vitest.json"
+  ],
+  "exit_code": 0,
+  "signal": null,
+  "counts": {
+    "passed": 147,
+    "failed": 0,
+    "pending": 1,
+    "total": 148
+  },
+  "original_sources_unchanged": true,
+  "finished_utc": "2026-10-25T05:28:45.696Z"
+}

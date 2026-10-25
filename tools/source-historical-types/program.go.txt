@@ -65,7 +65,7 @@ func mutatePartial(callback config.SourceEventCallback){
 }
 func openBackend(ctx context.Context,backend string)store.Backend{
  if backend=="pglite"{result,err:=store.OpenPGlite(ctx,"memory://");must(err);return result}
- if backend!="postgres"{panic("original backend required")};address:=os.Getenv("PONDER_TEST_POSTGRES");parsed,err:=url.Parse(address);must(err);if parsed.Hostname()!="127.0.0.1"||parsed.Port()!="53398"||parsed.Path!="/ponder_test"{panic("dedicated taskPG required")};result,err:=store.OpenPostgres(ctx,address);must(err);return result
+ if backend!="postgres"{panic("original backend required")};address:=os.Getenv("PONDER_TEST_POSTGRES");parsed,err:=url.Parse(address);must(err);if parsed.Hostname()!="127.0.0.1"||(parsed.Port()!="53398"&&!(os.Getenv("PONDER_UPSTREAM_ROOT")!=""&&parsed.Port()=="55432"))||parsed.Path!="/ponder_test"{panic("dedicated taskPG required")};result,err:=store.OpenPostgres(ctx,address);must(err);return result
 }
 func required(ctx context.Context,f filter.Object,span store.SourceInterval,source *store.SourceSyncStore)([]store.SourceFilterInterval,[]store.SourceFactoryInterval){
  filters:=[]filter.Object{f};var cached []store.SourceIntervalEntry

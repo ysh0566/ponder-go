@@ -1,0 +1,39 @@
+✔ reject unpinned, dirty or different client source before execution (1.395403ms)
+✔ reject changed or missing external dependency after execution (1.07001ms)
+✔ actual SDK source matches clean pinned original (8.643311ms)
+✔ fail closed on unknown startup shape (0.936161ms)
+✖ complete copy changes only startup, rejects changed test body and removes own temporary tree (8.699165ms)
+✔ reject unpinned or dirty original checkout state (0.182621ms)
+✖ durable exact context survives disposal and fails closed on tampering (10.530616ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 165.158118
+
+✖ failing tests:
+
+test at tools/loopback-adapter.test.mjs:4:1
+✖ complete copy changes only startup, rejects changed test body and removes own temporary tree (8.699165ms)
+  Error: Less than 5 GiB free; refusing adaptation
+      at createAdaptedUpstream (file:///workspace/shared/ponder-migration/work/ponder-go/tools/loopback-adapter.mjs:39:89)
+      at TestContext.<anonymous> (file:///workspace/shared/ponder-migration/work/ponder-go/tools/loopback-adapter.test.mjs:6:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tools/loopback-context.test.mjs:5:1
+✖ durable exact context survives disposal and fails closed on tampering (10.530616ms)
+  Error: Less than 5 GiB free; refusing adaptation
+      at createAdaptedUpstream (file:///workspace/shared/ponder-migration/work/ponder-go/tools/loopback-adapter.mjs:39:89)
+      at TestContext.<anonymous> (file:///workspace/shared/ponder-migration/work/ponder-go/tools/loopback-context.test.mjs:6:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
