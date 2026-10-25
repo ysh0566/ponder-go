@@ -1,0 +1,451 @@
+package runtime
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"iter"
+	"sync"
+
+	"ponder.local/ponder-go/bloom"
+	"ponder.local/ponder-go/filter"
+	"ponder.local/ponder-go/rpc"
+)
+
+type SourceRealtimeChain struct {
+	ID              uint64
+	Name            string
+	ReorgWindow     uint64
+	PollingInterval uint64
+}
+type SourceShutdownError struct{}
+
+func (SourceShutdownError) Error() string           { return "" }
+func (SourceShutdownError) SourceErrorName() string { return "ShutdownError" }
+
+type SourceRealtimeOptions struct {
+	Logger    rpc.ActionLogger
+	RPCLogger rpc.ActionLogger
+	IsKilled  func() bool
+}
+type SourceRealtimeEvent struct {
+	Type                string
+	Block               filter.Object
+	HasMatchedFilter    bool
+	Transactions        []filter.Object
+	TransactionReceipts []filter.Object
+	Logs                []filter.Object
+	Traces              []rpc.CallTrace
+	ChildAddresses      []SourceRealtimeFragmentChildren
+	ReorgedBlocks       []filter.Object
+	BlockCallback       func(bool)
+}
+type SourceRealtimeFragmentChildren struct {
+	FragmentID string
+	Addresses  []string
+}
+type sourceRealtimeData struct {
+	block        filter.Object
+	transactions []filter.Object
+	receipts     []filter.Object
+	logs         []filter.Object
+	traces       []rpc.CallTrace
+	children     []SourceRealtimeFragmentChildren
+}
+type SourceRealtimeSync struct {
+	requester        rpc.Requester
+	actions          *rpc.Actions
+	children         *SourceHistoricalChildren
+	chain            SourceRealtimeChain
+	options          SourceRealtimeOptions
+	kinds            map[string][]filter.Object
+	factories        []filter.Object
+	factoryFragments [][]string
+	logBlooms        []bloom.LogFilterBloom
+	factoryBlooms    []bloom.FactoryBloom
+	reconcileMu      sync.Mutex
+	stateMu          sync.RWMutex
+	finalized        filter.Object
+	unfinalized      []filter.Object
+	latestFetched    filter.Object
+	errorCount       uint64
+	childrenPerBlock map[uint64][]SourceRealtimeFragmentChildren
+}
+
+func NewSourceRealtimeSync(requester rpc.Requester, actions *rpc.Actions, children *SourceHistoricalChildren, finalized filter.Object, filters []filter.Object, chain SourceRealtimeChain, options SourceRealtimeOptions) (*SourceRealtimeSync, error) {
+	base, err := NewSourceInMemoryHistoricalSync(requester, actions, children, SourceHistoricalOptions{})
+	if err != nil {
+		return nil, err
+	}
+	finalNumber, err := sourceHistoricalNumber(finalized["number"])
+	if err != nil {
+		return nil, err
+	}
+	result := &SourceRealtimeSync{requester: requester, actions: base.actions, children: children, chain: chain, options: options, kinds: map[string][]filter.Object{}, factories: []filter.Object{}, factoryFragments: [][]string{}, logBlooms: []bloom.LogFilterBloom{}, factoryBlooms: []bloom.FactoryBloom{}, finalized: finalized, unfinalized: []filter.Object{}, childrenPerBlock: map[uint64][]SourceRealtimeFragmentChildren{}}
+	seen := map[string]bool{}
+	for _, f := range filters {
+		if sourceRealtimeEnded(f, finalNumber) {
+			continue
+		}
+		kind, _ := f["type"].(string)
+		result.kinds[kind] = append(result.kinds[kind], f)
+		for _, factory := range filter.GetFilterFactories(f) {
+			if sourceRealtimeEnded(factory, finalNumber) {
+				continue
+			}
+			id, _ := factory["id"].(string)
+			if seen[id] {
+				continue
+			}
+			seen[id] = true
+			result.factories = append(result.factories, factory)
+			result.factoryFragments = append(result.factoryFragments, filter.FactoryFragmentIDs(factory))
+		}
+	}
+	for _, f := range result.kinds["log"] {
+		value, err := bloom.GetLogFilterBloomObject(f)
+		if err != nil {
+			return nil, err
+		}
+		result.logBlooms = append(result.logBlooms, value)
+	}
+	for _, f := range result.factories {
+		value, err := bloom.GetFactoryBloom(f)
+		if err != nil {
+			return nil, err
+		}
+		result.factoryBlooms = append(result.factoryBlooms, value)
+	}
+	return result, nil
+}
+func sourceRealtimeEnded(f filter.Object, finalized uint64) bool {
+	value, ok := f["toBlock"]
+	if !ok || value == nil || filter.IsUndefined(value) {
+		return false
+	}
+	switch n := value.(type) {
+	case float64:
+		return n != 0 && n <= float64(finalized)
+	case uint64:
+		return n != 0 && n <= finalized
+	case int:
+		return n != 0 && float64(n) <= float64(finalized)
+	case int64:
+		return n != 0 && float64(n) <= float64(finalized)
+	case json.Number:
+		value, err := n.Float64()
+		return err == nil && value != 0 && value <= float64(finalized)
+	}
+	return false
+}
+func sourceRealtimeLight(block filter.Object) filter.Object {
+	return filter.Object{"hash": block["hash"], "parentHash": block["parentHash"], "number": block["number"], "timestamp": block["timestamp"]}
+}
+func (s *SourceRealtimeSync) latestLocked() filter.Object {
+	if len(s.unfinalized) > 0 {
+		return s.unfinalized[len(s.unfinalized)-1]
+	}
+	return s.finalized
+}
+func (s *SourceRealtimeSync) UnfinalizedBlocks() []filter.Object {
+	s.stateMu.RLock()
+	defer s.stateMu.RUnlock()
+	return append([]filter.Object{}, s.unfinalized...)
+}
+func (s *SourceRealtimeSync) logWarn(fields map[string]any) {
+	if s.options.Logger != nil {
+		s.options.Logger.Warn(fields)
+	}
+}
+func (s *SourceRealtimeSync) OnError(err error, block filter.Object) error {
+	if s.options.IsKilled != nil && s.options.IsKilled() {
+		return SourceShutdownError{}
+	}
+	s.stateMu.RLock()
+	count := s.errorCount
+	s.stateMu.RUnlock()
+	fields := map[string]any{"msg": "Failed to fetch latest block", "chain": s.chain.Name, "chain_id": s.chain.ID, "retry_count": count, "error": err}
+	if block != nil {
+		number, _ := sourceHistoricalNumber(block["number"])
+		fields["number"] = number
+		fields["hash"] = block["hash"]
+	}
+	s.logWarn(fields)
+	s.stateMu.Lock()
+	s.errorCount++
+	next := s.errorCount
+	s.stateMu.Unlock()
+	if next >= 10 && next*s.chain.PollingInterval > 10*60*1000 {
+		return err
+	}
+	return nil
+}
+func (s *SourceRealtimeSync) Sync(ctx context.Context, block filter.Object, callback func(bool)) iter.Seq2[SourceRealtimeEvent, error] {
+	return func(yield func(SourceRealtimeEvent, error) bool) {
+		fail := func(err error) {
+			if callback != nil {
+				callback(false)
+			}
+			if report := s.OnError(err, block); report != nil {
+				yield(SourceRealtimeEvent{}, report)
+			}
+		}
+		s.stateMu.Lock()
+		latest := s.latestLocked()
+		duplicate := latest["hash"] == block["hash"] || (s.latestFetched != nil && s.latestFetched["hash"] == block["hash"])
+		if !duplicate {
+			s.latestFetched = block
+		}
+		s.stateMu.Unlock()
+		if duplicate {
+			if callback != nil {
+				callback(false)
+			}
+			return
+		}
+		data, err := s.fetchBlockEventData(ctx, block)
+		if err != nil {
+			fail(err)
+			return
+		}
+		complete, err := func() (bool, error) {
+			s.reconcileMu.Lock()
+			defer s.reconcileMu.Unlock()
+			return s.reconcileBlock(ctx, data, callback, yield)
+		}()
+		if err != nil {
+			fail(err)
+			return
+		}
+		if !complete {
+			return
+		}
+		s.stateMu.Lock()
+		s.latestFetched = nil
+		s.errorCount = 0
+		s.stateMu.Unlock()
+	}
+}
+func (s *SourceRealtimeSync) reconcileBlock(ctx context.Context, data sourceRealtimeData, callback func(bool), yield func(SourceRealtimeEvent, error) bool) (bool, error) {
+	block := data.block
+	number, err := sourceHistoricalNumber(block["number"])
+	if err != nil {
+		return false, err
+	}
+	s.stateMu.RLock()
+	latest := s.latestLocked()
+	s.stateMu.RUnlock()
+	latestNumber, err := sourceHistoricalNumber(latest["number"])
+	if err != nil {
+		return false, err
+	}
+	reject := func() {
+		if callback != nil {
+			callback(false)
+		}
+	}
+	if latest["hash"] == block["hash"] {
+		reject()
+		return true, nil
+	}
+	if latestNumber >= number {
+		event, err := s.reconcileReorg(ctx, block)
+		if err != nil {
+			return false, err
+		}
+		reject()
+		return yield(event, nil), nil
+	}
+	if latestNumber+1 < number {
+		end := number
+		if end > latestNumber+50 {
+			end = latestNumber + 50
+		}
+		pending := make([]sourceRealtimeData, end-latestNumber-1)
+		tasks := []func() error{}
+		for n := latestNumber + 1; n < end; n++ {
+			index := n - latestNumber - 1
+			tasks = append(tasks, func() error {
+				block, err := s.actions.GetSourceBlockByNumber(ctx, Hex(n), true)
+				if err != nil {
+					return err
+				}
+				pending[index], err = s.fetchBlockEventData(ctx, block)
+				return err
+			})
+		}
+		if err := sourceHistoricalAll(tasks); err != nil {
+			return false, err
+		}
+		for _, pendingBlock := range pending {
+			ok, err := s.reconcileBlock(ctx, pendingBlock, nil, yield)
+			if err != nil || !ok {
+				return ok, err
+			}
+		}
+		if number-latestNumber > 50 {
+			reject()
+			return true, nil
+		}
+		return s.reconcileBlock(ctx, data, callback, yield)
+	}
+	if block["parentHash"] != latest["hash"] {
+		event, err := s.reconcileReorg(ctx, block)
+		if err != nil {
+			return false, err
+		}
+		reject()
+		return yield(event, nil), nil
+	}
+	filtered, matched, err := s.filterBlockEventData(data)
+	if err != nil {
+		return false, err
+	}
+	s.stateMu.Lock()
+	s.unfinalized = append(s.unfinalized, sourceRealtimeLight(block))
+	s.stateMu.Unlock()
+	data.block["transactions"] = filtered.transactions
+	event := SourceRealtimeEvent{Type: "block", HasMatchedFilter: matched, Block: filtered.block, Logs: filtered.logs, Transactions: filtered.transactions, TransactionReceipts: filtered.receipts, Traces: filtered.traces, ChildAddresses: filtered.children, BlockCallback: callback}
+	if !yield(event, nil) {
+		return false, nil
+	}
+	timestamp, err := sourceHistoricalNumber(block["timestamp"])
+	if err != nil {
+		return false, err
+	}
+	s.stateMu.Lock()
+	firstTime, err := sourceHistoricalNumber(s.unfinalized[0]["timestamp"])
+	if err != nil {
+		s.stateMu.Unlock()
+		return false, err
+	}
+	if timestamp < firstTime || timestamp-firstTime < s.chain.ReorgWindow {
+		s.stateMu.Unlock()
+		return true, nil
+	}
+	pendingFinalized := s.unfinalized[0]
+	cut := 0
+	for i, candidate := range s.unfinalized {
+		at, err := sourceHistoricalNumber(candidate["timestamp"])
+		if err != nil {
+			s.stateMu.Unlock()
+			return false, err
+		}
+		if timestamp >= at && timestamp-at >= s.chain.ReorgWindow {
+			pendingFinalized = candidate
+			cut = i + 1
+		} else {
+			break
+		}
+	}
+	for _, old := range s.unfinalized[:cut] {
+		n, _ := sourceHistoricalNumber(old["number"])
+		delete(s.childrenPerBlock, n)
+	}
+	s.unfinalized = append([]filter.Object{}, s.unfinalized[cut:]...)
+	s.finalized = pendingFinalized
+	s.stateMu.Unlock()
+	return yield(SourceRealtimeEvent{Type: "finalize", Block: pendingFinalized}, nil), nil
+}
+func (s *SourceRealtimeSync) reconcileReorg(ctx context.Context, block filter.Object) (SourceRealtimeEvent, error) {
+	number, err := sourceHistoricalNumber(block["number"])
+	if err != nil {
+		return SourceRealtimeEvent{}, err
+	}
+	s.stateMu.Lock()
+	removed := []filter.Object{}
+	kept := []filter.Object{}
+	for _, local := range s.unfinalized {
+		n, _ := sourceHistoricalNumber(local["number"])
+		if n >= number {
+			removed = append(removed, local)
+		} else {
+			kept = append(kept, local)
+		}
+	}
+	s.unfinalized = kept
+	s.stateMu.Unlock()
+	remote := block
+	for {
+		s.stateMu.RLock()
+		parent := s.latestLocked()
+		empty := len(s.unfinalized) == 0
+		s.stateMu.RUnlock()
+		if parent["hash"] == remote["parentHash"] {
+			break
+		}
+		if empty {
+			s.stateMu.Lock()
+			s.unfinalized = removed
+			finalized := s.finalized
+			s.stateMu.Unlock()
+			n, _ := sourceHistoricalNumber(finalized["number"])
+			s.logWarn(map[string]any{"msg": "Encountered unrecoverable reorg", "chain": s.chain.Name, "chain_id": s.chain.ID, "finalized_block": n})
+			return SourceRealtimeEvent{}, fmt.Errorf("Encountered unrecoverable '%s' reorg beyond finalized block %d", s.chain.Name, n)
+		}
+		remote, err = s.getBlockByHash(ctx, remote["parentHash"].(string), false)
+		if err != nil {
+			return SourceRealtimeEvent{}, err
+		}
+		s.stateMu.Lock()
+		last := s.unfinalized[len(s.unfinalized)-1]
+		s.unfinalized = s.unfinalized[:len(s.unfinalized)-1]
+		s.stateMu.Unlock()
+		removed = append([]filter.Object{last}, removed...)
+	}
+	s.stateMu.Lock()
+	ancestor := s.latestLocked()
+	for _, old := range removed {
+		n, _ := sourceHistoricalNumber(old["number"])
+		entries := s.childrenPerBlock[n]
+		for i, factory := range s.factories {
+			set := map[string]bool{}
+			for _, fragment := range s.factoryFragments[i] {
+				for _, entry := range entries {
+					if entry.FragmentID == fragment {
+						for _, address := range entry.Addresses {
+							set[address] = true
+						}
+					}
+				}
+			}
+			id, _ := factory["id"].(string)
+			s.children.sourceRealtimeRemoveBorn(id, n, set)
+		}
+		delete(s.childrenPerBlock, n)
+	}
+	s.stateMu.Unlock()
+	return SourceRealtimeEvent{Type: "reorg", Block: ancestor, ReorgedBlocks: removed}, nil
+}
+func (c *SourceHistoricalChildren) sourceRealtimeInsertFirst(id string, entry filter.ChildAddress) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	set, ok := c.values[id]
+	if !ok {
+		return fmt.Errorf("source factory child map not initialized: %s", id)
+	}
+	if _, exists := set.indices[entry.Address]; exists {
+		return nil
+	}
+	set.indices[entry.Address] = len(set.entries)
+	set.entries = append(set.entries, entry)
+	return nil
+}
+func (c *SourceHistoricalChildren) sourceRealtimeRemoveBorn(id string, number uint64, addresses map[string]bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	set := c.values[id]
+	if set == nil {
+		return
+	}
+	next := []filter.ChildAddress{}
+	indices := map[string]int{}
+	for _, entry := range set.entries {
+		if entry.Block == number && addresses[entry.Address] {
+			continue
+		}
+		indices[entry.Address] = len(next)
+		next = append(next, entry)
+	}
+	set.entries, set.indices = next, indices
+}

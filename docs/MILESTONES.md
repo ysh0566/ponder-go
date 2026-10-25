@@ -153,3 +153,7 @@ RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋check
 ## M33：原版内存与持久化历史范围获取
 
 新增40精确原例/102断言/12原生类型义务，累计456/905，449未实现。完整Go/race各2379，PG313/PGlite310，0fail/skip；22包167函数56批次，1057个准备后原生输入贯穿两种模式。两个完整原文件每backend/mode136个实际公开调用，严格比较provider输入消费、标准化值、Map身份/顺序与九表；原版pristine双后端各40通过、只读TS四程序各文件0-vs6诊断。12项负向原生编译和48次对应原例Anvil上的正向程序通过。106源码向量及10运行时回归不加source credit。之前observer/对象身份/共享Actions/部分缓存控制失败与输入完整保留。完整历史/实时/多链调度及其余449原例继续；接口和边界见SOURCE_HISTORICAL.md与batch-32。
+
+## M34：原版实时获取与内存协调
+
+新增30精确原例/203断言/0类型义务，累计486/905，419未实现。完整Go/race各2463，PG343/PGlite340，0fail/skip；22包170函数56批次，1065个准备后原生输入贯穿两种模式。每backend/mode83个实际公开调用、46个原始provider请求，严格比较独立状态、输入修改、Map/Set顺序及原始对象/frame身份和警告；3个原测试准备请求另记。实际消费者步骤驱动Go，原版输出不作native种子。完整pristine双后端各30，24个源码补充向量均通过且零额外credit。初轮采集范围/漏选trace名/磁盘编译中断与输入保留。完整runtime/多链调度与其他419原例继续；接口/边界见SOURCE_REALTIME.md与batch-33。

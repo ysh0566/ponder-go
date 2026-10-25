@@ -4,7 +4,19 @@
 
 
 
-## 当前执行入口：M33已验证，完整目标继续
+## 当前执行入口：M34已验证，完整目标继续
+
+batch-33.json/batch-33-evidence 与 realtime-m34/full-verify-02 恢复验收实际退出0。Go/race各2463，PG343/PGlite340，0fail/skip；22包、170函数，每模式56个不重复串行批次，默认timeout保留。1065/f6a0342703f5fd7b5e7d8a3ce6ee36771281f3597c639d2656aae26ba36f825a准备后原生输入贯穿完整normal/race。精确映射486/905=482Go+4SDK，全部映射原版oracle通过；419未实现。
+
+新增sync-realtime完整30原例/203断言/0类型义务，保留原hooks/Anvil/真实PG与PGlite setup/输入/断言/状态/返回cleanup。每backend/mode83个实际公开调用、46个原始provider请求，3个外部测试准备请求另记。Go独立无数据库内存API比较原始RPC消费、实际next/return步骤、结果/状态/输入块修改、Map/Set顺序及原始对象/frame身份和Error字段，额外警告比较仅排除时长；未用原版输出填充Go。完整原文件pristine各后端30通过。24源码向量为补充，旧复制trace helper同输入10红灯保留。见SOURCE_REALTIME.md。
+
+首轮采集器误拒绝原测试准备RPC、normal03漏选trace名和race01因磁盘0余量在编译阶段SIGINT退出-2均完整保留。normal03的72项加trace-normal02的12项与race02的84项在1065/2b4ebe9a355ab6ad315d0548cf702a8896c6a6ec4530ae1e27482fb3854a223d同输入下通过。full01 的两组 PostgreSQL 写入因磁盘耗尽出现 SQLSTATE53100，全部原始失败保留；保持同一输入重跑受影响的完整批次，56组真实成功命令输出按字节汇总，58次含失败实际尝试另有清单。完整验证准备并冻结输入，两种模式之间仅按需清理任务编译缓存，保留源码/fixture/模块/类型程序/证据。暂未使用的工具采用无损压缩，有逐文件原始和压缩SHA，可恢复cast/chisel，Anvil保留可运行；Forge也已无损压缩并保留恢复信息。
+
+上一实际发布M33 87555af3c8aba8f41154926238ceaa7bf1138649，tree 5d776cf3fa0265eb9e457e7c23468686f60bf55b，证明realtime-m34/m33-publication.json。M34只允许作为该SHA普通后继发布，ysh0566 author/committer并核验实际远端。已有默认repo/read:org/gist授权和GH_CONFIG_DIR持续有效，不重复登录/权限询问；不读token、不改全局helper、不force/改历史、不接触Mac/业务库、不建PR。
+
+继续runtime/index15原例/30断言/6原生类型义务，再推进runtime/historical14原例/29断言及完整1732行API的omnichain/isolated/catchup/refetch/crashrecovery协调。M33的25个RequiredSourceIntervals向量和M34内存同步器不能替代这些原例或完整调度。外部history-next/m35/PLAN.md仅只读准备，未映射。其余查询/GraphQL/API/CLI/dev/templates/完整类型/SDK/simulation继续，整体目标未完成，不得停在里程碑。
+
+## M33历史已验证基线
 
 batch-32.json/batch-32-evidence 与 history-m33/full-verify-01 实际退出0。Go/race各2379，PG313/PGlite310，0fail/skip；22包、167函数，每模式56个不重复串行批次，默认timeout保留。原生输入1057/7b132b1f137d4da4bbd7ccab6aaab71367c565953e33f286e584455217588c61在准备后冻结，贯穿两种完整模式。精确映射456/905=452Go+4SDK，全部映射原版oracle通过；449未实现。
 

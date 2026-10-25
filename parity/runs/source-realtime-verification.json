@@ -1,0 +1,981 @@
+{
+  "baseline": {
+    "repository": "https://github.com/ponder-sh/ponder",
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "core_version": "0.18.2"
+  },
+  "complete": true,
+  "scope": "complete_module_source_realtime",
+  "summary": {
+    "source_cases": 30,
+    "source_assertions": 203,
+    "source_error_directives": 0,
+    "backend_mode_executions": 4,
+    "native_calls_per_backend_mode": 83,
+    "raw_provider_inputs_per_backend_mode": 46,
+    "original_preparation_requests_per_backend_mode": 3,
+    "supplementary_source_vectors": 24,
+    "supplementary_source_credit": 0,
+    "native_memory_api_no_database": true
+  },
+  "pristine": {
+    "file": "parity/runs/source-realtime-pristine.json",
+    "sha256": "48230f14569cba682f09fbbbfeb5a2767e4ff97ecfe7590e02772133af1373e3"
+  },
+  "executions": [
+    {
+      "mode": "normal",
+      "backend": "postgres",
+      "complete": true,
+      "original_passed": 30,
+      "source_assertions": 203,
+      "native_calls": 83,
+      "raw_provider_inputs": 46,
+      "original_external_preparation_requests": 3,
+      "parent_warnings_compared": 8,
+      "operations": {
+        "construct": 34,
+        "sync": 49
+      },
+      "native_memory_api_no_database": true,
+      "log": {
+        "file": "parity/runs/go-test.jsonl",
+        "sha256": "b0e4b53699b1d86136e6d29d94102801bcde0aab9e70f858126ae9b44a7f3d46"
+      },
+      "native": {
+        "file": "parity/runs/realtime-m34/live-postgres-8697700/native.json",
+        "sha256": "9777021ddeb922cc7bd5ba977a6231ca7dd5ce5b5a8035c18e21509737c12d0f"
+      },
+      "capture": {
+        "file": "parity/runs/realtime-m34/live-postgres-8697700/calls.json",
+        "sha256": "74a163cb093b3b0dbc1d9a463528425710991c806ed98a6db19622e2aef35c05"
+      },
+      "requests": {
+        "file": "parity/runs/realtime-m34/live-postgres-8697700/calls.json.requests.jsonl",
+        "sha256": "8a21b78ce018c532bddb18021405549c9cb8beca9ac708016728f267405ea004"
+      },
+      "original": {
+        "file": "parity/runs/realtime-m34/live-postgres-8697700/original.json",
+        "sha256": "d2432962d75f8131227c6ddc087a3a4ec1ea425ffbdc5f7e20512f50c769779a"
+      },
+      "result": {
+        "file": "parity/runs/realtime-m34/live-postgres-8697700/result.json",
+        "sha256": "65d945f38b6686e2cb9dfcdef7b8643fd4dbd04be0b384975d760d9fded04e92"
+      },
+      "source_context": [
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-realtime/index.test.ts",
+          "sha256": "8cf96bbb5e60b9bc74e8657847185f06ef07a8005cb201f3e246ae472c42c849"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-realtime/index.ts",
+          "sha256": "c1afb00c60b50922b17ca87ea11def9143436d60978c6fa108fc30fcafa91fd2"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-realtime/bloom.ts",
+          "sha256": "9ef282a3a7175b95f7964b6ee33a3d746d52f9c3ebee7db66c91ebe33b95e794"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/utils/mutex.ts",
+          "sha256": "215b19bf2cdfe5ef712e2f15b19b059ad7045b89de7a25406068895385754fc2"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/utils/range.ts",
+          "sha256": "fa793bc1aa7af16efd5322c65c5381d6b63397d818e54d34d421c34d1526bfd1"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/rpc/actions.ts",
+          "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/rpc/index.ts",
+          "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/runtime/filter.ts",
+          "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/runtime/index.ts",
+          "sha256": "3211c59db32a335f335ceafffadb68c0f04aaf1ff837bb4dfe097e14f2041434"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/runtime/events.ts",
+          "sha256": "00c6728ed56c9f8a41bd427d5de4488d942e260558a4e4ce6eb98654946d7a8f"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-store/index.ts",
+          "sha256": "1f05bea9940a01765e107968b00bd5cc676f3950d70589c5e39ac4ca577fbdb5"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-store/schema.ts",
+          "sha256": "52b968c1faf6d947db9bb05f96117d086653a4cd3d65c82722d08acb86bd2687"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/setup.ts",
+          "sha256": "266fd6d21510c2f90ea7b47d2631c2218eafe149b1f680acbefd07b502932e2d"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/utils.ts",
+          "sha256": "c82853764e17721ff80d6a669362ac6b6f6a17cfe634dd33fbac4fc97bff4d23"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/constants.ts",
+          "sha256": "b214b5a5504156518027fbea443927abdabe11b735413eabbadd285e22fcb9b0"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/globalSetup.ts",
+          "sha256": "914db4e2f5b11049a1fd29a82c775108772ff1f902e247a7a8fe43ba30e5c55c"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/simulate.ts",
+          "sha256": "12df0b2c2c3ddf8353bc4e193de9fe88803742f367469951c27dfda9316fd501"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/generated.ts",
+          "sha256": "6b54ae3c033cdc12f2f37a08ec0b6bafa3456ab8242cab3fd190dd9a81c07a04"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/ERC20.sol",
+          "sha256": "0c29e00942f0b75369e952dedfbfc9870da397b440a277ae574ba4a0e4602989"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/Factory.sol",
+          "sha256": "9bdf3fe5ee34e6ea08fec57a3a02456fb2048e0f06343f452a4783b6b1bb7aaa"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/Pair.sol",
+          "sha256": "e878d8432efbe158999f0e8c6fa35824c8ca017130a52778d29143b59f382614"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/Revert.sol",
+          "sha256": "da67821e383e07d60954e0a73dc885544a18490720d2e15a782801b0cc9ab268"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/ERC20.sol/ERC20.json",
+          "sha256": "70fe22776bc88c80dccab65c1b2340b79fa3f479dd63ec4d13b60cb350f17dc2"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/Factory.sol/Factory.json",
+          "sha256": "321304117ccc782e8ce515b244b748920d31aa13eb889cca3f553c59dad2c362"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/Pair.sol/Pair.json",
+          "sha256": "9f53f9c60efaff73e87e5c3d63ca5d4843a0b7b6ee0b8f9ea55cc91613da1a4a"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/Revert.sol/Revert.json",
+          "sha256": "9f99274e15e1c285ad4b65418f8b1f6ecb60af69f79e5e2bcdb822912ce4d37d"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/vite.config.ts",
+          "sha256": "a0d23f6b86643f2a3b868b0fc9e8597bb989ec596e721368ce0c7364be580971"
+        },
+        {
+          "file": "../ponder-upstream/pnpm-lock.yaml",
+          "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+        },
+        {
+          "file": "tools/source-realtime-original.mjs",
+          "sha256": "f741e32ecf9e0522c7964f5e6e33f9ba59495b2651c68962ab1050e1ccfa4d16"
+        },
+        {
+          "file": "tools/source-realtime-live.setup.ts",
+          "sha256": "8ba3f4d63b6cd3211da175bd258f2f729c81399f771cf1c4e17e791924a7d341"
+        },
+        {
+          "file": "tools/source-realtime-live.config.mjs",
+          "sha256": "3c256f525bfca0b9a360d9172d4e9eb08303d77db20dc4072dc7445f5879aebe"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/full-oracle.config.mjs",
+          "sha256": "db4df171639a49711cfcc645e966a4643e543b24dbb69221a9b26e642a40dc3c"
+        },
+        {
+          "file": "tools/loopback-only.mjs",
+          "sha256": "9766e384063578151e56d5cabf5e0a8df7122c7b5b3bd23031f0c55fbce57187"
+        }
+      ]
+    },
+    {
+      "mode": "normal",
+      "backend": "pglite",
+      "complete": true,
+      "original_passed": 30,
+      "source_assertions": 203,
+      "native_calls": 83,
+      "raw_provider_inputs": 46,
+      "original_external_preparation_requests": 3,
+      "parent_warnings_compared": 8,
+      "operations": {
+        "construct": 34,
+        "sync": 49
+      },
+      "native_memory_api_no_database": true,
+      "log": {
+        "file": "parity/runs/go-test.jsonl",
+        "sha256": "b0e4b53699b1d86136e6d29d94102801bcde0aab9e70f858126ae9b44a7f3d46"
+      },
+      "native": {
+        "file": "parity/runs/realtime-m34/live-pglite-379491091/native.json",
+        "sha256": "2bb0bd33b24f00c5b54ce6d5db7560ae3758b3fb4e806310b19f25c16bf2c38f"
+      },
+      "capture": {
+        "file": "parity/runs/realtime-m34/live-pglite-379491091/calls.json",
+        "sha256": "6b84721f0b8bf745cf8017d3576f637b65c2f8edd1309fc75d7d0a239a5783f1"
+      },
+      "requests": {
+        "file": "parity/runs/realtime-m34/live-pglite-379491091/calls.json.requests.jsonl",
+        "sha256": "22db986bb452f6c78d87059bc3f5fb2e4111ac98fd63ef1cfc9af482ed01cc2a"
+      },
+      "original": {
+        "file": "parity/runs/realtime-m34/live-pglite-379491091/original.json",
+        "sha256": "b88bdf114b46708f3c8fbe4e341c8e7032c0b3d1d78de08da670f7bd1ff6af6c"
+      },
+      "result": {
+        "file": "parity/runs/realtime-m34/live-pglite-379491091/result.json",
+        "sha256": "943af0cf606c0b14456c858b2fb8cd124881845760744bdca87f80bf979c2411"
+      },
+      "source_context": [
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-realtime/index.test.ts",
+          "sha256": "8cf96bbb5e60b9bc74e8657847185f06ef07a8005cb201f3e246ae472c42c849"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-realtime/index.ts",
+          "sha256": "c1afb00c60b50922b17ca87ea11def9143436d60978c6fa108fc30fcafa91fd2"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-realtime/bloom.ts",
+          "sha256": "9ef282a3a7175b95f7964b6ee33a3d746d52f9c3ebee7db66c91ebe33b95e794"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/utils/mutex.ts",
+          "sha256": "215b19bf2cdfe5ef712e2f15b19b059ad7045b89de7a25406068895385754fc2"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/utils/range.ts",
+          "sha256": "fa793bc1aa7af16efd5322c65c5381d6b63397d818e54d34d421c34d1526bfd1"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/rpc/actions.ts",
+          "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/rpc/index.ts",
+          "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/runtime/filter.ts",
+          "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/runtime/index.ts",
+          "sha256": "3211c59db32a335f335ceafffadb68c0f04aaf1ff837bb4dfe097e14f2041434"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/runtime/events.ts",
+          "sha256": "00c6728ed56c9f8a41bd427d5de4488d942e260558a4e4ce6eb98654946d7a8f"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-store/index.ts",
+          "sha256": "1f05bea9940a01765e107968b00bd5cc676f3950d70589c5e39ac4ca577fbdb5"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-store/schema.ts",
+          "sha256": "52b968c1faf6d947db9bb05f96117d086653a4cd3d65c82722d08acb86bd2687"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/setup.ts",
+          "sha256": "266fd6d21510c2f90ea7b47d2631c2218eafe149b1f680acbefd07b502932e2d"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/utils.ts",
+          "sha256": "c82853764e17721ff80d6a669362ac6b6f6a17cfe634dd33fbac4fc97bff4d23"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/constants.ts",
+          "sha256": "b214b5a5504156518027fbea443927abdabe11b735413eabbadd285e22fcb9b0"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/globalSetup.ts",
+          "sha256": "914db4e2f5b11049a1fd29a82c775108772ff1f902e247a7a8fe43ba30e5c55c"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/simulate.ts",
+          "sha256": "12df0b2c2c3ddf8353bc4e193de9fe88803742f367469951c27dfda9316fd501"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/generated.ts",
+          "sha256": "6b54ae3c033cdc12f2f37a08ec0b6bafa3456ab8242cab3fd190dd9a81c07a04"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/ERC20.sol",
+          "sha256": "0c29e00942f0b75369e952dedfbfc9870da397b440a277ae574ba4a0e4602989"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/Factory.sol",
+          "sha256": "9bdf3fe5ee34e6ea08fec57a3a02456fb2048e0f06343f452a4783b6b1bb7aaa"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/Pair.sol",
+          "sha256": "e878d8432efbe158999f0e8c6fa35824c8ca017130a52778d29143b59f382614"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/Revert.sol",
+          "sha256": "da67821e383e07d60954e0a73dc885544a18490720d2e15a782801b0cc9ab268"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/ERC20.sol/ERC20.json",
+          "sha256": "70fe22776bc88c80dccab65c1b2340b79fa3f479dd63ec4d13b60cb350f17dc2"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/Factory.sol/Factory.json",
+          "sha256": "321304117ccc782e8ce515b244b748920d31aa13eb889cca3f553c59dad2c362"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/Pair.sol/Pair.json",
+          "sha256": "9f53f9c60efaff73e87e5c3d63ca5d4843a0b7b6ee0b8f9ea55cc91613da1a4a"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/Revert.sol/Revert.json",
+          "sha256": "9f99274e15e1c285ad4b65418f8b1f6ecb60af69f79e5e2bcdb822912ce4d37d"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/vite.config.ts",
+          "sha256": "a0d23f6b86643f2a3b868b0fc9e8597bb989ec596e721368ce0c7364be580971"
+        },
+        {
+          "file": "../ponder-upstream/pnpm-lock.yaml",
+          "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+        },
+        {
+          "file": "tools/source-realtime-original.mjs",
+          "sha256": "f741e32ecf9e0522c7964f5e6e33f9ba59495b2651c68962ab1050e1ccfa4d16"
+        },
+        {
+          "file": "tools/source-realtime-live.setup.ts",
+          "sha256": "8ba3f4d63b6cd3211da175bd258f2f729c81399f771cf1c4e17e791924a7d341"
+        },
+        {
+          "file": "tools/source-realtime-live.config.mjs",
+          "sha256": "3c256f525bfca0b9a360d9172d4e9eb08303d77db20dc4072dc7445f5879aebe"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/full-oracle.config.mjs",
+          "sha256": "db4df171639a49711cfcc645e966a4643e543b24dbb69221a9b26e642a40dc3c"
+        },
+        {
+          "file": "tools/loopback-only.mjs",
+          "sha256": "9766e384063578151e56d5cabf5e0a8df7122c7b5b3bd23031f0c55fbce57187"
+        }
+      ]
+    },
+    {
+      "mode": "race",
+      "backend": "postgres",
+      "complete": true,
+      "original_passed": 30,
+      "source_assertions": 203,
+      "native_calls": 83,
+      "raw_provider_inputs": 46,
+      "original_external_preparation_requests": 3,
+      "parent_warnings_compared": 8,
+      "operations": {
+        "construct": 34,
+        "sync": 49
+      },
+      "native_memory_api_no_database": true,
+      "log": {
+        "file": "parity/runs/go-race.jsonl",
+        "sha256": "c0f5d972baecf00f47dff04c437d4c1d54b4d661f2257fcbca4eab4a87315945"
+      },
+      "native": {
+        "file": "parity/runs/realtime-m34/live-postgres-152869426/native.json",
+        "sha256": "960a4c18fc132e41955466a5d2458d4a38b8c37a1041e67737480d3d4991bc94"
+      },
+      "capture": {
+        "file": "parity/runs/realtime-m34/live-postgres-152869426/calls.json",
+        "sha256": "fd13e44512738a035cf41d8074d6259715cb91391bfda84735c203625360b834"
+      },
+      "requests": {
+        "file": "parity/runs/realtime-m34/live-postgres-152869426/calls.json.requests.jsonl",
+        "sha256": "dae13cbcdb37271ecd6ead1668ae3a64b1ad913eea9bcbeadfb66b62220775ce"
+      },
+      "original": {
+        "file": "parity/runs/realtime-m34/live-postgres-152869426/original.json",
+        "sha256": "63d5d4733406434eb564adf89d8c0406f0f5f42fe2e5a20cf934b1fe8500651e"
+      },
+      "result": {
+        "file": "parity/runs/realtime-m34/live-postgres-152869426/result.json",
+        "sha256": "c4d172523b3f656e0c90a1bc2c2017995b82f854ae9d9d7fe82262b93e396a7f"
+      },
+      "source_context": [
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-realtime/index.test.ts",
+          "sha256": "8cf96bbb5e60b9bc74e8657847185f06ef07a8005cb201f3e246ae472c42c849"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-realtime/index.ts",
+          "sha256": "c1afb00c60b50922b17ca87ea11def9143436d60978c6fa108fc30fcafa91fd2"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-realtime/bloom.ts",
+          "sha256": "9ef282a3a7175b95f7964b6ee33a3d746d52f9c3ebee7db66c91ebe33b95e794"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/utils/mutex.ts",
+          "sha256": "215b19bf2cdfe5ef712e2f15b19b059ad7045b89de7a25406068895385754fc2"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/utils/range.ts",
+          "sha256": "fa793bc1aa7af16efd5322c65c5381d6b63397d818e54d34d421c34d1526bfd1"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/rpc/actions.ts",
+          "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/rpc/index.ts",
+          "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/runtime/filter.ts",
+          "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/runtime/index.ts",
+          "sha256": "3211c59db32a335f335ceafffadb68c0f04aaf1ff837bb4dfe097e14f2041434"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/runtime/events.ts",
+          "sha256": "00c6728ed56c9f8a41bd427d5de4488d942e260558a4e4ce6eb98654946d7a8f"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-store/index.ts",
+          "sha256": "1f05bea9940a01765e107968b00bd5cc676f3950d70589c5e39ac4ca577fbdb5"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-store/schema.ts",
+          "sha256": "52b968c1faf6d947db9bb05f96117d086653a4cd3d65c82722d08acb86bd2687"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/setup.ts",
+          "sha256": "266fd6d21510c2f90ea7b47d2631c2218eafe149b1f680acbefd07b502932e2d"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/utils.ts",
+          "sha256": "c82853764e17721ff80d6a669362ac6b6f6a17cfe634dd33fbac4fc97bff4d23"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/constants.ts",
+          "sha256": "b214b5a5504156518027fbea443927abdabe11b735413eabbadd285e22fcb9b0"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/globalSetup.ts",
+          "sha256": "914db4e2f5b11049a1fd29a82c775108772ff1f902e247a7a8fe43ba30e5c55c"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/simulate.ts",
+          "sha256": "12df0b2c2c3ddf8353bc4e193de9fe88803742f367469951c27dfda9316fd501"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/generated.ts",
+          "sha256": "6b54ae3c033cdc12f2f37a08ec0b6bafa3456ab8242cab3fd190dd9a81c07a04"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/ERC20.sol",
+          "sha256": "0c29e00942f0b75369e952dedfbfc9870da397b440a277ae574ba4a0e4602989"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/Factory.sol",
+          "sha256": "9bdf3fe5ee34e6ea08fec57a3a02456fb2048e0f06343f452a4783b6b1bb7aaa"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/Pair.sol",
+          "sha256": "e878d8432efbe158999f0e8c6fa35824c8ca017130a52778d29143b59f382614"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/Revert.sol",
+          "sha256": "da67821e383e07d60954e0a73dc885544a18490720d2e15a782801b0cc9ab268"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/ERC20.sol/ERC20.json",
+          "sha256": "70fe22776bc88c80dccab65c1b2340b79fa3f479dd63ec4d13b60cb350f17dc2"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/Factory.sol/Factory.json",
+          "sha256": "321304117ccc782e8ce515b244b748920d31aa13eb889cca3f553c59dad2c362"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/Pair.sol/Pair.json",
+          "sha256": "9f53f9c60efaff73e87e5c3d63ca5d4843a0b7b6ee0b8f9ea55cc91613da1a4a"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/Revert.sol/Revert.json",
+          "sha256": "9f99274e15e1c285ad4b65418f8b1f6ecb60af69f79e5e2bcdb822912ce4d37d"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/vite.config.ts",
+          "sha256": "a0d23f6b86643f2a3b868b0fc9e8597bb989ec596e721368ce0c7364be580971"
+        },
+        {
+          "file": "../ponder-upstream/pnpm-lock.yaml",
+          "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+        },
+        {
+          "file": "tools/source-realtime-original.mjs",
+          "sha256": "f741e32ecf9e0522c7964f5e6e33f9ba59495b2651c68962ab1050e1ccfa4d16"
+        },
+        {
+          "file": "tools/source-realtime-live.setup.ts",
+          "sha256": "8ba3f4d63b6cd3211da175bd258f2f729c81399f771cf1c4e17e791924a7d341"
+        },
+        {
+          "file": "tools/source-realtime-live.config.mjs",
+          "sha256": "3c256f525bfca0b9a360d9172d4e9eb08303d77db20dc4072dc7445f5879aebe"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/full-oracle.config.mjs",
+          "sha256": "db4df171639a49711cfcc645e966a4643e543b24dbb69221a9b26e642a40dc3c"
+        },
+        {
+          "file": "tools/loopback-only.mjs",
+          "sha256": "9766e384063578151e56d5cabf5e0a8df7122c7b5b3bd23031f0c55fbce57187"
+        }
+      ]
+    },
+    {
+      "mode": "race",
+      "backend": "pglite",
+      "complete": true,
+      "original_passed": 30,
+      "source_assertions": 203,
+      "native_calls": 83,
+      "raw_provider_inputs": 46,
+      "original_external_preparation_requests": 3,
+      "parent_warnings_compared": 8,
+      "operations": {
+        "construct": 34,
+        "sync": 49
+      },
+      "native_memory_api_no_database": true,
+      "log": {
+        "file": "parity/runs/go-race.jsonl",
+        "sha256": "c0f5d972baecf00f47dff04c437d4c1d54b4d661f2257fcbca4eab4a87315945"
+      },
+      "native": {
+        "file": "parity/runs/realtime-m34/live-pglite-2047173154/native.json",
+        "sha256": "c141d992d8a60c49ebbd56e06e23b501b6e8dedbd9135cd12590f0b61fea964c"
+      },
+      "capture": {
+        "file": "parity/runs/realtime-m34/live-pglite-2047173154/calls.json",
+        "sha256": "9504ec2d0e936ad7d35a1e0ce787f75f4ce43b11d0c02d4cbf6b3926b49818a9"
+      },
+      "requests": {
+        "file": "parity/runs/realtime-m34/live-pglite-2047173154/calls.json.requests.jsonl",
+        "sha256": "a7e125ab9c438812dfdf7e16780b3fa82fdf506897fbe6792bbfe872dbc03ccb"
+      },
+      "original": {
+        "file": "parity/runs/realtime-m34/live-pglite-2047173154/original.json",
+        "sha256": "ea9b75d9715856e223a1bdc4fcf8e08e8768e4ae6468c7bb2495ed145df83910"
+      },
+      "result": {
+        "file": "parity/runs/realtime-m34/live-pglite-2047173154/result.json",
+        "sha256": "15ef68374db927ea0b0a581e3dbc4c76db48502c7dde864e010411af9352732a"
+      },
+      "source_context": [
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-realtime/index.test.ts",
+          "sha256": "8cf96bbb5e60b9bc74e8657847185f06ef07a8005cb201f3e246ae472c42c849"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-realtime/index.ts",
+          "sha256": "c1afb00c60b50922b17ca87ea11def9143436d60978c6fa108fc30fcafa91fd2"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-realtime/bloom.ts",
+          "sha256": "9ef282a3a7175b95f7964b6ee33a3d746d52f9c3ebee7db66c91ebe33b95e794"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/utils/mutex.ts",
+          "sha256": "215b19bf2cdfe5ef712e2f15b19b059ad7045b89de7a25406068895385754fc2"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/utils/range.ts",
+          "sha256": "fa793bc1aa7af16efd5322c65c5381d6b63397d818e54d34d421c34d1526bfd1"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/rpc/actions.ts",
+          "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/rpc/index.ts",
+          "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/runtime/filter.ts",
+          "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/runtime/index.ts",
+          "sha256": "3211c59db32a335f335ceafffadb68c0f04aaf1ff837bb4dfe097e14f2041434"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/runtime/events.ts",
+          "sha256": "00c6728ed56c9f8a41bd427d5de4488d942e260558a4e4ce6eb98654946d7a8f"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-store/index.ts",
+          "sha256": "1f05bea9940a01765e107968b00bd5cc676f3950d70589c5e39ac4ca577fbdb5"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-store/schema.ts",
+          "sha256": "52b968c1faf6d947db9bb05f96117d086653a4cd3d65c82722d08acb86bd2687"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/setup.ts",
+          "sha256": "266fd6d21510c2f90ea7b47d2631c2218eafe149b1f680acbefd07b502932e2d"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/utils.ts",
+          "sha256": "c82853764e17721ff80d6a669362ac6b6f6a17cfe634dd33fbac4fc97bff4d23"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/constants.ts",
+          "sha256": "b214b5a5504156518027fbea443927abdabe11b735413eabbadd285e22fcb9b0"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/globalSetup.ts",
+          "sha256": "914db4e2f5b11049a1fd29a82c775108772ff1f902e247a7a8fe43ba30e5c55c"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/simulate.ts",
+          "sha256": "12df0b2c2c3ddf8353bc4e193de9fe88803742f367469951c27dfda9316fd501"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/generated.ts",
+          "sha256": "6b54ae3c033cdc12f2f37a08ec0b6bafa3456ab8242cab3fd190dd9a81c07a04"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/ERC20.sol",
+          "sha256": "0c29e00942f0b75369e952dedfbfc9870da397b440a277ae574ba4a0e4602989"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/Factory.sol",
+          "sha256": "9bdf3fe5ee34e6ea08fec57a3a02456fb2048e0f06343f452a4783b6b1bb7aaa"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/Pair.sol",
+          "sha256": "e878d8432efbe158999f0e8c6fa35824c8ca017130a52778d29143b59f382614"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/src/Revert.sol",
+          "sha256": "da67821e383e07d60954e0a73dc885544a18490720d2e15a782801b0cc9ab268"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/ERC20.sol/ERC20.json",
+          "sha256": "70fe22776bc88c80dccab65c1b2340b79fa3f479dd63ec4d13b60cb350f17dc2"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/Factory.sol/Factory.json",
+          "sha256": "321304117ccc782e8ce515b244b748920d31aa13eb889cca3f553c59dad2c362"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/Pair.sol/Pair.json",
+          "sha256": "9f53f9c60efaff73e87e5c3d63ca5d4843a0b7b6ee0b8f9ea55cc91613da1a4a"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/_test/contracts/out/Revert.sol/Revert.json",
+          "sha256": "9f99274e15e1c285ad4b65418f8b1f6ecb60af69f79e5e2bcdb822912ce4d37d"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/vite.config.ts",
+          "sha256": "a0d23f6b86643f2a3b868b0fc9e8597bb989ec596e721368ce0c7364be580971"
+        },
+        {
+          "file": "../ponder-upstream/pnpm-lock.yaml",
+          "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+        },
+        {
+          "file": "tools/source-realtime-original.mjs",
+          "sha256": "f741e32ecf9e0522c7964f5e6e33f9ba59495b2651c68962ab1050e1ccfa4d16"
+        },
+        {
+          "file": "tools/source-realtime-live.setup.ts",
+          "sha256": "8ba3f4d63b6cd3211da175bd258f2f729c81399f771cf1c4e17e791924a7d341"
+        },
+        {
+          "file": "tools/source-realtime-live.config.mjs",
+          "sha256": "3c256f525bfca0b9a360d9172d4e9eb08303d77db20dc4072dc7445f5879aebe"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/full-oracle.config.mjs",
+          "sha256": "db4df171639a49711cfcc645e966a4643e543b24dbb69221a9b26e642a40dc3c"
+        },
+        {
+          "file": "tools/loopback-only.mjs",
+          "sha256": "9766e384063578151e56d5cabf5e0a8df7122c7b5b3bd23031f0c55fbce57187"
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "file": "tools/source-realtime-results.mjs",
+      "sha256": "b67d3ffa705d40084e6464e8e854e4f0907507324ea75893d0650ae33ec06c55"
+    },
+    {
+      "file": "tools/source-realtime-original.mjs",
+      "sha256": "f741e32ecf9e0522c7964f5e6e33f9ba59495b2651c68962ab1050e1ccfa4d16"
+    },
+    {
+      "file": "tools/source-realtime-live.setup.ts",
+      "sha256": "8ba3f4d63b6cd3211da175bd258f2f729c81399f771cf1c4e17e791924a7d341"
+    },
+    {
+      "file": "tools/source-realtime-live.config.mjs",
+      "sha256": "3c256f525bfca0b9a360d9172d4e9eb08303d77db20dc4072dc7445f5879aebe"
+    },
+    {
+      "file": "tools/source-realtime-rpc-observer.mjs",
+      "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+    },
+    {
+      "file": "tools/source-realtime-observer-probe.mjs",
+      "sha256": "4e1b3a51e4f366ca28177aecb5c55659dfda1da947ae546c86ac4d4bef118ba8"
+    },
+    {
+      "file": "tools/source-realtime-pristine.mjs",
+      "sha256": "5d78b09b8f10323a9802bb0d79c69bfb39b4730ba1ecbadd078c40aad18588b9"
+    },
+    {
+      "file": "tools/source-realtime-module-loader.mjs",
+      "sha256": "310180cd2b1ced6a765bf6b913e18c81a321bd1f3de639aa91d4b11477710901"
+    },
+    {
+      "file": "tools/source-realtime-controls.mjs",
+      "sha256": "8899d95219bfdf2d70c6cbca6a46db3e33467319d4b6d61d8399e4cd7bc34d1c"
+    },
+    {
+      "file": "tools/source-trace-fixtures.mjs",
+      "sha256": "a4cf9e79fd0ac2fc56b0a5bbcdaf84370dd837c50b1e6f88214261acf426f67b"
+    },
+    {
+      "file": "rpc/source_call_traces.go",
+      "sha256": "8911526bdb891a95edfac5486e0561937bef57e9d26267a4abf0901825df1a33"
+    },
+    {
+      "file": "runtime/source_realtime_state.go",
+      "sha256": "f07292b7aa25f79e2abfe0b82eef2902ca9a616045caed814e462ec673c78a06"
+    },
+    {
+      "file": "runtime/source_realtime_fetch.go",
+      "sha256": "0a6a4b9ca074c296a8f35663e621fdbc21b9c788090aab3c975f42c386ccb869"
+    },
+    {
+      "file": "runtime/source_realtime_live_test.go",
+      "sha256": "ea97eac9d3b1bbadee5e34fd6c3792dc2631da23216cd039783290b44c5ea152"
+    },
+    {
+      "file": "runtime/source_realtime_controls_test.go",
+      "sha256": "9f38955d291ab6a236b2d2c48cfef2d50508b0c8bcfb7b65cebebc7524e28f6b"
+    },
+    {
+      "file": "runtime/source_trace_identity_test.go",
+      "sha256": "dbaa85fb9f85435bdf47f0cff09c3f612db37be67e704c58f186e144dd3ec7c7"
+    },
+    {
+      "file": "runtime/source_historical_wire_test.go",
+      "sha256": "6347b827972484dba7587503955e9396e55c3bb3fb745a9f8f940812239d611c"
+    },
+    {
+      "file": "testdata/rpc/source-trace-identity.json",
+      "sha256": "9b4728d939d1ccff6e90d815faa08b22c7d5523e00dfa0122bfd325d0fed1749"
+    },
+    {
+      "file": "testdata/runtime/source-realtime-controls.json",
+      "sha256": "2779194926d4ece48ff47a2667d9ac902af54abf96cacaf0f454d439b4da06bf"
+    },
+    {
+      "file": "parity/runs/realtime-m34/observer-identity-proof.json",
+      "sha256": "18221687466f3ee693b1b2042c11d18ef8c584fa7b6b2602f01f965fe2b34b8e"
+    },
+    {
+      "file": "parity/runs/realtime-m34/trace-old-01.jsonl",
+      "sha256": "1c19d9412171e8fbf8cdf5325c6da590996ed73e7699e351b145776678ff8bc6"
+    },
+    {
+      "file": "tools/source-realtime-observer-probe.mjs",
+      "sha256": "4e1b3a51e4f366ca28177aecb5c55659dfda1da947ae546c86ac4d4bef118ba8"
+    },
+    {
+      "file": "tools/source-realtime-rpc-observer.mjs",
+      "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/rpc/actions.ts",
+      "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/@vitest+spy@5.0.2/node_modules/@vitest/spy/dist/index.js",
+      "sha256": "7673ea7d963bbc1e0a6fddb07a7fc17bf4ee1262c7e8cd6b220de9cd05039e17"
+    },
+    {
+      "file": "../ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    },
+    {
+      "file": "tools/source-trace-fixtures.mjs",
+      "sha256": "a4cf9e79fd0ac2fc56b0a5bbcdaf84370dd837c50b1e6f88214261acf426f67b"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/rpc/actions.ts",
+      "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/internal/errors.ts",
+      "sha256": "2787d27ee1b5318aa48cddf41016f2780da3c28ba5fc867410746fb55a205276"
+    },
+    {
+      "file": "../ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    },
+    {
+      "file": "tools/source-realtime-controls.mjs",
+      "sha256": "8899d95219bfdf2d70c6cbca6a46db3e33467319d4b6d61d8399e4cd7bc34d1c"
+    },
+    {
+      "file": "tools/source-realtime-module-loader.mjs",
+      "sha256": "310180cd2b1ced6a765bf6b913e18c81a321bd1f3de639aa91d4b11477710901"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/sync-realtime/index.ts",
+      "sha256": "c1afb00c60b50922b17ca87ea11def9143436d60978c6fa108fc30fcafa91fd2"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/internal/errors.ts",
+      "sha256": "2787d27ee1b5318aa48cddf41016f2780da3c28ba5fc867410746fb55a205276"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/rpc/actions.ts",
+      "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/index.ts",
+      "sha256": "c4ba739226f5fd160c07a5d956e2dc703f937148aa43101d8f7a0668405ae8d7"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/getLogsRetryHelper.ts",
+      "sha256": "3d43ce4548ba5db33457e88bb4f15076f6522dbdc1f3d532caf65e9109068c9f"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/loadBalance.ts",
+      "sha256": "b99f59c393c9c17361ad4972093f81448be74d07403c2ffedec55fa4785ef59a"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/mergeAbis.ts",
+      "sha256": "ff4fa11f210c7344c9d66821724d539fce79100d3538060c1ce8adaabf34b122"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/rateLimit.ts",
+      "sha256": "c65c16482acbcffdee3048cb700108683eb0ef9fadd2d447a5512f32612e809b"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/utils/queue.ts",
+      "sha256": "d2ad41ed0f65fae80871d2d78d7f5afc8426de2bf1bcdc43801c348cbb389d00"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/utils/promiseWithResolvers.ts",
+      "sha256": "85d139d5b9e06c5d9547af202c6369741c2b64c4ac8163ac093ef1b08c885d7b"
+    },
+    {
+      "file": "../ponder-upstream/packages/utils/src/replaceBigInts.ts",
+      "sha256": "01194487018a9bf4f6001ccdd1a371a22d3d7f8363045a0ef74247146fc3a238"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/sync-realtime/bloom.ts",
+      "sha256": "9ef282a3a7175b95f7964b6ee33a3d746d52f9c3ebee7db66c91ebe33b95e794"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/runtime/filter.ts",
+      "sha256": "b9fe402a5a857bf0c309af808d7a04b1ac8052cfaacf7230f48425eb07ea4661"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/rpc/index.ts",
+      "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/queue.ts",
+      "sha256": "71d0498d004a9de43bd3bfd3091190077b86a651f62af50ede1c2b60a68c7c46"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/promiseWithResolvers.ts",
+      "sha256": "85d139d5b9e06c5d9547af202c6369741c2b64c4ac8163ac093ef1b08c885d7b"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/timer.ts",
+      "sha256": "c66dda4ac86e29b589a83043774fc222c7327eac31acc5d3153ca4be6d3bc619"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/wait.ts",
+      "sha256": "834947a11fe0550313307eeb68cf9ebcff6cd19913604a2f49eab614f892bdcd"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/rpc/http.ts",
+      "sha256": "bcd40aad1f370fa116caa9a2502cdb92807185334cac1b7ef995e9d5362e58ec"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/lowercase.ts",
+      "sha256": "0aa78833df2cdf1c9f517c636f979de22f8cb308e4bb52bb0747ec198fd12385"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/chunk.ts",
+      "sha256": "cf687c6fc45d937e375cd122221aefec0974e057f7b7962144b4d878f4f15e0f"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/pg.ts",
+      "sha256": "b3eb6af63da10e1714f6a16358a36a7125913746c5830d520b5c2349012ae28e"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/runtime/fragments.ts",
+      "sha256": "598f0605739d2348adc6a39e8d0fc9cd30bb1c996b132f6f642b1e6024bdf77f"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/dedupe.ts",
+      "sha256": "ecba745be6172e75021e553749d487b87f4f704b205a8c1f6261bb3ac2ddb1bf"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/finality.ts",
+      "sha256": "31017109c892bb593d0656ac79afc35df3b9fffddf7286705f7e69cfc6f1ff70"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/mutex.ts",
+      "sha256": "215b19bf2cdfe5ef712e2f15b19b059ad7045b89de7a25406068895385754fc2"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/utils/range.ts",
+      "sha256": "fa793bc1aa7af16efd5322c65c5381d6b63397d818e54d34d421c34d1526bfd1"
+    },
+    {
+      "file": "../ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    }
+  ]
+}

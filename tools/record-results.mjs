@@ -53,6 +53,7 @@ const configCompile = exists("parity/runs/config-live-verification.json") ? read
 const parameterTypes = exists("parity/runs/parameters-typecheck.json") ? read("parity/runs/parameters-typecheck.json") : null;
 const syncVerification = exists("parity/runs/source-sync-verification.json") ? read("parity/runs/source-sync-verification.json") : null;
 const historicalVerification = exists("parity/runs/source-historical-verification.json") ? read("parity/runs/source-historical-verification.json") : null;
+const realtimeVerification = exists("parity/runs/source-realtime-verification.json") ? read("parity/runs/source-realtime-verification.json") : null;
 const fileHash = file => crypto.createHash("sha256").update(fs.readFileSync(path.join(root,file))).digest("hex");
 
 if(ledger.tests.some(t=>t.mapping&&t.source_file==="packages/core/src/sync-store/index.test.ts")&&!syncVerification)throw Error("SyncStore mappings require complete actual source/native/type proof");
@@ -65,6 +66,12 @@ if(ledger.tests.some(t=>t.mapping&&t.source_file.includes("/sync-historical/"))&
 if(historicalVerification){
  const refs=[historicalVerification.pristine,historicalVerification.source_types,historicalVerification.compile,...historicalVerification.inputs,...historicalVerification.executions.flatMap(e=>[e.log,e.native,e.capture,e.requests,e.original,e.result,...e.source_context])];
  if(!historicalVerification.complete||historicalVerification.scope!=="complete_module_source_historical"||historicalVerification.executions.length!==8||historicalVerification.summary.source_cases!==40||historicalVerification.summary.source_assertions!==102||historicalVerification.summary.typed_positive_executions!==48||historicalVerification.directives.length!==12||refs.some(f=>!exists(f.file)||fileHash(f.file)!==f.sha256))throw Error("Incomplete or stale historical source/native evidence");
+}
+
+if(ledger.tests.some(t=>t.mapping&&t.source_file==="packages/core/src/sync-realtime/index.test.ts")&&!realtimeVerification)throw Error("Realtime mappings require complete actual source/native proof");
+if(realtimeVerification){
+ const refs=[realtimeVerification.pristine,...realtimeVerification.inputs,...realtimeVerification.executions.flatMap(e=>[e.log,e.native,e.capture,e.requests,e.original,e.result,...e.source_context])];
+ if(!realtimeVerification.complete||realtimeVerification.scope!=="complete_module_source_realtime"||realtimeVerification.executions.length!==4||realtimeVerification.summary.source_cases!==30||realtimeVerification.summary.source_assertions!==203||realtimeVerification.summary.source_error_directives!==0||realtimeVerification.summary.native_calls_per_backend_mode!==83||realtimeVerification.summary.raw_provider_inputs_per_backend_mode!==46||refs.some(f=>!exists(f.file)||fileHash(f.file)!==f.sha256))throw Error("Incomplete or stale realtime source/native evidence");
 }
 
 if (configCompile) {
@@ -184,6 +191,16 @@ for (const test of ledger.tests) {
   const passed=Object.keys(backends).length===2&&Object.values(backends).every(x=>x.status==="passed");
   test.oracle={status:passed?"passed":"blocked",evidence:historicalVerification.pristine.file,mode:"complete_unmodified_original_files_with_original_setup",full_original:true,backends};
   test.runtime_validation={status:"passed",evidence:"parity/runs/source-historical-verification.json",meaning:"Complete original historical files, genuine provider inputs and native values, ordered Map/identity semantics and nine physical tables compared in both Go modes/backends; exact type programs execute before original case Anvil cleanup"};
+ }
+ if (test.source_file === "packages/core/src/sync-realtime/index.test.ts" && realtimeVerification) {
+  const pristine=read(realtimeVerification.pristine.file),backends={};
+  for(const execution of pristine.executions){
+   const original=read(execution.raw_oracle.file).testResults.filter(f=>f.name.endsWith(test.source_file.replace("packages/core/",""))).flatMap(f=>f.assertionResults).find(t=>[...(t.ancestorTitles??[]),t.title].join(" > ")===test.full_name);
+   if(original)backends[execution.backend]={status:original.status,evidence:execution.raw_oracle.file};
+  }
+  const passed=Object.keys(backends).length===2&&Object.values(backends).every(x=>x.status==="passed");
+  test.oracle={status:passed?"passed":"blocked",evidence:realtimeVerification.pristine.file,mode:"complete_unmodified_original_file_with_original_setup",full_original:true,backends};
+  test.runtime_validation={status:"passed",evidence:"parity/runs/source-realtime-verification.json",meaning:"Complete original realtime file and independent native values/state, actual raw provider inputs and caller iterator steps, input mutations, Map/Set/frame identities and parent warnings in both Go modes/backends; native memory API opens no database"};
  }
  if (test.source_file === "packages/core/src/build/config.test.ts" && configOriginal) {
   const title=test.title.includes("%s")?test.title.replace("%s",test.parameter?.$special??String(test.parameter)):test.title;
@@ -364,6 +381,7 @@ const summary = {
 		error_directives_retained_sdk_verified:ledger.tests.filter(x=>x.mapping?.target_kind==="retained_sdk"&&x.pass_status==="passed").reduce((n,x)=>n+x.type_error_directives.length,0),
 	},
  indexed_topic_source_verification:topicVerification?{...topicVerification.summary,evidence:"parity/runs/topic-source-verification.json"}:null,
+ source_realtime_verification:realtimeVerification?{...realtimeVerification.summary,evidence:"parity/runs/source-realtime-verification.json"}:null,
  source_historical_verification:historicalVerification?{...historicalVerification.summary,evidence:"parity/runs/source-historical-verification.json"}:null,
  source_sync_verification:syncVerification?{...syncVerification.summary,evidence:"parity/runs/source-sync-verification.json"}:null,
  sql_source_verification:sqlVerification?{...sqlVerification.summary,evidence:"parity/runs/sql-source-verification.json"}:null,
