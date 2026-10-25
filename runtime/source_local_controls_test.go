@@ -348,7 +348,7 @@ func TestSourceLocalHistoricalControls(t *testing.T) {
 						if !reflect.DeepEqual(commits, []store.SourceInterval{{0, 25}, {26, 51}}) {
 							t.Fatal("unordered persisted intervals", commits)
 						}
-						actual, e := o.Store.GetIntervals(ctx, filters)
+						actual, e := o.Store.(*store.SourceSyncStore).GetIntervals(ctx, filters)
 						if e != nil {
 							t.Fatal(e)
 						}
@@ -414,11 +414,11 @@ func TestSourceLocalHistoricalControls(t *testing.T) {
 						localControlCount(t, ctx, b, cache, "blocks", 26)
 					case "fully cached zero RPC and writes":
 						for _, f := range filters {
-							if e := o.Store.InsertIntervals(ctx, 1, []store.SourceFilterInterval{{Filter: f, Interval: store.SourceInterval{0, 51}}}, nil); e != nil {
+							if e := o.Store.(*store.SourceSyncStore).InsertIntervals(ctx, 1, []store.SourceFilterInterval{{Filter: f, Interval: store.SourceInterval{0, 51}}}, nil); e != nil {
 								t.Fatal(e)
 							}
 						}
-						cached, e := o.Store.GetIntervals(ctx, filters)
+						cached, e := o.Store.(*store.SourceSyncStore).GetIntervals(ctx, filters)
 						if e != nil {
 							t.Fatal(e)
 						}

@@ -38,13 +38,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/historical.test.ts",
+        "source_name": "getLocalEventGenerator()",
+        "source_id": "1337ad403051f00c5d99",
+        "source_line": 42,
+        "assertions_sha256": "d3c29367a96c68ee218004f66759004f4b61929deeae0c62a4f768956451eecb",
+        "original_assertions": 1,
+        "target_file": "runtime/source_local_historical_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeHistoricalOriginal/postgres/getLocalEventGenerator()",
+        "backend_companion": "TestSourceRuntimeHistoricalOriginal/pglite/getLocalEventGenerator()",
+        "source_fixture": "testdata/runtime/source-runtime-historical-live.json",
+        "source_verification": "parity/runs/source-runtime-historical-verification.json",
+        "assertion_policy": "Complete pinned historical.test.ts executes all14 unchanged original declarations/hooks/inputs/assertions with explicit loopback startup adaptation, not pristine. These11 local generator cases replay14 actual calls and24 actual provider requests on each real database backend, normal and race, comparing generator steps/outputs, progress identity, checkpoints and physical database state. Native state starts empty and sequential calls execute production behavior; recorded outputs/rows never seed it. Three later scheduler cases remain unmapped; misnamed original omnichain case is not true omnichain coverage. Supplemental actual-RPC prefetch, rollback, cancellation and error controls add zero source credit. Native PGlite atomicity/cancellation/error joining are documented safety extensions beyond pinned source boundaries."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "meaning": "Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "dd482eb7065250d54888",
@@ -83,13 +145,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/historical.test.ts",
+        "source_name": "getLocalEventGenerator() pagination",
+        "source_id": "dd482eb7065250d54888",
+        "source_line": 87,
+        "assertions_sha256": "c27c68d59de95944e8f1c61ac19f81a616c182618e8f844de8524de18902d42f",
+        "original_assertions": 1,
+        "target_file": "runtime/source_local_historical_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeHistoricalOriginal/postgres/getLocalEventGenerator()_pagination",
+        "backend_companion": "TestSourceRuntimeHistoricalOriginal/pglite/getLocalEventGenerator()_pagination",
+        "source_fixture": "testdata/runtime/source-runtime-historical-live.json",
+        "source_verification": "parity/runs/source-runtime-historical-verification.json",
+        "assertion_policy": "Complete pinned historical.test.ts executes all14 unchanged original declarations/hooks/inputs/assertions with explicit loopback startup adaptation, not pristine. These11 local generator cases replay14 actual calls and24 actual provider requests on each real database backend, normal and race, comparing generator steps/outputs, progress identity, checkpoints and physical database state. Native state starts empty and sequential calls execute production behavior; recorded outputs/rows never seed it. Three later scheduler cases remain unmapped; misnamed original omnichain case is not true omnichain coverage. Supplemental actual-RPC prefetch, rollback, cancellation and error controls add zero source credit. Native PGlite atomicity/cancellation/error joining are documented safety extensions beyond pinned source boundaries."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "meaning": "Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "b259864fbc99fca7585d",
@@ -146,13 +270,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/historical.test.ts",
+        "source_name": "getLocalEventGenerator() pagination checkpoints",
+        "source_id": "b259864fbc99fca7585d",
+        "source_line": 132,
+        "assertions_sha256": "4d7ac26a48c89e3a1c411d385b9ea5fb658bdbeb68a6115c6d5c079b6e7eb1d1",
+        "original_assertions": 4,
+        "target_file": "runtime/source_local_historical_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeHistoricalOriginal/postgres/getLocalEventGenerator()_pagination_checkpoints",
+        "backend_companion": "TestSourceRuntimeHistoricalOriginal/pglite/getLocalEventGenerator()_pagination_checkpoints",
+        "source_fixture": "testdata/runtime/source-runtime-historical-live.json",
+        "source_verification": "parity/runs/source-runtime-historical-verification.json",
+        "assertion_policy": "Complete pinned historical.test.ts executes all14 unchanged original declarations/hooks/inputs/assertions with explicit loopback startup adaptation, not pristine. These11 local generator cases replay14 actual calls and24 actual provider requests on each real database backend, normal and race, comparing generator steps/outputs, progress identity, checkpoints and physical database state. Native state starts empty and sequential calls execute production behavior; recorded outputs/rows never seed it. Three later scheduler cases remain unmapped; misnamed original omnichain case is not true omnichain coverage. Supplemental actual-RPC prefetch, rollback, cancellation and error controls add zero source credit. Native PGlite atomicity/cancellation/error joining are documented safety extensions beyond pinned source boundaries."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "meaning": "Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "6932328b1d777888e031",
@@ -191,13 +377,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/historical.test.ts",
+        "source_name": "getLocalEventGenerator() pagination with zero interval",
+        "source_id": "6932328b1d777888e031",
+        "source_line": 192,
+        "assertions_sha256": "e857e85854c25a1604c7989e950ed33d1f6850e17da3c815380520eb935ea984",
+        "original_assertions": 1,
+        "target_file": "runtime/source_local_historical_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeHistoricalOriginal/postgres/getLocalEventGenerator()_pagination_with_zero_interval",
+        "backend_companion": "TestSourceRuntimeHistoricalOriginal/pglite/getLocalEventGenerator()_pagination_with_zero_interval",
+        "source_fixture": "testdata/runtime/source-runtime-historical-live.json",
+        "source_verification": "parity/runs/source-runtime-historical-verification.json",
+        "assertion_policy": "Complete pinned historical.test.ts executes all14 unchanged original declarations/hooks/inputs/assertions with explicit loopback startup adaptation, not pristine. These11 local generator cases replay14 actual calls and24 actual provider requests on each real database backend, normal and race, comparing generator steps/outputs, progress identity, checkpoints and physical database state. Native state starts empty and sequential calls execute production behavior; recorded outputs/rows never seed it. Three later scheduler cases remain unmapped; misnamed original omnichain case is not true omnichain coverage. Supplemental actual-RPC prefetch, rollback, cancellation and error controls add zero source credit. Native PGlite atomicity/cancellation/error joining are documented safety extensions beyond pinned source boundaries."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "meaning": "Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "35500a04eb3407d46aa8",
@@ -241,13 +489,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/historical.test.ts",
+        "source_name": "getLocalInMemoryEventGenerator()",
+        "source_id": "35500a04eb3407d46aa8",
+        "source_line": 237,
+        "assertions_sha256": "c086c837557058b8023a32d7845854424c542268a36e7978532cc8b6e3a633ae",
+        "original_assertions": 2,
+        "target_file": "runtime/source_local_historical_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeHistoricalOriginal/postgres/getLocalInMemoryEventGenerator()",
+        "backend_companion": "TestSourceRuntimeHistoricalOriginal/pglite/getLocalInMemoryEventGenerator()",
+        "source_fixture": "testdata/runtime/source-runtime-historical-live.json",
+        "source_verification": "parity/runs/source-runtime-historical-verification.json",
+        "assertion_policy": "Complete pinned historical.test.ts executes all14 unchanged original declarations/hooks/inputs/assertions with explicit loopback startup adaptation, not pristine. These11 local generator cases replay14 actual calls and24 actual provider requests on each real database backend, normal and race, comparing generator steps/outputs, progress identity, checkpoints and physical database state. Native state starts empty and sequential calls execute production behavior; recorded outputs/rows never seed it. Three later scheduler cases remain unmapped; misnamed original omnichain case is not true omnichain coverage. Supplemental actual-RPC prefetch, rollback, cancellation and error controls add zero source credit. Native PGlite atomicity/cancellation/error joining are documented safety extensions beyond pinned source boundaries."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "meaning": "Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "055e33151c56724c5459",
@@ -297,13 +607,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/historical.test.ts",
+        "source_name": "getLocalInMemoryEventGenerator() with start block after finalized block",
+        "source_id": "055e33151c56724c5459",
+        "source_line": 285,
+        "assertions_sha256": "88810e91684e6e5bd7029de81f5ef0b774ee951b3bc046aa55a6a9fa050d8623",
+        "original_assertions": 3,
+        "target_file": "runtime/source_local_historical_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeHistoricalOriginal/postgres/getLocalInMemoryEventGenerator()_with_start_block_after_finalized_block",
+        "backend_companion": "TestSourceRuntimeHistoricalOriginal/pglite/getLocalInMemoryEventGenerator()_with_start_block_after_finalized_block",
+        "source_fixture": "testdata/runtime/source-runtime-historical-live.json",
+        "source_verification": "parity/runs/source-runtime-historical-verification.json",
+        "assertion_policy": "Complete pinned historical.test.ts executes all14 unchanged original declarations/hooks/inputs/assertions with explicit loopback startup adaptation, not pristine. These11 local generator cases replay14 actual calls and24 actual provider requests on each real database backend, normal and race, comparing generator steps/outputs, progress identity, checkpoints and physical database state. Native state starts empty and sequential calls execute production behavior; recorded outputs/rows never seed it. Three later scheduler cases remain unmapped; misnamed original omnichain case is not true omnichain coverage. Supplemental actual-RPC prefetch, rollback, cancellation and error controls add zero source credit. Native PGlite atomicity/cancellation/error joining are documented safety extensions beyond pinned source boundaries."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "meaning": "Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "eb47df94258c65be3a2e",
@@ -356,13 +728,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/historical.test.ts",
+        "source_name": "getLocalInMemoryEventGenerator() ignores intervals table",
+        "source_id": "eb47df94258c65be3a2e",
+        "source_line": 336,
+        "assertions_sha256": "3c522bc8ac82065690c1d3f1d41acb6ed23f0822cb06bd98cd9c348f92a67369",
+        "original_assertions": 3,
+        "target_file": "runtime/source_local_historical_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeHistoricalOriginal/postgres/getLocalInMemoryEventGenerator()_ignores_intervals_table",
+        "backend_companion": "TestSourceRuntimeHistoricalOriginal/pglite/getLocalInMemoryEventGenerator()_ignores_intervals_table",
+        "source_fixture": "testdata/runtime/source-runtime-historical-live.json",
+        "source_verification": "parity/runs/source-runtime-historical-verification.json",
+        "assertion_policy": "Complete pinned historical.test.ts executes all14 unchanged original declarations/hooks/inputs/assertions with explicit loopback startup adaptation, not pristine. These11 local generator cases replay14 actual calls and24 actual provider requests on each real database backend, normal and race, comparing generator steps/outputs, progress identity, checkpoints and physical database state. Native state starts empty and sequential calls execute production behavior; recorded outputs/rows never seed it. Three later scheduler cases remain unmapped; misnamed original omnichain case is not true omnichain coverage. Supplemental actual-RPC prefetch, rollback, cancellation and error controls add zero source credit. Native PGlite atomicity/cancellation/error joining are documented safety extensions beyond pinned source boundaries."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "meaning": "Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "1644fb814d5a0df1b23c",
@@ -410,13 +844,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/historical.test.ts",
+        "source_name": "getLocalInMemoryEventGenerator() with crash recovery checkpoint",
+        "source_id": "1644fb814d5a0df1b23c",
+        "source_line": 425,
+        "assertions_sha256": "428dc8fcf11d5b493c7f5daa7843ce46de7a12514d44074225523c6b2a05e112",
+        "original_assertions": 2,
+        "target_file": "runtime/source_local_historical_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeHistoricalOriginal/postgres/getLocalInMemoryEventGenerator()_with_crash_recovery_checkpoint",
+        "backend_companion": "TestSourceRuntimeHistoricalOriginal/pglite/getLocalInMemoryEventGenerator()_with_crash_recovery_checkpoint",
+        "source_fixture": "testdata/runtime/source-runtime-historical-live.json",
+        "source_verification": "parity/runs/source-runtime-historical-verification.json",
+        "assertion_policy": "Complete pinned historical.test.ts executes all14 unchanged original declarations/hooks/inputs/assertions with explicit loopback startup adaptation, not pristine. These11 local generator cases replay14 actual calls and24 actual provider requests on each real database backend, normal and race, comparing generator steps/outputs, progress identity, checkpoints and physical database state. Native state starts empty and sequential calls execute production behavior; recorded outputs/rows never seed it. Three later scheduler cases remain unmapped; misnamed original omnichain case is not true omnichain coverage. Supplemental actual-RPC prefetch, rollback, cancellation and error controls add zero source credit. Native PGlite atomicity/cancellation/error joining are documented safety extensions beyond pinned source boundaries."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "meaning": "Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "4a23b3323e9c3992e535",
@@ -460,13 +956,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/historical.test.ts",
+        "source_name": "getLocalSyncGenerator()",
+        "source_id": "4a23b3323e9c3992e535",
+        "source_line": 489,
+        "assertions_sha256": "c280635ca9bff1f80fa838ebf9af20e3ea1b35fbafaf4ae74c2add3e2ed81b44",
+        "original_assertions": 2,
+        "target_file": "runtime/source_local_historical_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeHistoricalOriginal/postgres/getLocalSyncGenerator()",
+        "backend_companion": "TestSourceRuntimeHistoricalOriginal/pglite/getLocalSyncGenerator()",
+        "source_fixture": "testdata/runtime/source-runtime-historical-live.json",
+        "source_verification": "parity/runs/source-runtime-historical-verification.json",
+        "assertion_policy": "Complete pinned historical.test.ts executes all14 unchanged original declarations/hooks/inputs/assertions with explicit loopback startup adaptation, not pristine. These11 local generator cases replay14 actual calls and24 actual provider requests on each real database backend, normal and race, comparing generator steps/outputs, progress identity, checkpoints and physical database state. Native state starts empty and sequential calls execute production behavior; recorded outputs/rows never seed it. Three later scheduler cases remain unmapped; misnamed original omnichain case is not true omnichain coverage. Supplemental actual-RPC prefetch, rollback, cancellation and error controls add zero source credit. Native PGlite atomicity/cancellation/error joining are documented safety extensions beyond pinned source boundaries."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "meaning": "Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "d685ca5ec1b8a49be6b3",
@@ -510,13 +1068,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/historical.test.ts",
+        "source_name": "getLocalSyncGenerator() with partial cache",
+        "source_id": "d685ca5ec1b8a49be6b3",
+        "source_line": 537,
+        "assertions_sha256": "8efbf2bdf5a8c1f6be33ef30a8d6f315eec4d853b93abec0dbe4ea0ba098aa5e",
+        "original_assertions": 2,
+        "target_file": "runtime/source_local_historical_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeHistoricalOriginal/postgres/getLocalSyncGenerator()_with_partial_cache",
+        "backend_companion": "TestSourceRuntimeHistoricalOriginal/pglite/getLocalSyncGenerator()_with_partial_cache",
+        "source_fixture": "testdata/runtime/source-runtime-historical-live.json",
+        "source_verification": "parity/runs/source-runtime-historical-verification.json",
+        "assertion_policy": "Complete pinned historical.test.ts executes all14 unchanged original declarations/hooks/inputs/assertions with explicit loopback startup adaptation, not pristine. These11 local generator cases replay14 actual calls and24 actual provider requests on each real database backend, normal and race, comparing generator steps/outputs, progress identity, checkpoints and physical database state. Native state starts empty and sequential calls execute production behavior; recorded outputs/rows never seed it. Three later scheduler cases remain unmapped; misnamed original omnichain case is not true omnichain coverage. Supplemental actual-RPC prefetch, rollback, cancellation and error controls add zero source credit. Native PGlite atomicity/cancellation/error joining are documented safety extensions beyond pinned source boundaries."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "meaning": "Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "42b8ee0fbd39ff105e51",
@@ -567,13 +1187,75 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/historical.test.ts",
+        "source_name": "getLocalSyncGenerator() with full cache",
+        "source_id": "42b8ee0fbd39ff105e51",
+        "source_line": 616,
+        "assertions_sha256": "1f0ac5e561ae4a78d4a7b3acd7e41e8eefbf9d02948f3b0a7a0d2da585e70f8d",
+        "original_assertions": 3,
+        "target_file": "runtime/source_local_historical_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeHistoricalOriginal/postgres/getLocalSyncGenerator()_with_full_cache",
+        "backend_companion": "TestSourceRuntimeHistoricalOriginal/pglite/getLocalSyncGenerator()_with_full_cache",
+        "source_fixture": "testdata/runtime/source-runtime-historical-live.json",
+        "source_verification": "parity/runs/source-runtime-historical-verification.json",
+        "assertion_policy": "Complete pinned historical.test.ts executes all14 unchanged original declarations/hooks/inputs/assertions with explicit loopback startup adaptation, not pristine. These11 local generator cases replay14 actual calls and24 actual provider requests on each real database backend, normal and race, comparing generator steps/outputs, progress identity, checkpoints and physical database state. Native state starts empty and sequential calls execute production behavior; recorded outputs/rows never seed it. Three later scheduler cases remain unmapped; misnamed original omnichain case is not true omnichain coverage. Supplemental actual-RPC prefetch, rollback, cancellation and error controls add zero source credit. Native PGlite atomicity/cancellation/error joining are documented safety extensions beyond pinned source boundaries."
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      },
+      "runtime_validation": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "meaning": "Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."
+      },
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-race.jsonl"
+      },
+      "execution_evidence": "parity/runs/runtime-historical-m36/full-verify-01/native/go-test.jsonl",
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "d1f4e702f072c3b5eae1",
@@ -624,7 +1306,43 @@
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      }
     },
     {
       "id": "983c1f8526efc67c34aa",
@@ -675,7 +1393,43 @@
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      }
     },
     {
       "id": "a2f204a8ab7598691e12",
@@ -721,7 +1475,43 @@
       "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "oracle": {
+        "status": "passed",
+        "evidence": "parity/runs/source-runtime-historical-verification.json",
+        "mode": "environment_adapted_complete_original_file",
+        "full_original": true,
+        "environment_adapted": true,
+        "pristine_file": false,
+        "verification_period": "current",
+        "run_dir": "parity/runs/runtime-historical-m36/full-verify-01",
+        "executions": [
+          {
+            "mode": "normal",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "normal",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "postgres",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-postgres/original.json"
+          },
+          {
+            "mode": "race",
+            "backend": "pglite",
+            "status": "passed",
+            "evidence": "parity/runs/runtime-historical-m36/full-verify-01/historical-source-pglite/original.json"
+          }
+        ]
+      }
     }
   ]
 }

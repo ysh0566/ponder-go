@@ -7325,5 +7325,50 @@
     "source_fixture": "testdata/runtime/source-runtime-historical-live.json",
     "source_verification": "parity/runs/source-runtime-historical-verification.json",
     "assertion_policy": "Complete pinned historical.test.ts executes all14 unchanged original declarations/hooks/inputs/assertions with explicit loopback startup adaptation, not pristine. These11 local generator cases replay14 actual calls and24 actual provider requests on each real database backend, normal and race, comparing generator steps/outputs, progress identity, checkpoints and physical database state. Native state starts empty and sequential calls execute production behavior; recorded outputs/rows never seed it. Three later scheduler cases remain unmapped; misnamed original omnichain case is not true omnichain coverage. Supplemental actual-RPC prefetch, rollback, cancellation and error controls add zero source credit. Native PGlite atomicity/cancellation/error joining are documented safety extensions beyond pinned source boundaries."
+  },
+  {
+    "source_file": "packages/core/src/runtime/historical.test.ts",
+    "source_name": "getHistoricalEventsMultichain()",
+    "source_id": "d1f4e702f072c3b5eae1",
+    "source_line": 696,
+    "assertions_sha256": "d9591718c083a1b39478c0a88cf16a08eee7603c0002f4c9489e784e998ad7bb",
+    "original_assertions": 2,
+    "target_file": "runtime/source_runtime_multichain_test.go",
+    "go_package": "ponder.local/ponder-go/runtime",
+    "go_test": "TestSourceRuntimeMultichainOriginal/postgres/getHistoricalEventsMultichain()",
+    "backend_companion": "TestSourceRuntimeMultichainOriginal/pglite/getHistoricalEventsMultichain()",
+    "source_fixture": "testdata/runtime/source-runtime-multichain-live.json",
+    "source_verification": "parity/runs/source-runtime-multichain-verification.json",
+    "assertion_policy": "Complete pinned historical.test.ts executes all 14 unchanged declarations and 29 assertions under explicit loopback startup adaptation. Only these three original cases and five assertions earn M37 credit. Each backend replays three actual coordinator calls, seven provider requests and six direct clock observations in full normal/race runs. All three originals are single-chain Multichain calls, including the misleadingly named omnichain case. Mandatory supplemental genuine multichain, omnichain, isolated, refetch and checkpoint probes earn zero source credit. Native state is produced from original inputs and raw RPC; outputs and physical snapshots are verification-only. Outer run-loop transactions, realtime cutover and readiness are not covered. Native PGlite atomicity is a documented safety extension, not identical source transaction failure behavior."
+  },
+  {
+    "source_file": "packages/core/src/runtime/historical.test.ts",
+    "source_name": "getHistoricalEvents() omnichain",
+    "source_id": "983c1f8526efc67c34aa",
+    "source_line": 758,
+    "assertions_sha256": "d9591718c083a1b39478c0a88cf16a08eee7603c0002f4c9489e784e998ad7bb",
+    "original_assertions": 2,
+    "target_file": "runtime/source_runtime_multichain_test.go",
+    "go_package": "ponder.local/ponder-go/runtime",
+    "go_test": "TestSourceRuntimeMultichainOriginal/postgres/getHistoricalEvents()_omnichain",
+    "backend_companion": "TestSourceRuntimeMultichainOriginal/pglite/getHistoricalEvents()_omnichain",
+    "source_fixture": "testdata/runtime/source-runtime-multichain-live.json",
+    "source_verification": "parity/runs/source-runtime-multichain-verification.json",
+    "assertion_policy": "Complete pinned historical.test.ts executes all 14 unchanged declarations and 29 assertions under explicit loopback startup adaptation. Only these three original cases and five assertions earn M37 credit. Each backend replays three actual coordinator calls, seven provider requests and six direct clock observations in full normal/race runs. All three originals are single-chain Multichain calls, including the misleadingly named omnichain case. Mandatory supplemental genuine multichain, omnichain, isolated, refetch and checkpoint probes earn zero source credit. Native state is produced from original inputs and raw RPC; outputs and physical snapshots are verification-only. Outer run-loop transactions, realtime cutover and readiness are not covered. Native PGlite atomicity is a documented safety extension, not identical source transaction failure behavior."
+  },
+  {
+    "source_file": "packages/core/src/runtime/historical.test.ts",
+    "source_name": "getHistoricalEvents() with crash recovery checkpoint",
+    "source_id": "a2f204a8ab7598691e12",
+    "source_line": 820,
+    "assertions_sha256": "9f812cb0a739fa4a0fb82f02188846d4d75a785add3da3fe7ecee084664e577c",
+    "original_assertions": 1,
+    "target_file": "runtime/source_runtime_multichain_test.go",
+    "go_package": "ponder.local/ponder-go/runtime",
+    "go_test": "TestSourceRuntimeMultichainOriginal/postgres/getHistoricalEvents()_with_crash_recovery_checkpoint",
+    "backend_companion": "TestSourceRuntimeMultichainOriginal/pglite/getHistoricalEvents()_with_crash_recovery_checkpoint",
+    "source_fixture": "testdata/runtime/source-runtime-multichain-live.json",
+    "source_verification": "parity/runs/source-runtime-multichain-verification.json",
+    "assertion_policy": "Complete pinned historical.test.ts executes all 14 unchanged declarations and 29 assertions under explicit loopback startup adaptation. Only these three original cases and five assertions earn M37 credit. Each backend replays three actual coordinator calls, seven provider requests and six direct clock observations in full normal/race runs. All three originals are single-chain Multichain calls, including the misleadingly named omnichain case. Mandatory supplemental genuine multichain, omnichain, isolated, refetch and checkpoint probes earn zero source credit. Native state is produced from original inputs and raw RPC; outputs and physical snapshots are verification-only. Outer run-loop transactions, realtime cutover and readiness are not covered. Native PGlite atomicity is a documented safety extension, not identical source transaction failure behavior."
   }
 ]

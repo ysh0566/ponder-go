@@ -4,6 +4,20 @@
 
 
 
+## 当前执行入口：M37 本地完整验收通过，待父级独立复核与普通发布
+
+完整 `runtime-multichain-m37/full-verify-01` 于 2026-10-25 10:25 UTC 退出 0，35 阶段全部通过。normal/race 各 2983 测试节点、2736 叶用例，0 测试失败/跳过；22 包、202 顶层函数、每模式 65 个不重叠串行批次，原 timeout 保留。PG 各 405、PGlite 各 402。准备/结束/汇总时 1096 文件指纹一致：`740fa67bb628fa820aa991b8ed31889c12af9a54b06fa081e6409fdf17bee639`，33 个验收工具 hash 全程不变。
+
+全部 8 个规范 collector 已接受当前完整运行。新增最后 3 条 historical 原例、5 断言、0 类型义务，正式覆盖 511/905 = 507 Go + 4 SDK，394 未实现；4 条 M35 类型义务仍未映射。原完整 historical 14 例双后端通过；16 个真正双链/边界补充探针及两种嵌套首错因果控制在两种后端 normal/race 通过，均零额外 credit。名为 omnichain 的原例实际仍是单链 Multichain，不能代替补充证明。
+
+M37 范围是三种历史提取协调器、catchup、refetch 和 checkpoint 聚合，不包含外层 indexing transaction/realtime 切换、readiness/triggers。复核修正了 refresh 标准化、请求同步注册和首错取消，以及此前内存历史实现的首次 yield 前预取注册、block/trace 首错取消边界。共享对象由 iterator 独占，错误/停止取消并 join；source PGlite 无真实 QB 事务，native 更强原子性与资源清理是明确安全扩展，不能称失败行为完全等价。
+
+所有红色源码/原生/采集记录保留：observer 生命周期污染、无因果门控的完成顺序、错误的 Commit 门控死锁、safe-query 比较包装和嵌套过滤器准备失败。最终响应门控在真实 GetEventData 完整返回后执行，不持 SQL/Store 锁，不靠睡眠或排序预期。请求注入只允许已验证的原始请求，重复/不匹配校验错误独立保留。两个 wait-all overlay 反例均红、恢复后绿。首次 record-results 因旧 collector 默认输出路径而拒绝旧规范证明；已显式 `--output` 重新采集，8 个规范路径均指向本轮，再汇总通过，工具未放宽。
+
+已发布父基线 M36 `981c00f1b4b479165545feed6ca7da078b6451fb`。新冻结使用 batch-36，旧 batch-35 不改；当前仅本地验收，尚未提交/推送。父级独立复核后才允许普通后继发布，不改历史、不 force、不重登或新凭据、不接业务数据库。保持同一云目录和 loopback PostgreSQL 55432 同 exec；先 source env.sh，PATH 显式加入 pinned upstream/node_modules/.bin（tsc 5.4.5），5 GiB 硬停。不要在发布闭环前删除 hash 引用的编译产物。具体边界见 `SOURCE_RUNTIME_MULTICHAIN.md`。
+
+以下 M36 待发布文字保留为当时记录，不代表其当前发布状态。
+
 ## 当前执行入口：M36 本地完整验收通过，待父级复核与普通发布
 
 `runtime-historical-m36/full-verify-01` 于 2026-10-25 08:57 UTC 完整退出 0，28 阶段全部通过。normal/race 各 2863 测试节点、2634 叶用例，测试 0 失败/跳过；22 包、187 顶层函数、61 个不重叠批次，默认 timeout 保留。PG 各 386、PGlite 各 383。准备/结束/汇总时 1084 文件指纹一致：`30751da01517a8e7aa5f23d84a517de18da4807ac9722f72b8d6aa3426995dcf`。全部 7 个规范 collector 已以本轮真实目录重新接受；原版 core、编译控制、client 与 React 均通过。

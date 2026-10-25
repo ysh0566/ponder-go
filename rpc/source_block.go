@@ -101,6 +101,29 @@ func (a *Actions) GetSourceBlockByNumber(ctx context.Context, number string, tra
 	return StandardizeSourceBlock(block, ActionRequest{"eth_getBlockByNumber", params})
 }
 
+// BeginSourceBlockByNumber performs real synchronous admission when the action's
+// requester supports it. The returned continuation owns the response until the
+// future resolves. A false result makes no request; callers must use the normal
+// synchronous action instead, not a goroutine-start handshake.
+func (a *Actions) BeginSourceBlockByNumber(ctx context.Context, number string, transactions bool) (func() (map[string]any, error), bool) {
+	requester, ok := a.requester.(AsyncRequester)
+	if !ok {
+		return nil, false
+	}
+	params := []any{number, transactions}
+	var block map[string]any
+	pending := requester.BeginCall(ctx, "eth_getBlockByNumber", params, &block)
+	return func() (map[string]any, error) {
+		if err := <-pending; err != nil {
+			return nil, err
+		}
+		if block == nil {
+			return nil, fmt.Errorf("Block at number %q could not be found.", number)
+		}
+		return StandardizeSourceBlock(block, ActionRequest{"eth_getBlockByNumber", params})
+	}, true
+}
+
 func ValidateSourceTransactionsAndBlock(block map[string]any, request ActionRequest) error {
 	transactions, err := sourceRPCTransactions(block)
 	if err != nil {
