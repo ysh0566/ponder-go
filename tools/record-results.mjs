@@ -90,7 +90,9 @@ const historicalVerification = exists("parity/runs/source-historical-verificatio
 const realtimeVerification = exists("parity/runs/source-realtime-verification.json") ? read("parity/runs/source-realtime-verification.json") : null;
 const runtimeIndexVerificationFile = "parity/runs/source-runtime-index-verification.json";
 const runtimeIndexVerification = exists(runtimeIndexVerificationFile) ? read(runtimeIndexVerificationFile) : null;
-if(!runDir&&[syncVerification,historicalVerification,realtimeVerification,configCompile,runtimeIndexVerification].some(proof=>proof?.environment_adapted))throw Error("Adapted canonical verification requires an explicit --run-dir; historical native logs cannot substitute");
+const runtimeHistoricalVerificationFile = "parity/runs/source-runtime-historical-verification.json";
+const runtimeHistoricalVerification = exists(runtimeHistoricalVerificationFile) ? read(runtimeHistoricalVerificationFile) : null;
+if(!runDir&&[syncVerification,historicalVerification,realtimeVerification,configCompile,runtimeIndexVerification,runtimeHistoricalVerification].some(proof=>proof?.environment_adapted))throw Error("Adapted canonical verification requires an explicit --run-dir; historical native logs cannot substitute");
 function proofArchive(verification, execution) {
 	return runDir ? loadArchive(execution?.context_archive ?? verification.context_archive ?? fullRun.context_archive) : null;
 }
@@ -131,6 +133,27 @@ if(realtimeVerification){
 
 if (configCompile) {
  if(configCompile.executions.length!==2||configCompile.executions.some(x=>!x.complete||![x.native,x.capture,x.original,x.compile,...x.source_context].every(f=>proofValid(f,configCompile,x)))||!configCompile.inputs.every(f=>proofValid(f,configCompile)))throw Error("Incomplete or stale live config/native proof");
+}
+
+const runtimeHistoricalIDs = new Set(["1337ad403051f00c5d99","dd482eb7065250d54888","b259864fbc99fca7585d","6932328b1d777888e031","35500a04eb3407d46aa8","055e33151c56724c5459","eb47df94258c65be3a2e","1644fb814d5a0df1b23c","4a23b3323e9c3992e535","d685ca5ec1b8a49be6b3","42b8ee0fbd39ff105e51"]);
+if (runDir && ledger.tests.some(test=>test.mapping&&test.source_file==="packages/core/src/runtime/historical.test.ts")&&!runtimeHistoricalVerification)throw Error("Runtime historical mappings require current complete evidence");
+if(runtimeHistoricalVerification){
+ const v=runtimeHistoricalVerification;validateCurrentProof(v,"runtime-historical");
+ const selected=ledger.tests.filter(test=>test.source_file==="packages/core/src/runtime/historical.test.ts");
+ if(!v.complete||v.success!==true||v.scope!=="complete_module_source_runtime_historical"||v.summary.source_cases!==14||v.summary.source_assertions!==29||v.summary.targeted_cases!==11||v.summary.targeted_assertions!==24||v.summary.source_error_directives!==0||v.executions.length!==4||v.inputs.some(ref=>!proofValid(ref,v)))throw Error("Incomplete runtime historical evidence");
+ const combinations=new Set();
+ for(const execution of v.executions){
+  const combination=execution.mode+"/"+execution.backend;
+  if(!["normal/postgres","normal/pglite","race/postgres","race/pglite"].includes(combination)||combinations.has(combination)||[execution.log,execution.native,execution.capture,execution.original,execution.result,execution.source_order_probe,execution.source_order_result,execution.source_order_original,execution.source_order_context,...execution.source_context].some(ref=>!proofValid(ref,v,execution)))throw Error("Runtime historical execution/context differs");
+  combinations.add(combination);
+  const results=execution.mode==="normal"?go:race,seen=new Set();
+  if(execution.cases?.length!==11)throw Error("Runtime historical requires exactly eleven native cases");
+  for(const record of execution.cases){
+   const source=selected.find(test=>test.id===record.source_id),prefix="TestSourceRuntimeHistoricalOriginal/"+execution.backend;
+   if(!source||!runtimeHistoricalIDs.has(source.id)||seen.has(source.id)||execution.native_test_prefix!==prefix||record.go_test!==prefix+"/"+source.title.replaceAll(/\s/g,"_")||record.native_type_obligations!==0||results.get(`ponder.local/ponder-go/runtime:${record.go_test}`)?.Action!=="pass")throw Error("Runtime historical native case missing or changed");
+   seen.add(source.id);
+  }
+ }
 }
 
 if (runDir && ledger.tests.some(test => test.mapping && test.source_file === "packages/core/src/runtime/index.test.ts") && !runtimeIndexVerification) throw Error("Runtime index mappings require current complete source/native evidence");
@@ -364,6 +387,10 @@ for (const test of ledger.tests) {
    if (!test.mapping && test.type_error_directives.length) test.remaining_native_type_obligations=test.type_error_directives.length;
   }
  }
+ if(runDir&&test.source_file==="packages/core/src/runtime/historical.test.ts"&&runtimeHistoricalVerification){
+  currentLiveOracle(test,runtimeHistoricalVerification,runtimeHistoricalVerificationFile,4);
+  if(runtimeHistoricalIDs.has(test.id))test.runtime_validation={status:"passed",evidence:runtimeHistoricalVerificationFile,run_dir:runDir,meaning:"Eleven original local generator cases replayed on both real native backends in both full modes. Complete adapted fourteen-case source file remains separately recorded. PGlite atomic rollback and cancellation/error joining are documented safety extensions, not source-equivalence claims."};
+ }
  if(runDir&&test.source_file==="packages/core/src/runtime/index.test.ts"&&runtimeIndexVerification){
   currentLiveOracle(test,runtimeIndexVerification,runtimeIndexVerificationFile,4);
   test.runtime_validation={status:"passed",evidence:runtimeIndexVerificationFile,run_dir:runDir,meaning:"All original runtime/index inputs and assertions replayed against native Go in both complete module modes and both backends; adapted source capture and native execution remain separately identified."};
@@ -559,6 +586,7 @@ const summary = {
  source_realtime_verification:realtimeVerification?{...realtimeVerification.summary,evidence:"parity/runs/source-realtime-verification.json"}:null,
  source_historical_verification:historicalVerification?{...historicalVerification.summary,evidence:"parity/runs/source-historical-verification.json"}:null,
  source_sync_verification:syncVerification?{...syncVerification.summary,evidence:"parity/runs/source-sync-verification.json"}:null,
+ source_runtime_historical_verification:runtimeHistoricalVerification?{...runtimeHistoricalVerification.summary,evidence:runtimeHistoricalVerificationFile,environment_adapted:true,pristine_file:false}:null,
  source_runtime_index_verification:runtimeIndexVerification?{...runtimeIndexVerification.summary,evidence:runtimeIndexVerificationFile,environment_adapted:runtimeIndexVerification.environment_adapted,pristine_file:runtimeIndexVerification.pristine_file,native_type_obligations_passed:0}:null,
  sql_source_verification:sqlVerification?{...sqlVerification.summary,evidence:"parity/runs/sql-source-verification.json"}:null,
 	typed_abi_runtime: {file:typedGoFile,leaf_cases:leaves(typedGo).length,...count(leaves(typedGo)),counting:"Supplementary typed decoder execution; not additional source test records."},

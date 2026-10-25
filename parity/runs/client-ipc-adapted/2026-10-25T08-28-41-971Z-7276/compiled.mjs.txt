@@ -1,0 +1,297 @@
+// bridge/client-compat.ts
+import assert from "node:assert/strict";
+import { createRequire } from "node:module";
+
+// sdk/typescript/client/src/index.ts
+import {
+  Column,
+  is,
+  isTable,
+  mapRelationalRow,
+  SQL,
+  Table
+} from "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.pnpm/drizzle-orm@0.41.0_@electric-sql+pglite@0.2.13_@opentelemetry+api@1.7.0_@types+pg@8.10._1f0b5ccc7607fca472eabfdd81ce22df/node_modules/drizzle-orm/index.js";
+import { isPgEnum } from "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.pnpm/drizzle-orm@0.41.0_@electric-sql+pglite@0.2.13_@opentelemetry+api@1.7.0_@types+pg@8.10._1f0b5ccc7607fca472eabfdd81ce22df/node_modules/drizzle-orm/pg-core/index.js";
+import { PgCountBuilder } from "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.pnpm/drizzle-orm@0.41.0_@electric-sql+pglite@0.2.13_@opentelemetry+api@1.7.0_@types+pg@8.10._1f0b5ccc7607fca472eabfdd81ce22df/node_modules/drizzle-orm/pg-core/query-builders/count.js";
+import { PgRelationalQuery } from "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.pnpm/drizzle-orm@0.41.0_@electric-sql+pglite@0.2.13_@opentelemetry+api@1.7.0_@types+pg@8.10._1f0b5ccc7607fca472eabfdd81ce22df/node_modules/drizzle-orm/pg-core/query-builders/query.js";
+import { PgRaw } from "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.pnpm/drizzle-orm@0.41.0_@electric-sql+pglite@0.2.13_@opentelemetry+api@1.7.0_@types+pg@8.10._1f0b5ccc7607fca472eabfdd81ce22df/node_modules/drizzle-orm/pg-core/query-builders/raw.js";
+import { drizzle } from "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.pnpm/drizzle-orm@0.41.0_@electric-sql+pglite@0.2.13_@opentelemetry+api@1.7.0_@types+pg@8.10._1f0b5ccc7607fca472eabfdd81ce22df/node_modules/drizzle-orm/pg-proxy/index.js";
+import { TypedQueryBuilder } from "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.pnpm/drizzle-orm@0.41.0_@electric-sql+pglite@0.2.13_@opentelemetry+api@1.7.0_@types+pg@8.10._1f0b5ccc7607fca472eabfdd81ce22df/node_modules/drizzle-orm/query-builders/query-builder.js";
+import { EventSource } from "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.pnpm/eventsource@3.0.5/node_modules/eventsource/dist/index.js";
+import superjson from "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.pnpm/superjson@2.2.2/node_modules/superjson/dist/index.js";
+import {
+  and,
+  asc,
+  avg,
+  avgDistinct,
+  between,
+  count,
+  countDistinct,
+  desc,
+  eq,
+  exists,
+  gt,
+  gte,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  like,
+  lt,
+  lte,
+  max,
+  min,
+  ne,
+  not,
+  notBetween,
+  notExists,
+  notIlike,
+  notInArray,
+  notLike,
+  or,
+  relations,
+  SQL as SQL2,
+  sql,
+  sum,
+  sumDistinct
+} from "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.pnpm/drizzle-orm@0.41.0_@electric-sql+pglite@0.2.13_@opentelemetry+api@1.7.0_@types+pg@8.10._1f0b5ccc7607fca472eabfdd81ce22df/node_modules/drizzle-orm/index.js";
+import {
+  alias,
+  except,
+  exceptAll,
+  intersect,
+  intersectAll,
+  union,
+  unionAll
+} from "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.pnpm/drizzle-orm@0.41.0_@electric-sql+pglite@0.2.13_@opentelemetry+api@1.7.0_@types+pg@8.10._1f0b5ccc7607fca472eabfdd81ce22df/node_modules/drizzle-orm/pg-core/index.js";
+var getUrl = (baseUrl, method, query) => {
+  const url = new URL(baseUrl);
+  url.pathname = `${url.pathname}/${method}`;
+  if (query) {
+    url.searchParams.set("sql", superjson.stringify(query));
+  }
+  return url;
+};
+var noopDatabase = drizzle(() => Promise.resolve({ rows: [] }), {
+  casing: "snake_case"
+});
+var dialect = noopDatabase.dialect;
+var compileQuery = (query) => {
+  return dialect.sqlToQuery(query.getSQL());
+};
+var createClient = (baseUrl, params = {}) => {
+  const client2 = {
+    db: drizzle(
+      async (sql2, params2, method, typings) => {
+        const builtQuery = { sql: sql2, params: params2, typings };
+        const response = await fetch(getUrl(baseUrl, "db", builtQuery), {
+          method: "GET"
+        });
+        if (response.ok === false) {
+          const error = new Error(await response.text());
+          error.stack = void 0;
+          throw error;
+        }
+        const result = await response.json();
+        if (method === "all") {
+          return {
+            ...result,
+            rows: result.rows.map((row) => Object.values(row))
+          };
+        }
+        return result;
+      },
+      { schema: params.schema, casing: "snake_case" }
+    ),
+    live: (queryFn, onData, onError) => {
+      const noopDatabase2 = drizzle(() => Promise.resolve({ rows: [] }), {
+        schema: params.schema,
+        casing: "snake_case"
+      });
+      const queryPromise = queryFn(noopDatabase2);
+      if ("getSQL" in queryPromise === false) {
+        throw new Error(
+          '"queryFn" must return SQL. You may have to remove `.execute()` from your query.'
+        );
+      }
+      const queryBuilder = queryPromise;
+      const query = compileQuery(queryBuilder);
+      const sse = new EventSource(getUrl(baseUrl, "live", query));
+      const onDataListener = async (event) => {
+        try {
+          const result = JSON.parse(event.data);
+          const drizzleShim = drizzle(
+            (_, __, method) => {
+              if (method === "all") {
+                return Promise.resolve({
+                  ...result,
+                  rows: result.rows.map((row) => Object.values(row))
+                });
+              }
+              return Promise.resolve(result);
+            },
+            { schema: params.schema }
+          );
+          let data;
+          if (queryBuilder instanceof TypedQueryBuilder) {
+            const fields = queryBuilder._.selectedFields;
+            const orderedFields = orderSelectedFields(fields);
+            data = await drizzleShim._.session.prepareQuery(
+              query,
+              // @ts-expect-error
+              orderedFields,
+              void 0,
+              false
+            ).execute();
+          } else if (queryBuilder instanceof PgRelationalQuery) {
+            const selection = queryBuilder._toSQL().query.selection;
+            data = await drizzleShim._.session.prepareQuery(
+              query,
+              void 0,
+              void 0,
+              true,
+              (rawRows, mapColumnValue) => {
+                const rows = rawRows.map(
+                  (row) => mapRelationalRow(
+                    // @ts-expect-error
+                    queryBuilder.schema,
+                    // @ts-expect-error
+                    queryBuilder.tableConfig,
+                    row,
+                    selection,
+                    mapColumnValue
+                  )
+                );
+                if (queryBuilder.mode === "first") {
+                  return rows[0];
+                }
+                return rows;
+              }
+            ).execute();
+          } else if (queryBuilder instanceof PgRaw) {
+            data = await drizzleShim._.session.prepareQuery(query, void 0, void 0, false).execute();
+          } else if (queryBuilder instanceof PgCountBuilder) {
+            data = await drizzleShim._.session.count(queryBuilder.getSQL());
+          } else {
+            throw new Error("Unsupported query builder");
+          }
+          onData(data);
+        } catch (error) {
+          onError?.(error);
+        }
+      };
+      const onErrorListener = (_event) => {
+        onError?.(new Error("server disconnected"));
+      };
+      sse.addEventListener("message", onDataListener);
+      sse.addEventListener("error", onErrorListener);
+      return {
+        unsubscribe: () => {
+          sse.removeEventListener("message", onDataListener);
+          sse.removeEventListener("error", onErrorListener);
+          sse.close();
+        }
+      };
+    },
+    getStatus: async () => {
+      const response = await fetch(`${new URL(baseUrl).origin}/status`);
+      return response.json();
+    }
+  };
+  return client2;
+};
+function orderSelectedFields(fields, pathPrefix) {
+  return Object.entries(fields).reduce(
+    (result, [name, field]) => {
+      if (typeof name !== "string") {
+        return result;
+      }
+      const newPath = pathPrefix ? [...pathPrefix, name] : [name];
+      if (is(field, Column) || is(field, SQL) || is(field, SQL.Aliased)) {
+        result.push({ path: newPath, field });
+      } else if (is(field, Table)) {
+        result.push(
+          ...orderSelectedFields(field[Table.Symbol.Columns], newPath)
+        );
+      } else {
+        result.push(
+          ...orderSelectedFields(field, newPath)
+        );
+      }
+      return result;
+    },
+    []
+  );
+}
+
+// bridge/client-compat.ts
+var require2 = createRequire(
+  new URL(
+    "../../ponder-upstream/packages/client/package.json",
+    import.meta.url
+  )
+);
+var { pgTable, text, customType } = require2("drizzle-orm/pg-core");
+var bigint = customType({
+  dataType: () => "numeric(78)",
+  fromDriver: (v) => BigInt(v)
+});
+var account = pgTable(process.argv[3] ?? "account", {
+  id: text("id").primaryKey(),
+  balance: bigint("balance")
+});
+var base = process.argv[2];
+var client = createClient(base + "/sql", { schema: { account } });
+assert.deepEqual(await client.db.select().from(account), [
+  { id: "alice", balance: 7n }
+]);
+assert.deepEqual(
+  await client.db.select().from(account).where(eq(account.balance, 7n)),
+  [{ id: "alice", balance: 7n }]
+);
+assert.deepEqual(await client.getStatus(), {
+  "1": { id: 1, block: { number: 1, timestamp: 1 } }
+});
+var count2 = 0;
+var resolveData = () => {
+};
+var rejectData = () => {
+};
+var received = new Promise((resolve, reject) => {
+  resolveData = resolve;
+  rejectData = reject;
+});
+var live = client.live(
+  (db) => db.select().from(account),
+  (rows) => {
+    count2++;
+    resolveData(rows);
+  },
+  rejectData
+);
+var wait = (ms) => new Promise((r) => setTimeout(r, ms));
+await wait(100);
+assert.equal(
+  count2,
+  0,
+  "initial evaluation must establish hash without emitting"
+);
+await fetch(base + "/test/change?balance=7");
+await wait(100);
+assert.equal(count2, 0, "unchanged result must not emit");
+await fetch(base + "/test/change?balance=9");
+var timeout = setTimeout(() => rejectData(Error("SSE timeout")), 5e3);
+try {
+  assert.deepEqual(await received, [{ id: "alice", balance: 9n }]);
+  assert.equal(count2, 1);
+} finally {
+  clearTimeout(timeout);
+  live.unsubscribe();
+}
+console.log(
+  JSON.stringify({
+    client_source: "packages/client/src/index.ts",
+    assertions: 7,
+    result: "passed"
+  })
+);

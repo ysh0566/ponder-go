@@ -1,0 +1,20 @@
+{
+  "source_credit": 0,
+  "source": {
+    "file": "../ponder-upstream/packages/core/src/runtime/historical.ts",
+    "sha256": "395a9b5885440989fe43816562229ba4897933fed1ede468a7277403ab2feb9d"
+  },
+  "lines": [
+    1624,
+    1655
+  ],
+  "excerpt": "  const { callback, generator } =\n    createCallbackGenerator<IteratorResult<number>>();\n\n  (async () => {\n    for await (const { interval, promise } of intervalGenerator) {\n      // Note: this relies on the invariant that `syncInterval`\n      // will always resolve promises in the order it was called.\n      syncInterval({ interval, promise }).then((didInsertData) => {\n        const isDone = interval[1] === hexToNumber(last.number);\n        if (didInsertData || isDone) {\n          callback({ value: interval[1], done: false });\n        }\n\n        if (isDone) {\n          callback({ value: undefined, done: true });\n        }\n      });\n    }\n  })();\n\n  for await (const result of generator) {\n    if (result.done) break;\n    yield result.value;\n  }\n\n  params.common.logger.info({\n    msg: \"Finished fetching backfill JSON-RPC data\",\n    chain: params.chain.name,\n    chain_id: params.chain.id,\n    duration: backfillEndClock(),\n  });\n}",
+  "inspection_only": true,
+  "error_or_cancellation_probe_executed": false,
+  "findings": [
+    "A detached async loop launches syncInterval(...).then(successHandler) without a rejection handler.",
+    "The yielded-results loop has no try/finally cancelling or joining the detached producer when its consumer returns early.",
+    "The producer interval generator is not closed when the result generator reports done."
+  ],
+  "scope": "These static observations are not a reproduced failure/hang. Native explicit error propagation, cancellation and joining are a safety extension, not claimed exact equivalence to this source failure behavior."
+}

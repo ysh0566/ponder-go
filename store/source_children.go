@@ -18,9 +18,13 @@ type SourceFactoryChildren struct {
 	Children   []SourceChildAddress
 }
 
-// Inserts retain the source's two distinct commit stages and earliest block
-// conflict rule. Factory fragment IDs already include source chain/range identity.
+// Unbound inserts retain the source's two distinct commit stages and earliest
+// block conflict rule; an explicit WithTransaction scope joins both stages.
+// Factory fragment IDs already include source chain/range identity.
 func (s *SourceSyncStore) InsertChildAddresses(ctx context.Context, chain uint64, children []SourceFactoryChildren) error {
+	if err := s.scopeActive(ctx); err != nil {
+		return err
+	}
 	if len(children) == 0 {
 		return nil
 	}
@@ -31,7 +35,7 @@ func (s *SourceSyncStore) InsertChildAddresses(ctx context.Context, chain uint64
 		args = append(args, item.FragmentID)
 		slots = append(slots, "($"+strconv.Itoa(len(args))+")")
 	}
-	if e := s.cache.transaction(ctx, func(tx Transaction) error {
+	if e := s.transaction(ctx, func(tx Transaction) error {
 		rows, e := tx.Query(ctx, "INSERT INTO "+s.cache.table("factories")+"(fragment_id) VALUES"+strings.Join(slots, ",")+" ON CONFLICT(fragment_id) DO UPDATE SET fragment_id=excluded.fragment_id RETURNING id,fragment_id", args...)
 		if e != nil {
 			return e
@@ -64,7 +68,7 @@ func (s *SourceSyncStore) InsertChildAddresses(ctx context.Context, chain uint64
 			slots = append(slots, fmt.Sprintf("($%d,$%d,$%d,$%d)", n+1, n+2, n+3, n+4))
 			args = append(args, r.factory, chain, r.block, r.address)
 		}
-		if e := s.cache.transaction(ctx, func(tx Transaction) error {
+		if e := s.transaction(ctx, func(tx Transaction) error {
 			return tx.Exec(ctx, "INSERT INTO "+s.cache.table("factory_addresses")+" AS factory_addresses(factory_id,chain_id,block_number,address) VALUES"+strings.Join(slots, ",")+" ON CONFLICT(factory_id,address) DO UPDATE SET block_number=excluded.block_number WHERE excluded.block_number < factory_addresses.block_number", args...)
 		}); e != nil {
 			return e
@@ -88,6 +92,9 @@ func (m *SourceAddressMap) Get(address string) (uint64, bool) {
 	return m.Entries[i].BlockNumber, true
 }
 func (s *SourceSyncStore) GetChildAddresses(ctx context.Context, factory filter.Object) (*SourceAddressMap, error) {
+	if err := s.scopeActive(ctx); err != nil {
+		return nil, err
+	}
 	ids := filter.FactoryFragmentIDs(factory)
 	out := &SourceAddressMap{Entries: []SourceChildAddress{}, indices: map[string]int{}}
 	if len(ids) == 0 {
@@ -99,7 +106,7 @@ func (s *SourceSyncStore) GetChildAddresses(ctx context.Context, factory filter.
 		args = append(args, id)
 		slots = append(slots, "$"+strconv.Itoa(len(args)))
 	}
-	e := s.cache.transaction(ctx, func(tx Transaction) error {
+	e := s.transaction(ctx, func(tx Transaction) error {
 		rows, e := tx.Query(ctx, "SELECT a.address,a.block_number::text AS block_number FROM "+s.cache.table("factory_addresses")+" a INNER JOIN "+s.cache.table("factories")+" f ON a.factory_id=f.id WHERE f.fragment_id IN ("+strings.Join(slots, ",")+")", args...)
 		if e != nil {
 			return e

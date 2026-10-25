@@ -1,0 +1,39 @@
+{
+  "source_credit": 0,
+  "source": {
+    "file": "../ponder-upstream/packages/core/src/database/queryBuilder.ts",
+    "sha256": "123b86a63eeb26fcbfbbc4b196711550c57bb85642d9d33868bfaff01542f2c6"
+  },
+  "source_lines": [
+    465,
+    500
+  ],
+  "postgres_transaction": "real Drizzle SQL transaction; recorded QB resolution occurs after its commit",
+  "pglite_transaction": "pinned queryBuilder.transaction invokes callback(db) with retries and does not begin an SQL transaction",
+  "event_label_correction": "The historical order.json event named transaction_committed records the QB transaction Promise resolving. It is not a claim of an SQL COMMIT for PGlite.",
+  "provenance": [
+    {
+      "backend": "postgres",
+      "result": {
+        "file": "parity/runs/runtime-historical-m36/order-postgres-01/result.json",
+        "sha256": "a12bc1fbab3d51fccb52f9e49f8443ba7904b8b214e1877134a1e065f5bc198b"
+      },
+      "timeline": {
+        "file": "parity/runs/runtime-historical-m36/order-postgres-01/order.json",
+        "sha256": "1dbd03e61f698d49a186ae4b388352f61db3781e64826e8290c7239099e10fc9"
+      }
+    },
+    {
+      "backend": "pglite",
+      "result": {
+        "file": "parity/runs/runtime-historical-m36/order-pglite-01/result.json",
+        "sha256": "cc58cabe5d32d8feb72b0d36e3b38b29b9b0cd640adc828593470830c7f713e1"
+      },
+      "timeline": {
+        "file": "parity/runs/runtime-historical-m36/order-pglite-01/order.json",
+        "sha256": "33d692bf2f6450e6983878d1fc33b1bc107f1ab6fc447363cbc9be8bb271a455"
+      }
+    }
+  ],
+  "finding": "On both actual backends the second range fetch completes before prior QB completion, then second block-data phase starts after prior QB completion. No rollback behavior was tested by this probe."
+}

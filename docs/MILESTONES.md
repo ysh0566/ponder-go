@@ -166,3 +166,10 @@ RawBatch持久化业务+MAX journal；CommitBlock按表且isolated按链赋check
 新增 runtime/index 11 条完整映射/24 断言，累计 497/905 = 493 Go + 4 SDK；408 未实现。原文件全部 15 例/30 断言在两个原版后端及 Go normal/race 四种组合通过，但 4 例含 6 个 Map 推断指令仍无闭合原生类型证明，保持未映射。AsyncRequester 同步 FIFO admission、缓存/稀疏区间、事件归并和对象身份补充检查不增加 source credit。完整历史/多链调度不在本批完成范围。
 
 Anvil loopback 与客户端 Node 预编译为启动层适配，不是 pristine 原版运行。旧失败/中断、编译器 PATH 修复、映射 hash 序列化修复及历史采集 harness sidecar 的严格反例保留。历史 capture 只接受固定 M34 commit/blob 的原始字节；本轮原版双后端及当前原生输入证据仍分别验证。绝对 root 与编译二进制 hash 带来的异机复验限制见 CONTINUATION/SOURCE_RUNTIME_INDEX。旧 batch-33 不覆盖；本地完成不等于已发布或项目全量完成。
+
+
+## M36：本地历史生成器与事务绑定（本地验收通过，待发布复核）
+
+完整 `runtime-historical-m36/full-verify-01` 28 阶段退出 0；normal/race 各 2863 节点 / 2634 叶用例、0 测试失败/跳过，PG386/PGlite383；22包187函数61批，1084文件指纹 `30751da01517a8e7aa5f23d84a517de18da4807ac9722f72b8d6aa3426995dcf` 全程一致。新7规范证明重建，当前映射原版 oracle 508/508。
+
+新增首11个 historical 原例/24断言/14调用/24RPC，累计508/905（504Go+4SDK），397未实现。完整14原例两后端通过；后3调度原例仍无native映射，单链的“omnichain”标题不证明多链。真实RPC预取、按序原子提交、缓存零RPC、分页checkpoint、恢复重取与共享身份均对照。事务独立批提交保持；补充失败/取消/overlay红→绿零额外credit。PGlite原版无真实QB事务，native更强原子性和取消join是明确扩展；全量metrics/logger、多链及其余原例继续。证据新batch-35，旧batch-34保留；详见SOURCE_RUNTIME_HISTORICAL.md。

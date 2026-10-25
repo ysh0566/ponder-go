@@ -4,7 +4,18 @@
 
 
 
-## 当前执行入口：M35 本地验收通过，待普通提交发布，完整目标继续
+## 当前执行入口：M36 本地完整验收通过，待父级复核与普通发布
+
+`runtime-historical-m36/full-verify-01` 于 2026-10-25 08:57 UTC 完整退出 0，28 阶段全部通过。normal/race 各 2863 测试节点、2634 叶用例，测试 0 失败/跳过；22 包、187 顶层函数、61 个不重叠批次，默认 timeout 保留。PG 各 386、PGlite 各 383。准备/结束/汇总时 1084 文件指纹一致：`30751da01517a8e7aa5f23d84a517de18da4807ac9722f72b8d6aa3426995dcf`。全部 7 个规范 collector 已以本轮真实目录重新接受；原版 core、编译控制、client 与 React 均通过。
+
+新增 historical 本地生成器 11 条原例、24 断言、14 次调用、24 原始 RPC；两种真实后端及 normal/race 比较原输入、消费者步骤/结果、身份和九张物理表。完整原文件 14 条在双后端通过，后 3 条仍未映射；名为 omnichain 的单链测试不是真正多链证明。正式覆盖 508/905 = 504 Go + 4 SDK，397 未实现。M35 的 4 条未闭合类型义务仍未映射。
+
+新增事务绑定 SourceSyncStore，保留独立调用按批提交；范围 RPC 预取与块/child/interval 原子有序提交衔接。补充 22 控制 normal/race 通过；3 个隔离 Go overlay 在双后端分别证明顺序调度、吞错和非事务残留会失败，移除 overlay 后 6 项变绿。初次 bigint checkpoint 与取消队列失败均保留。原版 PGlite QB callback 不是 SQL 事务；native 的更强原子性、取消/错误 join 是安全扩展，不能宣称源失败行为等价。共享 Progress/maps 在整个 iterator 生命周期（含 yields 之间）由 iterator 独占。完整 logger/metrics、剩余多链调度和其他原例继续。
+
+当前已发布父基线 M35 `33761c84666733890c7176c75fe3756ded40998f`。本轮尚未提交/推送；仅允许父级复核后普通后继发布，不改历史、不 force、不重登/新凭据、不接业务数据库。新冻结使用 batch-35，不覆盖 batch-34。源与工具已冻结；同一云目录，PG 仅 loopback 55432，必须用同一 exec 的 `bash /workspace/scratch/fac5abfa4c9e/ponder-cloud/with-postgres.sh`；先 source env.sh，并显式将当前 sibling upstream/node_modules/.bin 加入 PATH（tsc 5.4.5）。磁盘硬门槛 5 GiB。具体边界见 `SOURCE_RUNTIME_HISTORICAL.md`。
+
+## M35 历史已验证基线（已普通发布）
+
 
 完整 `runtime-index-m35/full-verify-04` 于 2026-10-25 07:47:30 UTC 退出 0，22 个阶段全部通过。普通/race 各 2783 个测试节点，按汇总口径各 2565 个叶用例；22 包、183 个顶层函数、每模式 60 个不重叠批次，0 失败/跳过。PostgreSQL 各 358 叶用例，PGlite 各 355。1078 文件输入指纹 `23d113072444ffa0e81955676d47430adef5097b5e1441bf63dcb70dbf2cfdea` 在准备后、两模式结束及汇总时完全相同。React 类型 1/1、client 3/3、core 201（保留 2 个原有 pending）均通过。
 
