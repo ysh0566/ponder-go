@@ -17,7 +17,10 @@ import (
 // ContractCall describes a read-only ABI function call. FunctionName accepts a
 // name or selector; canonical signatures are also accepted as a Go convenience.
 type ContractCall struct {
-	ABI          ponderabi.ABI
+	ABI ponderabi.ABI
+	// ABIValue optionally retains opaque source ABI metadata (including internalType).
+	// Execution always uses ABI; profiling retains this original input by identity.
+	ABIValue     any
 	Address      string
 	FunctionName string
 	Args         []any

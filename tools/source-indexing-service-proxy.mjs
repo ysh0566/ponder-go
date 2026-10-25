@@ -9,7 +9,7 @@ const arg=name=>process.argv.find(a=>a.startsWith('--'+name+'='))?.slice(name.le
 const destination=arg('output');
 if(!destination)throw Error('Explicit new output required');
 const output=path.resolve(root,destination);
-if(!['indexing-service-m38','indexing-actions-m39'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json'))throw Error('New indexing-service evidence directory required');
+if(!['indexing-service-m38','indexing-actions-m39','indexing-profile-m40'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json'))throw Error('New indexing-service evidence directory required');
 fs.mkdirSync(output,{recursive:true});
 const report={complete:false,success:false,source_credit:0,probe:'source-event-proxy',pristine_file:false,environment_adapted:true,execution:'zero-credit direct actual createEventProxy reflection probe; globalSetup omitted, no DB or RPC required',started_utc:new Date().toISOString()};
 const save=()=>fs.writeFileSync(output+'/result.json',JSON.stringify(report,null,2)+'\n');save();

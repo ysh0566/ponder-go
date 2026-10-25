@@ -4,6 +4,20 @@
 
 
 
+## 当前执行入口：M40 RPC profiling/prefetch 完整验收通过，待父级发布复核
+
+已发布基线 M39 `8475c1236dade775b902031fcc8b8856c31ee623`。M40 `indexing-profile-m40/full-verify-01` 于 2026-10-25 15:13:03.642 UTC 完整退出0；62阶段与11个显式输出 canonical collectors全部通过。正式覆盖543/905（539 Go+4 SDK），362未实现；旧531映射不变，新增profile10原例/21断言和client prefetch2原例/9断言，零TS指令。其他12个client原例以及旧7项类型缺口保持unmapped。
+
+完整源24例双后端通过；native原例双后端normal/race严格重放实际输入/RPC tape/缓存行。21个profile边界向量和21个受控client因果场景、真实Service上下文/存储生命周期补充验证均零credit。normal/race各3286节点/2994叶例、0测试fail/skip；23包、257顶层函数、每模式79串行批次。1139输入指纹 `10119df4147f45fbddb57e60ee75925bef14899a6f21468f3ab5831d166f8d00` 与94工具hash全程不变。
+
+真正独立RPC profile、constant LRU10、严格预测阈值、源跨链dedupe怪异行为、异步prefetch与clear语义已实现。可选AsyncCacheReader在既有standalone adapter同步prepared-read admission；独立链等待、DB首错fail-fast但拥有未完兄弟任务、pending multicall后块进展与失败聚合不提前写缓存均经实际源/native因果控制。同步fallback、批量SQL/写入grouping、并发read visibility/commit-order、backend锁/IO取消与完整Viem包装/customerror限制保留；不是完整cachedViemClient/raw transport或外层runner完成。详见 `SOURCE_INDEXING_PROFILE.md`。
+
+source01/02/04及race-focused03等失败/过期证据完整保留，source05和完整full01为当前成功来源；新增归档Go文本使用.go.txt，不成为go ./...包。新batch39，旧batch38逐路径逐字节保持不变。尚未提交/推送；父级复核后普通后继发布。
+
+用户已批准未来独立sync存储ownership架构且要求功能正确；M40不改变拓扑。旧13029 schema备份/清理仍未授权，不能据此删库。沿用env.sh、pinned tsc5.4.5、同exec PG55432、5GiB硬停；只可清理已完成的可重建build缓存，保留源码/证据/依赖/PG数据/auth。
+
+以下 M39 及更早待发布段落是历史记录，不代表当前状态。
+
 ## 当前执行入口：M39 客户端子集完整验收通过，待父级发布复核
 
 已发布基线为 M38 `3809b5a510a3d01a82119f06b6fe6435ab545a9d`。M39 full-verify-02 于 2026-10-25 13:39:39 UTC 完整退出 0，54 阶段全绿；10 个规范 collector 均显式输出并接受当前证明。正式覆盖 531/905 = 527 Go + 4 SDK，374 未实现；原 523 条映射逐字不变，恰好新增最后 8 个 indexing/index.test.ts 客户端原例、9 断言、0 TS 指令。三项 M38 TS-only mock-property/delete 与四项 M35 runtime 类型缺口仍 unmapped。

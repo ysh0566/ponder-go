@@ -12,7 +12,7 @@ import (
 
 // AsyncSourceRPCRequestCache is an opt-in, standalone source-cache adapter.
 // Unlike Writer.SourceRPCRequestCache and callback-bound RPCRequestCache, it
-// owns asynchronous writes to independent protocol-cache transactions. The
+// owns asynchronous reads and writes in independent protocol-cache transactions. The
 // caller must drain or Close it before releasing the backend. Copying this
 // handle preserves the queue identity; all mutable state lives behind pointers.
 //
@@ -22,6 +22,7 @@ import (
 type AsyncSourceRPCRequestCache struct {
 	base  *SourceRPCRequestCache
 	state *sourceRPCWriteQueue
+	reads *sourceRPCReadQueue
 }
 
 type sourceRPCWriteQueue struct {
@@ -53,11 +54,12 @@ func (c *ProtocolCache) AsyncSourceRPCRequestCache(chain uint64) *AsyncSourceRPC
 	return &AsyncSourceRPCRequestCache{
 		base:  c.SourceRPCRequestCache(chain),
 		state: &sourceRPCWriteQueue{pending: make(map[*sourceRPCWrite]struct{}), drained: done},
+		reads: newSourceRPCReadQueue(),
 	}
 }
 
 func (c *AsyncSourceRPCRequestCache) active() error {
-	if c == nil || c.base == nil || c.state == nil {
+	if c == nil || c.base == nil || c.state == nil || c.reads == nil {
 		return fmt.Errorf("async source RPC cache is not attached")
 	}
 	c.state.mu.Lock()
@@ -177,8 +179,8 @@ func (c *AsyncSourceRPCRequestCache) WaitCacheWrites(ctx context.Context) error 
 	}
 }
 
-// Close seals admission, cancels pending writes, and waits for owned completion.
-// If ctx expires, ownership is retained and a later Close/WaitCacheWrites can
+// Close seals admission, cancels pending reads/writes, and waits for owned completion.
+// If ctx expires, ownership is retained and a later Close/WaitCacheReads/WaitCacheWrites can
 // join it. Backend operations already executing retain backend cancellation
 // semantics: neither an in-flight PGlite round trip nor Backend.Begin waiting
 // on a different Store's transaction on the same PGlite backend is forcibly
@@ -191,10 +193,20 @@ func (c *AsyncSourceRPCRequestCache) Close(ctx context.Context) error {
 		job.cancel()
 	}
 	q.mu.Unlock()
+	reads := c.reads
+	reads.mu.Lock()
+	reads.closed = true
+	for job := range reads.pending {
+		job.cancel()
+	}
+	reads.mu.Unlock()
+	if err := c.WaitCacheReads(ctx); err != nil {
+		return err
+	}
 	return c.WaitCacheWrites(ctx)
 }
 
-// Only queued standalone writes use cancellable Store-lock acquisition. In
+// Queued standalone reads/writes use cancellable Store-lock acquisition. In
 // particular, Close may be called while the same Store's callback owns s.mu;
 // cancellation must not require that callback to return first. This does not
 // alter the locking/commit behavior of existing synchronous cache operations.

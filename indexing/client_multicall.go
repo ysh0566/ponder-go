@@ -55,10 +55,13 @@ type multicallWireResult struct {
 // Multicall uses real aggregate3 RPC requests, with persistent per-child cache
 // lookup and miss-only batching. Duplicates retain their original positions.
 // It requires an explicit deployment address; chain deployment discovery,
-// account/state overrides and the source's prefetch/LRU are not implemented.
+// and account/state overrides are not implemented.
 func (c *Client) Multicall(ctx context.Context, contracts []ContractCall, options MulticallOptions) ([]any, error) {
 	if options.MulticallAddress == "" {
 		return nil, fmt.Errorf("multicallAddress is required")
+	}
+	if err := c.recordContracts(contracts, options.BlockOptions, true); err != nil {
+		return nil, err
 	}
 	allowFailure := options.AllowFailure == nil || *options.AllowFailure
 	batchSize := 1024
@@ -94,7 +97,14 @@ func (c *Client) Multicall(ctx context.Context, contracts []ContractCall, option
 	if len(chunk) > 0 {
 		chunks = append(chunks, chunk)
 	}
+	firstAttempt := true
 	return retryEmpty(ctx, options.RetryEmptyResponse, func() ([]any, error) {
+		if !firstAttempt {
+			if err := c.recordContracts(contracts, options.BlockOptions, true); err != nil {
+				return nil, err
+			}
+		}
+		firstAttempt = false
 		tag, err := c.blockTag(ctx, []BlockOptions{options.BlockOptions})
 		if err != nil {
 			return nil, err
@@ -157,79 +167,141 @@ func (c *Client) beginMulticallChunk(ctx context.Context, items []multicallItem,
 	fail := func(err error) func() ([]multicallWireResult, error) {
 		return func() ([]multicallWireResult, error) { return nil, err }
 	}
+	type childWrite struct {
+		params     []any
+		raw        json.RawMessage
+		prefetched bool
+	}
+	writes := []childWrite{}
+	flush := func() {
+		for _, write := range writes {
+			if write.prefetched {
+				// Source's serialized-future sentinel comparison, not the ordinary
+				// raw-result exclusion. Admission follows successful whole chunk.
+				if c.cacheEnabled && c.cache != nil && string(write.raw) != "0x" {
+					if key, err := c.cacheKey("eth_call", write.params); err == nil {
+						c.set.putAsync(ctx, c.cache, key, write.raw)
+					}
+				}
+			} else {
+				c.cacheResponse(ctx, "eth_call", write.params, write.raw)
+			}
+		}
+	}
 	results := make([]multicallWireResult, len(items))
 	misses := []int{}
 	calls := []any{}
 	params := make([][]any, len(items))
-	for i, item := range items {
-		params[i] = []any{Object{"to": item.contract.Address, "data": item.data}, tag}
-		raw, hit, err := c.cached(ctx, "eth_call", params[i])
-		if err != nil {
-			return fail(err)
-		}
-		if hit {
-			data, err := decodeHexResponse(raw)
+	var advance func(int, *prefetchValue) func() ([]multicallWireResult, error)
+	advance = func(start int, retained *prefetchValue) func() ([]multicallWireResult, error) {
+		for i := start; i < len(items); i++ {
+			item := items[i]
+			params[i] = []any{Object{"to": item.contract.Address, "data": item.data}, tag}
+			key, err := c.cacheKey("eth_call", params[i])
 			if err != nil {
 				return fail(err)
 			}
-			results[i] = multicallWireResult{true, data}
-			continue
+			var prefetched *prefetchValue
+			if i == start && retained != nil {
+				prefetched = retained
+			} else {
+				c.set.mu.RLock()
+				prefetched = c.prefetched[key]
+				c.set.mu.RUnlock()
+			}
+			if prefetched != nil && prefetched.future {
+				select {
+				case <-prefetched.done:
+				default:
+					// Suspend only this chunk. Retain the actual future already read,
+					// even if Clear removes its map entry while this action is waiting.
+					index, value := i, prefetched
+					return func() ([]multicallWireResult, error) {
+						select {
+						case <-value.done:
+						case <-ctx.Done():
+							return nil, ctx.Err()
+						}
+						return advance(index, value)()
+					}
+				}
+			}
+			raw, hit, err := c.prefetchedValueResult(ctx, key, prefetched, true)
+			if err == nil && hit && prefetched != nil && prefetched.future {
+				writes = append(writes, childWrite{params[i], raw, true})
+			}
+			if err == nil && !hit {
+				raw, hit, err = c.cached(ctx, "eth_call", params[i])
+			}
+			if err != nil {
+				return fail(err)
+			}
+			if hit {
+				data, err := decodeHexResponse(raw)
+				if err != nil {
+					return fail(err)
+				}
+				results[i] = multicallWireResult{true, data}
+				continue
+			}
+			misses = append(misses, i)
+			calls = append(calls, Object{"target": item.contract.Address, "allowFailure": true, "callData": item.data})
 		}
-		misses = append(misses, i)
-		calls = append(calls, Object{"target": item.contract.Address, "allowFailure": true, "callData": item.data})
-	}
-	if len(misses) == 0 {
-		return func() ([]multicallWireResult, error) { return results, nil }
-	}
-	data, selected, err := encodeContractCall(ContractCall{ABI: aggregate3ABI, Address: address, FunctionName: "aggregate3", Args: []any{calls}})
-	if err != nil {
-		return fail(err)
-	}
-	var raw json.RawMessage
-	callParams := []any{Object{"to": address, "data": data}, tag}
-	var completion <-chan error
-	if requester, ok := c.requester.(rpc.AsyncRequester); ok {
-		completion = requester.BeginCall(ctx, "eth_call", callParams, &raw)
-	} else {
-		future := make(chan error, 1)
-		completion = future
-		go func() { future <- c.requester.Call(ctx, "eth_call", callParams, &raw); close(future) }()
-	}
-	return func() ([]multicallWireResult, error) {
-		if err := <-completion; err != nil {
-			return nil, err
+		if len(misses) == 0 {
+			return func() ([]multicallWireResult, error) { flush(); return results, nil }
 		}
-		hex, err := decodeHexResponse(raw)
+		data, selected, err := encodeContractCall(ContractCall{ABI: aggregate3ABI, Address: address, FunctionName: "aggregate3", Args: []any{calls}})
 		if err != nil {
-			return nil, err
+			return fail(err)
 		}
-		decoded, err := decodeContractResult(selected, hex)
-		if err != nil {
-			return nil, err
+		var raw json.RawMessage
+		callParams := []any{Object{"to": address, "data": data}, tag}
+		var completion <-chan error
+		if requester, ok := c.requester.(rpc.AsyncRequester); ok {
+			completion = requester.BeginCall(ctx, "eth_call", callParams, &raw)
+		} else {
+			future := make(chan error, 1)
+			completion = future
+			go func() { future <- c.requester.Call(ctx, "eth_call", callParams, &raw); close(future) }()
 		}
-		rows, ok := decoded.([]any)
-		if !ok || len(rows) != len(misses) {
-			return nil, fmt.Errorf("multicall results mismatch")
+		return func() ([]multicallWireResult, error) {
+			if err := <-completion; err != nil {
+				return nil, err
+			}
+			hex, err := decodeHexResponse(raw)
+			if err != nil {
+				return nil, err
+			}
+			decoded, err := decodeContractResult(selected, hex)
+			if err != nil {
+				return nil, err
+			}
+			rows, ok := decoded.([]any)
+			if !ok || len(rows) != len(misses) {
+				return nil, fmt.Errorf("multicall results mismatch")
+			}
+			for j, index := range misses {
+				row, ok := rows[j].(map[string]any)
+				if !ok {
+					return nil, fmt.Errorf("invalid aggregate3 result tuple")
+				}
+				success, ok := row["success"].(bool)
+				if !ok {
+					return nil, fmt.Errorf("invalid aggregate3 success")
+				}
+				value, ok := row["returnData"].(string)
+				if !ok {
+					return nil, fmt.Errorf("invalid aggregate3 returnData")
+				}
+				results[index] = multicallWireResult{success, value}
+				if success {
+					encoded, _ := json.Marshal(value)
+					writes = append(writes, childWrite{params[index], encoded, false})
+				}
+			}
+			flush()
+			return results, nil
 		}
-		for j, index := range misses {
-			row, ok := rows[j].(map[string]any)
-			if !ok {
-				return nil, fmt.Errorf("invalid aggregate3 result tuple")
-			}
-			success, ok := row["success"].(bool)
-			if !ok {
-				return nil, fmt.Errorf("invalid aggregate3 success")
-			}
-			value, ok := row["returnData"].(string)
-			if !ok {
-				return nil, fmt.Errorf("invalid aggregate3 returnData")
-			}
-			results[index] = multicallWireResult{success, value}
-			if success {
-				encoded, _ := json.Marshal(value)
-				c.cacheResponse(ctx, "eth_call", params[index], encoded)
-			}
-		}
-		return results, nil
 	}
+	return advance(0, nil)
 }

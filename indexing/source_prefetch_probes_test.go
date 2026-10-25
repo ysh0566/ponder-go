@@ -1,0 +1,685 @@
+package indexing
+
+import (
+	"bytes"
+	"compress/gzip"
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	"ponder.local/ponder-go/filter"
+	"ponder.local/ponder-go/rpc"
+)
+
+type prefetchProbeBoundary struct {
+	t          *testing.T
+	mu         sync.Mutex
+	mode       string
+	expected   []Object
+	consumed   int
+	calls      []Object
+	gates      []func()
+	pending    int
+	cache      map[string]json.RawMessage
+	cacheCalls []Object
+	violation  error
+	rawErrors  []string
+	dbMode     string
+	dbGates    []func()
+	pendingDB  int
+	changed    chan struct{}
+}
+type prefetchProbeRPC struct {
+	b     *prefetchProbeBoundary
+	chain any
+}
+
+func (r *prefetchProbeRPC) Call(ctx context.Context, method string, params, out any) error {
+	return <-r.BeginCall(ctx, method, params, out)
+}
+func (r *prefetchProbeRPC) BeginCall(ctx context.Context, method string, params, out any) <-chan error {
+	b := r.b
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	done := make(chan error, 1)
+	actual := Object{"chainId": r.chain, "request": Object{"method": method, "params": params}}
+	if b.consumed >= len(b.expected) {
+		b.violation = fmt.Errorf("unexpected source-boundary RPC: %v", actual)
+		done <- b.violation
+		close(done)
+		return done
+	}
+	expected := b.expected[b.consumed]
+	b.consumed++
+	want, _ := json.Marshal(Object{"chainId": expected["chainId"], "request": expected["request"]})
+	got, _ := json.Marshal(indexingCanonical(actual))
+	if !bytes.Equal(got, want) {
+		b.violation = fmt.Errorf("strict RPC mismatch got %s want %s", got, want)
+		done <- b.violation
+		close(done)
+		return done
+	}
+	b.calls = append(b.calls, actual)
+	finish := func() {
+		var err error
+		if e, ok := expected["error"].(map[string]any); ok {
+			message := indexingObject(e["$error"])["message"].(string)
+			b.rawErrors = append(b.rawErrors, message)
+			err = errors.New(message)
+		} else {
+			raw, e := json.Marshal(expected["response"])
+			if e != nil {
+				err = e
+			} else {
+				err = json.Unmarshal(raw, out)
+			}
+		}
+		done <- err
+		close(done)
+	}
+	if b.mode == "held" || b.mode == "reject-held" {
+		b.pending++
+		b.gates = append(b.gates, func() { finish(); b.pending-- })
+	} else {
+		finish()
+	}
+	b.signalLocked()
+	return done
+}
+func (b *prefetchProbeBoundary) signalLocked() {
+	if b.changed != nil {
+		close(b.changed)
+		b.changed = make(chan struct{})
+	}
+}
+func (b *prefetchProbeBoundary) CacheGet(ctx context.Context, key string) (json.RawMessage, bool, error) {
+	select {
+	case result := <-b.BeginCacheGet(ctx, key):
+		return result.Value, result.Hit, result.Err
+	case <-ctx.Done():
+		return nil, false, ctx.Err()
+	}
+}
+func (b *prefetchProbeBoundary) BeginCacheGet(ctx context.Context, key string) <-chan rpc.CacheLookupResult {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	done := make(chan rpc.CacheLookupResult, 1)
+	var envelope []any
+	if err := json.Unmarshal([]byte(key), &envelope); err != nil {
+		b.violation = err
+		done <- rpc.CacheLookupResult{Err: err}
+		close(done)
+		return done
+	}
+	chain := envelope[0].(float64)
+	entry := Object{"operation": "get", "key": key, "result": filter.Undefined}
+	b.cacheCalls = append(b.cacheCalls, entry)
+	mode := b.dbMode
+	finish := func() {
+		if mode == "hold-first-fail-second" && chain == 2 {
+			message := "causal database rejection"
+			entry["error"] = message
+			delete(entry, "result")
+			b.rawErrors = append(b.rawErrors, message)
+			done <- rpc.CacheLookupResult{Err: errors.New(message)}
+		} else {
+			v, hit := b.cache[key]
+			if hit {
+				entry["result"] = string(v)
+			}
+			done <- rpc.CacheLookupResult{Value: append(json.RawMessage(nil), v...), Hit: hit}
+		}
+		close(done)
+		b.signalLocked()
+	}
+	if strings.HasPrefix(mode, "hold-first") && chain == 1 {
+		b.pendingDB++
+		var once sync.Once
+		release := func() { once.Do(func() { b.pendingDB--; finish() }) }
+		b.dbGates = append(b.dbGates, release)
+		context.AfterFunc(ctx, func() {
+			b.mu.Lock()
+			defer b.mu.Unlock()
+			once.Do(func() { b.pendingDB--; done <- rpc.CacheLookupResult{Err: ctx.Err()}; close(done); b.signalLocked() })
+		})
+	} else {
+		finish()
+	}
+	b.signalLocked()
+	return done
+}
+func (b *prefetchProbeBoundary) CachePut(ctx context.Context, key string, v json.RawMessage) error {
+	return <-b.BeginCachePut(ctx, key, v)
+}
+func (b *prefetchProbeBoundary) BeginCachePut(_ context.Context, key string, v json.RawMessage) <-chan error {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.cache[key] = append(json.RawMessage(nil), v...)
+	b.cacheCalls = append(b.cacheCalls, Object{"operation": "put", "key": key, "result": string(v)})
+	b.signalLocked()
+	done := make(chan error, 1)
+	done <- nil
+	close(done)
+	return done
+}
+
+func TestSourceIndexingPrefetchProbes(t *testing.T) {
+	raw, err := os.ReadFile("../testdata/indexing/source-indexing-profile-probes.json.gz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	z, err := gzip.NewReader(bytes.NewReader(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := io.ReadAll(z)
+	z.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture struct {
+		BackendCases map[string][]Object `json:"backend_cases"`
+	}
+	if err = json.Unmarshal(data, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	observations := []Object{}
+	for _, backend := range []string{"postgres", "pglite"} {
+		t.Run(backend, func(t *testing.T) {
+			var scenarios []Object
+			for _, c := range fixture.BackendCases[backend] {
+				if c["name"] == "client-boundaries" {
+					scenarios = indexingObjects(c["scenarios"])
+				}
+			}
+			if len(scenarios) != 21 {
+				t.Fatal("complete source scenarios required", len(scenarios))
+			}
+			reports := []Object{}
+			for _, scenario := range scenarios {
+				t.Run(scenario["name"].(string), func(t *testing.T) { reports = append(reports, replayPrefetchProbe(t, scenario)) })
+			}
+			input := Object{"scenarios": reports, "real_database": false, "real_rpc": false, "comparison": "strict RPC values/cache entries/result/error causes and causal pending admissions; batched empty DB-call grouping and Viem wrapper text excluded"}
+			data, err := json.Marshal(indexingCanonical(input))
+			if err != nil {
+				t.Fatal(err)
+			}
+			sum := sha256.Sum256(data)
+			observations = append(observations, Object{"id": "client-boundaries", "pass": !t.Failed(), "backend": backend, "go_test": "TestSourceIndexingPrefetchProbes/" + backend, "count": len(scenarios), "digest_input": indexingCanonical(input), "observation_sha256": hex.EncodeToString(sum[:])})
+		})
+	}
+	if !t.Failed() {
+		appendSourceProfileArtifact(t, "PONDER_INDEXING_PROFILE_PROBES_NATIVE_OUTPUT", raw, observations)
+	}
+
+}
+func replayPrefetchProbe(t *testing.T, record Object) Object {
+	if record["causal"] == true {
+		return replayCausalPrefetchProbe(t, record)
+	}
+	ctx := context.Background()
+	chains := indexingObjects(indexingUnmark(t, record["chains"]))
+	b := &prefetchProbeBoundary{t: t, mode: "normal", cache: map[string]json.RawMessage{}}
+	requesters := []rpc.Requester{}
+	caches := []rpc.Cache{}
+	for _, c := range chains {
+		requesters = append(requesters, &prefetchProbeRPC{b: b, chain: c["id"]})
+		caches = append(caches, b)
+	}
+	clients, err := NewStrictClientSet(chains, requesters, caches...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer clients.Close(ctx)
+	counts := map[string]uint64{}
+	for name, value := range indexingObject(record["initial_event_count"]) {
+		counts[name] = uint64(value.(float64))
+	}
+	clients.SetEventCounts(counts)
+	// Same fixed initial event as the source driver; ordinary operations replace it
+	// from captured INPUTS, never from recovered patterns or expected cache rows.
+	initial := indexingObject(indexingUnmark(t, record["initial_event"]))
+	current := initial
+	clients.SetEvent(current)
+	clients.SetProfileFieldOrder(map[string][]string{"args": {"target", "value"}, "result": {"answer"}})
+	reports := []Object{}
+	operations := indexingObjects(record["operations"])
+	for i, op := range operations {
+		name := op["operation"].(string)
+		args := indexingUnmark(t, op["args"])
+		b.mu.Lock()
+		b.expected = indexingObjects(op["rpc"])
+		b.consumed = 0
+		b.calls = nil
+		b.cacheCalls = nil
+		b.mu.Unlock()
+		var value any = filter.Undefined
+		var callErr error
+		switch name {
+		case "event":
+			current = indexingObject(args)
+			clients.SetEvent(current)
+		case "count":
+			clients.SetEventCounts(map[string]uint64{"sample": uint64(args.(float64))})
+		case "mode":
+			b.mu.Lock()
+			b.mode = args.(string)
+			b.mu.Unlock()
+		case "clear":
+			clients.Clear()
+		case "release":
+			b.mu.Lock()
+			for _, gate := range b.gates {
+				gate()
+			}
+			b.gates = nil
+			b.mu.Unlock()
+			callErr = clients.WaitPrefetch(ctx)
+		case "prefetch":
+			callErr = clients.Prefetch(ctx, indexingObjects(args))
+		case "readContract", "multicall":
+			c, e := clients.GetClient(indexingObject(current["chain"]))
+			if e != nil {
+				t.Fatal(e)
+			}
+			input := indexingObject(args)
+			if name == "readContract" {
+				opt := BlockOptions{}
+				if n, ok := input["blockNumber"]; ok {
+					opt.BlockNumber, e = clientInteger(n)
+					if e != nil {
+						t.Fatal(e)
+					}
+				}
+				opt.Cache, _ = input["cache"].(string)
+				retry := false
+				value, callErr = c.ReadContract(ctx, probeContract(t, input), ReadContractOptions{BlockOptions: opt, RetryEmptyResponse: &retry})
+			} else {
+				value, callErr = probeInvoke(t, ctx, c, name, input)
+			}
+		default:
+			t.Fatal("unknown operation", name)
+		}
+		b.mu.Lock()
+		pending := b.pending
+		b.mu.Unlock()
+		if pending == 0 {
+			if e := clients.WaitPrefetch(ctx); e != nil {
+				t.Fatal(e)
+			}
+		}
+		if e := clients.WaitCacheWrites(ctx); e != nil {
+			t.Fatal(e)
+		}
+		var errorCause any
+		if op["error"] != nil {
+			errorCause = prefetchActualError(t, callErr, op, b)
+		} else {
+			if callErr != nil {
+				t.Fatalf("step%d %s: %v", i, name, callErr)
+			}
+			indexingEqual(t, fmt.Sprintf("step%d result", i), indexingCanonical(value), op["result"])
+		}
+
+		b.mu.Lock()
+		violation := b.violation
+		consumed := b.consumed
+		calls := append([]Object{}, b.calls...)
+		cacheCalls := append([]Object{}, b.cacheCalls...)
+		b.mu.Unlock()
+		if violation != nil {
+			t.Fatal(violation)
+		}
+		if consumed != len(indexingObjects(op["rpc"])) {
+			t.Fatalf("step%d source RPC not consumed %d", i, consumed)
+		}
+		if pending != int(op["pending_rpc"].(float64)) {
+			t.Fatalf("step%d pending got%d want%v", i, pending, op["pending_rpc"])
+		}
+		expectedCache := prefetchExpectedCache(t, op)
+		indexingEqual(t, fmt.Sprintf("step%d flattened cache calls", i), indexingCanonical(cacheCalls), indexingCanonical(expectedCache))
+		digestInput := Object{"operation": name, "rpc": calls, "cache": cacheCalls, "pending_rpc": pending, "error_cause": errorCause, "result": indexingCanonical(value)}
+		data, e := json.Marshal(indexingCanonical(digestInput))
+		if e != nil {
+			t.Fatal(e)
+		}
+		sum := sha256.Sum256(data)
+		reports = append(reports, Object{"index": i, "operation": name, "digest_input": indexingCanonical(digestInput), "observation_sha256": hex.EncodeToString(sum[:])})
+	}
+	return Object{"name": record["name"], "operations": len(operations), "steps": reports}
+}
+func prefetchExpectedCache(t *testing.T, op Object) []Object {
+	out := []Object{}
+	for _, entry := range indexingObjects(op["store"]) {
+		args := indexingObject(entry["args"])
+
+		requests := indexingObjects(args["requests"])
+		for i, r := range requests {
+			operation := "get"
+			req := r
+			var result any = filter.Undefined
+			if entry["operation"] == "insertRpcRequestResults" {
+				operation = "put"
+				req = indexingObject(r["request"])
+				result = r["result"]
+			} else {
+				if entry["error"] == nil {
+					values := entry["result"].([]any)
+					result = indexingUnmark(t, values[i])
+				}
+			}
+			key, e := independentPrefetchCacheKey(args["chainId"], req)
+			if e != nil {
+				t.Fatal(e)
+			}
+			v := Object{"operation": operation, "key": key, "result": result}
+			if entry["error"] != nil {
+				delete(v, "result")
+				v["error"] = indexingObject(indexingObject(entry["error"])["$error"])["message"]
+			}
+			out = append(out, v)
+		}
+	}
+	return out
+}
+
+func independentPrefetchCacheKey(chain any, request Object) (string, error) {
+	params, err := json.Marshal(request["params"])
+	if err != nil {
+		return "", err
+	}
+	value, err := json.Marshal([]any{chain, request["method"], json.RawMessage(strings.ToLower(string(params)))})
+	return string(value), err
+}
+func prefetchActualError(t *testing.T, err error, op Object, b *prefetchProbeBoundary) any {
+	t.Helper()
+	if err == nil {
+		t.Fatal("source error expected")
+	}
+	source := indexingObject(indexingObject(op["error"])["$error"])
+	if source["cause_name"] == "ContractFunctionZeroDataError" {
+		var zero *ContractFunctionZeroDataError
+		if !errors.As(err, &zero) {
+			t.Fatalf("expected typed zero data, %T %v", err, err)
+		}
+		args := indexingObject(indexingUnmark(t, op["args"]))
+		if zero.FunctionName != args["functionName"] {
+			t.Fatal("zero data function mismatch", zero.FunctionName, args["functionName"])
+		}
+		return Object{"name": "ContractFunctionZeroDataError", "functionName": zero.FunctionName, "message": zero.Error()}
+	}
+	b.mu.Lock()
+	messages := append([]string{}, b.rawErrors...)
+	b.mu.Unlock()
+	for _, message := range messages {
+		if err.Error() == message {
+			return Object{"name": "Error", "message": err.Error()}
+		}
+	}
+	t.Fatalf("error must exactly match an actually rejected boundary: %T %q source%v", err, err.Error(), source)
+	return nil
+}
+
+type causalProbeSettlement struct {
+	value any
+	err   error
+}
+
+func replayCausalPrefetchProbe(t *testing.T, record Object) Object {
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	defer cancel()
+	chains := indexingObjects(indexingUnmark(t, record["chains"]))
+	b := &prefetchProbeBoundary{t: t, mode: "normal", dbMode: "normal", cache: map[string]json.RawMessage{}, expected: indexingObjects(record["rpc"]), changed: make(chan struct{})}
+	requesters := []rpc.Requester{}
+	caches := []rpc.Cache{}
+	for _, chain := range chains {
+		requesters = append(requesters, &prefetchProbeRPC{b: b, chain: chain["id"]})
+		caches = append(caches, b)
+	}
+	clients, err := NewStrictClientSet(chains, requesters, caches...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		b.mu.Lock()
+		for _, release := range b.gates {
+			release()
+		}
+		for _, release := range b.dbGates {
+			release()
+		}
+		b.gates = nil
+		b.dbGates = nil
+		b.mu.Unlock()
+		cancel()
+		closeCtx, stop := context.WithTimeout(context.Background(), time.Second)
+		defer stop()
+		_ = clients.Close(closeCtx)
+	}()
+	counts := map[string]uint64{}
+	for name, value := range indexingObject(record["initial_event_count"]) {
+		counts[name] = uint64(value.(float64))
+	}
+	clients.SetEventCounts(counts)
+	current := indexingObject(indexingUnmark(t, record["initial_event"]))
+	clients.SetEvent(current)
+	clients.SetProfileFieldOrder(map[string][]string{"args": {"target", "value"}, "result": {"answer"}})
+	var action <-chan causalProbeSettlement
+	waitRPC := func(count int) error {
+		for {
+			b.mu.Lock()
+			n := len(b.calls)
+			changed := b.changed
+			violation := b.violation
+			b.mu.Unlock()
+			if violation != nil {
+				return violation
+			}
+			if n >= count {
+				return nil
+			}
+			select {
+			case <-changed:
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}
+	}
+	snapshot := func() Object {
+		b.mu.Lock()
+		defer b.mu.Unlock()
+		reads, writes := 0, 0
+		for _, op := range b.cacheCalls {
+			if op["operation"] == "get" {
+				reads++
+			} else {
+				writes++
+			}
+		}
+		return Object{"rpc": len(b.calls), "reads": reads, "writes": writes, "pending_rpc": b.pending, "pending_db": b.pendingDB}
+	}
+	steps := []Object{}
+	for i, op := range indexingObjects(record["operations"]) {
+		name := op["operation"].(string)
+		args := indexingUnmark(t, op["args"])
+		var value any = filter.Undefined
+		var callErr error
+		switch name {
+		case "event":
+			current = indexingObject(args)
+			clients.SetEvent(current)
+		case "mode":
+			b.mu.Lock()
+			b.mode = args.(string)
+			b.mu.Unlock()
+		case "dbMode":
+			b.mu.Lock()
+			b.dbMode = args.(string)
+			b.mu.Unlock()
+		case "clear":
+			clients.Clear()
+		case "readContract":
+			client, e := clients.GetClient(indexingObject(current["chain"]))
+			if e != nil {
+				t.Fatal(e)
+			}
+			retry := false
+			value, callErr = client.ReadContract(ctx, probeContract(t, indexingObject(args)), ReadContractOptions{RetryEmptyResponse: &retry})
+		case "prefetch":
+			callErr = clients.Prefetch(ctx, indexingObjects(args))
+		case "startPrefetch":
+			done := make(chan causalProbeSettlement, 1)
+			action = done
+			events := indexingObjects(args)
+			go func() {
+				e := clients.Prefetch(ctx, events)
+				done <- causalProbeSettlement{value: filter.Undefined, err: e}
+				close(done)
+			}()
+		case "startMulticall":
+			done := make(chan causalProbeSettlement, 1)
+			action = done
+			client, e := clients.GetClient(indexingObject(current["chain"]))
+			if e != nil {
+				t.Fatal(e)
+			}
+			input := indexingObject(args)
+			contracts := []ContractCall{}
+			for _, c := range indexingObjects(input["contracts"]) {
+				contracts = append(contracts, probeContract(t, c))
+			}
+			batch := int(input["batchSize"].(float64))
+			allow := false
+			retry := false
+			address := input["multicallAddress"].(string)
+			go func() {
+				v, e := client.Multicall(ctx, contracts, MulticallOptions{MulticallAddress: address, AllowFailure: &allow, RetryEmptyResponse: &retry, BatchSize: &batch})
+				done <- causalProbeSettlement{value: v, err: e}
+				close(done)
+			}()
+		case "waitRPC":
+			callErr = waitRPC(int(args.(float64)))
+		case "waitWrites":
+			for {
+				b.mu.Lock()
+				count := 0
+				for _, entry := range b.cacheCalls {
+					if entry["operation"] == "put" {
+						count++
+					}
+				}
+				changed := b.changed
+				b.mu.Unlock()
+				if count >= int(args.(float64)) {
+					break
+				}
+				select {
+				case <-changed:
+				case <-ctx.Done():
+					callErr = ctx.Err()
+				}
+				if callErr != nil {
+					break
+				}
+			}
+		case "releaseRPC":
+			b.mu.Lock()
+			for _, release := range b.gates {
+				release()
+			}
+			b.gates = nil
+			b.signalLocked()
+			b.mu.Unlock()
+		case "releaseDB":
+			b.mu.Lock()
+			for _, release := range b.dbGates {
+				release()
+			}
+			b.dbGates = nil
+			b.signalLocked()
+			b.mu.Unlock()
+		case "awaitAction":
+			select {
+			case settled := <-action:
+				value, callErr = settled.value, settled.err
+			case <-ctx.Done():
+				callErr = ctx.Err()
+			}
+		default:
+			t.Fatal("unknown causal operation", name)
+		}
+		var cause any
+		if op["error"] != nil {
+			cause = prefetchActualError(t, callErr, op, b)
+		} else {
+			if callErr != nil {
+				t.Fatalf("%s step%d %s: %v", record["name"], i, name, callErr)
+			}
+			indexingEqual(t, "causal operation result", indexingCanonical(value), op["result"])
+		}
+		actual := snapshot()
+		want := indexingObject(op["snapshot"])
+		// Only causal barriers constrain scheduler order. start/release snapshots are
+		// archived, never misrepresented as cross-language microtask scheduling parity.
+		if name == "waitRPC" || name == "waitWrites" {
+			for _, key := range []string{"rpc", "pending_rpc", "pending_db"} {
+				indexingEqual(t, "causal barrier "+key, actual[key], want[key])
+			}
+			if record["name"] == "aggregate-rejection-no-write" || name == "waitWrites" {
+				indexingEqual(t, "no premature prefetched child persistence", actual["writes"], want["writes"])
+			}
+		}
+		if name == "awaitAction" {
+			if err := clients.WaitCacheWrites(ctx); err != nil {
+				t.Fatal(err)
+			}
+			actual = snapshot()
+			for _, key := range []string{"writes", "pending_rpc", "pending_db"} {
+				indexingEqual(t, "settled causal "+key, actual[key], want[key])
+			}
+		}
+		b.mu.Lock()
+		violation := b.violation
+		b.mu.Unlock()
+		if violation != nil {
+			t.Fatal(violation)
+		}
+		steps = append(steps, Object{"operation": name, "snapshot": actual, "error_cause": cause, "result": indexingCanonical(value)})
+	}
+	if err := clients.WaitPrefetch(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := clients.WaitCacheWrites(ctx); err != nil {
+		t.Fatal(err)
+	}
+	b.mu.Lock()
+	calls := append([]Object{}, b.calls...)
+	cacheCalls := append([]Object{}, b.cacheCalls...)
+	consumed := b.consumed
+	violation := b.violation
+	b.mu.Unlock()
+	if violation != nil {
+		t.Fatal(violation)
+	}
+	if consumed != len(indexingObjects(record["rpc"])) {
+		t.Fatal("causal tape incomplete", consumed)
+	}
+	expectedCache := prefetchExpectedCache(t, Object{"store": record["store"]})
+	indexingEqual(t, "causal complete cache transcript", indexingCanonical(cacheCalls), indexingCanonical(expectedCache))
+	input := Object{"steps": steps, "rpc": calls, "cache": cacheCalls, "snapshot": snapshot()}
+	raw, err := json.Marshal(indexingCanonical(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256(raw)
+	return Object{"name": record["name"], "operations": len(steps), "causal": true, "digest_input": indexingCanonical(input), "observation_sha256": hex.EncodeToString(sum[:])}
+}

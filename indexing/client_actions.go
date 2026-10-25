@@ -97,7 +97,11 @@ func (c *Client) cacheResponse(ctx context.Context, method string, params any, r
 	c.set.putAsync(ctx, c.cache, key, raw)
 }
 func (c *Client) request(ctx context.Context, method string, params any) (json.RawMessage, error) {
-	raw, hit, err := c.cached(ctx, method, params)
+	raw, hit, err := c.prefetchedResult(ctx, method, params, false)
+	if err != nil || hit {
+		return raw, err
+	}
+	raw, hit, err = c.cached(ctx, method, params)
 	if err != nil || hit {
 		return raw, err
 	}
@@ -191,11 +195,14 @@ func (c *Client) ReadContract(ctx context.Context, contract ContractCall, option
 	if len(options) == 1 {
 		opt = options[0]
 	}
-	data, selected, err := encodeContractCall(contract)
-	if err != nil {
-		return nil, err
-	}
 	return retryEmpty(ctx, opt.RetryEmptyResponse, func() (any, error) {
+		if err := c.recordContracts([]ContractCall{contract}, opt.BlockOptions, false); err != nil {
+			return nil, err
+		}
+		data, selected, err := encodeContractCall(contract)
+		if err != nil {
+			return nil, err
+		}
 		tag, err := c.blockTag(ctx, []BlockOptions{opt.BlockOptions})
 		if err != nil {
 			return nil, err
