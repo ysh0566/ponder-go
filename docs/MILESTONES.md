@@ -200,3 +200,12 @@ Anvil loopback 与客户端 Node 预编译为启动层适配，不是 pristine �
 full-verify-02于2026-10-25 13:39:39UTC通过54阶段，10canonical collectors接受。normal/race各3146节点/2870叶、0fail/skip，PG450/PGlite446；23包245函数76批次。1126输入c7072ab0bc5c10e615442065f6ec8ae1a2da8263d3a18a39b91727f71c878fb0、77工具hash一致。full01失败仅旧测试adapter expectedkey未canonicalize，两叶双模式失败；原fixture/rawRPC断言保留，修正经独立复核后全新重跑。full01修改前1215输入已归档；冻结batch38保留batch37。
 
 严格standalone AsyncCache仅保证prepared-row同步admission；legacy同步fallback、源/native并发read visibility、commit-order与batchinsert调用分组不等价，绑定事务adapter无async。PGlite共享backend锁/IO取消限制保留。typed error含义不等于完整Viem包装/customerror解码，ABI.Parse匿名tuple编码有限。无profile/prefetch/LRU、全client.test.ts、外层runner/readiness/cutover完成声明。详见SOURCE_INDEXING_ACTIONS.md。
+
+
+## M40 — RPC profiling 与预测预取（完整本地验收，待发布）
+
+基线8475c1236dade775b902031fcc8b8856c31ee623。profile10+client prefetch2原例/30断言/0TS新增，旧531映射不改，正式543/905（539Go+4SDK），362剩余，7旧类型缺口不计credit。完整源24例两后端通过；21+21补充向量和真实Service/队列生命周期均零credit。其他12个client原例不映射。
+
+full-verify-01于2026-10-25 15:13:03.642UTC通过62阶段，11个显式canonical collectors接受；normal/race各3286节点/2994叶、0测试fail/skip，23包257函数79批次。1139输入10119df4147f45fbddb57e60ee75925bef14899a6f21468f3ab5831d166f8d00和94工具hash一致。新batch39保留batch38，失败/过期证据不覆盖。
+
+实际RPC profiling/LRU/阈值/prefetch与异步因果语义，非store行键profile替代。既有standalone optional AsyncCacheReader拥有prepared读取任务；跨链首错与兄弟任务、clear后的pending chunk、aggregate失败禁止提前cache写均有源/native控制。保留同步fallback、backend锁/IO取消、批量分组/read visibility/commit-order及typed Viem facade限制；无完整rawtransport/client/outerrunner完成声明。未来独立sync存储已批准但本阶段不改拓扑；历史schema清理仍未批准。

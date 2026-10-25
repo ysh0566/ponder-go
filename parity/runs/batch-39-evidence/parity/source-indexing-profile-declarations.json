@@ -1,0 +1,1296 @@
+{
+  "source_credit": 0,
+  "targets": [
+    "2f670307cc3e54bf3901",
+    "465e8823325559c8cfa1",
+    "e7d2206043a345533ec0",
+    "fcafee958f55fe65dc77",
+    "fb137834371e07d16724",
+    "732ac50bf3a96196de3e",
+    "4c57d8f36ec9b90f69ac",
+    "d8952ac4024fd02802a7",
+    "0173bc5e83b0843a8d4e",
+    "ddf6318af43ddc28cd80",
+    "ff30deb8b9aca842519b",
+    "4ace7b36bca44245e4b7"
+  ],
+  "cases": [
+    {
+      "id": "d5a6e7d92b3479d0cb40",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 43,
+      "start": 934,
+      "end": 2250,
+      "suite_path": [],
+      "title": "request() block dependent method",
+      "full_name": "request() block dependent method",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"request() block dependent method\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const blockData = await simulateBlock();\n  const { eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  });\n\n  cachedViemClient.event = event;\n\n  const request = cachedViemClient.getClient(chain).request;\n\n  const response1 = await request({\n    method: \"eth_getBlockByNumber\",\n    params: [toHex(blockData.block.number), false],\n  });\n\n  expect(response1).toBeDefined();\n\n  const insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\");\n  const getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\");\n\n  const response2 = await request({\n    method: \"eth_getBlockByNumber\",\n    params: [toHex(blockData.block.number), false],\n  });\n\n  expect(response1).toStrictEqual(response2);\n\n  expect(insertSpy).toHaveBeenCalledTimes(0);\n  expect(getSpy).toHaveBeenCalledTimes(1);\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "blockData = await simulateBlock()",
+        "{ eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  })",
+        "request = cachedViemClient.getClient(chain).request",
+        "response1 = await request({\n    method: \"eth_getBlockByNumber\",\n    params: [toHex(blockData.block.number), false],\n  })",
+        "insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\")",
+        "getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\")",
+        "response2 = await request({\n    method: \"eth_getBlockByNumber\",\n    params: [toHex(blockData.block.number), false],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 78,
+          "text": "expect(response1).toBeDefined()"
+        },
+        {
+          "kind": "runtime",
+          "line": 88,
+          "text": "expect(response1).toStrictEqual(response2)"
+        },
+        {
+          "kind": "runtime",
+          "line": 90,
+          "text": "expect(insertSpy).toHaveBeenCalledTimes(0)"
+        },
+        {
+          "kind": "runtime",
+          "line": 91,
+          "text": "expect(getSpy).toHaveBeenCalledTimes(1)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "a0cae5c124b82e24515d",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 94,
+      "start": 2253,
+      "end": 3679,
+      "suite_path": [],
+      "title": "request() block dependent method without rpc request cache",
+      "full_name": "request() block dependent method without rpc request cache",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"request() block dependent method without rpc request cache\", async () => {\n  const chain = getChain({ cacheRpcRequests: false });\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const blockData = await simulateBlock();\n  const { eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  });\n\n  cachedViemClient.event = event;\n\n  const request = cachedViemClient.getClient(chain).request;\n\n  const insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\");\n  const getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\");\n  const requestSpy = vi.spyOn(rpc, \"request\");\n\n  const response1 = await request({\n    method: \"eth_getBlockByNumber\",\n    params: [toHex(blockData.block.number), false],\n  });\n  const response2 = await request({\n    method: \"eth_getBlockByNumber\",\n    params: [toHex(blockData.block.number), false],\n  });\n\n  expect(response1).toStrictEqual(response2);\n\n  expect(insertSpy).toHaveBeenCalledTimes(0);\n  expect(getSpy).toHaveBeenCalledTimes(0);\n  expect(requestSpy).toHaveBeenCalledTimes(2);\n})",
+      "inputs": [
+        "chain = getChain({ cacheRpcRequests: false })",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "blockData = await simulateBlock()",
+        "{ eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  })",
+        "request = cachedViemClient.getClient(chain).request",
+        "insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\")",
+        "getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\")",
+        "requestSpy = vi.spyOn(rpc, \"request\")",
+        "response1 = await request({\n    method: \"eth_getBlockByNumber\",\n    params: [toHex(blockData.block.number), false],\n  })",
+        "response2 = await request({\n    method: \"eth_getBlockByNumber\",\n    params: [toHex(blockData.block.number), false],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 137,
+          "text": "expect(response1).toStrictEqual(response2)"
+        },
+        {
+          "kind": "runtime",
+          "line": 139,
+          "text": "expect(insertSpy).toHaveBeenCalledTimes(0)"
+        },
+        {
+          "kind": "runtime",
+          "line": 140,
+          "text": "expect(getSpy).toHaveBeenCalledTimes(0)"
+        },
+        {
+          "kind": "runtime",
+          "line": 141,
+          "text": "expect(requestSpy).toHaveBeenCalledTimes(2)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "44e8b01e006987ddaf2c",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 144,
+      "start": 3682,
+      "end": 5254,
+      "suite_path": [],
+      "title": "request() non-block dependent method",
+      "full_name": "request() non-block dependent method",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"request() non-block dependent method\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  const blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n  const blockNumber = await publicClient.getBlockNumber();\n  const block = await publicClient.getBlock({ blockNumber: blockNumber });\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  });\n\n  cachedViemClient.event = event;\n\n  const request = cachedViemClient.getClient(chain).request;\n\n  const response1 = await request({\n    method: \"eth_getTransactionByHash\",\n    params: [block.transactions[0]!],\n  });\n\n  expect(response1).toBeDefined;\n\n  const insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\");\n  const getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\");\n\n  const response2 = await request({\n    method: \"eth_getTransactionByHash\",\n    params: [block.transactions[0]!],\n  });\n\n  expect(response1).toStrictEqual(response2);\n\n  expect(insertSpy).toHaveBeenCalledTimes(0);\n  expect(getSpy).toHaveBeenCalledTimes(1);\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "{ address } = await deployErc20({ sender: ALICE })",
+        "blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  })",
+        "{ eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "blockNumber = await publicClient.getBlockNumber()",
+        "block = await publicClient.getBlock({ blockNumber: blockNumber })",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  })",
+        "request = cachedViemClient.getClient(chain).request",
+        "response1 = await request({\n    method: \"eth_getTransactionByHash\",\n    params: [block.transactions[0]!],\n  })",
+        "insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\")",
+        "getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\")",
+        "response2 = await request({\n    method: \"eth_getTransactionByHash\",\n    params: [block.transactions[0]!],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 188,
+          "text": "expect(response1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 198,
+          "text": "expect(response1).toStrictEqual(response2)"
+        },
+        {
+          "kind": "runtime",
+          "line": 200,
+          "text": "expect(insertSpy).toHaveBeenCalledTimes(0)"
+        },
+        {
+          "kind": "runtime",
+          "line": 201,
+          "text": "expect(getSpy).toHaveBeenCalledTimes(1)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "03e35daa5edb6765228e",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 204,
+      "start": 5257,
+      "end": 6294,
+      "suite_path": [],
+      "title": "request() non-cached method",
+      "full_name": "request() non-cached method",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"request() non-cached method\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const blockData = await simulateBlock();\n  const { eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  });\n\n  cachedViemClient.event = event;\n\n  const request = cachedViemClient.getClient(chain).request;\n\n  const insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\");\n  const getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\");\n\n  expect(await request({ method: \"eth_blockNumber\" })).toBeDefined();\n\n  expect(insertSpy).toHaveBeenCalledTimes(0);\n  expect(getSpy).toHaveBeenCalledTimes(0);\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "blockData = await simulateBlock()",
+        "{ eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  })",
+        "request = cachedViemClient.getClient(chain).request",
+        "insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\")",
+        "getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\")"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 237,
+          "text": "expect(await request({ method: \"eth_blockNumber\" })).toBeDefined()"
+        },
+        {
+          "kind": "runtime",
+          "line": 239,
+          "text": "expect(insertSpy).toHaveBeenCalledTimes(0)"
+        },
+        {
+          "kind": "runtime",
+          "line": 240,
+          "text": "expect(getSpy).toHaveBeenCalledTimes(0)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "ad7215a48c1e01fdcf98",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 243,
+      "start": 6297,
+      "end": 9824,
+      "suite_path": [],
+      "title": "request() multicall",
+      "full_name": "request() multicall",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"request() multicall\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const blockData = await simulateBlock();\n  const { eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  });\n\n  cachedViemClient.event = event;\n\n  const request = cachedViemClient.getClient(chain).request;\n\n  const { address: multicall } = await deployMulticall({ sender: ALICE });\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const response1 = await request({\n    method: \"eth_call\",\n    params: [\n      {\n        to: multicall,\n        data: encodeFunctionData({\n          abi: multicall3Abi,\n          functionName: \"aggregate3\",\n          args: [\n            [\n              {\n                target: address,\n                allowFailure: false,\n                callData: encodeFunctionData({\n                  abi: erc20ABI,\n                  functionName: \"totalSupply\",\n                }),\n              },\n            ],\n          ],\n        }),\n      },\n      \"latest\",\n    ],\n  });\n\n  expect(response1).toBeDefined();\n\n  const insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\");\n  const getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\");\n  const requestSpy = vi.spyOn(rpc, \"request\");\n\n  let result = decodeFunctionResult({\n    abi: multicall3Abi,\n    functionName: \"aggregate3\",\n    data: response1 as Hex,\n  });\n\n  expect(result).toMatchInlineSnapshot(`\n    [\n      {\n        \"returnData\": \"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\",\n        \"success\": true,\n      },\n    ]\n  `);\n\n  const response2 = await request({\n    method: \"eth_call\",\n    params: [\n      {\n        to: multicall,\n        data: encodeFunctionData({\n          abi: multicall3Abi,\n          functionName: \"aggregate3\",\n          args: [\n            [\n              {\n                target: address,\n                allowFailure: false,\n                callData: encodeFunctionData({\n                  abi: erc20ABI,\n                  functionName: \"totalSupply\",\n                }),\n              },\n              {\n                target: address,\n                allowFailure: false,\n                callData: encodeFunctionData({\n                  abi: erc20ABI,\n                  functionName: \"balanceOf\",\n                  args: [ALICE],\n                }),\n              },\n            ],\n          ],\n        }),\n      },\n      \"latest\",\n    ],\n  });\n\n  result = decodeFunctionResult({\n    abi: multicall3Abi,\n    functionName: \"aggregate3\",\n    data: response2 as Hex,\n  });\n\n  expect(result).toMatchInlineSnapshot(`\n    [\n      {\n        \"returnData\": \"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\",\n        \"success\": true,\n      },\n      {\n        \"returnData\": \"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\",\n        \"success\": true,\n      },\n    ]\n  `);\n  expect(insertSpy).toHaveBeenCalledTimes(1);\n  expect(getSpy).toHaveBeenCalledTimes(1);\n  expect(requestSpy).toHaveBeenCalledTimes(1);\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "blockData = await simulateBlock()",
+        "{ eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  })",
+        "request = cachedViemClient.getClient(chain).request",
+        "{ address: multicall } = await deployMulticall({ sender: ALICE })",
+        "{ address } = await deployErc20({ sender: ALICE })",
+        "response1 = await request({\n    method: \"eth_call\",\n    params: [\n      {\n        to: multicall,\n        data: encodeFunctionData({\n          abi: multicall3Abi,\n          functionName: \"aggregate3\",\n          args: [\n            [\n              {\n                target: address,\n                allowFailure: false,\n                callData: encodeFunctionData({\n                  abi: erc20ABI,\n                  functionName: \"totalSupply\",\n                }),\n              },\n            ],\n          ],\n        }),\n      },\n      \"latest\",\n    ],\n  })",
+        "insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\")",
+        "getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\")",
+        "requestSpy = vi.spyOn(rpc, \"request\")",
+        "result = decodeFunctionResult({\n    abi: multicall3Abi,\n    functionName: \"aggregate3\",\n    data: response1 as Hex,\n  })",
+        "response2 = await request({\n    method: \"eth_call\",\n    params: [\n      {\n        to: multicall,\n        data: encodeFunctionData({\n          abi: multicall3Abi,\n          functionName: \"aggregate3\",\n          args: [\n            [\n              {\n                target: address,\n                allowFailure: false,\n                callData: encodeFunctionData({\n                  abi: erc20ABI,\n                  functionName: \"totalSupply\",\n                }),\n              },\n              {\n                target: address,\n                allowFailure: false,\n                callData: encodeFunctionData({\n                  abi: erc20ABI,\n                  functionName: \"balanceOf\",\n                  args: [ALICE],\n                }),\n              },\n            ],\n          ],\n        }),\n      },\n      \"latest\",\n    ],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 308,
+          "text": "expect(response1).toBeDefined()"
+        },
+        {
+          "kind": "runtime",
+          "line": 320,
+          "text": "expect(result).toMatchInlineSnapshot(`\n    [\n      {\n        \"returnData\": \"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\",\n        \"success\": true,\n      },\n    ]\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 370,
+          "text": "expect(result).toMatchInlineSnapshot(`\n    [\n      {\n        \"returnData\": \"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\",\n        \"success\": true,\n      },\n      {\n        \"returnData\": \"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\",\n        \"success\": true,\n      },\n    ]\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 382,
+          "text": "expect(insertSpy).toHaveBeenCalledTimes(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 383,
+          "text": "expect(getSpy).toHaveBeenCalledTimes(1)"
+        },
+        {
+          "kind": "runtime",
+          "line": 384,
+          "text": "expect(requestSpy).toHaveBeenCalledTimes(1)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "923c75ffc3191ff81609",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 387,
+      "start": 9827,
+      "end": 11974,
+      "suite_path": [],
+      "title": "request() multicall without rpc request cache",
+      "full_name": "request() multicall without rpc request cache",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"request() multicall without rpc request cache\", async () => {\n  const chain = getChain({ cacheRpcRequests: false });\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const blockData = await simulateBlock();\n  const { eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  });\n\n  cachedViemClient.event = event;\n\n  const request = cachedViemClient.getClient(chain).request;\n\n  const { address: multicall } = await deployMulticall({ sender: ALICE });\n  const { address } = await deployErc20({ sender: ALICE });\n  await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\");\n  const getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\");\n\n  const response = await request({\n    method: \"eth_call\",\n    params: [\n      {\n        to: multicall,\n        data: encodeFunctionData({\n          abi: multicall3Abi,\n          functionName: \"aggregate3\",\n          args: [\n            [\n              {\n                target: address,\n                allowFailure: false,\n                callData: encodeFunctionData({\n                  abi: erc20ABI,\n                  functionName: \"totalSupply\",\n                }),\n              },\n            ],\n          ],\n        }),\n      },\n      \"latest\",\n    ],\n  });\n\n  const result = decodeFunctionResult({\n    abi: multicall3Abi,\n    functionName: \"aggregate3\",\n    data: response as Hex,\n  });\n\n  expect(result).toMatchInlineSnapshot(`\n    [\n      {\n        \"returnData\": \"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\",\n        \"success\": true,\n      },\n    ]\n  `);\n  expect(insertSpy).toHaveBeenCalledTimes(0);\n  expect(getSpy).toHaveBeenCalledTimes(0);\n})",
+      "inputs": [
+        "chain = getChain({ cacheRpcRequests: false })",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "blockData = await simulateBlock()",
+        "{ eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  })",
+        "request = cachedViemClient.getClient(chain).request",
+        "{ address: multicall } = await deployMulticall({ sender: ALICE })",
+        "{ address } = await deployErc20({ sender: ALICE })",
+        "insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\")",
+        "getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\")",
+        "response = await request({\n    method: \"eth_call\",\n    params: [\n      {\n        to: multicall,\n        data: encodeFunctionData({\n          abi: multicall3Abi,\n          functionName: \"aggregate3\",\n          args: [\n            [\n              {\n                target: address,\n                allowFailure: false,\n                callData: encodeFunctionData({\n                  abi: erc20ABI,\n                  functionName: \"totalSupply\",\n                }),\n              },\n            ],\n          ],\n        }),\n      },\n      \"latest\",\n    ],\n  })",
+        "result = decodeFunctionResult({\n    abi: multicall3Abi,\n    functionName: \"aggregate3\",\n    data: response as Hex,\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 461,
+          "text": "expect(result).toMatchInlineSnapshot(`\n    [\n      {\n        \"returnData\": \"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\",\n        \"success\": true,\n      },\n    ]\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 469,
+          "text": "expect(insertSpy).toHaveBeenCalledTimes(0)"
+        },
+        {
+          "kind": "runtime",
+          "line": 470,
+          "text": "expect(getSpy).toHaveBeenCalledTimes(0)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "56fd6bae2c740a4a117c",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 473,
+      "start": 11977,
+      "end": 13288,
+      "suite_path": [],
+      "title": "request() multicall empty",
+      "full_name": "request() multicall empty",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"request() multicall empty\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const blockData = await simulateBlock();\n  const { eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  });\n\n  cachedViemClient.event = event;\n\n  const request = cachedViemClient.getClient(chain).request;\n\n  const { address: multicall } = await deployMulticall({ sender: ALICE });\n\n  const response = await request({\n    method: \"eth_call\",\n    params: [\n      {\n        to: multicall,\n        data: encodeFunctionData({\n          abi: multicall3Abi,\n          functionName: \"aggregate3\",\n          args: [[]],\n        }),\n      },\n      \"latest\",\n    ],\n  });\n\n  expect(response).toBeDefined();\n\n  const result = decodeFunctionResult({\n    abi: multicall3Abi,\n    functionName: \"aggregate3\",\n    data: response as Hex,\n  });\n\n  expect(result).toMatchInlineSnapshot(\"[]\");\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "blockData = await simulateBlock()",
+        "{ eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  })",
+        "request = cachedViemClient.getClient(chain).request",
+        "{ address: multicall } = await deployMulticall({ sender: ALICE })",
+        "response = await request({\n    method: \"eth_call\",\n    params: [\n      {\n        to: multicall,\n        data: encodeFunctionData({\n          abi: multicall3Abi,\n          functionName: \"aggregate3\",\n          args: [[]],\n        }),\n      },\n      \"latest\",\n    ],\n  })",
+        "result = decodeFunctionResult({\n    abi: multicall3Abi,\n    functionName: \"aggregate3\",\n    data: response as Hex,\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 520,
+          "text": "expect(response).toBeDefined()"
+        },
+        {
+          "kind": "runtime",
+          "line": 528,
+          "text": "expect(result).toMatchInlineSnapshot(\"[]\")"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "ff30deb8b9aca842519b",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 531,
+      "start": 13291,
+      "end": 14958,
+      "suite_path": [],
+      "title": "prefetch() uses profile metadata",
+      "full_name": "prefetch() uses profile metadata",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"prefetch() uses profile metadata\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const { address } = await deployErc20({ sender: ALICE });\n  const blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address,\n  });\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const eventCount = getEventCount(indexingFunctions);\n\n  eventCount[\n    \"Erc20:Transfer(address indexed from, address indexed to, uint256 amount)\"\n  ] = 1;\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount,\n  });\n  cachedViemClient.event = event;\n\n  let totalSupply = await cachedViemClient.getClient(chain).readContract({\n    abi: erc20ABI,\n    functionName: \"totalSupply\",\n    address,\n  });\n\n  expect(totalSupply).toBe(parseEther(\"1\"));\n\n  event.event.block.number = 2n;\n  cachedViemClient.event = event;\n\n  await cachedViemClient.prefetch({\n    events: [event],\n  });\n\n  const requestSpy = vi.spyOn(rpc, \"request\");\n  const getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\");\n\n  totalSupply = await cachedViemClient.getClient(chain).readContract({\n    abi: erc20ABI,\n    functionName: \"totalSupply\",\n    address,\n  });\n\n  expect(totalSupply).toBe(parseEther(\"1\"));\n\n  expect(requestSpy).toHaveBeenCalledTimes(0);\n  expect(getSpy).toHaveBeenCalledTimes(0);\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "{ address } = await deployErc20({ sender: ALICE })",
+        "blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  })",
+        "{ eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address,\n  })",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "eventCount = getEventCount(indexingFunctions)",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount,\n  })",
+        "totalSupply = await cachedViemClient.getClient(chain).readContract({\n    abi: erc20ABI,\n    functionName: \"totalSupply\",\n    address,\n  })",
+        "requestSpy = vi.spyOn(rpc, \"request\")",
+        "getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\")"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 577,
+          "text": "expect(totalSupply).toBe(parseEther(\"1\"))"
+        },
+        {
+          "kind": "runtime",
+          "line": 595,
+          "text": "expect(totalSupply).toBe(parseEther(\"1\"))"
+        },
+        {
+          "kind": "runtime",
+          "line": 597,
+          "text": "expect(requestSpy).toHaveBeenCalledTimes(0)"
+        },
+        {
+          "kind": "runtime",
+          "line": 598,
+          "text": "expect(getSpy).toHaveBeenCalledTimes(0)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "4ace7b36bca44245e4b7",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 601,
+      "start": 14961,
+      "end": 16840,
+      "suite_path": [],
+      "title": "prefetch() without rpc request cache",
+      "full_name": "prefetch() without rpc request cache",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"prefetch() without rpc request cache\", async () => {\n  const chain = getChain({ cacheRpcRequests: false });\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const { address } = await deployErc20({ sender: ALICE });\n  const blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address,\n  });\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const eventCount = getEventCount(indexingFunctions);\n\n  eventCount[\n    \"Erc20:Transfer(address indexed from, address indexed to, uint256 amount)\"\n  ] = 1;\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount,\n  });\n  cachedViemClient.event = event;\n\n  const insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\");\n  const getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\");\n\n  let totalSupply = await cachedViemClient.getClient(chain).readContract({\n    abi: erc20ABI,\n    functionName: \"totalSupply\",\n    address,\n  });\n\n  expect(totalSupply).toBe(parseEther(\"1\"));\n\n  event.event.block.number = 2n;\n  cachedViemClient.event = event;\n\n  await cachedViemClient.prefetch({\n    events: [event],\n  });\n\n  const requestSpy = vi.spyOn(rpc, \"request\");\n\n  totalSupply = await cachedViemClient.getClient(chain).readContract({\n    abi: erc20ABI,\n    functionName: \"totalSupply\",\n    address,\n  });\n\n  expect(totalSupply).toBe(parseEther(\"1\"));\n\n  // Note: The prefetch still uses the RPC, but not the database.\n  expect(requestSpy).toHaveBeenCalledTimes(0);\n  expect(insertSpy).toHaveBeenCalledTimes(0);\n  expect(getSpy).toHaveBeenCalledTimes(0);\n})",
+      "inputs": [
+        "chain = getChain({ cacheRpcRequests: false })",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "{ address } = await deployErc20({ sender: ALICE })",
+        "blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  })",
+        "{ eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address,\n  })",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "eventCount = getEventCount(indexingFunctions)",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount,\n  })",
+        "insertSpy = vi.spyOn(syncStore, \"insertRpcRequestResults\")",
+        "getSpy = vi.spyOn(syncStore, \"getRpcRequestResults\")",
+        "totalSupply = await cachedViemClient.getClient(chain).readContract({\n    abi: erc20ABI,\n    functionName: \"totalSupply\",\n    address,\n  })",
+        "requestSpy = vi.spyOn(rpc, \"request\")"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 650,
+          "text": "expect(totalSupply).toBe(parseEther(\"1\"))"
+        },
+        {
+          "kind": "runtime",
+          "line": 667,
+          "text": "expect(totalSupply).toBe(parseEther(\"1\"))"
+        },
+        {
+          "kind": "runtime",
+          "line": 670,
+          "text": "expect(requestSpy).toHaveBeenCalledTimes(0)"
+        },
+        {
+          "kind": "runtime",
+          "line": 671,
+          "text": "expect(insertSpy).toHaveBeenCalledTimes(0)"
+        },
+        {
+          "kind": "runtime",
+          "line": 672,
+          "text": "expect(getSpy).toHaveBeenCalledTimes(0)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "48d6cd52f7b026ce5025",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 675,
+      "start": 16843,
+      "end": 18119,
+      "suite_path": [],
+      "title": "request() revert",
+      "full_name": "request() revert",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"request() revert\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployRevert({ sender: ALICE });\n  const { address: erc20 } = await deployErc20({ sender: ALICE });\n  const blockData = await mintErc20({\n    erc20,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const { eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address: erc20,\n  });\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  });\n  cachedViemClient.event = event;\n\n  const request = cachedViemClient.getClient(chain).request;\n\n  const response1 = await request({\n    method: \"eth_call\",\n    params: [\n      {\n        to: address,\n        data: encodeFunctionData({\n          abi: revertABI,\n          functionName: \"revert\",\n          args: [true],\n        }),\n      },\n      \"0x1\",\n    ],\n  }).catch((error) => error);\n\n  expect(response1).toBeInstanceOf(Error);\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "{ address } = await deployRevert({ sender: ALICE })",
+        "{ address: erc20 } = await deployErc20({ sender: ALICE })",
+        "blockData = await mintErc20({\n    erc20,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "{ eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address: erc20,\n  })",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  })",
+        "request = cachedViemClient.getClient(chain).request",
+        "response1 = await request({\n    method: \"eth_call\",\n    params: [\n      {\n        to: address,\n        data: encodeFunctionData({\n          abi: revertABI,\n          functionName: \"revert\",\n          args: [true],\n        }),\n      },\n      \"0x1\",\n    ],\n  }).catch((error) => error)"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 726,
+          "text": "expect(response1).toBeInstanceOf(Error)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "f74aebcfe8f3daba8396",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 729,
+      "start": 18122,
+      "end": 19228,
+      "suite_path": [],
+      "title": "readContract() action retry",
+      "full_name": "readContract() action retry",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"readContract() action retry\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  const blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const { eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address,\n  });\n\n  const requestSpy = vi.spyOn(rpc, \"request\");\n\n  requestSpy.mockReturnValueOnce(Promise.resolve(\"0x\"));\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  });\n\n  cachedViemClient.event = event;\n\n  await cachedViemClient.getClient(chain).readContract({\n    abi: erc20ABI,\n    functionName: \"totalSupply\",\n    address,\n  });\n\n  expect(requestSpy).toHaveBeenCalledTimes(2);\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "{ address } = await deployErc20({ sender: ALICE })",
+        "blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "{ eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address,\n  })",
+        "requestSpy = vi.spyOn(rpc, \"request\")",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 774,
+          "text": "expect(requestSpy).toHaveBeenCalledTimes(2)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "e67c1aabb98a7f7d1b97",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 777,
+      "start": 19231,
+      "end": 20495,
+      "suite_path": [],
+      "title": "readContract() with immutable cache",
+      "full_name": "readContract() with immutable cache",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"readContract() with immutable cache\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  const blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const { eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address,\n  });\n\n  const requestSpy = vi.spyOn(rpc, \"request\");\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  });\n\n  cachedViemClient.event = event;\n\n  const result = await cachedViemClient.getClient(chain).readContract({\n    abi: erc20ABI,\n    functionName: \"totalSupply\",\n    address,\n    cache: \"immutable\",\n  });\n\n  expect(result).toMatchInlineSnapshot(\"1000000000000000000n\");\n\n  expect(requestSpy).toBeCalledWith(\n    {\n      method: \"eth_call\",\n      params: [expect.any(Object), \"latest\"],\n    },\n    expect.any(Object),\n  );\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "{ address } = await deployErc20({ sender: ALICE })",
+        "blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "{ eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address,\n  })",
+        "requestSpy = vi.spyOn(rpc, \"request\")",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  })",
+        "result = await cachedViemClient.getClient(chain).readContract({\n    abi: erc20ABI,\n    functionName: \"totalSupply\",\n    address,\n    cache: \"immutable\",\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 821,
+          "text": "expect(result).toMatchInlineSnapshot(\"1000000000000000000n\")"
+        },
+        {
+          "kind": "runtime",
+          "line": 823,
+          "text": "expect(requestSpy).toBeCalledWith(\n    {\n      method: \"eth_call\",\n      params: [expect.any(Object), \"latest\"],\n    },\n    expect.any(Object),\n  )"
+        },
+        {
+          "kind": "runtime",
+          "line": 826,
+          "text": "expect.any(Object)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "7a8a7fa716b12482e934",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 832,
+      "start": 20498,
+      "end": 21648,
+      "suite_path": [],
+      "title": "readContract() with no retry empty response",
+      "full_name": "readContract() with no retry empty response",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"readContract() with no retry empty response\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const { address } = await deployErc20({ sender: ALICE });\n  const blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  });\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const { eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address,\n  });\n\n  const requestSpy = vi.spyOn(rpc, \"request\");\n\n  requestSpy.mockReturnValueOnce(Promise.resolve(\"0x\"));\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  });\n\n  cachedViemClient.event = event;\n\n  await expect(\n    cachedViemClient.getClient(chain).readContract({\n      abi: erc20ABI,\n      functionName: \"totalSupply\",\n      address,\n      retryEmptyResponse: false,\n    }),\n  ).rejects.toThrow();\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "{ address } = await deployErc20({ sender: ALICE })",
+        "blockData = await mintErc20({\n    erc20: address,\n    to: ALICE,\n    amount: parseEther(\"1\"),\n    sender: ALICE,\n  })",
+        "{ syncStore } = await setupDatabaseServices()",
+        "{ eventCallbacks, indexingFunctions } = getErc20IndexingBuild({\n    address,\n  })",
+        "requestSpy = vi.spyOn(rpc, \"request\")",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 871,
+          "text": "expect(\n    cachedViemClient.getClient(chain).readContract({\n      abi: erc20ABI,\n      functionName: \"totalSupply\",\n      address,\n      retryEmptyResponse: false,\n    }),\n  ).rejects.toThrow()"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "bb51d97d55cada7b68cd",
+      "source_file": "packages/core/src/indexing/client.test.ts",
+      "source_sha256": "542da72ebb1b8e897887e3662761193b97fb3bc358b30c3319bcda0861d044ee",
+      "line": 881,
+      "start": 21651,
+      "end": 22559,
+      "suite_path": [],
+      "title": "getBlock() action retry",
+      "full_name": "getBlock() action retry",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"getBlock() action retry\", async () => {\n  const chain = getChain();\n  const rpc = createRpc({\n    chain,\n    common: context.common,\n  });\n\n  const blockData = await simulateBlock();\n\n  const { syncStore } = await setupDatabaseServices();\n\n  const { eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  });\n\n  const requestSpy = vi.spyOn(rpc, \"request\");\n\n  requestSpy.mockReturnValueOnce(Promise.resolve(null));\n\n  const event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  });\n\n  const cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  });\n\n  cachedViemClient.event = event;\n\n  await cachedViemClient.getClient(chain).getBlock({ blockNumber: 1n });\n\n  expect(requestSpy).toHaveBeenCalledTimes(2);\n})",
+      "inputs": [
+        "chain = getChain()",
+        "rpc = createRpc({\n    chain,\n    common: context.common,\n  })",
+        "blockData = await simulateBlock()",
+        "{ syncStore } = await setupDatabaseServices()",
+        "{ eventCallbacks, indexingFunctions } = getBlocksIndexingBuild({\n    interval: 1,\n  })",
+        "requestSpy = vi.spyOn(rpc, \"request\")",
+        "event = getSimulatedEvent({\n    eventCallback: eventCallbacks[0],\n    blockData,\n  })",
+        "cachedViemClient = createCachedViemClient({\n    common: context.common,\n    indexingBuild: { chains: [chain], rpcs: [rpc] },\n    syncStore,\n    eventCount: getEventCount(indexingFunctions),\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 916,
+          "text": "expect(requestSpy).toHaveBeenCalledTimes(2)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "2f670307cc3e54bf3901",
+      "source_file": "packages/core/src/indexing/profile.test.ts",
+      "source_sha256": "68290e51cfbecc6574c1555771ffdfe2d42b553976ac18f2be035b712286bbbb",
+      "line": 10,
+      "start": 474,
+      "end": 3024,
+      "suite_path": [],
+      "title": "recordProfilePattern() with undefined log event args",
+      "full_name": "recordProfilePattern() with undefined log event args",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"recordProfilePattern() with undefined log event args\", () => {\n  const { eventCallbacks } = getBlocksIndexingBuild({ interval: 1 });\n\n  const event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: undefined,\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent;\n\n  const pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  });\n\n  expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"constant\",\n          \"value\": \"0x0000000000000000000000000000000000000000\",\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `);\n\n  expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `);\n})",
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: undefined,\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 38,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"constant\",\n          \"value\": \"0x0000000000000000000000000000000000000000\",\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 79,
+          "text": "expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "465e8823325559c8cfa1",
+      "source_file": "packages/core/src/indexing/profile.test.ts",
+      "source_sha256": "68290e51cfbecc6574c1555771ffdfe2d42b553976ac18f2be035b712286bbbb",
+      "line": 113,
+      "start": 3027,
+      "end": 5615,
+      "suite_path": [],
+      "title": "recordProfilePattern() with undefined trace event args",
+      "full_name": "recordProfilePattern() with undefined trace event args",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"recordProfilePattern() with undefined trace event args\", () => {\n  const { eventCallbacks } = getBlocksIndexingBuild({ interval: 1 });\n  const event = {\n    type: \"trace\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: undefined,\n      result: undefined,\n      trace: {} as TraceEvent[\"event\"][\"trace\"],\n      transaction: {} as TraceEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies TraceEvent;\n\n  const pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  });\n\n  expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"constant\",\n          \"value\": \"0x0000000000000000000000000000000000000000\",\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `);\n\n  expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `);\n})",
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"trace\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: undefined,\n      result: undefined,\n      trace: {} as TraceEvent[\"event\"][\"trace\"],\n      transaction: {} as TraceEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies TraceEvent",
+        "pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 141,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"constant\",\n          \"value\": \"0x0000000000000000000000000000000000000000\",\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 182,
+          "text": "expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "e7d2206043a345533ec0",
+      "source_file": "packages/core/src/indexing/profile.test.ts",
+      "source_sha256": "68290e51cfbecc6574c1555771ffdfe2d42b553976ac18f2be035b712286bbbb",
+      "line": 216,
+      "start": 5618,
+      "end": 8156,
+      "suite_path": [],
+      "title": "recordProfilePattern() with array log event args",
+      "full_name": "recordProfilePattern() with array log event args",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"recordProfilePattern() with array log event args\", () => {\n  const { eventCallbacks } = getBlocksIndexingBuild({ interval: 1 });\n  const event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: [],\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent;\n\n  const pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  });\n\n  expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"constant\",\n          \"value\": \"0x0000000000000000000000000000000000000000\",\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `);\n\n  expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `);\n})",
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: [],\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 243,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"constant\",\n          \"value\": \"0x0000000000000000000000000000000000000000\",\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 284,
+          "text": "expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "fcafee958f55fe65dc77",
+      "source_file": "packages/core/src/indexing/profile.test.ts",
+      "source_sha256": "68290e51cfbecc6574c1555771ffdfe2d42b553976ac18f2be035b712286bbbb",
+      "line": 318,
+      "start": 8159,
+      "end": 10729,
+      "suite_path": [],
+      "title": "recordProfilePattern() with array trace event args",
+      "full_name": "recordProfilePattern() with array trace event args",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"recordProfilePattern() with array trace event args\", () => {\n  const { eventCallbacks } = getBlocksIndexingBuild({ interval: 1 });\n  const event = {\n    type: \"trace\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: [],\n      result: [],\n      trace: {} as TraceEvent[\"event\"][\"trace\"],\n      transaction: {} as TraceEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies TraceEvent;\n\n  const pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  });\n\n  expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"constant\",\n          \"value\": \"0x0000000000000000000000000000000000000000\",\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `);\n\n  expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `);\n})",
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"trace\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: [],\n      result: [],\n      trace: {} as TraceEvent[\"event\"][\"trace\"],\n      transaction: {} as TraceEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies TraceEvent",
+        "pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 346,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"constant\",\n          \"value\": \"0x0000000000000000000000000000000000000000\",\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 387,
+          "text": "expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "fb137834371e07d16724",
+      "source_file": "packages/core/src/indexing/profile.test.ts",
+      "source_sha256": "68290e51cfbecc6574c1555771ffdfe2d42b553976ac18f2be035b712286bbbb",
+      "line": 421,
+      "start": 10732,
+      "end": 13106,
+      "suite_path": [],
+      "title": "recordProfilePattern() address",
+      "full_name": "recordProfilePattern() address",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"recordProfilePattern() address\", () => {\n  const { eventCallbacks } = getBlocksIndexingBuild({ interval: 1 });\n  const event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: { address: zeroAddress },\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: {\n        number: 1n,\n      } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent;\n\n  const pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"totalSupply\",\n    },\n    hints: [],\n  });\n\n  expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": false,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"derived\",\n          \"value\": [\n            \"args\",\n            \"address\",\n          ],\n        },\n        \"args\": undefined,\n        \"cache\": undefined,\n        \"functionName\": \"totalSupply\",\n      },\n    }\n  `);\n\n  expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": undefined,\n      \"blockNumber\": 1n,\n      \"chainId\": 1,\n      \"functionName\": \"totalSupply\",\n    }\n  `);\n})",
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: { address: zeroAddress },\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: {\n        number: 1n,\n      } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"totalSupply\",\n    },\n    hints: [],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 449,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": false,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"derived\",\n          \"value\": [\n            \"args\",\n            \"address\",\n          ],\n        },\n        \"args\": undefined,\n        \"cache\": undefined,\n        \"functionName\": \"totalSupply\",\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 488,
+          "text": "expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": undefined,\n      \"blockNumber\": 1n,\n      \"chainId\": 1,\n      \"functionName\": \"totalSupply\",\n    }\n  `)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "732ac50bf3a96196de3e",
+      "source_file": "packages/core/src/indexing/profile.test.ts",
+      "source_sha256": "68290e51cfbecc6574c1555771ffdfe2d42b553976ac18f2be035b712286bbbb",
+      "line": 520,
+      "start": 13109,
+      "end": 15718,
+      "suite_path": [],
+      "title": "recordProfilePattern() args",
+      "full_name": "recordProfilePattern() args",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"recordProfilePattern() args\", () => {\n  const { eventCallbacks } = getBlocksIndexingBuild({ interval: 1 });\n  const event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: { address: zeroAddress },\n      log: {\n        address: ALICE,\n      } as unknown as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent;\n\n  const pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  });\n\n  expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": false,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"derived\",\n          \"value\": [\n            \"args\",\n            \"address\",\n          ],\n        },\n        \"args\": [\n          {\n            \"type\": \"derived\",\n            \"value\": [\n              \"log\",\n              \"address\",\n            ],\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `);\n\n  expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `);\n})",
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: { address: zeroAddress },\n      log: {\n        address: ALICE,\n      } as unknown as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 549,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": false,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"derived\",\n          \"value\": [\n            \"args\",\n            \"address\",\n          ],\n        },\n        \"args\": [\n          {\n            \"type\": \"derived\",\n            \"value\": [\n              \"log\",\n              \"address\",\n            ],\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 596,
+          "text": "expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "4c57d8f36ec9b90f69ac",
+      "source_file": "packages/core/src/indexing/profile.test.ts",
+      "source_sha256": "68290e51cfbecc6574c1555771ffdfe2d42b553976ac18f2be035b712286bbbb",
+      "line": 630,
+      "start": 15721,
+      "end": 18287,
+      "suite_path": [],
+      "title": "recordProfilePattern() constants",
+      "full_name": "recordProfilePattern() constants",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"recordProfilePattern() constants\", () => {\n  const { eventCallbacks } = getBlocksIndexingBuild({ interval: 1 });\n  const event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: { address: zeroAddress },\n      log: {} as unknown as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent;\n\n  const pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  });\n\n  expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"derived\",\n          \"value\": [\n            \"args\",\n            \"address\",\n          ],\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `);\n\n  expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `);\n})",
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: { address: zeroAddress },\n      log: {} as unknown as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 657,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"derived\",\n          \"value\": [\n            \"args\",\n            \"address\",\n          ],\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 701,
+          "text": "expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "d8952ac4024fd02802a7",
+      "source_file": "packages/core/src/indexing/profile.test.ts",
+      "source_sha256": "68290e51cfbecc6574c1555771ffdfe2d42b553976ac18f2be035b712286bbbb",
+      "line": 735,
+      "start": 18290,
+      "end": 21089,
+      "suite_path": [],
+      "title": "recordProfilePattern() hint",
+      "full_name": "recordProfilePattern() hint",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"recordProfilePattern() hint\", () => {\n  const { eventCallbacks } = getBlocksIndexingBuild({ interval: 1 });\n  const event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: { address: zeroAddress },\n      log: {} as unknown as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent;\n\n  let pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  });\n\n  pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [pattern!],\n  });\n\n  expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"derived\",\n          \"value\": [\n            \"args\",\n            \"address\",\n          ],\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `);\n\n  expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `);\n})",
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: { address: zeroAddress },\n      log: {} as unknown as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 773,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"derived\",\n          \"value\": [\n            \"args\",\n            \"address\",\n          ],\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": undefined,\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 817,
+          "text": "expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": 5n,\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "0173bc5e83b0843a8d4e",
+      "source_file": "packages/core/src/indexing/profile.test.ts",
+      "source_sha256": "68290e51cfbecc6574c1555771ffdfe2d42b553976ac18f2be035b712286bbbb",
+      "line": 851,
+      "start": 21092,
+      "end": 22361,
+      "suite_path": [],
+      "title": "recordProfilePattern() hint with different args",
+      "full_name": "recordProfilePattern() hint with different args",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"recordProfilePattern() hint with different args\", () => {\n  const { eventCallbacks } = getBlocksIndexingBuild({ interval: 1 });\n  const event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: { from: ALICE, to: BOB },\n      log: {} as unknown as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent;\n\n  const hint = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  });\n\n  const pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [BOB],\n    },\n    hints: [hint!],\n  });\n\n  expect(pattern).not.toBe(hint);\n  expect(pattern!.pattern.args).toStrictEqual([\n    { type: \"derived\", value: [\"args\", \"to\"] },\n  ]);\n  expect(recoverProfilePattern(pattern!.pattern, event).args).toStrictEqual([\n    BOB,\n  ]);\n})",
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: { from: ALICE, to: BOB },\n      log: {} as unknown as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "hint = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n    },\n    hints: [],\n  })",
+        "pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [BOB],\n    },\n    hints: [hint!],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 889,
+          "text": "expect(pattern).not.toBe(hint)"
+        },
+        {
+          "kind": "runtime",
+          "line": 890,
+          "text": "expect(pattern!.pattern.args).toStrictEqual([\n    { type: \"derived\", value: [\"args\", \"to\"] },\n  ])"
+        },
+        {
+          "kind": "runtime",
+          "line": 893,
+          "text": "expect(recoverProfilePattern(pattern!.pattern, event).args).toStrictEqual([\n    BOB,\n  ])"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    },
+    {
+      "id": "ddf6318af43ddc28cd80",
+      "source_file": "packages/core/src/indexing/profile.test.ts",
+      "source_sha256": "68290e51cfbecc6574c1555771ffdfe2d42b553976ac18f2be035b712286bbbb",
+      "line": 898,
+      "start": 22364,
+      "end": 24933,
+      "suite_path": [],
+      "title": "recordProfilePattern() cache immutable",
+      "full_name": "recordProfilePattern() cache immutable",
+      "parameter_index": 0,
+      "parameter": null,
+      "parameter_expression": null,
+      "contexts": [],
+      "source_state": "active",
+      "modifiers": [],
+      "kind": "runtime",
+      "test_source": "test(\"recordProfilePattern() cache immutable\", () => {\n  const { eventCallbacks } = getBlocksIndexingBuild({ interval: 1 });\n  const event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: undefined,\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent;\n\n  const pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n      cache: \"immutable\",\n    },\n    hints: [],\n  });\n\n  expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"constant\",\n          \"value\": \"0x0000000000000000000000000000000000000000\",\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": \"immutable\",\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `);\n\n  expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": \"latest\",\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `);\n})",
+      "inputs": [
+        "{ eventCallbacks } = getBlocksIndexingBuild({ interval: 1 })",
+        "event = {\n    type: \"log\",\n    chain: getChain(),\n    checkpoint: ZERO_CHECKPOINT_STRING,\n    eventCallback: eventCallbacks[0]!,\n    event: {\n      id: ZERO_CHECKPOINT_STRING,\n      args: undefined,\n      log: {} as LogEvent[\"event\"][\"log\"],\n      transaction: {} as LogEvent[\"event\"][\"transaction\"],\n      block: { number: 5n } as BlockEvent[\"event\"][\"block\"],\n    },\n  } satisfies LogEvent",
+        "pattern = recordProfilePattern({\n    event,\n    args: {\n      address: zeroAddress,\n      abi: [getAbiItem({ abi: erc20ABI, name: \"balanceOf\" })],\n      functionName: \"balanceOf\",\n      args: [ALICE],\n      cache: \"immutable\",\n    },\n    hints: [],\n  })"
+      ],
+      "assertions": [
+        {
+          "kind": "runtime",
+          "line": 926,
+          "text": "expect(pattern).toMatchInlineSnapshot(`\n    {\n      \"hasConstant\": true,\n      \"pattern\": {\n        \"abi\": [\n          {\n            \"inputs\": [\n              {\n                \"internalType\": \"address\",\n                \"name\": \"\",\n                \"type\": \"address\",\n              },\n            ],\n            \"name\": \"balanceOf\",\n            \"outputs\": [\n              {\n                \"internalType\": \"uint256\",\n                \"name\": \"\",\n                \"type\": \"uint256\",\n              },\n            ],\n            \"stateMutability\": \"view\",\n            \"type\": \"function\",\n          },\n        ],\n        \"address\": {\n          \"type\": \"constant\",\n          \"value\": \"0x0000000000000000000000000000000000000000\",\n        },\n        \"args\": [\n          {\n            \"type\": \"constant\",\n            \"value\": \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n          },\n        ],\n        \"cache\": \"immutable\",\n        \"functionName\": \"balanceOf\",\n      },\n    }\n  `)"
+        },
+        {
+          "kind": "runtime",
+          "line": 967,
+          "text": "expect(recoverProfilePattern(pattern!.pattern, event)).toMatchInlineSnapshot(`\n    {\n      \"abi\": [\n        {\n          \"inputs\": [\n            {\n              \"internalType\": \"address\",\n              \"name\": \"\",\n              \"type\": \"address\",\n            },\n          ],\n          \"name\": \"balanceOf\",\n          \"outputs\": [\n            {\n              \"internalType\": \"uint256\",\n              \"name\": \"\",\n              \"type\": \"uint256\",\n            },\n          ],\n          \"stateMutability\": \"view\",\n          \"type\": \"function\",\n        },\n      ],\n      \"address\": \"0x0000000000000000000000000000000000000000\",\n      \"args\": [\n        \"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\n      ],\n      \"blockNumber\": \"latest\",\n      \"chainId\": 1,\n      \"functionName\": \"balanceOf\",\n    }\n  `)"
+        }
+      ],
+      "type_error_directives": [],
+      "discovered": true,
+      "port_status": "unimplemented",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
+      "blockers": [],
+      "expansion_status": "statically_expanded",
+      "oracle_current_status": "not_run"
+    }
+  ]
+}

@@ -272,6 +272,7 @@ func (s *Service) ProcessSetupEvents(ctx context.Context) error {
 			}
 			event := Object{"type": "setup", "chain": chain, "setupCallback": cb, "checkpoint": cp, "block": block}
 			s.options.Clients.SetEvent(event)
+			s.options.Clients.SetEventCounts(s.options.EventCount)
 			if e = s.execute(ctx, event, nil, true); e != nil {
 				return e
 			}
@@ -335,6 +336,7 @@ func (s *Service) ProcessHistoricalEvents(ctx context.Context, events []Object, 
 			return fmt.Errorf("event %q lacks column profile", name)
 		}
 		s.options.Clients.SetEvent(event)
+		s.options.Clients.SetEventCounts(s.options.EventCount)
 		chain, _ := event["chain"].(Object)
 		id, e := clientInteger(chain["id"])
 		if e != nil {
@@ -346,6 +348,7 @@ func (s *Service) ProcessHistoricalEvents(ctx context.Context, events []Object, 
 		if s.options.FieldOrder != nil {
 			fieldOrder = s.options.FieldOrder(event)
 		}
+		s.options.Clients.SetProfileFieldOrder(fieldOrder)
 		if e = s.options.Database.SetProfileEvent(store.ProfileEvent{Callback: name, Count: s.options.EventCount[name], Type: kind, ChainID: id.Uint64(), Data: store.Row(body), FieldOrder: fieldOrder}); e != nil {
 			return e
 		}
@@ -359,6 +362,7 @@ func (s *Service) ProcessHistoricalEvents(ctx context.Context, events []Object, 
 		s.options.Metrics.Completed[name]++
 		profile.Count++
 		s.options.EventCount[name]++
+		s.options.Clients.SetEventCounts(s.options.EventCount)
 		now := s.options.Now()
 		if now.Sub(lastLoop) > 25*time.Millisecond {
 			lastLoop = now
@@ -434,6 +438,10 @@ func (s *Service) ProcessRealtimeEvents(ctx context.Context, events []Object) er
 			return e
 		}
 		s.options.Clients.SetEvent(event)
+		s.options.Clients.SetEventCounts(s.options.EventCount)
+		if s.options.FieldOrder != nil {
+			s.options.Clients.SetProfileFieldOrder(s.options.FieldOrder(event))
+		}
 		body, ok := event["event"].(Object)
 		if !ok {
 			return fmt.Errorf("event body is not an object")
@@ -444,6 +452,7 @@ func (s *Service) ProcessRealtimeEvents(ctx context.Context, events []Object) er
 		}
 		s.options.Metrics.Completed[name]++
 		s.options.EventCount[name]++
+		s.options.Clients.SetEventCounts(s.options.EventCount)
 	}
 	return nil
 }

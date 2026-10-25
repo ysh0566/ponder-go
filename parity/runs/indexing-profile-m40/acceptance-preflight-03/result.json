@@ -1,0 +1,122 @@
+{
+  "complete": true,
+  "success": true,
+  "source_credit": 0,
+  "recorded_utc": "2026-10-25T14:31:11.345Z",
+  "command": [
+    "node",
+    "--test",
+    "tools/indexing-actions-path-guards.test.mjs",
+    "tools/indexing-profile-path-guards.test.mjs",
+    "tools/source-indexing-profile-evidence.test.mjs"
+  ],
+  "exit_code": 0,
+  "passed": 124,
+  "failed": 0,
+  "skipped": 0,
+  "log": {
+    "file": "parity/runs/indexing-profile-m40/acceptance-preflight-03/controls.log",
+    "sha256": "9ec36866536f4eecf7a5f822f688fc8968ed498ec9d90230667e40fc55cf337c"
+  },
+  "fixtures": [
+    {
+      "file": "testdata/indexing/source-indexing-profile.json.gz",
+      "sha256": "e511986c6c420a7e1b682b86af4a9a4e7b7c3e9e013ec3dc405af522341d7b39"
+    },
+    {
+      "file": "testdata/indexing/source-indexing-profile-probes.json.gz",
+      "sha256": "0f21946a32e76413c74b2741f23df8791b50891a2916e0de95a3c0c66d9c486c"
+    }
+  ],
+  "current_harness_inventory": [
+    {
+      "file": "tools/indexing-profile-acceptance.mjs",
+      "sha256": "55fc63856fd953b72bb6863adb2e91d8d0945a78f248509dbe6b26216e665fd3"
+    },
+    {
+      "file": "tools/indexing-profile-full-verify.mjs",
+      "sha256": "76b3e0ab3736f5b28d3e26e81f0293e51634f406345945430db85732f470cd14"
+    },
+    {
+      "file": "tools/indexing-profile-path-guards.test.mjs",
+      "sha256": "78d328bdf848b1eb8b8b874771ef56e5954223e551e7a2400f1c26390f46c113"
+    },
+    {
+      "file": "tools/indexing-profile-collect-all.mjs",
+      "sha256": "46e8118d4f0a7f7350a06840db74df719e515065ed2ec36e22aa52d5bf79f684"
+    },
+    {
+      "file": "tools/source-indexing-profile-results.mjs",
+      "sha256": "7b92ef8b2c5b4c2d7ce6d66a7fe768d5cd5f971d108d09d65bf5893fe2c6b00a"
+    },
+    {
+      "file": "tools/source-indexing-profile-map.mjs",
+      "sha256": "82a868d46a954f3627c0e5ecc268471d471f5f298e3de9793feb2ad2ac1ca693"
+    },
+    {
+      "file": "tools/source-indexing-profile-original.mjs",
+      "sha256": "b3e2750c8af135577c9bd3c781131e5732861340faf5ba64afb9754120fc552a"
+    },
+    {
+      "file": "tools/source-indexing-profile-live.config.mjs",
+      "sha256": "e7802b7274568a67abb79fa6917e85b826257758c8ab32504d4d511dbb0b8fae"
+    },
+    {
+      "file": "tools/source-indexing-profile-live.setup.ts",
+      "sha256": "950d5e47d83d4859a0d45520def70d70119bb835c232b0ec531031c6a02d1eca"
+    },
+    {
+      "file": "tools/source-indexing-profile-fixture.mjs",
+      "sha256": "54ab3c4038413b7db2445c7ef764a06ae0d8f83e8418f5d1cc8a8fa261a7001e"
+    },
+    {
+      "file": "tools/source-indexing-profile-collect.mjs",
+      "sha256": "40d0ef8eb0db3deb21ecca7bb1b31984cf27661b0feebe478516e97f7a1d683b"
+    },
+    {
+      "file": "tools/source-indexing-profile-evidence.mjs",
+      "sha256": "58468367fa3eb27a4376d8a50279c78c3ae9a504db41b10f6c3ee97c9c3b39b9"
+    },
+    {
+      "file": "tools/source-indexing-profile-evidence.test.mjs",
+      "sha256": "bcf1879a2b2e7a59c99f49242e8533301d4bc7578c3a57e1276f5da14c5d3839"
+    },
+    {
+      "file": "tools/source-indexing-profile-probes.mjs",
+      "sha256": "b333bb06f87a1b664cef06e5f80c4dc5cb52036c51b8d1d16b7e55e3db4cc493"
+    },
+    {
+      "file": "tools/source-indexing-profile-probes.config.mjs",
+      "sha256": "f8e35cf7f456b16430b53e16078126062043d300784fad2a811bf05cadd00349"
+    },
+    {
+      "file": "tools/source-indexing-profile-probes.test.ts",
+      "sha256": "249dd7e1ad20061e412c459a8c7b0608a2b6d99a8f808b43b6678a77d5ba9e58"
+    },
+    {
+      "file": "tools/source-indexing-profile-probe-fixture.mjs",
+      "sha256": "8cff6080c465c673c34a5abe726aba6ee1f7c23d428e3cf19934e70865947498"
+    }
+  ],
+  "required_supplemental_tests": [
+    "TestSourceIndexingProfileEdges",
+    "TestProfilePrimitiveEquality",
+    "TestSourceIndexingPrefetchProbes",
+    "TestClientProfileServiceContext",
+    "TestClientPrefetchCloseOwnsFailedSibling",
+    "TestClientPrefetchReaderSingleSettlement"
+  ],
+  "required_store_tests": [
+    "TestSourceRPCAsyncReadAdmission",
+    "TestSourceRPCAsyncReadValidation",
+    "TestSourceRPCAsyncReadCallerCancellation",
+    "TestSourceRPCAsyncReadBackends"
+  ],
+  "required_store_scenarios": [
+    "prepared_read_hit_and_miss",
+    "close_timeout_retains_read_ownership",
+    "bound_adapters_no_async_reader",
+    "late_sql_read_error"
+  ],
+  "native_aggregate_acceptance": false
+}

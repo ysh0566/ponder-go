@@ -7,7 +7,7 @@ import {validateContextEntry} from './loopback-context.mjs';
 const root=path.resolve(import.meta.dirname,'..'),arg=process.argv.find(x=>x.startsWith('--run-dir='));
 if(!arg)throw Error('Explicit complete run directory required');
 const directory=path.resolve(root,arg.slice(10)),relative=path.relative(root,directory);
-if(!['runtime-index-m35','runtime-historical-m36','runtime-multichain-m37','indexing-service-m38','indexing-actions-m39'].some(stage=>relative.startsWith('parity/runs/'+stage+'/')))throw Error('Scoped M35 run required');
+if(!['runtime-index-m35','runtime-historical-m36','runtime-multichain-m37','indexing-service-m38','indexing-actions-m39','indexing-profile-m40'].some(stage=>relative.startsWith('parity/runs/'+stage+'/')))throw Error('Scoped M35 run required');
 const read=file=>JSON.parse(fs.readFileSync(path.resolve(root,file),'utf8'));
 const hash=file=>({file:path.relative(root,path.resolve(root,file)),sha256:crypto.createHash('sha256').update(fs.readFileSync(path.resolve(root,file))).digest('hex')});
 const check=(value,message)=>{if(!value)throw Error(message)};

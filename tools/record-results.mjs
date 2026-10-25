@@ -1,3 +1,5 @@
+import {indexingProfileSupplementalTests,indexingProfileStoreTests,indexingProfileStoreScenarios} from './indexing-profile-acceptance.mjs';
+import {indexingProfileTargets} from './source-indexing-profile-evidence.mjs';
 import {indexingActionsTargets} from './source-indexing-actions-evidence.mjs';
 import {indexingServiceTargets,indexingServiceTypeGaps} from './source-indexing-service-evidence.mjs';
 import {multichainTargets,multichainProbeNames} from './source-runtime-multichain-evidence.mjs';
@@ -97,11 +99,13 @@ const runtimeHistoricalVerificationFile = "parity/runs/source-runtime-historical
 const runtimeHistoricalVerification = exists(runtimeHistoricalVerificationFile) ? read(runtimeHistoricalVerificationFile) : null;
 const runtimeMultichainVerificationFile = "parity/runs/source-runtime-multichain-verification.json";
 const runtimeMultichainVerification = exists(runtimeMultichainVerificationFile) ? read(runtimeMultichainVerificationFile) : null;
+const indexingProfileVerificationFile="parity/runs/source-indexing-profile-verification.json";
+const indexingProfileVerification=exists(indexingProfileVerificationFile)?read(indexingProfileVerificationFile):null;
 const indexingActionsVerificationFile="parity/runs/source-indexing-actions-verification.json";
 const indexingActionsVerification=exists(indexingActionsVerificationFile)?read(indexingActionsVerificationFile):null;
 const indexingServiceVerificationFile="parity/runs/source-indexing-service-verification.json";
 const indexingServiceVerification=exists(indexingServiceVerificationFile)?read(indexingServiceVerificationFile):null;
-if(!runDir&&[syncVerification,historicalVerification,realtimeVerification,configCompile,runtimeIndexVerification,runtimeHistoricalVerification,runtimeMultichainVerification,indexingServiceVerification,indexingActionsVerification].some(proof=>proof?.environment_adapted))throw Error("Adapted canonical verification requires an explicit --run-dir; historical native logs cannot substitute");
+if(!runDir&&[syncVerification,historicalVerification,realtimeVerification,configCompile,runtimeIndexVerification,runtimeHistoricalVerification,runtimeMultichainVerification,indexingServiceVerification,indexingActionsVerification,indexingProfileVerification].some(proof=>proof?.environment_adapted))throw Error("Adapted canonical verification requires an explicit --run-dir; historical native logs cannot substitute");
 function proofArchive(verification, execution) {
 	return runDir ? loadArchive(execution?.context_archive ?? verification.context_archive ?? fullRun.context_archive) : null;
 }
@@ -187,6 +191,23 @@ if(runtimeMultichainVerification){
  }
 }
 
+const indexingProfileIDs=new Set(indexingProfileTargets);
+if(runDir&&ledger.tests.some(t=>t.mapping&&indexingProfileIDs.has(t.id))&&!indexingProfileVerification)throw Error("Indexing profile mappings require current complete evidence");
+if(indexingProfileVerification){
+ const v=indexingProfileVerification;validateCurrentProof(v,"indexing-profile");
+ if(!v.success||v.scope!=="complete_module_source_indexing_profile"||v.summary.source_cases!==24||v.summary.source_assertions!==63||v.summary.targeted_cases!==12||v.summary.targeted_assertions!==30||v.summary.source_error_directives!==0||v.summary.complete_mapping_candidates!==12||v.summary.supplementary_source_credit!==0||v.summary.profile_originals!==10||v.summary.prefetch_originals!==2||v.summary.unmapped_client_originals!==12||v.executions.length!==4||v.inputs.some(ref=>!proofValid(ref,v))||![v.previous_actions_proof,v.source_only].every(diskValid))throw Error("Complete12/30/0 indexing profile proof required");
+ const selected=ledger.tests.filter(t=>indexingProfileIDs.has(t.id)),seen=new Set();
+ if(JSON.stringify(v.supplemental_tests)!==JSON.stringify(indexingProfileSupplementalTests)||JSON.stringify(v.store_tests)!==JSON.stringify(indexingProfileStoreTests)||JSON.stringify(v.store_scenarios)!==JSON.stringify(indexingProfileStoreScenarios))throw Error("Exact current profile supplemental required");
+ if(ledger.tests.some(t=>t.mapping&&t.source_file==="packages/core/src/indexing/client.test.ts"&&!indexingProfileIDs.has(t.id)))throw Error("Other twelve client originals remain unmapped in M40");
+ for(const e of v.executions){const key=e.mode+"/"+e.backend,results=e.mode==="normal"?go:race;
+  if(!["normal/postgres","normal/pglite","race/postgres","race/pglite"].includes(key)||seen.has(key)||e.cases.length!==12||[e.log,e.native,e.artifact,e.probe_artifact,e.capture,e.original,e.result,e.context_archive,...e.source_context,...Object.values(e.probe).filter(x=>x?.file),...e.probe.source_context].some(r=>!proofValid(r,v,e)))throw Error("All native profile mode/backend results required");seen.add(key);
+  for(const name of indexingProfileSupplementalTests)if(results.get(`ponder.local/ponder-go/indexing:${name}`)?.Action!=="pass")throw Error("Current profile supplemental missing");
+  for(const name of indexingProfileStoreTests)if(results.get(`ponder.local/ponder-go/store:${name}`)?.Action!=="pass")throw Error("Current read queue test missing");
+  for(const name of indexingProfileStoreScenarios)if(results.get(`ponder.local/ponder-go/store:TestSourceRPCAsyncReadBackends/${e.backend}/${name}`)?.Action!=="pass")throw Error("Current read queue backend lifecycle missing");
+  for(const t of selected){const cs=e.cases.filter(c=>c.source_id===t.id),c=cs[0],prefix=t.source_file.endsWith("/profile.test.ts")?"TestSourceIndexingProfile":"TestSourceIndexingPrefetch",name=prefix+"/"+e.backend+"/"+t.id;if(cs.length!==1||c.go_test!==name||!c.runtime_passed||!c.formal_credit||c.native_type_obligations!==0||t.type_error_directives.length!==0||results.get(`ponder.local/ponder-go/indexing:${name}`)?.Action!=="pass")throw Error("Exact profile/prefetch original result required");}
+ }
+}
+
 const indexingActionsIDs=new Set(indexingActionsTargets);
 if(runDir&&ledger.tests.some(t=>t.mapping&&indexingActionsIDs.has(t.id))&&!indexingActionsVerification)throw Error("Indexing action mappings require current complete evidence");
 if(indexingActionsVerification){
@@ -205,7 +226,7 @@ if(runDir&&ledger.tests.some(t=>t.mapping&&t.source_file==="packages/core/src/in
 if(indexingServiceVerification){
  const v=indexingServiceVerification;validateCurrentProof(v,"indexing-service");
  const selected=ledger.tests.filter(t=>t.source_file==="packages/core/src/indexing/index.test.ts"&&indexingServiceIDs.has(t.id));
- if(!v.success||v.scope!=="complete_module_source_indexing_service"||v.summary.source_cases!==23||v.summary.source_assertions!==42||v.summary.targeted_cases!==15||v.summary.targeted_assertions!==33||v.summary.source_error_directives!==3||v.summary.complete_mapping_candidates!==12||v.summary.native_type_pending_cases!==3||v.summary.native_type_obligations_verified!==0||v.summary.supplementary_source_credit!==0||v.summary.proxy_source_operations!==23||v.summary.proxy_native_operations!==(runDir?.startsWith("parity/runs/indexing-actions-m39/")?23:22)||v.summary.proxy_descriptor_gap!==(runDir?.startsWith("parity/runs/indexing-actions-m39/")?0:1)||v.summary.cache_invocation_prefix_gap!==!runDir?.startsWith("parity/runs/indexing-actions-m39/")||(runDir?.startsWith("parity/runs/indexing-actions-m39/")&&(v.summary.cache_invocation_prefix_scope!=="strict_standalone_prepared_admission_only"||v.summary.cache_read_visibility_equivalence!==false))||v.summary.source_sync_table_snapshots!=='archival_only'||v.summary.native_business_database_assertions!=='original_insert_find_only'||JSON.stringify(v.type_gaps)!==JSON.stringify(indexingServiceTypeGaps)||v.executions.length!==4||v.inputs.some(ref=>!proofValid(ref,v)))throw Error("Complete indexing runtime proof and honest static gaps required");
+ if(!v.success||v.scope!=="complete_module_source_indexing_service"||v.summary.source_cases!==23||v.summary.source_assertions!==42||v.summary.targeted_cases!==15||v.summary.targeted_assertions!==33||v.summary.source_error_directives!==3||v.summary.complete_mapping_candidates!==12||v.summary.native_type_pending_cases!==3||v.summary.native_type_obligations_verified!==0||v.summary.supplementary_source_credit!==0||v.summary.proxy_source_operations!==23||v.summary.proxy_native_operations!==(["indexing-actions-m39","indexing-profile-m40"].some(stage=>runDir?.startsWith("parity/runs/"+stage+"/"))?23:22)||v.summary.proxy_descriptor_gap!==(["indexing-actions-m39","indexing-profile-m40"].some(stage=>runDir?.startsWith("parity/runs/"+stage+"/"))?0:1)||v.summary.cache_invocation_prefix_gap!==!["indexing-actions-m39","indexing-profile-m40"].some(stage=>runDir?.startsWith("parity/runs/"+stage+"/"))||(["indexing-actions-m39","indexing-profile-m40"].some(stage=>runDir?.startsWith("parity/runs/"+stage+"/"))&&(v.summary.cache_invocation_prefix_scope!=="strict_standalone_prepared_admission_only"||v.summary.cache_read_visibility_equivalence!==false))||v.summary.source_sync_table_snapshots!=='archival_only'||v.summary.native_business_database_assertions!=='original_insert_find_only'||JSON.stringify(v.type_gaps)!==JSON.stringify(indexingServiceTypeGaps)||v.executions.length!==4||v.inputs.some(ref=>!proofValid(ref,v)))throw Error("Complete indexing runtime proof and honest static gaps required");
  if(!v.proxy||!v.cache||v.proxy.source_credit!==0||v.cache.source_credit!==0||[v.proxy.capture,v.proxy.result,v.proxy.original,v.proxy.context_archive,v.proxy.fixture,...v.proxy.source_context,v.cache.capture,v.cache.result,v.cache.original,v.cache.context_archive,v.cache.fixture,...v.cache.source_context,v.source_only].some(ref=>!diskValid(ref)))throw Error("Current zero-credit actual proxy proof missing");
  const expectedSupplementalTests=['TestSourceIndexingServiceCache','TestClientAsyncCacheOwnership','TestDatabaseErrorBrandNotDisplayName','TestServiceErrorBrandNotDisplayName','TestSourceIndexingServiceProxy','TestPropertyViewReadOrderAndPresence','TestPropertyViewInvalidAccessStickyAndMutation','TestPropertyViewWritesDeleteAndBindingIdentity','TestPropertyViewHasKeysAndDisabledInspection','TestPropertyViewComponentsAndValidation','TestColumnIncludeSourceOrder','TestClientEventBalanceAndIdentity','TestClientPersistentCacheAndErrors','TestClientHTTPTransport','TestDatabaseErrorSourceClassification','TestDatabaseStickyOnlyRetryable','TestDatabaseAdaptersRealBackends','TestDatabasePostgresRealConnectionLossSticky','TestServiceSupplementalTwoChainIdentityAndSetup','TestServiceSupplementalStickyErrorTiming','TestServiceSupplementalConvergenceAndInvalidation','TestServiceSupplementalCancellationAndReentrancy'];
  if(JSON.stringify(v.supplemental_tests)!==JSON.stringify(expectedSupplementalTests))throw Error("Exact indexing supplemental census required");
@@ -467,6 +488,10 @@ for (const test of ledger.tests) {
    if(indexingServiceGapIDs.has(test.id)){test.runtime_status="passed";test.execution_status="executed";test.pass_status=null;test.execution_evidence=indexingServiceVerificationFile;test.race={status:"pass",evidence:raceFile};test.remaining_native_type_obligations=test.type_error_directives.length;test.type_directives_verification={status:"pending",native_verified:0,obligations:test.type_error_directives.length,meaning:"Exact TS obligations are missing mockRejectedValue on normal callback (two cases), and deletion of required transaction.maxPriorityFeePerGas (one case). Runtime execution is not static-equivalence proof."};test.parity_status="runtime_passed_type_obligations_pending";}
   }
  }
+ if(runDir&&indexingProfileIDs.has(test.id)&&indexingProfileVerification){
+  currentLiveOracle(test,indexingProfileVerification,indexingProfileVerificationFile,4);
+  test.runtime_validation={status:"passed",evidence:indexingProfileVerificationFile,run_dir:runDir,meaning:"Ten unchanged profile originals and two prefetch originals, thirty assertions and zero static directives replay from actual inputs on both source/native backend fixtures in complete normal/race. Controlled source boundary probes earn no extra credit. Other twelve client originals, full cachedViemClient/raw transport, outer runner and topology remain out of scope."};
+ }
  if(runDir&&indexingActionsIDs.has(test.id)&&indexingActionsVerification){
   currentLiveOracle(test,indexingActionsVerification,indexingActionsVerificationFile,4);
   test.runtime_validation={status:"passed",evidence:indexingActionsVerificationFile,run_dir:runDir,meaning:"Eight unchanged public-action originals, nine assertions and zero static directives replay on PostgreSQL/PGlite in full normal/race. Genuine ABI/aggregate3/cache behavior; real supplemental vectors earn no extra credit. No profiling/prefetch/LRU or full indexing/client.test.ts claim."};
@@ -666,6 +691,7 @@ const summary = {
  source_realtime_verification:realtimeVerification?{...realtimeVerification.summary,evidence:"parity/runs/source-realtime-verification.json"}:null,
  source_historical_verification:historicalVerification?{...historicalVerification.summary,evidence:"parity/runs/source-historical-verification.json"}:null,
  source_sync_verification:syncVerification?{...syncVerification.summary,evidence:"parity/runs/source-sync-verification.json"}:null,
+ source_indexing_profile_verification:indexingProfileVerification?{...indexingProfileVerification.summary,evidence:indexingProfileVerificationFile,environment_adapted:true,pristine_file:false}:null,
  source_indexing_actions_verification:indexingActionsVerification?{...indexingActionsVerification.summary,evidence:indexingActionsVerificationFile,environment_adapted:true,pristine_file:false}:null,
  source_indexing_service_verification:indexingServiceVerification?{...indexingServiceVerification.summary,evidence:indexingServiceVerificationFile,environment_adapted:true,pristine_file:false}:null,
  source_runtime_multichain_verification:runtimeMultichainVerification?{...runtimeMultichainVerification.summary,evidence:runtimeMultichainVerificationFile,environment_adapted:true,pristine_file:false}:null,

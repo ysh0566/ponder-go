@@ -1,0 +1,335 @@
+package indexing
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"math"
+	"ponder.local/ponder-go/rpc"
+	"strings"
+)
+
+// ProfileEntry is a snapshot of a sampled RPC pattern (not database row profiling).
+type ProfileEntry struct {
+	Key      string
+	Recorded *RecordedProfile
+	Count    uint64
+}
+type clientProfile struct {
+	entries          map[string]*ProfileEntry
+	order, constants []string
+}
+type prefetchValue struct {
+	raw    json.RawMessage
+	err    error
+	done   chan struct{}
+	future bool
+}
+type predictedCall struct {
+	client *Client
+	params []any
+	score  float64
+}
+
+// SetEventCounts snapshots the caller-owned counts. Service updates this from its
+// real successful-dispatch counters. Explicit clients must update it themselves,
+// just as the source caller owns eventCount; SetEvent never increments a count.
+func (s *ClientSet) SetEventCounts(counts map[string]uint64) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.eventCounts = map[string]uint64{}
+	for k, v := range counts {
+		s.eventCounts[k] = v
+	}
+}
+func (s *ClientSet) SetProfileFieldOrder(order map[string][]string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.profileFieldOrder = order
+}
+func (s *ClientSet) Profiles(name string) []ProfileEntry {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	var out []ProfileEntry
+	if p := s.profiles[name]; p != nil {
+		for _, k := range p.order {
+			out = append(out, *p.entries[k])
+		}
+	}
+	return out
+}
+func removeProfileKey(keys []string, key string) []string {
+	for i, k := range keys {
+		if k == key {
+			return append(keys[:i], keys[i+1:]...)
+		}
+	}
+	return keys
+}
+func (c *Client) recordContracts(contracts []ContractCall, options BlockOptions, multicall bool) error {
+	s := c.set
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.event["type"] == "setup" || options.BlockNumber != nil {
+		return nil
+	}
+	cb, _ := s.event["eventCallback"].(Object)
+	name, _ := cb["name"].(string)
+	count, exists := s.eventCounts[name]
+	if !exists || count%10 != 1 {
+		return nil
+	}
+	if s.profiles == nil {
+		s.profiles = map[string]*clientProfile{}
+	}
+	p := s.profiles[name]
+	if p == nil {
+		p = &clientProfile{entries: map[string]*ProfileEntry{}}
+		s.profiles[name] = p
+	}
+	if multicall && len(contracts) >= 10 {
+		return nil
+	}
+	for _, contract := range contracts {
+		hints := make([]*RecordedProfile, 0, len(p.order))
+		for _, k := range p.order {
+			hints = append(hints, p.entries[k].Recorded)
+		}
+		cache := options.Cache
+		if multicall {
+			cache = ""
+		} // source records each child, not outer cache option.
+		recorded, err := RecordProfilePattern(s.event, contract, cache, hints, s.profileFieldOrder)
+		if err != nil {
+			return err
+		}
+		if recorded == nil {
+			continue
+		}
+		key, err := GetProfilePatternKey(recorded.Pattern)
+		if err != nil {
+			return err
+		}
+		if entry := p.entries[key]; entry != nil {
+			entry.Count++
+			if recorded.HasConstant {
+				p.constants = append(removeProfileKey(p.constants, key), key)
+			}
+		} else {
+			p.entries[key] = &ProfileEntry{key, recorded, 1}
+			p.order = append(p.order, key)
+			if recorded.HasConstant {
+				p.constants = append(p.constants, key)
+				if len(p.constants) > 10 {
+					old := p.constants[0]
+					p.constants = p.constants[1:]
+					delete(p.entries, old)
+					p.order = removeProfileKey(p.order, old)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// Clear discards ephemeral prefetched values only. Learned profiles and their LRU
+// survive; in-flight work remains owned and joined by Close (it is not reinserted).
+func (s *ClientSet) Clear() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, c := range s.clients {
+		c.prefetched = map[string]*prefetchValue{}
+	}
+}
+func canonicalPredictionKey(params any) (string, error) {
+	b, e := json.Marshal(Object{"method": "eth_call", "params": params})
+	return strings.ToLower(string(b)), e
+}
+
+// Prefetch recovers requests against the supplied future events. Completion means
+// database lookup and RPC admission, NOT completion of admitted RPCs. First request
+// wins deduplication BEFORE chain grouping, intentionally ignoring chain ID like
+// the pinned source. Persistent-cache disabling does not disable RPC warming.
+func (s *ClientSet) Prefetch(ctx context.Context, events []Object) error {
+	s.mu.RLock()
+	if s.closed {
+		s.mu.RUnlock()
+		return fmt.Errorf("indexing client is closed")
+	}
+	predictions := []predictedCall{}
+	seen := map[string]bool{}
+	for _, event := range events {
+		cb, _ := event["eventCallback"].(Object)
+		name, _ := cb["name"].(string)
+		p := s.profiles[name]
+		if p == nil {
+			continue
+		}
+		for _, key := range p.order {
+			entry := p.entries[key]
+			request, err := RecoverProfilePattern(entry.Recorded.Pattern, event)
+			if err != nil {
+				s.mu.RUnlock()
+				return err
+			}
+			data, _, err := encodeContractCall(request.ContractCall)
+			if err != nil {
+				s.mu.RUnlock()
+				return err
+			}
+			tag := "latest"
+			if request.BlockNumber != "latest" {
+				n, e := clientInteger(request.BlockNumber)
+				if e != nil {
+					s.mu.RUnlock()
+					return e
+				}
+				tag = "0x" + n.Text(16)
+			}
+			params := []any{Object{"to": request.Address, "data": data}, tag}
+			key, err := canonicalPredictionKey(params)
+			if err != nil {
+				s.mu.RUnlock()
+				return err
+			}
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+			chain, err := clientInteger(request.ChainID)
+			if err != nil {
+				s.mu.RUnlock()
+				return err
+			}
+			client := s.clients[chain.String()]
+			if client == nil {
+				s.mu.RUnlock()
+				return fmt.Errorf("unknown prediction chain %s", chain)
+			}
+			count, ok := s.eventCounts[name]
+			score := math.NaN()
+			if ok {
+				score = float64(entry.Count) * 10 / float64(count)
+			}
+			predictions = append(predictions, predictedCall{client, params, score})
+		}
+	}
+	s.mu.RUnlock()
+	// Preserve configured chain order. Per-key CacheGet is the native adapter
+	// facade; no equivalence of source batched DB invocation grouping is claimed.
+	for _, chain := range s.chainOrder {
+		for _, p := range predictions {
+			if p.client != s.clients[chain] || !(p.score > 0.2) {
+				continue
+			}
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+			raw, hit, err := p.client.cached(ctx, "eth_call", p.params)
+			if err != nil {
+				return err
+			}
+			key, err := p.client.cacheKey("eth_call", p.params)
+			if err != nil {
+				return err
+			}
+			if hit {
+				s.mu.Lock()
+				p.client.prefetched[key] = &prefetchValue{raw: append(json.RawMessage(nil), raw...)}
+				s.mu.Unlock()
+			} else if p.score > 0.8 {
+				if err := p.client.admitPrefetch(ctx, key, p.params); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+func (c *Client) admitPrefetch(ctx context.Context, key string, params any) error {
+	s := c.set
+	s.mu.Lock()
+	if s.closed {
+		s.mu.Unlock()
+		return fmt.Errorf("indexing client is closed")
+	}
+	child, cancel := context.WithCancel(ctx)
+	s.nextPrefetch++
+	id := s.nextPrefetch
+	if len(s.prefetchPending) == 0 {
+		s.prefetchDrained = make(chan struct{})
+	}
+	s.prefetchPending[id] = cancel
+	v := &prefetchValue{done: make(chan struct{}), future: true}
+	c.prefetched[key] = v
+	s.mu.Unlock()
+	var completion <-chan error
+	if a, ok := c.requester.(rpc.AsyncRequester); ok {
+		completion = a.BeginCall(child, "eth_call", params, &v.raw)
+	} else {
+		ch := make(chan error, 1)
+		completion = ch
+		go func() { ch <- c.requester.Call(child, "eth_call", params, &v.raw); close(ch) }()
+	}
+	go func() {
+		if completion == nil {
+			v.err = fmt.Errorf("requester returned nil prefetch completion")
+		} else {
+			v.err = <-completion
+		}
+		close(v.done)
+		cancel()
+		s.mu.Lock()
+		delete(s.prefetchPending, id)
+		if len(s.prefetchPending) == 0 {
+			close(s.prefetchDrained)
+		}
+		s.mu.Unlock()
+	}()
+	return nil
+}
+func (s *ClientSet) WaitPrefetch(ctx context.Context) error {
+	s.mu.RLock()
+	done := s.prefetchDrained
+	s.mu.RUnlock()
+	select {
+	case <-done:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+// prefetchedResult does not consume entries. Failed futures are thrown by single
+// calls, but multicall ignores them and falls through to eventual transport.
+func (c *Client) prefetchedResult(ctx context.Context, method string, params any, multicall bool) (json.RawMessage, bool, error) {
+	key, err := c.cacheKey(method, params)
+	if err != nil {
+		return nil, false, err
+	}
+	c.set.mu.RLock()
+	v := c.prefetched[key]
+	c.set.mu.RUnlock()
+	if v == nil {
+		return nil, false, nil
+	}
+	if v.future {
+		select {
+		case <-v.done:
+		case <-ctx.Done():
+			return nil, false, ctx.Err()
+		}
+		if v.err != nil {
+			if multicall {
+				return nil, false, nil
+			}
+			return nil, true, v.err
+		}
+		// Source compares JSON.stringify(result) against raw ["0x", null], so even
+		// serialized empty values pass this check. Preserve that prefetch-only quirk.
+		if c.cacheEnabled && c.cache != nil && string(v.raw) != "0x" {
+			c.set.putAsync(ctx, c.cache, key, v.raw)
+		}
+	}
+	return append(json.RawMessage(nil), v.raw...), true, nil
+}

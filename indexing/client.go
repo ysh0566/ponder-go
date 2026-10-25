@@ -19,15 +19,25 @@ type BalanceOptions struct {
 
 // ClientSet owns stable per-chain client identities and the currently dispatched
 // source event. Its public actions are a bounded subset; it does not implement
-// cachedViemClient profiling, prefetching, or the in-memory LRU.
+// the full raw transport or outer indexing runner.
 type ClientSet struct {
-	mu        sync.RWMutex
-	event     Object
-	clients   map[string]*Client
-	closed    bool
-	pending   map[uint64]context.CancelFunc
-	nextWrite uint64
-	drained   chan struct{}
+	mu                sync.RWMutex
+	event             Object
+	clients           map[string]*Client
+	closed            bool
+	pending           map[uint64]context.CancelFunc
+	nextWrite         uint64
+	drained           chan struct{}
+	eventCounts       map[string]uint64
+	profileFieldOrder map[string][]string
+	profiles          map[string]*clientProfile
+	chainOrder        []string
+	prefetchPending   map[uint64]context.CancelFunc
+	nextPrefetch      uint64
+	prefetchDrained   chan struct{}
+	lookupPending     map[uint64]context.CancelFunc
+	nextLookup        uint64
+	lookupDrained     chan struct{}
 }
 type Client struct {
 	set          *ClientSet
@@ -35,6 +45,7 @@ type Client struct {
 	cache        rpc.Cache
 	chainID      any
 	cacheEnabled bool
+	prefetched   map[string]*prefetchValue
 }
 
 // NewClientSet accepts optional persistent RPC caches in the same order as chains.
@@ -45,6 +56,12 @@ func NewClientSet(chains []Object, requesters []rpc.Requester, caches ...rpc.Cac
 	}
 	s := &ClientSet{clients: map[string]*Client{}, pending: map[uint64]context.CancelFunc{}, drained: make(chan struct{})}
 	close(s.drained)
+	s.prefetchPending = map[uint64]context.CancelFunc{}
+	s.prefetchDrained = make(chan struct{})
+	close(s.prefetchDrained)
+	s.lookupPending = map[uint64]context.CancelFunc{}
+	s.lookupDrained = make(chan struct{})
+	close(s.lookupDrained)
 	for i, chain := range chains {
 		key, e := clientChainKey(chain)
 		if e != nil {
@@ -56,12 +73,13 @@ func NewClientSet(chains []Object, requesters []rpc.Requester, caches ...rpc.Cac
 		if requesters[i] == nil {
 			return nil, fmt.Errorf("missing requester for chain %s", key)
 		}
-		c := &Client{set: s, requester: requesters[i], chainID: json.Number(key)}
+		c := &Client{set: s, requester: requesters[i], chainID: json.Number(key), prefetched: map[string]*prefetchValue{}}
 		c.cacheEnabled, _ = chain["cacheRpcRequests"].(bool)
 		if i < len(caches) {
 			c.cache = caches[i]
 		}
 		s.clients[key] = c
+		s.chainOrder = append(s.chainOrder, key)
 	}
 	return s, nil
 }
@@ -236,6 +254,15 @@ func (s *ClientSet) Close(ctx context.Context) error {
 	for _, cancel := range s.pending {
 		cancel()
 	}
+	for _, cancel := range s.lookupPending {
+		cancel()
+	}
+	for _, cancel := range s.prefetchPending {
+		cancel()
+	}
 	s.mu.Unlock()
+	if err := s.WaitPrefetch(ctx); err != nil {
+		return err
+	}
 	return s.WaitCacheWrites(ctx)
 }

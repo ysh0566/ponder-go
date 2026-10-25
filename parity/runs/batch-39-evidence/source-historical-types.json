@@ -1,0 +1,319 @@
+{
+  "complete": true,
+  "success": true,
+  "source_error_directives": 12,
+  "diagnostics": 12,
+  "executions": [
+    {
+      "kind": "in-memory",
+      "mode": "pristine",
+      "exit_code": 0,
+      "error": null,
+      "report": {
+        "file": "parity/runs/history-m33/types-2026-10-25T15-11-21-677Z-56984/in-memory-pristine.json",
+        "sha256": "a7eb24c4e30c6d5f2942a6756774fc720985e8d67548d696aa058232767a9ff8"
+      },
+      "complete": true,
+      "success": true,
+      "typescript": "5.4.5",
+      "actual": [],
+      "other": [],
+      "source_context": [
+        {
+          "file": "tools/source-historical-types.mjs",
+          "sha256": "045401377152a0e022353c673902b441bd67cf5aadec63efde5c0cadbf3a8672"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/in-memory.test.ts",
+          "sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/tsconfig.json",
+          "sha256": "21745dcb1e01934c37b902f730ae40fa3daa63f39944ffdeea860278caf85f6c"
+        },
+        {
+          "file": "../ponder-upstream/tsconfig.base.json",
+          "sha256": "9a244a82a034dfc88055685a14ead3190f41d953d054251e8e9bd9975845cd52"
+        },
+        {
+          "file": "../ponder-upstream/packages/utils/src/index.ts",
+          "sha256": "c4ba739226f5fd160c07a5d956e2dc703f937148aa43101d8f7a0668405ae8d7"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/internal/types.ts",
+          "sha256": "c06a583c7b3c321a1566abf5d99cdb6a30598279d53d4a5572b6c3134e61ab35"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/rpc/index.ts",
+          "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+        },
+        {
+          "file": "../ponder-upstream/pnpm-lock.yaml",
+          "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+        }
+      ],
+      "effective_options": {
+        "rootDir": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream",
+        "utils_entry": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/packages/utils/src/index.ts"
+      }
+    },
+    {
+      "kind": "in-memory",
+      "mode": "stripped",
+      "exit_code": 0,
+      "error": null,
+      "report": {
+        "file": "parity/runs/history-m33/types-2026-10-25T15-11-21-677Z-56984/in-memory-stripped.json",
+        "sha256": "4eb893138777719fc5ccab90d3eb1101e60e9c8f893d9f8008971b4543b9bf03"
+      },
+      "complete": true,
+      "success": true,
+      "typescript": "5.4.5",
+      "actual": [
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/in-memory.test.ts",
+          "start": 5276,
+          "line": 202,
+          "code": 2322,
+          "message": "Type '(request: any) => Promise<string | boolean | `0x${string}`[] | { accessList: AccessList; gasUsed: `0x${string}`; } | RpcFeeHistory | RpcBlock | RpcLog[] | RpcProof | RpcTransaction | RpcTransactionReceipt | RpcUncle | readonly (RpcBlock & { calls: readonly { error?: { data?: `0x${string}` | undefined; code: number; message: string; } | undefined; logs?: readonly RpcLog[] | undefined; gasUsed: `0x${string}`; returnData: `0x${string}`; status: `0x${string}`; }[]; })[] | RpcTransactionReceipt[] | Trace[] | { transactionHash: \"0x0000000000000000000000000000000000000000000000000000000000000000\"; }[] | null>' is not assignable to type '<TParameters extends { method: \"web3_clientVersion\"; params?: undefined; } | { method: \"web3_sha3\"; params: [data: `0x${string}`]; } | { method: \"net_listening\"; params?: undefined; } | { method: \"net_peerCount\"; params?: undefined; } | { method: \"net_version\"; params?: undefined; } | { method: \"eth_blobBaseFee\"; params?: undefined; } | { method: \"eth_blockNumber\"; params?: undefined; } | { method: \"eth_call\"; params: readonly [transaction: ExactPartial<RpcTransactionRequest>] | readonly [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier] | readonly [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier, stateOverrideSet: RpcStateOverride] | readonly [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier, stateOverrideSet: RpcStateOverride, blockOverrides: Rpc]; } | { method: \"eth_createAccessList\"; params: [transaction: ExactPartial<RpcTransactionRequest>] | [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; } | { method: \"eth_chainId\"; params?: undefined; } | { method: \"eth_coinbase\"; params?: undefined; } | { method: \"eth_estimateGas\"; params: [transaction: RpcTransactionRequest] | [transaction: RpcTransactionRequest, block: `0x${string}` | BlockTag] | [transaction: RpcTransactionRequest, block: `0x${string}` | BlockTag, stateOverride: RpcStateOverride]; } | { method: \"eth_feeHistory\"; params: [blockCount: `0x${string}`, newestBlock: `0x${string}` | BlockTag, rewardPercentiles: number[] | undefined]; } | { method: \"eth_gasPrice\"; params?: undefined; } | { method: \"eth_getBalance\"; params: [address: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; } | { method: \"eth_getBlockByHash\"; params: [hash: `0x${string}`, includeTransactionObjects: boolean]; } | { method: \"eth_getBlockByNumber\"; params: [block: `0x${string}` | BlockTag, includeTransactionObjects: boolean]; } | { method: \"eth_getBlockTransactionCountByHash\"; params: [hash: `0x${string}`]; } | { method: \"eth_getBlockTransactionCountByNumber\"; params: [block: `0x${string}` | BlockTag]; } | { method: \"eth_getCode\"; params: [address: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; } | { method: \"eth_getFilterChanges\"; params: [filterId: `0x${string}`]; } | { method: \"eth_getFilterLogs\"; params: [filterId: `0x${string}`]; } | { method: \"eth_getLogs\"; params: [{ address?: `0x${string}` | `0x${string}`[] | undefined; topics?: LogTopic[] | undefined; } & ({ fromBlock?: `0x${string}` | BlockTag | undefined; toBlock?: `0x${string}` | BlockTag | undefined; blockHash?: undefined; } | { fromBlock?: undefined; toBlock?: undefined; blockHash?: `0x${string}` | undefined; })]; } | { method: \"eth_getProof\"; params: [address: `0x${string}`, storageKeys: `0x${string}`[], block: `0x${string}` | BlockTag]; } | { method: \"eth_getStorageAt\"; params: [address: `0x${string}`, index: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; } | { method: \"eth_getTransactionByBlockHashAndIndex\"; params: [hash: `0x${string}`, index: `0x${string}`]; } | { method: \"eth_getTransactionByBlockNumberAndIndex\"; params: [block: `0x${string}` | BlockTag, index: `0x${string}`]; } | { method: \"eth_getTransactionByHash\"; params: [hash: `0x${string}`]; } | { method: \"eth_getTransactionCount\"; params: [address: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; } | { method: \"eth_getTransactionReceipt\"; params: [hash: `0x${string}`]; } | { method: \"eth_getUncleByBlockHashAndIndex\"; params: [hash: `0x${string}`, index: `0x${string}`]; } | { method: \"eth_getUncleByBlockNumberAndIndex\"; params: [block: `0x${string}` | BlockTag, index: `0x${string}`]; } | { method: \"eth_getUncleCountByBlockHash\"; params: [hash: `0x${string}`]; } | { method: \"eth_getUncleCountByBlockNumber\"; params: [block: `0x${string}` | BlockTag]; } | { method: \"eth_maxPriorityFeePerGas\"; params?: undefined; } | { method: \"eth_newBlockFilter\"; params?: undefined; } | { method: \"eth_newFilter\"; params: [filter: { fromBlock?: `0x${string}` | BlockTag | undefined; toBlock?: `0x${string}` | BlockTag | undefined; address?: `0x${string}` | `0x${string}`[] | undefined; topics?: LogTopic[] | undefined; }]; } | { method: \"eth_newPendingTransactionFilter\"; params?: undefined; } | { method: \"eth_protocolVersion\"; params?: undefined; } | { method: \"eth_sendRawTransaction\"; params: [signedTransaction: `0x${string}`]; } | { method: \"eth_simulateV1\"; params: [{ blockStateCalls: readonly { blockOverrides?: Rpc | undefined; calls?: readonly ExactPartial<RpcTransactionRequest>[] | undefined; stateOverrides?: RpcStateOverride | undefined; }[]; returnFullTransactions?: boolean | undefined; traceTransfers?: boolean | undefined; validation?: boolean | undefined; }, `0x${string}` | BlockTag]; } | { method: \"eth_uninstallFilter\"; params: [filterId: `0x${string}`]; } | { method: \"debug_traceBlockByHash\"; params: [hash: `0x${string}`, tracingOptions: { tracer: \"callTracer\"; tracerConfig?: CallConfig | undefined; }]; } | { method: \"debug_traceBlockByNumber\"; params: [block: `0x${string}`, tracingOptions: { tracer: \"callTracer\"; tracerConfig?: CallConfig | undefined; }]; } | { method: \"eth_getBlockReceipts\"; params: [hash: `0x${string}`]; }>(parameters: TParameters, context?: { logger?: Logger | undefined; retryNullBlockRequest?: boolean | undefined; } | undefined) => Promise<RequestReturnType<TParameters[\"method\"]>>'.\n  Type 'Promise<string | boolean | `0x${string}`[] | { accessList: AccessList; gasUsed: `0x${string}`; } | RpcFeeHistory | RpcBlock | RpcLog[] | RpcProof | RpcTransaction | RpcTransactionReceipt | RpcUncle | readonly (RpcBlock & { calls: readonly { error?: { data?: `0x${string}` | undefined; code: number; message: string; } | undefined; logs?: readonly RpcLog[] | undefined; gasUsed: `0x${string}`; returnData: `0x${string}`; status: `0x${string}`; }[]; })[] | RpcTransactionReceipt[] | Trace[] | { transactionHash: \"0x0000000000000000000000000000000000000000000000000000000000000000\"; }[] | null>' is not assignable to type 'Promise<RequestReturnType<TParameters[\"method\"]>>'.\n    Type 'string | boolean | `0x${string}`[] | { accessList: AccessList; gasUsed: `0x${string}`; } | RpcFeeHistory | RpcBlock | RpcLog[] | RpcProof | RpcTransaction | RpcTransactionReceipt | RpcUncle | readonly (RpcBlock & { calls: readonly { error?: { data?: `0x${string}` | undefined; code: number; message: string; } | undefined; logs?: readonly RpcLog[] | undefined; gasUsed: `0x${string}`; returnData: `0x${string}`; status: `0x${string}`; }[]; })[] | RpcTransactionReceipt[] | Trace[] | { transactionHash: \"0x0000000000000000000000000000000000000000000000000000000000000000\"; }[] | null' is not assignable to type 'RequestReturnType<TParameters[\"method\"]>'.\n      Type 'null' is not assignable to type 'Extract<{ Method: \"web3_clientVersion\"; Parameters?: undefined; ReturnType: string; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"web3_sha3\"; Parameters: [data: `0x${string}`]; ReturnType: string; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"net_listening\"; Parameters?: undefined; ReturnType: boolean; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"net_peerCount\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"net_version\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_blobBaseFee\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_blockNumber\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_call\"; Parameters: readonly [transaction: ExactPartial<RpcTransactionRequest>] | readonly [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier] | readonly [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier, stateOverrideSet: RpcStateOverride] | readonly [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier, stateOverrideSet: RpcStateOverride, blockOverrides: Rpc]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_createAccessList\"; Parameters: [transaction: ExactPartial<RpcTransactionRequest>] | [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; ReturnType: { accessList: AccessList; gasUsed: `0x${string}`; }; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_chainId\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_coinbase\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_estimateGas\"; Parameters: [transaction: RpcTransactionRequest] | [transaction: RpcTransactionRequest, block: `0x${string}` | BlockTag] | [transaction: RpcTransactionRequest, block: `0x${string}` | BlockTag, stateOverride: RpcStateOverride]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_feeHistory\"; Parameters: [blockCount: `0x${string}`, newestBlock: `0x${string}` | BlockTag, rewardPercentiles: number[] | undefined]; ReturnType: RpcFeeHistory; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_gasPrice\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getBalance\"; Parameters: [address: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getBlockByHash\"; Parameters: [hash: `0x${string}`, includeTransactionObjects: boolean]; ReturnType: RpcBlock | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getBlockByNumber\"; Parameters: [block: `0x${string}` | BlockTag, includeTransactionObjects: boolean]; ReturnType: RpcBlock | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getBlockTransactionCountByHash\"; Parameters: [hash: `0x${string}`]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getBlockTransactionCountByNumber\"; Parameters: [block: `0x${string}` | BlockTag]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getCode\"; Parameters: [address: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getFilterChanges\"; Parameters: [filterId: `0x${string}`]; ReturnType: `0x${string}`[] | RpcLog[]; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getFilterLogs\"; Parameters: [filterId: `0x${string}`]; ReturnType: RpcLog[]; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getLogs\"; Parameters: [{ address?: `0x${string}` | `0x${string}`[] | undefined; topics?: LogTopic[] | undefined; } & ({ fromBlock?: `0x${string}` | BlockTag | undefined; toBlock?: `0x${string}` | BlockTag | undefined; blockHash?: undefined; } | { fromBlock?: undefined; toBlock?: undefined; blockHash?: `0x${string}` | undefined; })]; ReturnType: RpcLog[]; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getProof\"; Parameters: [address: `0x${string}`, storageKeys: `0x${string}`[], block: `0x${string}` | BlockTag]; ReturnType: RpcProof; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getStorageAt\"; Parameters: [address: `0x${string}`, index: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getTransactionByBlockHashAndIndex\"; Parameters: [hash: `0x${string}`, index: `0x${string}`]; ReturnType: RpcTransaction | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getTransactionByBlockNumberAndIndex\"; Parameters: [block: `0x${string}` | BlockTag, index: `0x${string}`]; ReturnType: RpcTransaction | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getTransactionByHash\"; Parameters: [hash: `0x${string}`]; ReturnType: RpcTransaction | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getTransactionCount\"; Parameters: [address: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getTransactionReceipt\"; Parameters: [hash: `0x${string}`]; ReturnType: RpcTransactionReceipt | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getUncleByBlockHashAndIndex\"; Parameters: [hash: `0x${string}`, index: `0x${string}`]; ReturnType: RpcUncle | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getUncleByBlockNumberAndIndex\"; Parameters: [block: `0x${string}` | BlockTag, index: `0x${string}`]; ReturnType: RpcUncle | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getUncleCountByBlockHash\"; Parameters: [hash: `0x${string}`]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getUncleCountByBlockNumber\"; Parameters: [block: `0x${string}` | BlockTag]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_maxPriorityFeePerGas\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_newBlockFilter\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_newFilter\"; Parameters: [filter: { fromBlock?: `0x${string}` | BlockTag | undefined; toBlock?: `0x${string}` | BlockTag | undefined; address?: `0x${string}` | `0x${string}`[] | undefined; topics?: LogTopic[] | undefined; }]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_newPendingTransactionFilter\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_protocolVersion\"; Parameters?: undefined; ReturnType: string; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_sendRawTransaction\"; Parameters: [signedTransaction: `0x${string}`]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_simulateV1\"; Parameters: [{ blockStateCalls: readonly { blockOverrides?: Rpc | undefined; calls?: readonly ExactPartial<RpcTransactionRequest>[] | undefined; stateOverrides?: RpcStateOverride | undefined; }[]; returnFullTransactions?: boolean | undefined; traceTransfers?: boolean | undefined; validation?: boolean | undefined; }, `0x${string}` | BlockTag]; ReturnType: readonly (RpcBlock & { calls: readonly { error?: { data?: `0x${string}` | undefined; code: number; message: string; } | undefined; logs?: readonly RpcLog[] | undefined; gasUsed: `0x${string}`; returnData: `0x${string}`; status: `0x${string}`; }[]; })[]; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_uninstallFilter\"; Parameters: [filterId: `0x${string}`]; ReturnType: boolean; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getBlockReceipts\"; Parameters: [hash: `0x${string}`]; ReturnType: RpcTransactionReceipt[] | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"debug_traceBlockByHash\"; Parameters: [hash: `0x${string}`, tracingOptions: { tracer: \"callTracer\"; tracerConfig?: CallConfig | undefined; }]; ReturnType: Trace[]; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"debug_traceBlockByNumber\"; Parameters: [block: `0x${string}`, tracingOptions: { tracer: \"callTracer\"; tracerConfig?: CallConfig | undefined; }]; ReturnType: Trace[]; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"]'.",
+          "source_id": "4ed88e241ef6d778d897"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/in-memory.test.ts",
+          "start": 16707,
+          "line": 587,
+          "code": 2339,
+          "message": "Property 'address' does not exist on type 'Filter'.\n  Property 'address' does not exist on type 'BlockFilter'.",
+          "source_id": "e7360d814bb5552f5222"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/in-memory.test.ts",
+          "start": 17956,
+          "line": 636,
+          "code": 2339,
+          "message": "Property 'address' does not exist on type 'Filter'.\n  Property 'address' does not exist on type 'BlockFilter'.",
+          "source_id": "da3e0236d21a83248db7"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/in-memory.test.ts",
+          "start": 18120,
+          "line": 639,
+          "code": 2339,
+          "message": "Property 'address' does not exist on type 'Filter'.\n  Property 'address' does not exist on type 'BlockFilter'.",
+          "source_id": "da3e0236d21a83248db7"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/in-memory.test.ts",
+          "start": 18933,
+          "line": 663,
+          "code": 2339,
+          "message": "Property 'address' does not exist on type 'Filter'.\n  Property 'address' does not exist on type 'BlockFilter'.",
+          "source_id": "da3e0236d21a83248db7"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/in-memory.test.ts",
+          "start": 25563,
+          "line": 914,
+          "code": 2339,
+          "message": "Property 'address' does not exist on type 'Filter'.\n  Property 'address' does not exist on type 'BlockFilter'.",
+          "source_id": "18407c46d5bf5ef7f901"
+        }
+      ],
+      "other": [],
+      "source_context": [
+        {
+          "file": "tools/source-historical-types.mjs",
+          "sha256": "045401377152a0e022353c673902b441bd67cf5aadec63efde5c0cadbf3a8672"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/in-memory.test.ts",
+          "sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/tsconfig.json",
+          "sha256": "21745dcb1e01934c37b902f730ae40fa3daa63f39944ffdeea860278caf85f6c"
+        },
+        {
+          "file": "../ponder-upstream/tsconfig.base.json",
+          "sha256": "9a244a82a034dfc88055685a14ead3190f41d953d054251e8e9bd9975845cd52"
+        },
+        {
+          "file": "../ponder-upstream/packages/utils/src/index.ts",
+          "sha256": "c4ba739226f5fd160c07a5d956e2dc703f937148aa43101d8f7a0668405ae8d7"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/internal/types.ts",
+          "sha256": "c06a583c7b3c321a1566abf5d99cdb6a30598279d53d4a5572b6c3134e61ab35"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/rpc/index.ts",
+          "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+        },
+        {
+          "file": "../ponder-upstream/pnpm-lock.yaml",
+          "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+        }
+      ],
+      "effective_options": {
+        "rootDir": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream",
+        "utils_entry": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/packages/utils/src/index.ts"
+      }
+    },
+    {
+      "kind": "index",
+      "mode": "pristine",
+      "exit_code": 0,
+      "error": null,
+      "report": {
+        "file": "parity/runs/history-m33/types-2026-10-25T15-11-21-677Z-56984/index-pristine.json",
+        "sha256": "74bb947d72bbfdea599d2ae6c2d89f930f464ca353361cd8d23cc2106988129a"
+      },
+      "complete": true,
+      "success": true,
+      "typescript": "5.4.5",
+      "actual": [],
+      "other": [],
+      "source_context": [
+        {
+          "file": "tools/source-historical-types.mjs",
+          "sha256": "045401377152a0e022353c673902b441bd67cf5aadec63efde5c0cadbf3a8672"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/index.test.ts",
+          "sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/tsconfig.json",
+          "sha256": "21745dcb1e01934c37b902f730ae40fa3daa63f39944ffdeea860278caf85f6c"
+        },
+        {
+          "file": "../ponder-upstream/tsconfig.base.json",
+          "sha256": "9a244a82a034dfc88055685a14ead3190f41d953d054251e8e9bd9975845cd52"
+        },
+        {
+          "file": "../ponder-upstream/packages/utils/src/index.ts",
+          "sha256": "c4ba739226f5fd160c07a5d956e2dc703f937148aa43101d8f7a0668405ae8d7"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/internal/types.ts",
+          "sha256": "c06a583c7b3c321a1566abf5d99cdb6a30598279d53d4a5572b6c3134e61ab35"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/rpc/index.ts",
+          "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+        },
+        {
+          "file": "../ponder-upstream/pnpm-lock.yaml",
+          "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+        }
+      ],
+      "effective_options": {
+        "rootDir": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream",
+        "utils_entry": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/packages/utils/src/index.ts"
+      }
+    },
+    {
+      "kind": "index",
+      "mode": "stripped",
+      "exit_code": 0,
+      "error": null,
+      "report": {
+        "file": "parity/runs/history-m33/types-2026-10-25T15-11-21-677Z-56984/index-stripped.json",
+        "sha256": "fe2c0aeceb2a064987ce6d5a20adca2be64c861c1b6b1e2e056a3bbd5386a819"
+      },
+      "complete": true,
+      "success": true,
+      "typescript": "5.4.5",
+      "actual": [
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/index.test.ts",
+          "start": 7774,
+          "line": 308,
+          "code": 2322,
+          "message": "Type '(request: any) => Promise<string | boolean | `0x${string}`[] | { accessList: AccessList; gasUsed: `0x${string}`; } | RpcFeeHistory | RpcBlock | RpcLog[] | RpcProof | RpcTransaction | RpcTransactionReceipt | RpcUncle | readonly (RpcBlock & { calls: readonly { error?: { data?: `0x${string}` | undefined; code: number; message: string; } | undefined; logs?: readonly RpcLog[] | undefined; gasUsed: `0x${string}`; returnData: `0x${string}`; status: `0x${string}`; }[]; })[] | RpcTransactionReceipt[] | Trace[] | { transactionHash: \"0x0000000000000000000000000000000000000000000000000000000000000000\"; }[] | null>' is not assignable to type '<TParameters extends { method: \"web3_clientVersion\"; params?: undefined; } | { method: \"web3_sha3\"; params: [data: `0x${string}`]; } | { method: \"net_listening\"; params?: undefined; } | { method: \"net_peerCount\"; params?: undefined; } | { method: \"net_version\"; params?: undefined; } | { method: \"eth_blobBaseFee\"; params?: undefined; } | { method: \"eth_blockNumber\"; params?: undefined; } | { method: \"eth_call\"; params: readonly [transaction: ExactPartial<RpcTransactionRequest>] | readonly [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier] | readonly [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier, stateOverrideSet: RpcStateOverride] | readonly [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier, stateOverrideSet: RpcStateOverride, blockOverrides: Rpc]; } | { method: \"eth_createAccessList\"; params: [transaction: ExactPartial<RpcTransactionRequest>] | [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; } | { method: \"eth_chainId\"; params?: undefined; } | { method: \"eth_coinbase\"; params?: undefined; } | { method: \"eth_estimateGas\"; params: [transaction: RpcTransactionRequest] | [transaction: RpcTransactionRequest, block: `0x${string}` | BlockTag] | [transaction: RpcTransactionRequest, block: `0x${string}` | BlockTag, stateOverride: RpcStateOverride]; } | { method: \"eth_feeHistory\"; params: [blockCount: `0x${string}`, newestBlock: `0x${string}` | BlockTag, rewardPercentiles: number[] | undefined]; } | { method: \"eth_gasPrice\"; params?: undefined; } | { method: \"eth_getBalance\"; params: [address: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; } | { method: \"eth_getBlockByHash\"; params: [hash: `0x${string}`, includeTransactionObjects: boolean]; } | { method: \"eth_getBlockByNumber\"; params: [block: `0x${string}` | BlockTag, includeTransactionObjects: boolean]; } | { method: \"eth_getBlockTransactionCountByHash\"; params: [hash: `0x${string}`]; } | { method: \"eth_getBlockTransactionCountByNumber\"; params: [block: `0x${string}` | BlockTag]; } | { method: \"eth_getCode\"; params: [address: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; } | { method: \"eth_getFilterChanges\"; params: [filterId: `0x${string}`]; } | { method: \"eth_getFilterLogs\"; params: [filterId: `0x${string}`]; } | { method: \"eth_getLogs\"; params: [{ address?: `0x${string}` | `0x${string}`[] | undefined; topics?: LogTopic[] | undefined; } & ({ fromBlock?: `0x${string}` | BlockTag | undefined; toBlock?: `0x${string}` | BlockTag | undefined; blockHash?: undefined; } | { fromBlock?: undefined; toBlock?: undefined; blockHash?: `0x${string}` | undefined; })]; } | { method: \"eth_getProof\"; params: [address: `0x${string}`, storageKeys: `0x${string}`[], block: `0x${string}` | BlockTag]; } | { method: \"eth_getStorageAt\"; params: [address: `0x${string}`, index: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; } | { method: \"eth_getTransactionByBlockHashAndIndex\"; params: [hash: `0x${string}`, index: `0x${string}`]; } | { method: \"eth_getTransactionByBlockNumberAndIndex\"; params: [block: `0x${string}` | BlockTag, index: `0x${string}`]; } | { method: \"eth_getTransactionByHash\"; params: [hash: `0x${string}`]; } | { method: \"eth_getTransactionCount\"; params: [address: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; } | { method: \"eth_getTransactionReceipt\"; params: [hash: `0x${string}`]; } | { method: \"eth_getUncleByBlockHashAndIndex\"; params: [hash: `0x${string}`, index: `0x${string}`]; } | { method: \"eth_getUncleByBlockNumberAndIndex\"; params: [block: `0x${string}` | BlockTag, index: `0x${string}`]; } | { method: \"eth_getUncleCountByBlockHash\"; params: [hash: `0x${string}`]; } | { method: \"eth_getUncleCountByBlockNumber\"; params: [block: `0x${string}` | BlockTag]; } | { method: \"eth_maxPriorityFeePerGas\"; params?: undefined; } | { method: \"eth_newBlockFilter\"; params?: undefined; } | { method: \"eth_newFilter\"; params: [filter: { fromBlock?: `0x${string}` | BlockTag | undefined; toBlock?: `0x${string}` | BlockTag | undefined; address?: `0x${string}` | `0x${string}`[] | undefined; topics?: LogTopic[] | undefined; }]; } | { method: \"eth_newPendingTransactionFilter\"; params?: undefined; } | { method: \"eth_protocolVersion\"; params?: undefined; } | { method: \"eth_sendRawTransaction\"; params: [signedTransaction: `0x${string}`]; } | { method: \"eth_simulateV1\"; params: [{ blockStateCalls: readonly { blockOverrides?: Rpc | undefined; calls?: readonly ExactPartial<RpcTransactionRequest>[] | undefined; stateOverrides?: RpcStateOverride | undefined; }[]; returnFullTransactions?: boolean | undefined; traceTransfers?: boolean | undefined; validation?: boolean | undefined; }, `0x${string}` | BlockTag]; } | { method: \"eth_uninstallFilter\"; params: [filterId: `0x${string}`]; } | { method: \"debug_traceBlockByHash\"; params: [hash: `0x${string}`, tracingOptions: { tracer: \"callTracer\"; tracerConfig?: CallConfig | undefined; }]; } | { method: \"debug_traceBlockByNumber\"; params: [block: `0x${string}`, tracingOptions: { tracer: \"callTracer\"; tracerConfig?: CallConfig | undefined; }]; } | { method: \"eth_getBlockReceipts\"; params: [hash: `0x${string}`]; }>(parameters: TParameters, context?: { logger?: Logger | undefined; retryNullBlockRequest?: boolean | undefined; } | undefined) => Promise<RequestReturnType<TParameters[\"method\"]>>'.\n  Type 'Promise<string | boolean | `0x${string}`[] | { accessList: AccessList; gasUsed: `0x${string}`; } | RpcFeeHistory | RpcBlock | RpcLog[] | RpcProof | RpcTransaction | RpcTransactionReceipt | RpcUncle | readonly (RpcBlock & { calls: readonly { error?: { data?: `0x${string}` | undefined; code: number; message: string; } | undefined; logs?: readonly RpcLog[] | undefined; gasUsed: `0x${string}`; returnData: `0x${string}`; status: `0x${string}`; }[]; })[] | RpcTransactionReceipt[] | Trace[] | { transactionHash: \"0x0000000000000000000000000000000000000000000000000000000000000000\"; }[] | null>' is not assignable to type 'Promise<RequestReturnType<TParameters[\"method\"]>>'.\n    Type 'string | boolean | `0x${string}`[] | { accessList: AccessList; gasUsed: `0x${string}`; } | RpcFeeHistory | RpcBlock | RpcLog[] | RpcProof | RpcTransaction | RpcTransactionReceipt | RpcUncle | readonly (RpcBlock & { calls: readonly { error?: { data?: `0x${string}` | undefined; code: number; message: string; } | undefined; logs?: readonly RpcLog[] | undefined; gasUsed: `0x${string}`; returnData: `0x${string}`; status: `0x${string}`; }[]; })[] | RpcTransactionReceipt[] | Trace[] | { transactionHash: \"0x0000000000000000000000000000000000000000000000000000000000000000\"; }[] | null' is not assignable to type 'RequestReturnType<TParameters[\"method\"]>'.\n      Type 'null' is not assignable to type 'Extract<{ Method: \"web3_clientVersion\"; Parameters?: undefined; ReturnType: string; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"web3_sha3\"; Parameters: [data: `0x${string}`]; ReturnType: string; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"net_listening\"; Parameters?: undefined; ReturnType: boolean; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"net_peerCount\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"net_version\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_blobBaseFee\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_blockNumber\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_call\"; Parameters: readonly [transaction: ExactPartial<RpcTransactionRequest>] | readonly [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier] | readonly [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier, stateOverrideSet: RpcStateOverride] | readonly [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier, stateOverrideSet: RpcStateOverride, blockOverrides: Rpc]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_createAccessList\"; Parameters: [transaction: ExactPartial<RpcTransactionRequest>] | [transaction: ExactPartial<RpcTransactionRequest>, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; ReturnType: { accessList: AccessList; gasUsed: `0x${string}`; }; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_chainId\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_coinbase\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_estimateGas\"; Parameters: [transaction: RpcTransactionRequest] | [transaction: RpcTransactionRequest, block: `0x${string}` | BlockTag] | [transaction: RpcTransactionRequest, block: `0x${string}` | BlockTag, stateOverride: RpcStateOverride]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_feeHistory\"; Parameters: [blockCount: `0x${string}`, newestBlock: `0x${string}` | BlockTag, rewardPercentiles: number[] | undefined]; ReturnType: RpcFeeHistory; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_gasPrice\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getBalance\"; Parameters: [address: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getBlockByHash\"; Parameters: [hash: `0x${string}`, includeTransactionObjects: boolean]; ReturnType: RpcBlock | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getBlockByNumber\"; Parameters: [block: `0x${string}` | BlockTag, includeTransactionObjects: boolean]; ReturnType: RpcBlock | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getBlockTransactionCountByHash\"; Parameters: [hash: `0x${string}`]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getBlockTransactionCountByNumber\"; Parameters: [block: `0x${string}` | BlockTag]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getCode\"; Parameters: [address: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getFilterChanges\"; Parameters: [filterId: `0x${string}`]; ReturnType: `0x${string}`[] | RpcLog[]; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getFilterLogs\"; Parameters: [filterId: `0x${string}`]; ReturnType: RpcLog[]; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getLogs\"; Parameters: [{ address?: `0x${string}` | `0x${string}`[] | undefined; topics?: LogTopic[] | undefined; } & ({ fromBlock?: `0x${string}` | BlockTag | undefined; toBlock?: `0x${string}` | BlockTag | undefined; blockHash?: undefined; } | { fromBlock?: undefined; toBlock?: undefined; blockHash?: `0x${string}` | undefined; })]; ReturnType: RpcLog[]; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getProof\"; Parameters: [address: `0x${string}`, storageKeys: `0x${string}`[], block: `0x${string}` | BlockTag]; ReturnType: RpcProof; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getStorageAt\"; Parameters: [address: `0x${string}`, index: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getTransactionByBlockHashAndIndex\"; Parameters: [hash: `0x${string}`, index: `0x${string}`]; ReturnType: RpcTransaction | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getTransactionByBlockNumberAndIndex\"; Parameters: [block: `0x${string}` | BlockTag, index: `0x${string}`]; ReturnType: RpcTransaction | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getTransactionByHash\"; Parameters: [hash: `0x${string}`]; ReturnType: RpcTransaction | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getTransactionCount\"; Parameters: [address: `0x${string}`, block: `0x${string}` | BlockTag | RpcBlockIdentifier]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getTransactionReceipt\"; Parameters: [hash: `0x${string}`]; ReturnType: RpcTransactionReceipt | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getUncleByBlockHashAndIndex\"; Parameters: [hash: `0x${string}`, index: `0x${string}`]; ReturnType: RpcUncle | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getUncleByBlockNumberAndIndex\"; Parameters: [block: `0x${string}` | BlockTag, index: `0x${string}`]; ReturnType: RpcUncle | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getUncleCountByBlockHash\"; Parameters: [hash: `0x${string}`]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getUncleCountByBlockNumber\"; Parameters: [block: `0x${string}` | BlockTag]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_maxPriorityFeePerGas\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_newBlockFilter\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_newFilter\"; Parameters: [filter: { fromBlock?: `0x${string}` | BlockTag | undefined; toBlock?: `0x${string}` | BlockTag | undefined; address?: `0x${string}` | `0x${string}`[] | undefined; topics?: LogTopic[] | undefined; }]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_newPendingTransactionFilter\"; Parameters?: undefined; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_protocolVersion\"; Parameters?: undefined; ReturnType: string; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_sendRawTransaction\"; Parameters: [signedTransaction: `0x${string}`]; ReturnType: `0x${string}`; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_simulateV1\"; Parameters: [{ blockStateCalls: readonly { blockOverrides?: Rpc | undefined; calls?: readonly ExactPartial<RpcTransactionRequest>[] | undefined; stateOverrides?: RpcStateOverride | undefined; }[]; returnFullTransactions?: boolean | undefined; traceTransfers?: boolean | undefined; validation?: boolean | undefined; }, `0x${string}` | BlockTag]; ReturnType: readonly (RpcBlock & { calls: readonly { error?: { data?: `0x${string}` | undefined; code: number; message: string; } | undefined; logs?: readonly RpcLog[] | undefined; gasUsed: `0x${string}`; returnData: `0x${string}`; status: `0x${string}`; }[]; })[]; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_uninstallFilter\"; Parameters: [filterId: `0x${string}`]; ReturnType: boolean; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"eth_getBlockReceipts\"; Parameters: [hash: `0x${string}`]; ReturnType: RpcTransactionReceipt[] | null; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"debug_traceBlockByHash\"; Parameters: [hash: `0x${string}`, tracingOptions: { tracer: \"callTracer\"; tracerConfig?: CallConfig | undefined; }]; ReturnType: Trace[]; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"] & Extract<{ Method: \"debug_traceBlockByNumber\"; Parameters: [block: `0x${string}`, tracingOptions: { tracer: \"callTracer\"; tracerConfig?: CallConfig | undefined; }]; ReturnType: Trace[]; }, { Method: TParameters[\"method\"]; }>[\"ReturnType\"]'.",
+          "source_id": "c5ca58c81d923d49529e"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/index.test.ts",
+          "start": 15717,
+          "line": 604,
+          "code": 2339,
+          "message": "Property 'address' does not exist on type 'Filter'.\n  Property 'address' does not exist on type 'BlockFilter'.",
+          "source_id": "97a5db3271fd8a51cce8"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/index.test.ts",
+          "start": 17727,
+          "line": 680,
+          "code": 2339,
+          "message": "Property 'address' does not exist on type 'Filter'.\n  Property 'address' does not exist on type 'BlockFilter'.",
+          "source_id": "9eaf4ba9f4488a48165e"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/index.test.ts",
+          "start": 17891,
+          "line": 683,
+          "code": 2339,
+          "message": "Property 'address' does not exist on type 'Filter'.\n  Property 'address' does not exist on type 'BlockFilter'.",
+          "source_id": "9eaf4ba9f4488a48165e"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/index.test.ts",
+          "start": 30215,
+          "line": 1149,
+          "code": 2339,
+          "message": "Property 'address' does not exist on type 'Filter'.\n  Property 'address' does not exist on type 'BlockFilter'.",
+          "source_id": "1f021a7b846451889eae"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/index.test.ts",
+          "start": 30281,
+          "line": 1151,
+          "code": 2339,
+          "message": "Property 'address' does not exist on type 'Filter'.\n  Property 'address' does not exist on type 'BlockFilter'.",
+          "source_id": "1f021a7b846451889eae"
+        }
+      ],
+      "other": [],
+      "source_context": [
+        {
+          "file": "tools/source-historical-types.mjs",
+          "sha256": "045401377152a0e022353c673902b441bd67cf5aadec63efde5c0cadbf3a8672"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/sync-historical/index.test.ts",
+          "sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/tsconfig.json",
+          "sha256": "21745dcb1e01934c37b902f730ae40fa3daa63f39944ffdeea860278caf85f6c"
+        },
+        {
+          "file": "../ponder-upstream/tsconfig.base.json",
+          "sha256": "9a244a82a034dfc88055685a14ead3190f41d953d054251e8e9bd9975845cd52"
+        },
+        {
+          "file": "../ponder-upstream/packages/utils/src/index.ts",
+          "sha256": "c4ba739226f5fd160c07a5d956e2dc703f937148aa43101d8f7a0668405ae8d7"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/internal/types.ts",
+          "sha256": "c06a583c7b3c321a1566abf5d99cdb6a30598279d53d4a5572b6c3134e61ab35"
+        },
+        {
+          "file": "../ponder-upstream/packages/core/src/rpc/index.ts",
+          "sha256": "30a43c79029f02d9cb9ab992dfabfe799be35162d750853b75b0de965aa3fb87"
+        },
+        {
+          "file": "../ponder-upstream/pnpm-lock.yaml",
+          "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+        }
+      ],
+      "effective_options": {
+        "rootDir": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream",
+        "utils_entry": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/packages/utils/src/index.ts"
+      }
+    }
+  ],
+  "source_credit": 0
+}

@@ -1,0 +1,83 @@
+{
+  "checks": [
+    {
+      "path": "/workspace/scratch/fac5abfa4c9e/ponder-cloud",
+      "free_bytes": 11744423936,
+      "minimum_bytes": 5368709120,
+      "ok": true
+    },
+    {
+      "path": "/workspace/scratch/fac5abfa4c9e/ponder-cloud/tmp",
+      "free_bytes": 11744423936,
+      "minimum_bytes": 5368709120,
+      "ok": true
+    },
+    {
+      "path": "/workspace/scratch/fac5abfa4c9e/ponder-cloud/postgres",
+      "free_bytes": 11744423936,
+      "minimum_bytes": 5368709120,
+      "ok": true
+    }
+  ],
+  "ok": true
+}
+waiting for server to start.... done
+server started
+{"Time":"2026-10-25T23:04:53.509909357+09:00","Action":"start","Package":"ponder.local/ponder-go/indexing"}
+{"Time":"2026-10-25T23:04:53.515033441+09:00","Action":"run","Package":"ponder.local/ponder-go/indexing","Test":"TestClientProfileServiceContext"}
+{"Time":"2026-10-25T23:04:53.515108002+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestClientProfileServiceContext","Output":"=== RUN   TestClientProfileServiceContext\n"}
+{"Time":"2026-10-25T23:04:53.515118087+09:00","Action":"run","Package":"ponder.local/ponder-go/indexing","Test":"TestClientProfileServiceContext/pglite"}
+{"Time":"2026-10-25T23:04:53.515121812+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestClientProfileServiceContext/pglite","Output":"=== RUN   TestClientProfileServiceContext/pglite\n"}
+{"Time":"2026-10-25T23:04:54.542961098+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestClientProfileServiceContext/pglite","Output":"--- PASS: TestClientProfileServiceContext/pglite (1.03s)\n"}
+{"Time":"2026-10-25T23:04:54.543015669+09:00","Action":"pass","Package":"ponder.local/ponder-go/indexing","Test":"TestClientProfileServiceContext/pglite","Elapsed":1.03}
+{"Time":"2026-10-25T23:04:54.543027807+09:00","Action":"run","Package":"ponder.local/ponder-go/indexing","Test":"TestClientProfileServiceContext/postgres"}
+{"Time":"2026-10-25T23:04:54.543030691+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestClientProfileServiceContext/postgres","Output":"=== RUN   TestClientProfileServiceContext/postgres\n"}
+{"Time":"2026-10-25T23:04:54.617887652+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestClientProfileServiceContext/postgres","Output":"--- PASS: TestClientProfileServiceContext/postgres (0.07s)\n"}
+{"Time":"2026-10-25T23:04:54.617928072+09:00","Action":"pass","Package":"ponder.local/ponder-go/indexing","Test":"TestClientProfileServiceContext/postgres","Elapsed":0.07}
+{"Time":"2026-10-25T23:04:54.617934202+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestClientProfileServiceContext","Output":"--- PASS: TestClientProfileServiceContext (1.10s)\n"}
+{"Time":"2026-10-25T23:04:54.617937597+09:00","Action":"pass","Package":"ponder.local/ponder-go/indexing","Test":"TestClientProfileServiceContext","Elapsed":1.1}
+{"Time":"2026-10-25T23:04:54.61793966+09:00","Action":"run","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch"}
+{"Time":"2026-10-25T23:04:54.617941833+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch","Output":"=== RUN   TestSourceIndexingPrefetch\n"}
+{"Time":"2026-10-25T23:04:54.627421069+09:00","Action":"run","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres"}
+{"Time":"2026-10-25T23:04:54.627439256+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres","Output":"=== RUN   TestSourceIndexingPrefetch/postgres\n"}
+{"Time":"2026-10-25T23:04:54.627444153+09:00","Action":"run","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b"}
+{"Time":"2026-10-25T23:04:54.627446717+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b","Output":"=== RUN   TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b\n"}
+{"Time":"2026-10-25T23:04:54.711457662+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b","Output":"    source_prefetch_test.go:87: strict original raw transport tape mismatch\n"}
+{"Time":"2026-10-25T23:04:54.711498463+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b","Output":"        got [{\"method\":\"eth_call\",\"params\":[{\"data\":\"0x18160ddd\",\"to\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\"},\"0x2\"]}]\n"}
+{"Time":"2026-10-25T23:04:54.711507987+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b","Output":"        want [{\"request\":{\"method\":\"eth_call\",\"params\":[{\"data\":\"0x18160ddd\",\"to\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\"},\"0x2\"]},\"response\":\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\"}]\n"}
+{"Time":"2026-10-25T23:04:54.71891753+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b","Output":"--- FAIL: TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b (0.09s)\n"}
+{"Time":"2026-10-25T23:04:54.718933754+09:00","Action":"fail","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b","Elapsed":0.09}
+{"Time":"2026-10-25T23:04:54.718940845+09:00","Action":"run","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7"}
+{"Time":"2026-10-25T23:04:54.718943709+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7","Output":"=== RUN   TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7\n"}
+{"Time":"2026-10-25T23:04:54.803388418+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7","Output":"    source_prefetch_test.go:87: strict original raw transport tape mismatch\n"}
+{"Time":"2026-10-25T23:04:54.803421698+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7","Output":"        got [{\"method\":\"eth_call\",\"params\":[{\"data\":\"0x18160ddd\",\"to\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\"},\"0x2\"]},{\"method\":\"eth_call\",\"params\":[{\"data\":\"0x18160ddd\",\"to\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\"},\"0x2\"]}]\n"}
+{"Time":"2026-10-25T23:04:54.80342992+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7","Output":"        want [{\"request\":{\"method\":\"eth_call\",\"params\":[{\"data\":\"0x18160ddd\",\"to\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\"},\"0x2\"]},\"response\":\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\"},{\"request\":{\"method\":\"eth_call\",\"params\":[{\"data\":\"0x18160ddd\",\"to\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\"},\"0x2\"]},\"response\":\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\"}]\n"}
+{"Time":"2026-10-25T23:04:54.810753335+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7","Output":"--- FAIL: TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7 (0.09s)\n"}
+{"Time":"2026-10-25T23:04:54.810782568+09:00","Action":"fail","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7","Elapsed":0.09}
+{"Time":"2026-10-25T23:04:54.810790791+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres","Output":"--- FAIL: TestSourceIndexingPrefetch/postgres (0.18s)\n"}
+{"Time":"2026-10-25T23:04:54.810845882+09:00","Action":"fail","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/postgres","Elapsed":0.18}
+{"Time":"2026-10-25T23:04:54.810855627+09:00","Action":"run","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite"}
+{"Time":"2026-10-25T23:04:54.810858902+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite","Output":"=== RUN   TestSourceIndexingPrefetch/pglite\n"}
+{"Time":"2026-10-25T23:04:54.810876688+09:00","Action":"run","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b"}
+{"Time":"2026-10-25T23:04:54.810879452+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b","Output":"=== RUN   TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b\n"}
+{"Time":"2026-10-25T23:04:55.86752801+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b","Output":"    source_prefetch_test.go:87: strict original raw transport tape mismatch\n"}
+{"Time":"2026-10-25T23:04:55.867572977+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b","Output":"        got [{\"method\":\"eth_call\",\"params\":[{\"data\":\"0x18160ddd\",\"to\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\"},\"0x2\"]}]\n"}
+{"Time":"2026-10-25T23:04:55.867577283+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b","Output":"        want [{\"request\":{\"method\":\"eth_call\",\"params\":[{\"data\":\"0x18160ddd\",\"to\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\"},\"0x2\"]},\"response\":\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\"}]\n"}
+{"Time":"2026-10-25T23:04:55.912760278+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b","Output":"--- FAIL: TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b (1.10s)\n"}
+{"Time":"2026-10-25T23:04:55.912829581+09:00","Action":"fail","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b","Elapsed":1.1}
+{"Time":"2026-10-25T23:04:55.912839676+09:00","Action":"run","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7"}
+{"Time":"2026-10-25T23:04:55.912843742+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7","Output":"=== RUN   TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7\n"}
+{"Time":"2026-10-25T23:04:56.887203001+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7","Output":"    source_prefetch_test.go:87: strict original raw transport tape mismatch\n"}
+{"Time":"2026-10-25T23:04:56.887266686+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7","Output":"        got [{\"method\":\"eth_call\",\"params\":[{\"data\":\"0x18160ddd\",\"to\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\"},\"0x2\"]},{\"method\":\"eth_call\",\"params\":[{\"data\":\"0x18160ddd\",\"to\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\"},\"0x2\"]}]\n"}
+{"Time":"2026-10-25T23:04:56.887271883+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7","Output":"        want [{\"request\":{\"method\":\"eth_call\",\"params\":[{\"data\":\"0x18160ddd\",\"to\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\"},\"0x2\"]},\"response\":\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\"},{\"request\":{\"method\":\"eth_call\",\"params\":[{\"data\":\"0x18160ddd\",\"to\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\"},\"0x2\"]},\"response\":\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\"}]\n"}
+{"Time":"2026-10-25T23:04:56.943513882+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7","Output":"--- FAIL: TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7 (1.03s)\n"}
+{"Time":"2026-10-25T23:04:56.943561773+09:00","Action":"fail","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7","Elapsed":1.03}
+{"Time":"2026-10-25T23:04:56.943568704+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite","Output":"--- FAIL: TestSourceIndexingPrefetch/pglite (2.13s)\n"}
+{"Time":"2026-10-25T23:04:56.943572349+09:00","Action":"fail","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch/pglite","Elapsed":2.13}
+{"Time":"2026-10-25T23:04:56.943576305+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch","Output":"--- FAIL: TestSourceIndexingPrefetch (2.32s)\n"}
+{"Time":"2026-10-25T23:04:56.943579389+09:00","Action":"fail","Package":"ponder.local/ponder-go/indexing","Test":"TestSourceIndexingPrefetch","Elapsed":2.32}
+{"Time":"2026-10-25T23:04:56.943581242+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Output":"FAIL\n"}
+{"Time":"2026-10-25T23:04:56.943618728+09:00","Action":"output","Package":"ponder.local/ponder-go/indexing","Output":"FAIL\tponder.local/ponder-go/indexing\t3.433s\n"}
+{"Time":"2026-10-25T23:04:56.943624827+09:00","Action":"fail","Package":"ponder.local/ponder-go/indexing","Elapsed":3.434}
+waiting for server to shut down.... done
+server stopped
