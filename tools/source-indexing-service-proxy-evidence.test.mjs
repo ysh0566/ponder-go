@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {assertIndexingServiceProxyCapture} from './source-indexing-service-evidence.mjs';
+const arg=process.argv.find(x=>x.startsWith('--fixture='));if(!arg)throw Error('Explicit --fixture required');
+const fixture=JSON.parse(fs.readFileSync(arg.slice(10)));
+test('actual source proxy evidence',()=>assert.equal(assertIndexingServiceProxyCapture(fixture).operations,23));
+const broken=(name,fn)=>test('rejects '+name,()=>{const copy=structuredClone(fixture);fn(copy);assert.throws(()=>assertIndexingServiceProxyCapture(copy))});
+const step=(c,name)=>c.steps.find(x=>x.operation===name);
+broken('missing operation',c=>c.steps.pop());
+broken('null conflated with undefined',c=>step(c,'get-null').value={$undefined:true});
+broken('ordinary map membership',c=>step(c,'has-missing-included').value=false);
+broken('ordinary map enumeration',c=>step(c,'objectKeys').value=['gas']);
+broken('fabricated invalid error',c=>step(c,'get-missing').error.name='Error');
+broken('lost sticky error',c=>step(c,'set-missing').sticky=null);
+broken('unstable proxy identity',c=>step(c,'identity-after-underlying-replacement').value.sameProxy=false);
+broken('reordered inspect reads',c=>step(c,'inspect-complete').reads.reverse());
+broken('unfaithful bypass tracking',c=>step(c,'disabled-delete-included').reads=['gas']);

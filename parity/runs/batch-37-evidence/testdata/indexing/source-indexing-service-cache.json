@@ -1,0 +1,241 @@
+{
+  "source_credit": 0,
+  "cases": [
+    {
+      "name": "delayed-cache-insert-success",
+      "source_credit": 0,
+      "real_rpc": true,
+      "input": {
+        "chain": {
+          "id": 1,
+          "name": "mainnet",
+          "cacheRpcRequests": true
+        },
+        "event": {
+          "type": "setup",
+          "block": {
+            "$bigint": "0"
+          }
+        },
+        "address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "lateFailure": false
+      },
+      "timeline": [
+        "cache_lookup",
+        "rpc_begin",
+        "rpc_return",
+        "insert_begin",
+        "getBalance_return",
+        "release_insert",
+        "insert_resolve"
+      ],
+      "providers": [
+        {
+          "request": {
+            "method": "eth_getBalance",
+            "params": [
+              "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+              "0x0"
+            ]
+          },
+          "response": "0x21e19e0c9bab2400000"
+        }
+      ],
+      "cacheCalls": [
+        {
+          "operation": "get",
+          "args": {
+            "requests": [
+              {
+                "method": "eth_getBalance",
+                "params": [
+                  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "0x0"
+                ]
+              }
+            ],
+            "chainId": 1
+          }
+        },
+        {
+          "operation": "insert",
+          "args": {
+            "requests": [
+              {
+                "request": {
+                  "method": "eth_getBalance",
+                  "params": [
+                    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                    "0x0"
+                  ]
+                },
+                "blockNumber": 0,
+                "result": "\"0x21e19e0c9bab2400000\""
+              }
+            ],
+            "chainId": 1
+          }
+        }
+      ],
+      "result": {
+        "$bigint": "10000000000000000000000"
+      },
+      "settled": true
+    },
+    {
+      "name": "delayed-cache-insert-failure",
+      "source_credit": 0,
+      "real_rpc": true,
+      "input": {
+        "chain": {
+          "id": 1,
+          "name": "mainnet",
+          "cacheRpcRequests": true
+        },
+        "event": {
+          "type": "setup",
+          "block": {
+            "$bigint": "0"
+          }
+        },
+        "address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "lateFailure": true
+      },
+      "timeline": [
+        "cache_lookup",
+        "rpc_begin",
+        "rpc_return",
+        "insert_begin",
+        "getBalance_return",
+        "release_insert",
+        "insert_reject"
+      ],
+      "providers": [
+        {
+          "request": {
+            "method": "eth_getBalance",
+            "params": [
+              "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+              "0x0"
+            ]
+          },
+          "response": "0x21e19e0c9bab2400000"
+        }
+      ],
+      "cacheCalls": [
+        {
+          "operation": "get",
+          "args": {
+            "requests": [
+              {
+                "method": "eth_getBalance",
+                "params": [
+                  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "0x0"
+                ]
+              }
+            ],
+            "chainId": 1
+          }
+        },
+        {
+          "operation": "insert",
+          "args": {
+            "requests": [
+              {
+                "request": {
+                  "method": "eth_getBalance",
+                  "params": [
+                    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                    "0x0"
+                  ]
+                },
+                "blockNumber": 0,
+                "result": "\"0x21e19e0c9bab2400000\""
+              }
+            ],
+            "chainId": 1
+          }
+        }
+      ],
+      "result": {
+        "$bigint": "10000000000000000000000"
+      },
+      "settled": true
+    },
+    {
+      "name": "user-error-name-is-not-brand",
+      "source_credit": 0,
+      "input": {
+        "name": "InvalidEventAccessError",
+        "message": "user spoof",
+        "isBaseError": false
+      },
+      "result": {
+        "name": "IndexingFunctionError",
+        "message": "user spoof",
+        "isBaseError": true,
+        "isIndexingFunctionError": true,
+        "sameIdentity": false
+      },
+      "hasError": true
+    },
+    {
+      "name": "actual-base-error-identity",
+      "source_credit": 0,
+      "input": {
+        "name": "InvalidEventAccessError",
+        "message": "",
+        "isBaseError": true
+      },
+      "result": {
+        "name": "InvalidEventAccessError",
+        "message": "",
+        "isBaseError": true,
+        "isIndexingFunctionError": false,
+        "sameIdentity": true
+      },
+      "hasError": true
+    }
+  ],
+  "evidence": {
+    "capture": {
+      "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-cache/calls.json",
+      "sha256": "3557fad4626372c78439c0da4d1f9c99825fbbc1e6455096f5137cc0d9b6d952"
+    },
+    "result": {
+      "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-cache/result.json",
+      "sha256": "8e6004211adf426264a3af1b0c1e3f7d47726d8089ad855f190fbc8c2cf7c135"
+    },
+    "original": {
+      "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-cache/original.json",
+      "sha256": "9b14f46218b0cb6d6b4d1c65a526641c92218e64bf1f52905b9ce5ee1c681da1"
+    },
+    "context_archive": {
+      "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-cache/context-archive.json",
+      "sha256": "b93a7a4c3bfd9e4c53a259d67ed4f6fdc91eebaee67936a8c8f2f8c1c4a5f27b"
+    },
+    "inputs": [
+      {
+        "file": "tools/source-indexing-service-cache.mjs",
+        "sha256": "f7b328138926893f3517ba5b0270442365431510a8c44e5e1b1e8463eeb8dab0"
+      },
+      {
+        "file": "tools/source-indexing-service-cache.test.ts",
+        "sha256": "57d10164ed0ae3d027fb46268ce6d585f624fa815d03e771fead7b5b93cc952b"
+      },
+      {
+        "file": "tools/source-indexing-service-cache.config.mjs",
+        "sha256": "1b3e228de30e867079f51f49f2c26e459c478599e6c1c34a8b2880e45473672c"
+      },
+      {
+        "file": "tools/loopback-adapter.mjs",
+        "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+      },
+      {
+        "file": "tools/loopback-context.mjs",
+        "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+      }
+    ]
+  }
+}

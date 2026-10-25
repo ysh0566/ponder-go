@@ -1,0 +1,84 @@
+{
+  "state": "Actual source WeakMap pagination and WeakSet receipt fallback on explicit provider inputs. Receipt normalization is outside this probe; no original source credit.",
+  "modes": [
+    {
+      "mode": "old_proxy",
+      "original_rpc_identity": false,
+      "logs_requests": [
+        {
+          "fromBlock": "0x1",
+          "toBlock": "0x1f4"
+        },
+        {
+          "fromBlock": "0x1f5",
+          "toBlock": "0x1f5"
+        },
+        {
+          "fromBlock": "0x1",
+          "toBlock": "0x1f4"
+        },
+        {
+          "fromBlock": "0x1f5",
+          "toBlock": "0x1fe"
+        }
+      ],
+      "logs_request_count": 4,
+      "block_receipt_attempts": 2,
+      "single_receipt_attempts": 2,
+      "capture_count": 8
+    },
+    {
+      "mode": "original_object",
+      "original_rpc_identity": true,
+      "logs_requests": [
+        {
+          "fromBlock": "0x1",
+          "toBlock": "0x1f4"
+        },
+        {
+          "fromBlock": "0x1f5",
+          "toBlock": "0x1f5"
+        },
+        {
+          "fromBlock": "0x1",
+          "toBlock": "0x1fe"
+        }
+      ],
+      "logs_request_count": 3,
+      "block_receipt_attempts": 1,
+      "single_receipt_attempts": 2,
+      "capture_count": 6
+    }
+  ],
+  "sources": [
+    {
+      "file": "tools/source-historical-observer-probe.mjs",
+      "sha256": "b3df1151adabce3a70fe5bf2ea7e98720a1e729190f032b2a1b2b825af64ece7"
+    },
+    {
+      "file": "tools/source-historical-rpc-observer.mjs",
+      "sha256": "73e44d8885801674fce7a47797a83cd4d894eb51d92431ad0f2f90fe11721826"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/rpc/actions.ts",
+      "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+    },
+    {
+      "file": "../ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/index.js",
+      "sha256": "a159baabd9da9741d4a4ff76e3ba43ac189957e49a9dc132f22e5004554bd1aa"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/utils/encoding/fromHex.js",
+      "sha256": "0f739a604366e68d28ef693630a0e1f3850874ac36df2f3a4b9d073809b96a5c"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/utils/encoding/toHex.js",
+      "sha256": "39d5ae8d305c2dda3513dac551c1005d7ca9905a5305549a37d7f5e8f2e17965"
+    }
+  ],
+  "source_credit": 0
+}

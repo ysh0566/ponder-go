@@ -32,9 +32,9 @@
       "upstream_sources": [],
       "evidence": [
         "parity/runs/summary.json",
-        "parity/runs/batch-35.json"
+        "parity/runs/batch-37.json"
       ],
-      "remaining": "508/905 exact original records verified; 397 unimplemented. Four runtime-index cases still lack closed native type obligations. Supplemental regressions add no source credit."
+      "remaining": "523/905 exact original records verified; 382 unimplemented. Seven runtime-passed cases (four runtime-index, three indexing handler service) still lack exact native type obligations and remain unmapped. Supplemental regressions add no source credit."
     },
     {
       "id": "differential-harness",
@@ -1268,7 +1268,29 @@
         "parity/runs/batch-35.json",
         "docs/SOURCE_RUNTIME_HISTORICAL.md"
       ],
-      "remaining": "11 exact local generator cases / 24 assertions verified. Three later scheduler cases remain unmapped; mislabeled single-chain omnichain source test is not genuine multichain evidence. PGlite native atomicity and cancel/error joins are explicit stronger safety semantics. Complete scheduler, logger/metrics and broader API/type behavior remain."
+      "remaining": "11 exact local generator cases / 24 assertions verified. Three later scheduler cases were subsequently mapped by M37; mislabeled single-chain omnichain source test is not genuine multichain evidence. PGlite native atomicity and cancel/error joins are explicit stronger safety semantics. Complete scheduler, logger/metrics and broader API/type behavior remain."
+    },
+    {
+      "id": "source-indexing-service-m38",
+      "status": "verified_subset",
+      "implementation_files": [
+        "indexing/service.go",
+        "indexing/types.go",
+        "indexing/access.go",
+        "indexing/client.go",
+        "indexing/database.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing/index.ts",
+        "packages/core/src/indexing/index.test.ts",
+        "packages/core/src/indexing/client.ts"
+      ],
+      "evidence": [
+        "parity/runs/source-indexing-service-verification.json",
+        "parity/runs/batch-37.json",
+        "docs/SOURCE_INDEXING_SERVICE.md"
+      ],
+      "remaining": "Source-shaped handler service only; current46stage aggregate and9canonical collectors accepted. First15 runtime cases/33assertions replay bothDB normal/race;3 exact TS-only directives unproved,12 formal mappings, not15. Explicit PropertyView syntax is not transparent JS Proxy; Object.keys descriptor operation remains unsupported (22of23 supplemental proxy operations). Source cache insertion invocation begins before getBalance returns; arbitrary synchronous Go CachePut under owned goroutine can begin afterward. Existing AsyncRequester admission does not provide AsyncCache admission, so this observable prefix gap remains open for full client facade work; only nonawait/release/settle causality, raw cache/RPC args and late-error handling are compared. Nine captured source sync-table snapshots are archival-only, not native table equivalence. Last8 client facade originals, full Viem actions/profile/prefetch, JS diagnostics, outer historical runner/atomicmultichain scheduling/realtimecutover/readiness remain. Source PGlite callback-only QB transaction differs from stronger native store atomicity."
     }
   ]
 }

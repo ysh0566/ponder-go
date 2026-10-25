@@ -1,0 +1,197 @@
+{
+  "source_credit": 0,
+  "cases": [
+    {
+      "name": "delayed-cache-insert-success",
+      "source_credit": 0,
+      "real_rpc": true,
+      "input": {
+        "chain": {
+          "id": 1,
+          "name": "mainnet",
+          "cacheRpcRequests": true
+        },
+        "event": {
+          "type": "setup",
+          "block": 0
+        },
+        "address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "lateFailure": false
+      },
+      "timeline": [
+        "cache_lookup",
+        "rpc_begin",
+        "rpc_return",
+        "insert_begin",
+        "getBalance_return",
+        "release_insert",
+        "insert_resolve"
+      ],
+      "providers": [
+        {
+          "request": {
+            "method": "eth_getBalance",
+            "params": [
+              "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+              "latest"
+            ]
+          },
+          "response": "0x21e19e0c9bab2400000"
+        }
+      ],
+      "cacheCalls": [
+        {
+          "operation": "get",
+          "args": {
+            "requests": [
+              {
+                "method": "eth_getBalance",
+                "params": [
+                  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "latest"
+                ]
+              }
+            ],
+            "chainId": 1
+          }
+        },
+        {
+          "operation": "insert",
+          "args": {
+            "requests": [
+              {
+                "request": {
+                  "method": "eth_getBalance",
+                  "params": [
+                    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                    "latest"
+                  ]
+                },
+                "blockNumber": 0,
+                "result": "\"0x21e19e0c9bab2400000\""
+              }
+            ],
+            "chainId": 1
+          }
+        }
+      ],
+      "result": {
+        "$bigint": "10000000000000000000000"
+      },
+      "settled": true
+    },
+    {
+      "name": "delayed-cache-insert-failure",
+      "source_credit": 0,
+      "real_rpc": true,
+      "input": {
+        "chain": {
+          "id": 1,
+          "name": "mainnet",
+          "cacheRpcRequests": true
+        },
+        "event": {
+          "type": "setup",
+          "block": 0
+        },
+        "address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "lateFailure": true
+      },
+      "timeline": [
+        "cache_lookup",
+        "rpc_begin",
+        "rpc_return",
+        "insert_begin",
+        "getBalance_return",
+        "release_insert",
+        "insert_reject"
+      ],
+      "providers": [
+        {
+          "request": {
+            "method": "eth_getBalance",
+            "params": [
+              "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+              "latest"
+            ]
+          },
+          "response": "0x21e19e0c9bab2400000"
+        }
+      ],
+      "cacheCalls": [
+        {
+          "operation": "get",
+          "args": {
+            "requests": [
+              {
+                "method": "eth_getBalance",
+                "params": [
+                  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "latest"
+                ]
+              }
+            ],
+            "chainId": 1
+          }
+        },
+        {
+          "operation": "insert",
+          "args": {
+            "requests": [
+              {
+                "request": {
+                  "method": "eth_getBalance",
+                  "params": [
+                    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                    "latest"
+                  ]
+                },
+                "blockNumber": 0,
+                "result": "\"0x21e19e0c9bab2400000\""
+              }
+            ],
+            "chainId": 1
+          }
+        }
+      ],
+      "result": {
+        "$bigint": "10000000000000000000000"
+      },
+      "settled": true
+    },
+    {
+      "name": "user-error-name-is-not-brand",
+      "source_credit": 0,
+      "input": {
+        "name": "InvalidEventAccessError",
+        "message": "user spoof",
+        "isBaseError": false
+      },
+      "result": {
+        "name": "IndexingFunctionError",
+        "message": "user spoof",
+        "isBaseError": true,
+        "isIndexingFunctionError": true,
+        "sameIdentity": false
+      },
+      "hasError": true
+    },
+    {
+      "name": "actual-base-error-identity",
+      "source_credit": 0,
+      "input": {
+        "name": "InvalidEventAccessError",
+        "message": "",
+        "isBaseError": true
+      },
+      "result": {
+        "name": "InvalidEventAccessError",
+        "message": "",
+        "isBaseError": true,
+        "isIndexingFunctionError": false,
+        "sameIdentity": true
+      },
+      "hasError": true
+    }
+  ]
+}

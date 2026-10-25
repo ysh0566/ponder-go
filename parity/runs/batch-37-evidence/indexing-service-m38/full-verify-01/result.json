@@ -1,0 +1,117 @@
+{
+  "complete": true,
+  "success": false,
+  "environment_adapted": true,
+  "pristine_file": false,
+  "source_credit": 0,
+  "scope": "All module Go tests, fuzz seeds and examples in disjoint serial batches, normal and race; actual source oracles, SDK, compiler controls, vet and CLI builds.",
+  "started_utc": "2026-10-25T11:02:57.563Z",
+  "commands": [
+    {
+      "name": "runtime-multichain-evidence-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--test",
+        "tools/source-runtime-multichain-evidence.test.mjs"
+      ],
+      "started_utc": "2026-10-25T11:02:58.096Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T11:02:58.309Z"
+    },
+    {
+      "name": "runtime-historical-evidence-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--test",
+        "tools/source-runtime-historical-evidence.test.mjs"
+      ],
+      "started_utc": "2026-10-25T11:02:58.341Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T11:02:58.518Z"
+    },
+    {
+      "name": "remaining-mapped-original-postgres",
+      "command": [
+        "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/../ponder-upstream/packages/core/node_modules/.bin/vitest",
+        "run",
+        "--config",
+        "tools/full-oracle.config.mjs",
+        "--configLoader",
+        "native",
+        "src/database/actions.test.ts",
+        "src/database/index.test.ts",
+        "src/indexing-store/cache.test.ts",
+        "src/indexing-store/index.test.ts",
+        "src/indexing-store/profile.test.ts",
+        "src/runtime/events.test.ts",
+        "src/runtime/filter.test.ts",
+        "src/sync-realtime/bloom.test.ts",
+        "src/utils/sql-parse.test.ts",
+        "--reporter=json",
+        "--outputFile=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-01/remaining-mapped-original-postgres.json"
+      ],
+      "started_utc": "2026-10-25T11:02:58.546Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T11:03:18.975Z"
+    },
+    {
+      "name": "remaining-mapped-original-pglite",
+      "command": [
+        "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/../ponder-upstream/packages/core/node_modules/.bin/vitest",
+        "run",
+        "--config",
+        "tools/full-oracle.config.mjs",
+        "--configLoader",
+        "native",
+        "src/database/actions.test.ts",
+        "src/database/index.test.ts",
+        "src/indexing-store/cache.test.ts",
+        "src/indexing-store/index.test.ts",
+        "src/indexing-store/profile.test.ts",
+        "src/runtime/events.test.ts",
+        "src/runtime/filter.test.ts",
+        "src/sync-realtime/bloom.test.ts",
+        "src/utils/sql-parse.test.ts",
+        "--reporter=json",
+        "--outputFile=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-01/remaining-mapped-original-pglite.json"
+      ],
+      "started_utc": "2026-10-25T11:03:19.004Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T11:03:35.638Z"
+    },
+    {
+      "name": "runtime-index-source-postgres",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-index-original.mjs",
+        "--backend=postgres",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-01/source-postgres"
+      ],
+      "started_utc": "2026-10-25T11:03:35.670Z",
+      "exit_code": 1,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T11:03:35.735Z"
+    }
+  ],
+  "typechecker_preflight": {
+    "compiler": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.bin/tsc",
+    "version": "5.4.5",
+    "exit_code": 0
+  },
+  "error": "Error: Verification failed: runtime-index-source-postgres\n    at run (file:///workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/tools/indexing-service-full-verify.mjs:28:49)\n    at file:///workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/tools/indexing-service-full-verify.mjs:48:3\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:647:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)",
+  "context_archive": {
+    "file": "parity/runs/indexing-service-m38/full-verify-01/context-archive.json",
+    "sha256": "fc17ead20ee7d71121889c0a70b62a916f09101015b9554a1d598a3fa1e9f14d"
+  },
+  "source_manifest_verified_after": true,
+  "finished_utc": "2026-10-25T11:03:36.018Z"
+}

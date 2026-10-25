@@ -1,0 +1,97 @@
+{
+  "state": "plan_not_executed",
+  "run_dir": "parity/runs/indexing-service-m38/full-verify-01",
+  "preflight": "source /workspace/scratch/fac5abfa4c9e/ponder-cloud/env.sh; export PATH=\"$PWD/../ponder-upstream/node_modules/.bin:$PATH\"",
+  "full": [
+    "bash",
+    "/workspace/scratch/fac5abfa4c9e/ponder-cloud/with-postgres.sh",
+    "node",
+    "tools/indexing-service-full-verify.mjs",
+    "--output=parity/runs/indexing-service-m38/full-verify-01"
+  ],
+  "canonical_collectors": [
+    [
+      "node",
+      "tools/source-sync-results.mjs",
+      "--run-dir=parity/runs/indexing-service-m38/full-verify-01",
+      "--context-archive=parity/runs/indexing-service-m38/full-verify-01/context-archive.json",
+      "--output=parity/runs/source-sync-verification.json"
+    ],
+    [
+      "node",
+      "tools/source-historical-results.mjs",
+      "--run-dir=parity/runs/indexing-service-m38/full-verify-01",
+      "--context-archive=parity/runs/indexing-service-m38/full-verify-01/context-archive.json",
+      "--output=parity/runs/source-historical-verification.json"
+    ],
+    [
+      "node",
+      "tools/source-realtime-results.mjs",
+      "--run-dir=parity/runs/indexing-service-m38/full-verify-01",
+      "--context-archive=parity/runs/indexing-service-m38/full-verify-01/context-archive.json",
+      "--output=parity/runs/source-realtime-verification.json"
+    ],
+    [
+      "node",
+      "tools/config-live-results.mjs",
+      "--run-dir=parity/runs/indexing-service-m38/full-verify-01",
+      "--context-archive=parity/runs/indexing-service-m38/full-verify-01/context-archive.json",
+      "--output=parity/runs/config-live-verification.json"
+    ],
+    [
+      "node",
+      "tools/sql-source-results.mjs",
+      "--run-dir=parity/runs/indexing-service-m38/full-verify-01",
+      "--context-archive=parity/runs/indexing-service-m38/full-verify-01/context-archive.json",
+      "--output=parity/runs/sql-source-verification.json"
+    ],
+    [
+      "node",
+      "tools/source-runtime-index-results.mjs",
+      "--run-dir=parity/runs/indexing-service-m38/full-verify-01",
+      "--output=parity/runs/source-runtime-index-verification.json"
+    ],
+    [
+      "node",
+      "tools/source-runtime-historical-results.mjs",
+      "--run-dir=parity/runs/indexing-service-m38/full-verify-01",
+      "--output=parity/runs/source-runtime-historical-verification.json"
+    ],
+    [
+      "node",
+      "tools/source-runtime-multichain-results.mjs",
+      "--run-dir=parity/runs/indexing-service-m38/full-verify-01",
+      "--output=parity/runs/source-runtime-multichain-verification.json"
+    ],
+    [
+      "node",
+      "tools/source-indexing-service-results.mjs",
+      "--run-dir=parity/runs/indexing-service-m38/full-verify-01",
+      "--output=parity/runs/source-indexing-service-verification.json"
+    ]
+  ],
+  "after_review_only": [
+    [
+      "node",
+      "tools/source-indexing-service-map.mjs",
+      "--proof=parity/runs/source-indexing-service-verification.json"
+    ],
+    [
+      "node",
+      "tools/manifest.mjs"
+    ],
+    [
+      "node",
+      "tools/record-results.mjs",
+      "--run-dir=parity/runs/indexing-service-m38/full-verify-01"
+    ]
+  ],
+  "constraints": [
+    "no collector default outputs",
+    "no source credit for supplements",
+    "three exact TS obligations remain unmapped",
+    "all full commands and9canonical collectors must pass",
+    "batch36 preserved;next freeze batch37",
+    "no commit or push before parent review"
+  ]
+}

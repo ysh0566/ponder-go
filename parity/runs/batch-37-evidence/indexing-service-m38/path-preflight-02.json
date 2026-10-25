@@ -1,0 +1,933 @@
+{
+  "complete": true,
+  "success": true,
+  "source_credit": 0,
+  "mode": "static AST extraction of exact full driver wrapper arguments; evaluate actual source guard expressions with controlled existence boundary, no wrapper/test/database execution",
+  "script": {
+    "file": "parity/runs/indexing-service-m38/path-preflight-02.mjs",
+    "sha256": "3d90bf416e185d00bfad0ab7805ce28ef7650c5cb8b2da3da53681421007cefa"
+  },
+  "driver": {
+    "file": "tools/indexing-service-full-verify.mjs",
+    "sha256": "1567c9e00afcabc1dfac461ece1d64eeed29a3afd2fbe04c1c8e007c272c3c89"
+  },
+  "records": [
+    {
+      "file": "tools/source-runtime-index-original.mjs",
+      "sha256": "0cf49f9c579e3f85fa1eba0ab2b8d4e082e28046255a53af1defba88b376aa44",
+      "guard": "!['runtime-index-m35','runtime-historical-m36','runtime-multichain-m37','indexing-service-m38'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json')",
+      "full_command": {
+        "label": "'runtime-index-source-'+backend",
+        "args": "['tools/source-runtime-index-original.mjs','--backend='+backend,'--output='+directory]"
+      },
+      "full_arguments": [
+        [
+          "tools/source-runtime-index-original.mjs",
+          "--backend=postgres",
+          "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/source-postgres"
+        ],
+        [
+          "tools/source-runtime-index-original.mjs",
+          "--backend=pglite",
+          "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/source-pglite"
+        ]
+      ],
+      "checks": [
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/source-postgres",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/source-pglite",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-index-m35",
+          "path": "parity/runs/runtime-index-m35/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-historical-m36",
+          "path": "parity/runs/runtime-historical-m36/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-multichain-m37",
+          "path": "parity/runs/runtime-multichain-m37/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m380/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38-sibling/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "other/indexing-service-m38/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-reused-output",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/preflight-existing",
+          "existing_result": true,
+          "rejected": true
+        }
+      ],
+      "reused_output_guard": "verified"
+    },
+    {
+      "file": "tools/source-runtime-historical-original.mjs",
+      "sha256": "7e9d0bb1c9d170320816b733b88287fd0173ca53f8562a0504bd6be560217164",
+      "guard": "!['runtime-historical-m36','runtime-multichain-m37','indexing-service-m38'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json')",
+      "full_command": {
+        "label": "'runtime-historical-source-'+backend",
+        "args": "['tools/source-runtime-historical-original.mjs','--backend='+backend,'--output='+output+'/historical-source-'+backend]"
+      },
+      "full_arguments": [
+        [
+          "tools/source-runtime-historical-original.mjs",
+          "--backend=postgres",
+          "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/historical-source-postgres"
+        ],
+        [
+          "tools/source-runtime-historical-original.mjs",
+          "--backend=pglite",
+          "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/historical-source-pglite"
+        ]
+      ],
+      "checks": [
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/historical-source-postgres",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/historical-source-pglite",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-historical-m36",
+          "path": "parity/runs/runtime-historical-m36/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-multichain-m37",
+          "path": "parity/runs/runtime-multichain-m37/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m380/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38-sibling/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "other/indexing-service-m38/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-reused-output",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/preflight-existing",
+          "existing_result": true,
+          "rejected": true
+        }
+      ],
+      "reused_output_guard": "verified"
+    },
+    {
+      "file": "tools/source-runtime-historical-log-order.mjs",
+      "sha256": "35a304a1a0bf09ecf5b03f0f9bde845d9683fa6a32ba076b9657b95df7538764",
+      "guard": "!['runtime-historical-m36','runtime-multichain-m37','indexing-service-m38'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json')",
+      "full_command": {
+        "label": "'runtime-historical-log-order-'+backend",
+        "args": "['tools/source-runtime-historical-log-order.mjs','--backend='+backend,'--output='+output+'/historical-log-order-'+backend]"
+      },
+      "full_arguments": [
+        [
+          "tools/source-runtime-historical-log-order.mjs",
+          "--backend=postgres",
+          "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/historical-log-order-postgres"
+        ],
+        [
+          "tools/source-runtime-historical-log-order.mjs",
+          "--backend=pglite",
+          "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/historical-log-order-pglite"
+        ]
+      ],
+      "checks": [
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/historical-log-order-postgres",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/historical-log-order-pglite",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-historical-m36",
+          "path": "parity/runs/runtime-historical-m36/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-multichain-m37",
+          "path": "parity/runs/runtime-multichain-m37/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m380/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38-sibling/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "other/indexing-service-m38/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-reused-output",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/preflight-existing",
+          "existing_result": true,
+          "rejected": true
+        }
+      ],
+      "reused_output_guard": "verified"
+    },
+    {
+      "file": "tools/source-runtime-historical-fixture.mjs",
+      "sha256": "334032727cd679eab9dd91bd792dfed45b77801cfb6ea7d44b56125cb75564dc",
+      "guard": "!['runtime-historical-m36','runtime-multichain-m37','indexing-service-m38'].some(stage=>directory.startsWith(root+'/parity/runs/'+stage+'/'))",
+      "full_command": {
+        "label": "'runtime-historical-fixture'",
+        "args": "['tools/source-runtime-historical-fixture.mjs','--postgres='+output+'/historical-source-postgres','--pglite='+output+'/historical-source-pglite']"
+      },
+      "full_arguments": [
+        [
+          "tools/source-runtime-historical-fixture.mjs",
+          "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/historical-source-postgres",
+          "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/historical-source-pglite"
+        ],
+        [
+          "tools/source-runtime-historical-fixture.mjs",
+          "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/historical-source-postgres",
+          "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/historical-source-pglite"
+        ]
+      ],
+      "checks": [
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/historical-source-postgres",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/historical-source-pglite",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/historical-source-postgres",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/historical-source-pglite",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-historical-m36",
+          "path": "parity/runs/runtime-historical-m36/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-multichain-m37",
+          "path": "parity/runs/runtime-multichain-m37/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m380/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38-sibling/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "other/indexing-service-m38/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        }
+      ],
+      "reused_output_guard": "not_applicable_readonly_input_or_canonical_collector"
+    },
+    {
+      "file": "tools/source-runtime-multichain-original.mjs",
+      "sha256": "e34bbe167d1d2b4ae7ea6e158abb6351f2ece2281a99404c565c8e4e31d143da",
+      "guard": "!['runtime-multichain-m37','indexing-service-m38'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json')",
+      "full_command": {
+        "label": "'runtime-multichain-source-'+backend",
+        "args": "['tools/source-runtime-multichain-original.mjs','--backend='+backend,'--output='+output+'/multichain-source-'+backend]"
+      },
+      "full_arguments": [
+        [
+          "tools/source-runtime-multichain-original.mjs",
+          "--backend=postgres",
+          "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/multichain-source-postgres"
+        ],
+        [
+          "tools/source-runtime-multichain-original.mjs",
+          "--backend=pglite",
+          "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/multichain-source-pglite"
+        ]
+      ],
+      "checks": [
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/multichain-source-postgres",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/multichain-source-pglite",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-multichain-m37",
+          "path": "parity/runs/runtime-multichain-m37/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m380/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38-sibling/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "other/indexing-service-m38/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-reused-output",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/preflight-existing",
+          "existing_result": true,
+          "rejected": true
+        }
+      ],
+      "reused_output_guard": "verified"
+    },
+    {
+      "file": "tools/source-runtime-multichain-probes.mjs",
+      "sha256": "336b1d136648de4dfbae5c6b970904c364a2840dc6193ff6181b4b361c77621f",
+      "guard": "!['runtime-multichain-m37','indexing-service-m38'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json')",
+      "full_command": {
+        "label": "'runtime-multichain-probes-'+backend",
+        "args": "['tools/source-runtime-multichain-probes.mjs','--backend='+backend,'--output='+output+'/multichain-probes-'+backend]"
+      },
+      "full_arguments": [
+        [
+          "tools/source-runtime-multichain-probes.mjs",
+          "--backend=postgres",
+          "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/multichain-probes-postgres"
+        ],
+        [
+          "tools/source-runtime-multichain-probes.mjs",
+          "--backend=pglite",
+          "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/multichain-probes-pglite"
+        ]
+      ],
+      "checks": [
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/multichain-probes-postgres",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/multichain-probes-pglite",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-multichain-m37",
+          "path": "parity/runs/runtime-multichain-m37/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m380/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38-sibling/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "other/indexing-service-m38/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-reused-output",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/preflight-existing",
+          "existing_result": true,
+          "rejected": true
+        }
+      ],
+      "reused_output_guard": "verified"
+    },
+    {
+      "file": "tools/source-runtime-multichain-fixture.mjs",
+      "sha256": "4d9cb1a08b8ae016ce754062082d8831a0e434399c02d1eb3dc7ec122b08fe13",
+      "guard": "!['runtime-multichain-m37','indexing-service-m38'].some(stage=>directory.startsWith(root+'/parity/runs/'+stage+'/'))",
+      "full_command": {
+        "label": "'runtime-multichain-fixture'",
+        "args": "['tools/source-runtime-multichain-fixture.mjs','--postgres='+output+'/multichain-source-postgres','--pglite='+output+'/multichain-source-pglite']"
+      },
+      "full_arguments": [
+        [
+          "tools/source-runtime-multichain-fixture.mjs",
+          "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/multichain-source-postgres",
+          "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/multichain-source-pglite"
+        ],
+        [
+          "tools/source-runtime-multichain-fixture.mjs",
+          "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/multichain-source-postgres",
+          "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/multichain-source-pglite"
+        ]
+      ],
+      "checks": [
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/multichain-source-postgres",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/multichain-source-pglite",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/multichain-source-postgres",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/multichain-source-pglite",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-multichain-m37",
+          "path": "parity/runs/runtime-multichain-m37/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m380/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38-sibling/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "other/indexing-service-m38/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        }
+      ],
+      "reused_output_guard": "not_applicable_readonly_input_or_canonical_collector"
+    },
+    {
+      "file": "tools/source-runtime-multichain-probe-fixture.mjs",
+      "sha256": "2dc1060af5f12c00db69987234d88db54bf8aef9b78bdc61f70aa848b10481b6",
+      "guard": "!['runtime-multichain-m37','indexing-service-m38'].some(stage=>directory.startsWith(root+'/parity/runs/'+stage+'/'))",
+      "full_command": {
+        "label": "'runtime-multichain-probe-fixture'",
+        "args": "['tools/source-runtime-multichain-probe-fixture.mjs','--postgres='+output+'/multichain-probes-postgres','--pglite='+output+'/multichain-probes-pglite']"
+      },
+      "full_arguments": [
+        [
+          "tools/source-runtime-multichain-probe-fixture.mjs",
+          "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/multichain-probes-postgres",
+          "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/multichain-probes-pglite"
+        ],
+        [
+          "tools/source-runtime-multichain-probe-fixture.mjs",
+          "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/multichain-probes-postgres",
+          "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-service-m38/full-verify-02/multichain-probes-pglite"
+        ]
+      ],
+      "checks": [
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/multichain-probes-postgres",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/multichain-probes-pglite",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/multichain-probes-postgres",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "exact-full-argument",
+          "path": "parity/runs/indexing-service-m38/full-verify-02/multichain-probes-pglite",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-multichain-m37",
+          "path": "parity/runs/runtime-multichain-m37/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m380/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38-sibling/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "other/indexing-service-m38/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        }
+      ],
+      "reused_output_guard": "not_applicable_readonly_input_or_canonical_collector"
+    },
+    {
+      "file": "tools/source-runtime-index-results.mjs",
+      "sha256": "24cc31149e4b5d331244ecfd96a58d6790531da05800dafac24b526e31b4c9f7",
+      "guard": "!['runtime-index-m35','runtime-historical-m36','runtime-multichain-m37','indexing-service-m38'].some(stage=>relative.startsWith('parity/runs/'+stage+'/'))",
+      "full_command": null,
+      "full_arguments": [],
+      "checks": [
+        {
+          "label": "exact-M38-collector-run-dir",
+          "path": "parity/runs/indexing-service-m38/full-verify-02",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-index-m35",
+          "path": "parity/runs/runtime-index-m35/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-historical-m36",
+          "path": "parity/runs/runtime-historical-m36/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-multichain-m37",
+          "path": "parity/runs/runtime-multichain-m37/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m380/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38-sibling/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "other/indexing-service-m38/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        }
+      ],
+      "reused_output_guard": "not_applicable_readonly_input_or_canonical_collector"
+    },
+    {
+      "file": "tools/source-runtime-historical-results.mjs",
+      "sha256": "23e1e7c3f969101afbdaa7139e2ba194515360565c829e9d4e4211578a10b173",
+      "guard": "!['runtime-historical-m36','runtime-multichain-m37','indexing-service-m38'].some(stage=>relative.startsWith('parity/runs/'+stage+'/'))",
+      "full_command": null,
+      "full_arguments": [],
+      "checks": [
+        {
+          "label": "exact-M38-collector-run-dir",
+          "path": "parity/runs/indexing-service-m38/full-verify-02",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-historical-m36",
+          "path": "parity/runs/runtime-historical-m36/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-multichain-m37",
+          "path": "parity/runs/runtime-multichain-m37/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m380/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38-sibling/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "other/indexing-service-m38/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        }
+      ],
+      "reused_output_guard": "not_applicable_readonly_input_or_canonical_collector"
+    },
+    {
+      "file": "tools/source-runtime-multichain-results.mjs",
+      "sha256": "ff86c8cc3237fa5a4038c9a492749d89dc1ea48ac8eba700a0a3a6ff5279496a",
+      "guard": "!['runtime-multichain-m37','indexing-service-m38'].some(stage=>relative.startsWith('parity/runs/'+stage+'/'))",
+      "full_command": null,
+      "full_arguments": [],
+      "checks": [
+        {
+          "label": "exact-M38-collector-run-dir",
+          "path": "parity/runs/indexing-service-m38/full-verify-02",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "preserved-runtime-multichain-m37",
+          "path": "parity/runs/runtime-multichain-m37/preflight/evidence",
+          "existing_result": false,
+          "rejected": false
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m380/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38-sibling/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/indexing-service-m38",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "other/indexing-service-m38/evidence",
+          "existing_result": false,
+          "rejected": true
+        },
+        {
+          "label": "reject-unapproved-or-sibling-prefix",
+          "path": "parity/runs/arbitrary/evidence",
+          "existing_result": false,
+          "rejected": true
+        }
+      ],
+      "reused_output_guard": "not_applicable_readonly_input_or_canonical_collector"
+    }
+  ],
+  "summary": {
+    "guards": 11,
+    "wrapper_commands": 8,
+    "checks": 115
+  }
+}
