@@ -1356,7 +1356,28 @@
         "parity/runs/batch-40.json",
         "docs/INDEPENDENT_INDEXING_STORAGE.md"
       ],
-      "remaining": "Constructor-owned separate domains and immutable reusable transaction bindings only; zero new original source credit. Source PGlite callback-only one-instance transactions intentionally differ from native two-directory SQL atomicity. Cooperative ownership is not a hostile SQL/filesystem security sandbox or host-power-loss guarantee. External writes/reorg require explicit session invalidation; no atomic multichain setup/checkpoint primitive, finite outer runner, MarkReady, realtime/cutover or automatic recovery integration yet."
+      "remaining": "Constructor-owned separate domains and immutable reusable transaction bindings only; zero new original source credit. Source PGlite callback-only one-instance transactions intentionally differ from native two-directory SQL atomicity. Cooperative ownership is not a hostile SQL/filesystem security sandbox or host-power-loss guarantee. External writes/reorg require explicit session invalidation; Atomic setup/group primitives are separately verified in M42; no finite outer runner, MarkReady, realtime/cutover or automatic recovery integration yet."
+    },
+    {
+      "id": "atomic-multichain-primitives-m42",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/multichain_actions.go",
+        "store/reorg.go",
+        "indexing/owned_multichain.go",
+        "indexing/service.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/multichain.ts",
+        "packages/core/src/database/queryBuilder.ts",
+        "packages/core/src/indexing/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/multichain-atomic-verification.json",
+        "parity/runs/batch-41.json",
+        "docs/MULTICHAIN_ATOMIC_PRIMITIVES.md"
+      ],
+      "remaining": "Bounded one-transaction all-chain setup and already-extracted single-chain historical groups only; zero new original source credit. Actual M37 generator/refetch/decode orchestration, outer runner, readiness, views/realtime/cutover and recovery coordination remain unfinished. Silent business-only rollback invalidates row caches but does not atomically rewind independent sync or reset runner cursors. Native PGlite separate directories/SQL rollback intentionally differ from source callback-only transaction behavior. Commit uncertainty requires durable evidence, never blind retry."
     }
   ]
 }

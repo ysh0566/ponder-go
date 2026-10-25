@@ -10,7 +10,7 @@ const read=f=>JSON.parse(fs.readFileSync(path.resolve(root,f)));
 const hash=f=>({file:path.relative(root,path.resolve(root,f)),sha256:crypto.createHash('sha256').update(fs.readFileSync(path.resolve(root,f))).digest('hex')});
 const backend_cases={},captures={};
 for(const backend of ['postgres','pglite']){
- const input=arg(backend);if(!input||!['indexing-profile-m40','independent-storage-m41'].some(stage=>path.resolve(root,input).startsWith(root+'/parity/runs/'+stage+'/')))throw Error('Explicit scoped both backend inputs required');
+ const input=arg(backend);if(!input||!['indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>path.resolve(root,input).startsWith(root+'/parity/runs/'+stage+'/')))throw Error('Explicit scoped both backend inputs required');
  const result=read(input+'/result.json'),capture=read(input+'/calls.json'),original=read(input+'/original.json');
  if(!result.complete||!result.success||result.backend!==backend||result.exit_code!==0||!result.adapter_verified_after||result.counts.passed!==2||result.counts.failed||result.counts.pending||!original.success||original.testResults.length!==1||original.testResults[0].assertionResults.length!==2||!indexingProfileProbeTitles.every(title=>original.testResults[0].assertionResults.some(t=>t.fullName===title&&t.status==='passed')))throw Error('Complete exact real probe execution required');
  for(const ref of [...result.inputs,result.context_archive])if(hash(ref.file).sha256!==ref.sha256)throw Error('Current probe inputs/context changed '+ref.file);

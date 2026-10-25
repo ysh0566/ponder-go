@@ -1,0 +1,571 @@
+package runtime
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"iter"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"reflect"
+	"strings"
+	"sync"
+	"testing"
+
+	"ponder.local/ponder-go/filter"
+	"ponder.local/ponder-go/rpc"
+)
+
+type realtimeLiveProvider struct {
+	Request, Response any
+	Error             *struct {
+		Name, Message string
+		Code          *int
+	}
+}
+type realtimeLiveReplay struct {
+	mu        sync.Mutex
+	registry  *historicalLiveRegistry
+	providers []realtimeLiveProvider
+	used      []bool
+	requests  []string
+}
+
+func (r *realtimeLiveReplay) load(input []realtimeLiveProvider) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.providers = input
+	r.used = make([]bool, len(input))
+	r.requests = []string{}
+}
+func (r *realtimeLiveReplay) Call(ctx context.Context, method string, params, out any) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	key, err := historicalLiveRequestKey(method, params)
+	if err != nil {
+		return err
+	}
+	r.requests = append(r.requests, key)
+	for i, input := range r.providers {
+		if r.used[i] {
+			continue
+		}
+		decoded, err := r.registry.restore(input.Request)
+		if err != nil {
+			return err
+		}
+		request, err := historicalLiveObject(decoded)
+		if err != nil {
+			return err
+		}
+		wanted, err := historicalLiveRequestKey(request["method"].(string), request["params"])
+		if err != nil {
+			return err
+		}
+		if key != wanted {
+			continue
+		}
+		r.used[i] = true
+		if input.Error != nil {
+			return &historicalLiveSourceError{Name: input.Error.Name, Message: input.Error.Message, Code: input.Error.Code}
+		}
+		value, err := r.registry.restore(input.Response)
+		if err != nil {
+			return err
+		}
+		target := reflect.ValueOf(out)
+		if target.Kind() != reflect.Pointer || target.IsNil() {
+			return fmt.Errorf("source provider pointer target required")
+		}
+		target = target.Elem()
+		if value == nil {
+			target.Set(reflect.Zero(target.Type()))
+			return nil
+		}
+		source := reflect.ValueOf(value)
+		if source.Type().AssignableTo(target.Type()) {
+			target.Set(source)
+			return nil
+		}
+		if source.Kind() == reflect.Slice && target.Kind() == reflect.Slice {
+			items := reflect.MakeSlice(target.Type(), source.Len(), source.Len())
+			for i := 0; i < source.Len(); i++ {
+				item := reflect.ValueOf(source.Index(i).Interface())
+				if !item.Type().AssignableTo(target.Type().Elem()) {
+					return fmt.Errorf("source provider slice element type differs")
+				}
+				items.Index(i).Set(item)
+			}
+			target.Set(items)
+			return nil
+		}
+		return fmt.Errorf("source provider target differs %T to %v", value, target.Type())
+	}
+	return fmt.Errorf("native realtime made uncaptured provider request %s", key)
+}
+func (r *realtimeLiveReplay) finished() error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if len(r.requests) != len(r.providers) {
+		return fmt.Errorf("source/native provider request count differs %d/%d", len(r.requests), len(r.providers))
+	}
+	for i, used := range r.used {
+		if !used {
+			return fmt.Errorf("native realtime omitted actual source request %d", i)
+		}
+	}
+	return nil
+}
+
+type realtimeLiveLogger struct {
+	mu       sync.Mutex
+	warnings []any
+}
+
+func (l *realtimeLiveLogger) Debug(map[string]any) {}
+func (l *realtimeLiveLogger) Warn(value map[string]any) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	copyValue := filter.Object{}
+	for key, item := range value {
+		if key != "duration" {
+			copyValue[key] = item
+		}
+	}
+	l.warnings = append(l.warnings, copyValue)
+}
+func (l *realtimeLiveLogger) reset() { l.mu.Lock(); l.warnings = []any{}; l.mu.Unlock() }
+
+type realtimeLiveInstance struct {
+	syncer   *SourceRealtimeSync
+	rpc      *realtimeLiveReplay
+	children *SourceHistoricalChildren
+}
+type realtimeLiveCase struct {
+	record    historicalLiveRecord
+	registry  *historicalLiveRegistry
+	instances map[uint64]*realtimeLiveInstance
+	rpcs      map[uint64]*realtimeLiveReplay
+	actions   map[uint64]*rpc.Actions
+	children  map[uint64]*SourceHistoricalChildren
+	logger    *realtimeLiveLogger
+	calls     []map[string]any
+	errors    []string
+	complete  bool
+	next      int
+	killed    bool
+}
+type realtimeLiveCall struct {
+	CaseID                     string `json:"case_id"`
+	Sequence                   int
+	Operation                  string
+	Args, Result, After, Error any
+	Providers                  []realtimeLiveProvider
+	Warnings                   []any
+	Drained                    bool
+	ConsumerSteps              []struct {
+		Operation string `json:"operation"`
+		Args      any    `json:"args"`
+	} `json:"consumer_steps"`
+}
+
+func realtimeLiveEvents(values []SourceRealtimeEvent) []filter.Object {
+	result := []filter.Object{}
+	for _, event := range values {
+		item := filter.Object{"type": event.Type, "block": event.Block}
+		switch event.Type {
+		case "block":
+			traces := []filter.Object{}
+			for _, trace := range event.Traces {
+				traces = append(traces, filter.Object{"transactionHash": trace.TransactionHash, "trace": trace.Trace})
+			}
+			children := historicalLiveMap{}
+			for _, entry := range event.ChildAddresses {
+				set := historicalLiveSet{}
+				for _, address := range entry.Addresses {
+					set = append(set, address)
+				}
+				children = append(children, historicalLivePair{Key: entry.FragmentID, Value: set})
+			}
+			item["hasMatchedFilter"] = event.HasMatchedFilter
+			item["transactions"] = event.Transactions
+			item["transactionReceipts"] = event.TransactionReceipts
+			item["logs"] = event.Logs
+			item["traces"] = traces
+			item["childAddresses"] = children
+			if event.BlockCallback == nil {
+				item["blockCallback"] = filter.Undefined
+			} else {
+				item["blockCallback"] = event.BlockCallback
+			}
+		case "reorg":
+			item["reorgedBlocks"] = event.ReorgedBlocks
+		}
+		result = append(result, item)
+	}
+	return result
+}
+func (c *realtimeLiveCase) construct(args filter.Object) (*realtimeLiveInstance, error) {
+	id, err := historicalLiveUint(args["instance"])
+	if err != nil {
+		return nil, err
+	}
+	rpcID, err := historicalLiveUint(args["rpcID"])
+	if err != nil {
+		return nil, err
+	}
+	childID, err := historicalLiveUint(args["childID"])
+	if err != nil {
+		return nil, err
+	}
+	if c.instances[id] != nil {
+		return nil, fmt.Errorf("duplicate realtime constructor")
+	}
+	requester := c.rpcs[rpcID]
+	if requester == nil {
+		requester = &realtimeLiveReplay{registry: c.registry}
+		c.rpcs[rpcID] = requester
+		c.actions[rpcID] = rpc.NewActions(requester)
+	}
+	children := c.children[childID]
+	if children == nil {
+		entries, err := historicalLiveChildren(args["children"])
+		if err != nil {
+			return nil, err
+		}
+		children = NewSourceHistoricalChildren(entries)
+		c.children[childID] = children
+	}
+	rawChain, err := historicalLiveObject(args["chain"])
+	if err != nil {
+		return nil, err
+	}
+	chainID, err := historicalLiveUint(rawChain["id"])
+	if err != nil {
+		return nil, err
+	}
+	reorg, err := historicalLiveUint(rawChain["reorgWindow"])
+	if err != nil {
+		return nil, err
+	}
+	poll, err := historicalLiveUint(rawChain["pollingInterval"])
+	if err != nil {
+		return nil, err
+	}
+	name, _ := rawChain["name"].(string)
+	finalized, err := historicalLiveObject(args["finalized"])
+	if err != nil {
+		return nil, err
+	}
+	values, ok := args["filters"].([]any)
+	if !ok {
+		return nil, fmt.Errorf("source constructor filter list required")
+	}
+	filters := []filter.Object{}
+	for _, value := range values {
+		f, err := historicalLiveObject(value)
+		if err != nil {
+			return nil, err
+		}
+		filters = append(filters, f)
+	}
+	syncer, err := NewSourceRealtimeSync(requester, c.actions[rpcID], children, finalized, filters, SourceRealtimeChain{ID: chainID, Name: name, ReorgWindow: reorg, PollingInterval: poll}, SourceRealtimeOptions{Logger: c.logger, IsKilled: func() bool { return c.killed }})
+	if err != nil {
+		return nil, err
+	}
+	instance := &realtimeLiveInstance{syncer: syncer, rpc: requester, children: children}
+	c.instances[id] = instance
+	return instance, nil
+}
+func (c *realtimeLiveCase) call(ctx context.Context, call realtimeLiveCall) error {
+	decoded, err := c.registry.restore(call.Args)
+	if err != nil {
+		return err
+	}
+	args, err := historicalLiveObject(decoded)
+	if err != nil {
+		return err
+	}
+	c.logger.reset()
+	c.killed = args["shutdownKilled"] == true
+	var instance *realtimeLiveInstance
+	var actual any
+	var caught error
+	if call.Operation == "construct" {
+		instance, err = c.construct(args)
+		if err != nil {
+			return err
+		}
+		actual = instance.syncer != nil
+	} else {
+		id, err := historicalLiveUint(args["instance"])
+		if err != nil {
+			return err
+		}
+		instance = c.instances[id]
+		if instance == nil {
+			return fmt.Errorf("missing native realtime instance")
+		}
+		instance.rpc.load(call.Providers)
+		switch call.Operation {
+		case "sync":
+			if !filter.IsUndefined(args["callback"]) {
+				return fmt.Errorf("original callback input needs explicit callable adapter")
+			}
+			block, err := historicalLiveObject(args["block"])
+			if err != nil {
+				return err
+			}
+			next, stop := iter.Pull2(instance.syncer.Sync(ctx, block, nil))
+			values := []SourceRealtimeEvent{}
+			if len(call.ConsumerSteps) == 0 {
+				return fmt.Errorf("actual source consumer step inputs required")
+			}
+			for _, step := range call.ConsumerSteps {
+				switch step.Operation {
+				case "next":
+					value, err, ok := next()
+					if err != nil {
+						caught = err
+					}
+					if ok && err == nil {
+						values = append(values, value)
+					}
+				case "return":
+					stop()
+				default:
+					stop()
+					return fmt.Errorf("unsupported actual original consumer step %s", step.Operation)
+				}
+			}
+			stop()
+			actual = realtimeLiveEvents(values)
+		case "onError":
+			input, ok := args["error"].(error)
+			if !ok {
+				return fmt.Errorf("actual source Error input required")
+			}
+			caught = instance.syncer.OnError(input, nil)
+			actual = filter.Undefined
+		default:
+			return fmt.Errorf("unknown source realtime operation %s", call.Operation)
+		}
+		if err := instance.rpc.finished(); err != nil {
+			return err
+		}
+	}
+	if call.Error != nil {
+		if caught == nil {
+			return fmt.Errorf("source propagated error missing")
+		}
+		if err := c.registry.compare(caught, call.Error, "actual propagated realtime Error"); err != nil {
+			return err
+		}
+	} else if caught != nil {
+		return fmt.Errorf("native realtime propagated unexpected error %v", caught)
+	}
+	if err := c.registry.compare(actual, call.Result, "actual realtime public result"); err != nil {
+		return err
+	}
+	if err := c.registry.compare(c.logger.warnings, call.Warnings, "actual parent realtime warnings excluding clock duration"); err != nil {
+		return err
+	}
+	after := filter.Object{"unfinalizedBlocks": instance.syncer.UnfinalizedBlocks(), "children": historicalLiveChildOutput(instance.children)}
+	if call.Operation == "sync" {
+		after["inputBlock"] = args["block"]
+	}
+	if err := c.registry.compare(after, call.After, "actual independent realtime state and input mutation"); err != nil {
+		return err
+	}
+	requests := []string{}
+	if call.Operation != "construct" {
+		requests = append(requests, instance.rpc.requests...)
+	}
+	c.calls = append(c.calls, map[string]any{"sequence": call.Sequence, "operation": call.Operation, "provider_inputs": len(call.Providers), "native_requests": requests, "warnings": len(c.logger.warnings), "actual_memory_api_no_database": true})
+	return nil
+}
+func TestUpstreamSourceRealtime(t *testing.T) {
+	if os.Getenv("PONDER_TEST_POSTGRES") == "" {
+		t.Skip("requires explicit task PostgreSQL plus original PGlite companion")
+	}
+	root, err := filepath.Abs("..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var ledger struct{ Tests []historicalLiveRecord }
+	if err := historicalLiveReadJSON(filepath.Join(root, "parity/test-ledger.json"), &ledger); err != nil {
+		t.Fatal(err)
+	}
+	records := []historicalLiveRecord{}
+	assertions := 0
+	for _, record := range ledger.Tests {
+		if record.File == "packages/core/src/sync-realtime/index.test.ts" {
+			records = append(records, record)
+			assertions += len(record.Assertions)
+		}
+	}
+	if len(records) != 30 || assertions != 203 {
+		t.Fatal("complete original realtime inventory required")
+	}
+	for _, backend := range []string{"postgres", "pglite"} {
+		t.Run(backend, func(t *testing.T) {
+			base := filepath.Join(root, "parity/runs/realtime-m34")
+			if err := os.MkdirAll(base, 0755); err != nil {
+				t.Fatal(err)
+			}
+			directory, err := os.MkdirTemp(base, "live-"+backend+"-")
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Log("Live source realtime evidence: " + directory)
+			states := map[string]*realtimeLiveCase{}
+			for _, record := range records {
+				states[record.ID] = &realtimeLiveCase{record: record, registry: newSourceLiveHistoricalRegistry(), instances: map[uint64]*realtimeLiveInstance{}, rpcs: map[uint64]*realtimeLiveReplay{}, actions: map[uint64]*rpc.Actions{}, children: map[uint64]*SourceHistoricalChildren{}, logger: &realtimeLiveLogger{warnings: []any{}}, calls: []map[string]any{}, errors: []string{}}
+			}
+			var active *realtimeLiveCase
+			var mu sync.Mutex
+			mux := http.NewServeMux()
+			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+				mu.Lock()
+				defer mu.Unlock()
+				fail := func(err error) {
+					if active != nil {
+						active.errors = append(active.errors, err.Error())
+					}
+					http.Error(w, err.Error(), 500)
+				}
+				decoder := json.NewDecoder(io.LimitReader(r.Body, 64<<20))
+				decoder.UseNumber()
+				switch r.URL.Path {
+				case "/start":
+					var input struct {
+						CaseID string `json:"case_id"`
+					}
+					if err := decoder.Decode(&input); err != nil {
+						fail(err)
+						return
+					}
+					state := states[input.CaseID]
+					if state == nil || state.complete || len(state.calls) > 0 {
+						fail(fmt.Errorf("unknown or repeated source realtime start"))
+						return
+					}
+					active = state
+				case "/call":
+					var input realtimeLiveCall
+					if err := decoder.Decode(&input); err != nil {
+						fail(err)
+						return
+					}
+					if active == nil || active.record.ID != input.CaseID || input.Sequence != active.next {
+						fail(fmt.Errorf("source realtime call identity/order differs"))
+						return
+					}
+					active.next++
+					if err := active.call(context.Background(), input); err != nil {
+						fail(err)
+						return
+					}
+				case "/case":
+					var input struct {
+						historicalLiveRecord
+						CaseID   string `json:"case_id"`
+						Sequence int
+					}
+					if err := decoder.Decode(&input); err != nil {
+						fail(err)
+						return
+					}
+					if active == nil || active.record.ID != input.CaseID || input.ID != active.record.ID || input.SourceSHA != active.record.SourceSHA || input.Body != active.record.Body || input.FullName != active.record.FullName || input.Sequence != active.next || len(active.errors) > 0 || len(active.calls) == 0 {
+						fail(fmt.Errorf("original realtime source/body/native completion differs"))
+						return
+					}
+					wanted, _ := json.Marshal(active.record.Assertions)
+					got, _ := json.Marshal(input.Assertions)
+					if string(wanted) != string(got) {
+						fail(fmt.Errorf("original realtime assertions changed"))
+						return
+					}
+					active.complete = true
+					active = nil
+				default:
+					fail(fmt.Errorf("unknown realtime comparison route"))
+					return
+				}
+				w.WriteHeader(200)
+			})
+			server := httptest.NewServer(mux)
+			command := exec.Command("node", "tools/source-realtime-original.mjs", "--backend="+backend, "--output="+directory)
+			command.Dir = root
+			command.Env = append(os.Environ(), "PONDER_REALTIME_ENDPOINT="+server.URL)
+			driver, err := os.Create(filepath.Join(directory, "driver.txt"))
+			if err != nil {
+				server.Close()
+				t.Fatal(err)
+			}
+			command.Stdout = driver
+			command.Stderr = driver
+			runError := command.Run()
+			driver.Close()
+			server.Close()
+			nativeCases := []map[string]any{}
+			for _, record := range records {
+				state := states[record.ID]
+				nativeCases = append(nativeCases, map[string]any{"id": record.ID, "source_sha256": record.SourceSHA, "complete": state.complete, "calls": state.calls, "errors": state.errors, "actual_memory_api_no_database": true})
+			}
+			report := map[string]any{"state": "Actual complete original source realtime public calls/provider inputs, independent native state/warnings/Set/frame identities. Exact mappings and complete module acceptance pending; no source credit.", "backend": backend, "cases": nativeCases, "original_exit_error": fmt.Sprint(runError), "source_credit": 0}
+			if os.Getenv("PONDER_UPSTREAM_ROOT") != "" {
+				report["environment_adapted"] = true
+				report["pristine_file"] = false
+				report["source_credit"] = 0
+				report["state"] = "ENVIRONMENT-ADAPTED startup; NOT pristine. " + report["state"].(string)
+			}
+			raw, err := json.MarshalIndent(report, "", "  ")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(directory, "native.json"), append(raw, '\n'), 0644); err != nil {
+				t.Fatal(err)
+			}
+			var original struct {
+				TestResults []struct {
+					AssertionResults []struct{ Title, Status string }
+				}
+			}
+			reportError := historicalLiveReadJSON(filepath.Join(directory, "original.json"), &original)
+			for _, record := range records {
+				t.Run(record.ID, func(t *testing.T) {
+					state := states[record.ID]
+					if !state.complete || len(state.errors) > 0 || len(state.calls) == 0 {
+						t.Fatal("actual native realtime comparison incomplete", state.errors)
+					}
+					if reportError != nil {
+						t.Fatal(reportError)
+					}
+					matches := 0
+					for _, file := range original.TestResults {
+						for _, item := range file.AssertionResults {
+							if item.Title == record.FullName && item.Status == "passed" {
+								matches++
+							}
+						}
+					}
+					if matches != 1 {
+						t.Fatal("original realtime assertions did not pass uniquely", record.FullName)
+					}
+				})
+			}
+			if runError != nil {
+				output, _ := os.ReadFile(filepath.Join(directory, "output.txt"))
+				t.Fatalf("original realtime exit %v: %s", runError, strings.TrimSpace(string(output)))
+			}
+		})
+	}
+}

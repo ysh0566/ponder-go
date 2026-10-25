@@ -1,0 +1,1265 @@
+{
+  "counting": "Supplementary actual pinned viem calls, zero original mappings. Native comparison and real runtime are separate required evidence.",
+  "sources": [
+    {
+      "file": "tools/topic-fixtures.mjs",
+      "sha256": "4d6c80b9bac08f17bca753a55085ffe204c57dc54bce0dde257b62392cfdc27a"
+    },
+    {
+      "file": "../ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/package.json",
+      "sha256": "08b1378afb32a2fbcad82604723dd7104a598e0b2fe7887b0b2a2431551c0de2"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/index.js",
+      "sha256": "a159baabd9da9741d4a4ff76e3ba43ac189957e49a9dc132f22e5004554bd1aa"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/utils/abi/encodeEventTopics.js",
+      "sha256": "8103976f52937b638afeb32a3f21e6f6fb7b6ff57f88c3daac0d57d9b91b233e"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/utils/abi/encodeAbiParameters.js",
+      "sha256": "97c7394ec434f93d254e9beefc728e74301c94c439683c75558e2577b7f276d6"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/utils/encoding/toBytes.js",
+      "sha256": "1a4beab59798bbb9bc29eb285512ed35cb1089f3a53ae35ccdef79b642c73237"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_cjs/utils/hash/keccak256.js",
+      "sha256": "877924fe76d470b55d566e9fb95f0c8c54f2b0ed7e699d032136e81c80671843"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_esm/utils/abi/encodeEventTopics.js",
+      "sha256": "8ee5ef279235fb54412446d4c63caf2e463ddce706acd993c4b19f26b95f0600"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_esm/utils/abi/encodeAbiParameters.js",
+      "sha256": "d329bf678e995dba1e6d735befac5e29591f7166649cc8143f91460b1589b32c"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_esm/utils/encoding/toBytes.js",
+      "sha256": "c67c68428c516b67b27ea3094c79632771efbf9a2df9c65b412f8f9220d7741d"
+    },
+    {
+      "file": "../ponder-upstream/node_modules/.pnpm/viem@2.35.0_typescript@5.4.5_zod@3.23.8/node_modules/viem/_esm/utils/hash/keccak256.js",
+      "sha256": "3e3b256aa1b5537440955848234b84aa4de248225cb038c82317420279e77c14"
+    }
+  ],
+  "cases": [
+    {
+      "name": "bytes32/missing",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes32",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {},
+      "topics": {
+        "topic0": "0x4e3c860b2325f2f14de483dfa419fb2104164a3368aaadf777b1a46c4e3b12b1",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes32/null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes32",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": null
+      },
+      "topics": {
+        "topic0": "0x4e3c860b2325f2f14de483dfa419fb2104164a3368aaadf777b1a46c4e3b12b1",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes32/undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes32",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": {
+          "$undefined": true
+        }
+      },
+      "topics": {
+        "topic0": "0x4e3c860b2325f2f14de483dfa419fb2104164a3368aaadf777b1a46c4e3b12b1",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes32/positional_null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes32",
+            "indexed": true
+          }
+        ]
+      },
+      "args": [
+        null
+      ],
+      "topics": {
+        "topic0": "0x4e3c860b2325f2f14de483dfa419fb2104164a3368aaadf777b1a46c4e3b12b1",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes32/positional_undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes32",
+            "indexed": true
+          }
+        ]
+      },
+      "args": [
+        {
+          "$undefined": true
+        }
+      ],
+      "topics": {
+        "topic0": "0x4e3c860b2325f2f14de483dfa419fb2104164a3368aaadf777b1a46c4e3b12b1",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes32/empty_or",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes32",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": []
+      },
+      "topics": {
+        "topic0": "0x4e3c860b2325f2f14de483dfa419fb2104164a3368aaadf777b1a46c4e3b12b1",
+        "topic1": [],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes32/value",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes32",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": "0x0000000000000000000000000000000000000000000000000000000000000001"
+      },
+      "topics": {
+        "topic0": "0x4e3c860b2325f2f14de483dfa419fb2104164a3368aaadf777b1a46c4e3b12b1",
+        "topic1": "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes32/or_value",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes32",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          "0x0000000000000000000000000000000000000000000000000000000000000001"
+        ]
+      },
+      "topics": {
+        "topic0": "0x4e3c860b2325f2f14de483dfa419fb2104164a3368aaadf777b1a46c4e3b12b1",
+        "topic1": [
+          "0x0000000000000000000000000000000000000000000000000000000000000001"
+        ],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes32/or_null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes32",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          null
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot read properties of null (reading 'length')"
+      }
+    },
+    {
+      "name": "bytes32/or_undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes32",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          {
+            "$undefined": true
+          }
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot read properties of undefined (reading 'length')"
+      }
+    },
+    {
+      "name": "address/missing",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "address",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {},
+      "topics": {
+        "topic0": "0xa8a4eb66b377d8f8786a05fcf52254c93c925d417dfc66a12a62bc66d37add09",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "address/null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "address",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": null
+      },
+      "topics": {
+        "topic0": "0xa8a4eb66b377d8f8786a05fcf52254c93c925d417dfc66a12a62bc66d37add09",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "address/undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "address",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": {
+          "$undefined": true
+        }
+      },
+      "topics": {
+        "topic0": "0xa8a4eb66b377d8f8786a05fcf52254c93c925d417dfc66a12a62bc66d37add09",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "address/positional_null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "address",
+            "indexed": true
+          }
+        ]
+      },
+      "args": [
+        null
+      ],
+      "topics": {
+        "topic0": "0xa8a4eb66b377d8f8786a05fcf52254c93c925d417dfc66a12a62bc66d37add09",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "address/positional_undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "address",
+            "indexed": true
+          }
+        ]
+      },
+      "args": [
+        {
+          "$undefined": true
+        }
+      ],
+      "topics": {
+        "topic0": "0xa8a4eb66b377d8f8786a05fcf52254c93c925d417dfc66a12a62bc66d37add09",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "address/empty_or",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "address",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": []
+      },
+      "topics": {
+        "topic0": "0xa8a4eb66b377d8f8786a05fcf52254c93c925d417dfc66a12a62bc66d37add09",
+        "topic1": [],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "address/value",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "address",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": "0x0000000000000000000000000000000000000001"
+      },
+      "topics": {
+        "topic0": "0xa8a4eb66b377d8f8786a05fcf52254c93c925d417dfc66a12a62bc66d37add09",
+        "topic1": "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "address/or_value",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "address",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          "0x0000000000000000000000000000000000000001"
+        ]
+      },
+      "topics": {
+        "topic0": "0xa8a4eb66b377d8f8786a05fcf52254c93c925d417dfc66a12a62bc66d37add09",
+        "topic1": [
+          "0x0000000000000000000000000000000000000000000000000000000000000001"
+        ],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "address/or_null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "address",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          null
+        ]
+      },
+      "error": {
+        "name": "InvalidAddressError",
+        "message": "Address \"null\" is invalid.\n\n- Address must be a hex value of 20 bytes (40 hex characters).\n- Address must match its checksum counterpart.\n\nVersion: viem@2.35.0"
+      }
+    },
+    {
+      "name": "address/or_undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "address",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          {
+            "$undefined": true
+          }
+        ]
+      },
+      "error": {
+        "name": "InvalidAddressError",
+        "message": "Address \"undefined\" is invalid.\n\n- Address must be a hex value of 20 bytes (40 hex characters).\n- Address must match its checksum counterpart.\n\nVersion: viem@2.35.0"
+      }
+    },
+    {
+      "name": "uint256/missing",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "uint256",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {},
+      "topics": {
+        "topic0": "0xd643c01d22702743c4086499fc0fb9fe5e06272216181007be2387d3f1680d1e",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "uint256/null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "uint256",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": null
+      },
+      "topics": {
+        "topic0": "0xd643c01d22702743c4086499fc0fb9fe5e06272216181007be2387d3f1680d1e",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "uint256/undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "uint256",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": {
+          "$undefined": true
+        }
+      },
+      "topics": {
+        "topic0": "0xd643c01d22702743c4086499fc0fb9fe5e06272216181007be2387d3f1680d1e",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "uint256/positional_null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "uint256",
+            "indexed": true
+          }
+        ]
+      },
+      "args": [
+        null
+      ],
+      "topics": {
+        "topic0": "0xd643c01d22702743c4086499fc0fb9fe5e06272216181007be2387d3f1680d1e",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "uint256/positional_undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "uint256",
+            "indexed": true
+          }
+        ]
+      },
+      "args": [
+        {
+          "$undefined": true
+        }
+      ],
+      "topics": {
+        "topic0": "0xd643c01d22702743c4086499fc0fb9fe5e06272216181007be2387d3f1680d1e",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "uint256/empty_or",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "uint256",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": []
+      },
+      "topics": {
+        "topic0": "0xd643c01d22702743c4086499fc0fb9fe5e06272216181007be2387d3f1680d1e",
+        "topic1": [],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "uint256/value",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "uint256",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": {
+          "$bigint": "1"
+        }
+      },
+      "topics": {
+        "topic0": "0xd643c01d22702743c4086499fc0fb9fe5e06272216181007be2387d3f1680d1e",
+        "topic1": "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "uint256/or_value",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "uint256",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          {
+            "$bigint": "1"
+          }
+        ]
+      },
+      "topics": {
+        "topic0": "0xd643c01d22702743c4086499fc0fb9fe5e06272216181007be2387d3f1680d1e",
+        "topic1": [
+          "0x0000000000000000000000000000000000000000000000000000000000000001"
+        ],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "uint256/or_null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "uint256",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          null
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot convert null to a BigInt"
+      }
+    },
+    {
+      "name": "uint256/or_undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "uint256",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          {
+            "$undefined": true
+          }
+        ]
+      },
+      "error": {
+        "name": "TypeError",
+        "message": "Cannot convert undefined to a BigInt"
+      }
+    },
+    {
+      "name": "string/missing",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "string",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {},
+      "topics": {
+        "topic0": "0x562e1bce31e21241d1fa2d7faf86764cd75d543bea91147e44bf14b9940b7af0",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "string/null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "string",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": null
+      },
+      "topics": {
+        "topic0": "0x562e1bce31e21241d1fa2d7faf86764cd75d543bea91147e44bf14b9940b7af0",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "string/undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "string",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": {
+          "$undefined": true
+        }
+      },
+      "topics": {
+        "topic0": "0x562e1bce31e21241d1fa2d7faf86764cd75d543bea91147e44bf14b9940b7af0",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "string/positional_null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "string",
+            "indexed": true
+          }
+        ]
+      },
+      "args": [
+        null
+      ],
+      "topics": {
+        "topic0": "0x562e1bce31e21241d1fa2d7faf86764cd75d543bea91147e44bf14b9940b7af0",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "string/positional_undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "string",
+            "indexed": true
+          }
+        ]
+      },
+      "args": [
+        {
+          "$undefined": true
+        }
+      ],
+      "topics": {
+        "topic0": "0x562e1bce31e21241d1fa2d7faf86764cd75d543bea91147e44bf14b9940b7af0",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "string/empty_or",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "string",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": []
+      },
+      "topics": {
+        "topic0": "0x562e1bce31e21241d1fa2d7faf86764cd75d543bea91147e44bf14b9940b7af0",
+        "topic1": [],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "string/value",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "string",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": "hello"
+      },
+      "topics": {
+        "topic0": "0x562e1bce31e21241d1fa2d7faf86764cd75d543bea91147e44bf14b9940b7af0",
+        "topic1": "0x1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8",
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "string/or_value",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "string",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          "hello"
+        ]
+      },
+      "topics": {
+        "topic0": "0x562e1bce31e21241d1fa2d7faf86764cd75d543bea91147e44bf14b9940b7af0",
+        "topic1": [
+          "0x1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8"
+        ],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "string/or_null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "string",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          null
+        ]
+      },
+      "topics": {
+        "topic0": "0x562e1bce31e21241d1fa2d7faf86764cd75d543bea91147e44bf14b9940b7af0",
+        "topic1": [
+          "0xefbde2c3aee204a69b7696d4b10ff31137fe78e3946306284f806e2dfc68b805"
+        ],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "string/or_undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "string",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          {
+            "$undefined": true
+          }
+        ]
+      },
+      "topics": {
+        "topic0": "0x562e1bce31e21241d1fa2d7faf86764cd75d543bea91147e44bf14b9940b7af0",
+        "topic1": [
+          "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+        ],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes/missing",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {},
+      "topics": {
+        "topic0": "0x74359858376f17c6f1e48e50716d72c41cbeee2c6fe83aaf3907e6390e0cf8cd",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes/null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": null
+      },
+      "topics": {
+        "topic0": "0x74359858376f17c6f1e48e50716d72c41cbeee2c6fe83aaf3907e6390e0cf8cd",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes/undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": {
+          "$undefined": true
+        }
+      },
+      "topics": {
+        "topic0": "0x74359858376f17c6f1e48e50716d72c41cbeee2c6fe83aaf3907e6390e0cf8cd",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes/positional_null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes",
+            "indexed": true
+          }
+        ]
+      },
+      "args": [
+        null
+      ],
+      "topics": {
+        "topic0": "0x74359858376f17c6f1e48e50716d72c41cbeee2c6fe83aaf3907e6390e0cf8cd",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes/positional_undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes",
+            "indexed": true
+          }
+        ]
+      },
+      "args": [
+        {
+          "$undefined": true
+        }
+      ],
+      "topics": {
+        "topic0": "0x74359858376f17c6f1e48e50716d72c41cbeee2c6fe83aaf3907e6390e0cf8cd",
+        "topic1": null,
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes/empty_or",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": []
+      },
+      "topics": {
+        "topic0": "0x74359858376f17c6f1e48e50716d72c41cbeee2c6fe83aaf3907e6390e0cf8cd",
+        "topic1": [],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes/value",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": "0x0102"
+      },
+      "topics": {
+        "topic0": "0x74359858376f17c6f1e48e50716d72c41cbeee2c6fe83aaf3907e6390e0cf8cd",
+        "topic1": "0x22ae6da6b482f9b1b19b0b897c3fd43884180a1c5ee361e1107a1bc635649dda",
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes/or_value",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          "0x0102"
+        ]
+      },
+      "topics": {
+        "topic0": "0x74359858376f17c6f1e48e50716d72c41cbeee2c6fe83aaf3907e6390e0cf8cd",
+        "topic1": [
+          "0x22ae6da6b482f9b1b19b0b897c3fd43884180a1c5ee361e1107a1bc635649dda"
+        ],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes/or_null",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          null
+        ]
+      },
+      "topics": {
+        "topic0": "0x74359858376f17c6f1e48e50716d72c41cbeee2c6fe83aaf3907e6390e0cf8cd",
+        "topic1": [
+          "0xefbde2c3aee204a69b7696d4b10ff31137fe78e3946306284f806e2dfc68b805"
+        ],
+        "topic2": null,
+        "topic3": null
+      }
+    },
+    {
+      "name": "bytes/or_undefined",
+      "event": {
+        "type": "event",
+        "name": "Seen",
+        "inputs": [
+          {
+            "name": "arg",
+            "type": "bytes",
+            "indexed": true
+          }
+        ]
+      },
+      "args": {
+        "arg": [
+          {
+            "$undefined": true
+          }
+        ]
+      },
+      "topics": {
+        "topic0": "0x74359858376f17c6f1e48e50716d72c41cbeee2c6fe83aaf3907e6390e0cf8cd",
+        "topic1": [
+          "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+        ],
+        "topic2": null,
+        "topic3": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,907 @@
+{
+  "complete": true,
+  "success": true,
+  "scope": "complete_module_source_runtime_multichain",
+  "run_dir": "parity/runs/multichain-atomic-m42/full-verify-03",
+  "environment_adapted": true,
+  "pristine_file": false,
+  "summary": {
+    "source_cases": 14,
+    "source_assertions": 29,
+    "targeted_cases": 3,
+    "targeted_assertions": 5,
+    "source_error_directives": 0,
+    "complete_mapping_candidates": 3,
+    "earlier_separately_mapped_cases": 11,
+    "supplemental_probe_cases": 16,
+    "supplementary_source_credit": 0
+  },
+  "full_verification": {
+    "file": "parity/runs/multichain-atomic-m42/full-verify-03/result.json",
+    "sha256": "8be797c07add38323908d090f2e9cb5357cce4a602ce511d45b2c0986e7b968f"
+  },
+  "prepared_native_inputs": {
+    "file": "parity/runs/multichain-atomic-m42/full-verify-03/prepared-native-inputs.json",
+    "sha256": "c29fcd4ec37bd1b1e83bfc98ae7a45824d8783a46839a30529213b45181af0fa"
+  },
+  "context_archive": {
+    "file": "parity/runs/multichain-atomic-m42/full-verify-03/context-archive.json",
+    "sha256": "ac5b3eddca38c24e06e59d91e3c23d584d7181d444f6c435211ccfbee6c42ac5"
+  },
+  "executions": [
+    {
+      "mode": "normal",
+      "backend": "postgres",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "d1f4e702f072c3b5eae1",
+          "go_test": "TestSourceRuntimeMultichainOriginal/postgres/getHistoricalEventsMultichain()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "983c1f8526efc67c34aa",
+          "go_test": "TestSourceRuntimeMultichainOriginal/postgres/getHistoricalEvents()_omnichain",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "a2f204a8ab7598691e12",
+          "go_test": "TestSourceRuntimeMultichainOriginal/postgres/getHistoricalEvents()_with_crash_recovery_checkpoint",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        }
+      ],
+      "native_calls": 3,
+      "provider_requests": 7,
+      "log": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-test.jsonl",
+        "sha256": "096c7621366ffbca599e19c332896f37953224be628de70d26ca056910dffee7"
+      },
+      "native": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-test.jsonl",
+        "sha256": "096c7621366ffbca599e19c332896f37953224be628de70d26ca056910dffee7"
+      },
+      "native_test_prefix": "TestSourceRuntimeMultichainOriginal/postgres",
+      "capture": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-postgres/calls.json",
+        "sha256": "275747bb2849547e6a2d61e540f7bf54a8aee5fbee3f0e8f109ba5d52ba1cd54"
+      },
+      "original": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-postgres/original.json",
+        "sha256": "94e80869abf4f9c8df4fa2970ae85a4acc8d499752e21830dcec6f17d3ef76a3"
+      },
+      "result": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-postgres/result.json",
+        "sha256": "bdfbe0cc33b4c381577ecb6970ba04f86c1c5d28d6ff0d1c5dfdbf7642e98d52"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-runtime-multichain-original.mjs",
+          "sha256": "7de6fda0ee51b2e8ce3d9c68d18f458621b25081c51b94659bc30eccab97d01f"
+        },
+        {
+          "file": "tools/source-runtime-multichain-live.setup.ts",
+          "sha256": "37c6ce1b8cb67c2e8ea249480288932b45bd2a579be05894587ccac11a7bbd81"
+        },
+        {
+          "file": "tools/source-runtime-multichain-live.config.mjs",
+          "sha256": "928e752f534c45e94af48df70d2fbcb82c1d43074415eb2e5616d7780c163aed"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-postgres/context-archive.json",
+        "sha256": "aef0cea8910bba25aed3ad6091961788ce0c14987d1b8c14e6116a3888a1cf00"
+      },
+      "supplemental_probe": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-postgres/probes.json",
+        "sha256": "0e034642d564134f5c0e9ea467c63bcbf693b0f1762a03856f9d3a4f8789a886"
+      },
+      "supplemental_result": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-postgres/result.json",
+        "sha256": "704cdd2a2e301bb3b7ec877738f1dcb5502dff7ce172c2bc0f58c1d69d690c4d"
+      },
+      "supplemental_original": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-postgres/original.json",
+        "sha256": "88c3ef1685455f8cfa2fe6024faa5f5194a9ce407b9b3af64baa3cd3eb909d28"
+      },
+      "supplemental_context": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-postgres/context-archive.json",
+        "sha256": "0d94de14be6dcb606c3d3a1746a579f943cc8508fcbb0a7d11d3f5804b4f3a43"
+      },
+      "supplemental_source_context": [
+        {
+          "file": "tools/source-runtime-multichain-probes.mjs",
+          "sha256": "6435a95995a45ab6e8cfb6dbfa5576cf0a0099fc0f6fe4997df229e62033c04d"
+        },
+        {
+          "file": "tools/source-runtime-multichain-probes.test.ts",
+          "sha256": "f872f3fba4a1fc060255c3e31e6a8563943d94525d52217ca5eb461ec59411a0"
+        },
+        {
+          "file": "tools/source-runtime-multichain-probes.config.mjs",
+          "sha256": "a4f9ca0f5a2c254aae558dda850228e5697f5bab578272f71f8274e02f38e771"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "supplemental_cases": [
+        {
+          "name": "two-chain-completion-mixed-cache",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/two-chain-completion-mixed-cache",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-pending",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/two-chain-pending",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-pending-catchup",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/two-chain-pending-catchup",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-multichain-catchup",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/two-chain-multichain-catchup",
+          "source_credit": 0
+        },
+        {
+          "name": "real-finalized-backward-multichain",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/real-finalized-backward-multichain",
+          "source_credit": 0
+        },
+        {
+          "name": "real-finalized-backward-omnichain",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/real-finalized-backward-omnichain",
+          "source_credit": 0
+        },
+        {
+          "name": "real-finalized-backward-isolated",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/real-finalized-backward-isolated",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-refetch",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/two-chain-refetch",
+          "source_credit": 0
+        },
+        {
+          "name": "isolated-memory-stop",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/isolated-memory-stop",
+          "source_credit": 0
+        },
+        {
+          "name": "refetch-all-filters-extras",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/refetch-all-filters-extras",
+          "source_credit": 0
+        },
+        {
+          "name": "refetch-sparse-slots",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/refetch-sparse-slots",
+          "source_credit": 0
+        },
+        {
+          "name": "aggregate-checkpoint-tags",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/aggregate-checkpoint-tags",
+          "source_credit": 0
+        },
+        {
+          "name": "cross-chain-crash-safe-cache",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/cross-chain-crash-safe-cache",
+          "source_credit": 0
+        },
+        {
+          "name": "cross-chain-crash-uncached-start",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/cross-chain-crash-uncached-start",
+          "source_credit": 0
+        },
+        {
+          "name": "bounded-end-empty-chain",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/bounded-end-empty-chain",
+          "source_credit": 0
+        },
+        {
+          "name": "latest-concurrent-reverse-completion",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/latest-concurrent-reverse-completion",
+          "source_credit": 0
+        }
+      ]
+    },
+    {
+      "mode": "normal",
+      "backend": "pglite",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "d1f4e702f072c3b5eae1",
+          "go_test": "TestSourceRuntimeMultichainOriginal/pglite/getHistoricalEventsMultichain()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "983c1f8526efc67c34aa",
+          "go_test": "TestSourceRuntimeMultichainOriginal/pglite/getHistoricalEvents()_omnichain",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "a2f204a8ab7598691e12",
+          "go_test": "TestSourceRuntimeMultichainOriginal/pglite/getHistoricalEvents()_with_crash_recovery_checkpoint",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        }
+      ],
+      "native_calls": 3,
+      "provider_requests": 7,
+      "log": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-test.jsonl",
+        "sha256": "096c7621366ffbca599e19c332896f37953224be628de70d26ca056910dffee7"
+      },
+      "native": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-test.jsonl",
+        "sha256": "096c7621366ffbca599e19c332896f37953224be628de70d26ca056910dffee7"
+      },
+      "native_test_prefix": "TestSourceRuntimeMultichainOriginal/pglite",
+      "capture": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-pglite/calls.json",
+        "sha256": "bc168e0d21ebeef472a57601a16823edd3a7e4bd90088da2d4279394a94f7105"
+      },
+      "original": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-pglite/original.json",
+        "sha256": "f14b2033df0fb2771b1afc95cd10cf166b7bfa0a843e36f3fd4f340bbbe62b32"
+      },
+      "result": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-pglite/result.json",
+        "sha256": "f01af5a39ba910dd6d62777d8c8695d526a6ff631d3f0a0195201d916539d1b4"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-runtime-multichain-original.mjs",
+          "sha256": "7de6fda0ee51b2e8ce3d9c68d18f458621b25081c51b94659bc30eccab97d01f"
+        },
+        {
+          "file": "tools/source-runtime-multichain-live.setup.ts",
+          "sha256": "37c6ce1b8cb67c2e8ea249480288932b45bd2a579be05894587ccac11a7bbd81"
+        },
+        {
+          "file": "tools/source-runtime-multichain-live.config.mjs",
+          "sha256": "928e752f534c45e94af48df70d2fbcb82c1d43074415eb2e5616d7780c163aed"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-pglite/context-archive.json",
+        "sha256": "273ed2eb0c8b387957f87e4cea9114756c3c4f5e64c843650174a71f2a5a0a1b"
+      },
+      "supplemental_probe": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-pglite/probes.json",
+        "sha256": "edf20100e3964b5ca867d253c192aad6d5087e304fde3620de9eca4166189bda"
+      },
+      "supplemental_result": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-pglite/result.json",
+        "sha256": "a52c0abef194946ce75ec1476152b698b3fed3d74b020ce8f6fad984a8ff7335"
+      },
+      "supplemental_original": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-pglite/original.json",
+        "sha256": "5af33661a3506999357eafae138782b9f68269009d0d3147d704834cdcdf06da"
+      },
+      "supplemental_context": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-pglite/context-archive.json",
+        "sha256": "266be377c80707c7ace1d9be83ac08a4ed47b0385905838fff3d90761684d73a"
+      },
+      "supplemental_source_context": [
+        {
+          "file": "tools/source-runtime-multichain-probes.mjs",
+          "sha256": "6435a95995a45ab6e8cfb6dbfa5576cf0a0099fc0f6fe4997df229e62033c04d"
+        },
+        {
+          "file": "tools/source-runtime-multichain-probes.test.ts",
+          "sha256": "f872f3fba4a1fc060255c3e31e6a8563943d94525d52217ca5eb461ec59411a0"
+        },
+        {
+          "file": "tools/source-runtime-multichain-probes.config.mjs",
+          "sha256": "a4f9ca0f5a2c254aae558dda850228e5697f5bab578272f71f8274e02f38e771"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "supplemental_cases": [
+        {
+          "name": "two-chain-completion-mixed-cache",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/two-chain-completion-mixed-cache",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-pending",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/two-chain-pending",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-pending-catchup",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/two-chain-pending-catchup",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-multichain-catchup",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/two-chain-multichain-catchup",
+          "source_credit": 0
+        },
+        {
+          "name": "real-finalized-backward-multichain",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/real-finalized-backward-multichain",
+          "source_credit": 0
+        },
+        {
+          "name": "real-finalized-backward-omnichain",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/real-finalized-backward-omnichain",
+          "source_credit": 0
+        },
+        {
+          "name": "real-finalized-backward-isolated",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/real-finalized-backward-isolated",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-refetch",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/two-chain-refetch",
+          "source_credit": 0
+        },
+        {
+          "name": "isolated-memory-stop",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/isolated-memory-stop",
+          "source_credit": 0
+        },
+        {
+          "name": "refetch-all-filters-extras",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/refetch-all-filters-extras",
+          "source_credit": 0
+        },
+        {
+          "name": "refetch-sparse-slots",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/refetch-sparse-slots",
+          "source_credit": 0
+        },
+        {
+          "name": "aggregate-checkpoint-tags",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/aggregate-checkpoint-tags",
+          "source_credit": 0
+        },
+        {
+          "name": "cross-chain-crash-safe-cache",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/cross-chain-crash-safe-cache",
+          "source_credit": 0
+        },
+        {
+          "name": "cross-chain-crash-uncached-start",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/cross-chain-crash-uncached-start",
+          "source_credit": 0
+        },
+        {
+          "name": "bounded-end-empty-chain",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/bounded-end-empty-chain",
+          "source_credit": 0
+        },
+        {
+          "name": "latest-concurrent-reverse-completion",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/latest-concurrent-reverse-completion",
+          "source_credit": 0
+        }
+      ]
+    },
+    {
+      "mode": "race",
+      "backend": "postgres",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "d1f4e702f072c3b5eae1",
+          "go_test": "TestSourceRuntimeMultichainOriginal/postgres/getHistoricalEventsMultichain()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "983c1f8526efc67c34aa",
+          "go_test": "TestSourceRuntimeMultichainOriginal/postgres/getHistoricalEvents()_omnichain",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "a2f204a8ab7598691e12",
+          "go_test": "TestSourceRuntimeMultichainOriginal/postgres/getHistoricalEvents()_with_crash_recovery_checkpoint",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        }
+      ],
+      "native_calls": 3,
+      "provider_requests": 7,
+      "log": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-race.jsonl",
+        "sha256": "1002b90b9ef31b5878333a1069c1485d1349b373efcf3e7ed11270a8afa04cb1"
+      },
+      "native": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-race.jsonl",
+        "sha256": "1002b90b9ef31b5878333a1069c1485d1349b373efcf3e7ed11270a8afa04cb1"
+      },
+      "native_test_prefix": "TestSourceRuntimeMultichainOriginal/postgres",
+      "capture": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-postgres/calls.json",
+        "sha256": "275747bb2849547e6a2d61e540f7bf54a8aee5fbee3f0e8f109ba5d52ba1cd54"
+      },
+      "original": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-postgres/original.json",
+        "sha256": "94e80869abf4f9c8df4fa2970ae85a4acc8d499752e21830dcec6f17d3ef76a3"
+      },
+      "result": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-postgres/result.json",
+        "sha256": "bdfbe0cc33b4c381577ecb6970ba04f86c1c5d28d6ff0d1c5dfdbf7642e98d52"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-runtime-multichain-original.mjs",
+          "sha256": "7de6fda0ee51b2e8ce3d9c68d18f458621b25081c51b94659bc30eccab97d01f"
+        },
+        {
+          "file": "tools/source-runtime-multichain-live.setup.ts",
+          "sha256": "37c6ce1b8cb67c2e8ea249480288932b45bd2a579be05894587ccac11a7bbd81"
+        },
+        {
+          "file": "tools/source-runtime-multichain-live.config.mjs",
+          "sha256": "928e752f534c45e94af48df70d2fbcb82c1d43074415eb2e5616d7780c163aed"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-postgres/context-archive.json",
+        "sha256": "aef0cea8910bba25aed3ad6091961788ce0c14987d1b8c14e6116a3888a1cf00"
+      },
+      "supplemental_probe": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-postgres/probes.json",
+        "sha256": "0e034642d564134f5c0e9ea467c63bcbf693b0f1762a03856f9d3a4f8789a886"
+      },
+      "supplemental_result": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-postgres/result.json",
+        "sha256": "704cdd2a2e301bb3b7ec877738f1dcb5502dff7ce172c2bc0f58c1d69d690c4d"
+      },
+      "supplemental_original": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-postgres/original.json",
+        "sha256": "88c3ef1685455f8cfa2fe6024faa5f5194a9ce407b9b3af64baa3cd3eb909d28"
+      },
+      "supplemental_context": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-postgres/context-archive.json",
+        "sha256": "0d94de14be6dcb606c3d3a1746a579f943cc8508fcbb0a7d11d3f5804b4f3a43"
+      },
+      "supplemental_source_context": [
+        {
+          "file": "tools/source-runtime-multichain-probes.mjs",
+          "sha256": "6435a95995a45ab6e8cfb6dbfa5576cf0a0099fc0f6fe4997df229e62033c04d"
+        },
+        {
+          "file": "tools/source-runtime-multichain-probes.test.ts",
+          "sha256": "f872f3fba4a1fc060255c3e31e6a8563943d94525d52217ca5eb461ec59411a0"
+        },
+        {
+          "file": "tools/source-runtime-multichain-probes.config.mjs",
+          "sha256": "a4f9ca0f5a2c254aae558dda850228e5697f5bab578272f71f8274e02f38e771"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "supplemental_cases": [
+        {
+          "name": "two-chain-completion-mixed-cache",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/two-chain-completion-mixed-cache",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-pending",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/two-chain-pending",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-pending-catchup",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/two-chain-pending-catchup",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-multichain-catchup",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/two-chain-multichain-catchup",
+          "source_credit": 0
+        },
+        {
+          "name": "real-finalized-backward-multichain",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/real-finalized-backward-multichain",
+          "source_credit": 0
+        },
+        {
+          "name": "real-finalized-backward-omnichain",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/real-finalized-backward-omnichain",
+          "source_credit": 0
+        },
+        {
+          "name": "real-finalized-backward-isolated",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/real-finalized-backward-isolated",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-refetch",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/two-chain-refetch",
+          "source_credit": 0
+        },
+        {
+          "name": "isolated-memory-stop",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/isolated-memory-stop",
+          "source_credit": 0
+        },
+        {
+          "name": "refetch-all-filters-extras",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/refetch-all-filters-extras",
+          "source_credit": 0
+        },
+        {
+          "name": "refetch-sparse-slots",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/refetch-sparse-slots",
+          "source_credit": 0
+        },
+        {
+          "name": "aggregate-checkpoint-tags",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/aggregate-checkpoint-tags",
+          "source_credit": 0
+        },
+        {
+          "name": "cross-chain-crash-safe-cache",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/cross-chain-crash-safe-cache",
+          "source_credit": 0
+        },
+        {
+          "name": "cross-chain-crash-uncached-start",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/cross-chain-crash-uncached-start",
+          "source_credit": 0
+        },
+        {
+          "name": "bounded-end-empty-chain",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/bounded-end-empty-chain",
+          "source_credit": 0
+        },
+        {
+          "name": "latest-concurrent-reverse-completion",
+          "go_test": "TestSourceRuntimeMultichainProbes/postgres/latest-concurrent-reverse-completion",
+          "source_credit": 0
+        }
+      ]
+    },
+    {
+      "mode": "race",
+      "backend": "pglite",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "d1f4e702f072c3b5eae1",
+          "go_test": "TestSourceRuntimeMultichainOriginal/pglite/getHistoricalEventsMultichain()",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "983c1f8526efc67c34aa",
+          "go_test": "TestSourceRuntimeMultichainOriginal/pglite/getHistoricalEvents()_omnichain",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        },
+        {
+          "source_id": "a2f204a8ab7598691e12",
+          "go_test": "TestSourceRuntimeMultichainOriginal/pglite/getHistoricalEvents()_with_crash_recovery_checkpoint",
+          "runtime_passed": true,
+          "native_type_obligations": 0,
+          "native_type_status": "not_applicable"
+        }
+      ],
+      "native_calls": 3,
+      "provider_requests": 7,
+      "log": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-race.jsonl",
+        "sha256": "1002b90b9ef31b5878333a1069c1485d1349b373efcf3e7ed11270a8afa04cb1"
+      },
+      "native": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-race.jsonl",
+        "sha256": "1002b90b9ef31b5878333a1069c1485d1349b373efcf3e7ed11270a8afa04cb1"
+      },
+      "native_test_prefix": "TestSourceRuntimeMultichainOriginal/pglite",
+      "capture": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-pglite/calls.json",
+        "sha256": "bc168e0d21ebeef472a57601a16823edd3a7e4bd90088da2d4279394a94f7105"
+      },
+      "original": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-pglite/original.json",
+        "sha256": "f14b2033df0fb2771b1afc95cd10cf166b7bfa0a843e36f3fd4f340bbbe62b32"
+      },
+      "result": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-pglite/result.json",
+        "sha256": "f01af5a39ba910dd6d62777d8c8695d526a6ff631d3f0a0195201d916539d1b4"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-runtime-multichain-original.mjs",
+          "sha256": "7de6fda0ee51b2e8ce3d9c68d18f458621b25081c51b94659bc30eccab97d01f"
+        },
+        {
+          "file": "tools/source-runtime-multichain-live.setup.ts",
+          "sha256": "37c6ce1b8cb67c2e8ea249480288932b45bd2a579be05894587ccac11a7bbd81"
+        },
+        {
+          "file": "tools/source-runtime-multichain-live.config.mjs",
+          "sha256": "928e752f534c45e94af48df70d2fbcb82c1d43074415eb2e5616d7780c163aed"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-source-pglite/context-archive.json",
+        "sha256": "273ed2eb0c8b387957f87e4cea9114756c3c4f5e64c843650174a71f2a5a0a1b"
+      },
+      "supplemental_probe": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-pglite/probes.json",
+        "sha256": "edf20100e3964b5ca867d253c192aad6d5087e304fde3620de9eca4166189bda"
+      },
+      "supplemental_result": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-pglite/result.json",
+        "sha256": "a52c0abef194946ce75ec1476152b698b3fed3d74b020ce8f6fad984a8ff7335"
+      },
+      "supplemental_original": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-pglite/original.json",
+        "sha256": "5af33661a3506999357eafae138782b9f68269009d0d3147d704834cdcdf06da"
+      },
+      "supplemental_context": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/multichain-probes-pglite/context-archive.json",
+        "sha256": "266be377c80707c7ace1d9be83ac08a4ed47b0385905838fff3d90761684d73a"
+      },
+      "supplemental_source_context": [
+        {
+          "file": "tools/source-runtime-multichain-probes.mjs",
+          "sha256": "6435a95995a45ab6e8cfb6dbfa5576cf0a0099fc0f6fe4997df229e62033c04d"
+        },
+        {
+          "file": "tools/source-runtime-multichain-probes.test.ts",
+          "sha256": "f872f3fba4a1fc060255c3e31e6a8563943d94525d52217ca5eb461ec59411a0"
+        },
+        {
+          "file": "tools/source-runtime-multichain-probes.config.mjs",
+          "sha256": "a4f9ca0f5a2c254aae558dda850228e5697f5bab578272f71f8274e02f38e771"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "supplemental_cases": [
+        {
+          "name": "two-chain-completion-mixed-cache",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/two-chain-completion-mixed-cache",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-pending",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/two-chain-pending",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-pending-catchup",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/two-chain-pending-catchup",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-multichain-catchup",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/two-chain-multichain-catchup",
+          "source_credit": 0
+        },
+        {
+          "name": "real-finalized-backward-multichain",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/real-finalized-backward-multichain",
+          "source_credit": 0
+        },
+        {
+          "name": "real-finalized-backward-omnichain",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/real-finalized-backward-omnichain",
+          "source_credit": 0
+        },
+        {
+          "name": "real-finalized-backward-isolated",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/real-finalized-backward-isolated",
+          "source_credit": 0
+        },
+        {
+          "name": "two-chain-refetch",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/two-chain-refetch",
+          "source_credit": 0
+        },
+        {
+          "name": "isolated-memory-stop",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/isolated-memory-stop",
+          "source_credit": 0
+        },
+        {
+          "name": "refetch-all-filters-extras",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/refetch-all-filters-extras",
+          "source_credit": 0
+        },
+        {
+          "name": "refetch-sparse-slots",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/refetch-sparse-slots",
+          "source_credit": 0
+        },
+        {
+          "name": "aggregate-checkpoint-tags",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/aggregate-checkpoint-tags",
+          "source_credit": 0
+        },
+        {
+          "name": "cross-chain-crash-safe-cache",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/cross-chain-crash-safe-cache",
+          "source_credit": 0
+        },
+        {
+          "name": "cross-chain-crash-uncached-start",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/cross-chain-crash-uncached-start",
+          "source_credit": 0
+        },
+        {
+          "name": "bounded-end-empty-chain",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/bounded-end-empty-chain",
+          "source_credit": 0
+        },
+        {
+          "name": "latest-concurrent-reverse-completion",
+          "go_test": "TestSourceRuntimeMultichainProbes/pglite/latest-concurrent-reverse-completion",
+          "source_credit": 0
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "file": "tools/source-runtime-multichain-evidence.mjs",
+      "sha256": "944c87627e5b1a3e015434ea2e7f9d154712863d450df93f9eb3cbe56e72578b"
+    },
+    {
+      "file": "tools/source-runtime-multichain-results.mjs",
+      "sha256": "4a20580ce183caa058384161eda3554e5f1a99fbc737e26aaca21a1bf718854a"
+    },
+    {
+      "file": "tools/source-runtime-multichain-fixture.mjs",
+      "sha256": "1391ddcb023f64d79231f78a950dcfea00f51bb74a8ab79b4094982b20f87a25"
+    },
+    {
+      "file": "tools/source-runtime-multichain-probe-fixture.mjs",
+      "sha256": "6cb839636513bca71cfd8423e94360ba2a5ccfbce8b84fb56bb809ce098bcf24"
+    },
+    {
+      "file": "runtime/source_history_coordinator.go",
+      "sha256": "6dff27b8cd23cd1dc33daa8459f8355608f32d885871918f80d7485e6cbb75c9"
+    },
+    {
+      "file": "runtime/source_historical_block.go",
+      "sha256": "10dd869e54c175b205be1098261f89dfeac0536c170c79643de35a50448011bc"
+    },
+    {
+      "file": "runtime/source_historical_memory.go",
+      "sha256": "69e613bb48f76c22e641b4d2389af4aff9938718558822798b9d7c7f7c2ac22c"
+    },
+    {
+      "file": "rpc/source_block.go",
+      "sha256": "7884b8eaa240cdd2c8e6f800a7d84d35add216b33a00ffda32a60ac6db87ca41"
+    },
+    {
+      "file": "runtime/source_runtime_multichain_test.go",
+      "sha256": "10fe4a57f6a42ea0a7d4d91a27d5d9e6965376270d65601caaeaa8a11083f559"
+    },
+    {
+      "file": "runtime/source_history_refetch.go",
+      "sha256": "3e4eae1e16061f79aac885cdb5b5b474e87b96290a17dfdea743b893a5ddb812"
+    },
+    {
+      "file": "runtime/source_omnichain_checkpoint.go",
+      "sha256": "1dcfd7448fe6c21d252d43d860cf5596332d3d5c1bf9971f09bfa8bba59c102a"
+    },
+    {
+      "file": "testdata/runtime/source-runtime-multichain-live.json",
+      "sha256": "f613f810f1923ae3e7a194264b81f296552845a0e684bb7aa267a4d82fdb5b46"
+    },
+    {
+      "file": "testdata/runtime/source-runtime-multichain-probes.json",
+      "sha256": "ae77a3c82247fb94998a05cd8047963c52a57ac120758869d992ccd134346973"
+    }
+  ]
+}

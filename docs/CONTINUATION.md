@@ -4,6 +4,22 @@
 
 
 
+## 当前执行入口：M42 多链原子 setup / historical group 完整验收通过，待父级发布复核
+
+已发布基线M41 `b2bad8f76956bf681177dd701742a253b9eaf072`。`multichain-atomic-m42/full-verify-03` 于2026-10-25 19:38:14.379UTC完成69阶段、13个显式canonical collectors及实际record-results，全部退出0；fresh fixture正常停止exit0。normal/race各3405节点/3087叶用例，0fail/skip；23包288顶层函数、每模式87串行批次。1156输入指纹 `95062ec28dce44addc309dabf2bf7c580f22876767de0e9d500991dc11c875c6` prepared/finished一致，119工具hash未变。正式覆盖仍543/905（539Go+4SDK），362待实现；新增原例/断言/类型credit全为0，旧543映射不变。
+
+`Owned.InitializeMultichain` 验证完整配置及source start/down、finalized/up编码，以完整checkpoint的min初始化，和setup RPC block明确分离。同一Service/Context/DB/client、同一binding与SQL事务保持原callback组序；每次切链（包括重复同链）显式flush/seal，全部链latest/finalized/safe/private cursor与prune共同提交。`Owned.HistoricalGroup` 仅接收已提取解码的单链group：校验完整durable配置、checkpoint/cursor和事件顺序/下界；flush先于journal/metadata/prune；空group推进、committed replay不调用handler。commit不确定错误必须查durable证据，绝不盲重试。
+
+静默 `RevertBusiness` 保留global suffix与safe-prefix拒绝，先失效会话行缓存，不跨域原子rewind sync也不重置runner cursor。绑定只在outer事务结束后Finish；普通rollback不取消独立cache工作。source completed-events在callback/flush/metadata错误时恢复，但eventCount/profile尝试计数保留；外层commit错误不冒称已回滚。PG显式取消可损坏固定owner连接，必须fail-closed并close/reopen，不自动重连旧缓存；真实prefetch取消、closeDone/join和持久状态已验证。
+
+真正源码runMultichain双链6场景/后端通过；真实iterator消费边界在下一pull事务外投递独立标记harness stop，不伪造协调器/结果。metadata-after-flush失败时源码PG保留1条setup行，源码PGlite保留5条已flush行；native独立PGlite目录+真实SQL原子性是已批准的安全差异，不声称源码回滚等价。旧single-chain和setup先commit再metadata两个Go overlay在双后端均红，恢复后绿；SQL同channel sentinel与Go订阅证明无通知，不靠sleep。详见 `MULTICHAIN_ATOMIC_PRIMITIVES.md`。
+
+full01保留为失败诊断：仅race两个cleanup叶失败（复用已取消ctx），此前未命中的文本替换已明确披露；终态后先归档1156native+119harness共1275文件，再精确修复两个测试hunk，独立复核及双后端normal/race focused通过。full02全部69+13通过但summary旧stage guard漏M42而失败；修改前1288文件（另含13canonical）归档。只改四个路径数组并追加完整真实guard正反回归，经407项旧/新控制和独立复核后fresh full03全通过。未改旧manifest/hash/receipt冒充成功。full02→03 prepared差异仅11个本轮source刷新fixture，逐项delta已保存；无隐藏native代码修改。
+
+新batch41保留旧batch40及全部失败记录。下一阶段M43才接入实际M37 generator/refetch/decode至这些primitives；没有完整outer runner、MarkReady、views/realtime切换/cutover完成声明。全部PG测试限于新M42 fixture且先SHOW data_directory验证；旧PG目录/schema未维护，仍未授权批量清理。继续沿用env.sh、pinned tsc5.4.5、同exec PG55432与5GiB硬门槛。父级独立staged review前不commit/push。
+
+以下M41及更早待发布段落保留为历史记录，不代表当前发布状态。
+
 ## 当前执行入口：M41 独立 sync ownership 与可复用事务绑定完整验收通过，待父级发布复核
 
 已发布基线 M40 `1cdf7a50666ded90e5974de73a00cf3884e7c7fe`。M41 `independent-storage-m41/full-verify-01` 完整65阶段及12个显式输出canonical collectors全部退出0；normal/race各3332节点、3031叶用例，0fail/skip，23包279顶层函数、每模式85串行批次。1151输入指纹 `48a34af5c9d4178fbb43024ba1b8d2ca1d1eb0db9c5970830db0b1ea1d84638a` 与105工具hash全程不变。正式覆盖仍543/905（539Go+4SDK），362未实现；本阶段原例/断言/类型credit均为0，旧543映射不变。

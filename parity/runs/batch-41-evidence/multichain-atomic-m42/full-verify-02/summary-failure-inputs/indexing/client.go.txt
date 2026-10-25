@@ -1,0 +1,268 @@
+package indexing
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"math/big"
+	"sync"
+
+	"ponder.local/ponder-go/rpc"
+)
+
+// BalanceOptions is the getBalance subset of ponderActions. Immutable requests
+// deliberately use latest, even when BlockNumber is also supplied.
+type BalanceOptions struct {
+	BlockNumber *big.Int
+	Cache       string
+}
+
+// ClientSet owns stable per-chain client identities and the currently dispatched
+// source event. Its public actions are a bounded subset; it does not implement
+// the full raw transport or outer indexing runner.
+type ClientSet struct {
+	mu                sync.RWMutex
+	event             Object
+	clients           map[string]*Client
+	closed            bool
+	pending           map[uint64]context.CancelFunc
+	nextWrite         uint64
+	drained           chan struct{}
+	eventCounts       map[string]uint64
+	profileFieldOrder map[string][]string
+	profiles          map[string]*clientProfile
+	chainOrder        []string
+	prefetchPending   map[uint64]context.CancelFunc
+	nextPrefetch      uint64
+	prefetchDrained   chan struct{}
+	lookupPending     map[uint64]context.CancelFunc
+	nextLookup        uint64
+	lookupDrained     chan struct{}
+}
+type Client struct {
+	set          *ClientSet
+	requester    rpc.Requester
+	cache        rpc.Cache
+	chainID      any
+	cacheEnabled bool
+	prefetched   map[string]*prefetchValue
+}
+
+// NewClientSet accepts optional persistent RPC caches in the same order as chains.
+// store.SourceRPCRequestCache implements rpc.Cache directly.
+func NewClientSet(chains []Object, requesters []rpc.Requester, caches ...rpc.Cache) (*ClientSet, error) {
+	if len(chains) != len(requesters) || len(caches) > len(chains) {
+		return nil, fmt.Errorf("indexing client chain/requester/cache count mismatch")
+	}
+	s := &ClientSet{clients: map[string]*Client{}, pending: map[uint64]context.CancelFunc{}, drained: make(chan struct{})}
+	close(s.drained)
+	s.prefetchPending = map[uint64]context.CancelFunc{}
+	s.prefetchDrained = make(chan struct{})
+	close(s.prefetchDrained)
+	s.lookupPending = map[uint64]context.CancelFunc{}
+	s.lookupDrained = make(chan struct{})
+	close(s.lookupDrained)
+	for i, chain := range chains {
+		key, e := clientChainKey(chain)
+		if e != nil {
+			return nil, e
+		}
+		if _, ok := s.clients[key]; ok {
+			return nil, fmt.Errorf("duplicate indexing chain %s", key)
+		}
+		if requesters[i] == nil {
+			return nil, fmt.Errorf("missing requester for chain %s", key)
+		}
+		c := &Client{set: s, requester: requesters[i], chainID: json.Number(key), prefetched: map[string]*prefetchValue{}}
+		c.cacheEnabled, _ = chain["cacheRpcRequests"].(bool)
+		if i < len(caches) {
+			c.cache = caches[i]
+		}
+		s.clients[key] = c
+		s.chainOrder = append(s.chainOrder, key)
+	}
+	return s, nil
+}
+
+// NewStrictClientSet requires real synchronous admission capability for every
+// enabled cache. Transaction-bound and custom synchronous-only adapters remain
+// usable with NewClientSet, but do not satisfy this stronger source prefix.
+func NewStrictClientSet(chains []Object, requesters []rpc.Requester, caches ...rpc.Cache) (*ClientSet, error) {
+	s, err := NewClientSet(chains, requesters, caches...)
+	if err != nil {
+		return nil, err
+	}
+	for key, client := range s.clients {
+		if client.cacheEnabled {
+			if _, ok := client.cache.(rpc.AsyncCache); !ok {
+				return nil, fmt.Errorf("chain %s requires standalone asynchronous cache admission", key)
+			}
+		}
+	}
+	return s, nil
+}
+
+func clientChainKey(chain Object) (string, error) {
+	n, e := clientInteger(chain["id"])
+	if e != nil {
+		return "", fmt.Errorf("invalid indexing chain id: %w", e)
+	}
+	return n.String(), nil
+}
+func (s *ClientSet) SetEvent(event Object) { s.mu.Lock(); defer s.mu.Unlock(); s.event = event }
+func (s *ClientSet) GetClient(chain Object) (*Client, error) {
+	key, e := clientChainKey(chain)
+	if e != nil {
+		return nil, e
+	}
+	c, ok := s.clients[key]
+	if !ok {
+		return nil, fmt.Errorf("unknown indexing chain %s", key)
+	}
+	return c, nil
+}
+func (c *Client) GetBalance(ctx context.Context, address string, options ...BalanceOptions) (*big.Int, error) {
+	tag, err := c.blockTag(ctx, options)
+	if err != nil {
+		return nil, err
+	}
+	raw, err := c.request(ctx, "eth_getBalance", []any{address, tag})
+	if err != nil {
+		return nil, err
+	}
+	return decodeBalance(raw)
+}
+func decodeBalance(raw json.RawMessage) (*big.Int, error) {
+	var value string
+	if e := json.Unmarshal(raw, &value); e != nil {
+		return nil, e
+	}
+	if len(value) < 3 || value[:2] != "0x" {
+		return nil, fmt.Errorf("invalid balance RPC quantity %q", value)
+	}
+	n, ok := new(big.Int).SetString(value[2:], 16)
+	if !ok || n.Sign() < 0 {
+		return nil, fmt.Errorf("invalid balance RPC quantity %q", value)
+	}
+	return n, nil
+}
+func clientInteger(v any) (*big.Int, error) {
+	var text string
+	switch n := v.(type) {
+	case *big.Int:
+		if n != nil && n.Sign() >= 0 {
+			return new(big.Int).Set(n), nil
+		}
+	case big.Int:
+		if n.Sign() >= 0 {
+			return new(big.Int).Set(&n), nil
+		}
+	case json.Number:
+		text = string(n)
+	case string:
+		text = n
+	case int:
+		text = fmt.Sprint(n)
+	case int64:
+		text = fmt.Sprint(n)
+	case uint64:
+		text = fmt.Sprint(n)
+	case uint:
+		text = fmt.Sprint(n)
+	case float64:
+		if n >= 0 && n <= 9007199254740991 && n == float64(uint64(n)) {
+			text = fmt.Sprintf("%.0f", n)
+		}
+	}
+	base := 10
+	if len(text) > 2 && text[:2] == "0x" {
+		base = 16
+		text = text[2:]
+	}
+	if n, ok := new(big.Int).SetString(text, base); ok && n.Sign() >= 0 {
+		return n, nil
+	}
+	return nil, fmt.Errorf("invalid nonnegative integer %v", v)
+}
+
+// putAsync owns each fire-and-forget write until completion. AsyncCache admission
+// runs synchronously; only its completion is awaited in a goroutine. A custom
+// synchronous-only adapter retains the weaker legacy goroutine invocation prefix.
+// Transaction-bound legacy adapters must be drained by their owner before return.
+// Cache implementations must honor cancellation for Close to complete.
+func (s *ClientSet) putAsync(ctx context.Context, cache rpc.Cache, key string, raw json.RawMessage) {
+	s.mu.Lock()
+	if s.closed {
+		s.mu.Unlock()
+		return
+	}
+	if len(s.pending) == 0 {
+		s.drained = make(chan struct{})
+	}
+	s.nextWrite++
+	id := s.nextWrite
+	child, cancel := context.WithCancel(ctx)
+	s.pending[id] = cancel
+	value := append(json.RawMessage(nil), raw...)
+	s.mu.Unlock()
+	var completion <-chan error
+	asynchronous, admitted := cache.(rpc.AsyncCache)
+	if admitted {
+		completion = asynchronous.BeginCachePut(child, key, value)
+	}
+	go func() {
+		defer func() {
+			cancel()
+			s.mu.Lock()
+			delete(s.pending, id)
+			if len(s.pending) == 0 {
+				close(s.drained)
+			}
+			s.mu.Unlock()
+		}()
+		if admitted {
+			// A malformed custom implementation returning nil is not retried through
+			// CachePut: admission may already have happened and must never be doubled.
+			if completion != nil {
+				<-completion
+			}
+		} else {
+			_ = cache.CachePut(child, key, value)
+		}
+	}()
+}
+
+// WaitCacheWrites drains writes already registered by completed requests. The
+// owner must not dispatch new requests concurrently with a transaction boundary.
+func (s *ClientSet) WaitCacheWrites(ctx context.Context) error {
+	s.mu.RLock()
+	done := s.drained
+	s.mu.RUnlock()
+	select {
+	case <-done:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+// Close prevents new requests, cancels and joins owned cache writers. Cancellation
+// of the wait does not resurrect the set or lose ownership of pending writers.
+func (s *ClientSet) Close(ctx context.Context) error {
+	s.mu.Lock()
+	s.closed = true
+	for _, cancel := range s.pending {
+		cancel()
+	}
+	for _, cancel := range s.lookupPending {
+		cancel()
+	}
+	for _, cancel := range s.prefetchPending {
+		cancel()
+	}
+	s.mu.Unlock()
+	if err := s.WaitPrefetch(ctx); err != nil {
+		return err
+	}
+	return s.WaitCacheWrites(ctx)
+}

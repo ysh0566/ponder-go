@@ -1,0 +1,47 @@
+// Zero-credit semantic vectors: actual deployed ERC20/Multicall3, real RPC and DB.
+import fs from 'node:fs';
+import {beforeEach,afterAll,test,expect} from 'vitest';
+import {parseEther,zeroAddress} from 'viem';
+import {ALICE} from '@/_test/constants.js';
+import {erc20ABI} from '@/_test/generated.js';
+import {context,setupCommon,setupAnvil,setupCleanup,setupIsolatedDatabase,setupDatabaseServices} from '@/_test/setup.js';
+import {deployErc20,deployMulticall,mintErc20} from '@/_test/simulate.js';
+import {getChain,getErc20IndexingBuild,getSimulatedEvent} from '@/_test/utils.js';
+import {createCachedViemClient} from '@/indexing/client.js';
+import {getEventCount} from '@/indexing/index.js';
+import {createRpc} from '@/rpc/index.js';
+import {rpcRequestResults} from '@/sync-store/schema.js';
+const output=process.env.PONDER_INDEXING_ACTIONS_PROBE_CAPTURE;if(!output)throw Error('Explicit probe output required');
+const encode=(v:any):any=>v===undefined?{$undefined:true}:typeof v==='bigint'?{$bigint:String(v)}:v instanceof Error?{$error:{name:v.name,message:v.message,cause_name:(v as any).cause?.name,short_message:(v as any).shortMessage}}:Array.isArray(v)?v.map(encode):v&&typeof v==='object'?Object.fromEntries(Object.entries(v).map(([k,value])=>[k,encode(value)])):v;
+const cases:any[]=[];
+beforeEach(setupCommon);beforeEach(setupAnvil);beforeEach(setupIsolatedDatabase);beforeEach(setupCleanup);
+test('actual actions partial cache duplicates order failure and immutable vectors',async()=>{
+ const {database,syncStore}=await setupDatabaseServices();
+ const {address:multicallAddress}=await deployMulticall({sender:ALICE});
+ const {address:first}=await deployErc20({sender:ALICE});await mintErc20({erc20:first,to:ALICE,amount:parseEther('1'),sender:ALICE});
+ const {address:second}=await deployErc20({sender:ALICE});const blockData=await mintErc20({erc20:second,to:ALICE,amount:parseEther('2'),sender:ALICE});
+ const chain=getChain(),rpc=createRpc({common:context.common,chain}),build=getErc20IndexingBuild({address:second});
+ const event=getSimulatedEvent({eventCallback:build.eventCallbacks[0],blockData});
+ const record:any={source_credit:0,name:'actual-partial-cache-duplicates-failure',chain:{id:chain.id,name:chain.name,cacheRpcRequests:chain.cacheRpcRequests},event:encode({type:event.type,block:event.event.block.number}),actions:[]};
+ let active:any;const pending:Promise<any>[]=[];
+ const request=rpc.request.bind(rpc);rpc.request=async(...args:any[])=>{const p:any={request:encode(args[0])};active.providers.push(p);try{const v=await(request as any)(...args);p.response=encode(v);return v}catch(e){p.error=encode(e);throw e}};
+ for(const name of ['getRpcRequestResults','insertRpcRequestResults'] as const){const original=syncStore[name].bind(syncStore);(syncStore as any)[name]=(...args:any[])=>{const op:any={operation:name,args:encode(args[0])};active.store.push(op);const promise=(original as any)(...args).then((v:any)=>{op.result=encode(v);return v},(e:any)=>{op.error=encode(e);throw e});if(name==='insertRpcRequestResults')pending.push(promise.catch(()=>{}));return promise}}
+ const cached=createCachedViemClient({common:context.common,indexingBuild:{chains:[chain],rpcs:[rpc]},syncStore,eventCount:getEventCount(build.indexingFunctions)});cached.event=event;const client=cached.getClient(chain);
+ const run=async(operation:string,args:any)=>{active={operation,args:encode([args]),providers:[],store:[]};record.actions.push(active);let value;try{value=await(client as any)[operation](args);active.result=encode(value)}catch(e){active.error=encode(e)}await Promise.all(pending);active.physical_after=encode(await database.syncQB.wrap(db=>db.select().from(rpcRequestResults)));return {value,record:active}};
+ const a={abi:erc20ABI,functionName:'totalSupply',address:first},b={abi:erc20ABI,functionName:'totalSupply',address:second};
+ expect((await run('readContract',a)).value).toBe(parseEther('1'));
+ const partial=await run('multicall',{allowFailure:false,multicallAddress,contracts:[b,a,b]});expect(partial.value).toEqual([parseEther('2'),parseEther('1'),parseEther('2')]);expect(partial.record.providers).toHaveLength(1);
+ const hit=await run('multicall',{allowFailure:false,multicallAddress,contracts:[a,b,a]});expect(hit.value).toEqual([parseEther('1'),parseEther('2'),parseEther('1')]);expect(hit.record.providers).toHaveLength(0);
+ const missing={abi:[{type:'function',name:'missing',stateMutability:'view',inputs:[],outputs:[{type:'uint256'}]}],functionName:'missing',address:first};
+ const failure=await run('multicall',{allowFailure:true,multicallAddress,contracts:[b,missing,a]});expect(failure.value.map((v:any)=>v.status)).toEqual(['success','failure','success']);expect(failure.record.physical_after).toHaveLength(2);
+ const rejected=await run('multicall',{allowFailure:false,multicallAddress,contracts:[missing,a]});expect(rejected.record.error).toBeDefined();expect(rejected.record.physical_after).toHaveLength(2);
+ const empty=await run('multicall',{allowFailure:false,multicallAddress,contracts:[]});expect(empty.value).toEqual([]);expect(empty.record.providers).toHaveLength(0);
+ const immutable=await run('readContract',{...a,cache:'immutable',blockNumber:0n});expect(immutable.value).toBe(parseEther('1'));expect(immutable.record.providers[0].request.params[1]).toBe('latest');
+ const code=await run('getCode',{address:zeroAddress});expect(code.value).toBeUndefined();expect(code.record.providers[0].response).toBe('0x');expect(code.record.physical_after).toHaveLength(3);
+ const codeAgain=await run('getCode',{address:zeroAddress});expect(codeAgain.value).toBeUndefined();expect(codeAgain.record.providers).toHaveLength(1);expect(codeAgain.record.physical_after).toHaveLength(3);
+ const chunked=await run('multicall',{allowFailure:false,multicallAddress,batchSize:4,blockNumber:4n,contracts:[missing,b]});expect(chunked.record.error).toBeDefined();expect(chunked.record.providers).toHaveLength(2);expect(chunked.record.physical_after).toHaveLength(4);
+ const invalid={abi:erc20ABI,functionName:'balanceOf',address:first,args:[]};
+ const placeholder=await run('multicall',{allowFailure:true,multicallAddress,contracts:[invalid]});expect(placeholder.value[0].status).toBe('failure');expect(placeholder.value[0].error.cause.name).toBe('ContractFunctionZeroDataError');expect(placeholder.record.providers).toHaveLength(1);expect(placeholder.record.physical_after).toHaveLength(4);
+ cases.push(record);
+});
+afterAll(()=>fs.writeFileSync(output,JSON.stringify({source_credit:0,real_rpc:true,real_database:true,cases},null,2)+'\n'));

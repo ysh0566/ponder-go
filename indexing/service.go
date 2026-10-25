@@ -241,6 +241,13 @@ func (s *Service) execute(ctx context.Context, event Object, view EventView, set
 	return err
 }
 func (s *Service) ProcessSetupEvents(ctx context.Context) error {
+	return s.processSetupEvents(ctx, nil)
+}
+
+// processSetupEvents preserves build/group order and stable handler identities.
+// The owner uses before for transaction-local journal attribution, never to
+// dispatch a second service or reorder callbacks by chain.
+func (s *Service) processSetupEvents(ctx context.Context, before func(uint64) error) error {
 	if e := s.begin(ctx); e != nil {
 		return e
 	}
@@ -272,6 +279,11 @@ func (s *Service) ProcessSetupEvents(ctx context.Context) error {
 			cp, e := checkpoint.Encode(checkpoint.Checkpoint{ChainID: id.Uint64(), BlockNumber: block.Uint64()})
 			if e != nil {
 				return e
+			}
+			if before != nil {
+				if e := before(id.Uint64()); e != nil {
+					return e
+				}
 			}
 			event := Object{"type": "setup", "chain": chain, "setupCallback": cb, "checkpoint": cp, "block": block}
 			s.options.Clients.SetEvent(event)

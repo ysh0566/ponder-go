@@ -1,0 +1,241 @@
+{
+  "source_credit": 0,
+  "cases": [
+    {
+      "name": "delayed-cache-insert-success",
+      "source_credit": 0,
+      "real_rpc": true,
+      "input": {
+        "chain": {
+          "id": 1,
+          "name": "mainnet",
+          "cacheRpcRequests": true
+        },
+        "event": {
+          "type": "setup",
+          "block": {
+            "$bigint": "0"
+          }
+        },
+        "address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "lateFailure": false
+      },
+      "timeline": [
+        "cache_lookup",
+        "rpc_begin",
+        "rpc_return",
+        "insert_begin",
+        "getBalance_return",
+        "release_insert",
+        "insert_resolve"
+      ],
+      "providers": [
+        {
+          "request": {
+            "method": "eth_getBalance",
+            "params": [
+              "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+              "0x0"
+            ]
+          },
+          "response": "0x21e19e0c9bab2400000"
+        }
+      ],
+      "cacheCalls": [
+        {
+          "operation": "get",
+          "args": {
+            "requests": [
+              {
+                "method": "eth_getBalance",
+                "params": [
+                  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "0x0"
+                ]
+              }
+            ],
+            "chainId": 1
+          }
+        },
+        {
+          "operation": "insert",
+          "args": {
+            "requests": [
+              {
+                "request": {
+                  "method": "eth_getBalance",
+                  "params": [
+                    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                    "0x0"
+                  ]
+                },
+                "blockNumber": 0,
+                "result": "\"0x21e19e0c9bab2400000\""
+              }
+            ],
+            "chainId": 1
+          }
+        }
+      ],
+      "result": {
+        "$bigint": "10000000000000000000000"
+      },
+      "settled": true
+    },
+    {
+      "name": "delayed-cache-insert-failure",
+      "source_credit": 0,
+      "real_rpc": true,
+      "input": {
+        "chain": {
+          "id": 1,
+          "name": "mainnet",
+          "cacheRpcRequests": true
+        },
+        "event": {
+          "type": "setup",
+          "block": {
+            "$bigint": "0"
+          }
+        },
+        "address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "lateFailure": true
+      },
+      "timeline": [
+        "cache_lookup",
+        "rpc_begin",
+        "rpc_return",
+        "insert_begin",
+        "getBalance_return",
+        "release_insert",
+        "insert_reject"
+      ],
+      "providers": [
+        {
+          "request": {
+            "method": "eth_getBalance",
+            "params": [
+              "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+              "0x0"
+            ]
+          },
+          "response": "0x21e19e0c9bab2400000"
+        }
+      ],
+      "cacheCalls": [
+        {
+          "operation": "get",
+          "args": {
+            "requests": [
+              {
+                "method": "eth_getBalance",
+                "params": [
+                  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                  "0x0"
+                ]
+              }
+            ],
+            "chainId": 1
+          }
+        },
+        {
+          "operation": "insert",
+          "args": {
+            "requests": [
+              {
+                "request": {
+                  "method": "eth_getBalance",
+                  "params": [
+                    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                    "0x0"
+                  ]
+                },
+                "blockNumber": 0,
+                "result": "\"0x21e19e0c9bab2400000\""
+              }
+            ],
+            "chainId": 1
+          }
+        }
+      ],
+      "result": {
+        "$bigint": "10000000000000000000000"
+      },
+      "settled": true
+    },
+    {
+      "name": "user-error-name-is-not-brand",
+      "source_credit": 0,
+      "input": {
+        "name": "InvalidEventAccessError",
+        "message": "user spoof",
+        "isBaseError": false
+      },
+      "result": {
+        "name": "IndexingFunctionError",
+        "message": "user spoof",
+        "isBaseError": true,
+        "isIndexingFunctionError": true,
+        "sameIdentity": false
+      },
+      "hasError": true
+    },
+    {
+      "name": "actual-base-error-identity",
+      "source_credit": 0,
+      "input": {
+        "name": "InvalidEventAccessError",
+        "message": "",
+        "isBaseError": true
+      },
+      "result": {
+        "name": "InvalidEventAccessError",
+        "message": "",
+        "isBaseError": true,
+        "isIndexingFunctionError": false,
+        "sameIdentity": true
+      },
+      "hasError": true
+    }
+  ],
+  "evidence": {
+    "capture": {
+      "file": "parity/runs/multichain-atomic-m42/full-verify-03/indexing-cache/calls.json",
+      "sha256": "3557fad4626372c78439c0da4d1f9c99825fbbc1e6455096f5137cc0d9b6d952"
+    },
+    "result": {
+      "file": "parity/runs/multichain-atomic-m42/full-verify-03/indexing-cache/result.json",
+      "sha256": "c66bad0a583d5dba38ef5d2c165fa40ab86e4c873dd76abe9937fd9dce9029c3"
+    },
+    "original": {
+      "file": "parity/runs/multichain-atomic-m42/full-verify-03/indexing-cache/original.json",
+      "sha256": "ca5bb3057721f60c632315faf1b93c09660c3a1ea269f5e6af1b94fdc1c8ce53"
+    },
+    "context_archive": {
+      "file": "parity/runs/multichain-atomic-m42/full-verify-03/indexing-cache/context-archive.json",
+      "sha256": "b24cf8a3f1fdd477c01b52b2e12cce0bc2c431d34ec8a4c6037ec76fe952267e"
+    },
+    "inputs": [
+      {
+        "file": "tools/source-indexing-service-cache.mjs",
+        "sha256": "4bfc440f5356c9dc56fe3b7e30f328d8faa53b1dabb7a93b6674bfe39360e4b1"
+      },
+      {
+        "file": "tools/source-indexing-service-cache.test.ts",
+        "sha256": "57d10164ed0ae3d027fb46268ce6d585f624fa815d03e771fead7b5b93cc952b"
+      },
+      {
+        "file": "tools/source-indexing-service-cache.config.mjs",
+        "sha256": "1b3e228de30e867079f51f49f2c26e459c478599e6c1c34a8b2880e45473672c"
+      },
+      {
+        "file": "tools/loopback-adapter.mjs",
+        "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+      },
+      {
+        "file": "tools/loopback-context.mjs",
+        "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+      }
+    ]
+  }
+}

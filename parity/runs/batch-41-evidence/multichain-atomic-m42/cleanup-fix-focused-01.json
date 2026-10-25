@@ -1,0 +1,31 @@
+{
+  "complete": true,
+  "success": true,
+  "recorded_utc": "2026-10-25T18:05:11.370892+00:00",
+  "scope": "test-only cleanup repair; independent bounded cleanup context, actual closeDone and deterministic canceled-operation-parent repeated close",
+  "source_credit": 0,
+  "modes": [
+    "normal",
+    "race"
+  ],
+  "backends": [
+    "postgres",
+    "pglite"
+  ],
+  "command": "go test [-race] -v ./indexing -run ^TestOwnedMultichain(CancellationWithPrefetch|ValidationAndRevertInvalidation)$ -count=1",
+  "receipt": "parity/runs/multichain-atomic-m42/cleanup-fix-focused-01-fixture",
+  "files": [
+    {
+      "file": "indexing/owned_multichain_test.go",
+      "sha256": "5c5f6c907d42895044e9cfdaf760446eceed7a9d65973e207eaa78820579167e"
+    },
+    {
+      "file": "parity/runs/multichain-atomic-m42/cleanup-fix-focused-01.normal.log",
+      "sha256": "713a37d1cfbbbe3583cc559c4d75f443c7c1fbcecebc8a49761ce2c14f04c2f2"
+    },
+    {
+      "file": "parity/runs/multichain-atomic-m42/cleanup-fix-focused-01.race.log",
+      "sha256": "f121f1e45ae5aea00d62d960d78a4983d3f7ae89aaa5672cd3dc16e0ebcca8b0"
+    }
+  ]
+}

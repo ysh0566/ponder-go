@@ -1,0 +1,3 @@
+package generated
+import "math/big"
+func checkCasef5a1b4bba32267f23015Type0() { out, _ := DecodeCasef5a1b4bba32267f23015Type0(""); var _ struct {Value0 struct {X []*big.Int "abi:\"x\"";Y bool "abi:\"y\"";Z []string "abi:\"z\"";};Value1 struct {Foo struct {Foo struct {X []*big.Int "abi:\"x\"";Y bool "abi:\"y\"";Z []string "abi:\"z\"";} "abi:\"foo\"";A *big.Int "abi:\"a\"";B []string "abi:\"b\"";} "abi:\"foo\"";Bar struct {Foo struct {X []*big.Int "abi:\"x\"";Y bool "abi:\"y\"";Z []string "abi:\"z\"";} "abi:\"foo\"";A *big.Int "abi:\"a\"";B []string "abi:\"b\"";} "abi:\"bar\"";C *big.Int "abi:\"c\"";D []string "abi:\"d\"";};} = out }

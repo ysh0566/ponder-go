@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import {assertIndexingServiceCacheCapture} from './source-indexing-service-evidence.mjs';
+const root=path.resolve(import.meta.dirname,'..'),arg=name=>process.argv.find(a=>a.startsWith('--'+name+'='))?.slice(name.length+3);
+const input=arg('input'),output=arg('output');
+if(!input||!output||!['indexing-service-m38','indexing-actions-m39','indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>path.resolve(root,input).startsWith(root+'/parity/runs/'+stage+'/'))||!path.resolve(root,output).startsWith(root+'/testdata/indexing/source-indexing-service'))throw Error('Explicit scoped --input and --output required');
+const hash=file=>({file:path.relative(root,path.resolve(root,file)),sha256:crypto.createHash('sha256').update(fs.readFileSync(path.resolve(root,file))).digest('hex')});
+const read=file=>JSON.parse(fs.readFileSync(path.resolve(root,file)));
+const result=read(input+'/result.json'),capture=read(input+'/calls.json'),original=read(input+'/original.json');
+if(!result.complete||!result.success||result.exit_code!==0||result.source_credit!==0||!result.adapter_verified_after||result.counts.passed!==4||result.counts.failed||result.counts.pending||!original.success)throw Error('Complete genuine source cache execution required');
+for(const ref of [...result.inputs,result.context_archive])if(hash(ref.file).sha256!==ref.sha256)throw Error('Cache context changed: '+ref.file);
+assertIndexingServiceCacheCapture(capture);
+fs.mkdirSync(path.dirname(path.resolve(root,output)),{recursive:true});fs.writeFileSync(path.resolve(root,output),JSON.stringify({...capture,evidence:{capture:hash(input+'/calls.json'),result:hash(input+'/result.json'),original:hash(input+'/original.json'),context_archive:result.context_archive,inputs:result.inputs}},null,2)+'\n');console.log({source_credit:0,cases:capture.cases.length,fixture:hash(output)});

@@ -1,0 +1,449 @@
+[
+  {
+    "id": "e53020cec4f7f158cc7c",
+    "line": 9,
+    "full_name": "buildLogFactory throws if provided parameter not found in inputs",
+    "source_file": "packages/core/src/build/factory.test.ts",
+    "source_sha256": "e3111d8ca8e32ceddcfd06025777fbbf35867632dffb4db09d5f06a3f635beb5",
+    "assertions": [
+      {
+        "input": {
+          "operation": "buildLogFactory",
+          "args": [
+            {
+              "address": "0xa",
+              "event": {
+                "name": "LlamaInstanceCreated",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "address",
+                    "name": "deployer",
+                    "indexed": true
+                  },
+                  {
+                    "type": "string",
+                    "name": "name",
+                    "indexed": true
+                  },
+                  {
+                    "type": "address",
+                    "name": "llamaCore"
+                  },
+                  {
+                    "type": "address",
+                    "name": "llamaExecutor"
+                  },
+                  {
+                    "type": "address",
+                    "name": "llamaPolicy"
+                  },
+                  {
+                    "type": "uint256",
+                    "name": "chainId"
+                  }
+                ]
+              },
+              "parameter": "fakeParameter",
+              "chainId": 1,
+              "sourceId": "Llama"
+            }
+          ]
+        },
+        "matcher": "toThrowError",
+        "expected": "Factory event parameter not found in factory event signature. Got 'fakeParameter', expected one of ['deployer', 'name', 'llamaCore', 'llamaExecutor', 'llamaPolicy', 'chainId']."
+      }
+    ]
+  },
+  {
+    "id": "da534c732fb8a3968121",
+    "line": 25,
+    "full_name": "buildLogFactory handles LlamaInstanceCreated llamaCore",
+    "source_file": "packages/core/src/build/factory.test.ts",
+    "source_sha256": "e3111d8ca8e32ceddcfd06025777fbbf35867632dffb4db09d5f06a3f635beb5",
+    "assertions": [
+      {
+        "input": {
+          "operation": "buildLogFactory",
+          "args": [
+            {
+              "address": "0xa",
+              "event": {
+                "name": "LlamaInstanceCreated",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "address",
+                    "name": "deployer",
+                    "indexed": true
+                  },
+                  {
+                    "type": "string",
+                    "name": "name",
+                    "indexed": true
+                  },
+                  {
+                    "type": "address",
+                    "name": "llamaCore"
+                  },
+                  {
+                    "type": "address",
+                    "name": "llamaExecutor"
+                  },
+                  {
+                    "type": "address",
+                    "name": "llamaPolicy"
+                  },
+                  {
+                    "type": "uint256",
+                    "name": "chainId"
+                  }
+                ]
+              },
+              "parameter": "llamaCore",
+              "chainId": 1,
+              "sourceId": "Llama"
+            }
+          ]
+        },
+        "matcher": "toMatchObject",
+        "expected": {
+          "address": "0xa",
+          "eventSelector": "0x00fef2d461a2fabbb523f9f42752c61336f03b17a602af52cc6c83cb8b110599",
+          "childAddressLocation": "offset0"
+        }
+      }
+    ]
+  },
+  {
+    "id": "82270c79e40903be3fa1",
+    "line": 43,
+    "full_name": "buildLogFactory handles LlamaInstanceCreated llamaPolicy",
+    "source_file": "packages/core/src/build/factory.test.ts",
+    "source_sha256": "e3111d8ca8e32ceddcfd06025777fbbf35867632dffb4db09d5f06a3f635beb5",
+    "assertions": [
+      {
+        "input": {
+          "operation": "buildLogFactory",
+          "args": [
+            {
+              "address": "0xa",
+              "event": {
+                "name": "LlamaInstanceCreated",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "address",
+                    "name": "deployer",
+                    "indexed": true
+                  },
+                  {
+                    "type": "string",
+                    "name": "name",
+                    "indexed": true
+                  },
+                  {
+                    "type": "address",
+                    "name": "llamaCore"
+                  },
+                  {
+                    "type": "address",
+                    "name": "llamaExecutor"
+                  },
+                  {
+                    "type": "address",
+                    "name": "llamaPolicy"
+                  },
+                  {
+                    "type": "uint256",
+                    "name": "chainId"
+                  }
+                ]
+              },
+              "parameter": "llamaPolicy",
+              "chainId": 1,
+              "sourceId": "Llama"
+            }
+          ]
+        },
+        "matcher": "toMatchObject",
+        "expected": {
+          "address": "0xa",
+          "eventSelector": "0x00fef2d461a2fabbb523f9f42752c61336f03b17a602af52cc6c83cb8b110599",
+          "childAddressLocation": "offset64"
+        }
+      }
+    ]
+  },
+  {
+    "id": "a33e9d09a4c1715a2e39",
+    "line": 66,
+    "full_name": "buildLogFactory handles Morpho CreateMarket struct parameter",
+    "source_file": "packages/core/src/build/factory.test.ts",
+    "source_sha256": "e3111d8ca8e32ceddcfd06025777fbbf35867632dffb4db09d5f06a3f635beb5",
+    "assertions": [
+      {
+        "input": {
+          "operation": "buildLogFactory",
+          "args": [
+            {
+              "address": "0xa",
+              "event": {
+                "name": "CreateMarket",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "id",
+                    "indexed": true
+                  },
+                  {
+                    "type": "tuple",
+                    "name": "marketParams",
+                    "components": [
+                      {
+                        "type": "address",
+                        "name": "loanToken"
+                      },
+                      {
+                        "type": "address",
+                        "name": "collateralToken"
+                      },
+                      {
+                        "type": "address",
+                        "name": "oracle"
+                      },
+                      {
+                        "type": "address",
+                        "name": "irm"
+                      },
+                      {
+                        "type": "uint256",
+                        "name": "lltv"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "parameter": "marketParams.oracle",
+              "chainId": 1,
+              "sourceId": "Llama"
+            }
+          ]
+        },
+        "matcher": "toMatchObject",
+        "expected": {
+          "address": "0xa",
+          "eventSelector": "0xac4b2400f169220b0c0afdde7a0b32e775ba727ea1cb30b35f935cdaab8683ac",
+          "childAddressLocation": "offset64"
+        }
+      }
+    ]
+  },
+  {
+    "id": "b8d435f0262e95b7135c",
+    "line": 90,
+    "full_name": "buildLogFactory handles Morpho CreateMarket struct parameter",
+    "source_file": "packages/core/src/build/factory.test.ts",
+    "source_sha256": "e3111d8ca8e32ceddcfd06025777fbbf35867632dffb4db09d5f06a3f635beb5",
+    "assertions": [
+      {
+        "input": {
+          "operation": "buildLogFactory",
+          "args": [
+            {
+              "address": "0xa",
+              "event": {
+                "name": "CoinCreatedV4",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "address",
+                    "name": "caller",
+                    "indexed": true
+                  },
+                  {
+                    "type": "address",
+                    "name": "payoutRecipient",
+                    "indexed": true
+                  },
+                  {
+                    "type": "address",
+                    "name": "platformReferrer",
+                    "indexed": true
+                  },
+                  {
+                    "type": "address",
+                    "name": "currency"
+                  },
+                  {
+                    "type": "string",
+                    "name": "uri"
+                  },
+                  {
+                    "type": "string",
+                    "name": "name"
+                  },
+                  {
+                    "type": "string",
+                    "name": "symbol"
+                  },
+                  {
+                    "type": "address",
+                    "name": "coin"
+                  },
+                  {
+                    "type": "tuple",
+                    "name": "poolKey",
+                    "components": [
+                      {
+                        "type": "address",
+                        "name": "currency0"
+                      },
+                      {
+                        "type": "address",
+                        "name": "currency1"
+                      },
+                      {
+                        "type": "uint24",
+                        "name": "fee"
+                      },
+                      {
+                        "type": "int24",
+                        "name": "tickSpacing"
+                      },
+                      {
+                        "type": "address",
+                        "name": "hooks"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "bytes32",
+                    "name": "poolKeyHash"
+                  },
+                  {
+                    "type": "string",
+                    "name": "version"
+                  }
+                ]
+              },
+              "parameter": "poolKey.hooks",
+              "chainId": 1,
+              "sourceId": "Llama"
+            }
+          ]
+        },
+        "matcher": "toMatchObject",
+        "expected": {
+          "address": "0xa",
+          "eventSelector": "0x2de436107c2096e039c98bbcc3c5a2560583738ce15c234557eecb4d3221aa81",
+          "childAddressLocation": "offset288"
+        }
+      }
+    ]
+  },
+  {
+    "id": "a4af483c12ab0ce510b6",
+    "line": 109,
+    "full_name": "buildLogFactory handles location",
+    "source_file": "packages/core/src/build/factory.test.ts",
+    "source_sha256": "e3111d8ca8e32ceddcfd06025777fbbf35867632dffb4db09d5f06a3f635beb5",
+    "assertions": [
+      {
+        "input": {
+          "operation": "buildLogFactory",
+          "args": [
+            {
+              "address": "0xa",
+              "event": {
+                "name": "CoinCreatedV4",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "address",
+                    "name": "caller",
+                    "indexed": true
+                  },
+                  {
+                    "type": "address",
+                    "name": "payoutRecipient",
+                    "indexed": true
+                  },
+                  {
+                    "type": "address",
+                    "name": "platformReferrer",
+                    "indexed": true
+                  },
+                  {
+                    "type": "address",
+                    "name": "currency"
+                  },
+                  {
+                    "type": "string",
+                    "name": "uri"
+                  },
+                  {
+                    "type": "string",
+                    "name": "name"
+                  },
+                  {
+                    "type": "string",
+                    "name": "symbol"
+                  },
+                  {
+                    "type": "address",
+                    "name": "coin"
+                  },
+                  {
+                    "type": "tuple",
+                    "name": "poolKey",
+                    "components": [
+                      {
+                        "type": "address",
+                        "name": "currency0"
+                      },
+                      {
+                        "type": "address",
+                        "name": "currency1"
+                      },
+                      {
+                        "type": "uint24",
+                        "name": "fee"
+                      },
+                      {
+                        "type": "int24",
+                        "name": "tickSpacing"
+                      },
+                      {
+                        "type": "address",
+                        "name": "hooks"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "bytes32",
+                    "name": "poolKeyHash"
+                  },
+                  {
+                    "type": "string",
+                    "name": "version"
+                  }
+                ]
+              },
+              "location": "offset10",
+              "chainId": 1,
+              "sourceId": "Llama"
+            }
+          ]
+        },
+        "matcher": "toMatchObject",
+        "expected": {
+          "address": "0xa",
+          "eventSelector": "0x2de436107c2096e039c98bbcc3c5a2560583738ce15c234557eecb4d3221aa81",
+          "childAddressLocation": "offset10"
+        }
+      }
+    ]
+  }
+]

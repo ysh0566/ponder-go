@@ -1,0 +1,1535 @@
+{
+  "backends": {
+    "pglite": {
+      "actions": 11,
+      "providers": 10,
+      "steps": [
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "admitted",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              }
+            ],
+            "index": 0,
+            "operation": "readContract",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x18160ddd",
+                    "to": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512"
+                  },
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": {
+              "$bigint": "1000000000000000000"
+            }
+          },
+          "index": 0,
+          "observation_sha256": "abc3de7230887d05efe625326d76acee2f5dc4ecdb26d8f58f30dec208f90615",
+          "operation": "readContract",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x5\"]]",
+                "operation": "admitted",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              },
+              {
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x5\"]]",
+                "operation": "admitted",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "index": 1,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x82ad56cb00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000cf7ed3acca5a467e9e704c703e8d87f634fb0fc900000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000418160ddd00000000000000000000000000000000000000000000000000000000000000000000000000000000cf7ed3acca5a467e9e704c703e8d87f634fb0fc900000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000418160ddd00000000000000000000000000000000000000000000000000000000",
+                    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                  },
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": [
+              {
+                "$bigint": "2000000000000000000"
+              },
+              {
+                "$bigint": "1000000000000000000"
+              },
+              {
+                "$bigint": "2000000000000000000"
+              }
+            ]
+          },
+          "index": 1,
+          "observation_sha256": "ec909d1563edd41bd7db3ff84d187027c28e8751e7b410a5ccdff5f22b55817a",
+          "operation": "multicall",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              },
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              }
+            ],
+            "index": 2,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 0,
+            "requests": [],
+            "result_or_error": [
+              {
+                "$bigint": "1000000000000000000"
+              },
+              {
+                "$bigint": "2000000000000000000"
+              },
+              {
+                "$bigint": "1000000000000000000"
+              }
+            ]
+          },
+          "index": 2,
+          "observation_sha256": "efdfc47ab9553583a22a95f87d9bd7773b9699785c6a36dbfe72b0bf7a4d2a25",
+          "operation": "multicall",
+          "provider_count": 0
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              },
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0xa8b00865\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              }
+            ],
+            "index": 3,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x82ad56cb000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000e7f1725e7734ce288f8367e1bb143e90bb3f0512000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000004a8b0086500000000000000000000000000000000000000000000000000000000",
+                    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                  },
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": [
+              {
+                "result": {
+                  "$bigint": "2000000000000000000"
+                },
+                "status": "success"
+              },
+              {
+                "error": {
+                  "$error": "contract_revert"
+                },
+                "result": {
+                  "$undefined": true
+                },
+                "status": "failure"
+              },
+              {
+                "result": {
+                  "$bigint": "1000000000000000000"
+                },
+                "status": "success"
+              }
+            ]
+          },
+          "index": 3,
+          "observation_sha256": "346d7ba15e57f214e6d57f11f085a5b5c18e57363b7e35ee361b6afd1675bfde",
+          "operation": "multicall",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0xa8b00865\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              }
+            ],
+            "index": 4,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x82ad56cb000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000e7f1725e7734ce288f8367e1bb143e90bb3f0512000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000004a8b0086500000000000000000000000000000000000000000000000000000000",
+                    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                  },
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": {
+              "$error": "contract_revert"
+            }
+          },
+          "index": 4,
+          "observation_sha256": "8fdfb619455c1e6986b16c01961094ff7063f690d81321c7133f45344ee6dd88",
+          "operation": "multicall",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [],
+            "index": 5,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 0,
+            "requests": [],
+            "result_or_error": []
+          },
+          "index": 5,
+          "observation_sha256": "531101aceb9e5ee98df9722feb132fa394d2ef8588b0eee47a235ec0cb763cac",
+          "operation": "multicall",
+          "provider_count": 0
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"latest\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"latest\"]]",
+                "operation": "admitted",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              }
+            ],
+            "index": 6,
+            "operation": "readContract",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": null,
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "9fa7dbc949e33cdcaf34f0ca53adcdbf",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x18160ddd",
+                    "to": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512"
+                  },
+                  "latest"
+                ]
+              }
+            ],
+            "result_or_error": {
+              "$bigint": "1000000000000000000"
+            }
+          },
+          "index": 6,
+          "observation_sha256": "48f1a3936d4243345ea79d61b0941a3da537bae37ce68304c888e67383b38566",
+          "operation": "readContract",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_getCode\",[\"0x0000000000000000000000000000000000000000\",\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              }
+            ],
+            "index": 7,
+            "operation": "getCode",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": null,
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "9fa7dbc949e33cdcaf34f0ca53adcdbf",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_getCode",
+                "params": [
+                  "0x0000000000000000000000000000000000000000",
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": {
+              "$undefined": true
+            }
+          },
+          "index": 7,
+          "observation_sha256": "5329e0b6d536b42bc06879912ccba21ee8b44481d6f3861f151547ee5609fdce",
+          "operation": "getCode",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_getCode\",[\"0x0000000000000000000000000000000000000000\",\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              }
+            ],
+            "index": 8,
+            "operation": "getCode",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": null,
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "9fa7dbc949e33cdcaf34f0ca53adcdbf",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_getCode",
+                "params": [
+                  "0x0000000000000000000000000000000000000000",
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": {
+              "$undefined": true
+            }
+          },
+          "index": 8,
+          "observation_sha256": "3e53e7f9434c7d56e525ed8517c3ce172e5737f2591929ae76616a7f078d459b",
+          "operation": "getCode",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0xa8b00865\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x4\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x4\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x4\"]]",
+                "operation": "admitted",
+                "result": "\"0x0000000000000000000000000000000000000000000000000000000000000000\""
+              }
+            ],
+            "index": 9,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "4"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "693724751c1108f48b28f1d3940b8a4c",
+                "result": "\"0x0000000000000000000000000000000000000000000000000000000000000000\""
+              },
+              {
+                "blockNumber": null,
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "9fa7dbc949e33cdcaf34f0ca53adcdbf",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 2,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x82ad56cb000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000e7f1725e7734ce288f8367e1bb143e90bb3f0512000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000004a8b0086500000000000000000000000000000000000000000000000000000000",
+                    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                  },
+                  "0x4"
+                ]
+              },
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x82ad56cb000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000cf7ed3acca5a467e9e704c703e8d87f634fb0fc900000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000418160ddd00000000000000000000000000000000000000000000000000000000",
+                    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                  },
+                  "0x4"
+                ]
+              }
+            ],
+            "result_or_error": {
+              "$error": "contract_revert"
+            }
+          },
+          "index": 9,
+          "observation_sha256": "08482863c06f3406b4585f13b6bcb0d3b4743844dc7bcdfcc412963e6b4f391b",
+          "operation": "multicall",
+          "provider_count": 2
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              }
+            ],
+            "index": 10,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "4"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "693724751c1108f48b28f1d3940b8a4c",
+                "result": "\"0x0000000000000000000000000000000000000000000000000000000000000000\""
+              },
+              {
+                "blockNumber": null,
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "9fa7dbc949e33cdcaf34f0ca53adcdbf",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x82ad56cb000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000e7f1725e7734ce288f8367e1bb143e90bb3f0512000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000000",
+                    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                  },
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": [
+              {
+                "error": {
+                  "$error": "contract_zero_data"
+                },
+                "result": {
+                  "$undefined": true
+                },
+                "status": "failure"
+              }
+            ]
+          },
+          "index": 10,
+          "observation_sha256": "39a4d7cbd152b432beb79b9206d0ddef5c5f35ff0b8d8c012928efc2b700ed74",
+          "operation": "multicall",
+          "provider_count": 1
+        }
+      ]
+    },
+    "postgres": {
+      "actions": 11,
+      "providers": 10,
+      "steps": [
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "admitted",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              }
+            ],
+            "index": 0,
+            "operation": "readContract",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x18160ddd",
+                    "to": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512"
+                  },
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": {
+              "$bigint": "1000000000000000000"
+            }
+          },
+          "index": 0,
+          "observation_sha256": "abc3de7230887d05efe625326d76acee2f5dc4ecdb26d8f58f30dec208f90615",
+          "operation": "readContract",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x5\"]]",
+                "operation": "admitted",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              },
+              {
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x5\"]]",
+                "operation": "admitted",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "index": 1,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x82ad56cb00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000cf7ed3acca5a467e9e704c703e8d87f634fb0fc900000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000418160ddd00000000000000000000000000000000000000000000000000000000000000000000000000000000cf7ed3acca5a467e9e704c703e8d87f634fb0fc900000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000418160ddd00000000000000000000000000000000000000000000000000000000",
+                    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                  },
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": [
+              {
+                "$bigint": "2000000000000000000"
+              },
+              {
+                "$bigint": "1000000000000000000"
+              },
+              {
+                "$bigint": "2000000000000000000"
+              }
+            ]
+          },
+          "index": 1,
+          "observation_sha256": "ec909d1563edd41bd7db3ff84d187027c28e8751e7b410a5ccdff5f22b55817a",
+          "operation": "multicall",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              },
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              }
+            ],
+            "index": 2,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 0,
+            "requests": [],
+            "result_or_error": [
+              {
+                "$bigint": "1000000000000000000"
+              },
+              {
+                "$bigint": "2000000000000000000"
+              },
+              {
+                "$bigint": "1000000000000000000"
+              }
+            ]
+          },
+          "index": 2,
+          "observation_sha256": "efdfc47ab9553583a22a95f87d9bd7773b9699785c6a36dbfe72b0bf7a4d2a25",
+          "operation": "multicall",
+          "provider_count": 0
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              },
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0xa8b00865\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              }
+            ],
+            "index": 3,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x82ad56cb000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000e7f1725e7734ce288f8367e1bb143e90bb3f0512000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000004a8b0086500000000000000000000000000000000000000000000000000000000",
+                    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                  },
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": [
+              {
+                "result": {
+                  "$bigint": "2000000000000000000"
+                },
+                "status": "success"
+              },
+              {
+                "error": {
+                  "$error": "contract_revert"
+                },
+                "result": {
+                  "$undefined": true
+                },
+                "status": "failure"
+              },
+              {
+                "result": {
+                  "$bigint": "1000000000000000000"
+                },
+                "status": "success"
+              }
+            ]
+          },
+          "index": 3,
+          "observation_sha256": "346d7ba15e57f214e6d57f11f085a5b5c18e57363b7e35ee361b6afd1675bfde",
+          "operation": "multicall",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0xa8b00865\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "hit": true,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              }
+            ],
+            "index": 4,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x82ad56cb000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000e7f1725e7734ce288f8367e1bb143e90bb3f0512000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000004a8b0086500000000000000000000000000000000000000000000000000000000",
+                    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                  },
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": {
+              "$error": "contract_revert"
+            }
+          },
+          "index": 4,
+          "observation_sha256": "8fdfb619455c1e6986b16c01961094ff7063f690d81321c7133f45344ee6dd88",
+          "operation": "multicall",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [],
+            "index": 5,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 0,
+            "requests": [],
+            "result_or_error": []
+          },
+          "index": 5,
+          "observation_sha256": "531101aceb9e5ee98df9722feb132fa394d2ef8588b0eee47a235ec0cb763cac",
+          "operation": "multicall",
+          "provider_count": 0
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"latest\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"latest\"]]",
+                "operation": "admitted",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              }
+            ],
+            "index": 6,
+            "operation": "readContract",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": null,
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "9fa7dbc949e33cdcaf34f0ca53adcdbf",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x18160ddd",
+                    "to": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512"
+                  },
+                  "latest"
+                ]
+              }
+            ],
+            "result_or_error": {
+              "$bigint": "1000000000000000000"
+            }
+          },
+          "index": 6,
+          "observation_sha256": "48f1a3936d4243345ea79d61b0941a3da537bae37ce68304c888e67383b38566",
+          "operation": "readContract",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_getCode\",[\"0x0000000000000000000000000000000000000000\",\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              }
+            ],
+            "index": 7,
+            "operation": "getCode",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": null,
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "9fa7dbc949e33cdcaf34f0ca53adcdbf",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_getCode",
+                "params": [
+                  "0x0000000000000000000000000000000000000000",
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": {
+              "$undefined": true
+            }
+          },
+          "index": 7,
+          "observation_sha256": "5329e0b6d536b42bc06879912ccba21ee8b44481d6f3861f151547ee5609fdce",
+          "operation": "getCode",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_getCode\",[\"0x0000000000000000000000000000000000000000\",\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              }
+            ],
+            "index": 8,
+            "operation": "getCode",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": null,
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "9fa7dbc949e33cdcaf34f0ca53adcdbf",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_getCode",
+                "params": [
+                  "0x0000000000000000000000000000000000000000",
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": {
+              "$undefined": true
+            }
+          },
+          "index": 8,
+          "observation_sha256": "3e53e7f9434c7d56e525ed8517c3ce172e5737f2591929ae76616a7f078d459b",
+          "operation": "getCode",
+          "provider_count": 1
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0xa8b00865\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x4\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x4\"]]",
+                "operation": "get",
+                "result": ""
+              },
+              {
+                "key": "[1,\"eth_call\",[{\"data\":\"0x18160ddd\",\"to\":\"0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9\"},\"0x4\"]]",
+                "operation": "admitted",
+                "result": "\"0x0000000000000000000000000000000000000000000000000000000000000000\""
+              }
+            ],
+            "index": 9,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "4"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "693724751c1108f48b28f1d3940b8a4c",
+                "result": "\"0x0000000000000000000000000000000000000000000000000000000000000000\""
+              },
+              {
+                "blockNumber": null,
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "9fa7dbc949e33cdcaf34f0ca53adcdbf",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 2,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x82ad56cb000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000e7f1725e7734ce288f8367e1bb143e90bb3f0512000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000004a8b0086500000000000000000000000000000000000000000000000000000000",
+                    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                  },
+                  "0x4"
+                ]
+              },
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x82ad56cb000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000cf7ed3acca5a467e9e704c703e8d87f634fb0fc900000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000418160ddd00000000000000000000000000000000000000000000000000000000",
+                    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                  },
+                  "0x4"
+                ]
+              }
+            ],
+            "result_or_error": {
+              "$error": "contract_revert"
+            }
+          },
+          "index": 9,
+          "observation_sha256": "08482863c06f3406b4585f13b6bcb0d3b4743844dc7bcdfcc412963e6b4f391b",
+          "operation": "multicall",
+          "provider_count": 2
+        },
+        {
+          "digest_input": {
+            "cache_observations": [
+              {
+                "hit": false,
+                "key": "[1,\"eth_call\",[{\"data\":\"0x\",\"to\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"},\"0x5\"]]",
+                "operation": "get",
+                "result": ""
+              }
+            ],
+            "index": 10,
+            "operation": "multicall",
+            "physical_rows": [
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "6018228df38c4494f91aba2ca6ac3c05",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "4"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "693724751c1108f48b28f1d3940b8a4c",
+                "result": "\"0x0000000000000000000000000000000000000000000000000000000000000000\""
+              },
+              {
+                "blockNumber": null,
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "9fa7dbc949e33cdcaf34f0ca53adcdbf",
+                "result": "\"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000\""
+              },
+              {
+                "blockNumber": {
+                  "$bigint": "5"
+                },
+                "chainId": {
+                  "$bigint": "1"
+                },
+                "requestHash": "d9bad5ecbcd61f58c7de87bb47fb51ef",
+                "result": "\"0x0000000000000000000000000000000000000000000000001bc16d674ec80000\""
+              }
+            ],
+            "provider_count": 1,
+            "requests": [
+              {
+                "method": "eth_call",
+                "params": [
+                  {
+                    "data": "0x82ad56cb000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000e7f1725e7734ce288f8367e1bb143e90bb3f0512000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000000",
+                    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                  },
+                  "0x5"
+                ]
+              }
+            ],
+            "result_or_error": [
+              {
+                "error": {
+                  "$error": "contract_zero_data"
+                },
+                "result": {
+                  "$undefined": true
+                },
+                "status": "failure"
+              }
+            ]
+          },
+          "index": 10,
+          "observation_sha256": "39a4d7cbd152b432beb79b9206d0ddef5c5f35ff0b8d8c012928efc2b700ed74",
+          "operation": "multicall",
+          "provider_count": 1
+        }
+      ]
+    }
+  },
+  "complete": true,
+  "error_equivalence": "typed contract revert and zero-data causes; source viem presentation/custom-error decoding not byte-equivalent",
+  "fixture": "testdata/indexing/source-indexing-actions-probes.json.gz",
+  "fixture_sha256": "803a1831903f7bed823b161e8327095081780c1c62cda55af717f3fe2d2fe578",
+  "real_database": true,
+  "source_credit": 0,
+  "success": true
+}

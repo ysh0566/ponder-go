@@ -1,0 +1,237 @@
+#!/usr/bin/env python3
+"""M42 evidence freeze. Default is read-only; --write creates NEW batch41 only.
+Run from the active ponder-go root after all collectors and documentation finish.
+This is not a substitute for acceptance collectors. Never rewrites old batches.
+"""
+import os,sys,json,gzip,hashlib,subprocess,shutil,pathlib,collections,re
+ROOT=pathlib.Path.cwd().resolve()
+RUN=os.environ.get('M42_RUN','parity/runs/multichain-atomic-m42/full-verify-01')
+BASE='parity/runs/batch-41-evidence'; BATCH='parity/runs/batch-41.json'
+PARENT='b2bad8f76956bf681177dd701742a253b9eaf072'
+FINGERPRINT=os.environ['M42_FINGERPRINT']; INPUT_COUNT=int(os.environ['M42_INPUT_COUNT'])
+WRITE=sys.argv[1:]==['--write']
+if sys.argv[1:] not in [[],['--check-only'],['--write']]:raise SystemExit('Usage: freeze-m42.py [--check-only|--write]')
+def read(p):return json.loads((ROOT/p).read_text())
+def digest(p):
+ h=hashlib.sha256()
+ with open(p,'rb') as f:
+  for chunk in iter(lambda:f.read(1024*1024),b''):h.update(chunk)
+ return h.hexdigest()
+def rel(p):return os.path.relpath(p,ROOT)
+def check(c,m):
+ if not c:raise RuntimeError(m)
+def git(*a):return subprocess.check_output(['git',*a],cwd=ROOT).decode().strip()
+check((ROOT/'AGENTS.md').is_file(),'Run from project root')
+check((ROOT/'docs/MULTICHAIN_ATOMIC_PRIMITIVES.md').is_file(),'M42 architecture/limitations document required')
+check(git('rev-parse','HEAD')==PARENT,'Expected exact published M41 parent; re-review if changed')
+check(not (ROOT/BASE).exists() and not (ROOT/BATCH).exists(),'New batch only; never overwrite an existing freeze')
+full=read(RUN+'/result.json'); summary=read('parity/runs/summary.json')
+check(full.get('complete') and full.get('success') and full.get('source_manifest_verified_after'),'Successful complete full run required')
+check(len(full['commands'])==69 and all(c.get('exit_code')==0 for c in full['commands']),'All 69 stages must exit zero')
+check(full['native_inputs']==full['finished_native_inputs']=={'files':INPUT_COUNT,'sha256':FINGERPRINT},'Wrong native input fingerprint')
+for k,v in {'ported':543,'passed':543,'unimplemented':362,'current_original_oracle_passed':543,'historical_only_original_oracles':0,'runtime_passed_type_pending':7}.items():check(summary['parity'].get(k)==v,'Unexpected parity count '+k)
+# Re-evaluate the actual native inventory instead of trusting only the report.
+node="import {sourceFingerprint} from './tools/go-source-fingerprint.mjs'; console.log(JSON.stringify(sourceFingerprint(process.cwd())))"
+check(json.loads(subprocess.check_output(['node','--input-type=module','-e',node],cwd=ROOT))==full['finished_native_inputs'],'Current native inputs changed')
+for e in full['harness_inputs']:check(digest(ROOT/e['file'])==e['sha256'],'Frozen harness changed: '+e['file'])
+for c in full['commands']:check((ROOT/RUN/(c['name']+'.log')).is_file(),'Missing command log: '+c['name'])
+# Preserve all failed/focused/current M42 artifacts explicitly, including ignored logs.
+selected=set(); status=subprocess.check_output(['git','status','--porcelain=v1','-z'],cwd=ROOT).split(b'\0')
+for record in status:
+ if not record:continue
+ check(record[:2] not in [b'R ',b' R',b'C ',b' C'],'Handle rename/copy status explicitly before freezing')
+ p=record[3:].decode()
+ if p.startswith('parity/runs/') and not p.startswith('parity/runs/batch-'):
+  q=ROOT/p
+  if q.is_dir():selected.update(rel(f) for f in q.rglob('*') if f.is_file() and not f.is_symlink())
+  elif q.is_file():selected.add(p)
+selected.update(rel(f) for f in (ROOT/'parity/runs/multichain-atomic-m42').rglob('*') if f.is_file() and not f.is_symlink())
+selected.update(p for p in ['parity/test-ledger.json','parity/feature-ledger.json','parity/mappings.json','parity/public-manifest.json','parity/runs/summary.json','README.md','docs/CONTINUATION.md','docs/MILESTONES.md','docs/SOURCE_INDEXING_SERVICE.md','docs/SOURCE_INDEXING_ACTIONS.md','docs/SOURCE_INDEXING_PROFILE.md','docs/INDEPENDENT_INDEXING_STORAGE.md','docs/MULTICHAIN_ATOMIC_PRIMITIVES.md','tools/source-indexing-profile-capture.md','parity/source-indexing-profile-declarations.json','parity/source-indexing-service-declarations.json','parity/source-indexing-actions-cases.json'] if (ROOT/p).is_file())
+canon=['config-live','source-sync','source-historical','source-realtime','sql-source','source-runtime-index','source-runtime-historical','source-runtime-multichain','source-indexing-service','source-indexing-actions','source-indexing-profile','independent-storage','multichain-atomic']
+current_roots=[RUN+'/result.json','parity/runs/summary.json']+['parity/runs/'+p+'-verification.json' for p in canon]
+for p in current_roots:check((ROOT/p).is_file(),'Missing canonical proof '+p);selected.add(p)
+indexing=read('parity/runs/source-indexing-service-verification.json')
+expected_indexing={'source_cases':23,'source_assertions':42,'targeted_cases':15,'targeted_assertions':33,'complete_mapping_candidates':12,'native_type_pending_cases':3,'native_type_obligations_verified':0,'supplementary_source_credit':0,'proxy_source_operations':23,'proxy_native_operations':23,'proxy_descriptor_gap':0,'cache_invocation_prefix_gap':False,'cache_invocation_prefix_scope':'strict_standalone_prepared_admission_only','cache_read_visibility_equivalence':False,'source_sync_table_snapshots':'archival_only','native_business_database_assertions':'original_insert_find_only'}
+for k,v in expected_indexing.items():check(indexing['summary'].get(k)==v,'M39 proof count/limit changed: '+k)
+check(len(indexing.get('limitations',{}))==3,'All explicit handler limitations required')
+gaps={'d75ae6d953a7bb8ea73c','afb6150d1f928a58bf24','8a08a48e2a99b23fa016'}
+check(set(indexing['type_gaps'])==gaps,'Exact three static gaps required')
+mappings=read('parity/mappings.json');new=[m for m in mappings if m.get('source_file')=='packages/core/src/indexing/index.test.ts']
+check(len(new)==20 and sum(m['original_assertions'] for m in new)==36 and not any(m.get('source_id') in gaps for m in mappings),'Exactly20 cumulative indexing mappings permitted')
+actions=read('parity/runs/source-indexing-actions-verification.json')
+for k,v in {'targeted_cases':8,'targeted_assertions':9,'complete_mapping_candidates':8,'source_error_directives':0,'supplementary_source_credit':0,'cache_read_visibility_equivalence':False}.items():check(actions['summary'].get(k)==v,'M39 action proof changed: '+k)
+prior_mappings=json.loads(subprocess.check_output(['git','show',PARENT+':parity/mappings.json'],cwd=ROOT))
+check(len(prior_mappings)==543 and mappings==prior_mappings,'Zero additions; all543 previous mapping objects/order unchanged')
+check([m for m in mappings if m in prior_mappings]==prior_mappings,'Old mapping order/objects changed')
+def mapping_bytes(text):
+ decoder=json.JSONDecoder();i=text.index('[')+1;out=[]
+ while True:
+  while text[i].isspace() or text[i]==',':i+=1
+  if text[i]==']':return out
+  start=i;_,i=decoder.raw_decode(text,i);out.append(text[start:i].encode())
+prior_mapping_text=subprocess.check_output(['git','show',PARENT+':parity/mappings.json'],cwd=ROOT).decode()
+check(mapping_bytes((ROOT/'parity/mappings.json').read_text())==mapping_bytes(prior_mapping_text),'All543 prior mapping objects must remain byte-identical')
+profile=read('parity/runs/source-indexing-profile-verification.json')
+for k,v in {'source_cases':24,'source_assertions':63,'targeted_cases':12,'targeted_assertions':30,'source_error_directives':0,'complete_mapping_candidates':12,'supplementary_source_credit':0,'profile_originals':10,'prefetch_originals':2,'unmapped_client_originals':12}.items():check(profile['summary'].get(k)==v,'M40 profile proof count changed: '+k)
+profile_ids={'2f670307cc3e54bf3901','465e8823325559c8cfa1','e7d2206043a345533ec0','fcafee958f55fe65dc77','fb137834371e07d16724','732ac50bf3a96196de3e','4c57d8f36ec9b90f69ac','d8952ac4024fd02802a7','0173bc5e83b0843a8d4e','ddf6318af43ddc28cd80','ff30deb8b9aca842519b','4ace7b36bca44245e4b7'}
+added=[m for m in mappings if m not in prior_mappings]
+check(added==[],'M42 adds no original source cases or assertion credit')
+check(sum(m['source_file']=='packages/core/src/indexing/profile.test.ts' for m in mappings)==10 and sum(m['source_file']=='packages/core/src/indexing/client.test.ts' for m in mappings)==2,'Retain exactly existing profile10/client2 mappings')
+check(not any(m['source_file']=='packages/core/src/indexing/client.test.ts' and m['source_id'] not in profile_ids for m in mappings),'Other12 client originals remain unmapped')
+independent=read('parity/runs/independent-storage-verification.json')
+check(independent.get('complete') and independent.get('success') and independent.get('source_credit')==0 and independent.get('scope')=='independent_storage_and_reusable_bindings','Current zero-credit M42 owner/session proof required')
+check(len(independent.get('source',[]))==2 and len(independent.get('executions',[]))==2,'Both source backends and native modes required')
+check(independent.get('postgres_fixture')==full.get('postgres_fixture'),'M42 fixture provenance differs')
+atomic=read('parity/runs/multichain-atomic-verification.json')
+check(atomic.get('complete') and atomic.get('success') and atomic.get('source_credit')==0 and atomic.get('scope')=='atomic_multichain_setup_and_historical_group_primitives','Current zero-credit M42 primitive proof required')
+check(len(atomic.get('source',[]))==2 and len(atomic.get('executions',[]))==2 and atomic.get('postgres_fixture')==full.get('postgres_fixture'),'M42 source/native fixture proof incomplete')
+fixture=full['postgres_fixture'];check(fixture.get('data_directory_verified') is True and fixture['receipt']==RUN+'-fixture','Exact owned fresh-cluster provenance required')
+for item in [fixture['preflight'],*fixture['inputs']]:check(digest(ROOT/item['file'])==item['sha256'],'Fixture preflight evidence changed')
+receipt=fixture['receipt']
+check((ROOT/receipt/'exit-code.txt').read_text().strip()=='0','Fresh-cluster wrapper did not exit successfully')
+check('server stopped' in (ROOT/receipt/'shutdown.log').read_text(),'Owned PostgreSQL shutdown confirmation missing')
+initial_inventory=read(receipt+'/initial-inventory.json');final_inventory=read(receipt+'/final-inventory.json')
+check(set(initial_inventory['databases'])=={'ponder_test','postgres','template0','template1'},'Initial databases were not pristine fixture defaults')
+check(all(r=='agent' or r.startswith('pg_') for r in initial_inventory['roles']),'Initial roles were not pristine fixture defaults')
+check(all(d in initial_inventory['databases'] or re.fullmatch(r'vitest_[0-9]+',d) for d in final_inventory['databases']),'Final inventory contains database outside pinned task fixture scope')
+check(all(r in initial_inventory['roles'] or re.fullmatch(r'ponder_vitest_[0-9]+_public',r) for r in final_inventory['roles']),'Final inventory contains role outside pinned task fixture scope')
+fixture_source='../ponder-upstream/packages/core/src/_test/setup.ts';fixture_source_text=(ROOT/fixture_source).read_text()
+check('const databaseName = `vitest_${TEST_POOL_ID}`;' in fixture_source_text and 'DROP DATABASE IF EXISTS "${databaseName}"' in fixture_source_text and 'DROP ROLE IF EXISTS "ponder_${databaseName}_public"' in fixture_source_text,'Pinned original fixture naming templates changed')
+check((ROOT/receipt/'pinned-test-lifecycle.sha256').read_text().split()[0]==digest(ROOT/fixture_source),'Executed fixture source hash changed')
+fixture_terminal={'directory':fixture['directory'],'exit_code':0,'initial_inventory':{'file':receipt+'/initial-inventory.json','sha256':digest(ROOT/receipt/'initial-inventory.json')},'final_inventory':{'file':receipt+'/final-inventory.json','sha256':digest(ROOT/receipt/'final-inventory.json')},'shutdown':{'file':receipt+'/shutdown.log','sha256':digest(ROOT/receipt/'shutdown.log')},'wrapper_exit':{'file':receipt+'/exit-code.txt','sha256':digest(ROOT/receipt/'exit-code.txt')},'pinned_source':{'file':fixture_source,'sha256':digest(ROOT/fixture_source)},'allowed_database_additions':'^vitest_[0-9]+$','allowed_role_additions':'^ponder_vitest_[0-9]+_public$','exceptions':[]}
+
+check((ROOT/receipt/'show-data-directory.txt').read_text().strip()==fixture['directory'],'Fresh-cluster SHOW receipt changed')
+for name in ['exit-code.txt','shutdown.log','server.log','final-inventory.json','final-inventory.stderr','initial-inventory.json','initdb.log','start.log','owned-directory.txt','show-data-directory.txt','scope.txt','legacy-fixture-scope.txt','pinned-test-lifecycle.sha256']:
+ check((ROOT/receipt/name).is_file(),'Missing terminal fixture artifact '+name);selected.add(receipt+'/'+name)
+check(not (pathlib.Path(fixture['directory'])/'postmaster.pid').exists(),'Owned cluster still appears running; wait for wrapper shutdown')
+for p in current_roots[2:]:
+ proof=read(p);check(proof.get('complete') and ('success' not in proof if p in ['parity/runs/'+name+'-verification.json' for name in canon[:5]] else proof.get('success') is True) and proof.get('run_dir')==RUN,'Canonical proof does not belong to current run: '+p)
+for mode in ['normal','race']:
+ for kind in ['indexing-service','indexing-actions','indexing-actions-probes','indexing-profile','indexing-profile-probes']:
+  artifact=ROOT/RUN/('native/'+kind+'-'+mode+'.json');check(artifact.is_file(),'Mandatory native observed artifact missing')
+# Preserve exact canonical/ledger command logs, not only aggregate stage logs.
+for p in (ROOT/RUN).glob('canonical-*.log'):selected.add(rel(p))
+for p in (ROOT/'testdata/indexing').rglob('*'):
+ if p.is_file() and not p.is_symlink():selected.add(rel(p))
+collector_log=RUN+'/canonical-collectors.json'
+collectors=read(collector_log)
+check(collectors.get('complete') and collectors.get('success') and collectors.get('run_dir')==RUN and len(collectors.get('commands',[]))==13,'Thirteen successful explicit canonical collector commands required')
+for command in collectors['commands']:
+ check(command.get('exit_code')==0 and any(arg.startswith('--output=parity/runs/') for arg in command['command']),'Explicit canonical output missing')
+ check((ROOT/command['log']).is_file(),'Canonical command log missing')
+ check(digest(ROOT/command['output']['file'])==command['output']['sha256'],'Canonical output changed')
+current_roots.append(collector_log)
+record_log=RUN+'/record-results-closeout.log';record_status=RUN+'/record-results-closeout.exit-code'
+check((ROOT/record_log).is_file() and (ROOT/record_log).stat().st_size>0,'Actual record-results closeout stdout/stderr log required')
+check((ROOT/record_status).read_text().strip()=='0','Explicit closeout record-results command must exit zero')
+selected.update([record_log,record_status,RUN+'-driver.log'])
+check((ROOT/(RUN+'-driver.log')).is_file(),'Full/canonical/initial record-results driver log required')
+record_results_closeout={'command':['node','tools/record-results.mjs','--run-dir='+RUN],'exit_code':0,'log':{'file':record_log,'sha256':digest(ROOT/record_log)},'status':{'file':record_status,'sha256':digest(ROOT/record_status)}}
+
+# Historical sidecar is a bounded exception, never a fallback for arbitrary stale refs.
+sidefile='parity/runs/runtime-index-m35/historical-capture-context/manifest.json'
+side=read(sidefile); history_links={}
+check(subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT/'../ponder-upstream').decode().strip()=='17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334','Pinned upstream changed')
+check(side['commit']=='d9b2ae852a735a7e4d7c66a940d55d5f3e924400' and side['blob']=='53e5fdc3bf23b341f154fe61277ff6bafadb370e','Unexpected historical sidecar provenance')
+for e in side['entries']:
+ check(digest(ROOT/e['fixture']['file'])==e['fixture']['sha256'],'Historical fixture changed')
+ check(digest(ROOT/e['raw_oracle']['file'])==e['raw_oracle']['sha256'],'Historical raw oracle changed')
+ check(digest(ROOT/e['frozen_ref']['file'])==e['frozen_ref']['sha256'],'Historical frozen harness changed')
+ history_links[(e['fixture']['file'],e['original_ref']['file'],e['original_ref']['sha256'])]=e['frozen_ref']
+# Traverse current proof refs; historical report subgraphs are retained but not
+# falsely required to match today's source tree. The boundary is explicit by key.
+queue=collections.deque((p,False) for p in current_roots);seen=set();refs=[];archives={};historical_reports=[]
+while queue:
+ p,historical=queue.popleft()
+ if (p,historical) in seen:continue
+ seen.add((p,historical));q=ROOT/p
+ if not q.is_file() or not (q.suffix=='.json' or q.name.endswith('.json.gz')):continue
+ try:obj=json.loads(gzip.decompress(q.read_bytes()).decode() if q.name.endswith('.json.gz') else q.read_text())
+ except (ValueError,UnicodeError):continue
+ if isinstance(obj,dict) and obj.get('format')=='ponder-loopback-context-v1':
+  for e in obj['entries'].values():archives[(e['executed_file'],e['sha256'])]=(e['persistent_file'],p)
+ def visit(v,keys=()):
+  if isinstance(v,dict):
+   f=v.get('file');h=v.get('sha256')
+   if isinstance(f,str) and isinstance(h,str) and len(h)==64:
+    is_history=historical or any(k in ['history_pristine_reference','historical_reference','previous_canonical'] for k in keys)
+    refs.append({'owner':p,'file':f,'sha256':h,'historical_subgraph':historical,'reference_key_path':list(keys)})
+    target=ROOT/f
+    if target.is_file() and (target.suffix=='.json' or target.name.endswith('.json.gz')):
+     targetrel=rel(target.resolve())
+     if targetrel.startswith('parity/runs/batch-'):historical_reports.append(targetrel)
+     elif '/node_modules/' not in str(target):queue.append((targetrel,is_history))
+   for k,x in v.items():visit(x,keys+(k,))
+  elif isinstance(v,list):
+   for x in v:visit(x,keys)
+ visit(obj)
+validated=[];dependencies={};exclusions={};historical_inventory=[];errors=[]
+for e in refs:
+ f=e['file'];q=(ROOT/f).resolve();expected=e['sha256'];actual=digest(q) if q.is_file() else None
+ if e['historical_subgraph']:
+  historical_inventory.append({**e,'actual_sha256':actual,'reason':'Historical provenance subgraph, not current execution credit'})
+  # Preserve the referenced report itself where it still exists; its historical
+  # internal source hashes are descriptive, never substituted into current proof.
+ else:
+  resolved=None
+  # Legacy generated fixtures use upstream-relative source paths, explicitly.
+  if actual is None and (e['owner'].startswith('testdata/') or e['owner']=='config/chain_catalog.json') and (f.startswith('packages/') or f=='pnpm-lock.yaml'):
+   up=(ROOT/'../ponder-upstream'/f).resolve()
+   if up.is_file() and digest(up)==expected:resolved=str(up)
+  if actual==expected:resolved=str(q)
+  elif (e['owner'],f,expected) in history_links:
+   target=history_links[(e['owner'],f,expected)];resolved=str(ROOT/target['file'])
+  elif e['owner'] in ['parity/runs/sql-source-verification.json',sidefile] and f=='tools/full-oracle.config.mjs' and expected=='db4df171639a49711cfcc645e966a4643e543b24dbb69221a9b26e642a40dc3c' and any(k in ['historical_original_ref','original_source_context','original_ref'] for k in e['reference_key_path']):
+   resolved=str(ROOT/side['entries'][0]['frozen_ref']['file'])
+  elif (str(q),expected) in archives:
+   target,archive=archives[(str(q),expected)]
+   if pathlib.Path(target).is_file() and digest(target)==expected and actual is None:resolved=target
+  if resolved is None:errors.append({**e,'actual_sha256':actual});continue
+  validated.append({**e,'resolved_file':rel(resolved)})
+ # Publishing policy is separate from validation: binary/dependency refs must
+ # validate when current, even though their bytes are deliberately not published.
+ target=pathlib.Path(resolved) if not e['historical_subgraph'] else q
+ if not target.is_file():exclusions[f]={**e,'reason':'Historical execution-only location; not current proof'};continue
+ rr=rel(target)
+ if '/node_modules/' in str(target) or '/.parity-build/' in str(target) or target.is_symlink():
+  exclusions[rr]={'file':f,'sha256':expected,'reason':'Validated rebuildable compiler/dependency artifact; not published'}
+ elif rr.startswith('parity/runs/batch-'):dependencies[rr]={'file':rr,'sha256':digest(target),'kind':'immutable_prior_batch'}
+ elif rr.startswith('parity/runs/'):selected.add(rr)
+ else:dependencies[rr]={'file':rr,'sha256':digest(target),'kind':'pinned_upstream' if rr.startswith('../') else 'repository_source_or_fixture'}
+check(not errors,'Current proof references failed strict validation:\n'+json.dumps(errors[:30],indent=2))
+# Validate prior batch identity before/after writing; original Git paths are immutable.
+prior=[p for p in git('ls-files','parity/runs/batch-40.json','parity/runs/batch-40-evidence').splitlines() if p]
+prior_hashes={p:digest(ROOT/p) for p in prior}
+baseline=read('parity/runs/multichain-atomic-m42/pre-freeze-baseline.json')
+check(baseline['published_base']==PARENT and baseline['new_source_credit']==0 and len(baseline['prior_batch40'])==877,'Exact pre-run baseline required')
+check(set(prior)=={e['file'] for e in baseline['prior_batch40']},'Prior batch40 file inventory differs')
+for e in baseline['prior_batch40']:check(digest(ROOT/e['file'])==e['sha256'],'Prior batch40 differs from pre-run baseline: '+e['file'])
+
+check(not git('diff','HEAD','--name-only','--','parity/runs/batch-40.json','parity/runs/batch-40-evidence'),'Prior batch40 modified')
+entries=[];total=0
+for p in sorted(selected):
+ q=ROOT/p
+ check(q.is_file() and not q.is_symlink(),'Unexpected missing/symlink evidence '+p)
+ check(not any(x in q.parts for x in ['node_modules','.parity-build','.git']),'Forbidden evidence path '+p)
+ with open(q,'rb') as stream:check(stream.read(4)!=b'\x7fELF','Executable artifact in evidence '+p)
+ size=q.stat().st_size;check(size<95*1024*1024,'Oversize evidence file '+p)
+ suffix=p[len('parity/runs/'):] if p.startswith('parity/runs/') else p
+ if suffix.endswith('.go'):suffix+='.txt'
+ check(not any(e['file']==BASE+'/'+suffix for e in entries),'Frozen destination collision: '+suffix)
+ entries.append({'file':BASE+'/'+suffix,'sha256':digest(q),'bytes':size,'copied_from':p});total+=size
+validation={'mode':'write' if WRITE else 'check-only','frozen_files':len(entries),'frozen_bytes':total,'strict_current_references':len(validated),'historical_subgraph_references':len(historical_inventory),'dependency_refs':len(dependencies),'excluded_rebuildable_refs':len(exclusions),'prior_batch40_files':len(prior),'source_fingerprint':FINGERPRINT,'terminal_fixture':fixture_terminal,'record_results_closeout':record_results_closeout}
+print(json.dumps(validation,indent=2))
+if not WRITE:raise SystemExit(0)
+free=shutil.disk_usage(ROOT).free;check(free-total>=5*1024**3,'Freeze would breach5GiB free-space floor')
+(ROOT/BASE).mkdir()
+for e in entries:
+ dest=ROOT/e['file'];dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(ROOT/e['copied_from'],dest);check(digest(dest)==e['sha256'],'Copied bytes differ')
+manifest={'format':'m42-frozen-evidence-v1','files':entries,'dependencies':list(dependencies.values()),'not_published_artifacts':list(exclusions.values()),'strict_current_reference_validation':validated,'historical_subgraph_inventory':historical_inventory,'validation':validation,'terminal_fixture':fixture_terminal,'record_results_closeout':record_results_closeout,'portability':'Absolute execution roots/compiler hashes retained; static audit supported, relocated replay requires fresh pinned preparation and run contexts.'}
+mp=ROOT/BASE/'manifest.json';mp.write_text(json.dumps(manifest,indent=2)+'\n')
+native_counts={mode:sum(1 for line in (ROOT/RUN/('native/'+filename+'.jsonl')).read_text().splitlines() if (lambda event:bool(event.get('Test')) and event.get('Action')=='pass')(json.loads(line))) for mode,filename in [('normal','go-test'),('race','go-race')]}
+check(native_counts['normal']==native_counts['race'],'Native node counts differ')
+batch=dict(summary);batch.update({'milestone':'M42','status':'verified_subset_project_incomplete','recorded_utc':full['finished_utc'],'based_on':PARENT,'new_exact_source_records':0,'new_original_assertions':0,'new_source_type_error_directives':0,'targeted_runtime_original_cases':0,'targeted_runtime_original_assertions':0,'native_test_nodes_per_mode':native_counts['normal'],'runtime_index_type_pending_cases':4,'indexing_service_type_pending_cases':3,'native_source_fingerprint':full['finished_native_inputs'],'full_verification':{'file':RUN+'/result.json','sha256':digest(ROOT/RUN/'result.json')},'frozen_evidence':entries,'evidence_manifest':{'file':rel(mp),'sha256':digest(mp)},'published':False,'source_indexing_service_scope':indexing['summary'],'source_indexing_service_limitations':indexing['limitations'],'source_indexing_actions_scope':actions['summary'],'source_indexing_actions_limitations':actions['limitations'],'source_indexing_profile_scope':profile['summary'],'source_indexing_profile_limitations':profile['limitations'],'source_independent_storage_scope':independent['scope'],'source_independent_storage_limitations':independent['limitations'],'postgres_fixture':full['postgres_fixture'],'terminal_fixture':fixture_terminal,'record_results_closeout':record_results_closeout,'source_atomic_multichain_scope':atomic['scope'],'source_atomic_multichain_limitations':atomic['limitations'],'scope_limits':['543/905 formal mappings;362 remain. Zero new original cases/assertions/types; all543 mapping objects/order byte-identical.', 'Bounded atomic setup across configured chains and one-chain historical group commit in owned multichain business storage; all metadata/private cursor and buffered writes settle in the same transaction.', 'Persistent service/context/database/client identities retain a single outer transaction binding; only actual terminal transaction outcome finalizes session caches.', 'Business writes, journal attribution and checkpoint metadata retain native SQL atomicity. Independent RPC cache work is not cancelled merely by business rollback.', 'Source PGlite same-instance callback-only transactions differ intentionally from native independent directories and SQL rollback; no rollback parity claim.', 'No full outer historical runner, readiness, views/trigger handoff, realtime or cutover completion. No cross-domain atomic sync rewind.', 'Complete aggregate executes old source DDL only on a fresh M42 PostgreSQL cluster whose canonical data_directory and initial inventory are independently verified. Old datadirs/schemas preserved.', 'Explicit loopback startup adaptation, not pristine source execution. Source harness bounded-prefix termination is recorded separately from production errors. Supplemental proof grants zero source credit.', 'Prior batch40 and failed/focused diagnostics preserved; rebuildable binaries validated but excluded from publication.']})
+(ROOT/BATCH).write_text(json.dumps(batch,indent=2)+'\n')
+for p,h in prior_hashes.items():check(digest(ROOT/p)==h,'Prior batch40 changed during freeze')
+check(json.loads(subprocess.check_output(['node','--input-type=module','-e',node],cwd=ROOT))==full['finished_native_inputs'],'Evidence freeze changed native source inventory')
+print('Created NEW batch41 evidence and manifest. Not staged, committed or pushed.')

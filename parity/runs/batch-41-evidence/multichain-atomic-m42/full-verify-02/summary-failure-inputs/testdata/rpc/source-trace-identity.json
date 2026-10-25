@@ -1,0 +1,2407 @@
+{
+  "state": "Actual pinned action/declarations and actual error classes, raw provider object input. Preserve in-place frames, shared identity, standardization mutation order and specific validation diagnostics. Native overlay/runtime and original test acceptance pending.",
+  "cases": [
+    {
+      "name": "root_defaults",
+      "input": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "request": {
+        "method": "debug_traceBlockByHash",
+        "params": [
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          {
+            "tracer": "callTracer"
+          }
+        ]
+      },
+      "result": [
+        {
+          "$id": 3,
+          "$object": [
+            [
+              "trace",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ],
+                  [
+                    "gas",
+                    "0x0"
+                  ],
+                  [
+                    "gasUsed",
+                    "0x0"
+                  ]
+                ]
+              }
+            ],
+            [
+              "transactionHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ]
+          ]
+        }
+      ],
+      "error": null,
+      "after": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ],
+                  [
+                    "gas",
+                    "0x0"
+                  ],
+                  [
+                    "gasUsed",
+                    "0x0"
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "frame_identities": [
+        {
+          "hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "frame_id": 2,
+          "root_or_descendant_input_frame": true
+        }
+      ]
+    },
+    {
+      "name": "nested_reverted_sibling_index",
+      "input": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "error",
+                            "revert"
+                          ],
+                          [
+                            "calls",
+                            [
+                              {
+                                "$id": 4,
+                                "$object": [
+                                  [
+                                    "type",
+                                    "CALL"
+                                  ],
+                                  [
+                                    "from",
+                                    "0x1111111111111111111111111111111111111111"
+                                  ],
+                                  [
+                                    "to",
+                                    "0x2222222222222222222222222222222222222222"
+                                  ],
+                                  [
+                                    "input",
+                                    "0x"
+                                  ]
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "$id": 5,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "request": {
+        "method": "debug_traceBlockByHash",
+        "params": [
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          {
+            "tracer": "callTracer"
+          }
+        ]
+      },
+      "result": [
+        {
+          "$id": 6,
+          "$object": [
+            [
+              "trace",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "error",
+                            "revert"
+                          ],
+                          [
+                            "calls",
+                            [
+                              {
+                                "$id": 4,
+                                "$object": [
+                                  [
+                                    "type",
+                                    "CALL"
+                                  ],
+                                  [
+                                    "from",
+                                    "0x1111111111111111111111111111111111111111"
+                                  ],
+                                  [
+                                    "to",
+                                    "0x2222222222222222222222222222222222222222"
+                                  ],
+                                  [
+                                    "input",
+                                    "0x"
+                                  ]
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "$id": 5,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "traceAddress",
+                            [
+                              1
+                            ]
+                          ],
+                          [
+                            "gas",
+                            "0x0"
+                          ],
+                          [
+                            "gasUsed",
+                            "0x0"
+                          ]
+                        ]
+                      }
+                    ]
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ],
+                  [
+                    "gas",
+                    "0x0"
+                  ],
+                  [
+                    "gasUsed",
+                    "0x0"
+                  ]
+                ]
+              }
+            ],
+            [
+              "transactionHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ]
+          ]
+        },
+        {
+          "$id": 7,
+          "$object": [
+            [
+              "trace",
+              {
+                "$ref": 5
+              }
+            ],
+            [
+              "transactionHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ]
+          ]
+        }
+      ],
+      "error": null,
+      "after": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "error",
+                            "revert"
+                          ],
+                          [
+                            "calls",
+                            [
+                              {
+                                "$id": 4,
+                                "$object": [
+                                  [
+                                    "type",
+                                    "CALL"
+                                  ],
+                                  [
+                                    "from",
+                                    "0x1111111111111111111111111111111111111111"
+                                  ],
+                                  [
+                                    "to",
+                                    "0x2222222222222222222222222222222222222222"
+                                  ],
+                                  [
+                                    "input",
+                                    "0x"
+                                  ]
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "$id": 5,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "traceAddress",
+                            [
+                              1
+                            ]
+                          ],
+                          [
+                            "gas",
+                            "0x0"
+                          ],
+                          [
+                            "gasUsed",
+                            "0x0"
+                          ]
+                        ]
+                      }
+                    ]
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ],
+                  [
+                    "gas",
+                    "0x0"
+                  ],
+                  [
+                    "gasUsed",
+                    "0x0"
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "frame_identities": [
+        {
+          "hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "frame_id": 2,
+          "root_or_descendant_input_frame": true
+        },
+        {
+          "hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "frame_id": 5,
+          "root_or_descendant_input_frame": true
+        }
+      ]
+    },
+    {
+      "name": "explicit_undefined_error",
+      "input": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "error",
+                    {
+                      "$undefined": true
+                    }
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "error",
+                            {
+                              "$undefined": true
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "request": {
+        "method": "debug_traceBlockByHash",
+        "params": [
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          {
+            "tracer": "callTracer"
+          }
+        ]
+      },
+      "result": [
+        {
+          "$id": 4,
+          "$object": [
+            [
+              "trace",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "error",
+                    {
+                      "$undefined": true
+                    }
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "error",
+                            {
+                              "$undefined": true
+                            }
+                          ],
+                          [
+                            "traceAddress",
+                            [
+                              0
+                            ]
+                          ],
+                          [
+                            "gas",
+                            "0x0"
+                          ],
+                          [
+                            "gasUsed",
+                            "0x0"
+                          ]
+                        ]
+                      }
+                    ]
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ],
+                  [
+                    "gas",
+                    "0x0"
+                  ],
+                  [
+                    "gasUsed",
+                    "0x0"
+                  ]
+                ]
+              }
+            ],
+            [
+              "transactionHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ]
+          ]
+        },
+        {
+          "$id": 5,
+          "$object": [
+            [
+              "trace",
+              {
+                "$ref": 3
+              }
+            ],
+            [
+              "transactionHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ]
+          ]
+        }
+      ],
+      "error": null,
+      "after": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "error",
+                    {
+                      "$undefined": true
+                    }
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "error",
+                            {
+                              "$undefined": true
+                            }
+                          ],
+                          [
+                            "traceAddress",
+                            [
+                              0
+                            ]
+                          ],
+                          [
+                            "gas",
+                            "0x0"
+                          ],
+                          [
+                            "gasUsed",
+                            "0x0"
+                          ]
+                        ]
+                      }
+                    ]
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ],
+                  [
+                    "gas",
+                    "0x0"
+                  ],
+                  [
+                    "gasUsed",
+                    "0x0"
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "frame_identities": [
+        {
+          "hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "frame_id": 2,
+          "root_or_descendant_input_frame": true
+        },
+        {
+          "hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "frame_id": 3,
+          "root_or_descendant_input_frame": true
+        }
+      ]
+    },
+    {
+      "name": "explicit_undefined_defaults",
+      "input": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "gas",
+                    {
+                      "$undefined": true
+                    }
+                  ],
+                  [
+                    "gasUsed",
+                    {
+                      "$undefined": true
+                    }
+                  ],
+                  [
+                    "calls",
+                    {
+                      "$undefined": true
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "request": {
+        "method": "debug_traceBlockByHash",
+        "params": [
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          {
+            "tracer": "callTracer"
+          }
+        ]
+      },
+      "result": [
+        {
+          "$id": 3,
+          "$object": [
+            [
+              "trace",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "gas",
+                    "0x0"
+                  ],
+                  [
+                    "gasUsed",
+                    "0x0"
+                  ],
+                  [
+                    "calls",
+                    {
+                      "$undefined": true
+                    }
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ]
+                ]
+              }
+            ],
+            [
+              "transactionHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ]
+          ]
+        }
+      ],
+      "error": null,
+      "after": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "gas",
+                    "0x0"
+                  ],
+                  [
+                    "gasUsed",
+                    "0x0"
+                  ],
+                  [
+                    "calls",
+                    {
+                      "$undefined": true
+                    }
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "frame_identities": [
+        {
+          "hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "frame_id": 2,
+          "root_or_descendant_input_frame": true
+        }
+      ]
+    },
+    {
+      "name": "missing_hash_mutates_before_rejection",
+      "input": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "request": {
+        "method": "debug_traceBlockByHash",
+        "params": [
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          {
+            "tracer": "callTracer"
+          }
+        ]
+      },
+      "result": null,
+      "error": {
+        "name": "RpcProviderError",
+        "message": "Invalid RPC response: 'trace.transactionHash' is a required property",
+        "meta": [
+          "Please report this error to the RPC operator.",
+          "Request: {\n  \"method\": \"debug_traceBlockByHash\",\n  \"params\": [\n    \"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\n    {\n      \"tracer\": \"callTracer\"\n    }\n  ]\n}"
+        ]
+      },
+      "after": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "traceAddress",
+                            [
+                              0
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "frame_identities": null
+    },
+    {
+      "name": "missing_type_completes_traversal",
+      "input": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$id": 4,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 5,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "request": {
+        "method": "debug_traceBlockByHash",
+        "params": [
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          {
+            "tracer": "callTracer"
+          }
+        ]
+      },
+      "result": null,
+      "error": {
+        "name": "RpcProviderError",
+        "message": "Invalid RPC response: 'trace.type' is a required property",
+        "meta": [
+          "Please report this error to the RPC operator.",
+          "Request: {\n  \"method\": \"debug_traceBlockByHash\",\n  \"params\": [\n    \"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\n    {\n      \"tracer\": \"callTracer\"\n    }\n  ]\n}"
+        ]
+      },
+      "after": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "traceAddress",
+                            [
+                              0
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$id": 4,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 5,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "frame_identities": null
+    },
+    {
+      "name": "missing_from_child_after_root_defaults",
+      "input": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ]
+                        ]
+                      },
+                      {
+                        "$id": 4,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "request": {
+        "method": "debug_traceBlockByHash",
+        "params": [
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          {
+            "tracer": "callTracer"
+          }
+        ]
+      },
+      "result": null,
+      "error": {
+        "name": "RpcProviderError",
+        "message": "Invalid RPC response: 'trace.from' is a required property",
+        "meta": [
+          "Please report this error to the RPC operator.",
+          "Request: {\n  \"method\": \"debug_traceBlockByHash\",\n  \"params\": [\n    \"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\n    {\n      \"tracer\": \"callTracer\"\n    }\n  ]\n}"
+        ]
+      },
+      "after": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "traceAddress",
+                            [
+                              0
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "$id": 4,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "traceAddress",
+                            [
+                              1
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ],
+                  [
+                    "gas",
+                    "0x0"
+                  ],
+                  [
+                    "gasUsed",
+                    "0x0"
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "frame_identities": null
+    },
+    {
+      "name": "missing_input",
+      "input": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "request": {
+        "method": "debug_traceBlockByHash",
+        "params": [
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          {
+            "tracer": "callTracer"
+          }
+        ]
+      },
+      "result": null,
+      "error": {
+        "name": "RpcProviderError",
+        "message": "Invalid RPC response: 'trace.input' is a required property",
+        "meta": [
+          "Please report this error to the RPC operator.",
+          "Request: {\n  \"method\": \"debug_traceBlockByHash\",\n  \"params\": [\n    \"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\n    {\n      \"tracer\": \"callTracer\"\n    }\n  ]\n}"
+        ]
+      },
+      "after": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "frame_identities": null
+    },
+    {
+      "name": "shared_frame_across_roots",
+      "input": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$id": 4,
+          "$object": [
+            [
+              "txHash",
+              "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            ],
+            [
+              "result",
+              {
+                "$ref": 2
+              }
+            ]
+          ]
+        }
+      ],
+      "request": {
+        "method": "debug_traceBlockByHash",
+        "params": [
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          {
+            "tracer": "callTracer"
+          }
+        ]
+      },
+      "result": [
+        {
+          "$id": 5,
+          "$object": [
+            [
+              "trace",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "traceAddress",
+                            [
+                              0
+                            ]
+                          ],
+                          [
+                            "gas",
+                            "0x0"
+                          ],
+                          [
+                            "gasUsed",
+                            "0x0"
+                          ]
+                        ]
+                      }
+                    ]
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ],
+                  [
+                    "gas",
+                    "0x0"
+                  ],
+                  [
+                    "gasUsed",
+                    "0x0"
+                  ]
+                ]
+              }
+            ],
+            [
+              "transactionHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ]
+          ]
+        },
+        {
+          "$id": 6,
+          "$object": [
+            [
+              "trace",
+              {
+                "$ref": 3
+              }
+            ],
+            [
+              "transactionHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ]
+          ]
+        },
+        {
+          "$id": 7,
+          "$object": [
+            [
+              "trace",
+              {
+                "$ref": 2
+              }
+            ],
+            [
+              "transactionHash",
+              "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            ]
+          ]
+        },
+        {
+          "$id": 8,
+          "$object": [
+            [
+              "trace",
+              {
+                "$ref": 3
+              }
+            ],
+            [
+              "transactionHash",
+              "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            ]
+          ]
+        }
+      ],
+      "error": null,
+      "after": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ],
+                          [
+                            "traceAddress",
+                            [
+                              0
+                            ]
+                          ],
+                          [
+                            "gas",
+                            "0x0"
+                          ],
+                          [
+                            "gasUsed",
+                            "0x0"
+                          ]
+                        ]
+                      }
+                    ]
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ],
+                  [
+                    "gas",
+                    "0x0"
+                  ],
+                  [
+                    "gasUsed",
+                    "0x0"
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$id": 4,
+          "$object": [
+            [
+              "txHash",
+              "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            ],
+            [
+              "result",
+              {
+                "$ref": 2
+              }
+            ]
+          ]
+        }
+      ],
+      "frame_identities": [
+        {
+          "hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "frame_id": 2,
+          "root_or_descendant_input_frame": true
+        },
+        {
+          "hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "frame_id": 3,
+          "root_or_descendant_input_frame": true
+        },
+        {
+          "hash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "frame_id": 2,
+          "root_or_descendant_input_frame": true
+        },
+        {
+          "hash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "frame_id": 3,
+          "root_or_descendant_input_frame": true
+        }
+      ]
+    },
+    {
+      "name": "empty_response",
+      "input": [],
+      "request": {
+        "method": "debug_traceBlockByHash",
+        "params": [
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          {
+            "tracer": "callTracer"
+          }
+        ]
+      },
+      "result": [],
+      "error": null,
+      "after": [],
+      "frame_identities": []
+    },
+    {
+      "name": "explicit_null_error_excludes_subtree",
+      "input": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "error",
+                    null
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "request": {
+        "method": "debug_traceBlockByHash",
+        "params": [
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          {
+            "tracer": "callTracer"
+          }
+        ]
+      },
+      "result": [],
+      "error": null,
+      "after": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "error",
+                    null
+                  ],
+                  [
+                    "calls",
+                    [
+                      {
+                        "$id": 3,
+                        "$object": [
+                          [
+                            "type",
+                            "CALL"
+                          ],
+                          [
+                            "from",
+                            "0x1111111111111111111111111111111111111111"
+                          ],
+                          [
+                            "to",
+                            "0x2222222222222222222222222222222222222222"
+                          ],
+                          [
+                            "input",
+                            "0x"
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "frame_identities": []
+    },
+    {
+      "name": "null_gas_retained",
+      "input": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "gas",
+                    null
+                  ],
+                  [
+                    "gasUsed",
+                    null
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "request": {
+        "method": "debug_traceBlockByHash",
+        "params": [
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          {
+            "tracer": "callTracer"
+          }
+        ]
+      },
+      "result": [
+        {
+          "$id": 3,
+          "$object": [
+            [
+              "trace",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "gas",
+                    null
+                  ],
+                  [
+                    "gasUsed",
+                    null
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ]
+                ]
+              }
+            ],
+            [
+              "transactionHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ]
+          ]
+        }
+      ],
+      "error": null,
+      "after": [
+        {
+          "$id": 1,
+          "$object": [
+            [
+              "txHash",
+              "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            [
+              "result",
+              {
+                "$id": 2,
+                "$object": [
+                  [
+                    "type",
+                    "CALL"
+                  ],
+                  [
+                    "from",
+                    "0x1111111111111111111111111111111111111111"
+                  ],
+                  [
+                    "to",
+                    "0x2222222222222222222222222222222222222222"
+                  ],
+                  [
+                    "input",
+                    "0x"
+                  ],
+                  [
+                    "gas",
+                    null
+                  ],
+                  [
+                    "gasUsed",
+                    null
+                  ],
+                  [
+                    "traceAddress",
+                    []
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "frame_identities": [
+        {
+          "hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "frame_id": 2,
+          "root_or_descendant_input_frame": true
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "file": "tools/source-trace-fixtures.mjs",
+      "sha256": "a4cf9e79fd0ac2fc56b0a5bbcdaf84370dd837c50b1e6f88214261acf426f67b"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/rpc/actions.ts",
+      "sha256": "2d1093e132ac37651988322bb2c5407467c61e72daf19acb250d2ecf7533b7db"
+    },
+    {
+      "file": "../ponder-upstream/packages/core/src/internal/errors.ts",
+      "sha256": "2787d27ee1b5318aa48cddf41016f2780da3c28ba5fc867410746fb55a205276"
+    },
+    {
+      "file": "../ponder-upstream/pnpm-lock.yaml",
+      "sha256": "797129174b3edb211a89aa5ff6029c8c7cf79d49f559ed8a168dc2eee9d6a38d"
+    }
+  ],
+  "source_credit": 0
+}

@@ -1,0 +1,1086 @@
+{
+  "complete": true,
+  "success": true,
+  "scope": "complete_module_source_indexing_profile",
+  "run_dir": "parity/runs/multichain-atomic-m42/full-verify-03",
+  "environment_adapted": true,
+  "pristine_file": false,
+  "summary": {
+    "source_cases": 24,
+    "source_assertions": 63,
+    "targeted_cases": 12,
+    "targeted_assertions": 30,
+    "source_error_directives": 0,
+    "complete_mapping_candidates": 12,
+    "supplementary_source_credit": 0,
+    "profile_originals": 10,
+    "prefetch_originals": 2,
+    "unmapped_client_originals": 12
+  },
+  "supplemental_tests": [
+    "TestSourceIndexingProfileEdges",
+    "TestProfilePrimitiveEquality",
+    "TestSourceIndexingPrefetchProbes",
+    "TestClientProfileServiceContext",
+    "TestClientPrefetchCloseOwnsFailedSibling",
+    "TestClientPrefetchReaderSingleSettlement"
+  ],
+  "store_tests": [
+    "TestSourceRPCAsyncReadAdmission",
+    "TestSourceRPCAsyncReadValidation",
+    "TestSourceRPCAsyncReadCallerCancellation",
+    "TestSourceRPCAsyncReadBackends"
+  ],
+  "store_scenarios": [
+    "prepared_read_hit_and_miss",
+    "close_timeout_retains_read_ownership",
+    "bound_adapters_no_async_reader",
+    "late_sql_read_error"
+  ],
+  "limitations": {
+    "probe_boundary": "Supplemental source and native controlled RPC/database doubles prove causal boundary semantics; original prefetch cases separately use real source/native PostgreSQL/PGlite caches. Neither claims network scheduling parity.",
+    "client_scope": "Only existing action facade plus profile/prefetch. Twelve other client.test.ts originals remain unmapped. Not full cachedViemClient/raw transport or outer runner/readiness/cutover.",
+    "backend_scope": "Strict standalone prepared write and optional AsyncCacheReader prepared SELECT admission only; no new database topology. Transaction-bound adapters do not expose detached asynchronous readers. Legacy synchronous fallback, database read visibility/commit order, source batch insertion grouping, PGlite shared-lock and IO cancellation limitations remain. Full Viem custom-error decoding/wrapping is not claimed.",
+    "cross_chain": "Source canonical dedupe happens before chain grouping and excludes chain ID; preserved, not improved. Causal controlled lookup/admission probes do not establish complete database read-visibility or commit-order equivalence."
+  },
+  "full_verification": {
+    "file": "parity/runs/multichain-atomic-m42/full-verify-03/result.json",
+    "sha256": "8be797c07add38323908d090f2e9cb5357cce4a602ce511d45b2c0986e7b968f"
+  },
+  "prepared_native_inputs": {
+    "file": "parity/runs/multichain-atomic-m42/full-verify-03/prepared-native-inputs.json",
+    "sha256": "c29fcd4ec37bd1b1e83bfc98ae7a45824d8783a46839a30529213b45181af0fa"
+  },
+  "context_archive": {
+    "file": "parity/runs/multichain-atomic-m42/full-verify-03/context-archive.json",
+    "sha256": "ac5b3eddca38c24e06e59d91e3c23d584d7181d444f6c435211ccfbee6c42ac5"
+  },
+  "previous_actions_proof": {
+    "file": "parity/runs/source-indexing-actions-verification.json",
+    "sha256": "1198c6b4ddc284d5ec9a816198ce6a0078995dfe62c1733e7e8c45eeb1719107"
+  },
+  "source_only": {
+    "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-verification.json",
+    "sha256": "af4b986835bfbcd80dc293a51d6232d7a16f03f84536aae4292049b51f4714b2"
+  },
+  "executions": [
+    {
+      "mode": "normal",
+      "backend": "postgres",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "ff30deb8b9aca842519b",
+          "go_test": "TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4ace7b36bca44245e4b7",
+          "go_test": "TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "2f670307cc3e54bf3901",
+          "go_test": "TestSourceIndexingProfile/postgres/2f670307cc3e54bf3901",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "465e8823325559c8cfa1",
+          "go_test": "TestSourceIndexingProfile/postgres/465e8823325559c8cfa1",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "e7d2206043a345533ec0",
+          "go_test": "TestSourceIndexingProfile/postgres/e7d2206043a345533ec0",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fcafee958f55fe65dc77",
+          "go_test": "TestSourceIndexingProfile/postgres/fcafee958f55fe65dc77",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fb137834371e07d16724",
+          "go_test": "TestSourceIndexingProfile/postgres/fb137834371e07d16724",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "732ac50bf3a96196de3e",
+          "go_test": "TestSourceIndexingProfile/postgres/732ac50bf3a96196de3e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4c57d8f36ec9b90f69ac",
+          "go_test": "TestSourceIndexingProfile/postgres/4c57d8f36ec9b90f69ac",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "d8952ac4024fd02802a7",
+          "go_test": "TestSourceIndexingProfile/postgres/d8952ac4024fd02802a7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "0173bc5e83b0843a8d4e",
+          "go_test": "TestSourceIndexingProfile/postgres/0173bc5e83b0843a8d4e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "ddf6318af43ddc28cd80",
+          "go_test": "TestSourceIndexingProfile/postgres/ddf6318af43ddc28cd80",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        }
+      ],
+      "artifact": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/indexing-profile-normal.json",
+        "sha256": "86cac87b9f0b18cc3eb1fcd0881ebf655d3198210d6afcc3a12ef4b5af493ed6"
+      },
+      "probe_artifact": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/indexing-profile-probes-normal.json",
+        "sha256": "1aca6314dffe4c0aabfa564bd5fa7fdc11211d4e75cc5981e5e385e91ff92444"
+      },
+      "log": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-test.jsonl",
+        "sha256": "096c7621366ffbca599e19c332896f37953224be628de70d26ca056910dffee7"
+      },
+      "native": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-test.jsonl",
+        "sha256": "096c7621366ffbca599e19c332896f37953224be628de70d26ca056910dffee7"
+      },
+      "capture": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-postgres/calls.json.gz",
+        "sha256": "c1fa156eabdd6d93c397e573ddfff588fd0cebedeb537d5a13e669ac4ed442a9"
+      },
+      "original": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-postgres/original.json",
+        "sha256": "f42d1a4add47c0cb11abce98274784e6e6c7647d76a382c17465cabed0d0c7d0"
+      },
+      "result": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-postgres/result.json",
+        "sha256": "18c975f53839aa87381b6b27e229fd6e48f682382c5f994632c6fade4c6e4b63"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-indexing-profile-original.mjs",
+          "sha256": "188c2f292dd4f6fd51cd779e093f7448792ed149a75d70303340b073bdf98e25"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.setup.ts",
+          "sha256": "950d5e47d83d4859a0d45520def70d70119bb835c232b0ec531031c6a02d1eca"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.config.mjs",
+          "sha256": "e7802b7274568a67abb79fa6917e85b826257758c8ab32504d4d511dbb0b8fae"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-postgres/context-archive.json",
+        "sha256": "1e6a9cdcaba4c005b0b81a293e03d78f29e39946bb1ec372bf26a8fed33c5f6f"
+      },
+      "probe": {
+        "capture": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-postgres/calls.json",
+          "sha256": "ad541f51a9a936b37f107eb671aa29058c41fe80ab136dd5061cf8662c362c36"
+        },
+        "result": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-postgres/result.json",
+          "sha256": "02742a23ed641db7a27f1fc518a6868be925433a7a0681254fd8662805a3c9c1"
+        },
+        "original": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-postgres/original.json",
+          "sha256": "348a55ea8acee157d966f5987a18fe15c6cad3e4b96af82c86568e7312256037"
+        },
+        "context_archive": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-postgres/context-archive.json",
+          "sha256": "30ecb25d0769925533e1ab26b75288f0ec73cda202f7bf400602fd508c523935"
+        },
+        "source_context": [
+          {
+            "file": "tools/source-indexing-profile-probes.mjs",
+            "sha256": "8564714b562ff669dce7ceb498c9695433d8fe13581ad9f213f55c5c874856e4"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.test.ts",
+            "sha256": "249dd7e1ad20061e412c459a8c7b0608a2b6d99a8f808b43b6678a77d5ba9e58"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.config.mjs",
+            "sha256": "f8e35cf7f456b16430b53e16078126062043d300784fad2a811bf05cadd00349"
+          },
+          {
+            "file": "tools/source-realtime-rpc-observer.mjs",
+            "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+          },
+          {
+            "file": "tools/loopback-adapter.mjs",
+            "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+          },
+          {
+            "file": "tools/loopback-context.mjs",
+            "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "normal",
+      "backend": "pglite",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "ff30deb8b9aca842519b",
+          "go_test": "TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4ace7b36bca44245e4b7",
+          "go_test": "TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "2f670307cc3e54bf3901",
+          "go_test": "TestSourceIndexingProfile/pglite/2f670307cc3e54bf3901",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "465e8823325559c8cfa1",
+          "go_test": "TestSourceIndexingProfile/pglite/465e8823325559c8cfa1",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "e7d2206043a345533ec0",
+          "go_test": "TestSourceIndexingProfile/pglite/e7d2206043a345533ec0",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fcafee958f55fe65dc77",
+          "go_test": "TestSourceIndexingProfile/pglite/fcafee958f55fe65dc77",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fb137834371e07d16724",
+          "go_test": "TestSourceIndexingProfile/pglite/fb137834371e07d16724",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "732ac50bf3a96196de3e",
+          "go_test": "TestSourceIndexingProfile/pglite/732ac50bf3a96196de3e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4c57d8f36ec9b90f69ac",
+          "go_test": "TestSourceIndexingProfile/pglite/4c57d8f36ec9b90f69ac",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "d8952ac4024fd02802a7",
+          "go_test": "TestSourceIndexingProfile/pglite/d8952ac4024fd02802a7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "0173bc5e83b0843a8d4e",
+          "go_test": "TestSourceIndexingProfile/pglite/0173bc5e83b0843a8d4e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "ddf6318af43ddc28cd80",
+          "go_test": "TestSourceIndexingProfile/pglite/ddf6318af43ddc28cd80",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        }
+      ],
+      "artifact": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/indexing-profile-normal.json",
+        "sha256": "86cac87b9f0b18cc3eb1fcd0881ebf655d3198210d6afcc3a12ef4b5af493ed6"
+      },
+      "probe_artifact": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/indexing-profile-probes-normal.json",
+        "sha256": "1aca6314dffe4c0aabfa564bd5fa7fdc11211d4e75cc5981e5e385e91ff92444"
+      },
+      "log": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-test.jsonl",
+        "sha256": "096c7621366ffbca599e19c332896f37953224be628de70d26ca056910dffee7"
+      },
+      "native": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-test.jsonl",
+        "sha256": "096c7621366ffbca599e19c332896f37953224be628de70d26ca056910dffee7"
+      },
+      "capture": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-pglite/calls.json.gz",
+        "sha256": "6683a9844d31c4506d99a378aba7cafb7084c0bb7f14608783ef23474509d139"
+      },
+      "original": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-pglite/original.json",
+        "sha256": "9713925db77d46f8def9152a61758dc2cd676ae31bbac5582ce70aa457f168b2"
+      },
+      "result": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-pglite/result.json",
+        "sha256": "7b7ecdd57b146fb66572518c065affa3648f1f9e21acb534136afeeb4da4e6a7"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-indexing-profile-original.mjs",
+          "sha256": "188c2f292dd4f6fd51cd779e093f7448792ed149a75d70303340b073bdf98e25"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.setup.ts",
+          "sha256": "950d5e47d83d4859a0d45520def70d70119bb835c232b0ec531031c6a02d1eca"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.config.mjs",
+          "sha256": "e7802b7274568a67abb79fa6917e85b826257758c8ab32504d4d511dbb0b8fae"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-pglite/context-archive.json",
+        "sha256": "4023ff9610cb8df320738c6ae9c52ead5dd2bf336a4e999f2593d4e3678c74f7"
+      },
+      "probe": {
+        "capture": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-pglite/calls.json",
+          "sha256": "ad541f51a9a936b37f107eb671aa29058c41fe80ab136dd5061cf8662c362c36"
+        },
+        "result": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-pglite/result.json",
+          "sha256": "7a08b2a8f12d7344c139a732052e7d6646dce2bd10e29f7b791aead6c58abd72"
+        },
+        "original": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-pglite/original.json",
+          "sha256": "e300156b62d7835749dfd8ee59a9796a25830d1a9e6705629436437f4fb67b38"
+        },
+        "context_archive": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-pglite/context-archive.json",
+          "sha256": "6706a19991c350591c2dd520bb004df5d1039b8b1c163cdac32631af9074c489"
+        },
+        "source_context": [
+          {
+            "file": "tools/source-indexing-profile-probes.mjs",
+            "sha256": "8564714b562ff669dce7ceb498c9695433d8fe13581ad9f213f55c5c874856e4"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.test.ts",
+            "sha256": "249dd7e1ad20061e412c459a8c7b0608a2b6d99a8f808b43b6678a77d5ba9e58"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.config.mjs",
+            "sha256": "f8e35cf7f456b16430b53e16078126062043d300784fad2a811bf05cadd00349"
+          },
+          {
+            "file": "tools/source-realtime-rpc-observer.mjs",
+            "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+          },
+          {
+            "file": "tools/loopback-adapter.mjs",
+            "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+          },
+          {
+            "file": "tools/loopback-context.mjs",
+            "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "race",
+      "backend": "postgres",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "ff30deb8b9aca842519b",
+          "go_test": "TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4ace7b36bca44245e4b7",
+          "go_test": "TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "2f670307cc3e54bf3901",
+          "go_test": "TestSourceIndexingProfile/postgres/2f670307cc3e54bf3901",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "465e8823325559c8cfa1",
+          "go_test": "TestSourceIndexingProfile/postgres/465e8823325559c8cfa1",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "e7d2206043a345533ec0",
+          "go_test": "TestSourceIndexingProfile/postgres/e7d2206043a345533ec0",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fcafee958f55fe65dc77",
+          "go_test": "TestSourceIndexingProfile/postgres/fcafee958f55fe65dc77",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fb137834371e07d16724",
+          "go_test": "TestSourceIndexingProfile/postgres/fb137834371e07d16724",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "732ac50bf3a96196de3e",
+          "go_test": "TestSourceIndexingProfile/postgres/732ac50bf3a96196de3e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4c57d8f36ec9b90f69ac",
+          "go_test": "TestSourceIndexingProfile/postgres/4c57d8f36ec9b90f69ac",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "d8952ac4024fd02802a7",
+          "go_test": "TestSourceIndexingProfile/postgres/d8952ac4024fd02802a7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "0173bc5e83b0843a8d4e",
+          "go_test": "TestSourceIndexingProfile/postgres/0173bc5e83b0843a8d4e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "ddf6318af43ddc28cd80",
+          "go_test": "TestSourceIndexingProfile/postgres/ddf6318af43ddc28cd80",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        }
+      ],
+      "artifact": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/indexing-profile-race.json",
+        "sha256": "86cac87b9f0b18cc3eb1fcd0881ebf655d3198210d6afcc3a12ef4b5af493ed6"
+      },
+      "probe_artifact": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/indexing-profile-probes-race.json",
+        "sha256": "2def4598f8901e4c2f9f7ef3cb7e098817a833c92f7bd1c5c5be1cf117e441a4"
+      },
+      "log": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-race.jsonl",
+        "sha256": "1002b90b9ef31b5878333a1069c1485d1349b373efcf3e7ed11270a8afa04cb1"
+      },
+      "native": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-race.jsonl",
+        "sha256": "1002b90b9ef31b5878333a1069c1485d1349b373efcf3e7ed11270a8afa04cb1"
+      },
+      "capture": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-postgres/calls.json.gz",
+        "sha256": "c1fa156eabdd6d93c397e573ddfff588fd0cebedeb537d5a13e669ac4ed442a9"
+      },
+      "original": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-postgres/original.json",
+        "sha256": "f42d1a4add47c0cb11abce98274784e6e6c7647d76a382c17465cabed0d0c7d0"
+      },
+      "result": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-postgres/result.json",
+        "sha256": "18c975f53839aa87381b6b27e229fd6e48f682382c5f994632c6fade4c6e4b63"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-indexing-profile-original.mjs",
+          "sha256": "188c2f292dd4f6fd51cd779e093f7448792ed149a75d70303340b073bdf98e25"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.setup.ts",
+          "sha256": "950d5e47d83d4859a0d45520def70d70119bb835c232b0ec531031c6a02d1eca"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.config.mjs",
+          "sha256": "e7802b7274568a67abb79fa6917e85b826257758c8ab32504d4d511dbb0b8fae"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-postgres/context-archive.json",
+        "sha256": "1e6a9cdcaba4c005b0b81a293e03d78f29e39946bb1ec372bf26a8fed33c5f6f"
+      },
+      "probe": {
+        "capture": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-postgres/calls.json",
+          "sha256": "ad541f51a9a936b37f107eb671aa29058c41fe80ab136dd5061cf8662c362c36"
+        },
+        "result": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-postgres/result.json",
+          "sha256": "02742a23ed641db7a27f1fc518a6868be925433a7a0681254fd8662805a3c9c1"
+        },
+        "original": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-postgres/original.json",
+          "sha256": "348a55ea8acee157d966f5987a18fe15c6cad3e4b96af82c86568e7312256037"
+        },
+        "context_archive": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-postgres/context-archive.json",
+          "sha256": "30ecb25d0769925533e1ab26b75288f0ec73cda202f7bf400602fd508c523935"
+        },
+        "source_context": [
+          {
+            "file": "tools/source-indexing-profile-probes.mjs",
+            "sha256": "8564714b562ff669dce7ceb498c9695433d8fe13581ad9f213f55c5c874856e4"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.test.ts",
+            "sha256": "249dd7e1ad20061e412c459a8c7b0608a2b6d99a8f808b43b6678a77d5ba9e58"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.config.mjs",
+            "sha256": "f8e35cf7f456b16430b53e16078126062043d300784fad2a811bf05cadd00349"
+          },
+          {
+            "file": "tools/source-realtime-rpc-observer.mjs",
+            "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+          },
+          {
+            "file": "tools/loopback-adapter.mjs",
+            "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+          },
+          {
+            "file": "tools/loopback-context.mjs",
+            "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "race",
+      "backend": "pglite",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "ff30deb8b9aca842519b",
+          "go_test": "TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4ace7b36bca44245e4b7",
+          "go_test": "TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "2f670307cc3e54bf3901",
+          "go_test": "TestSourceIndexingProfile/pglite/2f670307cc3e54bf3901",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "465e8823325559c8cfa1",
+          "go_test": "TestSourceIndexingProfile/pglite/465e8823325559c8cfa1",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "e7d2206043a345533ec0",
+          "go_test": "TestSourceIndexingProfile/pglite/e7d2206043a345533ec0",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fcafee958f55fe65dc77",
+          "go_test": "TestSourceIndexingProfile/pglite/fcafee958f55fe65dc77",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fb137834371e07d16724",
+          "go_test": "TestSourceIndexingProfile/pglite/fb137834371e07d16724",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "732ac50bf3a96196de3e",
+          "go_test": "TestSourceIndexingProfile/pglite/732ac50bf3a96196de3e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4c57d8f36ec9b90f69ac",
+          "go_test": "TestSourceIndexingProfile/pglite/4c57d8f36ec9b90f69ac",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "d8952ac4024fd02802a7",
+          "go_test": "TestSourceIndexingProfile/pglite/d8952ac4024fd02802a7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "0173bc5e83b0843a8d4e",
+          "go_test": "TestSourceIndexingProfile/pglite/0173bc5e83b0843a8d4e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "ddf6318af43ddc28cd80",
+          "go_test": "TestSourceIndexingProfile/pglite/ddf6318af43ddc28cd80",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        }
+      ],
+      "artifact": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/indexing-profile-race.json",
+        "sha256": "86cac87b9f0b18cc3eb1fcd0881ebf655d3198210d6afcc3a12ef4b5af493ed6"
+      },
+      "probe_artifact": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/indexing-profile-probes-race.json",
+        "sha256": "2def4598f8901e4c2f9f7ef3cb7e098817a833c92f7bd1c5c5be1cf117e441a4"
+      },
+      "log": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-race.jsonl",
+        "sha256": "1002b90b9ef31b5878333a1069c1485d1349b373efcf3e7ed11270a8afa04cb1"
+      },
+      "native": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-race.jsonl",
+        "sha256": "1002b90b9ef31b5878333a1069c1485d1349b373efcf3e7ed11270a8afa04cb1"
+      },
+      "capture": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-pglite/calls.json.gz",
+        "sha256": "6683a9844d31c4506d99a378aba7cafb7084c0bb7f14608783ef23474509d139"
+      },
+      "original": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-pglite/original.json",
+        "sha256": "9713925db77d46f8def9152a61758dc2cd676ae31bbac5582ce70aa457f168b2"
+      },
+      "result": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-pglite/result.json",
+        "sha256": "7b7ecdd57b146fb66572518c065affa3648f1f9e21acb534136afeeb4da4e6a7"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-indexing-profile-original.mjs",
+          "sha256": "188c2f292dd4f6fd51cd779e093f7448792ed149a75d70303340b073bdf98e25"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.setup.ts",
+          "sha256": "950d5e47d83d4859a0d45520def70d70119bb835c232b0ec531031c6a02d1eca"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.config.mjs",
+          "sha256": "e7802b7274568a67abb79fa6917e85b826257758c8ab32504d4d511dbb0b8fae"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-source-pglite/context-archive.json",
+        "sha256": "4023ff9610cb8df320738c6ae9c52ead5dd2bf336a4e999f2593d4e3678c74f7"
+      },
+      "probe": {
+        "capture": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-pglite/calls.json",
+          "sha256": "ad541f51a9a936b37f107eb671aa29058c41fe80ab136dd5061cf8662c362c36"
+        },
+        "result": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-pglite/result.json",
+          "sha256": "7a08b2a8f12d7344c139a732052e7d6646dce2bd10e29f7b791aead6c58abd72"
+        },
+        "original": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-pglite/original.json",
+          "sha256": "e300156b62d7835749dfd8ee59a9796a25830d1a9e6705629436437f4fb67b38"
+        },
+        "context_archive": {
+          "file": "parity/runs/multichain-atomic-m42/full-verify-03/profile-probes-pglite/context-archive.json",
+          "sha256": "6706a19991c350591c2dd520bb004df5d1039b8b1c163cdac32631af9074c489"
+        },
+        "source_context": [
+          {
+            "file": "tools/source-indexing-profile-probes.mjs",
+            "sha256": "8564714b562ff669dce7ceb498c9695433d8fe13581ad9f213f55c5c874856e4"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.test.ts",
+            "sha256": "249dd7e1ad20061e412c459a8c7b0608a2b6d99a8f808b43b6678a77d5ba9e58"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.config.mjs",
+            "sha256": "f8e35cf7f456b16430b53e16078126062043d300784fad2a811bf05cadd00349"
+          },
+          {
+            "file": "tools/source-realtime-rpc-observer.mjs",
+            "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+          },
+          {
+            "file": "tools/loopback-adapter.mjs",
+            "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+          },
+          {
+            "file": "tools/loopback-context.mjs",
+            "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+          }
+        ]
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "tools/indexing-profile-acceptance.mjs",
+      "sha256": "55fc63856fd953b72bb6863adb2e91d8d0945a78f248509dbe6b26216e665fd3"
+    },
+    {
+      "file": "tools/indexing-profile-full-verify.mjs",
+      "sha256": "76b3e0ab3736f5b28d3e26e81f0293e51634f406345945430db85732f470cd14"
+    },
+    {
+      "file": "tools/indexing-profile-path-guards.test.mjs",
+      "sha256": "78d328bdf848b1eb8b8b874771ef56e5954223e551e7a2400f1c26390f46c113"
+    },
+    {
+      "file": "tools/indexing-profile-collect-all.mjs",
+      "sha256": "46e8118d4f0a7f7350a06840db74df719e515065ed2ec36e22aa52d5bf79f684"
+    },
+    {
+      "file": "tools/source-indexing-profile-results.mjs",
+      "sha256": "3b19ebe3da8f3d8a739431ee0490a129acfb5f89b558f2002fcfbad8fff4f4b6"
+    },
+    {
+      "file": "tools/source-indexing-profile-map.mjs",
+      "sha256": "82a868d46a954f3627c0e5ecc268471d471f5f298e3de9793feb2ad2ac1ca693"
+    },
+    {
+      "file": "tools/source-indexing-profile-original.mjs",
+      "sha256": "188c2f292dd4f6fd51cd779e093f7448792ed149a75d70303340b073bdf98e25"
+    },
+    {
+      "file": "tools/source-indexing-profile-live.config.mjs",
+      "sha256": "e7802b7274568a67abb79fa6917e85b826257758c8ab32504d4d511dbb0b8fae"
+    },
+    {
+      "file": "tools/source-indexing-profile-live.setup.ts",
+      "sha256": "950d5e47d83d4859a0d45520def70d70119bb835c232b0ec531031c6a02d1eca"
+    },
+    {
+      "file": "tools/source-indexing-profile-fixture.mjs",
+      "sha256": "f47fcf5cdee3393c8372e1e34982949c9c05cdd60664419a2ba4667b999bd030"
+    },
+    {
+      "file": "tools/source-indexing-profile-collect.mjs",
+      "sha256": "8379e716d052caa2bdddf6a62f4d4396908cbda1c58c3f24c80412ea644dd011"
+    },
+    {
+      "file": "tools/source-indexing-profile-evidence.mjs",
+      "sha256": "58468367fa3eb27a4376d8a50279c78c3ae9a504db41b10f6c3ee97c9c3b39b9"
+    },
+    {
+      "file": "tools/source-indexing-profile-evidence.test.mjs",
+      "sha256": "bcf1879a2b2e7a59c99f49242e8533301d4bc7578c3a57e1276f5da14c5d3839"
+    },
+    {
+      "file": "tools/source-indexing-profile-probes.mjs",
+      "sha256": "8564714b562ff669dce7ceb498c9695433d8fe13581ad9f213f55c5c874856e4"
+    },
+    {
+      "file": "tools/source-indexing-profile-probes.config.mjs",
+      "sha256": "f8e35cf7f456b16430b53e16078126062043d300784fad2a811bf05cadd00349"
+    },
+    {
+      "file": "tools/source-indexing-profile-probes.test.ts",
+      "sha256": "249dd7e1ad20061e412c459a8c7b0608a2b6d99a8f808b43b6678a77d5ba9e58"
+    },
+    {
+      "file": "tools/source-indexing-profile-probe-fixture.mjs",
+      "sha256": "0d85c9e6cf64e9238df80eb0d6900ae3de1db839de404103cefb2228fab7b0de"
+    },
+    {
+      "file": "testdata/indexing/source-indexing-profile.json.gz",
+      "sha256": "ef39bf973595e438de9f0f0206819515c2dfb2b3178c55903c0292be563bd36a"
+    },
+    {
+      "file": "testdata/indexing/source-indexing-profile-probes.json.gz",
+      "sha256": "fe8ea25176f1e68d60caad743c7fe2fb2815c2bbe5a2467b25735af124739fcc"
+    },
+    {
+      "file": "parity/source-indexing-profile-declarations.json",
+      "sha256": "2c59b3c26bb6ac6f6c99c7d3f9c9775556019f5d198c6a49109960ff2013d467"
+    },
+    {
+      "file": "rpc/async_cache_reader.go",
+      "sha256": "e32edc47482c31a55d6ce0d54217bcd6a6450c2a6d5f3d26d95ab26f27ec6015"
+    },
+    {
+      "file": "store/source_rpc_async_read.go",
+      "sha256": "89f83e083bdd5a37f472cab48fd73e6c338ff7be0b11a32e44523b67efa99100"
+    },
+    {
+      "file": "store/source_rpc_async_read_test.go",
+      "sha256": "866ff089635f53bcff26ffc288b9376a52a74023baec2f7b22b71ec124bd474b"
+    },
+    {
+      "file": "store/source_rpc_async.go",
+      "sha256": "0771dde1c509b8810f8ee9a3387dc0d90333909deab0d2ed7f23b7ca725a95cb"
+    },
+    {
+      "file": "indexing/access.go",
+      "sha256": "eeb9ed6875f5d74c204accd8bcbf4f5099f443ccc36efacfc0e6162d94ae2ecd"
+    },
+    {
+      "file": "indexing/access_test.go",
+      "sha256": "2654254fecf28782d68b600b31f1736936bb2f4692b911cde1387c00d9285f2b"
+    },
+    {
+      "file": "indexing/client.go",
+      "sha256": "966c60f7448501e4b77ce6f8f3fd37f6b0ad1818a564bd3931aab791d187e2d4"
+    },
+    {
+      "file": "indexing/client_abi.go",
+      "sha256": "f437523f6a1fedc75d73060125555686da444a07b37d9e2a25fb34452f0eee97"
+    },
+    {
+      "file": "indexing/client_abi_test.go",
+      "sha256": "54eda7913b6c7706eeec89c7167e049ca68af536484a042c2e97d83d191d15c5"
+    },
+    {
+      "file": "indexing/client_actions.go",
+      "sha256": "38bf299c00d77b6ba5d116ae73d814a342c5ab52bbcfc3f2ae46f618a4df84d8"
+    },
+    {
+      "file": "indexing/client_actions_test.go",
+      "sha256": "4754301a7ee0ee6ca7ea6974b0faaa17d731c81173f429855b7d7da89159f46c"
+    },
+    {
+      "file": "indexing/client_admission_integration_test.go",
+      "sha256": "ef73d723df30900c70c2e808485c800c315836c2b3c48a8f8c7c99d0fbc04582"
+    },
+    {
+      "file": "indexing/client_multicall.go",
+      "sha256": "4f856036687b4bdf894e6806772ffe50e97779f30b66c32b7d7a9e16a9b2da7b"
+    },
+    {
+      "file": "indexing/client_prefetch.go",
+      "sha256": "454d16834734747dc72d2abeed516e5529e453b72a5e802bbbe1da666ae07546"
+    },
+    {
+      "file": "indexing/client_prefetch_integration_test.go",
+      "sha256": "4d2d28cabe3c0a2afe9fc04cb408d4a93d6bfeced868a2fdc020b07e29a2595d"
+    },
+    {
+      "file": "indexing/client_prefetch_lifecycle_test.go",
+      "sha256": "d34a8bedecbceb2fa06a9e8801bde0e23acc39b8782460d0e8e9c9e9f8785155"
+    },
+    {
+      "file": "indexing/client_test.go",
+      "sha256": "558066aa15e38eeb08f7c5235e82d0aaea9df23ca1631b40f4e62d73aa3d5d9f"
+    },
+    {
+      "file": "indexing/database.go",
+      "sha256": "1561728c7c212cc4fc00b28fbab735098fae5b3099b8fb2d7ab6b18330872e7d"
+    },
+    {
+      "file": "indexing/database_binding.go",
+      "sha256": "127debacb8b2120ec87ffabc787d27a1075a9d921438a1d121a1f35721e1e844"
+    },
+    {
+      "file": "indexing/database_binding_test.go",
+      "sha256": "fb5b1bfe1b06fcfc2d685d21da70650b5eed1b80b2f7ebcb6e55122358fb73b8"
+    },
+    {
+      "file": "indexing/database_integration_test.go",
+      "sha256": "b02c69f768d59c7044297f7737ee5c16a0d49e41ae4fa1b1a7ad80d7b77e6504"
+    },
+    {
+      "file": "indexing/database_test.go",
+      "sha256": "b0e3fbeb918bd32b5aa6e777a67d70b38d3ef4239658c13c2a25b46daca9aa39"
+    },
+    {
+      "file": "indexing/error_brand_test.go",
+      "sha256": "1a517ce132647a48d53f72edebce1cd53883fd2bae8bd651fa31031e251d09af"
+    },
+    {
+      "file": "indexing/owned.go",
+      "sha256": "4db8de0715ae95e49332a19d497a7dc7833b3eda2067c79ee440d4c01ba441a1"
+    },
+    {
+      "file": "indexing/owned_integration_test.go",
+      "sha256": "859347e6b335993f001469e2fc3b75130289852370ec8740d77f2de8c2ee4c48"
+    },
+    {
+      "file": "indexing/owned_lifecycle_test.go",
+      "sha256": "57fe68249f9db946197d572b5099c86de0f8468a361d23e62598cc3994e25d33"
+    },
+    {
+      "file": "indexing/owned_multichain.go",
+      "sha256": "8eee9bfae85f9b5736e24143929d365b36af44988f97ac6817f2563cffd9b8e4"
+    },
+    {
+      "file": "indexing/owned_multichain_test.go",
+      "sha256": "5c5f6c907d42895044e9cfdaf760446eceed7a9d65973e207eaa78820579167e"
+    },
+    {
+      "file": "indexing/profile.go",
+      "sha256": "b1b52091b096adcb235e162fff291226c6d5c4e7e34290c8202fa6cf8cae6c80"
+    },
+    {
+      "file": "indexing/service.go",
+      "sha256": "db1b5095aebec2e1052aa9a0c3d986bd06d62312c7bffdb96f646c973fcdfbe0"
+    },
+    {
+      "file": "indexing/service_semantics_test.go",
+      "sha256": "c10fd9f141724816f763e93d277b9fbe63d9d773ea839f4afcc34243ab5e41a4"
+    },
+    {
+      "file": "indexing/source_actions_probes_test.go",
+      "sha256": "a4e699c7b8f2533cc17474076e802b14cecb35960aba7bac6bdd96c5045fce4f"
+    },
+    {
+      "file": "indexing/source_actions_test.go",
+      "sha256": "3ce015ac4d78af3dfc66ce6c38e2d930b460f1a56e4946df90d94a114cb2d838"
+    },
+    {
+      "file": "indexing/source_cache_test.go",
+      "sha256": "25dd6fe8c83ca015740de96eca9627ced71675d6fcb09583fc74f52be125fac3"
+    },
+    {
+      "file": "indexing/source_parity_test.go",
+      "sha256": "4517f4bd5014ee7f76825fe823aa7d34ca15c9da99eef8df4e2ffe6cf8216124"
+    },
+    {
+      "file": "indexing/source_prefetch_probes_test.go",
+      "sha256": "482a2e7a303a1c879f0c897b4ba4c0f99c66a758dc8cd401789e440bc86cc9b1"
+    },
+    {
+      "file": "indexing/source_prefetch_test.go",
+      "sha256": "e938a78b707107f4b96388a104186007a2863d54ea078ab154a926207e19b52c"
+    },
+    {
+      "file": "indexing/source_profile_edges_test.go",
+      "sha256": "23362c2bf7c9dc4f8a445fe764d4e0e95599c461b8c31a1929981161d173a355"
+    },
+    {
+      "file": "indexing/source_profile_test.go",
+      "sha256": "75da84221739d902436ff4b4a9d69fc683c2c45904465f4d5ad812d2f53fc052"
+    },
+    {
+      "file": "indexing/source_proxy_test.go",
+      "sha256": "6d98051e28463fef6dc773ae5f75def87cdc9a7147096a69880ee5a3d7590067"
+    },
+    {
+      "file": "indexing/types.go",
+      "sha256": "b73983554cfd9d6cba571188e1572d93123886650b7e540a2bc9c078f23ceb9b"
+    }
+  ]
+}

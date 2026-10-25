@@ -1,0 +1,31 @@
+// Add precisely ten profile + two prefetch originals after complete current proof.
+import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';
+import {sourceFingerprint} from './go-source-fingerprint.mjs';
+import {indexingProfileSupplementalTests,indexingProfileStoreTests,indexingProfileStoreScenarios} from './indexing-profile-acceptance.mjs';
+import {indexingProfileTargets} from './source-indexing-profile-evidence.mjs';
+const root=path.resolve(import.meta.dirname,'..'),read=f=>JSON.parse(fs.readFileSync(path.resolve(root,f))),hash=f=>crypto.createHash('sha256').update(fs.readFileSync(path.resolve(root,f))).digest('hex');
+const valid=r=>r&&fs.existsSync(path.resolve(root,r.file))&&hash(r.file)===r.sha256;
+const file=process.argv.find(a=>a.startsWith('--proof='))?.slice(8);
+if(!file||path.resolve(root,file)!==root+'/parity/runs/source-indexing-profile-verification.json')throw Error('Explicit canonical M40 proof required');
+const proof=read(file),full=read(proof.full_verification.file),s=proof.summary;
+if(!proof.complete||!proof.success||proof.scope!=='complete_module_source_indexing_profile'||!proof.environment_adapted||proof.pristine_file!==false||s.source_cases!==24||s.source_assertions!==63||s.targeted_cases!==12||s.targeted_assertions!==30||s.source_error_directives!==0||s.complete_mapping_candidates!==12||s.supplementary_source_credit!==0||s.profile_originals!==10||s.prefetch_originals!==2||s.unmapped_client_originals!==12)throw Error('Exact12/30/0 current original proof required');
+if(!full.complete||!full.success||full.finished_native_inputs.sha256!==sourceFingerprint(root).sha256||![proof.full_verification,proof.prepared_native_inputs,proof.context_archive,proof.previous_actions_proof,proof.source_only,...proof.inputs,...full.harness_inputs].every(valid))throw Error('Current immutable complete proof required');
+if(proof.executions.length!==4||['normal','race'].some(mode=>['postgres','pglite'].some(backend=>proof.executions.filter(e=>e.mode===mode&&e.backend===backend&&e.complete).length!==1)))throw Error('Four unique mode/backend executions required');
+if(JSON.stringify(proof.supplemental_tests)!==JSON.stringify(indexingProfileSupplementalTests)||JSON.stringify(proof.store_tests)!==JSON.stringify(indexingProfileStoreTests)||JSON.stringify(proof.store_scenarios)!==JSON.stringify(indexingProfileStoreScenarios))throw Error('Exact supplemental census required');
+const ledger=read('parity/test-ledger.json'),mappings=read('parity/mappings.json'),selected=ledger.tests.filter(t=>indexingProfileTargets.includes(t.id));
+if(selected.length!==12||selected.reduce((n,t)=>n+t.assertions.length,0)!==30||selected.some(t=>t.type_error_directives.length!==0))throw Error('Exact pinned declarations required');
+for(const e of proof.executions){
+ if(![e.log,e.native,e.artifact,e.probe_artifact,e.capture,e.original,e.result,e.context_archive,...e.source_context,...Object.values(e.probe).filter(v=>v?.file),...e.probe.source_context].every(valid)||e.cases.length!==12)throw Error('Current complete execution references required');
+ const events=fs.readFileSync(path.resolve(root,e.log.file),'utf8').trim().split('\n').map(JSON.parse),passed=(n,pkg='ponder.local/ponder-go/indexing')=>events.filter(x=>x.Package===pkg&&x.Test===n&&x.Action==='pass').length===1;
+ for(const name of indexingProfileSupplementalTests)if(!passed(name))throw Error('Current supplemental missing');
+ for(const name of indexingProfileStoreTests)if(!passed(name,'ponder.local/ponder-go/store'))throw Error('Current read queue test missing');
+ for(const name of indexingProfileStoreScenarios)if(!passed('TestSourceRPCAsyncReadBackends/'+e.backend+'/'+name,'ponder.local/ponder-go/store'))throw Error('Current read queue backend lifecycle missing');
+ for(const t of selected){const cases=e.cases.filter(c=>c.source_id===t.id),c=cases[0],prefix=t.source_file.endsWith('/profile.test.ts')?'TestSourceIndexingProfile':'TestSourceIndexingPrefetch',name=prefix+'/'+e.backend+'/'+t.id;if(cases.length!==1||c.go_test!==name||!c.runtime_passed||!c.formal_credit||c.native_type_obligations!==0||!passed(name))throw Error('Exact original pass required');}
+}
+for(const t of selected){
+ const profile=t.source_file.endsWith('/profile.test.ts'),prefix=profile?'TestSourceIndexingProfile':'TestSourceIndexingPrefetch';
+ const mapping={source_file:t.source_file,source_name:t.full_name,source_id:t.id,source_line:t.line,assertions_sha256:crypto.createHash('sha256').update(t.assertions.map(a=>a.text).join('\n')).digest('hex'),original_assertions:t.assertions.length,target_file:profile?'indexing/source_profile_test.go':'indexing/source_prefetch_test.go',go_package:'ponder.local/ponder-go/indexing',go_test:prefix+'/postgres/'+t.id,backend_companion:prefix+'/pglite/'+t.id,source_fixture:'testdata/indexing/source-indexing-profile.json.gz',source_verification:'parity/runs/source-indexing-profile-verification.json',assertion_policy:'Complete unchanged profile.test.ts10 and client.test.ts14 execute on both source backends; only ten profile originals and two prefetch originals (30 assertions, zero TS obligations) replay from exact source event/ABI/args/hints and actual client RPC tapes in full normal/race. Actual profile derivation/recovery/key/identity, event/count integration, standalone cache prefetch and disabled-persistent behavior are compared; outputs never seed expectations into implementation. Controlled source/native boundary probes preserve sampling, constant LRU, threshold/dedupe and async causal semantics with zero extra credit. Other twelve client originals remain unmapped; no full raw transport/client or outer runner/topology claim.'};
+ const existing=mappings.find(m=>m.source_id===t.id);if(existing&&JSON.stringify(existing)!==JSON.stringify(mapping))throw Error('Conflicting existing mapping');if(!existing)mappings.push(mapping);
+}
+if(mappings.some(m=>m.source_file==='packages/core/src/indexing/client.test.ts'&&!indexingProfileTargets.includes(m.source_id)))throw Error('Unrelated client original mapped in bounded M40');
+fs.writeFileSync(root+'/parity/mappings.json',JSON.stringify(mappings,null,2)+'\n');console.log({added_or_verified:12,supplementary_source_credit:0});
