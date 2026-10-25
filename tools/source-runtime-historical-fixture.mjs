@@ -13,7 +13,7 @@ if(declarations.length!==14||declarations.reduce((n,t)=>n+t.assertions.length,0)
 const backend_cases={},captures={};
 for(const backend of ['postgres','pglite']){
  const input=arg(backend);if(!input)throw Error('Explicit both backend capture directories required');
- const directory=path.resolve(root,input);if(!['runtime-historical-m36','runtime-multichain-m37','indexing-service-m38'].some(stage=>directory.startsWith(root+'/parity/runs/'+stage+'/')))throw Error('Scoped historical evidence required');
+ const directory=path.resolve(root,input);if(!['runtime-historical-m36','runtime-multichain-m37','indexing-service-m38','indexing-actions-m39'].some(stage=>directory.startsWith(root+'/parity/runs/'+stage+'/')))throw Error('Scoped historical evidence required');
  const result=JSON.parse(fs.readFileSync(directory+'/result.json','utf8')),original=JSON.parse(fs.readFileSync(directory+'/original.json','utf8')),capture=JSON.parse(fs.readFileSync(directory+'/calls.json','utf8'));
  if(!result.complete||!result.success||result.backend!==backend||!result.environment_adapted||result.pristine_file!==false||!result.adapter_verified_after||result.counts.passed!==14||result.counts.failed||result.counts.pending||!original.success||capture.cases.length!==14)throw Error('Complete unchanged original backend execution required');
  for(const ref of [...result.inputs,result.context_archive])if(hash(ref.file).sha256!==ref.sha256)throw Error('Capture context changed: '+ref.file);

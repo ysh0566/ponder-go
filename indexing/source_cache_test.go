@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -219,9 +220,12 @@ func replaySourceCacheGate(t *testing.T, record Object) {
 	cache.mu.Lock()
 	actualCalls := append([]Object{}, cache.calls...)
 	cache.mu.Unlock()
-	// Source batches request objects; native rpc.Cache receives a canonical key.
-	// Normalize only this documented boundary, retaining method, full params,
-	// chain ID, JSON-encoded provider value and the event's block tag.
+	// The source fixture captures raw (possibly checksummed) syncStore request
+	// arguments, NOT getCacheKey or persistent MD5 keys. Those source keys use
+	// recursively ordered, lowercased JSON. Adapt only this documented native
+	// envelope boundary: independently canonicalize params while retaining the
+	// envelope's method spelling/chain, full values, result and event block tag.
+	// The fixture and the exact raw provider assertion above remain untouched.
 	expectedCalls := []Object{}
 	for _, raw := range record["cacheCalls"].([]any) {
 		call := indexingObject(raw)
@@ -240,7 +244,14 @@ func replaySourceCacheGate(t *testing.T, record Object) {
 				t.Fatal("source block number/tag disagree")
 			}
 		}
-		key, _ := json.Marshal([]any{args["chainId"], request["method"], request["params"]})
+		paramsJSON, err := json.Marshal(request["params"])
+		if err != nil {
+			t.Fatal(err)
+		}
+		key, err := json.Marshal([]any{args["chainId"], request["method"], json.RawMessage(strings.ToLower(string(paramsJSON)))})
+		if err != nil {
+			t.Fatal(err)
+		}
 		expected := Object{"operation": call["operation"], "key": string(key)}
 		if call["operation"] == "insert" {
 			expected["result"] = entry["result"]
@@ -327,5 +338,44 @@ func replaySourceCacheBrand(t *testing.T, record Object, backend string) {
 	})
 	if e != nil {
 		t.Fatal(e)
+	}
+}
+
+// Zero-credit control for the explicit raw-request / canonical-cache-key boundary.
+// Literal independent expectations catch accidental lowercasing of the provider
+// request as well as failure to lowercase the native cache envelope's params.
+func TestSourceIndexingCacheKeyBoundary(t *testing.T) {
+	const address = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+	const canonical = `[1,"eth_getBalance",["0x70997970c51812dc3a010c7d01b50e0d17dc79c8","0x0"]]`
+	const rawEnvelope = `[1,"eth_getBalance",["0x70997970C51812dc3A010C7d01b50e0d17dc79C8","0x0"]]`
+	requester := &balanceRequester{}
+	cache := &balanceCache{values: map[string]json.RawMessage{}}
+	chain := Object{"id": 1, "cacheRpcRequests": true}
+	clients, err := NewClientSet([]Object{chain}, []rpc.Requester{requester}, cache)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer clients.Close(context.Background())
+	clients.SetEvent(Object{"type": "setup", "block": 0})
+	client, err := clients.GetClient(chain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	value, err := client.GetBalance(context.Background(), address)
+	if err != nil || value.Int64() != 42 {
+		t.Fatal(value, err)
+	}
+	if err = clients.WaitCacheWrites(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	indexingEqual(t, "provider preserves checksum", requester.params, []any{address, "0x0"})
+	if raw, ok := cache.values[canonical]; !ok || string(raw) != `"0x2a"` {
+		t.Fatal("canonical cache key/result missing", cache.values)
+	}
+	if _, ok := cache.values[rawEnvelope]; ok {
+		t.Fatal("raw checksum envelope used as canonical key")
+	}
+	if len(cache.values) != 1 || requester.calls != 1 {
+		t.Fatal("unexpected cache/RPC cardinality", len(cache.values), requester.calls)
 	}
 }

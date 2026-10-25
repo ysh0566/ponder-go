@@ -2,7 +2,7 @@
   "complete": true,
   "success": true,
   "scope": "complete_module_source_indexing_service",
-  "run_dir": "parity/runs/indexing-service-m38/full-verify-02",
+  "run_dir": "parity/runs/indexing-actions-m39/full-verify-02",
   "environment_adapted": true,
   "pristine_file": false,
   "summary": {
@@ -17,9 +17,11 @@
     "native_type_obligations_verified": 0,
     "supplementary_source_credit": 0,
     "proxy_source_operations": 23,
-    "proxy_native_operations": 22,
-    "proxy_descriptor_gap": 1,
-    "cache_invocation_prefix_gap": true,
+    "proxy_native_operations": 23,
+    "proxy_descriptor_gap": 0,
+    "cache_invocation_prefix_gap": false,
+    "cache_invocation_prefix_scope": "strict_standalone_prepared_admission_only",
+    "cache_read_visibility_equivalence": false,
     "source_sync_table_snapshots": "archival_only",
     "native_business_database_assertions": "original_insert_find_only"
   },
@@ -29,21 +31,21 @@
     "8a08a48e2a99b23fa016"
   ],
   "limitations": {
-    "cache_invocation_prefix": "Source invokes insert_begin synchronously before getBalance returns. Native asynchronous persistence may begin after return. Compared behavior is nonawaited completion, explicit release/settle and ignored late failure; raw source timelines are retained, not rewritten.",
+    "cache_invocation_prefix": "Closed for NewStrictClientSet with real standalone AsyncSourceRPCRequestCache admission; legacy NewClientSet synchronous-only fallback retains weaker prefix timing. Transaction-bound async construction is rejected. Source-vs-native concurrent cache-read visibility is not established: native Store mutex serializes an executing write and read. Source delayed-write probe is separate held-completion evidence, not a real delayed source-DB/read comparison. PGlite cross-Store Backend.Begin waits shared backend mutex non-contextually, in addition to in-flight IO limits; no commit-order or concurrency equivalence claimed.",
     "source_sync_table_snapshots": "Nine physical_before/physical_after sync tables are archival-only source observations, not natively compared. Original business database insert/find assertions are executed against real native IndexingStore.",
-    "proxy_descriptor": "Source Object.keys exposes JS descriptor behavior without an equivalent Go facade. Source23 operations, native22 supported operations; no fake empty enumeration."
+    "proxy_descriptor": "Separate target descriptor query and enumerable filtering now replay all 23 original operations; arbitrary DefineOwnProperty and symbol descriptors remain outside supported scope."
   },
   "full_verification": {
-    "file": "parity/runs/indexing-service-m38/full-verify-02/result.json",
-    "sha256": "ddd862be2105fc16dd7de94c9b59aa9a34f7bb7274160f64dee0098a5efaa37a"
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/result.json",
+    "sha256": "41440774979bab261568fc2e22fb18ca2db314a438b9789b8b39d91db6c6d7ac"
   },
   "prepared_native_inputs": {
-    "file": "parity/runs/indexing-service-m38/full-verify-02/prepared-native-inputs.json",
-    "sha256": "03ad0dc3ff847aad68ff94093698f9681ca6987fefab08d4cdbc7fc437db132a"
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/prepared-native-inputs.json",
+    "sha256": "3dacc85e2a7c62680b798d2987a97a4eefdbfaebaa7c666983646566f9ab268a"
   },
   "context_archive": {
-    "file": "parity/runs/indexing-service-m38/full-verify-02/context-archive.json",
-    "sha256": "a883435550f7004d1ec3f34b3f10d1f042454f8f0a8105d07231cc3d6634327c"
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/context-archive.json",
+    "sha256": "327cd9184fb0ff951d123feaa0792bfb06cf12b3320555102186d6aa1c4fe156"
   },
   "executions": [
     {
@@ -173,34 +175,34 @@
         }
       ],
       "artifact": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/native/indexing-service-normal.json",
-        "sha256": "2099cb2285bc3b07b1cc649d96ebed9084ef7d0bd4a419ca973ccf7b31698125"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/indexing-service-normal.json",
+        "sha256": "5c03bbacbbd32a23246d7b3435034e697716a72f785a6a964dc69b3ad6619878"
       },
       "native_test_prefix": "TestSourceIndexingService/postgres",
       "log": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
-        "sha256": "f9120f8dd285a1c05778f3c8d6854625b8216662ad772debc22ee9eeba97d8df"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-test.jsonl",
+        "sha256": "6f2c1021c0cf73abad1cd392a3260dff9350ecc00fd95d8313784ee98c413422"
       },
       "native": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
-        "sha256": "f9120f8dd285a1c05778f3c8d6854625b8216662ad772debc22ee9eeba97d8df"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-test.jsonl",
+        "sha256": "6f2c1021c0cf73abad1cd392a3260dff9350ecc00fd95d8313784ee98c413422"
       },
       "capture": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/calls.json.gz",
-        "sha256": "4cd411cf2f2ada6889728e7b7710aec12aaa8864a55e3350aec27453d7ed8697"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-postgres/calls.json.gz",
+        "sha256": "5a433c255d94d155f3e78ca383f508125494dba7cfd26aab10f8e46b67227bcb"
       },
       "original": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json",
-        "sha256": "6566e01f7a1d638cbf0c64683b4366c5e83f092228d4b7c0eaa5d8899d7c19a0"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-postgres/original.json",
+        "sha256": "fcea607131b33d418b679fc69fc80cedd7804caac6050ab609afd448daf75b1d"
       },
       "result": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/result.json",
-        "sha256": "f4b1abc4bd6f3b0196e55e0d04e93ce2b32b042cad927185149c923bf7947a34"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-postgres/result.json",
+        "sha256": "5f3310b2def1bd6166016bc3956ff287c43d2c20679bd893ca32de45289f86f5"
       },
       "source_context": [
         {
           "file": "tools/source-indexing-service-original.mjs",
-          "sha256": "e9abd5491d5d571dd7945ca0e248fc3d37df995f252f34828672146ba38be84a"
+          "sha256": "1620e4f3abd93cd37296745de2592600c3a18ee5d90049b3adfa95547232a97c"
         },
         {
           "file": "tools/source-indexing-service-live.setup.ts",
@@ -224,8 +226,8 @@
         }
       ],
       "context_archive": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/context-archive.json",
-        "sha256": "b3711c1fa2263cdde3fbcc5e8b79e1b0c97eb7d9f3ef2427bb7ff620d2201347"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-postgres/context-archive.json",
+        "sha256": "9438803c8f12ed249ed58c12d2760cabd0a34314400151e31e57e233b82784aa"
       }
     },
     {
@@ -355,34 +357,34 @@
         }
       ],
       "artifact": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/native/indexing-service-normal.json",
-        "sha256": "2099cb2285bc3b07b1cc649d96ebed9084ef7d0bd4a419ca973ccf7b31698125"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/indexing-service-normal.json",
+        "sha256": "5c03bbacbbd32a23246d7b3435034e697716a72f785a6a964dc69b3ad6619878"
       },
       "native_test_prefix": "TestSourceIndexingService/pglite",
       "log": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
-        "sha256": "f9120f8dd285a1c05778f3c8d6854625b8216662ad772debc22ee9eeba97d8df"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-test.jsonl",
+        "sha256": "6f2c1021c0cf73abad1cd392a3260dff9350ecc00fd95d8313784ee98c413422"
       },
       "native": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/native/go-test.jsonl",
-        "sha256": "f9120f8dd285a1c05778f3c8d6854625b8216662ad772debc22ee9eeba97d8df"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-test.jsonl",
+        "sha256": "6f2c1021c0cf73abad1cd392a3260dff9350ecc00fd95d8313784ee98c413422"
       },
       "capture": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/calls.json.gz",
-        "sha256": "94bb0026588309a74570a1b086061ffc95717718c4ea30195f85821f852f4fb4"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-pglite/calls.json.gz",
+        "sha256": "af8f8873bbfee58f4a52ff004c8e84f28df3f9cb12ea6498c0a8c66bd67b5d8f"
       },
       "original": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json",
-        "sha256": "59d49f6923361d07c1963355a370a2d1cf2b203859a6435889f09974cabc729d"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-pglite/original.json",
+        "sha256": "7829ac62578be17d037c2d46d801ef54cedb02747d7789c36527a96d546a1b2c"
       },
       "result": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/result.json",
-        "sha256": "f502dce18b98c0f6ab34ae2b8b7c574be96fec42aaf9839f2be17a11021378cc"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-pglite/result.json",
+        "sha256": "4f75d26b5482e2c2fbead6d568e54d901c6ee783e0343e94720f8541273b3b80"
       },
       "source_context": [
         {
           "file": "tools/source-indexing-service-original.mjs",
-          "sha256": "e9abd5491d5d571dd7945ca0e248fc3d37df995f252f34828672146ba38be84a"
+          "sha256": "1620e4f3abd93cd37296745de2592600c3a18ee5d90049b3adfa95547232a97c"
         },
         {
           "file": "tools/source-indexing-service-live.setup.ts",
@@ -406,8 +408,8 @@
         }
       ],
       "context_archive": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/context-archive.json",
-        "sha256": "5fc61e5c29093ba100f49ce635976e4a876955568a757c4f8cb48c9be31e14d9"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-pglite/context-archive.json",
+        "sha256": "acf46969842a1e1d3080fc6ef1e0cba4299b03b7418fe168e03a45a3874d72b8"
       }
     },
     {
@@ -537,34 +539,34 @@
         }
       ],
       "artifact": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/native/indexing-service-race.json",
-        "sha256": "2099cb2285bc3b07b1cc649d96ebed9084ef7d0bd4a419ca973ccf7b31698125"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/indexing-service-race.json",
+        "sha256": "5c03bbacbbd32a23246d7b3435034e697716a72f785a6a964dc69b3ad6619878"
       },
       "native_test_prefix": "TestSourceIndexingService/postgres",
       "log": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl",
-        "sha256": "ec95fecc147e67f16ed665f4d1ecd4eee284aac39a8732cea7baaec96bfbcc14"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-race.jsonl",
+        "sha256": "397bc6225c183120da98275b1a411e183e8b090b041ae2b85a14d886af486d57"
       },
       "native": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl",
-        "sha256": "ec95fecc147e67f16ed665f4d1ecd4eee284aac39a8732cea7baaec96bfbcc14"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-race.jsonl",
+        "sha256": "397bc6225c183120da98275b1a411e183e8b090b041ae2b85a14d886af486d57"
       },
       "capture": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/calls.json.gz",
-        "sha256": "4cd411cf2f2ada6889728e7b7710aec12aaa8864a55e3350aec27453d7ed8697"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-postgres/calls.json.gz",
+        "sha256": "5a433c255d94d155f3e78ca383f508125494dba7cfd26aab10f8e46b67227bcb"
       },
       "original": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/original.json",
-        "sha256": "6566e01f7a1d638cbf0c64683b4366c5e83f092228d4b7c0eaa5d8899d7c19a0"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-postgres/original.json",
+        "sha256": "fcea607131b33d418b679fc69fc80cedd7804caac6050ab609afd448daf75b1d"
       },
       "result": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/result.json",
-        "sha256": "f4b1abc4bd6f3b0196e55e0d04e93ce2b32b042cad927185149c923bf7947a34"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-postgres/result.json",
+        "sha256": "5f3310b2def1bd6166016bc3956ff287c43d2c20679bd893ca32de45289f86f5"
       },
       "source_context": [
         {
           "file": "tools/source-indexing-service-original.mjs",
-          "sha256": "e9abd5491d5d571dd7945ca0e248fc3d37df995f252f34828672146ba38be84a"
+          "sha256": "1620e4f3abd93cd37296745de2592600c3a18ee5d90049b3adfa95547232a97c"
         },
         {
           "file": "tools/source-indexing-service-live.setup.ts",
@@ -588,8 +590,8 @@
         }
       ],
       "context_archive": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-postgres/context-archive.json",
-        "sha256": "b3711c1fa2263cdde3fbcc5e8b79e1b0c97eb7d9f3ef2427bb7ff620d2201347"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-postgres/context-archive.json",
+        "sha256": "9438803c8f12ed249ed58c12d2760cabd0a34314400151e31e57e233b82784aa"
       }
     },
     {
@@ -719,34 +721,34 @@
         }
       ],
       "artifact": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/native/indexing-service-race.json",
-        "sha256": "2099cb2285bc3b07b1cc649d96ebed9084ef7d0bd4a419ca973ccf7b31698125"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/indexing-service-race.json",
+        "sha256": "5c03bbacbbd32a23246d7b3435034e697716a72f785a6a964dc69b3ad6619878"
       },
       "native_test_prefix": "TestSourceIndexingService/pglite",
       "log": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl",
-        "sha256": "ec95fecc147e67f16ed665f4d1ecd4eee284aac39a8732cea7baaec96bfbcc14"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-race.jsonl",
+        "sha256": "397bc6225c183120da98275b1a411e183e8b090b041ae2b85a14d886af486d57"
       },
       "native": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/native/go-race.jsonl",
-        "sha256": "ec95fecc147e67f16ed665f4d1ecd4eee284aac39a8732cea7baaec96bfbcc14"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/native/go-race.jsonl",
+        "sha256": "397bc6225c183120da98275b1a411e183e8b090b041ae2b85a14d886af486d57"
       },
       "capture": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/calls.json.gz",
-        "sha256": "94bb0026588309a74570a1b086061ffc95717718c4ea30195f85821f852f4fb4"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-pglite/calls.json.gz",
+        "sha256": "af8f8873bbfee58f4a52ff004c8e84f28df3f9cb12ea6498c0a8c66bd67b5d8f"
       },
       "original": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/original.json",
-        "sha256": "59d49f6923361d07c1963355a370a2d1cf2b203859a6435889f09974cabc729d"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-pglite/original.json",
+        "sha256": "7829ac62578be17d037c2d46d801ef54cedb02747d7789c36527a96d546a1b2c"
       },
       "result": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/result.json",
-        "sha256": "f502dce18b98c0f6ab34ae2b8b7c574be96fec42aaf9839f2be17a11021378cc"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-pglite/result.json",
+        "sha256": "4f75d26b5482e2c2fbead6d568e54d901c6ee783e0343e94720f8541273b3b80"
       },
       "source_context": [
         {
           "file": "tools/source-indexing-service-original.mjs",
-          "sha256": "e9abd5491d5d571dd7945ca0e248fc3d37df995f252f34828672146ba38be84a"
+          "sha256": "1620e4f3abd93cd37296745de2592600c3a18ee5d90049b3adfa95547232a97c"
         },
         {
           "file": "tools/source-indexing-service-live.setup.ts",
@@ -770,8 +772,8 @@
         }
       ],
       "context_archive": {
-        "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-pglite/context-archive.json",
-        "sha256": "5fc61e5c29093ba100f49ce635976e4a876955568a757c4f8cb48c9be31e14d9"
+        "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-pglite/context-archive.json",
+        "sha256": "acf46969842a1e1d3080fc6ef1e0cba4299b03b7418fe168e03a45a3874d72b8"
       }
     }
   ],
@@ -801,25 +803,25 @@
   ],
   "proxy": {
     "capture": {
-      "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-proxy/calls.json",
+      "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-proxy/calls.json",
       "sha256": "8512c746914edfeb5f552e714801d25244ad7a634bc361c97bf7f307ad1bd9ae"
     },
     "result": {
-      "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-proxy/result.json",
-      "sha256": "7f166a56d97b65d9a49e51800636523be312e8c96168263748e9deea5b8ab672"
+      "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-proxy/result.json",
+      "sha256": "e948a4f933b62d6c146fa96401d7abed633f8ec9e4661e4f8cf4003ce8e2f295"
     },
     "original": {
-      "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-proxy/original.json",
-      "sha256": "52b271b670d9c8e5f90fceaae9ef8076cd505e1cee532aa9ffef43ade41b6745"
+      "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-proxy/original.json",
+      "sha256": "64df233c5089f7e1ebbd434be52d92a2c25c675d9d516453439a0c4f51fd4957"
     },
     "context_archive": {
-      "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-proxy/context-archive.json",
-      "sha256": "a02ca23f0063880c39d0f189359e35c27eba18dd8757028ecee26df6711bebdf"
+      "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-proxy/context-archive.json",
+      "sha256": "f5acfd8c52165ee1cc542dd52d9b3bce08b4e003ed6ac2743a66e5b074f39c8b"
     },
     "source_context": [
       {
         "file": "tools/source-indexing-service-proxy.mjs",
-        "sha256": "04e3d32e907058d1cad879c900eb68e78ccf8826ec07e09c0d4cfb4bf7a450c3"
+        "sha256": "96e232172b7f1511ed01fa294dba54acd68d1cec27eaa906efe51e499eb2729a"
       },
       {
         "file": "tools/source-indexing-service-proxy.test.ts",
@@ -840,31 +842,31 @@
     ],
     "fixture": {
       "file": "testdata/indexing/source-indexing-service-proxy.json",
-      "sha256": "72e80c9c52dbe8b694e88c52088cc9cbcfbaa06746efe9fb28f9b46a7f5867e3"
+      "sha256": "9adcf036fcb940cf92b411d71d3d6a23dad5a301daaf13965878e84cec0abf89"
     },
     "source_credit": 0
   },
   "cache": {
     "capture": {
-      "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-cache/calls.json",
+      "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-cache/calls.json",
       "sha256": "3557fad4626372c78439c0da4d1f9c99825fbbc1e6455096f5137cc0d9b6d952"
     },
     "result": {
-      "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-cache/result.json",
-      "sha256": "8e6004211adf426264a3af1b0c1e3f7d47726d8089ad855f190fbc8c2cf7c135"
+      "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-cache/result.json",
+      "sha256": "dac67b7dbf82d3d5bb7d95cfdaf89bf684c9bf899d9c0b183983a92ea8f291fa"
     },
     "original": {
-      "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-cache/original.json",
-      "sha256": "9b14f46218b0cb6d6b4d1c65a526641c92218e64bf1f52905b9ce5ee1c681da1"
+      "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-cache/original.json",
+      "sha256": "3a7f38caa2f6d14fdcac7892725b95098ea4142931edb086673e55185dee0080"
     },
     "context_archive": {
-      "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-cache/context-archive.json",
-      "sha256": "b93a7a4c3bfd9e4c53a259d67ed4f6fdc91eebaee67936a8c8f2f8c1c4a5f27b"
+      "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-cache/context-archive.json",
+      "sha256": "84f814a8e75c8c0ff9248f094304023e5703e84825f59425b4c2701a6a6eef66"
     },
     "source_context": [
       {
         "file": "tools/source-indexing-service-cache.mjs",
-        "sha256": "f7b328138926893f3517ba5b0270442365431510a8c44e5e1b1e8463eeb8dab0"
+        "sha256": "cc885357442bae90051a0bbd21f29c9e8abf4e3e04ab3d1e829037b38ed147fb"
       },
       {
         "file": "tools/source-indexing-service-cache.test.ts",
@@ -885,13 +887,13 @@
     ],
     "fixture": {
       "file": "testdata/indexing/source-indexing-service-cache.json",
-      "sha256": "21e3352aab3060dac496ba91621aa472640cd0d9736266198b4336fab91035e3"
+      "sha256": "2e33dec15f432781ab5d637c8db954ed0ec42c44acba6b362e98fd44b16550f7"
     },
     "source_credit": 0
   },
   "source_only": {
-    "file": "parity/runs/indexing-service-m38/full-verify-02/indexing-source-verification.json",
-    "sha256": "832969bc1e522982c180db37d685c82c654f3d9a1a0b5027fd54494ff02776ac"
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/indexing-source-verification.json",
+    "sha256": "741d08a9d02453544dedbe532569af349b942259186a77ee3dbda65e02f228d5"
   },
   "inputs": [
     {
@@ -900,7 +902,7 @@
     },
     {
       "file": "tools/source-indexing-service-cache.mjs",
-      "sha256": "f7b328138926893f3517ba5b0270442365431510a8c44e5e1b1e8463eeb8dab0"
+      "sha256": "cc885357442bae90051a0bbd21f29c9e8abf4e3e04ab3d1e829037b38ed147fb"
     },
     {
       "file": "tools/source-indexing-service-cache.config.mjs",
@@ -912,7 +914,7 @@
     },
     {
       "file": "tools/source-indexing-service-cache-fixture.mjs",
-      "sha256": "9c41104172e124956514d7801d593d3f90cfb1214c5b3aec58d9493b405f3cfa"
+      "sha256": "afe23a77d061df4e9d96d8940bbaf26df1797dec1b8e122790b5760bc0a7f209"
     },
     {
       "file": "tools/source-indexing-service-cache-evidence.test.mjs",
@@ -924,7 +926,7 @@
     },
     {
       "file": "tools/source-indexing-service-results.mjs",
-      "sha256": "714fdd4a4468d3f47404ed928475c703a5dfb9fa442e1d9e9bb6d23daf6dac4b"
+      "sha256": "db50c0c9079f42841cba3b8dfe9118784430a45b2c3eb335a613620df32171b7"
     },
     {
       "file": "tools/source-indexing-service-map.mjs",
@@ -932,11 +934,11 @@
     },
     {
       "file": "tools/source-indexing-service-collect.mjs",
-      "sha256": "e0d74c5471c4cfc19bf09982d1b602a13a5edbb645a0601a92d6a85ec48250fc"
+      "sha256": "b7784e887fbc36874aab0e24c5d03dd12713c769415c26c7c271f78e58e03c17"
     },
     {
       "file": "tools/source-indexing-service-proxy.mjs",
-      "sha256": "04e3d32e907058d1cad879c900eb68e78ccf8826ec07e09c0d4cfb4bf7a450c3"
+      "sha256": "96e232172b7f1511ed01fa294dba54acd68d1cec27eaa906efe51e499eb2729a"
     },
     {
       "file": "tools/source-indexing-service-proxy.config.mjs",
@@ -948,7 +950,7 @@
     },
     {
       "file": "tools/source-indexing-service-proxy-fixture.mjs",
-      "sha256": "34196ccb041f04c3086d87c268dac4f799c133e2cc907e0353e2254ea7865f92"
+      "sha256": "7aa048c8ba00d0f83e14f46886865cf5e599300ed43267c4b42301fbe3b86fff"
     },
     {
       "file": "tools/source-indexing-service-proxy-evidence.test.mjs",
@@ -956,7 +958,7 @@
     },
     {
       "file": "tools/source-indexing-service-original.mjs",
-      "sha256": "e9abd5491d5d571dd7945ca0e248fc3d37df995f252f34828672146ba38be84a"
+      "sha256": "1620e4f3abd93cd37296745de2592600c3a18ee5d90049b3adfa95547232a97c"
     },
     {
       "file": "tools/source-indexing-service-live.config.mjs",
@@ -968,7 +970,7 @@
     },
     {
       "file": "tools/source-indexing-service-fixture.mjs",
-      "sha256": "f807177990432d358802ee753283fa1d594b6b6952b0e3230371854ace1fc1af"
+      "sha256": "96620f5ba833501e634d78b504496a2240985eed0f977ffca4d51f2bf338f7f6"
     },
     {
       "file": "tools/source-indexing-service-evidence.mjs",
@@ -988,7 +990,7 @@
     },
     {
       "file": "tools/record-results.mjs",
-      "sha256": "579aa929aab9a2e938ee404d44b3f5c783dc0ebfcff7ec0897d7e04348dc7207"
+      "sha256": "27d03871c88ff752e380b267c88db4bf52c27a4336481a5e2e356bf30e9e0b2d"
     },
     {
       "file": "tools/source-sync-results.mjs",
@@ -1012,23 +1014,23 @@
     },
     {
       "file": "tools/source-runtime-index-results.mjs",
-      "sha256": "24cc31149e4b5d331244ecfd96a58d6790531da05800dafac24b526e31b4c9f7"
+      "sha256": "2bb5baae0a371ff93d7c9ef8167609bc4872e63c065aecb4c2b66ee71db9ea11"
     },
     {
       "file": "tools/source-runtime-historical-results.mjs",
-      "sha256": "23e1e7c3f969101afbdaa7139e2ba194515360565c829e9d4e4211578a10b173"
+      "sha256": "d37a53cea9eda16eee61647a45ec7048b6475096b299f25b1c45911da488bcdc"
     },
     {
       "file": "tools/source-runtime-multichain-results.mjs",
-      "sha256": "ff86c8cc3237fa5a4038c9a492749d89dc1ea48ac8eba700a0a3a6ff5279496a"
+      "sha256": "0f3b58f8986fc2e85aece846cc1e20bdedafd940332a275f6f916fda8d2ee0b3"
     },
     {
       "file": "indexing/access.go",
-      "sha256": "2a6210bedc13f18729a3e729d007f7d5af5ac1f621e645ce0021959e3693c792"
+      "sha256": "eeb9ed6875f5d74c204accd8bcbf4f5099f443ccc36efacfc0e6162d94ae2ecd"
     },
     {
       "file": "indexing/client.go",
-      "sha256": "6a172683ef4c725fcef21563540bc43c1fef579a3aa6106a8363cc615d6c7e9c"
+      "sha256": "2c5f9ef6412ab45bb4b1357a5a5f96d98e94372da5e5af33ff6e11b7a4491206"
     },
     {
       "file": "indexing/database.go",
@@ -1048,11 +1050,11 @@
     },
     {
       "file": "indexing/source_cache_test.go",
-      "sha256": "f7e5e567b027dcca7ecf2dee3c8b199d1172af4bf0a7b677a6bf6ae4aadb82d2"
+      "sha256": "25dd6fe8c83ca015740de96eca9627ced71675d6fcb09583fc74f52be125fac3"
     },
     {
       "file": "indexing/source_proxy_test.go",
-      "sha256": "8e34360c3c67f0759e3d945b7a9275678c0d598d9c2091d49cea919e5caa4bb8"
+      "sha256": "6d98051e28463fef6dc773ae5f75def87cdc9a7147096a69880ee5a3d7590067"
     },
     {
       "file": "indexing/service_semantics_test.go",
@@ -1068,11 +1070,11 @@
     },
     {
       "file": "testdata/indexing/source-indexing-service-live.json.gz",
-      "sha256": "7e09d752e34b12546029817ddd87fe1cba6ede929a6c2193486b21553d5839cf"
+      "sha256": "1d3c8971e8bf7a8d3fa2b68cea2716b6e60e332cf3a4d9d079e1b04055f3cbdd"
     },
     {
       "file": "parity/source-indexing-service-declarations.json",
-      "sha256": "abff2a13a5c0746bc6e3c6a571f25057ac4a0246808989c987fc97eb1cd9c024"
+      "sha256": "f12cce926a7674e84ae6bdd32d899ee6c4a0d28e8374955cbb4fe2c61a8532f7"
     }
   ]
 }

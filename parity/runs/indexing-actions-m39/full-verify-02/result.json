@@ -1,0 +1,1142 @@
+{
+  "complete": true,
+  "success": true,
+  "environment_adapted": true,
+  "pristine_file": false,
+  "source_credit": 0,
+  "scope": "All module Go tests, fuzz seeds and examples in disjoint serial batches, normal and race; actual source oracles, SDK, compiler controls, vet and CLI builds.",
+  "started_utc": "2026-10-25T13:02:42.015Z",
+  "commands": [
+    {
+      "name": "runtime-multichain-evidence-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--test",
+        "tools/source-runtime-multichain-evidence.test.mjs"
+      ],
+      "started_utc": "2026-10-25T13:02:42.537Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:02:42.729Z"
+    },
+    {
+      "name": "runtime-historical-evidence-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--test",
+        "tools/source-runtime-historical-evidence.test.mjs"
+      ],
+      "started_utc": "2026-10-25T13:02:42.760Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:02:42.941Z"
+    },
+    {
+      "name": "remaining-mapped-original-postgres",
+      "command": [
+        "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/../ponder-upstream/packages/core/node_modules/.bin/vitest",
+        "run",
+        "--config",
+        "tools/full-oracle.config.mjs",
+        "--configLoader",
+        "native",
+        "src/database/actions.test.ts",
+        "src/database/index.test.ts",
+        "src/indexing-store/cache.test.ts",
+        "src/indexing-store/index.test.ts",
+        "src/indexing-store/profile.test.ts",
+        "src/runtime/events.test.ts",
+        "src/runtime/filter.test.ts",
+        "src/sync-realtime/bloom.test.ts",
+        "src/utils/sql-parse.test.ts",
+        "--reporter=json",
+        "--outputFile=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/remaining-mapped-original-postgres.json"
+      ],
+      "started_utc": "2026-10-25T13:02:42.969Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:03:04.801Z"
+    },
+    {
+      "name": "remaining-mapped-original-pglite",
+      "command": [
+        "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/../ponder-upstream/packages/core/node_modules/.bin/vitest",
+        "run",
+        "--config",
+        "tools/full-oracle.config.mjs",
+        "--configLoader",
+        "native",
+        "src/database/actions.test.ts",
+        "src/database/index.test.ts",
+        "src/indexing-store/cache.test.ts",
+        "src/indexing-store/index.test.ts",
+        "src/indexing-store/profile.test.ts",
+        "src/runtime/events.test.ts",
+        "src/runtime/filter.test.ts",
+        "src/sync-realtime/bloom.test.ts",
+        "src/utils/sql-parse.test.ts",
+        "--reporter=json",
+        "--outputFile=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/remaining-mapped-original-pglite.json"
+      ],
+      "started_utc": "2026-10-25T13:03:04.828Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:03:22.136Z"
+    },
+    {
+      "name": "runtime-index-source-postgres",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-index-original.mjs",
+        "--backend=postgres",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/source-postgres"
+      ],
+      "started_utc": "2026-10-25T13:03:22.167Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:03:26.783Z"
+    },
+    {
+      "name": "runtime-index-source-pglite",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-index-original.mjs",
+        "--backend=pglite",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/source-pglite"
+      ],
+      "started_utc": "2026-10-25T13:03:26.815Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:03:31.118Z"
+    },
+    {
+      "name": "runtime-historical-source-postgres",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-historical-original.mjs",
+        "--backend=postgres",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/historical-source-postgres"
+      ],
+      "started_utc": "2026-10-25T13:03:31.157Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:03:36.581Z"
+    },
+    {
+      "name": "runtime-historical-log-order-postgres",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-historical-log-order.mjs",
+        "--backend=postgres",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/historical-log-order-postgres"
+      ],
+      "started_utc": "2026-10-25T13:03:36.609Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:03:40.468Z"
+    },
+    {
+      "name": "runtime-historical-source-pglite",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-historical-original.mjs",
+        "--backend=pglite",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/historical-source-pglite"
+      ],
+      "started_utc": "2026-10-25T13:03:40.497Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:03:45.356Z"
+    },
+    {
+      "name": "runtime-historical-log-order-pglite",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-historical-log-order.mjs",
+        "--backend=pglite",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/historical-log-order-pglite"
+      ],
+      "started_utc": "2026-10-25T13:03:45.385Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:03:49.545Z"
+    },
+    {
+      "name": "runtime-historical-fixture",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-historical-fixture.mjs",
+        "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/historical-source-postgres",
+        "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/historical-source-pglite"
+      ],
+      "started_utc": "2026-10-25T13:03:49.577Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:03:49.726Z"
+    },
+    {
+      "name": "runtime-multichain-source-postgres",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-multichain-original.mjs",
+        "--backend=postgres",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/multichain-source-postgres"
+      ],
+      "started_utc": "2026-10-25T13:03:49.787Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:03:55.824Z"
+    },
+    {
+      "name": "runtime-multichain-probes-postgres",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-multichain-probes.mjs",
+        "--backend=postgres",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/multichain-probes-postgres"
+      ],
+      "started_utc": "2026-10-25T13:03:55.853Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:03.379Z"
+    },
+    {
+      "name": "runtime-multichain-source-pglite",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-multichain-original.mjs",
+        "--backend=pglite",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/multichain-source-pglite"
+      ],
+      "started_utc": "2026-10-25T13:04:03.412Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:08.929Z"
+    },
+    {
+      "name": "runtime-multichain-probes-pglite",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-multichain-probes.mjs",
+        "--backend=pglite",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/multichain-probes-pglite"
+      ],
+      "started_utc": "2026-10-25T13:04:08.965Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:15.750Z"
+    },
+    {
+      "name": "runtime-multichain-fixture",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-multichain-fixture.mjs",
+        "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/multichain-source-postgres",
+        "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/multichain-source-pglite"
+      ],
+      "started_utc": "2026-10-25T13:04:15.783Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:15.898Z"
+    },
+    {
+      "name": "runtime-multichain-probe-fixture",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-multichain-probe-fixture.mjs",
+        "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/multichain-probes-postgres",
+        "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/multichain-probes-pglite"
+      ],
+      "started_utc": "2026-10-25T13:04:15.927Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:16.230Z"
+    },
+    {
+      "name": "indexing-service-source-postgres",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-service-original.mjs",
+        "--backend=postgres",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/indexing-source-postgres"
+      ],
+      "started_utc": "2026-10-25T13:04:16.257Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:24.433Z"
+    },
+    {
+      "name": "indexing-service-source-pglite",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-service-original.mjs",
+        "--backend=pglite",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/indexing-source-pglite"
+      ],
+      "started_utc": "2026-10-25T13:04:24.463Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:30.939Z"
+    },
+    {
+      "name": "indexing-service-fixture",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-service-fixture.mjs",
+        "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/indexing-source-postgres",
+        "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/indexing-source-pglite",
+        "--output=testdata/indexing/source-indexing-service-live.json.gz",
+        "--declarations=parity/source-indexing-service-declarations.json"
+      ],
+      "started_utc": "2026-10-25T13:04:30.969Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:31.731Z"
+    },
+    {
+      "name": "indexing-service-source-collect",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-service-collect.mjs",
+        "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/indexing-source-postgres",
+        "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/indexing-source-pglite",
+        "--fixture=testdata/indexing/source-indexing-service-live.json.gz",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/indexing-source-verification.json"
+      ],
+      "started_utc": "2026-10-25T13:04:31.758Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:32.933Z"
+    },
+    {
+      "name": "indexing-service-proxy-source",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-service-proxy.mjs",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/indexing-proxy"
+      ],
+      "started_utc": "2026-10-25T13:04:32.963Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:34.618Z"
+    },
+    {
+      "name": "indexing-service-proxy-fixture",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-service-proxy-fixture.mjs",
+        "--input=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/indexing-proxy",
+        "--output=testdata/indexing/source-indexing-service-proxy.json"
+      ],
+      "started_utc": "2026-10-25T13:04:34.660Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:34.733Z"
+    },
+    {
+      "name": "indexing-service-evidence-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-service-evidence.test.mjs",
+        "--fixture=testdata/indexing/source-indexing-service-live.json.gz"
+      ],
+      "started_utc": "2026-10-25T13:04:34.765Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:38.656Z"
+    },
+    {
+      "name": "indexing-service-proxy-evidence-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-service-proxy-evidence.test.mjs",
+        "--fixture=testdata/indexing/source-indexing-service-proxy.json"
+      ],
+      "started_utc": "2026-10-25T13:04:38.690Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:38.771Z"
+    },
+    {
+      "name": "indexing-service-cache-source",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-service-cache.mjs",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/indexing-cache"
+      ],
+      "started_utc": "2026-10-25T13:04:38.806Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:41.629Z"
+    },
+    {
+      "name": "indexing-service-cache-fixture",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-service-cache-fixture.mjs",
+        "--input=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/indexing-cache",
+        "--output=testdata/indexing/source-indexing-service-cache.json"
+      ],
+      "started_utc": "2026-10-25T13:04:41.681Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:41.740Z"
+    },
+    {
+      "name": "indexing-service-cache-evidence-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-service-cache-evidence.test.mjs",
+        "--fixture=testdata/indexing/source-indexing-service-cache.json"
+      ],
+      "started_utc": "2026-10-25T13:04:41.769Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:41.844Z"
+    },
+    {
+      "name": "indexing-actions-source-postgres",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-actions-original.mjs",
+        "--backend=postgres",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/actions-source-postgres"
+      ],
+      "started_utc": "2026-10-25T13:04:41.872Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:49.756Z"
+    },
+    {
+      "name": "indexing-actions-probes-postgres",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-actions-probes.mjs",
+        "--backend=postgres",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/actions-probes-postgres"
+      ],
+      "started_utc": "2026-10-25T13:04:49.786Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:53.211Z"
+    },
+    {
+      "name": "indexing-actions-source-pglite",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-actions-original.mjs",
+        "--backend=pglite",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/actions-source-pglite"
+      ],
+      "started_utc": "2026-10-25T13:04:53.239Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:04:59.429Z"
+    },
+    {
+      "name": "indexing-actions-probes-pglite",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-actions-probes.mjs",
+        "--backend=pglite",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/actions-probes-pglite"
+      ],
+      "started_utc": "2026-10-25T13:04:59.464Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:05:03.525Z"
+    },
+    {
+      "name": "indexing-actions-fixture",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-actions-fixture.mjs",
+        "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/actions-source-postgres",
+        "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/actions-source-pglite",
+        "--output=testdata/indexing/source-indexing-actions-live.json.gz",
+        "--declarations=parity/source-indexing-actions-cases.json"
+      ],
+      "started_utc": "2026-10-25T13:05:03.558Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:05:03.650Z"
+    },
+    {
+      "name": "indexing-actions-source-collect",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-actions-collect.mjs",
+        "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/actions-source-postgres",
+        "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/actions-source-pglite",
+        "--fixture=testdata/indexing/source-indexing-actions-live.json.gz",
+        "--output=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/actions-source-verification.json"
+      ],
+      "started_utc": "2026-10-25T13:05:03.683Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:05:03.903Z"
+    },
+    {
+      "name": "indexing-actions-probe-fixture",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-indexing-actions-probe-fixture.mjs",
+        "--postgres=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/actions-probes-postgres",
+        "--pglite=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/actions-probes-pglite",
+        "--output=testdata/indexing/source-indexing-actions-probes.json.gz"
+      ],
+      "started_utc": "2026-10-25T13:05:03.931Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:05:04.118Z"
+    },
+    {
+      "name": "indexing-actions-evidence-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--test",
+        "tools/source-indexing-actions-evidence.test.mjs",
+        "tools/indexing-actions-path-guards.test.mjs"
+      ],
+      "started_utc": "2026-10-25T13:05:04.147Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:05:04.442Z"
+    },
+    {
+      "name": "sync-type-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-sync-compile.mjs",
+        "--write"
+      ],
+      "started_utc": "2026-10-25T13:05:04.470Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:05:06.969Z"
+    },
+    {
+      "name": "historical-type-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-historical-types/compile.mjs"
+      ],
+      "started_utc": "2026-10-25T13:05:07.009Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:05:10.845Z"
+    },
+    {
+      "name": "sdk-client-build",
+      "command": [
+        "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/sdk/typescript/client/node_modules/.bin/tsup"
+      ],
+      "started_utc": "2026-10-25T13:05:10.883Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:05:12.684Z"
+    },
+    {
+      "name": "prepared-native-inputs",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/record-native-inputs.mjs"
+      ],
+      "started_utc": "2026-10-25T13:05:12.713Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:05:13.089Z"
+    },
+    {
+      "name": "abi-generated-normal",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-json",
+        "./abi/testdata/compile/generated"
+      ],
+      "started_utc": "2026-10-25T13:05:13.267Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:05:13.682Z"
+    },
+    {
+      "name": "abi-generated-race",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-race",
+        "-json",
+        "./abi/testdata/compile/generated"
+      ],
+      "started_utc": "2026-10-25T13:05:13.712Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:05:15.187Z"
+    },
+    {
+      "name": "go-normal",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/go-tests.mjs"
+      ],
+      "started_utc": "2026-10-25T13:05:15.216Z",
+      "native_indexing_actions_probes_output": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/native/indexing-actions-probes-normal.json",
+      "native_indexing_actions_output": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/native/indexing-actions-normal.json",
+      "native_indexing_output": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/native/indexing-service-normal.json",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:20:12.488Z"
+    },
+    {
+      "name": "go-race",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/go-tests.mjs",
+        "--race"
+      ],
+      "started_utc": "2026-10-25T13:20:12.515Z",
+      "native_indexing_actions_probes_output": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/native/indexing-actions-probes-race.json",
+      "native_indexing_actions_output": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/native/indexing-actions-race.json",
+      "native_indexing_output": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/native/indexing-service-race.json",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:37:18.995Z"
+    },
+    {
+      "name": "go-vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "started_utc": "2026-10-25T13:37:19.039Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:37:20.100Z"
+    },
+    {
+      "name": "cli-build",
+      "command": [
+        "go",
+        "build",
+        "-o",
+        "bin/ponder",
+        "./cmd/ponder"
+      ],
+      "started_utc": "2026-10-25T13:37:20.136Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:37:20.337Z"
+    },
+    {
+      "name": "erc20-build",
+      "command": [
+        "go",
+        "build",
+        "-o",
+        "bin/erc20",
+        "./examples/erc20"
+      ],
+      "started_utc": "2026-10-25T13:37:20.364Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:37:20.584Z"
+    },
+    {
+      "name": "core-oracle",
+      "command": [
+        "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/../ponder-upstream/packages/core/node_modules/.bin/vitest",
+        "run",
+        "--config",
+        "tools/oracle.config.mjs",
+        "--configLoader",
+        "native",
+        "--maxWorkers=2",
+        "src/utils/checkpoint.test.ts",
+        "src/utils/interval.test.ts",
+        "src/utils/finality.test.ts",
+        "src/build/schema.test.ts",
+        "src/utils/decodeEventLog.test.ts",
+        "src/utils/decodeAbiParameters.test.ts",
+        "src/build/factory.test.ts",
+        "src/utils/offset.test.ts",
+        "src/indexing-store/utils.test.ts",
+        "src/runtime/fragments.test.ts",
+        "src/rpc/actions.test.ts",
+        "--reporter=json",
+        "--outputFile=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/core-oracle.json"
+      ],
+      "started_utc": "2026-10-25T13:37:20.619Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:37:23.329Z"
+    },
+    {
+      "name": "parameters-types",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/parameters-typecheck.mjs"
+      ],
+      "started_utc": "2026-10-25T13:37:23.359Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:37:24.973Z"
+    },
+    {
+      "name": "sync-types",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-sync-types.mjs"
+      ],
+      "started_utc": "2026-10-25T13:37:25.003Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:37:52.878Z"
+    },
+    {
+      "name": "historical-types",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-historical-types.mjs"
+      ],
+      "started_utc": "2026-10-25T13:37:52.913Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:38:52.632Z"
+    },
+    {
+      "name": "runtime-index-types",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-index-types.mjs"
+      ],
+      "started_utc": "2026-10-25T13:38:52.666Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:39:36.942Z"
+    },
+    {
+      "name": "sdk-client-tests",
+      "command": [
+        "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/sdk/typescript/client/node_modules/.bin/vitest",
+        "run",
+        "--configLoader",
+        "native",
+        "--maxWorkers=2",
+        "--reporter=json",
+        "--outputFile=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/sdk-client.json"
+      ],
+      "started_utc": "2026-10-25T13:39:36.974Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:39:37.868Z"
+    },
+    {
+      "name": "sdk-react-types",
+      "command": [
+        "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/sdk/typescript/react/node_modules/.bin/vitest",
+        "run",
+        "--typecheck.only",
+        "--configLoader",
+        "native",
+        "--maxWorkers=2",
+        "--reporter=json",
+        "--outputFile=/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-go/parity/runs/indexing-actions-m39/full-verify-02/sdk-react.json"
+      ],
+      "started_utc": "2026-10-25T13:39:37.896Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T13:39:39.456Z"
+    }
+  ],
+  "typechecker_preflight": {
+    "compiler": "/workspace/scratch/fac5abfa4c9e/ponder-recovery/work/ponder-upstream/node_modules/.bin/tsc",
+    "version": "5.4.5",
+    "exit_code": 0
+  },
+  "prepared_native_inputs": {
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/prepared-native-inputs.json",
+    "sha256": "3dacc85e2a7c62680b798d2987a97a4eefdbfaebaa7c666983646566f9ab268a"
+  },
+  "native_inputs": {
+    "files": 1126,
+    "sha256": "c7072ab0bc5c10e615442065f6ec8ae1a2da8263d3a18a39b91727f71c878fb0"
+  },
+  "harness_inputs": [
+    {
+      "file": "tools/indexing-actions-path-guards.test.mjs",
+      "sha256": "f9e5650f90804acda23bb8220e068f04ce4595c7dd85ce156d148e6127d9b4c6"
+    },
+    {
+      "file": "tools/indexing-actions-acceptance.mjs",
+      "sha256": "2a8da42f24cd6675e4afdc794d2871226739f887ef561f5573cb9828a09da392"
+    },
+    {
+      "file": "tools/indexing-actions-full-verify.mjs",
+      "sha256": "8c0df6b42bd6af88d3e9b5b89e8991098fb60d750140bbc424c5fdf15a338bae"
+    },
+    {
+      "file": "tools/source-indexing-actions-results.mjs",
+      "sha256": "69a3048ca3eb439022fd10cca0945c428a51b55a4e0cd2e5e19ae28c4be11d09"
+    },
+    {
+      "file": "tools/source-indexing-actions-map.mjs",
+      "sha256": "5552d74df44d7b69783520e8a56284de6efd868a17790d72b7303d1438d98953"
+    },
+    {
+      "file": "tools/source-indexing-actions-original.mjs",
+      "sha256": "e6a4f72e5c54c116e7da408503916aa758fa8e6afb89f106da7edfaddee3677a"
+    },
+    {
+      "file": "tools/source-indexing-actions-live.config.mjs",
+      "sha256": "adc08dbc09a7365f0eed2fa2643a9209bf7eebac4ec5da4fe041661c6f8973ed"
+    },
+    {
+      "file": "tools/source-indexing-actions-live.setup.ts",
+      "sha256": "e6f4c0f7b21a95b463f423a4088e94ff3714f0ace40ed94e2538483259c84e49"
+    },
+    {
+      "file": "tools/source-indexing-actions-fixture.mjs",
+      "sha256": "3c222d7236ea9f2ec0692ad8db11eb3f462fd796caabd0d30f0242084dee1136"
+    },
+    {
+      "file": "tools/source-indexing-actions-collect.mjs",
+      "sha256": "1a2e8132ed0c7155295dc5f740f7f780aa35fd316b37f738cc3421d4ab289ff7"
+    },
+    {
+      "file": "tools/source-indexing-actions-evidence.mjs",
+      "sha256": "ed2ebbdc2112788ab8d43af7f48f9aa9677baca0c44ef8d66a775beec63509c7"
+    },
+    {
+      "file": "tools/source-indexing-actions-evidence.test.mjs",
+      "sha256": "bf38dabcb2abcbc55e053fa2d0c02345e07ee54f3462050127ef9db2df262d0f"
+    },
+    {
+      "file": "tools/source-indexing-actions-probes.mjs",
+      "sha256": "1a2935f994e1472cb93a4ddfaba2a937fad7f83c9a2c08752f60bf07ba919c4e"
+    },
+    {
+      "file": "tools/source-indexing-actions-probes.config.mjs",
+      "sha256": "1d565965dab14981c329a53e651e5d8dbf81c5c1dcb2083d733293833e292eaa"
+    },
+    {
+      "file": "tools/source-indexing-actions-probes.test.ts",
+      "sha256": "afb141595ab24103187d99893ca98a53d3181fab275ebf857e126b738429b272"
+    },
+    {
+      "file": "tools/source-indexing-actions-probe-fixture.mjs",
+      "sha256": "1daa7af9af85e891a566f2104f3259e5b3a22db264bc91145073ec1385702f58"
+    },
+    {
+      "file": "tools/manifest.mjs",
+      "sha256": "741c4812b0e86d29b0b0a360310b3fc48dbce7a351d842ef4fc7fc03fd138436"
+    },
+    {
+      "file": "tools/source-indexing-service-cache.mjs",
+      "sha256": "cc885357442bae90051a0bbd21f29c9e8abf4e3e04ab3d1e829037b38ed147fb"
+    },
+    {
+      "file": "tools/source-indexing-service-cache.config.mjs",
+      "sha256": "1b3e228de30e867079f51f49f2c26e459c478599e6c1c34a8b2880e45473672c"
+    },
+    {
+      "file": "tools/source-indexing-service-cache.test.ts",
+      "sha256": "57d10164ed0ae3d027fb46268ce6d585f624fa815d03e771fead7b5b93cc952b"
+    },
+    {
+      "file": "tools/source-indexing-service-cache-fixture.mjs",
+      "sha256": "afe23a77d061df4e9d96d8940bbaf26df1797dec1b8e122790b5760bc0a7f209"
+    },
+    {
+      "file": "tools/source-indexing-service-cache-evidence.test.mjs",
+      "sha256": "f21a99732dd3a7cf8799c8c92a211c00c0041e68ca050f5d6c672358f6d77ed9"
+    },
+    {
+      "file": "tools/indexing-service-full-verify.mjs",
+      "sha256": "1567c9e00afcabc1dfac461ece1d64eeed29a3afd2fbe04c1c8e007c272c3c89"
+    },
+    {
+      "file": "tools/source-indexing-service-results.mjs",
+      "sha256": "db50c0c9079f42841cba3b8dfe9118784430a45b2c3eb335a613620df32171b7"
+    },
+    {
+      "file": "tools/source-indexing-service-map.mjs",
+      "sha256": "c6e0483ecff6978921ba872087c56b2f49468becc9eefcc1b3f258f6a19b8ed1"
+    },
+    {
+      "file": "tools/source-indexing-service-collect.mjs",
+      "sha256": "b7784e887fbc36874aab0e24c5d03dd12713c769415c26c7c271f78e58e03c17"
+    },
+    {
+      "file": "tools/source-indexing-service-proxy.mjs",
+      "sha256": "96e232172b7f1511ed01fa294dba54acd68d1cec27eaa906efe51e499eb2729a"
+    },
+    {
+      "file": "tools/source-indexing-service-proxy.config.mjs",
+      "sha256": "acb1e55422509f7ccbc9de57debac8b29e380c357bb9b65a04683b763e42a910"
+    },
+    {
+      "file": "tools/source-indexing-service-proxy.test.ts",
+      "sha256": "226750063021ffbcf4fde81103fe57ef6e3fd04f9da7663eace20b2c0b674b50"
+    },
+    {
+      "file": "tools/source-indexing-service-proxy-fixture.mjs",
+      "sha256": "7aa048c8ba00d0f83e14f46886865cf5e599300ed43267c4b42301fbe3b86fff"
+    },
+    {
+      "file": "tools/source-indexing-service-proxy-evidence.test.mjs",
+      "sha256": "eb158e5ae79a79bb1d6d0cd573ce13a49db991744236cff65f2242c2dbd76d3f"
+    },
+    {
+      "file": "tools/source-indexing-service-original.mjs",
+      "sha256": "1620e4f3abd93cd37296745de2592600c3a18ee5d90049b3adfa95547232a97c"
+    },
+    {
+      "file": "tools/source-indexing-service-live.config.mjs",
+      "sha256": "7315768c688ca1ee5a57f1932908dbfadd5df02f7a647f43924396783339221a"
+    },
+    {
+      "file": "tools/source-indexing-service-live.setup.ts",
+      "sha256": "e09de5f2e5c2e915bb7c77643b579e41bc93c3bd2e66ab960eb74db0f504b255"
+    },
+    {
+      "file": "tools/source-indexing-service-fixture.mjs",
+      "sha256": "96620f5ba833501e634d78b504496a2240985eed0f977ffca4d51f2bf338f7f6"
+    },
+    {
+      "file": "tools/source-indexing-service-evidence.mjs",
+      "sha256": "121046e3c6eb313be7f9ab3dd243e1d953431906a0b4655bbb79a38d232e5867"
+    },
+    {
+      "file": "tools/source-indexing-service-evidence.test.mjs",
+      "sha256": "ebc6c89ba7ea5f4408e7c821d17cf65ef3225bdd16fd31e765d99267b5c62150"
+    },
+    {
+      "file": "tools/go-source-fingerprint.mjs",
+      "sha256": "b2c656e0a81df291e106d69f22afc24096fd7bbf583ae09b0eb3d69e7c3d44d1"
+    },
+    {
+      "file": "tools/record-native-inputs.mjs",
+      "sha256": "357559d3b0a667212004f6683fb203ebaab0cab0f2157b3666764624f48dbdb6"
+    },
+    {
+      "file": "tools/source-sync-results.mjs",
+      "sha256": "e025a056a2930a629e413bc9c002bdd99b1e447d927fcfc535aadaa8bb4d7328"
+    },
+    {
+      "file": "tools/source-historical-results.mjs",
+      "sha256": "efc0cbbd856ac2155050c9b838536c5f845cbc817e2549d34ebe1da148a31a2d"
+    },
+    {
+      "file": "tools/source-realtime-results.mjs",
+      "sha256": "dc8dd1975eb371fd79faf4fad81682ae2994df2d9737bedfcdb084ffb8da012d"
+    },
+    {
+      "file": "tools/config-live-results.mjs",
+      "sha256": "ca18950d8eb0cc2b78f280421c81bebbd294b5496fc14185769b187bc56cb5fd"
+    },
+    {
+      "file": "tools/sql-source-results.mjs",
+      "sha256": "b70aaac684bb04a8da30cc2f1839c8c6163ea2203aa337140b3be1d625357d01"
+    },
+    {
+      "file": "tools/source-runtime-multichain-results.mjs",
+      "sha256": "0f3b58f8986fc2e85aece846cc1e20bdedafd940332a275f6f916fda8d2ee0b3"
+    },
+    {
+      "file": "tools/source-runtime-multichain-map.mjs",
+      "sha256": "da99bd79ea47ea7fa86f231a1d0c5fb1b0cbb69ea3543c153a3ac0a5aff35125"
+    },
+    {
+      "file": "tools/record-results.mjs",
+      "sha256": "27d03871c88ff752e380b267c88db4bf52c27a4336481a5e2e356bf30e9e0b2d"
+    },
+    {
+      "file": "tools/source-runtime-historical-results.mjs",
+      "sha256": "d37a53cea9eda16eee61647a45ec7048b6475096b299f25b1c45911da488bcdc"
+    },
+    {
+      "file": "tools/source-runtime-index-results.mjs",
+      "sha256": "2bb5baae0a371ff93d7c9ef8167609bc4872e63c065aecb4c2b66ee71db9ea11"
+    },
+    {
+      "file": "tools/go-tests.mjs",
+      "sha256": "c4de2f4a967654d761c813936e39e29e1260fb3cc75656661445cfc826c67db2"
+    },
+    {
+      "file": "tools/runtime-multichain-full-verify.mjs",
+      "sha256": "7f4e087dd905108768c6ddde41be4dd2cff14a67aea773b26f75b158bc2a262b"
+    },
+    {
+      "file": "tools/pinned-typecheck-preflight.mjs",
+      "sha256": "785a64b4904e987982d1f76da7589bdc42022676be5116251c073bd92cec8d0a"
+    },
+    {
+      "file": "tools/loopback-adapter.mjs",
+      "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+    },
+    {
+      "file": "tools/loopback-context.mjs",
+      "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+    },
+    {
+      "file": "tools/client-compat-launch.mjs",
+      "sha256": "1f619acd8f36939bfdb44088303f8432aa6123883f14be4f521b1a8a1b205229"
+    },
+    {
+      "file": "tools/client-compat-provenance.mjs",
+      "sha256": "14fdb40014e8166cb3e9f6ea2da1a5274db0d7a719124ee2f3e565a87404dd5a"
+    },
+    {
+      "file": "tools/source-runtime-index-live.setup.ts",
+      "sha256": "3f92691e9004aacaed189ca294d92e9a6bbf0da04988db17f59b5258285ba0b4"
+    },
+    {
+      "file": "tools/source-runtime-index-original.mjs",
+      "sha256": "4ff1d5860882bf81976e63b094643ca03948dae93e1d30e783b3bde7da786ebc"
+    },
+    {
+      "file": "tools/source-runtime-historical-original.mjs",
+      "sha256": "1b8684b5cc3bf73a201df9404f94ed7bebc9924ea5bad2798738c72d5871ebfd"
+    },
+    {
+      "file": "tools/source-runtime-historical-live.config.mjs",
+      "sha256": "c95f9997cf9e2a735ae2ae54ea7deeb6b603311f06bdd54c0d44cfdac00d4aac"
+    },
+    {
+      "file": "tools/source-runtime-historical-live.setup.ts",
+      "sha256": "5fdae76512c523b5263ae13da18687346e045ab9cb170e118c7ebcfbb17b3006"
+    },
+    {
+      "file": "tools/source-runtime-historical-fixture.mjs",
+      "sha256": "1a79b5715f9599da93caab6cef3740bec8972d585ca0ffe1768a5933339dc518"
+    },
+    {
+      "file": "tools/source-runtime-historical-evidence.mjs",
+      "sha256": "ea4ab7b0530f03d24905800280d4069d2f956de14ffaf6ffba01b545c7df6869"
+    },
+    {
+      "file": "tools/source-runtime-historical-evidence.test.mjs",
+      "sha256": "802c7de1eaf1c164117675691fa3a9ebbbbc9e1f5835cb2c7ff63db577d0f73e"
+    },
+    {
+      "file": "tools/source-runtime-historical-log-order.mjs",
+      "sha256": "bf0e40b975fb0f897f20498568b2d1659d4caaf1c601b984e45c3919f67a53aa"
+    },
+    {
+      "file": "tools/source-runtime-historical-log-order.config.mjs",
+      "sha256": "02e4470688c0dc79f02127c55f4135a063dc322e638478da23b53a8b5ba761d0"
+    },
+    {
+      "file": "tools/source-runtime-historical-log-order.test.ts",
+      "sha256": "022421aecfbe5ed388963875f92a83eacf1cd081ae0f14b445bb7f583245cdaa"
+    },
+    {
+      "file": "tools/source-runtime-multichain-original.mjs",
+      "sha256": "65dbc386b74864fd7c090816da420dff22969423c19dc749b9c31ff7aeac1c3c"
+    },
+    {
+      "file": "tools/source-runtime-multichain-live.config.mjs",
+      "sha256": "928e752f534c45e94af48df70d2fbcb82c1d43074415eb2e5616d7780c163aed"
+    },
+    {
+      "file": "tools/source-runtime-multichain-live.setup.ts",
+      "sha256": "37c6ce1b8cb67c2e8ea249480288932b45bd2a579be05894587ccac11a7bbd81"
+    },
+    {
+      "file": "tools/source-runtime-multichain-fixture.mjs",
+      "sha256": "879db8ce16ac8f9de4f4072b69f97860db6faebaf07f14aa188a1216cf6c145a"
+    },
+    {
+      "file": "tools/source-runtime-multichain-evidence.mjs",
+      "sha256": "944c87627e5b1a3e015434ea2e7f9d154712863d450df93f9eb3cbe56e72578b"
+    },
+    {
+      "file": "tools/source-runtime-multichain-evidence.test.mjs",
+      "sha256": "9a1bb70a880e1474e90cfd0d6d97f9965c3db905dcdc5774ceeeea9065fd0072"
+    },
+    {
+      "file": "tools/source-runtime-multichain-probes.mjs",
+      "sha256": "4c73e2b4a39e4379d96cb885f6034c1c586fa5f67edf90f7630eeda6e9cbfd6b"
+    },
+    {
+      "file": "tools/source-runtime-multichain-probes.config.mjs",
+      "sha256": "a4f9ca0f5a2c254aae558dda850228e5697f5bab578272f71f8274e02f38e771"
+    },
+    {
+      "file": "tools/source-runtime-multichain-probes.test.ts",
+      "sha256": "f872f3fba4a1fc060255c3e31e6a8563943d94525d52217ca5eb461ec59411a0"
+    },
+    {
+      "file": "tools/source-runtime-multichain-probe-fixture.mjs",
+      "sha256": "d627799d3e8436fc0f402fb7a6b69ada4da2dd1977adb3faf4ba57cec3c6e117"
+    }
+  ],
+  "finished_native_inputs": {
+    "files": 1126,
+    "sha256": "c7072ab0bc5c10e615442065f6ec8ae1a2da8263d3a18a39b91727f71c878fb0"
+  },
+  "context_archive": {
+    "file": "parity/runs/indexing-actions-m39/full-verify-02/context-archive.json",
+    "sha256": "327cd9184fb0ff951d123feaa0792bfb06cf12b3320555102186d6aa1c4fe156"
+  },
+  "source_manifest_verified_after": true,
+  "finished_utc": "2026-10-25T13:39:39.875Z"
+}

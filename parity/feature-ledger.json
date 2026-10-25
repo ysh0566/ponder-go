@@ -32,9 +32,9 @@
       "upstream_sources": [],
       "evidence": [
         "parity/runs/summary.json",
-        "parity/runs/batch-37.json"
+        "parity/runs/batch-38.json"
       ],
-      "remaining": "523/905 exact original records verified; 382 unimplemented. Seven runtime-passed cases (four runtime-index, three indexing handler service) still lack exact native type obligations and remain unmapped. Supplemental regressions add no source credit."
+      "remaining": "531/905 exact original records verified; 374 unimplemented. Seven runtime-passed cases (four runtime-index, three indexing handler service) still lack exact native type obligations and remain unmapped. Supplemental regressions add no source credit."
     },
     {
       "id": "differential-harness",
@@ -1290,7 +1290,31 @@
         "parity/runs/batch-37.json",
         "docs/SOURCE_INDEXING_SERVICE.md"
       ],
-      "remaining": "Source-shaped handler service only; current46stage aggregate and9canonical collectors accepted. First15 runtime cases/33assertions replay bothDB normal/race;3 exact TS-only directives unproved,12 formal mappings, not15. Explicit PropertyView syntax is not transparent JS Proxy; Object.keys descriptor operation remains unsupported (22of23 supplemental proxy operations). Source cache insertion invocation begins before getBalance returns; arbitrary synchronous Go CachePut under owned goroutine can begin afterward. Existing AsyncRequester admission does not provide AsyncCache admission, so this observable prefix gap remains open for full client facade work; only nonawait/release/settle causality, raw cache/RPC args and late-error handling are compared. Nine captured source sync-table snapshots are archival-only, not native table equivalence. Last8 client facade originals, full Viem actions/profile/prefetch, JS diagnostics, outer historical runner/atomicmultichain scheduling/realtimecutover/readiness remain. Source PGlite callback-only QB transaction differs from stronger native store atomicity."
+      "remaining": "Historical M38 handler subset remains12 formal mappings for15 runtime originals/33assertions, with3 exact TS-only gaps. M39 now replays all23 descriptor operations and provides strict standalone AsyncCache prepared admission plus8 separately mapped action originals. Generic synchronous fallback timing, concurrent cache-read visibility, commit order and batchinsert grouping remain unproved; captured service sync-table snapshots stay archival-only. No full profile/prefetch/LRU or outer runner/readiness/cutover claim; native stronger PGlite transaction safety is not source failure parity."
+    },
+    {
+      "id": "source-indexing-actions-m39",
+      "status": "verified_subset",
+      "implementation_files": [
+        "indexing/client_actions.go",
+        "indexing/client_multicall.go",
+        "indexing/client_abi.go",
+        "indexing/client.go",
+        "store/source_rpc_async.go",
+        "indexing/access.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing/client.ts",
+        "packages/core/src/indexing/index.test.ts",
+        "packages/core/src/sync-store/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/source-indexing-actions-verification.json",
+        "parity/runs/source-indexing-service-verification.json",
+        "parity/runs/batch-38.json",
+        "docs/SOURCE_INDEXING_ACTIONS.md"
+      ],
+      "remaining": "Eight original action cases/nine assertions verified both databases/full modes, not full cachedViemClient. No profile/prefetch/LRU, full indexing/client.test.ts, account/state overrides or chain deployment discovery. Strict standalone AsyncCache synchronously prepares/admit queue work; bound transaction adapters remain synchronous, custom fallback weaker. Concurrent cache-read visibility, commit-order and sourcebatch/nativeperchild invocation grouping not equivalent. Typed revert/zero-data meaning not full Viem wrappers/custom-error decoding; ABI.Parse anonymous tuple encoding limited. Seven prior static gaps and outer runner/readiness/cutover remain."
     }
   ]
 }

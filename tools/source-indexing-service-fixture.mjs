@@ -15,7 +15,7 @@ const backend_cases={},captures={};
 let census;
 for(const backend of ['postgres','pglite']){
  const input=arg(backend);if(!input)throw Error('Explicit both backend capture directories required');
- const directory=path.resolve(root,input);if(!directory.startsWith(root+'/parity/runs/indexing-service-m38/'))throw Error('Scoped original evidence required');
+ const directory=path.resolve(root,input);if(!['indexing-service-m38','indexing-actions-m39'].some(stage=>directory.startsWith(root+'/parity/runs/'+stage+'/')))throw Error('Scoped original evidence required');
  const result=JSON.parse(fs.readFileSync(directory+'/result.json')),original=JSON.parse(fs.readFileSync(directory+'/original.json'));
  const captureFile=directory+'/calls.json.gz',capture=JSON.parse(gunzipSync(fs.readFileSync(captureFile)));
  if(!result.complete||!result.success||result.backend!==backend||!result.environment_adapted||result.pristine_file!==false||!result.adapter_verified_after||result.counts.passed!==23||result.counts.failed||result.counts.pending||!original.success)throw Error('Complete unchanged original execution required');

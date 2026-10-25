@@ -18,7 +18,8 @@ type BalanceOptions struct {
 }
 
 // ClientSet owns stable per-chain client identities and the currently dispatched
-// source event. It does not implement Viem's other public actions or prefetching.
+// source event. Its public actions are a bounded subset; it does not implement
+// cachedViemClient profiling, prefetching, or the in-memory LRU.
 type ClientSet struct {
 	mu        sync.RWMutex
 	event     Object
@@ -64,6 +65,25 @@ func NewClientSet(chains []Object, requesters []rpc.Requester, caches ...rpc.Cac
 	}
 	return s, nil
 }
+
+// NewStrictClientSet requires real synchronous admission capability for every
+// enabled cache. Transaction-bound and custom synchronous-only adapters remain
+// usable with NewClientSet, but do not satisfy this stronger source prefix.
+func NewStrictClientSet(chains []Object, requesters []rpc.Requester, caches ...rpc.Cache) (*ClientSet, error) {
+	s, err := NewClientSet(chains, requesters, caches...)
+	if err != nil {
+		return nil, err
+	}
+	for key, client := range s.clients {
+		if client.cacheEnabled {
+			if _, ok := client.cache.(rpc.AsyncCache); !ok {
+				return nil, fmt.Errorf("chain %s requires standalone asynchronous cache admission", key)
+			}
+		}
+	}
+	return s, nil
+}
+
 func clientChainKey(chain Object) (string, error) {
 	n, e := clientInteger(chain["id"])
 	if e != nil {
@@ -84,78 +104,15 @@ func (s *ClientSet) GetClient(chain Object) (*Client, error) {
 	return c, nil
 }
 func (c *Client) GetBalance(ctx context.Context, address string, options ...BalanceOptions) (*big.Int, error) {
-	if e := ctx.Err(); e != nil {
-		return nil, e
+	tag, err := c.blockTag(ctx, options)
+	if err != nil {
+		return nil, err
 	}
-	c.set.mu.RLock()
-	closed := c.set.closed
-	c.set.mu.RUnlock()
-	if closed {
-		return nil, fmt.Errorf("indexing client is closed")
+	raw, err := c.request(ctx, "eth_getBalance", []any{address, tag})
+	if err != nil {
+		return nil, err
 	}
-	if len(options) > 1 {
-		return nil, fmt.Errorf("getBalance accepts at most one options object")
-	}
-	var opt BalanceOptions
-	if len(options) == 1 {
-		opt = options[0]
-	}
-	var tag string
-	if opt.Cache == "immutable" {
-		tag = "latest"
-	} else {
-		n := opt.BlockNumber
-		if n == nil {
-			c.set.mu.RLock()
-			event := c.set.event
-			var v any
-			if event["type"] == "setup" {
-				v = event["block"]
-			} else if data, ok := event["event"].(map[string]any); ok {
-				if block, ok := data["block"].(map[string]any); ok {
-					v = block["number"]
-				}
-			}
-			var e error
-			n, e = clientInteger(v)
-			c.set.mu.RUnlock()
-			if e != nil {
-				return nil, fmt.Errorf("getBalance requires event block: %w", e)
-			}
-		}
-		if n.Sign() < 0 {
-			return nil, fmt.Errorf("negative getBalance block number")
-		}
-		tag = "0x" + n.Text(16)
-	}
-	params := []any{address, tag}
-	keyBytes, e := json.Marshal([]any{c.chainID, "eth_getBalance", params})
-	if e != nil {
-		return nil, e
-	}
-	key := string(keyBytes)
-	var raw json.RawMessage
-	if c.cacheEnabled && c.cache != nil {
-		var hit bool
-		raw, hit, e = c.cache.CacheGet(ctx, key)
-		if e != nil {
-			return nil, e
-		}
-		if hit {
-			return decodeBalance(raw)
-		}
-	}
-	if e = c.requester.Call(ctx, "eth_getBalance", params, &raw); e != nil {
-		return nil, e
-	}
-	balance, e := decodeBalance(raw)
-	if e != nil {
-		return nil, e
-	}
-	if c.cacheEnabled && c.cache != nil {
-		c.set.putAsync(ctx, c.cache, key, raw)
-	} // Source ignores cache insertion failures and does not await writes.
-	return balance, nil
+	return decodeBalance(raw)
 }
 func decodeBalance(raw json.RawMessage) (*big.Int, error) {
 	var value string
@@ -210,10 +167,11 @@ func clientInteger(v any) (*big.Int, error) {
 	return nil, fmt.Errorf("invalid nonnegative integer %v", v)
 }
 
-// putAsync owns each fire-and-forget write until completion. A caller using a
-// transaction-bound cache must explicitly drain before ending that transaction;
-// request completion never waits on cache insertion. Cache implementations must
-// honor context cancellation for Close to complete.
+// putAsync owns each fire-and-forget write until completion. AsyncCache admission
+// runs synchronously; only its completion is awaited in a goroutine. A custom
+// synchronous-only adapter retains the weaker legacy goroutine invocation prefix.
+// Transaction-bound legacy adapters must be drained by their owner before return.
+// Cache implementations must honor cancellation for Close to complete.
 func (s *ClientSet) putAsync(ctx context.Context, cache rpc.Cache, key string, raw json.RawMessage) {
 	s.mu.Lock()
 	if s.closed {
@@ -229,6 +187,11 @@ func (s *ClientSet) putAsync(ctx context.Context, cache rpc.Cache, key string, r
 	s.pending[id] = cancel
 	value := append(json.RawMessage(nil), raw...)
 	s.mu.Unlock()
+	var completion <-chan error
+	asynchronous, admitted := cache.(rpc.AsyncCache)
+	if admitted {
+		completion = asynchronous.BeginCachePut(child, key, value)
+	}
 	go func() {
 		defer func() {
 			cancel()
@@ -239,7 +202,15 @@ func (s *ClientSet) putAsync(ctx context.Context, cache rpc.Cache, key string, r
 			}
 			s.mu.Unlock()
 		}()
-		_ = cache.CachePut(child, key, value)
+		if admitted {
+			// A malformed custom implementation returning nil is not retried through
+			// CachePut: admission may already have happened and must never be doubled.
+			if completion != nil {
+				<-completion
+			}
+		} else {
+			_ = cache.CachePut(child, key, value)
+		}
 	}()
 }
 

@@ -40,12 +40,22 @@ func (c *ProtocolCache) InsertSourceRPCRawRequestResults(ctx context.Context, ch
 	return c.transaction(ctx, func(tx Transaction) error { return c.insertSourceRPC(ctx, tx, chain, requests) })
 }
 func (c *ProtocolCache) insertSourceRPC(ctx context.Context, q Querier, chain uint64, requests []SourceRPCRawResult) error {
+	query, args, err := c.prepareSourceRPC(chain, requests)
+	if err != nil {
+		return err
+	}
+	return q.Exec(ctx, query, args...)
+}
+
+// prepareSourceRPC constructs the complete immutable SQL row payload before an
+// asynchronous adapter write is admitted. It is also the synchronous insert path.
+func (c *ProtocolCache) prepareSourceRPC(chain uint64, requests []SourceRPCRawResult) (string, []any, error) {
 	values := make([]string, len(requests))
 	args := make([]any, 0, len(requests)*4)
 	for i, r := range requests {
 		hash, e := SourceRPCRequestHash(r.Request)
 		if e != nil {
-			return e
+			return "", nil, e
 		}
 		var block any
 		if r.BlockNumber != nil && *r.BlockNumber != 0 {
@@ -55,7 +65,7 @@ func (c *ProtocolCache) insertSourceRPC(ctx context.Context, q Querier, chain ui
 		values[i] = fmt.Sprintf("($%d,$%d,$%d,$%d)", n+1, n+2, n+3, n+4)
 		args = append(args, chain, hash, block, r.Result)
 	}
-	return q.Exec(ctx, "INSERT INTO "+c.table("rpc_request_results")+"(chain_id,request_hash,block_number,result) VALUES"+strings.Join(values, ",")+" ON CONFLICT(chain_id,request_hash) DO NOTHING", args...)
+	return "INSERT INTO " + c.table("rpc_request_results") + "(chain_id,request_hash,block_number,result) VALUES" + strings.Join(values, ",") + " ON CONFLICT(chain_id,request_hash) DO NOTHING", args, nil
 }
 func (c *ProtocolCache) GetSourceRPCRequestResults(ctx context.Context, chain uint64, requests []rpc.SourceRequest) ([]*string, error) {
 	raw := make([]any, len(requests))

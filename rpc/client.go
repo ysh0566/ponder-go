@@ -28,6 +28,17 @@ type Cache interface {
 	CacheGet(context.Context, string) (json.RawMessage, bool, error)
 	CachePut(context.Context, string, json.RawMessage) error
 }
+
+// AsyncCache is an optional admission contract for fire-and-forget cache writes.
+// BeginCachePut must snapshot and validate its input, construct the actual write,
+// and admit it to an owned write queue before returning. The buffered future
+// receives exactly one completion error and is then closed. Starting a goroutine
+// around CachePut alone does not implement this contract. Completion/commit order
+// relative to other database work is deliberately not promised.
+type AsyncCache interface {
+	BeginCachePut(context.Context, string, json.RawMessage) <-chan error
+}
+
 type Client struct {
 	URLs              []string
 	HTTP              *http.Client

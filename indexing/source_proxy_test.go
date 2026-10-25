@@ -11,7 +11,7 @@ import (
 )
 
 // TestSourceIndexingServiceProxy replays actual source probe inputs. Supplemental
-// only: Go has no JS property descriptors, and Node inspect text is normalized
+// only: string descriptor reflection uses the explicit facade, and Node inspect text is normalized
 // from the actual Inspect result rather than asserted as a Go formatting API.
 func TestSourceIndexingServiceProxy(t *testing.T) {
 	raw, e := os.ReadFile("../testdata/indexing/source-indexing-service-proxy.json")
@@ -86,9 +86,7 @@ func TestSourceIndexingServiceProxy(t *testing.T) {
 		case "ownKeys":
 			value = view.Keys()
 		case "objectKeys":
-			// No descriptor API exists on the explicit Go facade. Do not substitute
-			// Reflect.ownKeys or a fabricated empty result as claimed parity.
-			t.Log("source Object.keys descriptor reflection has no Go facade counterpart; supplemental gap")
+			value = view.ObjectKeys()
 		case "set-present":
 			err = view.Set("gas", big.NewInt(12))
 			value = err == nil
@@ -171,7 +169,7 @@ func TestSourceIndexingServiceProxy(t *testing.T) {
 			if err != nil {
 				t.Fatal(op, err)
 			}
-			if op != "objectKeys" && op != "inspect-complete" {
+			if op != "inspect-complete" {
 				indexingEqual(t, op+" value", value, step["value"])
 			}
 		}
