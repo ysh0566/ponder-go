@@ -157,12 +157,17 @@ type pgliteTx struct {
 }
 
 func OpenPGlite(ctx context.Context, directory string) (Backend, error) {
+	return openPGlite(ctx, directory, nil)
+}
+
+func openPGlite(ctx context.Context, directory string, inheritedLocks []*os.File) (Backend, error) {
 	_, file, _, _ := runtime.Caller(0)
 	script := filepath.Join(filepath.Dir(file), "../bridge/pglite.mjs")
 	if directory == "" {
 		directory = "memory://"
 	}
 	cmd := exec.CommandContext(ctx, "node", script, directory)
+	cmd.ExtraFiles = inheritedLocks
 	cmd.Stderr = os.Stderr
 	in, e := cmd.StdinPipe()
 	if e != nil {

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"ponder.local/ponder-go/schema"
+	"ponder.local/ponder-go/sqlquery"
 	"reflect"
 	"sync"
 	"time"
@@ -50,8 +51,9 @@ type Conflict struct {
 }
 
 type IndexingStore struct {
-	writer *Writer
-	Cache  *IndexingCache
+	readonly bool
+	writer   *Writer
+	Cache    *IndexingCache
 }
 
 // Close ends the native handler scope. Store.Apply also closes it automatically.
@@ -87,6 +89,11 @@ func (w *Writer) indexingSession() *IndexingStore {
 func (w *Writer) Indexing(options ...CacheOptions) *IndexingStore {
 	w.ormMu.Lock()
 	defer w.ormMu.Unlock()
+	return w.indexingLocked(options...)
+}
+
+// indexingLocked requires ormMu, including when installing a session binding.
+func (w *Writer) indexingLocked(options ...CacheOptions) *IndexingStore {
 	if w.orm != nil {
 		return w.orm
 	}
@@ -175,6 +182,15 @@ func property(c schema.Column) string {
 func (db *IndexingStore) active() error {
 	if db.writer.closed.Load() {
 		return &NonRetryableUserError{Message: "A store API method (find, update, insert, delete) was called after the indexing function returned."}
+	}
+	return nil
+}
+func (db *IndexingStore) writable() error {
+	if e := db.active(); e != nil {
+		return e
+	}
+	if db.readonly {
+		return &NonRetryableUserError{Message: "read-only indexing binding cannot write"}
 	}
 	return nil
 }
@@ -356,7 +372,7 @@ func (db *IndexingStore) insert(ctx context.Context, t schema.Table, cache *tabl
 func (db *IndexingStore) InsertOne(ctx context.Context, name string, input Row, conflict Conflict) (Row, error) {
 	db.Cache.mu.Lock()
 	defer db.Cache.mu.Unlock()
-	if e := db.active(); e != nil {
+	if e := db.writable(); e != nil {
 		return nil, e
 	}
 	t, cache, e := db.table(name)
@@ -369,7 +385,7 @@ func (db *IndexingStore) InsertOne(ctx context.Context, name string, input Row, 
 func (db *IndexingStore) InsertMany(ctx context.Context, name string, inputs []Row, conflict Conflict) ([]Row, error) {
 	db.Cache.mu.Lock()
 	defer db.Cache.mu.Unlock()
-	if e := db.active(); e != nil {
+	if e := db.writable(); e != nil {
 		return nil, e
 	}
 	t, cache, e := db.table(name)
@@ -435,7 +451,7 @@ func (db *IndexingStore) update(ctx context.Context, t schema.Table, cache *tabl
 func (db *IndexingStore) Update(ctx context.Context, name string, key, set Row) (Row, error) {
 	db.Cache.mu.Lock()
 	defer db.Cache.mu.Unlock()
-	if e := db.active(); e != nil {
+	if e := db.writable(); e != nil {
 		return nil, e
 	}
 	t, cache, e := db.table(name)
@@ -448,7 +464,7 @@ func (db *IndexingStore) Update(ctx context.Context, name string, key, set Row) 
 func (db *IndexingStore) UpdateFunc(ctx context.Context, name string, key Row, update RowUpdater) (Row, error) {
 	db.Cache.mu.Lock()
 	defer db.Cache.mu.Unlock()
-	if e := db.active(); e != nil {
+	if e := db.writable(); e != nil {
 		return nil, e
 	}
 	t, cache, e := db.table(name)
@@ -461,6 +477,9 @@ func (db *IndexingStore) UpdateFunc(ctx context.Context, name string, key Row, u
 func (db *IndexingStore) SQL(ctx context.Context, query string, args ...any) (Result, error) {
 	if e := db.active(); e != nil {
 		return Result{}, e
+	}
+	if db.readonly && !sqlquery.IsReadonly(query) {
+		return Result{}, &NonRetryableUserError{Message: "read-only indexing binding cannot write SQL"}
 	}
 	return db.writer.SQL(ctx, query, args...)
 }
@@ -518,7 +537,7 @@ func (db *IndexingStore) Select(ctx context.Context, name string, key Row) ([]Ro
 func (db *IndexingStore) Delete(ctx context.Context, name string, key Row) (bool, error) {
 	db.Cache.mu.Lock()
 	defer db.Cache.mu.Unlock()
-	if e := db.active(); e != nil {
+	if e := db.writable(); e != nil {
 		return false, e
 	}
 	t, cache, e := db.table(name)
@@ -604,6 +623,9 @@ func (cache *IndexingCache) flush(ctx context.Context, checkActive bool, tables 
 		if e := cache.db.active(); e != nil {
 			return e
 		}
+	}
+	if cache.db.readonly {
+		return nil
 	}
 	selected := map[string]bool{}
 	for _, table := range tables {

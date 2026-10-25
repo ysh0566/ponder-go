@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 
 	"ponder.local/ponder-go/store"
 )
@@ -73,9 +74,13 @@ type DatabaseErrorClassifier func(error) error
 // Database never starts, commits, or substitutes a transaction. Its underlying
 // IndexingStore and cache are the real transaction-bound instances supplied by caller.
 type Database struct {
-	underlying *store.IndexingStore
-	errors     RetryableErrorHandler
-	classify   DatabaseErrorClassifier
+	underlying    *store.IndexingStore
+	errors        RetryableErrorHandler
+	classify      DatabaseErrorClassifier
+	session       *store.IndexingSession
+	bindingMu     sync.Mutex
+	binding       *DatabaseBinding
+	readOnlyScope func() (func(), error)
 }
 
 func NewDatabase(db *store.IndexingStore, handler RetryableErrorHandler, classifiers ...DatabaseErrorClassifier) *Database {
@@ -98,40 +103,96 @@ func (db *Database) capture(err error) error {
 	return err
 }
 func (db *Database) Find(ctx context.Context, name string, key store.Row) (store.Row, error) {
-	v, e := db.underlying.Find(ctx, name, key)
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return nil, db.capture(err)
+	}
+	defer release()
+	v, e := underlying.Find(ctx, name, key)
 	return v, db.capture(e)
 }
 func (db *Database) InsertOne(ctx context.Context, name string, input store.Row, conflict store.Conflict) (store.Row, error) {
-	v, e := db.underlying.InsertOne(ctx, name, input, conflict)
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return nil, db.capture(err)
+	}
+	defer release()
+	v, e := underlying.InsertOne(ctx, name, input, conflict)
 	return v, db.capture(e)
 }
 func (db *Database) InsertMany(ctx context.Context, name string, input []store.Row, conflict store.Conflict) ([]store.Row, error) {
-	v, e := db.underlying.InsertMany(ctx, name, input, conflict)
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return nil, db.capture(err)
+	}
+	defer release()
+	v, e := underlying.InsertMany(ctx, name, input, conflict)
 	return v, db.capture(e)
 }
 func (db *Database) Update(ctx context.Context, name string, key, set store.Row) (store.Row, error) {
-	v, e := db.underlying.Update(ctx, name, key, set)
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return nil, db.capture(err)
+	}
+	defer release()
+	v, e := underlying.Update(ctx, name, key, set)
 	return v, db.capture(e)
 }
 func (db *Database) UpdateFunc(ctx context.Context, name string, key store.Row, update store.RowUpdater) (store.Row, error) {
-	v, e := db.underlying.UpdateFunc(ctx, name, key, update)
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return nil, db.capture(err)
+	}
+	defer release()
+	v, e := underlying.UpdateFunc(ctx, name, key, update)
 	return v, db.capture(e)
 }
 func (db *Database) Delete(ctx context.Context, name string, key store.Row) (bool, error) {
-	v, e := db.underlying.Delete(ctx, name, key)
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return false, db.capture(err)
+	}
+	defer release()
+	v, e := underlying.Delete(ctx, name, key)
 	return v, db.capture(e)
 }
 func (db *Database) Select(ctx context.Context, name string, key store.Row) ([]store.Row, error) {
-	v, e := db.underlying.Select(ctx, name, key)
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return nil, db.capture(err)
+	}
+	defer release()
+	v, e := underlying.Select(ctx, name, key)
 	return v, db.capture(e)
 }
 func (db *Database) SQL(ctx context.Context, query string, args ...any) (store.Result, error) {
-	v, e := db.underlying.SQL(ctx, query, args...)
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return store.Result{}, db.capture(err)
+	}
+	defer release()
+	v, e := underlying.SQL(ctx, query, args...)
 	return v, db.capture(e)
 }
 func (db *Database) Flush(ctx context.Context, tables ...string) error {
-	return db.capture(db.underlying.Cache.Flush(ctx, tables...))
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return db.capture(err)
+	}
+	defer release()
+	return db.capture(underlying.Cache.Flush(ctx, tables...))
 }
+
+// SetProfileEvent is retained for fixed, legacy transaction adapters. A session
+// requires SetProfileEventContext so an escaped caller cannot alter later profiles.
 func (db *Database) SetProfileEvent(event store.ProfileEvent) error {
-	return db.capture(db.underlying.Cache.SetProfileEvent(event))
+	return db.SetProfileEventContext(context.Background(), event)
+}
+func (db *Database) SetProfileEventContext(ctx context.Context, event store.ProfileEvent) error {
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return db.capture(err)
+	}
+	defer release()
+	return db.capture(underlying.Cache.SetProfileEvent(event))
 }

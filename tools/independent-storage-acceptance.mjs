@@ -1,0 +1,3 @@
+// Supplemental M41 lifecycle proof, not additional original-test coverage.
+export const independentStorageStages = ['independent-storage-source-postgres','independent-storage-source-pglite','independent-storage-evidence-controls'];
+export const independentStorageHarness = ['tools/independent-storage-acceptance.mjs','tools/independent-storage-full-verify.mjs','tools/independent-storage-postgres-fixture.sh','tools/independent-storage-collect-all.mjs','tools/independent-storage-results.mjs','tools/independent-storage-path-guards.test.mjs','tools/independent-storage-evidence.mjs','tools/independent-storage-evidence.test.mjs','tools/source-independent-storage.mjs','tools/source-independent-storage.config.mjs','tools/source-independent-storage.test.ts'];

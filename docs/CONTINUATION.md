@@ -4,6 +4,22 @@
 
 
 
+## 当前执行入口：M41 独立 sync ownership 与可复用事务绑定完整验收通过，待父级发布复核
+
+已发布基线 M40 `1cdf7a50666ded90e5974de73a00cf3884e7c7fe`。M41 `independent-storage-m41/full-verify-01` 完整65阶段及12个显式输出canonical collectors全部退出0；normal/race各3332节点、3031叶用例，0fail/skip，23包279顶层函数、每模式85串行批次。1151输入指纹 `48a34af5c9d4178fbb43024ba1b8d2ca1d1eb0db9c5970830db0b1ea1d84638a` 与105工具hash全程不变。正式覆盖仍543/905（539Go+4SDK），362未实现；本阶段原例/断言/类型credit均为0，旧543映射不变。
+
+constructor-owned双域使用独立PG池/namespace families，分别固定到持有生命周期锁且不会重连的连接；实际终止任一连接后该域fail-closed，其他域继续排他。PGlite使用独立进程/持久目录，拒绝canonical alias/nested；跨进程flock由两个Node子进程继承，Go父进程骤停时仍禁止重开，直到子进程退出。旧OpenPGlite API语义不改；短初始化ctx不持有成功owner的进程生命周期。
+
+persistent IndexingSession保留已确认提交的缓存快照与learned profiles，绑定writer/cache对象始终不可变。稳定Service/HandlerArgs/Context/Database/client通过私有ctx capability重绑，拒绝unbound/wrong-owner/concurrent/stale上下文及旧handle。正常返回/rollback仅revoke业务能力，不cancel独立cache ctx；rollback/flush/uncertain commit清除行/buffer但保留profiles。显式read-only绑定允许事务外行prefetch，拒绝写入。Close先seal新绑定并等待活动业务，再cancel/join lookup→RPC futures、cache completions和读写队列；超时保留同一close任务与资源归属。WaitCacheWrites只表示settled，不保证persisted。
+
+双后端真实setup/history GetBalance/ReadContract miss/hit、业务/journal/checkpoint回滚、pending写跨正常/rollback完成、显式取消、真实晚到SQL错误、关闭重开、连接死亡和父进程退出均已验证。真实source createIndexing/cache/client/userQB补充探针保留不同语义：PG回滚留下2业务行，源PGlite callback-only transaction留下4行；两者6条cache均持久于各自实例。native PGlite两目录+真实SQL原子性是明确安全扩展，不声称源布局/失败行为等价。源码pending gate在wrapper admission延迟原插入，不是源SQL队列或commit-order等价证明。详见 `INDEPENDENT_INDEXING_STORAGE.md`。
+
+全量旧oracle的DROP/CREATE只在本次全新task-owned PG cluster执行，wrapper与driver均以SHOW data_directory核验新目录后才运行。回执 `independent-storage-m41/full-verify-01-fixture` 保存路径/初末inventory/启动/停止/exit0。原cluster `/workspace/scratch/fac5abfa4c9e/ponder-cloud/postgres/data` 在该完整运行中停止且未触碰；历史schema清理仍是未授权的另一请求。新cluster仅是获批测试fixture，不是旧schema维护。
+
+下一阶段M42先补真正原子的多链setup/checkpoint primitives，再有限Multichain runner（必要时继续拆分）。不得移除single-chain guard、分别InitializeCheckpoints冒充atomic setup，或声称MarkReady/realtime/cutover已完成。当前没有完整outer runner，也没有自动external-write/reorg缓存失效；低层外部写必须显式Session.Invalidate并遵守ownership。新batch40保留旧batch39与所有失败诊断；尚未提交/推送，父级独立复核后才普通后继发布。
+
+以下M40及更早待发布段落为历史记录，不代表当前发布状态。
+
 ## 当前执行入口：M40 RPC profiling/prefetch 完整验收通过，待父级发布复核
 
 已发布基线 M39 `8475c1236dade775b902031fcc8b8856c31ee623`。M40 `indexing-profile-m40/full-verify-01` 于 2026-10-25 15:13:03.642 UTC 完整退出0；62阶段与11个显式输出 canonical collectors全部通过。正式覆盖543/905（539 Go+4 SDK），362未实现；旧531映射不变，新增profile10原例/21断言和client prefetch2原例/9断言，零TS指令。其他12个client原例以及旧7项类型缺口保持unmapped。
