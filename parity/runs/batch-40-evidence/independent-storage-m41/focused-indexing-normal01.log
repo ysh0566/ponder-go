@@ -1,0 +1,79 @@
+{
+  "checks": [
+    {
+      "path": "/workspace/scratch/fac5abfa4c9e/ponder-cloud",
+      "free_bytes": 10501128192,
+      "minimum_bytes": 5368709120,
+      "ok": true
+    },
+    {
+      "path": "/workspace/scratch/fac5abfa4c9e/ponder-cloud/tmp",
+      "free_bytes": 10501128192,
+      "minimum_bytes": 5368709120,
+      "ok": true
+    },
+    {
+      "path": "/workspace/scratch/fac5abfa4c9e/ponder-cloud/postgres",
+      "free_bytes": 10501128192,
+      "minimum_bytes": 5368709120,
+      "ok": true
+    }
+  ],
+  "ok": true
+}
+waiting for server to start.... done
+server started
+=== RUN   TestDatabaseBindingCapabilities
+--- PASS: TestDatabaseBindingCapabilities (0.00s)
+=== RUN   TestDatabaseUnboundOperationsReject
+--- PASS: TestDatabaseUnboundOperationsReject (0.00s)
+=== RUN   TestOwnedPersistentHandlerTransactions
+=== RUN   TestOwnedPersistentHandlerTransactions/postgres
+=== RUN   TestOwnedPersistentHandlerTransactions/pglite
+--- PASS: TestOwnedPersistentHandlerTransactions (4.55s)
+    --- PASS: TestOwnedPersistentHandlerTransactions/postgres (0.28s)
+    --- PASS: TestOwnedPersistentHandlerTransactions/pglite (4.28s)
+=== RUN   TestOwnedPendingCacheAcrossBindingExit
+=== RUN   TestOwnedPendingCacheAcrossBindingExit/postgres
+=== RUN   TestOwnedPendingCacheAcrossBindingExit/postgres/commit
+=== RUN   TestOwnedPendingCacheAcrossBindingExit/postgres/rollback
+=== RUN   TestOwnedPendingCacheAcrossBindingExit/postgres/caller-cancel
+=== RUN   TestOwnedPendingCacheAcrossBindingExit/postgres/late-error
+=== RUN   TestOwnedPendingCacheAcrossBindingExit/postgres/owner-close
+    owned_integration_test.go:342: close abandoned or closed blocked backend <nil>
+=== RUN   TestOwnedPendingCacheAcrossBindingExit/pglite
+=== RUN   TestOwnedPendingCacheAcrossBindingExit/pglite/commit
+=== RUN   TestOwnedPendingCacheAcrossBindingExit/pglite/rollback
+=== RUN   TestOwnedPendingCacheAcrossBindingExit/pglite/caller-cancel
+=== RUN   TestOwnedPendingCacheAcrossBindingExit/pglite/late-error
+=== RUN   TestOwnedPendingCacheAcrossBindingExit/pglite/owner-close
+--- FAIL: TestOwnedPendingCacheAcrossBindingExit (22.21s)
+    --- FAIL: TestOwnedPendingCacheAcrossBindingExit/postgres (1.03s)
+        --- PASS: TestOwnedPendingCacheAcrossBindingExit/postgres/commit (0.24s)
+        --- PASS: TestOwnedPendingCacheAcrossBindingExit/postgres/rollback (0.20s)
+        --- PASS: TestOwnedPendingCacheAcrossBindingExit/postgres/caller-cancel (0.22s)
+        --- PASS: TestOwnedPendingCacheAcrossBindingExit/postgres/late-error (0.21s)
+        --- FAIL: TestOwnedPendingCacheAcrossBindingExit/postgres/owner-close (0.17s)
+    --- PASS: TestOwnedPendingCacheAcrossBindingExit/pglite (21.18s)
+        --- PASS: TestOwnedPendingCacheAcrossBindingExit/pglite/commit (4.16s)
+        --- PASS: TestOwnedPendingCacheAcrossBindingExit/pglite/rollback (4.14s)
+        --- PASS: TestOwnedPendingCacheAcrossBindingExit/pglite/caller-cancel (4.31s)
+        --- PASS: TestOwnedPendingCacheAcrossBindingExit/pglite/late-error (4.22s)
+        --- PASS: TestOwnedPendingCacheAcrossBindingExit/pglite/owner-close (4.35s)
+=== RUN   TestOwnedCloseWaitsActiveBinding
+=== RUN   TestOwnedCloseWaitsActiveBinding/postgres
+=== RUN   TestOwnedCloseWaitsActiveBinding/pglite
+--- PASS: TestOwnedCloseWaitsActiveBinding (4.31s)
+    --- PASS: TestOwnedCloseWaitsActiveBinding/postgres (0.19s)
+    --- PASS: TestOwnedCloseWaitsActiveBinding/pglite (4.12s)
+=== RUN   TestOwnedCloseJoinsEscapedRequest
+=== RUN   TestOwnedCloseJoinsEscapedRequest/postgres
+=== RUN   TestOwnedCloseJoinsEscapedRequest/pglite
+--- PASS: TestOwnedCloseJoinsEscapedRequest (3.22s)
+    --- PASS: TestOwnedCloseJoinsEscapedRequest/postgres (0.14s)
+    --- PASS: TestOwnedCloseJoinsEscapedRequest/pglite (3.08s)
+FAIL
+FAIL	ponder.local/ponder-go/indexing	34.300s
+FAIL
+waiting for server to shut down.... done
+server stopped

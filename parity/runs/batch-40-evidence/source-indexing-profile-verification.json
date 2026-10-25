@@ -1,0 +1,1078 @@
+{
+  "complete": true,
+  "success": true,
+  "scope": "complete_module_source_indexing_profile",
+  "run_dir": "parity/runs/independent-storage-m41/full-verify-01",
+  "environment_adapted": true,
+  "pristine_file": false,
+  "summary": {
+    "source_cases": 24,
+    "source_assertions": 63,
+    "targeted_cases": 12,
+    "targeted_assertions": 30,
+    "source_error_directives": 0,
+    "complete_mapping_candidates": 12,
+    "supplementary_source_credit": 0,
+    "profile_originals": 10,
+    "prefetch_originals": 2,
+    "unmapped_client_originals": 12
+  },
+  "supplemental_tests": [
+    "TestSourceIndexingProfileEdges",
+    "TestProfilePrimitiveEquality",
+    "TestSourceIndexingPrefetchProbes",
+    "TestClientProfileServiceContext",
+    "TestClientPrefetchCloseOwnsFailedSibling",
+    "TestClientPrefetchReaderSingleSettlement"
+  ],
+  "store_tests": [
+    "TestSourceRPCAsyncReadAdmission",
+    "TestSourceRPCAsyncReadValidation",
+    "TestSourceRPCAsyncReadCallerCancellation",
+    "TestSourceRPCAsyncReadBackends"
+  ],
+  "store_scenarios": [
+    "prepared_read_hit_and_miss",
+    "close_timeout_retains_read_ownership",
+    "bound_adapters_no_async_reader",
+    "late_sql_read_error"
+  ],
+  "limitations": {
+    "probe_boundary": "Supplemental source and native controlled RPC/database doubles prove causal boundary semantics; original prefetch cases separately use real source/native PostgreSQL/PGlite caches. Neither claims network scheduling parity.",
+    "client_scope": "Only existing action facade plus profile/prefetch. Twelve other client.test.ts originals remain unmapped. Not full cachedViemClient/raw transport or outer runner/readiness/cutover.",
+    "backend_scope": "Strict standalone prepared write and optional AsyncCacheReader prepared SELECT admission only; no new database topology. Transaction-bound adapters do not expose detached asynchronous readers. Legacy synchronous fallback, database read visibility/commit order, source batch insertion grouping, PGlite shared-lock and IO cancellation limitations remain. Full Viem custom-error decoding/wrapping is not claimed.",
+    "cross_chain": "Source canonical dedupe happens before chain grouping and excludes chain ID; preserved, not improved. Causal controlled lookup/admission probes do not establish complete database read-visibility or commit-order equivalence."
+  },
+  "full_verification": {
+    "file": "parity/runs/independent-storage-m41/full-verify-01/result.json",
+    "sha256": "cd5aa60beb199237d36aeeedb5c6663b51af91552711efefafa036c67ee20674"
+  },
+  "prepared_native_inputs": {
+    "file": "parity/runs/independent-storage-m41/full-verify-01/prepared-native-inputs.json",
+    "sha256": "f277f80ca83d2d42fb2b5ebfc62b3b7efe7d35146fae325ce526a95b17819da7"
+  },
+  "context_archive": {
+    "file": "parity/runs/independent-storage-m41/full-verify-01/context-archive.json",
+    "sha256": "9ff2bf57e6f7374ab32bca756a1dac970b04260efd975952579cb79509f7e22c"
+  },
+  "previous_actions_proof": {
+    "file": "parity/runs/source-indexing-actions-verification.json",
+    "sha256": "4048f4fda670703477a9d8c1edaf1daab8331870587bf86c96dbe61aeee90f01"
+  },
+  "source_only": {
+    "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-verification.json",
+    "sha256": "2aa3730e6874eac41610c48454318bd72c67a211b3aa860f3d42109cb2da28ec"
+  },
+  "executions": [
+    {
+      "mode": "normal",
+      "backend": "postgres",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "ff30deb8b9aca842519b",
+          "go_test": "TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4ace7b36bca44245e4b7",
+          "go_test": "TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "2f670307cc3e54bf3901",
+          "go_test": "TestSourceIndexingProfile/postgres/2f670307cc3e54bf3901",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "465e8823325559c8cfa1",
+          "go_test": "TestSourceIndexingProfile/postgres/465e8823325559c8cfa1",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "e7d2206043a345533ec0",
+          "go_test": "TestSourceIndexingProfile/postgres/e7d2206043a345533ec0",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fcafee958f55fe65dc77",
+          "go_test": "TestSourceIndexingProfile/postgres/fcafee958f55fe65dc77",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fb137834371e07d16724",
+          "go_test": "TestSourceIndexingProfile/postgres/fb137834371e07d16724",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "732ac50bf3a96196de3e",
+          "go_test": "TestSourceIndexingProfile/postgres/732ac50bf3a96196de3e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4c57d8f36ec9b90f69ac",
+          "go_test": "TestSourceIndexingProfile/postgres/4c57d8f36ec9b90f69ac",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "d8952ac4024fd02802a7",
+          "go_test": "TestSourceIndexingProfile/postgres/d8952ac4024fd02802a7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "0173bc5e83b0843a8d4e",
+          "go_test": "TestSourceIndexingProfile/postgres/0173bc5e83b0843a8d4e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "ddf6318af43ddc28cd80",
+          "go_test": "TestSourceIndexingProfile/postgres/ddf6318af43ddc28cd80",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        }
+      ],
+      "artifact": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/indexing-profile-normal.json",
+        "sha256": "2cff457946541d0fa3035acaebcc396566d74ae4be093a75da78fe1d01ccf4ae"
+      },
+      "probe_artifact": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/indexing-profile-probes-normal.json",
+        "sha256": "6c2ffb81c50e7c7a7ae63d3282f954dbff20858698eb83708dd56d5f0a1875fc"
+      },
+      "log": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/go-test.jsonl",
+        "sha256": "b8202ca4efd33034474858a5457b294b09ee3f6b7c9dc6220b32625d57f78a9d"
+      },
+      "native": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/go-test.jsonl",
+        "sha256": "b8202ca4efd33034474858a5457b294b09ee3f6b7c9dc6220b32625d57f78a9d"
+      },
+      "capture": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-postgres/calls.json.gz",
+        "sha256": "3cf3ef9249d638a0f3b1b1f68bf4bd247dfa41069cbf6c0ed9a5fee7c84be078"
+      },
+      "original": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-postgres/original.json",
+        "sha256": "05095459bd9667cba3a2c06f191ecb50803d9643e004e643d5a49394c72191e6"
+      },
+      "result": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-postgres/result.json",
+        "sha256": "e047f43a2d47bcc709b25d630ad9b54a0d0d3bcce18386696d7db4ffa6aac499"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-indexing-profile-original.mjs",
+          "sha256": "b3c46e3b1a559c881b95a7781f4efae8fc5adfb7a846638f9b4f25bb1f67b2d0"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.setup.ts",
+          "sha256": "950d5e47d83d4859a0d45520def70d70119bb835c232b0ec531031c6a02d1eca"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.config.mjs",
+          "sha256": "e7802b7274568a67abb79fa6917e85b826257758c8ab32504d4d511dbb0b8fae"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-postgres/context-archive.json",
+        "sha256": "eb7ab31f4d18b9c5ecd38401872c624921162bdf31cb6dc4d47a27cf7ac89142"
+      },
+      "probe": {
+        "capture": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-postgres/calls.json",
+          "sha256": "ad541f51a9a936b37f107eb671aa29058c41fe80ab136dd5061cf8662c362c36"
+        },
+        "result": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-postgres/result.json",
+          "sha256": "2fd6f016caf06dafab6df56fc02770ad4547055419b5dfbeef54b0aaa801d497"
+        },
+        "original": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-postgres/original.json",
+          "sha256": "9b838ffeb37610156052634c0f1dea1012d2181945ca8cb9bc6dab22dfefaa93"
+        },
+        "context_archive": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-postgres/context-archive.json",
+          "sha256": "0e7b8d73b40e6c398287499e1383411bf4fbf257f9a217c502d6391ed43c7693"
+        },
+        "source_context": [
+          {
+            "file": "tools/source-indexing-profile-probes.mjs",
+            "sha256": "fa111790a31013feb401b34855ca7adc8df370a079b199d4480140dba1a1f50c"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.test.ts",
+            "sha256": "249dd7e1ad20061e412c459a8c7b0608a2b6d99a8f808b43b6678a77d5ba9e58"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.config.mjs",
+            "sha256": "f8e35cf7f456b16430b53e16078126062043d300784fad2a811bf05cadd00349"
+          },
+          {
+            "file": "tools/source-realtime-rpc-observer.mjs",
+            "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+          },
+          {
+            "file": "tools/loopback-adapter.mjs",
+            "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+          },
+          {
+            "file": "tools/loopback-context.mjs",
+            "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "normal",
+      "backend": "pglite",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "ff30deb8b9aca842519b",
+          "go_test": "TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4ace7b36bca44245e4b7",
+          "go_test": "TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "2f670307cc3e54bf3901",
+          "go_test": "TestSourceIndexingProfile/pglite/2f670307cc3e54bf3901",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "465e8823325559c8cfa1",
+          "go_test": "TestSourceIndexingProfile/pglite/465e8823325559c8cfa1",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "e7d2206043a345533ec0",
+          "go_test": "TestSourceIndexingProfile/pglite/e7d2206043a345533ec0",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fcafee958f55fe65dc77",
+          "go_test": "TestSourceIndexingProfile/pglite/fcafee958f55fe65dc77",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fb137834371e07d16724",
+          "go_test": "TestSourceIndexingProfile/pglite/fb137834371e07d16724",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "732ac50bf3a96196de3e",
+          "go_test": "TestSourceIndexingProfile/pglite/732ac50bf3a96196de3e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4c57d8f36ec9b90f69ac",
+          "go_test": "TestSourceIndexingProfile/pglite/4c57d8f36ec9b90f69ac",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "d8952ac4024fd02802a7",
+          "go_test": "TestSourceIndexingProfile/pglite/d8952ac4024fd02802a7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "0173bc5e83b0843a8d4e",
+          "go_test": "TestSourceIndexingProfile/pglite/0173bc5e83b0843a8d4e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "ddf6318af43ddc28cd80",
+          "go_test": "TestSourceIndexingProfile/pglite/ddf6318af43ddc28cd80",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        }
+      ],
+      "artifact": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/indexing-profile-normal.json",
+        "sha256": "2cff457946541d0fa3035acaebcc396566d74ae4be093a75da78fe1d01ccf4ae"
+      },
+      "probe_artifact": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/indexing-profile-probes-normal.json",
+        "sha256": "6c2ffb81c50e7c7a7ae63d3282f954dbff20858698eb83708dd56d5f0a1875fc"
+      },
+      "log": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/go-test.jsonl",
+        "sha256": "b8202ca4efd33034474858a5457b294b09ee3f6b7c9dc6220b32625d57f78a9d"
+      },
+      "native": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/go-test.jsonl",
+        "sha256": "b8202ca4efd33034474858a5457b294b09ee3f6b7c9dc6220b32625d57f78a9d"
+      },
+      "capture": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-pglite/calls.json.gz",
+        "sha256": "14520d395977984dae134ae04a4730720ce9d23f9613ecbbabbd363c249b4697"
+      },
+      "original": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-pglite/original.json",
+        "sha256": "5edcf0366717e86e4f9a192f89b44dd3d49eeafc30a177514ed99a1386316429"
+      },
+      "result": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-pglite/result.json",
+        "sha256": "16b0bba5200b2e666f18fd8c122d998c05b2d2cc12160bb8c6735cc22af8bb7c"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-indexing-profile-original.mjs",
+          "sha256": "b3c46e3b1a559c881b95a7781f4efae8fc5adfb7a846638f9b4f25bb1f67b2d0"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.setup.ts",
+          "sha256": "950d5e47d83d4859a0d45520def70d70119bb835c232b0ec531031c6a02d1eca"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.config.mjs",
+          "sha256": "e7802b7274568a67abb79fa6917e85b826257758c8ab32504d4d511dbb0b8fae"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-pglite/context-archive.json",
+        "sha256": "e3aae33e160c94be37847948dfe34674f6d3bc26e6e85270c67de509cd1aff1f"
+      },
+      "probe": {
+        "capture": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-pglite/calls.json",
+          "sha256": "ad541f51a9a936b37f107eb671aa29058c41fe80ab136dd5061cf8662c362c36"
+        },
+        "result": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-pglite/result.json",
+          "sha256": "486d37bad66c38e7ae48fe4b49bf0e84acb24bfcfe0b522a05e26717b668de9c"
+        },
+        "original": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-pglite/original.json",
+          "sha256": "c06b4a9d709063b9f80d8484e788e9cdd54b751e2232391699fae84578192132"
+        },
+        "context_archive": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-pglite/context-archive.json",
+          "sha256": "5c3baa9f7aa5c779e29ed10dc3451252d9c5d8b1c53e2a5ab58f02c57db226e4"
+        },
+        "source_context": [
+          {
+            "file": "tools/source-indexing-profile-probes.mjs",
+            "sha256": "fa111790a31013feb401b34855ca7adc8df370a079b199d4480140dba1a1f50c"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.test.ts",
+            "sha256": "249dd7e1ad20061e412c459a8c7b0608a2b6d99a8f808b43b6678a77d5ba9e58"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.config.mjs",
+            "sha256": "f8e35cf7f456b16430b53e16078126062043d300784fad2a811bf05cadd00349"
+          },
+          {
+            "file": "tools/source-realtime-rpc-observer.mjs",
+            "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+          },
+          {
+            "file": "tools/loopback-adapter.mjs",
+            "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+          },
+          {
+            "file": "tools/loopback-context.mjs",
+            "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "race",
+      "backend": "postgres",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "ff30deb8b9aca842519b",
+          "go_test": "TestSourceIndexingPrefetch/postgres/ff30deb8b9aca842519b",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4ace7b36bca44245e4b7",
+          "go_test": "TestSourceIndexingPrefetch/postgres/4ace7b36bca44245e4b7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "2f670307cc3e54bf3901",
+          "go_test": "TestSourceIndexingProfile/postgres/2f670307cc3e54bf3901",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "465e8823325559c8cfa1",
+          "go_test": "TestSourceIndexingProfile/postgres/465e8823325559c8cfa1",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "e7d2206043a345533ec0",
+          "go_test": "TestSourceIndexingProfile/postgres/e7d2206043a345533ec0",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fcafee958f55fe65dc77",
+          "go_test": "TestSourceIndexingProfile/postgres/fcafee958f55fe65dc77",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fb137834371e07d16724",
+          "go_test": "TestSourceIndexingProfile/postgres/fb137834371e07d16724",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "732ac50bf3a96196de3e",
+          "go_test": "TestSourceIndexingProfile/postgres/732ac50bf3a96196de3e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4c57d8f36ec9b90f69ac",
+          "go_test": "TestSourceIndexingProfile/postgres/4c57d8f36ec9b90f69ac",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "d8952ac4024fd02802a7",
+          "go_test": "TestSourceIndexingProfile/postgres/d8952ac4024fd02802a7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "0173bc5e83b0843a8d4e",
+          "go_test": "TestSourceIndexingProfile/postgres/0173bc5e83b0843a8d4e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "ddf6318af43ddc28cd80",
+          "go_test": "TestSourceIndexingProfile/postgres/ddf6318af43ddc28cd80",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        }
+      ],
+      "artifact": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/indexing-profile-race.json",
+        "sha256": "2cff457946541d0fa3035acaebcc396566d74ae4be093a75da78fe1d01ccf4ae"
+      },
+      "probe_artifact": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/indexing-profile-probes-race.json",
+        "sha256": "08d431ac7e094f796deb219fefd0cbd70ad10ec83e012f762b13a5a1d6b457b6"
+      },
+      "log": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/go-race.jsonl",
+        "sha256": "c29c880d7f7c91e5d9aeb1b2eac60b027b5631b6c043fe95a484f8fad1bf7a0b"
+      },
+      "native": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/go-race.jsonl",
+        "sha256": "c29c880d7f7c91e5d9aeb1b2eac60b027b5631b6c043fe95a484f8fad1bf7a0b"
+      },
+      "capture": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-postgres/calls.json.gz",
+        "sha256": "3cf3ef9249d638a0f3b1b1f68bf4bd247dfa41069cbf6c0ed9a5fee7c84be078"
+      },
+      "original": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-postgres/original.json",
+        "sha256": "05095459bd9667cba3a2c06f191ecb50803d9643e004e643d5a49394c72191e6"
+      },
+      "result": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-postgres/result.json",
+        "sha256": "e047f43a2d47bcc709b25d630ad9b54a0d0d3bcce18386696d7db4ffa6aac499"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-indexing-profile-original.mjs",
+          "sha256": "b3c46e3b1a559c881b95a7781f4efae8fc5adfb7a846638f9b4f25bb1f67b2d0"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.setup.ts",
+          "sha256": "950d5e47d83d4859a0d45520def70d70119bb835c232b0ec531031c6a02d1eca"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.config.mjs",
+          "sha256": "e7802b7274568a67abb79fa6917e85b826257758c8ab32504d4d511dbb0b8fae"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-postgres/context-archive.json",
+        "sha256": "eb7ab31f4d18b9c5ecd38401872c624921162bdf31cb6dc4d47a27cf7ac89142"
+      },
+      "probe": {
+        "capture": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-postgres/calls.json",
+          "sha256": "ad541f51a9a936b37f107eb671aa29058c41fe80ab136dd5061cf8662c362c36"
+        },
+        "result": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-postgres/result.json",
+          "sha256": "2fd6f016caf06dafab6df56fc02770ad4547055419b5dfbeef54b0aaa801d497"
+        },
+        "original": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-postgres/original.json",
+          "sha256": "9b838ffeb37610156052634c0f1dea1012d2181945ca8cb9bc6dab22dfefaa93"
+        },
+        "context_archive": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-postgres/context-archive.json",
+          "sha256": "0e7b8d73b40e6c398287499e1383411bf4fbf257f9a217c502d6391ed43c7693"
+        },
+        "source_context": [
+          {
+            "file": "tools/source-indexing-profile-probes.mjs",
+            "sha256": "fa111790a31013feb401b34855ca7adc8df370a079b199d4480140dba1a1f50c"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.test.ts",
+            "sha256": "249dd7e1ad20061e412c459a8c7b0608a2b6d99a8f808b43b6678a77d5ba9e58"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.config.mjs",
+            "sha256": "f8e35cf7f456b16430b53e16078126062043d300784fad2a811bf05cadd00349"
+          },
+          {
+            "file": "tools/source-realtime-rpc-observer.mjs",
+            "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+          },
+          {
+            "file": "tools/loopback-adapter.mjs",
+            "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+          },
+          {
+            "file": "tools/loopback-context.mjs",
+            "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "race",
+      "backend": "pglite",
+      "complete": true,
+      "cases": [
+        {
+          "source_id": "ff30deb8b9aca842519b",
+          "go_test": "TestSourceIndexingPrefetch/pglite/ff30deb8b9aca842519b",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4ace7b36bca44245e4b7",
+          "go_test": "TestSourceIndexingPrefetch/pglite/4ace7b36bca44245e4b7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "2f670307cc3e54bf3901",
+          "go_test": "TestSourceIndexingProfile/pglite/2f670307cc3e54bf3901",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "465e8823325559c8cfa1",
+          "go_test": "TestSourceIndexingProfile/pglite/465e8823325559c8cfa1",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "e7d2206043a345533ec0",
+          "go_test": "TestSourceIndexingProfile/pglite/e7d2206043a345533ec0",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fcafee958f55fe65dc77",
+          "go_test": "TestSourceIndexingProfile/pglite/fcafee958f55fe65dc77",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "fb137834371e07d16724",
+          "go_test": "TestSourceIndexingProfile/pglite/fb137834371e07d16724",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "732ac50bf3a96196de3e",
+          "go_test": "TestSourceIndexingProfile/pglite/732ac50bf3a96196de3e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "4c57d8f36ec9b90f69ac",
+          "go_test": "TestSourceIndexingProfile/pglite/4c57d8f36ec9b90f69ac",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "d8952ac4024fd02802a7",
+          "go_test": "TestSourceIndexingProfile/pglite/d8952ac4024fd02802a7",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "0173bc5e83b0843a8d4e",
+          "go_test": "TestSourceIndexingProfile/pglite/0173bc5e83b0843a8d4e",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        },
+        {
+          "source_id": "ddf6318af43ddc28cd80",
+          "go_test": "TestSourceIndexingProfile/pglite/ddf6318af43ddc28cd80",
+          "runtime_passed": true,
+          "formal_credit": true,
+          "native_type_obligations": 0
+        }
+      ],
+      "artifact": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/indexing-profile-race.json",
+        "sha256": "2cff457946541d0fa3035acaebcc396566d74ae4be093a75da78fe1d01ccf4ae"
+      },
+      "probe_artifact": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/indexing-profile-probes-race.json",
+        "sha256": "08d431ac7e094f796deb219fefd0cbd70ad10ec83e012f762b13a5a1d6b457b6"
+      },
+      "log": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/go-race.jsonl",
+        "sha256": "c29c880d7f7c91e5d9aeb1b2eac60b027b5631b6c043fe95a484f8fad1bf7a0b"
+      },
+      "native": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/native/go-race.jsonl",
+        "sha256": "c29c880d7f7c91e5d9aeb1b2eac60b027b5631b6c043fe95a484f8fad1bf7a0b"
+      },
+      "capture": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-pglite/calls.json.gz",
+        "sha256": "14520d395977984dae134ae04a4730720ce9d23f9613ecbbabbd363c249b4697"
+      },
+      "original": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-pglite/original.json",
+        "sha256": "5edcf0366717e86e4f9a192f89b44dd3d49eeafc30a177514ed99a1386316429"
+      },
+      "result": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-pglite/result.json",
+        "sha256": "16b0bba5200b2e666f18fd8c122d998c05b2d2cc12160bb8c6735cc22af8bb7c"
+      },
+      "source_context": [
+        {
+          "file": "tools/source-indexing-profile-original.mjs",
+          "sha256": "b3c46e3b1a559c881b95a7781f4efae8fc5adfb7a846638f9b4f25bb1f67b2d0"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.setup.ts",
+          "sha256": "950d5e47d83d4859a0d45520def70d70119bb835c232b0ec531031c6a02d1eca"
+        },
+        {
+          "file": "tools/source-indexing-profile-live.config.mjs",
+          "sha256": "e7802b7274568a67abb79fa6917e85b826257758c8ab32504d4d511dbb0b8fae"
+        },
+        {
+          "file": "tools/source-realtime-rpc-observer.mjs",
+          "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+        },
+        {
+          "file": "tools/loopback-adapter.mjs",
+          "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+        },
+        {
+          "file": "tools/loopback-context.mjs",
+          "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+        }
+      ],
+      "context_archive": {
+        "file": "parity/runs/independent-storage-m41/full-verify-01/profile-source-pglite/context-archive.json",
+        "sha256": "e3aae33e160c94be37847948dfe34674f6d3bc26e6e85270c67de509cd1aff1f"
+      },
+      "probe": {
+        "capture": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-pglite/calls.json",
+          "sha256": "ad541f51a9a936b37f107eb671aa29058c41fe80ab136dd5061cf8662c362c36"
+        },
+        "result": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-pglite/result.json",
+          "sha256": "486d37bad66c38e7ae48fe4b49bf0e84acb24bfcfe0b522a05e26717b668de9c"
+        },
+        "original": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-pglite/original.json",
+          "sha256": "c06b4a9d709063b9f80d8484e788e9cdd54b751e2232391699fae84578192132"
+        },
+        "context_archive": {
+          "file": "parity/runs/independent-storage-m41/full-verify-01/profile-probes-pglite/context-archive.json",
+          "sha256": "5c3baa9f7aa5c779e29ed10dc3451252d9c5d8b1c53e2a5ab58f02c57db226e4"
+        },
+        "source_context": [
+          {
+            "file": "tools/source-indexing-profile-probes.mjs",
+            "sha256": "fa111790a31013feb401b34855ca7adc8df370a079b199d4480140dba1a1f50c"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.test.ts",
+            "sha256": "249dd7e1ad20061e412c459a8c7b0608a2b6d99a8f808b43b6678a77d5ba9e58"
+          },
+          {
+            "file": "tools/source-indexing-profile-probes.config.mjs",
+            "sha256": "f8e35cf7f456b16430b53e16078126062043d300784fad2a811bf05cadd00349"
+          },
+          {
+            "file": "tools/source-realtime-rpc-observer.mjs",
+            "sha256": "efebbe03a2a146ce5fae0d6c0954d8b54ca188c77f8c3cea1e86879c88c4cf88"
+          },
+          {
+            "file": "tools/loopback-adapter.mjs",
+            "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+          },
+          {
+            "file": "tools/loopback-context.mjs",
+            "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+          }
+        ]
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "tools/indexing-profile-acceptance.mjs",
+      "sha256": "55fc63856fd953b72bb6863adb2e91d8d0945a78f248509dbe6b26216e665fd3"
+    },
+    {
+      "file": "tools/indexing-profile-full-verify.mjs",
+      "sha256": "76b3e0ab3736f5b28d3e26e81f0293e51634f406345945430db85732f470cd14"
+    },
+    {
+      "file": "tools/indexing-profile-path-guards.test.mjs",
+      "sha256": "78d328bdf848b1eb8b8b874771ef56e5954223e551e7a2400f1c26390f46c113"
+    },
+    {
+      "file": "tools/indexing-profile-collect-all.mjs",
+      "sha256": "46e8118d4f0a7f7350a06840db74df719e515065ed2ec36e22aa52d5bf79f684"
+    },
+    {
+      "file": "tools/source-indexing-profile-results.mjs",
+      "sha256": "b95f75ed0ae3eb56e0bad62cb2d8e02af8583857d0f9694469a214697bb66150"
+    },
+    {
+      "file": "tools/source-indexing-profile-map.mjs",
+      "sha256": "82a868d46a954f3627c0e5ecc268471d471f5f298e3de9793feb2ad2ac1ca693"
+    },
+    {
+      "file": "tools/source-indexing-profile-original.mjs",
+      "sha256": "b3c46e3b1a559c881b95a7781f4efae8fc5adfb7a846638f9b4f25bb1f67b2d0"
+    },
+    {
+      "file": "tools/source-indexing-profile-live.config.mjs",
+      "sha256": "e7802b7274568a67abb79fa6917e85b826257758c8ab32504d4d511dbb0b8fae"
+    },
+    {
+      "file": "tools/source-indexing-profile-live.setup.ts",
+      "sha256": "950d5e47d83d4859a0d45520def70d70119bb835c232b0ec531031c6a02d1eca"
+    },
+    {
+      "file": "tools/source-indexing-profile-fixture.mjs",
+      "sha256": "800b383aecb7d03b5a1890f8178f766016ad2425d0a03a3f7b2d85e080635904"
+    },
+    {
+      "file": "tools/source-indexing-profile-collect.mjs",
+      "sha256": "f8c5b42d2302250a7100033d871246335eb76fff8d6f93da5775ad4649515ec7"
+    },
+    {
+      "file": "tools/source-indexing-profile-evidence.mjs",
+      "sha256": "58468367fa3eb27a4376d8a50279c78c3ae9a504db41b10f6c3ee97c9c3b39b9"
+    },
+    {
+      "file": "tools/source-indexing-profile-evidence.test.mjs",
+      "sha256": "bcf1879a2b2e7a59c99f49242e8533301d4bc7578c3a57e1276f5da14c5d3839"
+    },
+    {
+      "file": "tools/source-indexing-profile-probes.mjs",
+      "sha256": "fa111790a31013feb401b34855ca7adc8df370a079b199d4480140dba1a1f50c"
+    },
+    {
+      "file": "tools/source-indexing-profile-probes.config.mjs",
+      "sha256": "f8e35cf7f456b16430b53e16078126062043d300784fad2a811bf05cadd00349"
+    },
+    {
+      "file": "tools/source-indexing-profile-probes.test.ts",
+      "sha256": "249dd7e1ad20061e412c459a8c7b0608a2b6d99a8f808b43b6678a77d5ba9e58"
+    },
+    {
+      "file": "tools/source-indexing-profile-probe-fixture.mjs",
+      "sha256": "dc8651a8a86862020a6c6ea750559051c3b354a22de1053a78d2be5aa0ba77ce"
+    },
+    {
+      "file": "testdata/indexing/source-indexing-profile.json.gz",
+      "sha256": "0834f63d8c3f6cea27e3958a1d84daa67acb81cce10825624c13e778f3f45357"
+    },
+    {
+      "file": "testdata/indexing/source-indexing-profile-probes.json.gz",
+      "sha256": "7d166603e8e13f6cf65addbe612306b8e097257cb194774039e511e7789f5330"
+    },
+    {
+      "file": "parity/source-indexing-profile-declarations.json",
+      "sha256": "51ad10490f3beedaebbf7bff2e43479dcca9ca5b9d818037164efca312f2ece8"
+    },
+    {
+      "file": "rpc/async_cache_reader.go",
+      "sha256": "e32edc47482c31a55d6ce0d54217bcd6a6450c2a6d5f3d26d95ab26f27ec6015"
+    },
+    {
+      "file": "store/source_rpc_async_read.go",
+      "sha256": "89f83e083bdd5a37f472cab48fd73e6c338ff7be0b11a32e44523b67efa99100"
+    },
+    {
+      "file": "store/source_rpc_async_read_test.go",
+      "sha256": "866ff089635f53bcff26ffc288b9376a52a74023baec2f7b22b71ec124bd474b"
+    },
+    {
+      "file": "store/source_rpc_async.go",
+      "sha256": "0771dde1c509b8810f8ee9a3387dc0d90333909deab0d2ed7f23b7ca725a95cb"
+    },
+    {
+      "file": "indexing/access.go",
+      "sha256": "eeb9ed6875f5d74c204accd8bcbf4f5099f443ccc36efacfc0e6162d94ae2ecd"
+    },
+    {
+      "file": "indexing/access_test.go",
+      "sha256": "2654254fecf28782d68b600b31f1736936bb2f4692b911cde1387c00d9285f2b"
+    },
+    {
+      "file": "indexing/client.go",
+      "sha256": "966c60f7448501e4b77ce6f8f3fd37f6b0ad1818a564bd3931aab791d187e2d4"
+    },
+    {
+      "file": "indexing/client_abi.go",
+      "sha256": "f437523f6a1fedc75d73060125555686da444a07b37d9e2a25fb34452f0eee97"
+    },
+    {
+      "file": "indexing/client_abi_test.go",
+      "sha256": "54eda7913b6c7706eeec89c7167e049ca68af536484a042c2e97d83d191d15c5"
+    },
+    {
+      "file": "indexing/client_actions.go",
+      "sha256": "38bf299c00d77b6ba5d116ae73d814a342c5ab52bbcfc3f2ae46f618a4df84d8"
+    },
+    {
+      "file": "indexing/client_actions_test.go",
+      "sha256": "4754301a7ee0ee6ca7ea6974b0faaa17d731c81173f429855b7d7da89159f46c"
+    },
+    {
+      "file": "indexing/client_admission_integration_test.go",
+      "sha256": "ef73d723df30900c70c2e808485c800c315836c2b3c48a8f8c7c99d0fbc04582"
+    },
+    {
+      "file": "indexing/client_multicall.go",
+      "sha256": "4f856036687b4bdf894e6806772ffe50e97779f30b66c32b7d7a9e16a9b2da7b"
+    },
+    {
+      "file": "indexing/client_prefetch.go",
+      "sha256": "454d16834734747dc72d2abeed516e5529e453b72a5e802bbbe1da666ae07546"
+    },
+    {
+      "file": "indexing/client_prefetch_integration_test.go",
+      "sha256": "4d2d28cabe3c0a2afe9fc04cb408d4a93d6bfeced868a2fdc020b07e29a2595d"
+    },
+    {
+      "file": "indexing/client_prefetch_lifecycle_test.go",
+      "sha256": "d34a8bedecbceb2fa06a9e8801bde0e23acc39b8782460d0e8e9c9e9f8785155"
+    },
+    {
+      "file": "indexing/client_test.go",
+      "sha256": "558066aa15e38eeb08f7c5235e82d0aaea9df23ca1631b40f4e62d73aa3d5d9f"
+    },
+    {
+      "file": "indexing/database.go",
+      "sha256": "1561728c7c212cc4fc00b28fbab735098fae5b3099b8fb2d7ab6b18330872e7d"
+    },
+    {
+      "file": "indexing/database_binding.go",
+      "sha256": "127debacb8b2120ec87ffabc787d27a1075a9d921438a1d121a1f35721e1e844"
+    },
+    {
+      "file": "indexing/database_binding_test.go",
+      "sha256": "fb5b1bfe1b06fcfc2d685d21da70650b5eed1b80b2f7ebcb6e55122358fb73b8"
+    },
+    {
+      "file": "indexing/database_integration_test.go",
+      "sha256": "b02c69f768d59c7044297f7737ee5c16a0d49e41ae4fa1b1a7ad80d7b77e6504"
+    },
+    {
+      "file": "indexing/database_test.go",
+      "sha256": "b0e3fbeb918bd32b5aa6e777a67d70b38d3ef4239658c13c2a25b46daca9aa39"
+    },
+    {
+      "file": "indexing/error_brand_test.go",
+      "sha256": "1a517ce132647a48d53f72edebce1cd53883fd2bae8bd651fa31031e251d09af"
+    },
+    {
+      "file": "indexing/owned.go",
+      "sha256": "4db8de0715ae95e49332a19d497a7dc7833b3eda2067c79ee440d4c01ba441a1"
+    },
+    {
+      "file": "indexing/owned_integration_test.go",
+      "sha256": "859347e6b335993f001469e2fc3b75130289852370ec8740d77f2de8c2ee4c48"
+    },
+    {
+      "file": "indexing/owned_lifecycle_test.go",
+      "sha256": "57fe68249f9db946197d572b5099c86de0f8468a361d23e62598cc3994e25d33"
+    },
+    {
+      "file": "indexing/profile.go",
+      "sha256": "b1b52091b096adcb235e162fff291226c6d5c4e7e34290c8202fa6cf8cae6c80"
+    },
+    {
+      "file": "indexing/service.go",
+      "sha256": "9541a1f598a16d565248fdbde51506b0965dfc7e06ae6fede9b06d77b0c36626"
+    },
+    {
+      "file": "indexing/service_semantics_test.go",
+      "sha256": "c10fd9f141724816f763e93d277b9fbe63d9d773ea839f4afcc34243ab5e41a4"
+    },
+    {
+      "file": "indexing/source_actions_probes_test.go",
+      "sha256": "a4e699c7b8f2533cc17474076e802b14cecb35960aba7bac6bdd96c5045fce4f"
+    },
+    {
+      "file": "indexing/source_actions_test.go",
+      "sha256": "3ce015ac4d78af3dfc66ce6c38e2d930b460f1a56e4946df90d94a114cb2d838"
+    },
+    {
+      "file": "indexing/source_cache_test.go",
+      "sha256": "25dd6fe8c83ca015740de96eca9627ced71675d6fcb09583fc74f52be125fac3"
+    },
+    {
+      "file": "indexing/source_parity_test.go",
+      "sha256": "4517f4bd5014ee7f76825fe823aa7d34ca15c9da99eef8df4e2ffe6cf8216124"
+    },
+    {
+      "file": "indexing/source_prefetch_probes_test.go",
+      "sha256": "482a2e7a303a1c879f0c897b4ba4c0f99c66a758dc8cd401789e440bc86cc9b1"
+    },
+    {
+      "file": "indexing/source_prefetch_test.go",
+      "sha256": "e938a78b707107f4b96388a104186007a2863d54ea078ab154a926207e19b52c"
+    },
+    {
+      "file": "indexing/source_profile_edges_test.go",
+      "sha256": "23362c2bf7c9dc4f8a445fe764d4e0e95599c461b8c31a1929981161d173a355"
+    },
+    {
+      "file": "indexing/source_profile_test.go",
+      "sha256": "75da84221739d902436ff4b4a9d69fc683c2c45904465f4d5ad812d2f53fc052"
+    },
+    {
+      "file": "indexing/source_proxy_test.go",
+      "sha256": "6d98051e28463fef6dc773ae5f75def87cdc9a7147096a69880ee5a3d7590067"
+    },
+    {
+      "file": "indexing/types.go",
+      "sha256": "b73983554cfd9d6cba571188e1572d93123886650b7e540a2bc9c078f23ceb9b"
+    }
+  ]
+}

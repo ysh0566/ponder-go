@@ -209,3 +209,12 @@ full-verify-02于2026-10-25 13:39:39UTC通过54阶段，10canonical collectors�
 full-verify-01于2026-10-25 15:13:03.642UTC通过62阶段，11个显式canonical collectors接受；normal/race各3286节点/2994叶、0测试fail/skip，23包257函数79批次。1139输入10119df4147f45fbddb57e60ee75925bef14899a6f21468f3ab5831d166f8d00和94工具hash一致。新batch39保留batch38，失败/过期证据不覆盖。
 
 实际RPC profiling/LRU/阈值/prefetch与异步因果语义，非store行键profile替代。既有standalone optional AsyncCacheReader拥有prepared读取任务；跨链首错与兄弟任务、clear后的pending chunk、aggregate失败禁止提前cache写均有源/native控制。保留同步fallback、backend锁/IO取消、批量分组/read visibility/commit-order及typed Viem facade限制；无完整rawtransport/client/outerrunner完成声明。未来独立sync存储已批准但本阶段不改拓扑；历史schema清理仍未批准。
+
+
+## M41 — 独立同步存储ownership与可复用索引绑定（完整本地验收，待发布）
+
+基线M40 `1cdf7a50666ded90e5974de73a00cf3884e7c7fe`。完整65阶段及12个canonical collectors退出0；normal/race各3332节点/3031叶、0fail/skip，23包279函数85批。1151输入指纹48a34af5c9d4178fbb43024ba1b8d2ca1d1eb0db9c5970830db0b1ea1d84638a和105工具hash一致。正式543/905不变、362剩余，新增原例/断言/类型credit全为0。
+
+constructor-owned PG两池/namespace families及两条独立固定连接、PGlite双进程/持久目录避免handler内cache读死锁；排他ownership、连接死亡fail-closed、继承flock跨Go父退出保留和重开经验证。稳定服务/数据库/client identity通过私有ctx capability绑定不可变writer/cache；成功commit保留快照，rollback/flush/uncertain commit清行/buffer但保留profiles。正常revoke不cancel独立cache工作；显式readonly prefetch与单一保留close任务拥有完整cancel/join边界。
+
+真实双后端setup/history缓存hit/miss、业务/journal/checkpoint rollback、pending/取消/晚SQL失败、close/reopen和bounded close通过。源真实createIndexing/cache/userQB探针零credit；源PGlite同实例callback-only事务与native双目录真实SQL原子性有意不同，不外推并发read visibility/commit-order/grouping等价。全量旧oracle仅运行于SHOW data_directory核验的新M41测试cluster；旧cluster/历史schema未作维护。详情见INDEPENDENT_INDEXING_STORAGE.md；新batch40保留batch39。M42仍需原子多链setup/checkpoint和有限runner；未完成MarkReady/realtime/cutover。

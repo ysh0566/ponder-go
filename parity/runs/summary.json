@@ -4,20 +4,20 @@
     "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
     "core_version": "0.18.2"
   },
-  "run_dir": "parity/runs/indexing-profile-m40/full-verify-01",
+  "run_dir": "parity/runs/independent-storage-m41/full-verify-01",
   "environment_adapted": true,
   "pristine_file": false,
   "full_verification": {
-    "file": "parity/runs/indexing-profile-m40/full-verify-01/result.json",
-    "sha256": "1cba07fbbaef6974807f857844d368efc3fee5c151b745045b30ae9b9b00d6dd"
+    "file": "parity/runs/independent-storage-m41/full-verify-01/result.json",
+    "sha256": "cd5aa60beb199237d36aeeedb5c6663b51af91552711efefafa036c67ee20674"
   },
   "context_archive": {
-    "file": "parity/runs/indexing-profile-m40/full-verify-01/context-archive.json",
-    "sha256": "8a815c23819cfc91c2d8355786c583daa7b8855b8c5dd4b207b47e1a0c55b33b"
+    "file": "parity/runs/independent-storage-m41/full-verify-01/context-archive.json",
+    "sha256": "9ff2bf57e6f7374ab32bca756a1dac970b04260efd975952579cb79509f7e22c"
   },
   "prepared_native_inputs": {
-    "file": "parity/runs/indexing-profile-m40/full-verify-01/prepared-native-inputs.json",
-    "sha256": "4c5d539a659c2ae729aee719846ce5785db2909617de94a313ae365ca4a835c0"
+    "file": "parity/runs/independent-storage-m41/full-verify-01/prepared-native-inputs.json",
+    "sha256": "f277f80ca83d2d42fb2b5ebfc62b3b7efe7d35146fae325ce526a95b17819da7"
   },
   "counting": "Only exact source mappings count toward upstream parity. Native regression cases and generated differential vectors are separate evidence.",
   "parity": {
@@ -146,7 +146,7 @@
   "current_remaining_original_backend_oracles": [
     {
       "backend": "postgres",
-      "evidence": "parity/runs/indexing-profile-m40/full-verify-01/remaining-mapped-original-postgres.json",
+      "evidence": "parity/runs/independent-storage-m41/full-verify-01/remaining-mapped-original-postgres.json",
       "scope": "Nine complete original source files covering remaining mapped cases; unmapped cases add no port credit",
       "environment_adapted": true,
       "pristine_file": false,
@@ -154,13 +154,13 @@
       "failed": 0,
       "pending": 3,
       "context_archive": {
-        "file": "parity/runs/indexing-profile-m40/full-verify-01/context-archive.json",
-        "sha256": "8a815c23819cfc91c2d8355786c583daa7b8855b8c5dd4b207b47e1a0c55b33b"
+        "file": "parity/runs/independent-storage-m41/full-verify-01/context-archive.json",
+        "sha256": "9ff2bf57e6f7374ab32bca756a1dac970b04260efd975952579cb79509f7e22c"
       }
     },
     {
       "backend": "pglite",
-      "evidence": "parity/runs/indexing-profile-m40/full-verify-01/remaining-mapped-original-pglite.json",
+      "evidence": "parity/runs/independent-storage-m41/full-verify-01/remaining-mapped-original-pglite.json",
       "scope": "Nine complete original source files covering remaining mapped cases; unmapped cases add no port credit",
       "environment_adapted": true,
       "pristine_file": false,
@@ -168,29 +168,29 @@
       "failed": 0,
       "pending": 3,
       "context_archive": {
-        "file": "parity/runs/indexing-profile-m40/full-verify-01/context-archive.json",
-        "sha256": "8a815c23819cfc91c2d8355786c583daa7b8855b8c5dd4b207b47e1a0c55b33b"
+        "file": "parity/runs/independent-storage-m41/full-verify-01/context-archive.json",
+        "sha256": "9ff2bf57e6f7374ab32bca756a1dac970b04260efd975952579cb79509f7e22c"
       }
     }
   ],
   "native_execution_schedule": {
     "go": {
-      "evidence": "parity/runs/indexing-profile-m40/full-verify-01/native/go-test-execution.json",
+      "evidence": "parity/runs/independent-storage-m41/full-verify-01/native/go-test-execution.json",
       "complete": true,
       "success": true,
       "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
       "packages": 23,
-      "top_level_functions": 257,
-      "batches": 79
+      "top_level_functions": 279,
+      "batches": 85
     },
     "race": {
-      "evidence": "parity/runs/indexing-profile-m40/full-verify-01/native/go-race-execution.json",
+      "evidence": "parity/runs/independent-storage-m41/full-verify-01/native/go-race-execution.json",
       "complete": true,
       "success": true,
       "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
       "packages": 23,
-      "top_level_functions": 257,
-      "batches": 79
+      "top_level_functions": 279,
+      "batches": 85
     }
   },
   "type_fixtures": {
@@ -405,7 +405,7 @@
     "evidence": "parity/runs/sql-source-verification.json"
   },
   "typed_abi_runtime": {
-    "file": "parity/runs/indexing-profile-m40/full-verify-01/abi-generated-normal.log",
+    "file": "parity/runs/independent-storage-m41/full-verify-01/abi-generated-normal.log",
     "leaf_cases": 53,
     "pass": 53,
     "fail": 0,
@@ -413,7 +413,7 @@
     "counting": "Supplementary typed decoder execution; not additional source test records."
   },
   "typed_abi_race": {
-    "file": "parity/runs/indexing-profile-m40/full-verify-01/abi-generated-race.log",
+    "file": "parity/runs/independent-storage-m41/full-verify-01/abi-generated-race.log",
     "leaf_cases": 53,
     "pass": 53,
     "fail": 0,
@@ -423,34 +423,34 @@
     "postgres": {
       "counting": "First explicit slash dialect component wins; legacy backend-tagged names remain supported. Source titles mentioning another backend do not double count. Source mappings and backend companions remain separate from source parity.",
       "go": {
-        "leaf_cases": 509,
-        "pass": 509,
+        "leaf_cases": 520,
+        "pass": 520,
         "fail": 0,
         "skip": 0
       },
       "race": {
-        "leaf_cases": 509,
-        "pass": 509,
+        "leaf_cases": 520,
+        "pass": 520,
         "fail": 0,
         "skip": 0
       },
-      "evidence": "parity/runs/indexing-profile-m40/full-verify-01/native/go-test.jsonl"
+      "evidence": "parity/runs/independent-storage-m41/full-verify-01/native/go-test.jsonl"
     },
     "pglite": {
       "counting": "First explicit slash dialect component wins; legacy backend-tagged names remain supported. Source titles mentioning another backend do not double count. Source mappings and backend companions remain separate from source parity.",
       "go": {
-        "leaf_cases": 505,
-        "pass": 505,
+        "leaf_cases": 519,
+        "pass": 519,
         "fail": 0,
         "skip": 0
       },
       "race": {
-        "leaf_cases": 505,
-        "pass": 505,
+        "leaf_cases": 519,
+        "pass": 519,
         "fail": 0,
         "skip": 0
       },
-      "evidence": "parity/runs/indexing-profile-m40/full-verify-01/native/go-test.jsonl"
+      "evidence": "parity/runs/independent-storage-m41/full-verify-01/native/go-test.jsonl"
     }
   },
   "simulation": {
@@ -459,16 +459,16 @@
     "executed_seeds": 0
   },
   "native_go": {
-    "file": "parity/runs/indexing-profile-m40/full-verify-01/native/go-test.jsonl",
-    "leaf_cases": 2994,
-    "pass": 2994,
+    "file": "parity/runs/independent-storage-m41/full-verify-01/native/go-test.jsonl",
+    "leaf_cases": 3031,
+    "pass": 3031,
     "fail": 0,
     "skip": 0
   },
   "race": {
-    "file": "parity/runs/indexing-profile-m40/full-verify-01/native/go-race.jsonl",
-    "leaf_cases": 2994,
-    "pass": 2994,
+    "file": "parity/runs/independent-storage-m41/full-verify-01/native/go-race.jsonl",
+    "leaf_cases": 3031,
+    "pass": 3031,
     "fail": 0,
     "skip": 0
   },
@@ -481,7 +481,7 @@
     "failed": 0
   },
   "core_oracle": {
-    "file": "parity/runs/indexing-profile-m40/full-verify-01/core-oracle.json",
+    "file": "parity/runs/independent-storage-m41/full-verify-01/core-oracle.json",
     "mode": "isolated_complete_source_files",
     "execution": "isolated complete source files without application global setup",
     "isolated": true,
@@ -496,7 +496,7 @@
     "failed": 0
   },
   "client": {
-    "file": "parity/runs/indexing-profile-m40/full-verify-01/sdk-client.json",
+    "file": "parity/runs/independent-storage-m41/full-verify-01/sdk-client.json",
     "numTotalTests": 3,
     "numPassedTests": 3,
     "numFailedTests": 0

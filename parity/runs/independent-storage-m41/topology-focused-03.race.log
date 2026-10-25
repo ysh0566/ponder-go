@@ -1,0 +1,57 @@
+=== RUN   TestIndependentStorageLateCacheSQLFailure
+=== RUN   TestIndependentStorageLateCacheSQLFailure/postgres
+=== RUN   TestIndependentStorageLateCacheSQLFailure/pglite
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+ExitStatus {
+  name: 'ExitStatus',
+  message: 'Program terminated with exit(1)',
+  status: 1
+}
+
+Node.js v24.22.1
+    independent_storage_failure_test.go:45: PGlite did not become ready (process: exit status 1, stdout: <nil>)
+--- FAIL: TestIndependentStorageLateCacheSQLFailure (0.34s)
+    --- PASS: TestIndependentStorageLateCacheSQLFailure/postgres (0.17s)
+    --- FAIL: TestIndependentStorageLateCacheSQLFailure/pglite (0.17s)
+=== RUN   TestIndependentNamespaceTopology
+--- PASS: TestIndependentNamespaceTopology (0.00s)
+=== RUN   TestIndependentDirectoryTopology
+--- PASS: TestIndependentDirectoryTopology (0.00s)
+=== RUN   TestIndependentDirectoryRejectsUnsafePaths
+--- PASS: TestIndependentDirectoryRejectsUnsafePaths (0.00s)
+=== RUN   TestIndependentCloseRetainsOwnership
+--- PASS: TestIndependentCloseRetainsOwnership (0.00s)
+=== RUN   TestIndependentStoragePersistentTopology
+=== RUN   TestIndependentStoragePersistentTopology/postgres
+=== RUN   TestIndependentStoragePersistentTopology/pglite
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+ExitStatus {
+  name: 'ExitStatus',
+  message: 'Program terminated with exit(1)',
+  status: 1
+}
+
+Node.js v24.22.1
+    independent_storage_test.go:188: PGlite did not become ready (process: exit status 1, stdout: <nil>)
+--- FAIL: TestIndependentStoragePersistentTopology (0.48s)
+    --- PASS: TestIndependentStoragePersistentTopology/postgres (0.31s)
+    --- FAIL: TestIndependentStoragePersistentTopology/pglite (0.17s)
+=== RUN   TestIndependentPGliteRejectedTopologyPreservesPaths
+--- PASS: TestIndependentPGliteRejectedTopologyPreservesPaths (0.00s)
+=== RUN   TestIndependentFilesystemOwnerChild
+--- PASS: TestIndependentFilesystemOwnerChild (0.00s)
+=== RUN   TestIndexingSessionRealTransactions
+=== RUN   TestIndexingSessionRealTransactions/postgres
+=== RUN   TestIndexingSessionRealTransactions/pglite
+--- PASS: TestIndexingSessionRealTransactions (1.71s)
+    --- PASS: TestIndexingSessionRealTransactions/postgres (0.08s)
+    --- PASS: TestIndexingSessionRealTransactions/pglite (1.62s)
+FAIL
+FAIL	ponder.local/ponder-go/store	2.556s
+FAIL

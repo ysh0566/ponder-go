@@ -32,7 +32,7 @@ type Service struct {
 }
 
 func NewService(o Options) (*Service, error) {
-	if o.Clients == nil || o.Database == nil || o.Database.Underlying() == nil {
+	if o.Clients == nil || o.Database == nil || !o.Database.configured() {
 		return nil, fmt.Errorf("indexing service requires real clients and indexing store")
 	}
 	if o.Errors == nil {
@@ -111,6 +111,9 @@ func (s *Service) Metrics() *Metrics                        { return s.options.M
 func (s *Service) EventCount() map[string]uint64            { return s.options.EventCount }
 func (s *Service) ColumnAccessPattern() ColumnAccessPattern { return s.options.ColumnAccessPattern }
 func (s *Service) begin(ctx context.Context) error {
+	if e := s.options.Database.checkBinding(ctx); e != nil {
+		return e
+	}
 	if e := ctx.Err(); e != nil {
 		return e
 	}
@@ -349,7 +352,7 @@ func (s *Service) ProcessHistoricalEvents(ctx context.Context, events []Object, 
 			fieldOrder = s.options.FieldOrder(event)
 		}
 		s.options.Clients.SetProfileFieldOrder(fieldOrder)
-		if e = s.options.Database.SetProfileEvent(store.ProfileEvent{Callback: name, Count: s.options.EventCount[name], Type: kind, ChainID: id.Uint64(), Data: store.Row(body), FieldOrder: fieldOrder}); e != nil {
+		if e = s.options.Database.SetProfileEventContext(ctx, store.ProfileEvent{Callback: name, Count: s.options.EventCount[name], Type: kind, ChainID: id.Uint64(), Data: store.Row(body), FieldOrder: fieldOrder}); e != nil {
 			return e
 		}
 		view, e := s.historicalView(event, name)

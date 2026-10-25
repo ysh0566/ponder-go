@@ -32,9 +32,9 @@
       "upstream_sources": [],
       "evidence": [
         "parity/runs/summary.json",
-        "parity/runs/batch-38.json"
+        "parity/runs/batch-40.json"
       ],
-      "remaining": "531/905 exact original records verified; 374 unimplemented. Seven runtime-passed cases (four runtime-index, three indexing handler service) still lack exact native type obligations and remain unmapped. Supplemental regressions add no source credit."
+      "remaining": "543/905 exact original records verified; 362 unimplemented. M41 adds zero source credit. Seven runtime-passed cases (four runtime-index, three handler service) still lack exact native type obligations and remain unmapped."
     },
     {
       "id": "differential-harness",
@@ -1290,7 +1290,7 @@
         "parity/runs/batch-37.json",
         "docs/SOURCE_INDEXING_SERVICE.md"
       ],
-      "remaining": "Historical M38 handler subset remains12 formal mappings for15 runtime originals/33assertions, with3 exact TS-only gaps. M39 now replays all23 descriptor operations and provides strict standalone AsyncCache prepared admission plus8 separately mapped action originals. Generic synchronous fallback timing, concurrent cache-read visibility, commit order and batchinsert grouping remain unproved; captured service sync-table snapshots stay archival-only. No full profile/prefetch/LRU or outer runner/readiness/cutover claim; native stronger PGlite transaction safety is not source failure parity."
+      "remaining": "Historical M38 handler subset remains12 formal mappings for15 runtime originals/33assertions, with3 exact TS-only gaps. M39 now replays all23 descriptor operations and provides strict standalone AsyncCache prepared admission plus8 separately mapped action originals. Generic synchronous fallback timing, concurrent cache-read visibility, commit order and batchinsert grouping remain unproved; captured service sync-table snapshots stay archival-only. RPC profile/prefetch/LRU is separately verified in M40, owned reusable bindings in M41; no outer runner/readiness/cutover claim; native stronger PGlite transaction safety is not source failure parity."
     },
     {
       "id": "source-indexing-actions-m39",
@@ -1314,7 +1314,49 @@
         "parity/runs/batch-38.json",
         "docs/SOURCE_INDEXING_ACTIONS.md"
       ],
-      "remaining": "Eight original action cases/nine assertions verified both databases/full modes, not full cachedViemClient. No profile/prefetch/LRU, full indexing/client.test.ts, account/state overrides or chain deployment discovery. Strict standalone AsyncCache synchronously prepares/admit queue work; bound transaction adapters remain synchronous, custom fallback weaker. Concurrent cache-read visibility, commit-order and sourcebatch/nativeperchild invocation grouping not equivalent. Typed revert/zero-data meaning not full Viem wrappers/custom-error decoding; ABI.Parse anonymous tuple encoding limited. Seven prior static gaps and outer runner/readiness/cutover remain."
+      "remaining": "Eight original action cases/nine assertions verified both databases/full modes, not full cachedViemClient. RPC profile/prefetch/LRU is separately verified in M40; full indexing/client.test.ts, account/state overrides and chain deployment discovery remain incomplete. Strict standalone AsyncCache synchronously prepares/admit queue work; bound transaction adapters remain synchronous, custom fallback weaker. Concurrent cache-read visibility, commit-order and sourcebatch/nativeperchild invocation grouping not equivalent. Typed revert/zero-data meaning not full Viem wrappers/custom-error decoding; ABI.Parse anonymous tuple encoding limited. Seven prior static gaps and outer runner/readiness/cutover remain."
+    },
+    {
+      "id": "source-indexing-profile-m40",
+      "status": "verified_subset",
+      "implementation_files": [
+        "indexing/profile.go",
+        "indexing/client_prefetch.go",
+        "store/source_rpc_async_read.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing/profile.ts",
+        "packages/core/src/indexing/client.ts"
+      ],
+      "evidence": [
+        "parity/runs/source-indexing-profile-verification.json",
+        "parity/runs/batch-39.json"
+      ],
+      "remaining": "Existing ten profile and two prefetch originals/30 assertions/zero TS directives mapped. Twelve other client originals remain unmapped; supplemental profile/client causal probes add no credit. Full Viem wrappers/custom errors, raw transport, database read visibility/commit-order/grouping and outer runner remain outside this proof."
+    },
+    {
+      "id": "independent-indexing-storage-m41",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/independent_storage.go",
+        "store/independent_filesystem.go",
+        "store/independent_postgres.go",
+        "store/indexing_session.go",
+        "indexing/database_binding.go",
+        "indexing/owned.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/multichain.ts",
+        "packages/core/src/database/queryBuilder.ts",
+        "packages/core/src/indexing/index.ts",
+        "packages/core/src/indexing-store/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/independent-storage-verification.json",
+        "parity/runs/batch-40.json",
+        "docs/INDEPENDENT_INDEXING_STORAGE.md"
+      ],
+      "remaining": "Constructor-owned separate domains and immutable reusable transaction bindings only; zero new original source credit. Source PGlite callback-only one-instance transactions intentionally differ from native two-directory SQL atomicity. Cooperative ownership is not a hostile SQL/filesystem security sandbox or host-power-loss guarantee. External writes/reorg require explicit session invalidation; no atomic multichain setup/checkpoint primitive, finite outer runner, MarkReady, realtime/cutover or automatic recovery integration yet."
     }
   ]
 }
