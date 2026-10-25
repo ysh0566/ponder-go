@@ -182,3 +182,12 @@ Anvil loopback 与客户端 Node 预编译为启动层适配，不是 pristine �
 新增最后3个 historical 原例/5断言/0类型义务，累计511/905（507Go+4SDK），394未实现。原完整14例双后端通过；16补充探针及两个嵌套首错控制零credit。实现 completion-order Multichain、global-boundary Omnichain pending/catchup、Isolated、按原跨链位置 refetch 与 checkpoint聚合；不是外层运行循环、handler事务或实时切换。
 
 复核修正 refresh 标准化/同步注册/首错取消，并修正旧内存获取的预取注册和 block/trace首错边界。严格原始请求消费、真实 safe-crash SQL、九表、共享身份及恢复控制保留；初期失败、两种wait-all反例、错误Commit门控中断、采集与汇总命令误用均保留。source与native取消/原子性差异明确说明，不扩大等价或原例credit。新batch-36保留旧batch-35，详情见SOURCE_RUNTIME_MULTICHAIN与CONTINUATION。
+
+
+## M38：source-shaped indexing handler service（本地完整验收通过，待发布复核）
+
+新 indexing 服务接入真实 transaction-bound IndexingStore/cache 和 event-scoped getBalance，保留 setup event undefined、双链 context/contracts/client identity、callback 顺序、sticky retryable error 与100sample include收敛/失效。显式 PropertyView 代替 JS Proxy 语法；未移除旧 Engine 单链限制。前15原例/33断言 runtime 在双后端完整normal/race通过；三项 TS-only义务保留未映射，仅12新增。累计523/905（519Go+4SDK），382未实现，七例runtime/type-pending未计credit。
+
+源 Proxy23步/native22支持操作与 Object.keys descriptor gap、缓存写 invocation-prefix scheduling gap 均公开保留；对应 supplemental 零credit，不假称精确全轨迹等价。九张源 sync 表快照 archival-only。实际 M37提取/Decode→handler→真实业务写/rollback 仅证明组成边界；外层 runner、atomicmultichain调度、ready/realtimecutover、last8clientfacade 等仍未完成。
+
+完整full-verify-02于2026-10-25 11:43:06UTC通过46阶段；normal/race各3070节点/2807叶用例、0测试fail/skip，PG430/PGlite426，23包226函数71批次。1114文件指纹c13f65c6c3fde1a89b80e2ab256a892ef795323f64de46535735dd6e40552ec3与61工具hash一致；9canonical证明接受。full01目录guard失败保留，8条最小allowlist修正+115控制经独立复核后完整重跑；新batch37，不覆盖batch36。

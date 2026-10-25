@@ -4,6 +4,21 @@
 
 
 
+## 当前执行入口：M38 索引 handler 服务完整验收通过，待父级发布复核
+
+已发布基线 M37 为 `869b3d0742a4303a67cccba99e980d50599684bb`，原 M37 待发布段落保留为历史记录。当前正式覆盖为 523/905（519 Go + 4 SDK），382 未实现；七例 runtime 通过但类型义务未闭合仍 unmapped。新 `indexing` 包独立于 legacy 单链 Engine；只实现 setup/historical/realtime handler 边界，不包含外层 run*、自动多链事务、ready、realtime cutover 或 triggers。
+
+未改动 indexing/index.test.ts 完整 23 例在 PG/PGlite 通过；前 15 例/33 断言的 native 双后端 normal/race 已在完整统一验收通过。两例普通 callback 缺 mockRejectedValue 属性及一例删除 required maxPriorityFeePerGas 的 TS 义务没有等价 native 静态证明；三例保持 unmapped，仅新增 12 credit。真正 M37 双链历史提取/Decode→handler→真实 IndexingStore 写入、journal/调用者 checkpoint/rollback 的 supplemental 通过 normal/race，但不等于外层 runner 已完成。
+
+完整 `indexing-service-m38/full-verify-02` 于 2026-10-25 11:43:06 UTC 退出0，46阶段全部通过；normal/race各3070节点/2807叶用例、0测试失败/跳过，PG各430/PGlite各426。23包226顶层函数、每模式71串行批次，原timeout保留。1114文件指纹 `c13f65c6c3fde1a89b80e2ab256a892ef795323f64de46535735dd6e40552ec3` 准备/完成/汇总一致，61验收工具hash未变；九个canonical collector均显式输出并接受当前完整证明。新batch37保留旧batch36，不提交/推送直至父级复核。
+
+必须继续携带两项真实能力缺口：
+
+1. source Proxy 探针 23 步中，native 只重放 22 个支持操作。source `Object.keys(proxy)` 因 descriptor 缺失返回空列表；Go PropertyView 没有该 descriptor API，测试明确记录缺口，**没有伪造空结果，也没有 t.Skip**。Get/Set/Delete/Has/Reflect.ownKeys 对应 Keys、真实重复访问轨迹、missing/null/undefined、reset/sticky identity/rebind 均作实际比较；Inspect 比较语义字段与读取顺序，不声称 Node 文本格式等价。
+2. source cached client 在 getBalance 返回之前已进入 insertion 方法的同步前缀；Go 对任意同步 CachePut 的受管 goroutine 可以在返回之后才进入。现有 AsyncRequester 有真实 admission，但 Cache/SourceRPCRequestCache 没有 BeginCachePut 能力，不能用假握手声称等价。当前仅证明真实 RPC/cache 参数、非等待返回、release→settle、late error 忽略与 writer cancel/join；保留原始未排序 timeline，此 invocation-prefix gap 留待完整 client facade 阶段。
+
+源采集的九张 sync 表前后快照在 M38 仅归档，不作 native 表等价声明；原 business insert/find 断言真实执行。源 PGlite QB callback 非 SQL transaction，native 更强事务是明确安全扩展。详见 `SOURCE_INDEXING_SERVICE.md`。full01在旧wrapper拒绝M38目录时停止，无原断言失败；仅8条allowlist扩展后经115positive/negative控制与独立复核，从头full02通过。observer语法、原生undefined默认值、重放身份和相对artifact路径等早期失败全部保留。继续时沿用 env.sh、pinned .bin/tsc5.4.5、同 exec PG55432、至少5GiB，九个 canonical collectors 必须显式 --output；旧 batch36 和全部失败记录不得覆盖。
+
 ## 当前执行入口：M37 本地完整验收通过，待父级独立复核与普通发布
 
 完整 `runtime-multichain-m37/full-verify-01` 于 2026-10-25 10:25 UTC 退出 0，35 阶段全部通过。normal/race 各 2983 测试节点、2736 叶用例，0 测试失败/跳过；22 包、202 顶层函数、每模式 65 个不重叠串行批次，原 timeout 保留。PG 各 405、PGlite 各 402。准备/结束/汇总时 1096 文件指纹一致：`740fa67bb628fa820aa991b8ed31889c12af9a54b06fa081e6409fdf17bee639`，33 个验收工具 hash 全程不变。

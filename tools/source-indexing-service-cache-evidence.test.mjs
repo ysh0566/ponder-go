@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {assertIndexingServiceCacheCapture} from './source-indexing-service-evidence.mjs';
+const arg=process.argv.find(x=>x.startsWith('--fixture='));if(!arg)throw Error('Explicit --fixture required');
+const fixture=JSON.parse(fs.readFileSync(arg.slice(10)));
+test('actual cached client and error-brand source evidence',()=>assert.equal(assertIndexingServiceCacheCapture(fixture).cases,4));
+const broken=(name,fn)=>test('rejects '+name,()=>{const copy=structuredClone(fixture);fn(copy);assert.throws(()=>assertIndexingServiceCacheCapture(copy))});
+broken('awaited insert',c=>{const a=c.cases[0].timeline;[a[4],a[6]]=[a[6],a[4]]});
+broken('lost late failure',c=>c.cases[1].timeline[6]='insert_resolve');
+broken('fabricated balance',c=>c.cases[0].result.$bigint='1');
+broken('wrong scoped block',c=>c.cases[0].providers[0].request.params[1]='latest');
+broken('fake provider marker',c=>c.cases[0].real_rpc=false);
+broken('user error name accepted as brand',c=>c.cases[2].result.sameIdentity=true);
+broken('lost actual BaseError identity',c=>c.cases[3].result.sameIdentity=false);

@@ -7,7 +7,7 @@ import {validateContextEntry} from './loopback-context.mjs';
 const root=path.resolve(import.meta.dirname,'..'),arg=process.argv.find(x=>x.startsWith('--run-dir='));
 if(!arg)throw Error('Explicit complete run directory required');
 const directory=path.resolve(root,arg.slice(10)),relative=path.relative(root,directory);
-if(!['runtime-index-m35','runtime-historical-m36','runtime-multichain-m37'].some(stage=>relative.startsWith('parity/runs/'+stage+'/')))throw Error('Scoped M35 run required');
+if(!['runtime-index-m35','runtime-historical-m36','runtime-multichain-m37','indexing-service-m38'].some(stage=>relative.startsWith('parity/runs/'+stage+'/')))throw Error('Scoped M35 run required');
 const read=file=>JSON.parse(fs.readFileSync(path.resolve(root,file),'utf8'));
 const hash=file=>({file:path.relative(root,path.resolve(root,file)),sha256:crypto.createHash('sha256').update(fs.readFileSync(path.resolve(root,file))).digest('hex')});
 const check=(value,message)=>{if(!value)throw Error(message)};
@@ -54,4 +54,4 @@ for(const mode of ['normal','race']){
  }
 }
 const report={complete:true,success:true,scope:'complete_module_source_runtime_index',run_dir:relative,environment_adapted:true,pristine_file:false,summary:{source_cases:15,source_assertions:30,source_error_directives:6,runtime_passed_cases:15,complete_mapping_candidates:11,native_type_pending_cases:4,native_type_obligations_verified:0,supplementary_source_credit:0},full_verification:hash(directory+'/result.json'),prepared_native_inputs:full.prepared_native_inputs,context_archive:full.context_archive,source_types:hash('parity/runs/source-runtime-index-types.json'),executions,inputs:['tools/source-runtime-index-results.mjs','runtime/source_index_live_test.go','runtime/source_sync_progress.go','runtime/source_event_merge.go','runtime/source_sync_cache.go','rpc/async.go','testdata/runtime/source-runtime-index-live.json','parity/runs/runtime-index-progress-order-source/probe.json'].map(hash)};
-fs.writeFileSync(root+'/parity/runs/source-runtime-index-verification.json',JSON.stringify(report,null,2)+'\n');console.log(report.summary);
+fs.writeFileSync(path.resolve(root,process.argv.find(x=>x.startsWith('--output='))?.slice(9)??'parity/runs/source-runtime-index-verification.json'),JSON.stringify(report,null,2)+'\n');console.log(report.summary);
