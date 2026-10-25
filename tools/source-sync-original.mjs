@@ -1,14 +1,17 @@
+import {resolveOracleRoot} from './loopback-adapter.mjs';
 import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import{spawnSync}from'node:child_process';
-const root=path.resolve(import.meta.dirname,'..'),upstream=path.resolve(root,'../ponder-upstream');
+const root=path.resolve(import.meta.dirname,'..'),originalUpstream=path.resolve(root,'../ponder-upstream'),upstream=resolveOracleRoot(),adapted=!!process.env.PONDER_UPSTREAM_ROOT;
 const argument=name=>process.argv.find(a=>a.startsWith('--'+name+'='))?.slice(name.length+3),backend=argument('backend'),destination=argument('output');
 if(!['postgres','pglite'].includes(backend)||!destination||!process.env.PONDER_SOURCE_SYNC_ENDPOINT)throw Error('Explicit backend/output/native endpoint required');
 const output=path.resolve(root,destination);if(!output.startsWith(path.join(root,'parity/runs/sync-store-m32/'))||fs.existsSync(path.join(output,'result.json')))throw Error('Choose new task evidence output');fs.mkdirSync(output,{recursive:true});
 function command(args){const p=spawnSync(args[0],args.slice(1),{cwd:root,encoding:'utf8'});if(p.error||p.status!==0)throw Error(p.error?.message??p.stderr);return p.stdout.trim();}
-if(command(['git','-C',upstream,'rev-parse','HEAD'])!=='17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334'||command(['git','-C',upstream,'status','--porcelain','--untracked-files=no']))throw Error('Pinned original checkout changed');
+if(command(['git','-C',originalUpstream,'rev-parse','HEAD'])!=='17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334'||command(['git','-C',originalUpstream,'status','--porcelain','--untracked-files=no']))throw Error('Pinned original checkout changed');
 for(const dir of[root,upstream,upstream+'/packages/core'])if(fs.existsSync(dir+'/.env.local'))throw Error('Unexpected dotenv file');
 const env={...process.env,CI:'1',PONDER_PORT_ROOT:root,PONDER_SOURCE_SYNC_CAPTURE:path.join(output,'calls.json'),PONDER_BIND_AUDIT:path.join(output,'bindings.jsonl'),NODE_OPTIONS:`${process.env.NODE_OPTIONS??''} --import=${root}/tools/loopback-only.mjs`.trim()};
-if(backend==='postgres'){const url=new URL(env.PONDER_TEST_POSTGRES??'');if(url.hostname!=='127.0.0.1'||url.port!=='53398'||url.pathname!=='/ponder_test')throw Error('Only explicit task PostgreSQL accepted');env.DATABASE_URL=env.PONDER_TEST_POSTGRES;}else delete env.DATABASE_URL;
+if(backend==='postgres'){const url=new URL(env.PONDER_TEST_POSTGRES??'');if(url.hostname!=='127.0.0.1'||url.port!==(adapted?'55432':'53398')||url.pathname!=='/ponder_test')throw Error('Only explicit task PostgreSQL accepted');env.DATABASE_URL=env.PONDER_TEST_POSTGRES;}else delete env.DATABASE_URL;
+if(adapted){if(process.env.NODE_OPTIONS)throw Error('Adapted run cannot inherit NODE_OPTIONS');env.NODE_OPTIONS='';}
 const report={state:'Complete original file with actual source/native method/SQL/state comparison, original source outputs unchanged. Separate pristine original and native type/runtime evidence required before source mappings.',backend,complete:false,success:false,started_utc:new Date().toISOString(),source_credit:0};
+if(adapted){report.pristine_file=false;report.environment_adapted=true;report.state='ENVIRONMENT-ADAPTED startup; NOT pristine. '+report.state;fs.copyFileSync(upstream+'/.ponder-loopback-manifest.json',output+'/startup-adaptation.json');}
 const save=()=>fs.writeFileSync(path.join(output,'result.json'),JSON.stringify(report,null,2)+'\n');save();
 const args=['run','--config',path.join(root,'tools/source-sync-live.config.mjs'),'--configLoader','native','src/sync-store/index.test.ts','--reporter=json','--outputFile='+path.join(output,'original.json')];report.command=['vitest',...args];save();
 const fd=fs.openSync(path.join(output,'output.txt'),'w');let result;try{result=spawnSync(upstream+'/packages/core/node_modules/.bin/vitest',args,{cwd:root,env,stdio:['ignore',fd,fd]});}finally{fs.closeSync(fd)}

@@ -1,0 +1,235 @@
+{
+  "complete": false,
+  "success": false,
+  "environment_adapted": true,
+  "pristine_file": false,
+  "source_credit": 0,
+  "scope": "All module Go tests, fuzz seeds and examples in disjoint serial batches, normal and race; actual source oracles, SDK, compiler controls, vet and CLI builds.",
+  "started_utc": "2026-10-25T06:15:45.529Z",
+  "commands": [
+    {
+      "name": "remaining-mapped-original-postgres",
+      "command": [
+        "/workspace/shared/ponder-migration/work/ponder-go/../ponder-upstream/packages/core/node_modules/.bin/vitest",
+        "run",
+        "--config",
+        "tools/full-oracle.config.mjs",
+        "--configLoader",
+        "native",
+        "src/database/actions.test.ts",
+        "src/database/index.test.ts",
+        "src/indexing-store/cache.test.ts",
+        "src/indexing-store/index.test.ts",
+        "src/indexing-store/profile.test.ts",
+        "src/runtime/events.test.ts",
+        "src/runtime/filter.test.ts",
+        "src/sync-realtime/bloom.test.ts",
+        "src/utils/sql-parse.test.ts",
+        "--reporter=json",
+        "--outputFile=/workspace/shared/ponder-migration/work/ponder-go/parity/runs/runtime-index-m35/full-verify-02/remaining-mapped-original-postgres.json"
+      ],
+      "started_utc": "2026-10-25T06:15:46.016Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T06:16:06.513Z"
+    },
+    {
+      "name": "remaining-mapped-original-pglite",
+      "command": [
+        "/workspace/shared/ponder-migration/work/ponder-go/../ponder-upstream/packages/core/node_modules/.bin/vitest",
+        "run",
+        "--config",
+        "tools/full-oracle.config.mjs",
+        "--configLoader",
+        "native",
+        "src/database/actions.test.ts",
+        "src/database/index.test.ts",
+        "src/indexing-store/cache.test.ts",
+        "src/indexing-store/index.test.ts",
+        "src/indexing-store/profile.test.ts",
+        "src/runtime/events.test.ts",
+        "src/runtime/filter.test.ts",
+        "src/sync-realtime/bloom.test.ts",
+        "src/utils/sql-parse.test.ts",
+        "--reporter=json",
+        "--outputFile=/workspace/shared/ponder-migration/work/ponder-go/parity/runs/runtime-index-m35/full-verify-02/remaining-mapped-original-pglite.json"
+      ],
+      "started_utc": "2026-10-25T06:16:06.540Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T06:16:22.577Z"
+    },
+    {
+      "name": "runtime-index-source-postgres",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-index-original.mjs",
+        "--backend=postgres",
+        "--output=/workspace/shared/ponder-migration/work/ponder-go/parity/runs/runtime-index-m35/full-verify-02/source-postgres"
+      ],
+      "started_utc": "2026-10-25T06:16:22.608Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T06:16:27.099Z"
+    },
+    {
+      "name": "runtime-index-source-pglite",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-runtime-index-original.mjs",
+        "--backend=pglite",
+        "--output=/workspace/shared/ponder-migration/work/ponder-go/parity/runs/runtime-index-m35/full-verify-02/source-pglite"
+      ],
+      "started_utc": "2026-10-25T06:16:27.130Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T06:16:30.926Z"
+    },
+    {
+      "name": "sync-type-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-sync-compile.mjs",
+        "--write"
+      ],
+      "started_utc": "2026-10-25T06:16:30.959Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T06:16:32.979Z"
+    },
+    {
+      "name": "historical-type-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/source-historical-types/compile.mjs"
+      ],
+      "started_utc": "2026-10-25T06:16:33.005Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T06:16:35.893Z"
+    },
+    {
+      "name": "sdk-client-build",
+      "command": [
+        "/workspace/shared/ponder-migration/work/ponder-go/sdk/typescript/client/node_modules/.bin/tsup"
+      ],
+      "started_utc": "2026-10-25T06:16:35.920Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T06:16:37.544Z"
+    },
+    {
+      "name": "prepared-native-inputs",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/record-native-inputs.mjs"
+      ],
+      "started_utc": "2026-10-25T06:16:37.571Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T06:16:37.786Z"
+    },
+    {
+      "name": "abi-generated-normal",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-json",
+        "./abi/testdata/compile/generated"
+      ],
+      "started_utc": "2026-10-25T06:16:37.890Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T06:16:38.321Z"
+    },
+    {
+      "name": "abi-generated-race",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-race",
+        "-json",
+        "./abi/testdata/compile/generated"
+      ],
+      "started_utc": "2026-10-25T06:16:38.351Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T06:16:39.791Z"
+    },
+    {
+      "name": "go-normal",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/go-tests.mjs"
+      ],
+      "started_utc": "2026-10-25T06:16:39.820Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "finished_utc": "2026-10-25T06:28:35.406Z"
+    },
+    {
+      "name": "go-race",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/go-tests.mjs",
+        "--race"
+      ],
+      "started_utc": "2026-10-25T06:28:35.433Z"
+    }
+  ],
+  "prepared_native_inputs": {
+    "file": "parity/runs/runtime-index-m35/full-verify-02/prepared-native-inputs.json",
+    "sha256": "bbb3b41723dc284ccf3cfb459b7b2890cd89b084ff05001738c473f199f8b0bd"
+  },
+  "native_inputs": {
+    "files": 1078,
+    "sha256": "3ab0882f0d4ab833e82c2053e61a87117ef85222e930c754b1008aeafcefc9d6"
+  },
+  "harness_inputs": [
+    {
+      "file": "tools/go-tests.mjs",
+      "sha256": "c4de2f4a967654d761c813936e39e29e1260fb3cc75656661445cfc826c67db2"
+    },
+    {
+      "file": "tools/runtime-index-full-verify.mjs",
+      "sha256": "9617c40d185647ed45b9907d1c4a572ab4b3382820d3b742cf2ce6b8a31af2b2"
+    },
+    {
+      "file": "tools/loopback-adapter.mjs",
+      "sha256": "d5e441f1bc647b78f9d216e91e46634029314ee17394e679a36208908a2a2200"
+    },
+    {
+      "file": "tools/loopback-context.mjs",
+      "sha256": "b5cb63b0b84028df0575591ec6ab8f9a9da5f491da3e6fcc9471c0d853eaa706"
+    },
+    {
+      "file": "tools/client-compat-launch.mjs",
+      "sha256": "1f619acd8f36939bfdb44088303f8432aa6123883f14be4f521b1a8a1b205229"
+    },
+    {
+      "file": "tools/client-compat-provenance.mjs",
+      "sha256": "14fdb40014e8166cb3e9f6ea2da1a5274db0d7a719124ee2f3e565a87404dd5a"
+    },
+    {
+      "file": "tools/source-runtime-index-live.setup.ts",
+      "sha256": "3f92691e9004aacaed189ca294d92e9a6bbf0da04988db17f59b5258285ba0b4"
+    },
+    {
+      "file": "tools/source-runtime-index-original.mjs",
+      "sha256": "8d630f0f6ddbadee6e719d3cf910943ea71a5a0264d3d9027c0da16830d06597"
+    }
+  ]
+}

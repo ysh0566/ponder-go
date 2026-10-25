@@ -80,8 +80,9 @@ func TestOriginalClientCompatibility(t *testing.T) {
 				defer httpServer.Close()
 				_, file, _, _ := runtime.Caller(0)
 				project := filepath.Dir(filepath.Dir(file))
-				tsx := filepath.Join(project, "../ponder-upstream/packages/core/node_modules/.bin/tsx")
-				cmd := exec.Command(tsx, filepath.Join(project, "bridge/client-compat.ts"), httpServer.URL, relation)
+				// Environment-adapted launch only: preserve the same TypeScript test,
+				// original seven assertions and real HTTP/SSE/database interactions.
+				cmd := exec.Command("node", filepath.Join(project, "tools/client-compat-launch.mjs"), httpServer.URL, relation)
 				out, e := cmd.CombinedOutput()
 				if e != nil {
 					t.Fatalf("original client: %v\n%s", e, out)

@@ -28,7 +28,7 @@ func main() {
 	var backend store.Backend
 	if input.Backend == "postgres" {
 		database, parseErr := url.Parse(input.DatabaseURL)
-		if parseErr != nil || database.Hostname() != "127.0.0.1" || database.Port() != "53398" || database.Path != "/ponder_test" {
+		if parseErr != nil || database.Hostname() != "127.0.0.1" || (database.Port() != "53398" && !(os.Getenv("PONDER_UPSTREAM_ROOT") != "" && database.Port() == "55432")) || database.Path != "/ponder_test" {
 			panic("explicit task PostgreSQL required")
 		}
 		backend, err = store.OpenPostgres(ctx, input.DatabaseURL)

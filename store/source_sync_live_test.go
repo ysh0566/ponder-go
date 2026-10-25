@@ -447,6 +447,12 @@ func TestUpstreamSourceSyncStore(t *testing.T) {
 			}
 			mu.Lock()
 			report := map[string]any{"state": "Actual full original/native live calls; no mapping/type/runtime acceptance implied", "backend": dialect, "cases": []any{}, "original_exit_error": fmt.Sprint(e)}
+			if os.Getenv("PONDER_UPSTREAM_ROOT") != "" {
+				report["environment_adapted"] = true
+				report["pristine_file"] = false
+				report["source_credit"] = 0
+				report["state"] = "ENVIRONMENT-ADAPTED startup; NOT pristine. " + report["state"].(string)
+			}
 			report["native_backend_closed_before_types"] = backendClosedBeforeTypes
 			report["types_finished"] = typesFinished
 			report["type_execution_phase"] = "after_all_original_comparisons_before_original_anvil_teardown"

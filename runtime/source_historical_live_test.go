@@ -372,7 +372,7 @@ func (c *historicalLiveCase) openBackend(ctx context.Context) error {
 	if c.dialect == "postgres" {
 		address := os.Getenv("PONDER_TEST_POSTGRES")
 		parsed, parseErr := url.Parse(address)
-		if parseErr != nil || parsed.Hostname() != "127.0.0.1" || parsed.Port() != "53398" || parsed.Path != "/ponder_test" {
+		if parseErr != nil || parsed.Hostname() != "127.0.0.1" || (parsed.Port() != "53398" && !(os.Getenv("PONDER_UPSTREAM_ROOT") != "" && parsed.Port() == "55432")) || parsed.Path != "/ponder_test" {
 			return fmt.Errorf("dedicated task PostgreSQL required")
 		}
 		c.backend, err = store.OpenPostgres(ctx, address)
@@ -772,6 +772,12 @@ func TestUpstreamSourceHistorical(t *testing.T) {
 						cases = append(cases, map[string]any{"id": id, "title": state.record.FullName, "source_sha256": state.record.SourceSHA, "complete": state.complete, "comparison_backend_closed": state.backendClosed, "calls": state.calls, "errors": state.errors, "types_done": state.typesDone, "type_executions": state.typeRuns})
 					}
 					report := map[string]any{"state": "Actual full original historical public calls, raw provider replay, independent native acquisition/cache; native types/full acceptance pending, zero source credit", "backend": dialect, "kind": kind, "source_credit": 0, "cases": cases, "original_exit_error": fmt.Sprint(runErr)}
+					if os.Getenv("PONDER_UPSTREAM_ROOT") != "" {
+						report["environment_adapted"] = true
+						report["pristine_file"] = false
+						report["source_credit"] = 0
+						report["state"] = "ENVIRONMENT-ADAPTED startup; NOT pristine. " + report["state"].(string)
+					}
 					encoded, _ := json.MarshalIndent(report, "", "  ")
 					if err = os.WriteFile(directory+"/native.json", append(encoded, '\n'), 0600); err != nil {
 						t.Fatal(err)

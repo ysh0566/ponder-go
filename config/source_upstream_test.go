@@ -400,8 +400,20 @@ func TestUpstreamConfigRuntime(t *testing.T) {
 	defer server.Close()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	upstreamRoot := filepath.Join(root, "../ponder-upstream")
+	adaptedRoot := os.Getenv("PONDER_UPSTREAM_ROOT")
+	if adaptedRoot != "" {
+		upstreamRoot = adaptedRoot
+		manifest, err := os.ReadFile(filepath.Join(upstreamRoot, ".ponder-loopback-manifest.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(output, "startup-adaptation.json"), manifest, 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
 	oracle := filepath.Join(output, "original.json")
-	command := exec.CommandContext(ctx, filepath.Join(root, "../ponder-upstream/packages/core/node_modules/.bin/vitest"), "run", "--config", "tools/config-live.config.mjs", "--configLoader", "native", "src/build/config.test.ts", "--reporter=json", "--outputFile="+oracle)
+	command := exec.CommandContext(ctx, filepath.Join(upstreamRoot, "packages/core/node_modules/.bin/vitest"), "run", "--config", "tools/config-live.config.mjs", "--configLoader", "native", "src/build/config.test.ts", "--reporter=json", "--outputFile="+oracle)
 	command.Dir = root
 	env := []string{}
 	for _, entry := range os.Environ() {
@@ -410,6 +422,14 @@ func TestUpstreamConfigRuntime(t *testing.T) {
 		}
 	}
 	command.Env = append(env, "CI=1", "PONDER_CONFIG_NATIVE_ENDPOINT="+server.URL, "PONDER_CONFIG_CAPTURE_OUTPUT="+filepath.Join(output, "calls.json"), "PONDER_BIND_AUDIT="+filepath.Join(output, "bindings.jsonl"), "NODE_OPTIONS=--import="+filepath.Join(root, "tools/loopback-only.mjs"))
+	if adaptedRoot != "" {
+		// Explicit adapted mode uses ordinary public loopback options, no listener monkey patch.
+		for i, value := range command.Env {
+			if strings.HasPrefix(value, "NODE_OPTIONS=") {
+				command.Env[i] = "NODE_OPTIONS="
+			}
+		}
+	}
 	log, err := os.Create(filepath.Join(output, "output.txt"))
 	if err != nil {
 		t.Fatal(err)
@@ -423,14 +443,31 @@ func TestUpstreamConfigRuntime(t *testing.T) {
 
 	sourceContext := []map[string]string{}
 	for _, file := range []string{"../ponder-upstream/packages/core/src/build/config.test.ts", "../ponder-upstream/packages/core/src/build/config.ts", "../ponder-upstream/packages/core/src/config/index.ts", "../ponder-upstream/packages/core/src/config/address.ts", "../ponder-upstream/packages/core/src/_test/setup.ts", "../ponder-upstream/packages/core/src/_test/globalSetup.ts", "../ponder-upstream/packages/core/src/_test/utils.ts", "../ponder-upstream/packages/core/src/_test/constants.ts", "../ponder-upstream/packages/core/src/_test/generated.ts", "../ponder-upstream/packages/core/src/utils/abi.ts", "../ponder-upstream/packages/core/src/utils/chains.ts", "../ponder-upstream/packages/core/src/runtime/filter.ts", "../ponder-upstream/packages/core/src/rpc/index.ts", "../ponder-upstream/packages/core/src/utils/finality.ts", "../ponder-upstream/pnpm-lock.yaml", "config/source_upstream_test.go", "tools/config-live.setup.ts", "tools/config-live.config.mjs", "tools/full-oracle.config.mjs", "tools/loopback-only.mjs"} {
-		content, err := os.ReadFile(filepath.Join(root, file))
+		filename := filepath.Join(root, file)
+		if adaptedRoot != "" && strings.HasPrefix(file, "../ponder-upstream/") {
+			filename = filepath.Join(upstreamRoot, strings.TrimPrefix(file, "../ponder-upstream/"))
+		}
+		content, err := os.ReadFile(filename)
 		if err != nil {
 			t.Fatal(err)
 		}
 		digest := sha256.Sum256(content)
-		sourceContext = append(sourceContext, map[string]string{"file": file, "sha256": fmt.Sprintf("%x", digest)})
+		label := file
+		if adaptedRoot != "" && strings.HasPrefix(file, "../ponder-upstream/") {
+			label, err = filepath.Rel(root, filename)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		sourceContext = append(sourceContext, map[string]string{"file": label, "sha256": fmt.Sprintf("%x", digest)})
 	}
 	evidence := map[string]any{"started_utc": started.UTC().Format(time.RFC3339Nano), "elapsed_ms": time.Since(started).Milliseconds(), "calls": calls, "cases": cases, "command": command.Args, "source_type_obligations_satisfied": false, "source_context": sourceContext}
+	if adaptedRoot != "" {
+		evidence["environment_adapted"] = true
+		evidence["pristine_file"] = false
+		evidence["source_credit"] = 0
+		evidence["method"] = "Environment-adapted startup; NOT pristine original execution"
+	}
 	data, _ := json.MarshalIndent(evidence, "", "  ")
 	if err := os.WriteFile(filepath.Join(output, "native.json"), append(data, '\n'), 0644); err != nil {
 		t.Fatal(err)

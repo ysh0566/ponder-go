@@ -1,0 +1,13 @@
+# Client compatibility startup adaptation
+
+`TestOriginalClientCompatibility` now launches `tools/client-compat-launch.mjs` with ordinary Node. The launcher uses the already installed official esbuild API to compile the unchanged `bridge/client-compat.ts` and SDK implementation, then executes the resulting ESM JavaScript with ordinary Node. It does not execute or import the tsx CLI/loader, create an IPC socket, patch sockets, or relax platform restrictions.
+
+The output is a uniquely named `.parity-build/client-compat-*.mjs`, at the same directory depth as `bridge/client-compat.ts`. This preserves its `new URL('../../ponder-upstream/packages/client/package.json', import.meta.url)` behavior. Third-party dependencies remain external: esbuild's official resolver selects each import from the pinned upstream client installation, preserving import/export conditions rather than bundling another copy of Drizzle or linking an SDK node_modules tree.
+
+The source's seven assertions, HTTP queries, bigint decoding, initial/unchanged SSE suppression, changed-result notification, five-second SSE timeout and unsubscribe remain unchanged. The Go test still exercises both `account` and nested views on real PGlite and PostgreSQL, then checks the Go client and its existing read-only SQL refusals.
+
+Every execution saves `parity/runs/client-ipc-adapted/<unique-run>/` containing source and dependency fingerprints, esbuild metadata, generated JavaScript bytes (as evidence, not an executable cache), stdout/stderr, exit code and explicit environment-adapted status. The temporary executable is removed in `finally`; dependency installation and shared caches are untouched. The compiler is stopped after use. Source bytes are rechecked after execution. A five-GiB free-space gate applies before compilation.
+
+This is an environment-adapted launch, not pristine original execution, a TypeScript typecheck, or a source-credit grant. It uses real loopback networking and cannot run without networking entirely. Only the launcher has changed, not the client behavior under test.
+
+Provenance checks fail closed before execution unless the upstream HEAD is the pinned commit, its tracked tree is clean, and the SDK entry bytes equal the pinned original client source. After execution, all bundled input hashes and resolved external dependency entry hashes (including the runtime createRequire entry) are rechecked, followed by another upstream/SDK provenance check. `client-compat-provenance.test.mjs` includes wrong-commit, dirty-tree, changed-SDK, changed-dependency and missing-dependency negative controls; it never modifies the real upstream or installed dependencies.
