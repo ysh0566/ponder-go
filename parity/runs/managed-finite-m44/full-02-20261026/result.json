@@ -1,0 +1,612 @@
+{
+  "complete": true,
+  "success": false,
+  "scope": "m44_full_test_execution_not_final_collector_acceptance",
+  "source_credit": 0,
+  "ported_original": 543,
+  "original_total": 905,
+  "started_utc": "2026-10-26T11:20:11.030Z",
+  "baseline_run": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026",
+  "baseline_inventory_extension": {
+    "accepted_commit": "42783182f418b5dd6abc795f6e3cc8acfec6f409",
+    "original_native_files": 15,
+    "current_native_files": 21,
+    "added_files": [
+      "historical/managed_test.go",
+      "historical/managed_plan_test.go",
+      "indexing/client_managed_test.go",
+      "indexing/client_managed_sql_test.go",
+      "indexing/client_managed_fallback_test.go",
+      "store/managed_finite_test.go"
+    ],
+    "original_stages": 73,
+    "original_assertions_unchanged": true,
+    "source_credit": 0
+  },
+  "harness_inputs": [
+    {
+      "file": "tools/managed-finite-acceptance.mjs",
+      "sha256": "97847619f3d592f759c0a56fbfcfbc979c4a21420afa60d836ba3f33cac44156"
+    },
+    {
+      "file": "tools/managed-finite-evidence.mjs",
+      "sha256": "8767477762f6394be3bb2f5f9d0ce772519c6f7eb15629173304dd5cc6769102"
+    },
+    {
+      "file": "tools/managed-finite-preflight.mjs",
+      "sha256": "a4e4c352b6a27c3edfb40a0b64f51f6f8a8b5e66b56964e148ef2797df715318"
+    },
+    {
+      "file": "tools/managed-finite-results.mjs",
+      "sha256": "e51715ea60b374efd238707de848ff56bdf9b92d27c8890a3869e02a09ba6f6f"
+    },
+    {
+      "file": "tools/managed-finite-full-verify.mjs",
+      "sha256": "8e0e1f87651d274c675a5865e2cee92a571aa3de84094ea9aad6ca96a1a2154c"
+    },
+    {
+      "file": "tools/managed-finite-path-guards.test.mjs",
+      "sha256": "d671d1be03db9977758c6f10f58036a9b111776f91b78c986da1b09e6e50aa6c"
+    },
+    {
+      "file": "tools/managed-finite-observe.test.py",
+      "sha256": "d419c13df78e7a721b05b3aff61de5c2d48e0e2a0ae935877e4d737986db1f43"
+    },
+    {
+      "file": "tools/managed-finite-observer.test.mjs",
+      "sha256": "970de6da2885161eb70d049119133aad2afb3481fda4b0481b6cc51a1975e3ba"
+    },
+    {
+      "file": "tools/managed-finite-observe.py",
+      "sha256": "b1d6a51a28980a3f6b3a62ed546b2bebe72d4de83c26f093fa26d2fa8429c553"
+    },
+    {
+      "file": "tools/managed-finite-launch.sh",
+      "sha256": "318d04bc2ba5ec7de645a1b117f30731ac012fcde191b67329ebb81a1abce66c"
+    },
+    {
+      "file": "tools/managed-finite-launch.mjs",
+      "sha256": "5bac01681a1cfaf7f0ceb2d68c0a26a86b8c87dd83bfe0e0fbb388b8a57048b0"
+    },
+    {
+      "file": "tools/managed-finite-closeout.mjs",
+      "sha256": "f5956798139bbdb226361aca82f65c7c7a85bf617327caaaa85763eb78185b1f"
+    }
+  ],
+  "managed_test_inputs": [
+    {
+      "file": "historical/managed_test.go",
+      "sha256": "da750453ffe54fa0aa5e3a397f7a938286e07c1619c26e86d5ab7f14465121c0"
+    },
+    {
+      "file": "historical/managed_plan_test.go",
+      "sha256": "72059114e5dbb08cb08a8170bea1b0d4358428746c2f3fbe6e286e196713ab94"
+    },
+    {
+      "file": "indexing/client_managed_test.go",
+      "sha256": "0d6d8b4053726cde8f9a4bed4a6608ab88ab3afd834cf7e7f03cd08962e120c9"
+    },
+    {
+      "file": "indexing/client_managed_sql_test.go",
+      "sha256": "639bd7b3bd36a1ae6e027183efd6b3ccf3951c1793458a305738fcdaae1f79c3"
+    },
+    {
+      "file": "indexing/client_managed_fallback_test.go",
+      "sha256": "ca8b7c09f076eae2b21de941649cc0885bc7eb7edd164301d2b52124683ad1aa"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "sha256": "f8a6e3c5e4c9ead6c4308739de230d16f0830bb73a907a8e1ac67236fdd13c31"
+    }
+  ],
+  "retained_fixture_root": "/workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/tmp/ponder-m43-pg-zCAxtPff/managed-finite-persistent",
+  "commands": [
+    {
+      "name": "preflight",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/managed-finite-preflight.mjs",
+        "--output=parity/runs/managed-finite-m44/full-02-20261026/preflight.json"
+      ],
+      "started_utc": "2026-10-26T11:20:11.106Z",
+      "finished_utc": "2026-10-26T11:20:12.629Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "log": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/preflight.log",
+        "sha256": "504fbb80367227cdeea082aa7e16cbf6bf4071883f8f6f7e52f8e5590b5beb81"
+      }
+    },
+    {
+      "name": "managed-guard-controls",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--test",
+        "tools/managed-finite-path-guards.test.mjs",
+        "tools/managed-finite-observer.test.mjs"
+      ],
+      "started_utc": "2026-10-26T11:20:12.633Z",
+      "finished_utc": "2026-10-26T11:20:13.197Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "log": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/managed-guard-controls.log",
+        "sha256": "af9e623bca3adc8b0e054c675e83d72080091e8c2b889ce9a1a744fc6e3d8c59"
+      }
+    },
+    {
+      "name": "observer-identity-controls",
+      "command": [
+        "python3",
+        "tools/managed-finite-observe.test.py"
+      ],
+      "started_utc": "2026-10-26T11:20:13.198Z",
+      "finished_utc": "2026-10-26T11:20:13.542Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "log": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/observer-identity-controls.log",
+        "sha256": "bbd21010222fc9a70194dfbd9a19751537c8d29023915259f33a678eb9ef6173"
+      }
+    },
+    {
+      "name": "unchanged-full-regression",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "tools/finite-historical-full-verify.mjs",
+        "--output=parity/runs/finite-historical-m43/m44-regression-full-02-20261026"
+      ],
+      "started_utc": "2026-10-26T11:20:13.545Z",
+      "finished_utc": "2026-10-26T13:05:56.804Z",
+      "exit_code": 0,
+      "signal": null,
+      "error": null,
+      "log": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/unchanged-full-regression.log",
+        "sha256": "b688ab28cc64ec6cc34a068e6555668d7be771050933a5ee657e8d6ec358631a"
+      }
+    }
+  ],
+  "managed_harness_snapshots": [
+    {
+      "input": {
+        "file": "tools/managed-finite-acceptance.mjs",
+        "sha256": "97847619f3d592f759c0a56fbfcfbc979c4a21420afa60d836ba3f33cac44156"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/prepared-managed-harness/tools/managed-finite-acceptance.mjs",
+        "sha256": "97847619f3d592f759c0a56fbfcfbc979c4a21420afa60d836ba3f33cac44156"
+      }
+    },
+    {
+      "input": {
+        "file": "tools/managed-finite-evidence.mjs",
+        "sha256": "8767477762f6394be3bb2f5f9d0ce772519c6f7eb15629173304dd5cc6769102"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/prepared-managed-harness/tools/managed-finite-evidence.mjs",
+        "sha256": "8767477762f6394be3bb2f5f9d0ce772519c6f7eb15629173304dd5cc6769102"
+      }
+    },
+    {
+      "input": {
+        "file": "tools/managed-finite-preflight.mjs",
+        "sha256": "a4e4c352b6a27c3edfb40a0b64f51f6f8a8b5e66b56964e148ef2797df715318"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/prepared-managed-harness/tools/managed-finite-preflight.mjs",
+        "sha256": "a4e4c352b6a27c3edfb40a0b64f51f6f8a8b5e66b56964e148ef2797df715318"
+      }
+    },
+    {
+      "input": {
+        "file": "tools/managed-finite-results.mjs",
+        "sha256": "e51715ea60b374efd238707de848ff56bdf9b92d27c8890a3869e02a09ba6f6f"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/prepared-managed-harness/tools/managed-finite-results.mjs",
+        "sha256": "e51715ea60b374efd238707de848ff56bdf9b92d27c8890a3869e02a09ba6f6f"
+      }
+    },
+    {
+      "input": {
+        "file": "tools/managed-finite-full-verify.mjs",
+        "sha256": "8e0e1f87651d274c675a5865e2cee92a571aa3de84094ea9aad6ca96a1a2154c"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/prepared-managed-harness/tools/managed-finite-full-verify.mjs",
+        "sha256": "8e0e1f87651d274c675a5865e2cee92a571aa3de84094ea9aad6ca96a1a2154c"
+      }
+    },
+    {
+      "input": {
+        "file": "tools/managed-finite-path-guards.test.mjs",
+        "sha256": "d671d1be03db9977758c6f10f58036a9b111776f91b78c986da1b09e6e50aa6c"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/prepared-managed-harness/tools/managed-finite-path-guards.test.mjs",
+        "sha256": "d671d1be03db9977758c6f10f58036a9b111776f91b78c986da1b09e6e50aa6c"
+      }
+    },
+    {
+      "input": {
+        "file": "tools/managed-finite-observe.test.py",
+        "sha256": "d419c13df78e7a721b05b3aff61de5c2d48e0e2a0ae935877e4d737986db1f43"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/prepared-managed-harness/tools/managed-finite-observe.test.py",
+        "sha256": "d419c13df78e7a721b05b3aff61de5c2d48e0e2a0ae935877e4d737986db1f43"
+      }
+    },
+    {
+      "input": {
+        "file": "tools/managed-finite-observer.test.mjs",
+        "sha256": "970de6da2885161eb70d049119133aad2afb3481fda4b0481b6cc51a1975e3ba"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/prepared-managed-harness/tools/managed-finite-observer.test.mjs",
+        "sha256": "970de6da2885161eb70d049119133aad2afb3481fda4b0481b6cc51a1975e3ba"
+      }
+    },
+    {
+      "input": {
+        "file": "tools/managed-finite-observe.py",
+        "sha256": "b1d6a51a28980a3f6b3a62ed546b2bebe72d4de83c26f093fa26d2fa8429c553"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/prepared-managed-harness/tools/managed-finite-observe.py",
+        "sha256": "b1d6a51a28980a3f6b3a62ed546b2bebe72d4de83c26f093fa26d2fa8429c553"
+      }
+    },
+    {
+      "input": {
+        "file": "tools/managed-finite-launch.sh",
+        "sha256": "318d04bc2ba5ec7de645a1b117f30731ac012fcde191b67329ebb81a1abce66c"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/prepared-managed-harness/tools/managed-finite-launch.sh",
+        "sha256": "318d04bc2ba5ec7de645a1b117f30731ac012fcde191b67329ebb81a1abce66c"
+      }
+    },
+    {
+      "input": {
+        "file": "tools/managed-finite-launch.mjs",
+        "sha256": "5bac01681a1cfaf7f0ceb2d68c0a26a86b8c87dd83bfe0e0fbb388b8a57048b0"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/prepared-managed-harness/tools/managed-finite-launch.mjs",
+        "sha256": "5bac01681a1cfaf7f0ceb2d68c0a26a86b8c87dd83bfe0e0fbb388b8a57048b0"
+      }
+    },
+    {
+      "input": {
+        "file": "tools/managed-finite-closeout.mjs",
+        "sha256": "f5956798139bbdb226361aca82f65c7c7a85bf617327caaaa85763eb78185b1f"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/prepared-managed-harness/tools/managed-finite-closeout.mjs",
+        "sha256": "f5956798139bbdb226361aca82f65c7c7a85bf617327caaaa85763eb78185b1f"
+      }
+    }
+  ],
+  "derived_output_allowlist": [
+    "parity/runs/source-sync-verification.json",
+    "parity/runs/source-historical-verification.json",
+    "parity/runs/source-realtime-verification.json",
+    "parity/runs/config-live-verification.json",
+    "parity/runs/sql-source-verification.json",
+    "parity/runs/source-runtime-index-verification.json",
+    "parity/runs/source-runtime-historical-verification.json",
+    "parity/runs/source-runtime-multichain-verification.json",
+    "parity/runs/source-indexing-service-verification.json",
+    "parity/runs/source-indexing-actions-verification.json",
+    "parity/runs/source-indexing-profile-verification.json",
+    "parity/runs/independent-storage-verification.json",
+    "parity/runs/multichain-atomic-verification.json",
+    "parity/runs/finite-historical-verification.json",
+    "parity/test-ledger.json",
+    "parity/runs/summary.json"
+  ],
+  "previous_derived_outputs": [
+    {
+      "file": "parity/runs/source-sync-verification.json",
+      "before": {
+        "file": "parity/runs/source-sync-verification.json",
+        "sha256": "2df74b140b6151fe46ca91690dd09cb5f8b181f46479d3b6409698aeae61bc69"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/source-sync-verification.json",
+        "sha256": "2df74b140b6151fe46ca91690dd09cb5f8b181f46479d3b6409698aeae61bc69"
+      }
+    },
+    {
+      "file": "parity/runs/source-historical-verification.json",
+      "before": {
+        "file": "parity/runs/source-historical-verification.json",
+        "sha256": "1296af242e9546191f45f8d3ca5d5a1c8b798b0aa7cf091f182794441ae4eb5b"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/source-historical-verification.json",
+        "sha256": "1296af242e9546191f45f8d3ca5d5a1c8b798b0aa7cf091f182794441ae4eb5b"
+      }
+    },
+    {
+      "file": "parity/runs/source-realtime-verification.json",
+      "before": {
+        "file": "parity/runs/source-realtime-verification.json",
+        "sha256": "69759c56c79b8585aad67fcb9db8d7945ca7a1a577d9a9cae12279ea553878f9"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/source-realtime-verification.json",
+        "sha256": "69759c56c79b8585aad67fcb9db8d7945ca7a1a577d9a9cae12279ea553878f9"
+      }
+    },
+    {
+      "file": "parity/runs/config-live-verification.json",
+      "before": {
+        "file": "parity/runs/config-live-verification.json",
+        "sha256": "3eb289e67235ac0ba256c0a48523c712755aea84861d28408bae63590c7ffe25"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/config-live-verification.json",
+        "sha256": "3eb289e67235ac0ba256c0a48523c712755aea84861d28408bae63590c7ffe25"
+      }
+    },
+    {
+      "file": "parity/runs/sql-source-verification.json",
+      "before": {
+        "file": "parity/runs/sql-source-verification.json",
+        "sha256": "a1a6097fe946c26156920bb59b6824ade0ac6cb812118e18f917d43eb6cb63e9"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/sql-source-verification.json",
+        "sha256": "a1a6097fe946c26156920bb59b6824ade0ac6cb812118e18f917d43eb6cb63e9"
+      }
+    },
+    {
+      "file": "parity/runs/source-runtime-index-verification.json",
+      "before": {
+        "file": "parity/runs/source-runtime-index-verification.json",
+        "sha256": "5f23e7190f84dff4f0cee1a774dcd5d9f1be836a0fc0ae3eb3c759daae588584"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/source-runtime-index-verification.json",
+        "sha256": "5f23e7190f84dff4f0cee1a774dcd5d9f1be836a0fc0ae3eb3c759daae588584"
+      }
+    },
+    {
+      "file": "parity/runs/source-runtime-historical-verification.json",
+      "before": {
+        "file": "parity/runs/source-runtime-historical-verification.json",
+        "sha256": "bc3a98fabbc6ddfa34b231f8472da293693a423714931bc73865df0e60bf9490"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/source-runtime-historical-verification.json",
+        "sha256": "bc3a98fabbc6ddfa34b231f8472da293693a423714931bc73865df0e60bf9490"
+      }
+    },
+    {
+      "file": "parity/runs/source-runtime-multichain-verification.json",
+      "before": {
+        "file": "parity/runs/source-runtime-multichain-verification.json",
+        "sha256": "61789681b8fe2b0464208e2c45b78f57434bef0ffce4797a64ae6b03e1cab545"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/source-runtime-multichain-verification.json",
+        "sha256": "61789681b8fe2b0464208e2c45b78f57434bef0ffce4797a64ae6b03e1cab545"
+      }
+    },
+    {
+      "file": "parity/runs/source-indexing-service-verification.json",
+      "before": {
+        "file": "parity/runs/source-indexing-service-verification.json",
+        "sha256": "b3f53d8f66b151d2bb2249d263b1b86b1b5be04c79da6ccdd4b79fac1c8cd33a"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/source-indexing-service-verification.json",
+        "sha256": "b3f53d8f66b151d2bb2249d263b1b86b1b5be04c79da6ccdd4b79fac1c8cd33a"
+      }
+    },
+    {
+      "file": "parity/runs/source-indexing-actions-verification.json",
+      "before": {
+        "file": "parity/runs/source-indexing-actions-verification.json",
+        "sha256": "6342a685d19bf9ea8f93292e1bfe6aaca83a5ba9cf3a0df8e86bd9174566164a"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/source-indexing-actions-verification.json",
+        "sha256": "6342a685d19bf9ea8f93292e1bfe6aaca83a5ba9cf3a0df8e86bd9174566164a"
+      }
+    },
+    {
+      "file": "parity/runs/source-indexing-profile-verification.json",
+      "before": {
+        "file": "parity/runs/source-indexing-profile-verification.json",
+        "sha256": "164a15a4b16b49fb0365801e5067430cd57a55143a6e23e4c8226d52b0504f8c"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/source-indexing-profile-verification.json",
+        "sha256": "164a15a4b16b49fb0365801e5067430cd57a55143a6e23e4c8226d52b0504f8c"
+      }
+    },
+    {
+      "file": "parity/runs/independent-storage-verification.json",
+      "before": {
+        "file": "parity/runs/independent-storage-verification.json",
+        "sha256": "13d9e54aa3f731803f38c65bd00ecb14b69fe564abe1bd55b7fc754d94e3e853"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/independent-storage-verification.json",
+        "sha256": "13d9e54aa3f731803f38c65bd00ecb14b69fe564abe1bd55b7fc754d94e3e853"
+      }
+    },
+    {
+      "file": "parity/runs/multichain-atomic-verification.json",
+      "before": {
+        "file": "parity/runs/multichain-atomic-verification.json",
+        "sha256": "1f428faed52adbaea4e6091f15d4226df3d92e0691a20c79264b0377b4ba1385"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/multichain-atomic-verification.json",
+        "sha256": "1f428faed52adbaea4e6091f15d4226df3d92e0691a20c79264b0377b4ba1385"
+      }
+    },
+    {
+      "file": "parity/runs/finite-historical-verification.json",
+      "before": {
+        "file": "parity/runs/finite-historical-verification.json",
+        "sha256": "2172622de165616dcc1196a1158c2dfea44d53e393aacd27edff0053a548ab89"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/finite-historical-verification.json",
+        "sha256": "2172622de165616dcc1196a1158c2dfea44d53e393aacd27edff0053a548ab89"
+      }
+    },
+    {
+      "file": "parity/test-ledger.json",
+      "before": {
+        "file": "parity/test-ledger.json",
+        "sha256": "32646b06a0f3aa61a97d602852b851049bacd357f1794319f8057dd6826b32ef"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/test-ledger.json",
+        "sha256": "32646b06a0f3aa61a97d602852b851049bacd357f1794319f8057dd6826b32ef"
+      }
+    },
+    {
+      "file": "parity/runs/summary.json",
+      "before": {
+        "file": "parity/runs/summary.json",
+        "sha256": "bb3ff94f8b1071cc4b549c4c4ab299fdf4c1e606abdb7fdc19e44023882f09dd"
+      },
+      "snapshot": {
+        "file": "parity/runs/managed-finite-m44/full-02-20261026/previous-derived/parity/runs/summary.json",
+        "sha256": "bb3ff94f8b1071cc4b549c4c4ab299fdf4c1e606abdb7fdc19e44023882f09dd"
+      }
+    }
+  ],
+  "source_mapping_inputs": [
+    {
+      "file": "parity/config-source-cases.json",
+      "sha256": "f8af342e417e31ce2350f73494eb9af106c85261dd73a1d439213e299f8fb9a5"
+    },
+    {
+      "file": "parity/event-construction-source-cases.json",
+      "sha256": "0e284c72ae8ada94b36143ea3c745204dc7f1d51406d29b15d547fda0dfcef95"
+    },
+    {
+      "file": "parity/events-filter-completion-source-cases.json",
+      "sha256": "6b3a52e1480c05ad4604153fd8e4212ee0d3b747d7e1c8f2f663a01e3f996211"
+    },
+    {
+      "file": "parity/filter-fragments-source-cases.json",
+      "sha256": "77879a91355b49c399f9884144b3dca90e3ffe994b63a2f4d47fc653076dac9f"
+    },
+    {
+      "file": "parity/lifecycle-orm-completion-source-cases.json",
+      "sha256": "088fba7cde9e2088263cc21a3c795ea00682315b537c4965f8733fbc421d6efa"
+    },
+    {
+      "file": "parity/lifecycle-source-cases.json",
+      "sha256": "2f078fe2c7ff31801610a55b081990585c26819368709c804063a5de293213c1"
+    },
+    {
+      "file": "parity/mappings.json",
+      "sha256": "ffd9a641c25cff3a0ca6456976f3e966d748513d5bf8723d2d2a5e2618a288f7"
+    },
+    {
+      "file": "parity/notify-source-cases.json",
+      "sha256": "449cc86c07f1e38ad85981dfb25a3fa2fe3c850882f5411e30fd8f63d71ab6d1"
+    },
+    {
+      "file": "parity/orm-source-cases.json",
+      "sha256": "b3bfd5feb002655b6d73a69f7a256b7be1dbb885a58af059ba71c0ecf887d7b9"
+    },
+    {
+      "file": "parity/profile-source-cases.json",
+      "sha256": "648a37883ac54ed1bc41838d313c05a861d370215cc4a92d98d88fe60f3a274c"
+    },
+    {
+      "file": "parity/rpc-actions-source-cases.json",
+      "sha256": "a10858f0984b7635059799ee72a7aae06b99a8b837de861c8b7efdc92c51e9d6"
+    },
+    {
+      "file": "parity/rpc-log-source-cases.json",
+      "sha256": "99b1a20fdeaf5e9e8d8e9bc4f2ca7fca33fe8d052fb62a73b87c61017e92008d"
+    },
+    {
+      "file": "parity/runtime-source-cases.json",
+      "sha256": "91b6ba2f932368152726825ad2544d8c91f3292c748600758686c3e7d8acc99a"
+    },
+    {
+      "file": "parity/selected-mapped-declarations.json",
+      "sha256": "0517751e1fce84f8cce36921506de13dac0383f26420d7fd0acb6a676aa18b29"
+    },
+    {
+      "file": "parity/selected-runtime-declarations.json",
+      "sha256": "e52d508fdb4ecd7f3ae01ceda4b9ce36cd1e783ace421d2531dd552d32c2df34"
+    },
+    {
+      "file": "parity/selected-with-eth-declarations.json",
+      "sha256": "45df2d1199f0c6b16072c001ce5714a40f54a56a6bfefa770f2eb6fe9cd9361e"
+    },
+    {
+      "file": "parity/source-indexing-actions-cases.json",
+      "sha256": "f4d181f0bf7ce0a4b49c1eb2f3a9d7845db493cd14d8721206af42f09d6daca6"
+    },
+    {
+      "file": "parity/source-indexing-profile-declarations.json",
+      "sha256": "4f4bf02bf1f3fdb64847040d5a4cac61f254aa239e84ebf861a423c2719f184e"
+    },
+    {
+      "file": "parity/source-indexing-service-declarations.json",
+      "sha256": "8b4409b711f79da5362f34ad2960a03c9a8414501cc51da057c56107754af4d5"
+    },
+    {
+      "file": "parity/source-runtime-historical-declarations.json",
+      "sha256": "345d78f87cf769653c787f5ba58b0bd6a324c6bbe50da665d9a9c6cf023eaf51"
+    },
+    {
+      "file": "parity/source-runtime-index-pure-declarations.json",
+      "sha256": "15a518951136738281270934415437edd011fa2d620ec8761c60800d26946630"
+    },
+    {
+      "file": "parity/source-runtime-multichain-declarations.json",
+      "sha256": "345d78f87cf769653c787f5ba58b0bd6a324c6bbe50da665d9a9c6cf023eaf51"
+    },
+    {
+      "file": "parity/sql-source-cases.json",
+      "sha256": "8158b9bbf1d01910584855014a3b4c446c5f4ef1ca5d250d7d699af60441ce42"
+    },
+    {
+      "file": "parity/staged-actions-source-cases.json",
+      "sha256": "9f6e877fab4ebb6024a0ef0e3c95e62af9a653ce7be384487aae37c24e8c5170"
+    },
+    {
+      "file": "parity/sync-migration-source-cases.json",
+      "sha256": "58ce3754452b01d2fd90573c5e813800d90836365649220a5a719bed545890e0"
+    },
+    {
+      "file": "parity/typed-orm-source-cases.json",
+      "sha256": "c9f0d6e730fd27f496414bbc7e0c6232cb06bb943a47bfd7858184d1e1f42b0f"
+    }
+  ],
+  "full_regression": {
+    "file": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/result.json",
+    "sha256": "fc63be56f115e19c7fb126ff42544ad54c9eabdbd6fdd316ae5b5b032b071c35"
+  },
+  "prepared_native_inputs": {
+    "file": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/prepared-native-inputs.json",
+    "sha256": "cf1866acee5d30c1de5d2ef1096528b5d0ccea2789d9a9e3c475a8384fbf54e4"
+  },
+  "native_inputs": {
+    "files": 1191,
+    "sha256": "c2b3399a287367e6bfc13ab6de887954a90062f12580390d9632e2a355f26d27"
+  },
+  "executions": [],
+  "error": "Error: Native failures/skips cannot establish acceptance\n    at check (file:///workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-go/tools/managed-finite-evidence.mjs:5:70)\n    at validateManagedEvents (file:///workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-go/tools/managed-finite-evidence.mjs:32:3)\n    at file:///workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-go/tools/managed-finite-full-verify.mjs:66:121\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:647:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)",
+  "finished_utc": "2026-10-26T13:05:56.890Z"
+}

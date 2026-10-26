@@ -32,6 +32,18 @@ func (a *Actions) multichainTransaction(ctx context.Context, fn func(Transaction
 	if err = a.s.requireLease(ctx, tx); err != nil {
 		return err
 	}
+	if a.s.managedFinite != nil {
+		rows, e := tx.Query(ctx, "SELECT 1 FROM "+a.s.internal("_ponder_go_managed_stages")+" LIMIT 1")
+		if e != nil {
+			return e
+		}
+		if len(rows.Rows) > 0 {
+			return fmt.Errorf("managed historical writes are sealed after activation starts")
+		}
+		if e = a.s.managedFinite.requireStageAbsent(ctx, tx, "capture"); e != nil {
+			return e
+		}
+	}
 	if err = prepareLiveQueryChanges(ctx, tx, a.s.Backend.Dialect()); err != nil {
 		return err
 	}
@@ -40,6 +52,14 @@ func (a *Actions) multichainTransaction(ctx context.Context, fn func(Transaction
 	}
 	if err = fn(tx); err != nil {
 		return err
+	}
+	if a.s.managedFinite != nil {
+		if err := a.s.managedFinite.dropTransientCapture(ctx, tx); err != nil {
+			return err
+		}
+		if err := a.s.requireLease(ctx, tx); err != nil {
+			return err
+		}
 	}
 	if err = tx.Commit(ctx); err != nil {
 		return &CommitOutcomeUnknownError{Err: err}

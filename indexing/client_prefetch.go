@@ -152,6 +152,11 @@ func canonicalPredictionKey(params any) (string, error) {
 // wins deduplication BEFORE chain grouping, intentionally ignoring chain ID like
 // the pinned source. Persistent-cache disabling does not disable RPC warming.
 func (s *ClientSet) Prefetch(ctx context.Context, events []Object) error {
+	ctx, finish, admissionErr := s.managedRoots.begin(ctx)
+	if admissionErr != nil {
+		return admissionErr
+	}
+	defer finish()
 	s.mu.RLock()
 	if s.closed {
 		s.mu.RUnlock()
@@ -275,6 +280,7 @@ func (s *ClientSet) Prefetch(ctx context.Context, events []Object) error {
 		go func(job lookupJob) {
 			consumed := make([]bool, len(job.futures))
 			err := s.prefetchChain(job.ctx, ctx, job.calls, job.futures, consumed)
+			s.managedRoots.recordFailure(err)
 			if err != nil {
 				settled <- err
 			}
@@ -389,9 +395,17 @@ func (c *Client) admitPrefetch(ctx context.Context, key string, params any) erro
 	go func() {
 		if completion == nil {
 			v.err = fmt.Errorf("requester returned nil prefetch completion")
+			s.managedRoots.recordFailure(v.err)
 		} else {
-			v.err = <-completion
+			var ok bool
+			v.err, ok = <-completion
+			if !ok && s.managedRoots != nil {
+				v.err = fmt.Errorf("requester closed without prefetch completion")
+				s.managedRoots.recordFailure(v.err)
+			}
 		}
+		// A valid speculative RPC failure may fall back to an eventual RPC
+		// (notably multicall). Do not poison a successful supported fallback.
 		close(v.done)
 		cancel()
 		s.mu.Lock()

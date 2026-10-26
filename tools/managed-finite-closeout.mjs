@@ -1,0 +1,22 @@
+// Observe after the fixture and launch group have exited; never stop/kill/delete.
+import fs from 'node:fs';import path from 'node:path';import {spawnSync} from 'node:child_process';
+import {check,equal,hash,scopedPath,managedBaselinePath,validateManagedCloseout} from './managed-finite-evidence.mjs';
+const root=path.resolve(import.meta.dirname,'..'),arg=process.argv.find(a=>a.startsWith('--run-dir='))?.slice(10),directory=scopedPath(root,arg,'parity/runs/managed-finite-m44',true),destination=directory+'/closeout.json';
+check(!fs.existsSync(destination),'Never replace closeout evidence');
+const read=f=>JSON.parse(fs.readFileSync(f)),run=read(directory+'/result.json'),baseline=managedBaselinePath(root,run.baseline_run,true),launchDir=directory+'-launch',launch=read(launchDir+'/launch.json'),joined=read(launchDir+'/joined.json'),fixture=baseline+'-fixture';
+check(run.complete&&run.success&&launch.run_dir===path.relative(root,directory)&&launch.baseline_run===run.baseline_run,'Exact successful launch/run linkage required');
+check(path.dirname(baseline)===root+'/parity/runs/finite-historical-m43'&&path.basename(baseline).startsWith('m44-regression-'),'Direct new baseline child required');
+check(joined.pgid===launch.pgid&&launch.pgid===launch.pid&&Number.isInteger(launch.pid)&&launch.pid>1&&/^\d+$/.test(launch.proc_start_ticks),'Exact launch/join process identity required');
+check(equal(launch.launcher,hash(root,'tools/managed-finite-launch.mjs')),'Recorded launcher differs from current frozen harness');
+check(equal(launch.command,['bash','tools/finite-historical-postgres-fixture.sh',baseline+'-fixture',process.execPath,'tools/managed-finite-full-verify.mjs','--output='+directory,'--baseline='+baseline,'--collect-canonical']),'Exact authorized fixture/wrapper launch command required');
+
+check(equal(joined.launch,hash(root,launchDir+'/launch.json'))&&Date.parse(launch.recorded_utc)<=Date.parse(run.started_utc)&&Date.parse(joined.observed_utc)>=Date.parse(run.finished_utc),'Actual launch must precede execution and join must follow it');
+const owned=fs.readFileSync(fixture+'/owned-directory.txt','utf8').trim(),data=fs.readFileSync(fixture+'/show-data-directory.txt','utf8').trim(),full=read(baseline+'/result.json');
+check(data===owned+'/data'&&fs.realpathSync(data)===data&&data===full.postgres_fixture.directory&&full.postgres_fixture.receipt===path.relative(root,fixture),'Actual fixture directory identity differs');
+check(fs.existsSync(data+'/PG_VERSION'),'Real retained PostgreSQL directory required');
+const status=spawnSync('pg_ctl',['-D',data,'status'],{encoding:'utf8'}),processes=spawnSync('ps',['-eo','pid=,pgid=,stat=,comm='],{encoding:'utf8'});check(processes.status===0,'Process census unavailable');
+const members=processes.stdout.trim().split('\n').filter(Boolean).map(l=>{const [pid,pgid,state,...command]=l.trim().split(/\s+/);return{pid:Number(pid),pgid:Number(pgid),state,command:command.join(' ')};}).filter(p=>p.pgid===launch.pgid);
+const initial=read(fixture+'/initial-inventory.json'),final=read(fixture+'/final-inventory.json');
+const report={complete:true,success:true,run_dir:path.relative(root,directory),observed_utc:new Date().toISOString(),wrapper:hash(root,directory+'/result.json'),baseline:hash(root,baseline+'/result.json'),launch:hash(root,launchDir+'/launch.json'),join:hash(root,launchDir+'/joined.json'),launch_pgid:launch.pgid,launch_exit_code:joined.exit_code,launch_signal:joined.signal,interrupted:joined.interrupted,joined_processes:joined.processes,current_processes:members,fixture_exit_code:Number(fs.readFileSync(fixture+'/exit-code.txt','utf8').trim()),postgres_status:{command:['pg_ctl','-D',data,'status'],exit_code:status.status,stdout:status.stdout,stderr:status.stderr,error:status.error?.message??null},postmaster_pid_present:fs.existsSync(data+'/postmaster.pid'),initial_inventory:initial,final_inventory:final,shutdown_log:fs.readFileSync(fixture+'/shutdown.log','utf8'),fixture_inputs:['owned-directory.txt','show-data-directory.txt','initial-inventory.json','final-inventory.json','shutdown.log','exit-code.txt'].map(f=>hash(root,fixture+'/'+f)),scope:'Current launch-group drain and actual PostgreSQL shutdown only; not an OS-power-loss durability or unrecorded detached-process claim.'};
+validateManagedCloseout(report);
+fs.writeFileSync(destination,JSON.stringify(report,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({closeout:path.relative(root,destination),success:true}));

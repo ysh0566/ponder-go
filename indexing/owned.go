@@ -26,19 +26,21 @@ type OwnedOptions struct {
 // RPC/cache work before closing either backend. It never cancels a normal batch
 // context merely because its SQL transaction committed or rolled back.
 type Owned struct {
-	storage    *store.IndependentStorage
-	service    *Service
-	clients    *ClientSet
-	database   *Database
-	caches     []*ownedCache
-	requesters []*ownedRequester
-	mu         sync.Mutex
-	active     bool
-	activeDone chan struct{}
-	closing    bool
-	closeDone  chan struct{}
-	closeErr   error
-	historical *HistoricalSync
+	storage       *store.IndependentStorage
+	service       *Service
+	clients       *ClientSet
+	database      *Database
+	caches        []*ownedCache
+	requesters    []*ownedRequester
+	mu            sync.Mutex
+	active        bool
+	activeDone    chan struct{}
+	closing       bool
+	closeDone     chan struct{}
+	closeErr      error
+	managedSealed bool
+	managedCancel context.CancelFunc
+	historical    *HistoricalSync
 }
 
 func OpenOwnedPostgres(ctx context.Context, o OwnedOptions) (*Owned, error) {
@@ -148,7 +150,7 @@ func (o *Owned) enterWork(ctx context.Context) (func(), error) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	scope, _ := ctx.Value(historicalScopeKey{}).(*HistoricalSync)
-	if o.closing || o.active || scope != o.historical || (scope != nil && scope.sealed.Load()) {
+	if o.closing || o.managedSealed || o.active || scope != o.historical || (scope != nil && scope.sealed.Load()) {
 		return nil, fmt.Errorf("owned indexing is closed or already bound")
 	}
 	o.active = true
@@ -164,11 +166,19 @@ func (o *Owned) Close(ctx context.Context) error {
 	o.mu.Lock()
 	if !o.closing {
 		o.closing = true
+		if o.clients != nil && o.clients.managedRoots != nil {
+			o.clients.managedRoots.mu.Lock()
+			o.clients.managedRoots.sealed = true
+			o.clients.managedRoots.mu.Unlock()
+		}
 		o.closeDone = make(chan struct{})
 		active := o.activeDone
 		historical := o.historical
 		if historical != nil {
 			historical.cancel()
+		}
+		if o.managedCancel != nil {
+			o.managedCancel()
 		}
 		go func() {
 			if historical != nil {
@@ -195,6 +205,13 @@ func (o *Owned) Close(ctx context.Context) error {
 }
 func (o *Owned) closeResources() error {
 	var result error
+	if o.clients != nil && o.clients.managedRoots != nil {
+		// Seal synchronously, but cancel/join physical I/O below before waiting
+		// for escaped root calls, which may currently be blocked in that I/O.
+		o.clients.managedRoots.mu.Lock()
+		o.clients.managedRoots.sealed = true
+		o.clients.managedRoots.mu.Unlock()
+	}
 	if o.clients != nil {
 		result = errors.Join(result, o.clients.Close(context.Background()))
 	}
@@ -204,6 +221,9 @@ func (o *Owned) closeResources() error {
 	for _, c := range o.caches {
 		c.gate.close()
 		result = errors.Join(result, c.base.Close(context.Background()))
+	}
+	if o.clients != nil {
+		result = errors.Join(result, o.clients.managedRoots.sealAndWait(context.Background()))
 	}
 	if o.storage != nil {
 		result = errors.Join(result, o.storage.Close(context.Background()))

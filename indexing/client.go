@@ -21,6 +21,7 @@ type BalanceOptions struct {
 // source event. Its public actions are a bounded subset; it does not implement
 // the full raw transport or outer indexing runner.
 type ClientSet struct {
+	managedRoots      *managedClientRoots
 	mu                sync.RWMutex
 	event             Object
 	clients           map[string]*Client
@@ -224,10 +225,16 @@ func (s *ClientSet) putAsync(ctx context.Context, cache rpc.Cache, key string, r
 			// A malformed custom implementation returning nil is not retried through
 			// CachePut: admission may already have happened and must never be doubled.
 			if completion != nil {
-				<-completion
+				err, ok := <-completion
+				if !ok {
+					err = fmt.Errorf("cache writer closed without completion")
+				}
+				s.managedRoots.recordFailure(err)
+			} else {
+				s.managedRoots.recordFailure(fmt.Errorf("cache writer returned nil completion"))
 			}
 		} else {
-			_ = cache.CachePut(child, key, value)
+			s.managedRoots.recordFailure(cache.CachePut(child, key, value))
 		}
 	}()
 }

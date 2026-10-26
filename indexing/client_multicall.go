@@ -57,6 +57,11 @@ type multicallWireResult struct {
 // It requires an explicit deployment address; chain deployment discovery,
 // and account/state overrides are not implemented.
 func (c *Client) Multicall(ctx context.Context, contracts []ContractCall, options MulticallOptions) ([]any, error) {
+	ctx, finish, admissionErr := c.set.managedRoots.begin(ctx)
+	if admissionErr != nil {
+		return nil, admissionErr
+	}
+	defer finish()
 	if options.MulticallAddress == "" {
 		return nil, fmt.Errorf("multicallAddress is required")
 	}

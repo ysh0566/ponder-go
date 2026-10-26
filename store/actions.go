@@ -44,6 +44,11 @@ func (a *Actions) transaction(ctx context.Context, fn func(Transaction) error) e
 	if e = fn(tx); e != nil {
 		return e
 	}
+	if a.s.managedFinite != nil {
+		if err := a.s.requireLease(ctx, tx); err != nil {
+			return err
+		}
+	}
 	return tx.Commit(ctx)
 }
 func (a *Actions) CreateTriggers(ctx context.Context) error {

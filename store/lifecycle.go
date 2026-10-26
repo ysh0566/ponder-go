@@ -340,6 +340,9 @@ func (d *Lifecycle) MarkReady(ctx context.Context) error {
 	})
 }
 func (s *Store) requireLease(ctx context.Context, tx Transaction) error {
+	if s.managedFinite != nil {
+		return s.managedFinite.requireLease(ctx, tx)
+	}
 	if s.leaseToken == "" {
 		return nil
 	}

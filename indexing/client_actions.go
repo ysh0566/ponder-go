@@ -97,6 +97,11 @@ func (c *Client) cacheResponse(ctx context.Context, method string, params any, r
 	c.set.putAsync(ctx, c.cache, key, raw)
 }
 func (c *Client) request(ctx context.Context, method string, params any) (json.RawMessage, error) {
+	ctx, finish, admissionErr := c.set.managedRoots.begin(ctx)
+	if admissionErr != nil {
+		return nil, admissionErr
+	}
+	defer finish()
 	raw, hit, err := c.prefetchedResult(ctx, method, params, false)
 	if err != nil || hit {
 		return raw, err
@@ -188,6 +193,11 @@ func retryEmptyWithWait[T any](ctx context.Context, enabled *bool, action func()
 	}
 }
 func (c *Client) ReadContract(ctx context.Context, contract ContractCall, options ...ReadContractOptions) (any, error) {
+	ctx, finish, admissionErr := c.set.managedRoots.begin(ctx)
+	if admissionErr != nil {
+		return nil, admissionErr
+	}
+	defer finish()
 	if len(options) > 1 {
 		return nil, fmt.Errorf("readContract accepts at most one options object")
 	}
