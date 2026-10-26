@@ -245,7 +245,7 @@ func matchProfileValue(event ProfileEvent, value any) *ProfileValue {
 
 func RecordProfilePattern(event ProfileEvent, table schema.Table, key Row, hints []ProfilePattern) (ProfilePattern, error) {
 	for _, hint := range hints {
-		recovered, e := RecoverProfilePattern(hint, event)
+		recovered, e := recoverProfileKey(hint, event, table)
 		if e != nil {
 			return nil, e
 		}
@@ -281,6 +281,57 @@ func RecordProfilePattern(event ProfileEvent, table schema.Table, key Row, hints
 		pattern[name] = *match
 	}
 	return pattern, nil
+}
+
+// recoverProfileKey adapts only internally derived predictions to their actual
+// key column. Source recordProfilePattern compares String(normalizeColumn(...))
+// and PgText's driver roundtrip is identity, so a text id "4" may legitimately
+// learn block.number (4n). Replaying that internal BigInt through the public Go
+// text-input validator would fail a valid handler. Keep public input validation
+// and RecoverProfilePattern's exact primitive result unchanged.
+func recoverProfileKey(pattern ProfilePattern, event ProfileEvent, table schema.Table) (Row, error) {
+	row, err := RecoverProfilePattern(pattern, event)
+	if err != nil {
+		return nil, err
+	}
+	for _, key := range table.Keys() {
+		for _, column := range table.Columns {
+			if column.Name != key || column.Type != "text" {
+				continue
+			}
+			name := property(column)
+			value, exists := row[name]
+			if !exists || value == nil || isUndefined(value) {
+				continue
+			}
+			if n, ok := value.(*big.Int); ok {
+				if n != nil {
+					row[name] = n.String()
+				}
+				continue
+			}
+			v := reflect.ValueOf(value)
+			switch v.Kind() {
+			case reflect.String:
+				row[name] = v.String()
+			case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				row[name] = fmt.Sprint(value)
+			case reflect.Float32, reflect.Float64:
+				n := v.Float()
+				switch {
+				case math.IsNaN(n):
+					row[name] = "NaN"
+				case math.IsInf(n, 1):
+					row[name] = "Infinity"
+				case math.IsInf(n, -1):
+					row[name] = "-Infinity"
+				default:
+					row[name] = sourceNumber(n)
+				}
+			}
+		}
+	}
+	return row, nil
 }
 
 func RecoverProfilePattern(pattern ProfilePattern, event ProfileEvent) (Row, error) {

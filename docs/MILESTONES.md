@@ -227,3 +227,16 @@ constructor-owned PG两池/namespace families及两条独立固定连接、PGlit
 一SQL事务/稳定binding承载全部setup，原callback顺序与逐段flush/seal归属；完整初始metadata/cursor与业务一起提交。单链历史group在多链DB验证durable配置/cursor，显式flush后封journal、更新metadata并prune；空group与durable replay、commit不确定边界、静默global-suffix rollback与session invalidation均验证。真正源码双链6场景、双后端持久状态、缓存独立性、两项红→绿shortcut controls及因果无通知/取消join证明均为补充证据。source PGlite callback-only rollback差异明确保留。
 
 full01 cleanup测试缺陷及full02 summary stage guard缺口和修改前输入均完整归档，独立复核后完整full03重验，无改旧manifest冒充成功。新batch41不改旧batch40；无outer runner、M37提取/refetch协调、ready或realtime/cutover完成声明。旧schema/目录未维护；详情见MULTICHAIN_ATOMIC_PRIMITIVES.md。
+
+
+## M43 — 有限多链历史 runner：本地功能验收通过，尚未发布（2026-10-26）
+
+full05 的 73 阶段、14 个 canonical collectors 和 summary 全部成功。normal/race 各 3,356 个叶用例通过，0 fail/skip，每模式 98 个串行批次、24 个包；证据见 `parity/runs/finite-historical-m43/rebuild-full-05/result.json` 与 `parity/runs/summary.json`。正式覆盖仍为 543/905，362 未实现，零新增原例 credit。
+
+本批修复普通退出误取消既有 SQL/cache 工作的问题，保留真正 caller 取消、deadline、Owner.Close 的传播及失效连接 fail-closed/重开边界。范围不扩展到 ready、realtime cutover 或完整运行时。
+
+原 full05 外层 launcher 仍失败：summary 更新的派生 `parity/test-ledger.json` 漏列在输出允许清单，最终不变性检查因此拒绝。它不是业务测试失败，也不能被改写为一次完整外层成功。独立确定性重放与纠正收尾证明已完成并通过独立复核，见 `parity/runs/finite-historical-m43/rebuild-full-05-closeout/result.json`；本地接受功能结果与这份单独纠正证明，不改写原外层失败。M43 尚未发布；最新发布基线仍为 M42 `ef93f2b567b1f0914dd5ce44d436a00f63abf688`。
+
+## M43 历史记录 — 新一轮验收前的状态（由上方取代）
+
+M42已发布基线ef93f2b已恢复。旧M43未推代码/完整证据/PG卷不可访问；旧M43完整工作树与原完整本地验收证据未恢复；这是基于已发布基线的新整合与重新实现，不声称原WIP完整字节连续性。新分支work/m43-rebuild-20261026正在整合与重写缺失回归，必须fresh完整73+14+summary，当前未验收/未发布。限定finite finalized-bound default multichain，终止于ready/realtime/cutover之前；源PGlite强驱逐预期原Error与默认缓存完整完成严格分域。正式543/905、362pending不变、零新增credit。见M43_RECOVERY.md；不复用旧日志片段为新proof。

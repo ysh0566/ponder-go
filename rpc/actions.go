@@ -26,15 +26,30 @@ type logsMetadata struct {
 	estimated uint64
 	confirmed *uint64
 }
-type Actions struct {
-	requester            Requester
+type actionsMetadata struct {
 	mu                   sync.Mutex
 	logs                 *logsMetadata
 	withoutBlockReceipts bool
 }
 
+// Actions binds an immutable requester to metadata shared by one RPC owner.
+// Scoped views never copy a mutex and never bypass their requester's admission.
+type Actions struct {
+	requester Requester
+	state     *actionsMetadata
+}
+
 func NewActions(requester Requester) *Actions {
-	return &Actions{requester: requester, logs: &logsMetadata{estimated: 500}}
+	return &Actions{requester: requester, state: &actionsMetadata{logs: &logsMetadata{estimated: 500}}}
+}
+
+// WithRequester retains learned range/fallback state while binding every action
+// to the given requester (including AsyncRequester when the wrapper supports it).
+func (a *Actions) WithRequester(requester Requester) *Actions {
+	if a == nil || requester == nil {
+		return nil
+	}
+	return &Actions{requester: requester, state: a.state}
 }
 
 // GetLogs performs one standardized request. Historical range synchronization
@@ -86,8 +101,8 @@ func (a *Actions) GetLogsWithPagination(ctx context.Context, input map[string]an
 				fail(err)
 				return
 			}
-			a.mu.Lock()
-			metadata := a.logs
+			a.state.mu.Lock()
+			metadata := a.state.logs
 			size := metadata.estimated
 			if metadata.confirmed != nil {
 				size = *metadata.confirmed
@@ -95,7 +110,7 @@ func (a *Actions) GetLogsWithPagination(ctx context.Context, input map[string]an
 			if options != nil && options.EthGetLogsBlockRange != nil {
 				size = *options.EthGetLogsBlockRange
 			}
-			a.mu.Unlock()
+			a.state.mu.Unlock()
 			if size == 0 {
 				fail(fmt.Errorf("eth_getLogs block range must be positive"))
 				return
@@ -137,12 +152,12 @@ func (a *Actions) GetLogsWithPagination(ctx context.Context, input map[string]an
 					n := size
 					next.confirmed = &n
 				}
-				a.mu.Lock()
-				a.logs = next
-				a.mu.Unlock()
+				a.state.mu.Lock()
+				a.state.logs = next
+				a.state.mu.Unlock()
 				continue
 			}
-			a.mu.Lock()
+			a.state.mu.Lock()
 			if (options == nil || options.EthGetLogsBlockRange == nil) && metadata.confirmed == nil {
 				grown := math.Floor(float64(metadata.estimated)*1.05 + 0.5)
 				if grown >= float64(math.MaxUint64) {
@@ -151,7 +166,7 @@ func (a *Actions) GetLogsWithPagination(ctx context.Context, input map[string]an
 					metadata.estimated = uint64(grown)
 				}
 			}
-			a.mu.Unlock()
+			a.state.mu.Unlock()
 			if !yield(LogsPage{logs, cursor, to}, nil) || to == endBlock {
 				return
 			}
@@ -219,9 +234,9 @@ func (a *Actions) GetTransactionReceipts(ctx context.Context, blockHash string, 
 	if len(transactionHashes) == 0 {
 		return []ReceiptResponse{}, nil
 	}
-	a.mu.Lock()
-	fallback := a.withoutBlockReceipts
-	a.mu.Unlock()
+	a.state.mu.Lock()
+	fallback := a.state.withoutBlockReceipts
+	a.state.mu.Unlock()
 	if !fallback {
 		receipts, err := a.GetBlockReceipts(ctx, blockHash)
 		if err == nil {
@@ -230,9 +245,9 @@ func (a *Actions) GetTransactionReceipts(ctx context.Context, blockHash string, 
 		if options != nil && options.Logger != nil {
 			options.Logger.Warn(map[string]any{"msg": "Caught eth_getBlockReceipts error, switching to eth_getTransactionReceipt method", "error": err})
 		}
-		a.mu.Lock()
-		a.withoutBlockReceipts = true
-		a.mu.Unlock()
+		a.state.mu.Lock()
+		a.state.withoutBlockReceipts = true
+		a.state.mu.Unlock()
 	}
 	responses := []ReceiptResponse{}
 	seen := map[string]bool{}

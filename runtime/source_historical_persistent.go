@@ -332,6 +332,13 @@ func (s *SourceHistoricalSync) prepareBlockRangeData(ctx context.Context, span s
 }
 
 func (s *SourceHistoricalSync) SyncBlockData(ctx context.Context, span store.SourceInterval, required []store.SourceFilterInterval, logs []filter.Object, database *store.SourceSyncStore) (filter.Object, error) {
+	return s.syncBlockData(ctx, ctx, span, required, logs, database)
+}
+
+// syncBlockData keeps acquisition and new work on the scheduling context while
+// completing an admitted transaction's SQL under its provider-owned lifetime.
+// The public standalone method deliberately retains its original single context.
+func (s *SourceHistoricalSync) syncBlockData(ctx, persistenceCtx context.Context, span store.SourceInterval, required []store.SourceFilterInterval, logs []filter.Object, database *store.SourceSyncStore) (filter.Object, error) {
 	if database == nil {
 		return nil, fmt.Errorf("source historical sync store required")
 	}
@@ -373,11 +380,11 @@ func (s *SourceHistoricalSync) SyncBlockData(ctx context.Context, span store.Sou
 		}
 		closestMu.Unlock()
 		return sourceHistoricalAll([]func() error{
-			func() error { return database.InsertBlocks(ctx, s.chain, []filter.Object{data.RawBlock}) },
-			func() error { return database.InsertTransactions(ctx, s.chain, data.RawTransactions) },
-			func() error { return database.InsertTransactionReceipts(ctx, s.chain, data.RawTransactionReceipts) },
-			func() error { return database.InsertTraces(ctx, s.chain, data.RawTraces) },
-			func() error { return database.InsertLogs(ctx, s.chain, data.RawLogs) },
+			func() error { return database.InsertBlocks(persistenceCtx, s.chain, []filter.Object{data.RawBlock}) },
+			func() error { return database.InsertTransactions(persistenceCtx, s.chain, data.RawTransactions) },
+			func() error { return database.InsertTransactionReceipts(persistenceCtx, s.chain, data.RawTransactionReceipts) },
+			func() error { return database.InsertTraces(persistenceCtx, s.chain, data.RawTraces) },
+			func() error { return database.InsertLogs(persistenceCtx, s.chain, data.RawLogs) },
 		})
 	}
 	jobs := make(chan uint64)

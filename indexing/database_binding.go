@@ -115,7 +115,7 @@ func (db *Database) WithReadOnly(ctx context.Context, chain uint64, fn func(cont
 		return invalidBinding()
 	}
 	if db.readOnlyScope != nil {
-		release, err := db.readOnlyScope()
+		release, err := db.readOnlyScope(ctx)
 		if err != nil {
 			return err
 		}

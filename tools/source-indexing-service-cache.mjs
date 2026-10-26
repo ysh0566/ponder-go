@@ -9,7 +9,7 @@ const arg=name=>process.argv.find(a=>a.startsWith('--'+name+'='))?.slice(name.le
 const destination=arg('output');
 if(!destination)throw Error('Explicit new output required');
 const output=path.resolve(root,destination);
-if(!['indexing-service-m38','indexing-actions-m39','indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json'))throw Error('New indexing-service evidence directory required');
+if(!['indexing-service-m38','indexing-actions-m39','indexing-profile-m40','independent-storage-m41','multichain-atomic-m42','finite-historical-m43'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json'))throw Error('New indexing-service evidence directory required');
 fs.mkdirSync(output,{recursive:true});
 const report={complete:false,success:false,source_credit:0,probe:'source-client-cache-and-error-brand',pristine_file:false,environment_adapted:true,execution:'zero-credit actual cached client with real Anvil RPC and gated cache persistence; actual indexing error branding',started_utc:new Date().toISOString()};
 const save=()=>fs.writeFileSync(output+'/result.json',JSON.stringify(report,null,2)+'\n');save();

@@ -8,15 +8,15 @@ const root=path.resolve(import.meta.dirname,'..'),arg=n=>process.argv.find(a=>a.
 const check=(v,m)=>{if(!v)throw Error(m)},equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 check(arg('run-dir')&&arg('output'),'Explicit run-dir and output required');
 const directory=path.resolve(root,arg('run-dir')),relative=path.relative(root,directory),destination=path.resolve(root,arg('output'));
-check(relative.startsWith('parity/runs/multichain-atomic-m42/')&&destination.startsWith(root+'/parity/runs/'),'Scoped M42 run/output required');
+check(['multichain-atomic-m42','finite-historical-m43'].some(stage=>relative.startsWith('parity/runs/'+stage+'/'))&&destination.startsWith(root+'/parity/runs/'),'Scoped M42 run/output required');
 const read=f=>JSON.parse(fs.readFileSync(path.resolve(root,f))),hash=f=>({file:path.relative(root,path.resolve(root,f)),sha256:crypto.createHash('sha256').update(fs.readFileSync(path.resolve(root,f))).digest('hex')});
 const valid=r=>r&&fs.existsSync(path.resolve(root,r.file))&&hash(r.file).sha256===r.sha256;
 const full=read(directory+'/result.json'),fingerprint=sourceFingerprint(root),prepared=read(full.prepared_native_inputs.file);
 check(full.complete&&full.success&&full.source_manifest_verified_after&&full.environment_adapted&&full.pristine_file===false,'Complete adapted aggregate required');
 check(equal(full.native_inputs,fingerprint)&&equal(full.finished_native_inputs,fingerprint)&&equal(prepared.fingerprint,fingerprint)&&prepared.files.every(valid),'Current prepared/native inputs differ');
 check(valid(full.prepared_native_inputs)&&valid(full.context_archive)&&full.harness_inputs.every(valid)&&atomicMultichainHarness.every(f=>full.harness_inputs.some(r=>r.file===f)),'Current full harness inventory required');
-check(full.commands.length===69&&atomicMultichainStages.every(n=>full.commands.filter(c=>c.name===n&&c.exit_code===0).length===1),'Missing/duplicate M42 aggregate stage');
-check(full.commands.find(c=>c.name==='multichain-atomic-evidence-controls').atomic_source_root===directory,'Actual current source negative controls required');
+check(full.commands.length===(relative.startsWith('parity/runs/finite-historical-m43/')?73:69)&&atomicMultichainStages.every(n=>full.commands.filter(c=>c.name===n&&c.exit_code===0).length===1),'Missing/duplicate M42 aggregate stage');
+check((relative.startsWith('parity/runs/finite-historical-m43/')?full.commands.find(c=>c.name==='finite-historical-evidence-controls').finite_source_root:full.commands.find(c=>c.name==='multichain-atomic-evidence-controls').atomic_source_root)===directory,'Actual current source negative controls required');
 const previous='parity/runs/independent-storage-verification.json',prior=read(previous);
 check(prior.complete&&prior.success&&prior.run_dir===relative&&valid(prior.full_verification)&&prior.full_verification.sha256===hash(directory+'/result.json').sha256&&prior.inputs.every(valid),'Complete current M41 regression proof required');
 function archive(ref,expected){check(valid(ref)&&path.resolve(root,ref.file)===expected+'/context-archive.json','Exact context reference required');const a=read(ref.file);check(a.project_root===root&&a.evidence_root===expected&&a.verification_phase==='before-dispose'&&Object.values(a.entries).every(e=>validateContextEntry({file:e.executed_file,sha256:e.sha256},a)),'Context archive differs')}

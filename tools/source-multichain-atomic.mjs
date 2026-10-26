@@ -10,7 +10,7 @@ const arg=name=>process.argv.find(a=>a.startsWith('--'+name+'='))?.slice(name.le
 const backend=arg('backend'), destination=arg('output');
 if(!['postgres','pglite'].includes(backend)||!destination)throw Error('Explicit backend and new output required');
 const output=path.resolve(root,destination);
-if(!['multichain-atomic-m42'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json'))throw Error('New indexing-service evidence directory required');
+if(!['multichain-atomic-m42','finite-historical-m43'].some(stage=>output.startsWith(root+'/parity/runs/'+stage+'/'))||fs.existsSync(output+'/result.json'))throw Error('New indexing-service evidence directory required');
 fs.mkdirSync(output,{recursive:true});
 const report={complete:false,success:false,source_credit:0,backend,pristine_file:false,environment_adapted:true,execution:'zero-credit unchanged runMultichain selected real historical iterator prefix; real two-chain Anvil RPC and handlers/database, consumer-boundary branded stop before cutover',started_utc:new Date().toISOString()};
 const save=()=>fs.writeFileSync(output+'/result.json',JSON.stringify(report,null,2)+'\n');save();
@@ -23,10 +23,11 @@ try{
  if(backend==='postgres'){
   const url=new URL(env.PONDER_TEST_POSTGRES??'');
   if(url.hostname!=='127.0.0.1'||url.port!=='55432'||url.pathname!=='/ponder_test')throw Error('Only dedicated task PostgreSQL accepted');
-  const receipt=env.PONDER_M42_POSTGRES_RECEIPT,directory=env.PONDER_M42_POSTGRES_DIRECTORY;
+  const successor=output.startsWith(root+'/parity/runs/finite-historical-m43/');
+  const receipt=successor?env.PONDER_M43_POSTGRES_RECEIPT:env.PONDER_M42_POSTGRES_RECEIPT,directory=successor?env.PONDER_M43_POSTGRES_DIRECTORY:env.PONDER_M42_POSTGRES_DIRECTORY;
   if(!receipt||!directory)throw Error('New M42 fixture receipt required before legacy source test DDL');
   const owned=fs.readFileSync(receipt+'/owned-directory.txt','utf8').trim();
-  if(directory!==owned+'/data'||fs.realpathSync(directory)!==directory||!owned.startsWith(path.resolve(env.TMPDIR)+'/ponder-m42-pg-'))throw Error('Canonical new M42 fixture required');
+  if(directory!==owned+'/data'||fs.realpathSync(directory)!==directory||!owned.startsWith(path.resolve(env.TMPDIR)+(successor?'/ponder-m43-pg-':'/ponder-m42-pg-')))throw Error('Canonical new M42 fixture required');
   const initial=JSON.parse(fs.readFileSync(receipt+'/initial-inventory.json','utf8'));
   if(JSON.stringify([...initial.databases].sort())!==JSON.stringify(['ponder_test','postgres','template0','template1'])||!initial.roles.every(r=>r==='agent'||r.startsWith('pg_')))throw Error('Expected fresh inventory');
   const check=spawnSync('psql',['-XAt','-d',env.PONDER_TEST_POSTGRES,'-c','SHOW data_directory'],{encoding:'utf8'});

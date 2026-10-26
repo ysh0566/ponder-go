@@ -12,7 +12,7 @@ const root=path.resolve(import.meta.dirname,'..'),arg=n=>process.argv.find(a=>a.
 const check=(v,m)=>{if(!v)throw Error(m)},equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 check(arg('run-dir')&&arg('output'),'Explicit --run-dir and --output required');
 const directory=path.resolve(root,arg('run-dir')),relative=path.relative(root,directory),destination=path.resolve(root,arg('output'));
-check(['indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>relative.startsWith('parity/runs/'+stage+'/'))&&destination.startsWith(root+'/parity/runs/'),'Scoped M40 run/output required');
+check(['indexing-profile-m40','independent-storage-m41','multichain-atomic-m42','finite-historical-m43'].some(stage=>relative.startsWith('parity/runs/'+stage+'/'))&&destination.startsWith(root+'/parity/runs/'),'Scoped M40 run/output required');
 const read=f=>JSON.parse(fs.readFileSync(path.resolve(root,f))),compressed=f=>JSON.parse(gunzipSync(fs.readFileSync(path.resolve(root,f))));
 const hash=f=>({file:path.relative(root,path.resolve(root,f)),sha256:crypto.createHash('sha256').update(fs.readFileSync(path.resolve(root,f))).digest('hex')});
 const valid=r=>r&&fs.existsSync(path.resolve(root,r.file))&&hash(r.file).sha256===r.sha256;

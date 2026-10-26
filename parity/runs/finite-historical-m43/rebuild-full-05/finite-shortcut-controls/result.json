@@ -1,0 +1,76 @@
+{
+  "productionUnchanged": true,
+  "nativeInputs": {
+    "files": 1180,
+    "sha256": "8a7795176fa1fe3c4dc48ff9f1e89ccbe707c45638148255fd235c4a154e5780"
+  },
+  "finishedNativeInputs": {
+    "files": 1180,
+    "sha256": "8a7795176fa1fe3c4dc48ff9f1e89ccbe707c45638148255fd235c4a154e5780"
+  },
+  "scriptHash": "f4b333f08f0da1b8d329320c05b7c1183007f5048a03afe831bfac1839a68245",
+  "started_at": "2026-10-26T08:03:28Z",
+  "controls": [
+    {
+      "name": "discard-refetch",
+      "test": "TestFiniteHistoricalRunnerRetry",
+      "backends": [
+        "postgres"
+      ],
+      "suffix": "/sticky_false",
+      "reason": "missing-field attempts: InvalidEventAccessError key=block.gasUsed retries=9"
+    },
+    {
+      "name": "repeat-setup",
+      "test": "TestFiniteHistoricalRunner",
+      "backends": [
+        "postgres",
+        "pglite"
+      ],
+      "suffix": "",
+      "reason": "multichain runtime already initialized or has pending state"
+    },
+    {
+      "name": "retain-resume-complete",
+      "test": "TestFiniteHistoricalRunnerResumeCompleteCache",
+      "backends": [
+        "postgres",
+        "pglite"
+      ],
+      "suffix": "",
+      "reason": "resume complete-cache conflict: sqlstate=23505 constraint=account_pkey prefix_unchanged=true resumed=true committed_groups=0 setup_unchanged=true"
+    }
+  ],
+  "negativeControlsFailedInDeclaredScope": true,
+  "restoredGreen": true,
+  "originalCredit": 0,
+  "hashes": {
+    "discard-refetch.command.txt": "f3c7fe9156dfaf28731b49f836a5fc5d0db739d6337a4926d518dfd02cfcd92d",
+    "discard-refetch.exit-code.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "discard-refetch.go.txt": "9372463c172160430825b065cd7f9701ac815267c910810dfaa7bea23af56114",
+    "discard-refetch.overlay.json": "36a5645a55c746c0fdc9892f9ed93a32da99d264bc233008a88527901984ea01",
+    "discard-refetch.red.log": "b3325cfca9d6b3e8c09be0fb7e120becc8aa9330dddbc84f0f72eec1e89ef8ab",
+    "fixture-receipt.txt": "745839b339d1a111f878f27eec374b7627bae0b15877af37e18558b94711a6fa",
+    "inputs.json": "89c45063c6ee812056eb69e2c78c7b91969bd09eeac8c40a26cf9f33b1df6271",
+    "native-inputs-after.json": "b3bd024b8388cedaa53626ad41d437a7eef645de765ad822b6e6d43c1abfd289",
+    "native-inputs-before.json": "b3bd024b8388cedaa53626ad41d437a7eef645de765ad822b6e6d43c1abfd289",
+    "production.go.txt": "2c84e36eb6b6c4036acf9f500306fbcdeef81af7eac16027c7c439c15c24a635",
+    "production.sha256": "4aaf8bb6111d4a9ab55036c7ac0263404528957116f4ebcc7d8af87ef2e6d9c8",
+    "repeat-setup.command.txt": "f7fef6196625944887caf340266ac42cc893ca9ee5aaec06bbdcad93e2ab27de",
+    "repeat-setup.exit-code.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "repeat-setup.go.txt": "7f8996bc57655e2e524b91e886d147a337f1a65a76fabfd36572e13fdde4ed21",
+    "repeat-setup.overlay.json": "7b59a36c409722bcf9e39f06193a4c052da5e63215ebe8dcf1ddf7c22cb6feae",
+    "repeat-setup.red.log": "ad4ba18f2e3d87142a1a1c54c8774cd657688e1023a235ec840268df7c352aae",
+    "restored-green.command.txt": "bcae5d0a55dc546662b9fdb23ca48cb29c1001992f5131bd1fadcb4a896fb265",
+    "restored-green.log": "5dbafd4cebbcbc575ac625c0261783b719bebd41fd82603640a053d6c49d7609",
+    "retain-resume-complete.command.txt": "8452156e2268b3e568e73ddc865568a083596d30eb3b52af99f00770d24787b6",
+    "retain-resume-complete.exit-code.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "retain-resume-complete.go.txt": "59333d286a8c122a4112e5411522dae8e311343debed4f90082eee954cc4ec4d",
+    "retain-resume-complete.overlay.json": "7f035eccdf1d8463f53325da086845361f8a60ce4ddb873547365341051c727f",
+    "retain-resume-complete.red.log": "c4b6b6d60032698eebd68d9ea71ada1dac67b9c10e78d0fa0ca17b535291d3c1",
+    "show-data-directory.txt": "cc331ab66ed95ef6a0be9cd2a5f7ec9289105ee89b16d51ae33648fef69b0da9",
+    "started-at.txt": "65a6a47802a38a6a235b6074bd8efa84f3141838a6c0d0e326c002cf119346ef",
+    "tool-inputs-after.sha256": "9c697f5a84d2b7296215aae1f01df1df4412d909d5b251263f4f42d0a129176f",
+    "tool-inputs-before.sha256": "9c697f5a84d2b7296215aae1f01df1df4412d909d5b251263f4f42d0a129176f"
+  }
+}

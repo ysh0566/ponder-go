@@ -42,11 +42,13 @@ func sourceLocalStoreMissing(s SourceLocalHistoricalStore) bool {
 
 // SourceLocalHistoricalOptions connects the source-shaped acquisition, progress,
 // callback and store APIs. Progress and callback maps retain their identities.
-// The iterator exclusively owns Progress and callback/filter/child maps from its
-// first Next until completion or stop returns, including time between yields:
-// background prefetch and progress publication continue while a yield is consumed.
+// The iterator owns Progress and children until completion or stop returns,
+// including time between yields. Callback configuration remains immutable;
+// concurrent learned include updates require the same FilterSession everywhere.
+// Background prefetch and progress publication continue while a yield is consumed.
 // Callers may inspect the final shared identities after the iterator has joined.
 type SourceLocalHistoricalOptions struct {
+	FilterSession   *filter.Session
 	ChainID         uint64
 	Requester       rpc.Requester
 	Actions         *rpc.Actions
@@ -55,6 +57,10 @@ type SourceLocalHistoricalOptions struct {
 	Progress        *SourceSyncProgress
 	CachedIntervals []store.SourceIntervalEntry
 	Store           SourceLocalHistoricalStore
+	// PersistenceContext is an opaque canonical token supplied by an owned
+	// persistence provider. It is not an arbitrary cancellation override.
+	// Leave nil for a standalone SourceSyncStore and legacy M37 behavior.
+	PersistenceContext context.Context
 	From, To        string
 	Limit           int
 	IsCatchup       bool
@@ -143,7 +149,7 @@ func sourceLocalBuild(o SourceLocalHistoricalOptions, data store.SourceEventData
 	for _, entry := range o.Children.Snapshot() {
 		children[entry.ID] = entry.Entries
 	}
-	return protocol.BuildEvents(protocol.Batch{EventCallbacks: o.EventCallbacks, Blocks: data.Blocks, Transactions: data.Transactions, TransactionReceipts: data.TransactionReceipts, Logs: data.Logs, Traces: data.Traces, ChildAddresses: children, ChainID: o.ChainID})
+	return protocol.BuildEvents(protocol.Batch{EventCallbacks: o.FilterSession.Callbacks(o.EventCallbacks), Blocks: data.Blocks, Transactions: data.Transactions, TransactionReceipts: data.TransactionReceipts, Logs: data.Logs, Traces: data.Traces, ChildAddresses: children, ChainID: o.ChainID})
 }
 
 // sourceLocalQueue provides the source callback generator's unbounded progress
@@ -232,6 +238,10 @@ func LocalSourceSync(ctx context.Context, o SourceLocalHistoricalOptions) iter.S
 			fail(e)
 			return
 		}
+		if e := sourceValidateHistoricalPersistence(ctx, o.Store, o.PersistenceContext); e != nil {
+			fail(e)
+			return
+		}
 		first, lastNumber, last, e := sourceLocalBounds(o)
 		if e != nil {
 			fail(e)
@@ -251,7 +261,8 @@ func LocalSourceSync(ctx context.Context, o SourceLocalHistoricalOptions) iter.S
 			fail(e)
 			return
 		}
-		if _, e = RequiredSourceIntervalUnion(filters, store.SourceInterval{first, lastNumber}, o.CachedIntervals); e != nil {
+		planningFilters, cached := sourceLocalPlanning(o, filters)
+		if _, e = RequiredSourceIntervalUnion(planningFilters, store.SourceInterval{first, lastNumber}, cached); e != nil {
 			fail(e)
 			return
 		}
@@ -319,7 +330,8 @@ func sourceRunLocalSync(ctx context.Context, o SourceLocalHistoricalOptions, fil
 		go func() {
 			defer workers.Done()
 			p := sourceLocalPrepared{span: span, started: now()}
-			p.required, p.factories, p.err = RequiredSourceIntervals(filters, span, o.CachedIntervals)
+			planningFilters, cached := sourceLocalPlanning(o, filters)
+			p.required, p.factories, p.err = RequiredSourceIntervals(planningFilters, span, cached)
 			if p.err == nil && (len(p.required) > 0 || len(p.factories) > 0) {
 				p.data, p.err = syncer.prepareBlockRangeData(owned, span, p.required, p.factories)
 			}
@@ -350,14 +362,16 @@ func sourceRunLocalSync(ctx context.Context, o SourceLocalHistoricalOptions, fil
 			pending = launch(store.SourceInterval{math.Min(p.span[1]+1, lastNumber), math.Min(p.span[1]+1+estimate, lastNumber)})
 		}
 		if p.data != nil {
-			err := o.Store.WithTransaction(owned, func(bound *store.SourceSyncStore) error {
-				if e := bound.InsertChildAddresses(owned, o.ChainID, p.data.children); e != nil {
-					return e
-				}
-				if _, e := syncer.SyncBlockData(owned, p.span, p.required, p.data.logs, bound); e != nil {
-					return e
-				}
-				return bound.InsertIntervals(owned, o.ChainID, p.required, p.factories)
+			err := sourceWithHistoricalPersistence(owned, o.Store, o.PersistenceContext, func(ioCtx context.Context, workCtx context.Context) error {
+				return o.Store.WithTransaction(ioCtx, func(bound *store.SourceSyncStore) error {
+					if e := bound.InsertChildAddresses(ioCtx, o.ChainID, p.data.children); e != nil {
+						return e
+					}
+					if _, e := syncer.syncBlockData(workCtx, ioCtx, p.span, p.required, p.data.logs, bound); e != nil {
+						return e
+					}
+					return bound.InsertIntervals(ioCtx, o.ChainID, p.required, p.factories)
+				})
 			})
 			if err != nil {
 				return err
@@ -408,7 +422,12 @@ func LocalSourceEvents(ctx context.Context, o SourceLocalHistoricalOptions) iter
 				return
 			}
 			for cursor <= math.Min(syncCursor, toBlock) {
-				data, e := o.Store.GetEventData(ctx, store.SourceEventDataArgs{Filters: filters, FromBlock: cursor, ToBlock: math.Min(syncCursor, toBlock), ChainID: o.ChainID, Limit: o.Limit})
+				var data store.SourceEventData
+				e := sourceWithHistoricalPersistence(ctx, o.Store, o.PersistenceContext, func(ioCtx context.Context, _ context.Context) error {
+					var queryErr error
+					data, queryErr = o.Store.GetEventData(ioCtx, store.SourceEventDataArgs{FilterSession: o.FilterSession, Filters: filters, FromBlock: cursor, ToBlock: math.Min(syncCursor, toBlock), ChainID: o.ChainID, Limit: o.Limit})
+					return queryErr
+				})
 				if e != nil {
 					fail(e)
 					return
@@ -449,6 +468,10 @@ func LocalSourceInMemoryEvents(ctx context.Context, o SourceLocalHistoricalOptio
 			fail(e)
 			return
 		}
+		if e := sourceValidateHistoricalPersistence(ctx, o.Store, o.PersistenceContext); e != nil {
+			fail(e)
+			return
+		}
 		first, lastNumber, last, e := sourceLocalBounds(o)
 		if e != nil {
 			fail(e)
@@ -481,12 +504,13 @@ func LocalSourceInMemoryEvents(ctx context.Context, o SourceLocalHistoricalOptio
 			fail(e)
 			return
 		}
-		required, _, e := RequiredSourceIntervals(filters, store.SourceInterval{float64(from.BlockNumber), lastNumber}, o.CachedIntervals)
+		planningFilters, cached := sourceLocalPlanning(o, filters)
+		required, _, e := RequiredSourceIntervals(planningFilters, store.SourceInterval{float64(from.BlockNumber), lastNumber}, cached)
 		if e != nil {
 			fail(e)
 			return
 		}
-		_, factories, e := RequiredSourceIntervals(filters, store.SourceInterval{first, lastNumber}, o.CachedIntervals)
+		_, factories, e := RequiredSourceIntervals(planningFilters, store.SourceInterval{first, lastNumber}, cached)
 		if e != nil {
 			fail(e)
 			return

@@ -6,14 +6,20 @@ root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$root"
 [[ $# == 1 ]] || { echo 'usage: negative-controls.sh NEW_OUTPUT_DIRECTORY' >&2; exit 2; }
 out=$(realpath -m "$1")
-case "$out" in "$root"/parity/runs/multichain-atomic-m42/*) ;; *) exit 2;; esac
-[[ ! -e "$out" && -n "${PONDER_M42_POSTGRES_DIRECTORY:-}" && -n "${PONDER_TEST_POSTGRES:-}" && -n "${PONDER_M42_POSTGRES_RECEIPT:-}" ]] || exit 2
-receipt=$(realpath -m "$PONDER_M42_POSTGRES_RECEIPT")
-case "$receipt" in "$root"/parity/runs/multichain-atomic-m42/*) ;; *) exit 2;; esac
-case "$PONDER_M42_POSTGRES_DIRECTORY" in /workspace/scratch/fac5abfa4c9e/ponder-cloud/tmp/ponder-m42-pg-*/data) ;; *) exit 2;; esac
-[[ "$(cat "$receipt/show-data-directory.txt")" == "$PONDER_M42_POSTGRES_DIRECTORY" ]] || exit 2
+case "$out" in
+ "$root"/parity/runs/multichain-atomic-m42/*) directory=${PONDER_M42_POSTGRES_DIRECTORY:-}; receipt_input=${PONDER_M42_POSTGRES_RECEIPT:-}; stage=multichain-atomic-m42; prefix=ponder-m42-pg- ;;
+ "$root"/parity/runs/finite-historical-m43/*) directory=${PONDER_M43_POSTGRES_DIRECTORY:-}; receipt_input=${PONDER_M43_POSTGRES_RECEIPT:-}; stage=finite-historical-m43; prefix=ponder-m43-pg- ;;
+ *) exit 2;;
+esac
+[[ ! -e "$out" && -n "$directory" && -n "${PONDER_TEST_POSTGRES:-}" && -n "$receipt_input" ]] || exit 2
+receipt=$(realpath -m "$receipt_input")
+case "$receipt" in "$root"/parity/runs/"$stage"/*) ;; *) exit 2;; esac
+owned=$(cat "$receipt/owned-directory.txt")
+case "$owned" in "${TMPDIR:?}"/"$prefix"*) ;; *) exit 2;; esac
+[[ "$directory" == "$owned/data" && "$(realpath "$owned/data")" == "$owned/data" ]] || exit 2
+[[ "$(cat "$receipt/show-data-directory.txt")" == "$directory" ]] || exit 2
 actual=$(psql -XAt "$PONDER_TEST_POSTGRES" -c 'SHOW data_directory')
-[[ "$actual" == "$PONDER_M42_POSTGRES_DIRECTORY" ]] || { echo 'Negative controls require verified fresh M42 fixture' >&2; exit 2; }
+[[ "$actual" == "$directory" ]] || { echo 'Negative controls require verified fresh scoped fixture' >&2; exit 2; }
 mkdir -p "$out"
 date -u +%Y-%m-%dT%H:%M:%SZ > "$out/started-at.txt"
 printf '%s\n' "$receipt" > "$out/fixture-receipt.txt"

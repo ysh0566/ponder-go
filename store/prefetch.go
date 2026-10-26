@@ -204,7 +204,7 @@ func (cache *IndexingCache) Prefetch(ctx context.Context, events []ProfileEvent)
 				if float64(entry.count)*10/float64(count) <= 0.25 {
 					continue
 				}
-				row, e := RecoverProfilePattern(entry.pattern, event)
+				row, e := recoverProfileKey(entry.pattern, event, table)
 				if e != nil {
 					state.mu.Unlock()
 					return e

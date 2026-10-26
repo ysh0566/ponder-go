@@ -46,7 +46,7 @@ docker run -d --name ponder-go-cloud-test \
   -v ponder_go_cloud_test:/var/lib/postgresql/data \
   postgres:16
 docker exec ponder-go-cloud-test pg_isready -U ponder -d ponder_test
-export PONDER_TEST_POSTGRES='postgres://ponder:ponder-local-test@127.0.0.1:53398/ponder_test?sslmode=disable'
+export PONDER_TEST_POSTGRES='postgres://ponder:<redacted-local-fixture-password>@127.0.0.1:53398/ponder_test?sslmode=disable'
 ```
 
 该账户仅是公开在测试文档中的隔离库fixture，不能用于生产。若没有Docker但已有PostgreSQL，可以创建同等隔离测试库并显式提供URL；不得把PGlite当PG验收替代。若两者均不存在，报告具体缺项，先执行独立可执行部分，不擅自安装服务。PGlite由 `bridge/pglite.mjs` 自动启动真实PostgreSQL WASM；默认从相邻上游解析依赖，也支持PONDER_UPSTREAM。每个测试自己的临时目录/连接会清理，不需要手动建立共享PGlite实例。

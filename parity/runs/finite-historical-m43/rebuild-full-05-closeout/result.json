@@ -1,0 +1,78 @@
+{
+  "purpose": "Separate corrective closeout proof for omitted known derived ledger output; parent review required; does not rewrite original launcher failure",
+  "deterministic_replay_verified": true,
+  "original_launcher_success": false,
+  "original_launcher_sha256": "7adda9229797e89fb15039d3d76c023e36e5b6ecf4a9309795d299b031bd663d",
+  "source_credit_added": 0,
+  "full_stages_passed": 73,
+  "collectors_passed": 14,
+  "normal": {
+    "file": "parity/runs/finite-historical-m43/rebuild-full-05/native/go-test.jsonl",
+    "leaf_cases": 3356,
+    "pass": 3356,
+    "fail": 0,
+    "skip": 0
+  },
+  "race": {
+    "file": "parity/runs/finite-historical-m43/rebuild-full-05/native/go-race.jsonl",
+    "leaf_cases": 3356,
+    "pass": 3356,
+    "fail": 0,
+    "skip": 0
+  },
+  "fixed_ledger_summary_unchanged": true,
+  "source_records": 905,
+  "mapped": 543,
+  "unimplemented": 362,
+  "delta_leaf_count": 3152,
+  "exact_allowed_generated_field_patterns": {
+    "/tests/*/execution_evidence": 543,
+    "/tests/*/oracle/evidence": 345,
+    "/tests/*/oracle/run_dir": 557,
+    "/tests/*/oracle/executions/*/evidence": 768,
+    "/tests/*/race/evidence": 546,
+    "/tests/*/oracle/backends/pglite/evidence": 138,
+    "/tests/*/oracle/backends/postgres/evidence": 138,
+    "/tests/*/runtime_validation/run_dir": 64,
+    "/tests/*/type_verification/typed_runtime_evidence": 53
+  },
+  "replay_read_file_count": 1914,
+  "replay_read_events": 19233,
+  "whole_repository_regular_files_unchanged": 39922,
+  "whole_repository_bytes": 8057261770,
+  "tree_scope": "all regular files including .git and parity evidence; excludes node_modules and symlink entries, exact original paths retained for provenance checks",
+  "writer": {
+    "file": "tools/record-results.mjs",
+    "sha256": "221c4f650ad062c2be2ef64a0375cd2e87bb17933869d24c18126950d33df0e3"
+  },
+  "reviewed_preload_sha256": "c95514615106ffce4a8e89a36963ef982d54242cf4420d2e1d1983824451767f",
+  "complete": true,
+  "success": true,
+  "accepted_as": "Full05 functional results plus separately verified corrective closeout; original launcher remains failed, not rewritten",
+  "publication_review": "Parent accepted this distinction after independent review",
+  "original_failure_reason": "After summary, the launcher omitted the frozen writer\u2019s known parity/test-ledger.json derived output from its allowed-output set.",
+  "repository_tree_before_sha256": "2786eeee11e4b706af111e004f9da92e5fa5dfad3c5549b15db84818325cde75",
+  "repository_tree_after_sha256": "2786eeee11e4b706af111e004f9da92e5fa5dfad3c5549b15db84818325cde75",
+  "prepared_archive_members_verified": 1375,
+  "prepared_live_inputs_verified": 1374,
+  "privacy": "Private reconstruction drafts, whole-tree path manifests, database data and caches are not exported. Public replay audit paths are normalized; original audit hash is retained. The replay helper is the exact reviewed helper and retains historical absolute execution-root binding.",
+  "artifacts": [
+    {
+      "file": "parity/runs/finite-historical-m43/rebuild-full-05-closeout/pre-ledger.json",
+      "sha256": "18a044b46adfe490ae7844455d6b145f2a7af3ee1fc39c246a43aafcb028a2f8"
+    },
+    {
+      "file": "parity/runs/finite-historical-m43/rebuild-full-05-closeout/ledger-delta.json",
+      "sha256": "a55a7696cbfe641b1c525bf153a67725e22a7d62d0cd33c52bd6fd1c94e5c1fd"
+    },
+    {
+      "file": "parity/runs/finite-historical-m43/rebuild-full-05-closeout/replay-audited.cjs",
+      "sha256": "c95514615106ffce4a8e89a36963ef982d54242cf4420d2e1d1983824451767f"
+    },
+    {
+      "file": "parity/runs/finite-historical-m43/rebuild-full-05-closeout/replay-audit.json",
+      "sha256": "c7f97ba3095c9e779901a13973a0f7b0f7d74b7c19e1bdd60b3273022634b2cc"
+    }
+  ],
+  "public_export_limit": "The original pre-source snapshot is intentionally private because it contains historical local-test credential URIs and private reconstruction information. This package does not contain or claim to reconstruct all original frozen materials. Safe pre-ledger and independently sufficient corrective output proof are published separately; original sealed bytes/hash were not changed."
+}

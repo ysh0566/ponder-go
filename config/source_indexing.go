@@ -5,22 +5,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 
 	"ponder.local/ponder-go/abi"
 	"ponder.local/ponder-go/filter"
 )
 
 type SourceIndexingBuild struct {
-	sources      map[string][]*sourceObject
-	latest       []*sourceObject
-	base         *SourceConfigBuild
-	chains       []*sourceObject
-	chainIndexes []int
-	finalized    []*sourceObject
-	callbacks    [][]*sourceObject
-	setup        [][]*sourceObject
-	contracts    []*sourceObject
-	logs         []*sourceObject
+	executableOnce sync.Once
+	executable     *ExecutableSourceIndexingBuild
+	functions      []SourceIndexingFunction
+	ordering       any
+	sources        map[string][]*sourceObject
+	latest         []*sourceObject
+	base           *SourceConfigBuild
+	chains         []*sourceObject
+	chainIndexes   []int
+	finalized      []*sourceObject
+	callbacks      [][]*sourceObject
+	setup          [][]*sourceObject
+	contracts      []*sourceObject
+	logs           []*sourceObject
 }
 
 func (build *SourceIndexingBuild) Value() map[string]any {
@@ -220,6 +225,11 @@ func BuildSourceIndexing(ctx context.Context, config *SourceConfiguration, built
 		return nil, err
 	}
 	result := &SourceIndexingBuild{sources: allSources, latest: latest, base: built, chains: []*sourceObject{}, chainIndexes: []int{}, finalized: []*sourceObject{}, callbacks: [][]*sourceObject{}, setup: [][]*sourceObject{}, contracts: []*sourceObject{}, logs: allCallbacks.logs}
+	result.functions = append([]SourceIndexingFunction(nil), functions...)
+	result.ordering = config.value.get("ordering")
+	if sourceNullish(result.ordering) {
+		result.ordering = "multichain"
+	}
 	for i, chain := range chains {
 		callbacks, setup, contracts := allCallbacks.events[i], allCallbacks.setup[i], allCallbacks.contracts[i]
 		if len(callbacks) == 0 && len(setup) == 0 {

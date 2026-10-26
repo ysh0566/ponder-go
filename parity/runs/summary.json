@@ -4,20 +4,20 @@
     "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
     "core_version": "0.18.2"
   },
-  "run_dir": "parity/runs/multichain-atomic-m42/full-verify-03",
+  "run_dir": "parity/runs/finite-historical-m43/rebuild-full-05",
   "environment_adapted": true,
   "pristine_file": false,
   "full_verification": {
-    "file": "parity/runs/multichain-atomic-m42/full-verify-03/result.json",
-    "sha256": "8be797c07add38323908d090f2e9cb5357cce4a602ce511d45b2c0986e7b968f"
+    "file": "parity/runs/finite-historical-m43/rebuild-full-05/result.json",
+    "sha256": "712116c4827252746fbd7bf38392fe720f3076ead55785d51bb63e177fc9638c"
   },
   "context_archive": {
-    "file": "parity/runs/multichain-atomic-m42/full-verify-03/context-archive.json",
-    "sha256": "ac5b3eddca38c24e06e59d91e3c23d584d7181d444f6c435211ccfbee6c42ac5"
+    "file": "parity/runs/finite-historical-m43/rebuild-full-05/context-archive.json",
+    "sha256": "6c356a2937675c96d29731898342b159b09e82b0dd3f5fb0a4d334f235aa3354"
   },
   "prepared_native_inputs": {
-    "file": "parity/runs/multichain-atomic-m42/full-verify-03/prepared-native-inputs.json",
-    "sha256": "c29fcd4ec37bd1b1e83bfc98ae7a45824d8783a46839a30529213b45181af0fa"
+    "file": "parity/runs/finite-historical-m43/rebuild-full-05/prepared-native-inputs.json",
+    "sha256": "98fb8b5f7e98ba2432f62ce476ed42a8e16ce25304f49bfc20e79bfd4272e51a"
   },
   "counting": "Only exact source mappings count toward upstream parity. Native regression cases and generated differential vectors are separate evidence.",
   "parity": {
@@ -146,7 +146,7 @@
   "current_remaining_original_backend_oracles": [
     {
       "backend": "postgres",
-      "evidence": "parity/runs/multichain-atomic-m42/full-verify-03/remaining-mapped-original-postgres.json",
+      "evidence": "parity/runs/finite-historical-m43/rebuild-full-05/remaining-mapped-original-postgres.json",
       "scope": "Nine complete original source files covering remaining mapped cases; unmapped cases add no port credit",
       "environment_adapted": true,
       "pristine_file": false,
@@ -154,13 +154,13 @@
       "failed": 0,
       "pending": 3,
       "context_archive": {
-        "file": "parity/runs/multichain-atomic-m42/full-verify-03/context-archive.json",
-        "sha256": "ac5b3eddca38c24e06e59d91e3c23d584d7181d444f6c435211ccfbee6c42ac5"
+        "file": "parity/runs/finite-historical-m43/rebuild-full-05/context-archive.json",
+        "sha256": "6c356a2937675c96d29731898342b159b09e82b0dd3f5fb0a4d334f235aa3354"
       }
     },
     {
       "backend": "pglite",
-      "evidence": "parity/runs/multichain-atomic-m42/full-verify-03/remaining-mapped-original-pglite.json",
+      "evidence": "parity/runs/finite-historical-m43/rebuild-full-05/remaining-mapped-original-pglite.json",
       "scope": "Nine complete original source files covering remaining mapped cases; unmapped cases add no port credit",
       "environment_adapted": true,
       "pristine_file": false,
@@ -168,29 +168,29 @@
       "failed": 0,
       "pending": 3,
       "context_archive": {
-        "file": "parity/runs/multichain-atomic-m42/full-verify-03/context-archive.json",
-        "sha256": "ac5b3eddca38c24e06e59d91e3c23d584d7181d444f6c435211ccfbee6c42ac5"
+        "file": "parity/runs/finite-historical-m43/rebuild-full-05/context-archive.json",
+        "sha256": "6c356a2937675c96d29731898342b159b09e82b0dd3f5fb0a4d334f235aa3354"
       }
     }
   ],
   "native_execution_schedule": {
     "go": {
-      "evidence": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-test-execution.json",
+      "evidence": "parity/runs/finite-historical-m43/rebuild-full-05/native/go-test-execution.json",
       "complete": true,
       "success": true,
       "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
-      "packages": 23,
-      "top_level_functions": 288,
-      "batches": 87
+      "packages": 24,
+      "top_level_functions": 338,
+      "batches": 98
     },
     "race": {
-      "evidence": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-race-execution.json",
+      "evidence": "parity/runs/finite-historical-m43/rebuild-full-05/native/go-race-execution.json",
       "complete": true,
       "success": true,
       "policy": "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
-      "packages": 23,
-      "top_level_functions": 288,
-      "batches": 87
+      "packages": 24,
+      "top_level_functions": 338,
+      "batches": 98
     }
   },
   "type_fixtures": {
@@ -405,7 +405,7 @@
     "evidence": "parity/runs/sql-source-verification.json"
   },
   "typed_abi_runtime": {
-    "file": "parity/runs/multichain-atomic-m42/full-verify-03/abi-generated-normal.log",
+    "file": "parity/runs/finite-historical-m43/rebuild-full-05/abi-generated-normal.log",
     "leaf_cases": 53,
     "pass": 53,
     "fail": 0,
@@ -413,7 +413,7 @@
     "counting": "Supplementary typed decoder execution; not additional source test records."
   },
   "typed_abi_race": {
-    "file": "parity/runs/multichain-atomic-m42/full-verify-03/abi-generated-race.log",
+    "file": "parity/runs/finite-historical-m43/rebuild-full-05/abi-generated-race.log",
     "leaf_cases": 53,
     "pass": 53,
     "fail": 0,
@@ -423,34 +423,34 @@
     "postgres": {
       "counting": "First explicit slash dialect component wins; legacy backend-tagged names remain supported. Source titles mentioning another backend do not double count. Source mappings and backend companions remain separate from source parity.",
       "go": {
-        "leaf_cases": 545,
-        "pass": 545,
+        "leaf_cases": 608,
+        "pass": 608,
         "fail": 0,
         "skip": 0
       },
       "race": {
-        "leaf_cases": 545,
-        "pass": 545,
+        "leaf_cases": 608,
+        "pass": 608,
         "fail": 0,
         "skip": 0
       },
-      "evidence": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-test.jsonl"
+      "evidence": "parity/runs/finite-historical-m43/rebuild-full-05/native/go-test.jsonl"
     },
     "pglite": {
       "counting": "First explicit slash dialect component wins; legacy backend-tagged names remain supported. Source titles mentioning another backend do not double count. Source mappings and backend companions remain separate from source parity.",
       "go": {
-        "leaf_cases": 544,
-        "pass": 544,
+        "leaf_cases": 586,
+        "pass": 586,
         "fail": 0,
         "skip": 0
       },
       "race": {
-        "leaf_cases": 544,
-        "pass": 544,
+        "leaf_cases": 586,
+        "pass": 586,
         "fail": 0,
         "skip": 0
       },
-      "evidence": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-test.jsonl"
+      "evidence": "parity/runs/finite-historical-m43/rebuild-full-05/native/go-test.jsonl"
     }
   },
   "simulation": {
@@ -459,16 +459,16 @@
     "executed_seeds": 0
   },
   "native_go": {
-    "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-test.jsonl",
-    "leaf_cases": 3087,
-    "pass": 3087,
+    "file": "parity/runs/finite-historical-m43/rebuild-full-05/native/go-test.jsonl",
+    "leaf_cases": 3356,
+    "pass": 3356,
     "fail": 0,
     "skip": 0
   },
   "race": {
-    "file": "parity/runs/multichain-atomic-m42/full-verify-03/native/go-race.jsonl",
-    "leaf_cases": 3087,
-    "pass": 3087,
+    "file": "parity/runs/finite-historical-m43/rebuild-full-05/native/go-race.jsonl",
+    "leaf_cases": 3356,
+    "pass": 3356,
     "fail": 0,
     "skip": 0
   },
@@ -481,7 +481,7 @@
     "failed": 0
   },
   "core_oracle": {
-    "file": "parity/runs/multichain-atomic-m42/full-verify-03/core-oracle.json",
+    "file": "parity/runs/finite-historical-m43/rebuild-full-05/core-oracle.json",
     "mode": "isolated_complete_source_files",
     "execution": "isolated complete source files without application global setup",
     "isolated": true,
@@ -496,7 +496,7 @@
     "failed": 0
   },
   "client": {
-    "file": "parity/runs/multichain-atomic-m42/full-verify-03/sdk-client.json",
+    "file": "parity/runs/finite-historical-m43/rebuild-full-05/sdk-client.json",
     "numTotalTests": 3,
     "numPassedTests": 3,
     "numFailedTests": 0

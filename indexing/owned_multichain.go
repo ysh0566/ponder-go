@@ -108,6 +108,20 @@ func (o *Owned) InitializeMultichain(ctx context.Context, initial []InitialChain
 // Callers must resolve CommitOutcomeUnknownError using durable checkpoint
 // evidence (or reopen storage), not assume a rollback. Empty groups advance.
 func (o *Owned) HistoricalGroup(ctx context.Context, target checkpoint.Checkpoint, events []Object, updateIndexingSeconds func(Object, Object)) (bool, error) {
+	return o.historicalGroup(ctx, target, events, updateIndexingSeconds, nil)
+}
+
+// HistoricalGroupWithRefetch retains HistoricalGroup's one-attempt transaction
+// contract. On genuine InvalidEventAccessError it clears the actual bound row
+// cache and invokes refetch before the business callback exits/rolls back. A
+// successful refetch still rethrows the original error; the caller may replace
+// its events for the next backend-specific transaction attempt. No SQL/RPC
+// prefetch is repeated here and uncertain commits are never retried implicitly.
+func (o *Owned) HistoricalGroupWithRefetch(ctx context.Context, target checkpoint.Checkpoint, events []Object, updateIndexingSeconds func(Object, Object), refetch func(context.Context, []Object) error) (bool, error) {
+	return o.historicalGroup(ctx, target, events, updateIndexingSeconds, refetch)
+}
+
+func (o *Owned) historicalGroup(ctx context.Context, target checkpoint.Checkpoint, events []Object, updateIndexingSeconds func(Object, Object), refetch func(context.Context, []Object) error) (bool, error) {
 	chains, err := o.configuredChains()
 	if err != nil {
 		return false, err
@@ -179,7 +193,32 @@ func (o *Owned) HistoricalGroup(ctx context.Context, target checkpoint.Checkpoin
 			for k, v := range o.service.options.Metrics.Completed {
 				completed[k] = v
 			}
-			return o.service.ProcessHistoricalEvents(run, events, updateIndexingSeconds)
+			dispatchErr := o.service.ProcessHistoricalEvents(run, events, updateIndexingSeconds)
+			if dispatchErr != nil && refetch != nil {
+				// The source catches within the transaction, restores only completed
+				// metrics, and discards buffered/row predictions before refetching.
+				// Attempt counts and learned profiles intentionally survive.
+				for key := range o.service.options.Metrics.Completed {
+					delete(o.service.options.Metrics.Completed, key)
+				}
+				for key, value := range completed {
+					o.service.options.Metrics.Completed[key] = value
+				}
+				underlying, release, acquireErr := o.database.acquire(run)
+				if acquireErr != nil {
+					return acquireErr
+				}
+				underlying.Cache.Invalidate()
+				underlying.Cache.Clear()
+				release()
+				var invalid *InvalidEventAccessError
+				if errors.As(dispatchErr, &invalid) {
+					if err := refetch(run, events); err != nil {
+						return err
+					}
+				}
+			}
+			return dispatchErr
 		})
 		var uncertain *store.CommitOutcomeUnknownError
 		if e != nil && !errors.As(e, &uncertain) && completed != nil {
@@ -199,7 +238,7 @@ func (o *Owned) HistoricalGroup(ctx context.Context, target checkpoint.Checkpoin
 // single binding covers every setup callback; normal revocation does not cancel
 // pending independent cache/RPC jobs. Detached callback goroutines are forbidden.
 func (o *Owned) boundTransaction(ctx context.Context, run func(func(*store.Writer) (context.Context, func(), error)) error) (err error) {
-	release, err := o.enterWork()
+	release, err := o.enterWork(ctx)
 	if err != nil {
 		return err
 	}
@@ -231,7 +270,7 @@ func (o *Owned) boundTransaction(ctx context.Context, run func(func(*store.Write
 // Checkpoints reads durable business progress under the owner's lifecycle gate.
 // It is the evidence boundary after an ambiguous commit; it does not retry work.
 func (o *Owned) Checkpoints(ctx context.Context) ([]store.CheckpointState, error) {
-	release, err := o.enterWork()
+	release, err := o.enterWork(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +282,7 @@ func (o *Owned) Checkpoints(ctx context.Context) ([]store.CheckpointState, error
 // invalidates reusable row predictions even on an uncertain failure. It does
 // NOT atomically rewind the independent sync domain or reset runner cursors.
 func (o *Owned) RevertBusiness(ctx context.Context, target checkpoint.Checkpoint) error {
-	release, err := o.enterWork()
+	release, err := o.enterWork(ctx)
 	if err != nil {
 		return err
 	}

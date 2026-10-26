@@ -23,6 +23,7 @@ type Context struct {
 	DB        *Database
 }
 type Build struct {
+	FilterSession     *filter.Session
 	Chains            []Object
 	Contracts         []Object
 	EventCallbacks    [][]Object
