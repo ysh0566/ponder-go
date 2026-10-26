@@ -1,0 +1,280 @@
+2026-10-26 16:52:10.739 JST [98] LOG:  starting PostgreSQL 14.24 on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-10-26 16:52:10.739 JST [98] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+2026-10-26 16:52:10.741 JST [99] LOG:  database system was shut down at 2026-10-26 16:52:10 JST
+2026-10-26 16:52:10.744 JST [98] LOG:  database system is ready to accept connections
+2026-10-26 16:52:24.358 JST [253] ERROR:  duplicate key value violates unique constraint "pg_namespace_nspname_index"
+2026-10-26 16:52:24.358 JST [253] DETAIL:  Key (nspname)=(ponder_rpc_cache_1) already exists.
+2026-10-26 16:52:24.358 JST [253] STATEMENT:  CREATE SCHEMA "ponder_rpc_cache_1";
+2026-10-26 16:52:38.438 JST [304] ERROR:  null value in column "balance" of relation "account" violates not-null constraint
+2026-10-26 16:52:38.438 JST [304] DETAIL:  Failing row contains (0x0000000000000000000000000000000000000001, null).
+2026-10-26 16:52:38.438 JST [304] STATEMENT:  insert into "account" ("address", "balance") values ($1, default)
+2026-10-26 16:52:38.467 JST [304] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 16:52:38.467 JST [304] DETAIL:  Key (address)=(0x0000000000000000000000000000000000000000) already exists.
+2026-10-26 16:52:38.467 JST [304] STATEMENT:  insert into "account" ("address", "balance") values ($1, $2)
+2026-10-26 16:52:39.927 JST [310] ERROR:  relation "does_not_exist" does not exist at character 15
+2026-10-26 16:52:39.927 JST [310] STATEMENT:  SELECT * FROM does_not_exist
+2026-10-26 16:52:59.866 JST [415] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 16:52:59.866 JST [415] DETAIL:  Key (address)=(0x0000000000000000000000000000000000000000) already exists.
+2026-10-26 16:52:59.866 JST [415] STATEMENT:  insert into "account" ("address", "balance") values ($1, $2)
+2026-10-26 16:52:59.875 JST [415] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 16:52:59.875 JST [415] DETAIL:  Key (address)=(0x0000000000000000000000000000000000000000) already exists.
+2026-10-26 16:52:59.875 JST [415] CONTEXT:  COPY account, line 1
+2026-10-26 16:52:59.875 JST [415] STATEMENT:  COPY "public"."account" FROM STDIN
+2026-10-26 17:04:45.108 JST [5585] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 17:04:45.108 JST [5585] DETAIL:  Key (id)=(chain1) already exists.
+2026-10-26 17:04:45.108 JST [5585] STATEMENT:  INSERT INTO "ponder_go_m43_b_18e205b6e7a59798"."account" ("id","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0))
+2026-10-26 17:07:58.951 JST [10367] FATAL:  terminating connection due to administrator command
+2026-10-26 17:09:30.747 JST [11548] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 17:09:30.747 JST [11548] DETAIL:  Key (id)=(alice) already exists.
+2026-10-26 17:09:30.747 JST [11548] STATEMENT:  INSERT INTO "ponder_go_m38_adapter_18e205f97a3a5368".account (id,balance) VALUES ('alice',3)
+2026-10-26 17:09:30.837 JST [11549] FATAL:  terminating connection due to administrator command
+2026-10-26 17:09:30.837 JST [11549] STATEMENT:  SELECT pg_terminate_backend(pg_backend_pid())
+2026-10-26 17:14:31.633 JST [14560] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 17:14:31.633 JST [14560] DETAIL:  Key (address)=(0x0000000000000000000000000000000000000000) already exists.
+2026-10-26 17:14:31.633 JST [14560] STATEMENT:  INSERT INTO "ponder_go_typed_18e2063f85e97944"."account" AS t ("address","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0)) RETURNING row_to_json(t)::text AS row
+2026-10-26 17:25:03.130 JST [26418] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:25:28.630 JST [26439] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:26:45.495 JST [27121] ERROR:  business writes require active journal triggers
+2026-10-26 17:26:45.495 JST [27121] CONTEXT:  PL/pgSQL function _ponder_go_guard() line 5 at RAISE
+2026-10-26 17:26:45.495 JST [27121] STATEMENT:  INSERT INTO "ponder_go_actions_18e206ea64edabd2"."account" ("address","balance") VALUES ($1,$2)
+2026-10-26 17:26:45.523 JST [27121] ERROR:  business writes require active journal triggers
+2026-10-26 17:26:45.523 JST [27121] CONTEXT:  PL/pgSQL function _ponder_go_guard() line 5 at RAISE
+2026-10-26 17:26:45.523 JST [27121] STATEMENT:  INSERT INTO "ponder_go_actions_18e206ea64edabd2"."account" ("address","balance") VALUES ($1,$2)
+2026-10-26 17:26:45.524 JST [27121] ERROR:  business writes require an active indexing event
+2026-10-26 17:26:45.524 JST [27121] CONTEXT:  PL/pgSQL function _ponder_go_guard() line 4 at RAISE
+2026-10-26 17:26:45.524 JST [27121] STATEMENT:  INSERT INTO "ponder_go_actions_18e206ea64edabd2"."account" (address,balance) VALUES ($1,$2)
+2026-10-26 17:27:28.614 JST [27452] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:27:28.716 JST [27460] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:27:29.305 JST [27500] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:28:04.279 JST [27813] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 17:28:04.279 JST [27813] DETAIL:  Key (address)=(0x0000000000000000000000000000000000000000) already exists.
+2026-10-26 17:28:04.279 JST [27813] STATEMENT:  INSERT INTO "ponder_go_orm_18e206fcba07f411"."account" ("address","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0))
+2026-10-26 17:28:07.799 JST [27890] ERROR:  new row for relation "rpc_request_results" violates check constraint "reject_late_result"
+2026-10-26 17:28:07.799 JST [27890] DETAIL:  Failing row contains (b145d0175372fd8d894a42000a7457f2, 1, 2, "0xbad").
+2026-10-26 17:28:07.799 JST [27890] STATEMENT:  INSERT INTO "ponder_go_lates_18e206fd8265f203_rpc_1"."rpc_request_results"(chain_id,request_hash,block_number,result) VALUES($1,$2,$3,$4) ON CONFLICT(chain_id,request_hash) DO NOTHING
+2026-10-26 17:28:17.951 JST [27999] FATAL:  terminating connection due to administrator command
+2026-10-26 17:28:18.015 JST [28004] FATAL:  terminating connection due to administrator command
+2026-10-26 17:28:39.399 JST [28266] ERROR:  new row for relation "account" violates check constraint "session_nonnegative"
+2026-10-26 17:28:39.399 JST [28266] DETAIL:  Failing row contains (0x0000000000000000000000000000000000000000, -1).
+2026-10-26 17:28:39.399 JST [28266] STATEMENT:  INSERT INTO "ponder_go_session_18e20704e8617d02"."account" ("address","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0)) ON CONFLICT ("address") DO UPDATE SET "address"=excluded."address","balance"=excluded."balance"
+2026-10-26 17:28:57.963 JST [28430] ERROR:  business writes require active journal triggers
+2026-10-26 17:28:57.963 JST [28430] CONTEXT:  PL/pgSQL function _ponder_go_guard() line 5 at RAISE
+2026-10-26 17:28:57.963 JST [28430] STATEMENT:  UPDATE "ponder_go_life_guard_18e207093747284a"."account" SET "balance"=$1 WHERE "address"=$2
+2026-10-26 17:29:21.144 JST [28610] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:29:21.421 JST [28619] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:29:21.615 JST [28628] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:30:25.449 JST [29352] ERROR:  value "1099511627776" is out of range for type integer
+2026-10-26 17:30:25.449 JST [29352] STATEMENT:  INSERT INTO "ponder_go_orm_18e2071d98b352b3"."batch" ("id","value") VALUES (($1::text)::integer,($2::text)::integer)
+2026-10-26 17:30:27.046 JST [29365] ERROR:  null value in column "balance" of relation "account" violates not-null constraint
+2026-10-26 17:30:27.046 JST [29365] DETAIL:  Failing row contains (0x0000000000000000000000000000000000000000, null).
+2026-10-26 17:30:27.046 JST [29365] STATEMENT:  INSERT INTO "ponder_go_orm_18e2071dfb1815a4"."account" ("address","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0))
+2026-10-26 17:30:28.816 JST [29378] ERROR:  relation "does_not_exist" does not exist at character 15
+2026-10-26 17:30:28.816 JST [29378] STATEMENT:  SELECT * FROM does_not_exist
+2026-10-26 17:30:28.818 JST [29378] ERROR:  null value in column "balance" of relation "account" violates not-null constraint
+2026-10-26 17:30:28.818 JST [29378] DETAIL:  Failing row contains (bad, null).
+2026-10-26 17:30:28.818 JST [29378] STATEMENT:  INSERT INTO account (address) VALUES ('bad')
+2026-10-26 17:30:54.180 JST [29700] ERROR:  null value in column "balance" of relation "account" violates not-null constraint
+2026-10-26 17:30:54.180 JST [29700] DETAIL:  Failing row contains (0x0000000000000000000000000000000000000001, null).
+2026-10-26 17:30:54.180 JST [29700] STATEMENT:  INSERT INTO "ponder_go_orm_18e207244bc99375"."account" AS t ("address","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0)) RETURNING row_to_json(t)::text AS row
+2026-10-26 17:30:54.181 JST [29700] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 17:30:54.181 JST [29700] DETAIL:  Key (address)=(0x0000000000000000000000000000000000000000) already exists.
+2026-10-26 17:30:54.181 JST [29700] STATEMENT:  INSERT INTO "ponder_go_orm_18e207244bc99375"."account" AS t ("address","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0)) RETURNING row_to_json(t)::text AS row
+2026-10-26 17:31:48.153 JST [30431] ERROR:  injected cache rewind failure
+2026-10-26 17:31:48.153 JST [30431] CONTEXT:  PL/pgSQL function ponder_go_protocol_18e20730da430652_rpc_1.reject_rewind() line 1 at RAISE
+2026-10-26 17:31:48.153 JST [30431] STATEMENT:  DELETE FROM "ponder_go_protocol_18e20730da430652_rpc_1"."blocks" WHERE chain_id=$1 AND number>$2
+2026-10-26 17:31:48.365 JST [30433] ERROR:  new row for relation "intervals" violates check constraint "reject_completion"
+2026-10-26 17:31:48.365 JST [30433] DETAIL:  Failing row contains (native:1, 1, {[1,1]}).
+2026-10-26 17:31:48.365 JST [30433] STATEMENT:  INSERT INTO "ponder_go_protocol_18e20730e67730bf_rpc_1"."intervals"(fragment_id,chain_id,blocks) VALUES($1,$2,nummultirange(numrange($3::numeric,$3::numeric,'[]'))) ON CONFLICT(fragment_id) DO UPDATE SET blocks="ponder_go_protocol_18e20730e67730bf_rpc_1"."intervals".blocks + excluded.blocks
+2026-10-26 17:32:03.204 JST [30537] ERROR:  cold rewind fault
+2026-10-26 17:32:03.204 JST [30537] CONTEXT:  PL/pgSQL function ponder_go_cold_18e2073458820b7b_rpc_1.reject_cold() line 1 at RAISE
+2026-10-26 17:32:03.204 JST [30537] STATEMENT:  DELETE FROM "ponder_go_cold_18e2073458820b7b_rpc_1"."blocks" WHERE chain_id=$1 AND number>$2
+2026-10-26 17:32:20.323 JST [30685] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:32:20.444 JST [30693] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:32:35.401 JST [30896] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:32:38.338 JST [31053] ERROR:  relation "ponder_go_async_read_18e2073c87e6ba45_rpc_1.rpc_request_results" does not exist at character 33
+2026-10-26 17:32:38.338 JST [31053] STATEMENT:  SELECT request_hash,result FROM "ponder_go_async_read_18e2073c87e6ba45_rpc_1"."rpc_request_results" WHERE chain_id=$1 AND request_hash IN ($2)
+2026-10-26 17:32:41.683 JST [31144] ERROR:  relation "ponder_go_async_rpc_18e2073d4ed7958b_rpc_1.rpc_request_results" does not exist at character 13
+2026-10-26 17:32:41.683 JST [31144] STATEMENT:  INSERT INTO "ponder_go_async_rpc_18e2073d4ed7958b_rpc_1"."rpc_request_results"(chain_id,request_hash,block_number,result) VALUES($1,$2,$3,$4) ON CONFLICT(chain_id,request_hash) DO NOTHING
+2026-10-26 17:32:43.741 JST [31161] ERROR:  new row for relation "rpc_request_results" violates check constraint "reject_source_result"
+2026-10-26 17:32:43.741 JST [31161] DETAIL:  Failing row contains (9c9ff01cce5a1c9d3a1888acd68f10dd, 1, 2, bad).
+2026-10-26 17:32:43.741 JST [31161] STATEMENT:  INSERT INTO "ponder_go_srcrpc_18e2073dcc36bf66_rpc_1"."rpc_request_results"(chain_id,request_hash,block_number,result) VALUES($1,$2,$3,$4),($5,$6,$7,$8) ON CONFLICT(chain_id,request_hash) DO NOTHING
+2026-10-26 17:35:15.180 JST [34704] ERROR:  division by zero
+2026-10-26 17:35:15.180 JST [34704] STATEMENT:  SELECT 1/0
+2026-10-26 17:35:22.488 JST [34824] ERROR:  business writes require an active indexing event
+2026-10-26 17:35:22.488 JST [34824] CONTEXT:  PL/pgSQL function _ponder_go_guard() line 4 at RAISE
+2026-10-26 17:35:22.488 JST [34824] STATEMENT:  INSERT INTO "ponder_go_sql_18e20762c310dbd9"."account" (id,balance) VALUES ('outside',4)
+2026-10-26 17:35:22.502 JST [34824] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 17:35:22.502 JST [34824] DETAIL:  Key (id)=(kept) already exists.
+2026-10-26 17:35:22.502 JST [34824] STATEMENT:  INSERT INTO account (id,balance) VALUES ('rolled-back',6),('kept',7)
+2026-10-26 17:35:22.532 JST [34824] ERROR:  primary key updates are unsupported
+2026-10-26 17:35:22.532 JST [34824] CONTEXT:  PL/pgSQL function _ponder_go_capture() line 22 at RAISE
+2026-10-26 17:35:22.532 JST [34824] STATEMENT:  UPDATE account SET id='changed' WHERE id='kept'
+2026-10-26 17:35:22.539 JST [34824] ERROR:  new row for relation "_ponder_go_journal" violates check constraint "injected_journal_failure"
+2026-10-26 17:35:22.539 JST [34824] DETAIL:  Failing row contains (12, account, {"id": "not-committed"}, null, {"id":"not-committed","balance":4,"note":null}, 0, 0000000005000000000000000100000000000000050000000000000000500000..., 1).
+2026-10-26 17:35:22.539 JST [34824] CONTEXT:  SQL statement "INSERT INTO "ponder_go_sql_18e20762c310dbd9"."_ponder_go_journal" (table_name,row_key,before_row,row_data,operation,checkpoint,chain_id)
+	 VALUES (TG_TABLE_NAME,row_key_value,CASE WHEN TG_OP='INSERT' THEN NULL ELSE row_to_json(OLD) END,CASE WHEN TG_OP='INSERT' THEN row_to_json(NEW) ELSE row_to_json(OLD) END,CASE WHEN TG_OP='INSERT' THEN 0 WHEN TG_OP='UPDATE' THEN 1 ELSE 2 END,checkpoint_value,chain_value::numeric)"
+	PL/pgSQL function _ponder_go_capture() line 26 at SQL statement
+2026-10-26 17:35:22.539 JST [34824] STATEMENT:  INSERT INTO "ponder_go_sql_18e20762c310dbd9"."account" ("balance","id") VALUES ($1,$2)
+2026-10-26 17:35:25.774 JST [34850] ERROR:  relation "does_not_exist" does not exist at character 15
+2026-10-26 17:35:25.774 JST [34850] STATEMENT:  SELECT * FROM does_not_exist
+2026-10-26 17:35:29.541 JST [34937] ERROR:  cannot execute DELETE in a read-only transaction
+2026-10-26 17:35:29.541 JST [34937] STATEMENT:  DELETE FROM account
+2026-10-26 17:35:48.815 JST [35112] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:35:48.915 JST [35120] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:35:49.012 JST [35128] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:35:59.912 JST [35291] ERROR:  schema "ponder_go_sync_bound_18e2076b7c25a454_rpc_1" already exists
+2026-10-26 17:35:59.912 JST [35291] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2076b7c25a454_rpc_1";
+	
+2026-10-26 17:35:59.913 JST [35293] ERROR:  schema "ponder_go_sync_bound_18e2076b7c25a454_rpc_1" already exists
+2026-10-26 17:35:59.913 JST [35293] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2076b7c25a454_rpc_1";
+	
+2026-10-26 17:35:59.914 JST [35298] ERROR:  schema "ponder_go_sync_bound_18e2076b7c25a454_rpc_1" already exists
+2026-10-26 17:35:59.914 JST [35298] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2076b7c25a454_rpc_1";
+	
+2026-10-26 17:35:59.915 JST [35294] ERROR:  schema "ponder_go_sync_bound_18e2076b7c25a454_rpc_1" already exists
+2026-10-26 17:35:59.915 JST [35294] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2076b7c25a454_rpc_1";
+	
+2026-10-26 17:35:59.917 JST [35295] ERROR:  schema "ponder_go_sync_bound_18e2076b7c25a454_rpc_1" already exists
+2026-10-26 17:35:59.917 JST [35295] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2076b7c25a454_rpc_1";
+	
+2026-10-26 17:35:59.918 JST [35297] ERROR:  schema "ponder_go_sync_bound_18e2076b7c25a454_rpc_1" already exists
+2026-10-26 17:35:59.918 JST [35297] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2076b7c25a454_rpc_1";
+	
+2026-10-26 17:35:59.919 JST [35296] ERROR:  schema "ponder_go_sync_bound_18e2076b7c25a454_rpc_1" already exists
+2026-10-26 17:35:59.919 JST [35296] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2076b7c25a454_rpc_1";
+	
+2026-10-26 17:36:09.868 JST [35390] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:36:20.618 JST [35492] ERROR:  schema "ponder_go_sync_18e207704e68cf6e_rpc_1" already exists
+2026-10-26 17:36:20.618 JST [35492] STATEMENT:  CREATE SCHEMA "ponder_go_sync_18e207704e68cf6e_rpc_1";
+	
+2026-10-26 17:39:27.726 JST [39700] FATAL:  terminating connection due to administrator command
+2026-10-26 17:41:28.130 JST [40887] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 17:41:28.130 JST [40887] DETAIL:  Key (id)=(alice) already exists.
+2026-10-26 17:41:28.130 JST [40887] STATEMENT:  INSERT INTO "ponder_go_m38_adapter_18e207b7e51bbc9b".account (id,balance) VALUES ('alice',3)
+2026-10-26 17:41:28.232 JST [40888] FATAL:  terminating connection due to administrator command
+2026-10-26 17:41:28.232 JST [40888] STATEMENT:  SELECT pg_terminate_backend(pg_backend_pid())
+2026-10-26 17:47:42.654 JST [43944] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 17:47:42.654 JST [43944] DETAIL:  Key (address)=(0x0000000000000000000000000000000000000000) already exists.
+2026-10-26 17:47:42.654 JST [43944] STATEMENT:  INSERT INTO "ponder_go_typed_18e2080f196399d2"."account" AS t ("address","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0)) RETURNING row_to_json(t)::text AS row
+2026-10-26 17:58:52.577 JST [55845] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 17:59:17.954 JST [55867] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:00:48.810 JST [56565] ERROR:  business writes require active journal triggers
+2026-10-26 18:00:48.810 JST [56565] CONTEXT:  PL/pgSQL function _ponder_go_guard() line 5 at RAISE
+2026-10-26 18:00:48.810 JST [56565] STATEMENT:  INSERT INTO "ponder_go_actions_18e208c61dd0128c"."account" ("address","balance") VALUES ($1,$2)
+2026-10-26 18:00:48.899 JST [56565] ERROR:  business writes require active journal triggers
+2026-10-26 18:00:48.899 JST [56565] CONTEXT:  PL/pgSQL function _ponder_go_guard() line 5 at RAISE
+2026-10-26 18:00:48.899 JST [56565] STATEMENT:  INSERT INTO "ponder_go_actions_18e208c61dd0128c"."account" ("address","balance") VALUES ($1,$2)
+2026-10-26 18:00:48.900 JST [56565] ERROR:  business writes require an active indexing event
+2026-10-26 18:00:48.900 JST [56565] CONTEXT:  PL/pgSQL function _ponder_go_guard() line 4 at RAISE
+2026-10-26 18:00:48.900 JST [56565] STATEMENT:  INSERT INTO "ponder_go_actions_18e208c61dd0128c"."account" (address,balance) VALUES ($1,$2)
+2026-10-26 18:01:32.606 JST [56895] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:01:32.775 JST [56903] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:01:33.515 JST [56943] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:02:04.801 JST [57258] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 18:02:04.801 JST [57258] DETAIL:  Key (address)=(0x0000000000000000000000000000000000000000) already exists.
+2026-10-26 18:02:04.801 JST [57258] STATEMENT:  INSERT INTO "ponder_go_orm_18e208d7d486f5f7"."account" ("address","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0))
+2026-10-26 18:02:08.623 JST [57336] ERROR:  new row for relation "rpc_request_results" violates check constraint "reject_late_result"
+2026-10-26 18:02:08.623 JST [57336] DETAIL:  Failing row contains (b145d0175372fd8d894a42000a7457f2, 1, 2, "0xbad").
+2026-10-26 18:02:08.623 JST [57336] STATEMENT:  INSERT INTO "ponder_go_lates_18e208d8a9ca284e_rpc_1"."rpc_request_results"(chain_id,request_hash,block_number,result) VALUES($1,$2,$3,$4) ON CONFLICT(chain_id,request_hash) DO NOTHING
+2026-10-26 18:02:20.922 JST [57446] FATAL:  terminating connection due to administrator command
+2026-10-26 18:02:21.033 JST [57452] FATAL:  terminating connection due to administrator command
+2026-10-26 18:02:44.896 JST [57714] ERROR:  new row for relation "account" violates check constraint "session_nonnegative"
+2026-10-26 18:02:44.896 JST [57714] DETAIL:  Failing row contains (0x0000000000000000000000000000000000000000, -1).
+2026-10-26 18:02:44.896 JST [57714] STATEMENT:  INSERT INTO "ponder_go_session_18e208e1293891d5"."account" ("address","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0)) ON CONFLICT ("address") DO UPDATE SET "address"=excluded."address","balance"=excluded."balance"
+2026-10-26 18:03:04.766 JST [57877] ERROR:  business writes require active journal triggers
+2026-10-26 18:03:04.766 JST [57877] CONTEXT:  PL/pgSQL function _ponder_go_guard() line 5 at RAISE
+2026-10-26 18:03:04.766 JST [57877] STATEMENT:  UPDATE "ponder_go_life_guard_18e208e5c50b1aa1"."account" SET "balance"=$1 WHERE "address"=$2
+2026-10-26 18:03:28.028 JST [58058] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:03:28.269 JST [58067] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:03:28.500 JST [58076] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:04:09.909 JST [58332] ERROR:  canceling statement due to user request
+2026-10-26 18:04:09.909 JST [58332] STATEMENT:  UPDATE "ponder_go_life_18e208f4ba4cc4f0"."_ponder_go_app" SET value=jsonb_set(value,'{heartbeat_at}',to_jsonb($1::bigint)) WHERE key='app' AND lease_token=$2 AND value->>'is_locked'='1' AND (value->>'heartbeat_at')::bigint>$3 RETURNING key
+2026-10-26 18:04:52.571 JST [58803] ERROR:  value "1099511627776" is out of range for type integer
+2026-10-26 18:04:52.571 JST [58803] STATEMENT:  INSERT INTO "ponder_go_orm_18e208fedf0a2136"."batch" ("id","value") VALUES (($1::text)::integer,($2::text)::integer)
+2026-10-26 18:04:54.476 JST [58816] ERROR:  null value in column "balance" of relation "account" violates not-null constraint
+2026-10-26 18:04:54.476 JST [58816] DETAIL:  Failing row contains (0x0000000000000000000000000000000000000000, null).
+2026-10-26 18:04:54.476 JST [58816] STATEMENT:  INSERT INTO "ponder_go_orm_18e208ff56b54879"."account" ("address","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0))
+2026-10-26 18:04:56.181 JST [58829] ERROR:  relation "does_not_exist" does not exist at character 15
+2026-10-26 18:04:56.181 JST [58829] STATEMENT:  SELECT * FROM does_not_exist
+2026-10-26 18:04:56.183 JST [58829] ERROR:  null value in column "balance" of relation "account" violates not-null constraint
+2026-10-26 18:04:56.183 JST [58829] DETAIL:  Failing row contains (bad, null).
+2026-10-26 18:04:56.183 JST [58829] STATEMENT:  INSERT INTO account (address) VALUES ('bad')
+2026-10-26 18:05:25.049 JST [59150] ERROR:  null value in column "balance" of relation "account" violates not-null constraint
+2026-10-26 18:05:25.049 JST [59150] DETAIL:  Failing row contains (0x0000000000000000000000000000000000000001, null).
+2026-10-26 18:05:25.049 JST [59150] STATEMENT:  INSERT INTO "ponder_go_orm_18e2090673d2d6f7"."account" AS t ("address","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0)) RETURNING row_to_json(t)::text AS row
+2026-10-26 18:05:25.052 JST [59150] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 18:05:25.052 JST [59150] DETAIL:  Key (address)=(0x0000000000000000000000000000000000000000) already exists.
+2026-10-26 18:05:25.052 JST [59150] STATEMENT:  INSERT INTO "ponder_go_orm_18e2090673d2d6f7"."account" AS t ("address","balance") VALUES (($1::text)::text,($2::text)::numeric(78,0)) RETURNING row_to_json(t)::text AS row
+2026-10-26 18:06:26.941 JST [59884] ERROR:  injected cache rewind failure
+2026-10-26 18:06:26.941 JST [59884] CONTEXT:  PL/pgSQL function ponder_go_protocol_18e20914d860c705_rpc_1.reject_rewind() line 1 at RAISE
+2026-10-26 18:06:26.941 JST [59884] STATEMENT:  DELETE FROM "ponder_go_protocol_18e20914d860c705_rpc_1"."blocks" WHERE chain_id=$1 AND number>$2
+2026-10-26 18:06:27.252 JST [59886] ERROR:  new row for relation "intervals" violates check constraint "reject_completion"
+2026-10-26 18:06:27.252 JST [59886] DETAIL:  Failing row contains (native:1, 1, {[1,1]}).
+2026-10-26 18:06:27.252 JST [59886] STATEMENT:  INSERT INTO "ponder_go_protocol_18e20914eb855e72_rpc_1"."intervals"(fragment_id,chain_id,blocks) VALUES($1,$2,nummultirange(numrange($3::numeric,$3::numeric,'[]'))) ON CONFLICT(fragment_id) DO UPDATE SET blocks="ponder_go_protocol_18e20914eb855e72_rpc_1"."intervals".blocks + excluded.blocks
+2026-10-26 18:06:43.713 JST [59991] ERROR:  cold rewind fault
+2026-10-26 18:06:43.713 JST [59991] CONTEXT:  PL/pgSQL function ponder_go_cold_18e20918ac78c2e6_rpc_1.reject_cold() line 1 at RAISE
+2026-10-26 18:06:43.713 JST [59991] STATEMENT:  DELETE FROM "ponder_go_cold_18e20918ac78c2e6_rpc_1"."blocks" WHERE chain_id=$1 AND number>$2
+2026-10-26 18:07:09.083 JST [60138] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:07:09.268 JST [60146] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:07:27.209 JST [60347] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:07:32.987 JST [60508] ERROR:  relation "ponder_go_async_read_18e2092437852b96_rpc_1.rpc_request_results" does not exist at character 33
+2026-10-26 18:07:32.987 JST [60508] STATEMENT:  SELECT request_hash,result FROM "ponder_go_async_read_18e2092437852b96_rpc_1"."rpc_request_results" WHERE chain_id=$1 AND request_hash IN ($2)
+2026-10-26 18:07:38.257 JST [60598] ERROR:  relation "ponder_go_async_rpc_18e2092570111a2b_rpc_1.rpc_request_results" does not exist at character 13
+2026-10-26 18:07:38.257 JST [60598] STATEMENT:  INSERT INTO "ponder_go_async_rpc_18e2092570111a2b_rpc_1"."rpc_request_results"(chain_id,request_hash,block_number,result) VALUES($1,$2,$3,$4) ON CONFLICT(chain_id,request_hash) DO NOTHING
+2026-10-26 18:07:40.246 JST [60615] ERROR:  new row for relation "rpc_request_results" violates check constraint "reject_source_result"
+2026-10-26 18:07:40.246 JST [60615] DETAIL:  Failing row contains (9c9ff01cce5a1c9d3a1888acd68f10dd, 1, 2, bad).
+2026-10-26 18:07:40.246 JST [60615] STATEMENT:  INSERT INTO "ponder_go_srcrpc_18e20925ed0c450b_rpc_1"."rpc_request_results"(chain_id,request_hash,block_number,result) VALUES($1,$2,$3,$4),($5,$6,$7,$8) ON CONFLICT(chain_id,request_hash) DO NOTHING
+2026-10-26 18:10:37.906 JST [64162] ERROR:  division by zero
+2026-10-26 18:10:37.906 JST [64162] STATEMENT:  SELECT 1/0
+2026-10-26 18:10:47.952 JST [64281] ERROR:  business writes require an active indexing event
+2026-10-26 18:10:47.952 JST [64281] CONTEXT:  PL/pgSQL function _ponder_go_guard() line 4 at RAISE
+2026-10-26 18:10:47.952 JST [64281] STATEMENT:  INSERT INTO "ponder_go_sql_18e20951a1f4f7ea"."account" (id,balance) VALUES ('outside',4)
+2026-10-26 18:10:47.964 JST [64281] ERROR:  duplicate key value violates unique constraint "account_pkey"
+2026-10-26 18:10:47.964 JST [64281] DETAIL:  Key (id)=(kept) already exists.
+2026-10-26 18:10:47.964 JST [64281] STATEMENT:  INSERT INTO account (id,balance) VALUES ('rolled-back',6),('kept',7)
+2026-10-26 18:10:47.990 JST [64281] ERROR:  primary key updates are unsupported
+2026-10-26 18:10:47.990 JST [64281] CONTEXT:  PL/pgSQL function _ponder_go_capture() line 22 at RAISE
+2026-10-26 18:10:47.990 JST [64281] STATEMENT:  UPDATE account SET id='changed' WHERE id='kept'
+2026-10-26 18:10:47.996 JST [64281] ERROR:  new row for relation "_ponder_go_journal" violates check constraint "injected_journal_failure"
+2026-10-26 18:10:47.996 JST [64281] DETAIL:  Failing row contains (12, account, {"id": "not-committed"}, null, {"id":"not-committed","balance":4,"note":null}, 0, 0000000005000000000000000100000000000000050000000000000000500000..., 1).
+2026-10-26 18:10:47.996 JST [64281] CONTEXT:  SQL statement "INSERT INTO "ponder_go_sql_18e20951a1f4f7ea"."_ponder_go_journal" (table_name,row_key,before_row,row_data,operation,checkpoint,chain_id)
+	 VALUES (TG_TABLE_NAME,row_key_value,CASE WHEN TG_OP='INSERT' THEN NULL ELSE row_to_json(OLD) END,CASE WHEN TG_OP='INSERT' THEN row_to_json(NEW) ELSE row_to_json(OLD) END,CASE WHEN TG_OP='INSERT' THEN 0 WHEN TG_OP='UPDATE' THEN 1 ELSE 2 END,checkpoint_value,chain_value::numeric)"
+	PL/pgSQL function _ponder_go_capture() line 26 at SQL statement
+2026-10-26 18:10:47.996 JST [64281] STATEMENT:  INSERT INTO "ponder_go_sql_18e20951a1f4f7ea"."account" ("balance","id") VALUES ($1,$2)
+2026-10-26 18:10:51.099 JST [64307] ERROR:  relation "does_not_exist" does not exist at character 15
+2026-10-26 18:10:51.099 JST [64307] STATEMENT:  SELECT * FROM does_not_exist
+2026-10-26 18:10:55.760 JST [64396] ERROR:  cannot execute DELETE in a read-only transaction
+2026-10-26 18:10:55.760 JST [64396] STATEMENT:  DELETE FROM account
+2026-10-26 18:11:16.412 JST [64573] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:11:16.571 JST [64581] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:11:16.767 JST [64589] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:11:29.244 JST [64758] ERROR:  schema "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1" already exists
+2026-10-26 18:11:29.244 JST [64758] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1";
+	
+2026-10-26 18:11:29.249 JST [64753] ERROR:  schema "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1" already exists
+2026-10-26 18:11:29.249 JST [64753] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1";
+	
+2026-10-26 18:11:29.251 JST [64752] ERROR:  schema "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1" already exists
+2026-10-26 18:11:29.251 JST [64752] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1";
+	
+2026-10-26 18:11:29.255 JST [64757] ERROR:  schema "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1" already exists
+2026-10-26 18:11:29.255 JST [64757] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1";
+	
+2026-10-26 18:11:29.257 JST [64755] ERROR:  schema "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1" already exists
+2026-10-26 18:11:29.257 JST [64755] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1";
+	
+2026-10-26 18:11:29.259 JST [64756] ERROR:  schema "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1" already exists
+2026-10-26 18:11:29.259 JST [64756] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1";
+	
+2026-10-26 18:11:29.262 JST [64754] ERROR:  schema "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1" already exists
+2026-10-26 18:11:29.262 JST [64754] STATEMENT:  CREATE SCHEMA "ponder_go_sync_bound_18e2095b4225d9f7_rpc_1";
+	
+2026-10-26 18:11:40.306 JST [64851] LOG:  unexpected EOF on client connection with an open transaction
+2026-10-26 18:11:53.719 JST [64952] ERROR:  schema "ponder_go_sync_18e20960f4962834_rpc_1" already exists
+2026-10-26 18:11:53.719 JST [64952] STATEMENT:  CREATE SCHEMA "ponder_go_sync_18e20960f4962834_rpc_1";
+	
+2026-10-26 18:15:58.968 JST [98] LOG:  received fast shutdown request
+2026-10-26 18:15:58.969 JST [98] LOG:  aborting any active transactions
+2026-10-26 18:15:58.974 JST [98] LOG:  background worker "logical replication launcher" (PID 105) exited with exit code 1
+2026-10-26 18:15:59.529 JST [100] LOG:  shutting down
+2026-10-26 18:15:59.596 JST [98] LOG:  database system is shut down

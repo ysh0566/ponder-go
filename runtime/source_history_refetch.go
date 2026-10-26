@@ -20,11 +20,13 @@ type SourceHistoryEventStore interface {
 }
 
 type SourceHistoryRefetchOptions struct {
+	FilterSession  *filter.Session
 	Chain          protocol.Object
 	EventCallbacks []protocol.Object
 	Children       *SourceHistoricalChildren
 	Events         []protocol.Object
 	Store          SourceHistoryEventStore
+	PersistenceContext context.Context
 }
 
 // RefetchLocalSourceEvents mirrors refetchLocalEvents: query all callback
@@ -34,6 +36,9 @@ type SourceHistoryRefetchOptions struct {
 func RefetchLocalSourceEvents(ctx context.Context, o SourceHistoryRefetchOptions) ([]protocol.RawEvent, error) {
 	if o.Store == nil || o.Children == nil {
 		return nil, fmt.Errorf("source historical refetch store and children required")
+	}
+	if err := sourceValidateHistoricalPersistence(ctx, o.Store, o.PersistenceContext); err != nil {
+		return nil, err
 	}
 	if len(o.Events) == 0 {
 		return nil, fmt.Errorf("source historical refetch requires at least one event")
@@ -71,14 +76,19 @@ func RefetchLocalSourceEvents(ctx context.Context, o SourceHistoryRefetchOptions
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
-		data, err := o.Store.GetEventData(ctx, store.SourceEventDataArgs{Filters: filters, FromBlock: cursor, ToBlock: end, ChainID: chainID, Limit: len(o.Events)})
+		var data store.SourceEventData
+		err := sourceWithHistoricalPersistence(ctx, o.Store, o.PersistenceContext, func(ioCtx context.Context, _ context.Context) error {
+			var queryErr error
+			data, queryErr = o.Store.GetEventData(ioCtx, store.SourceEventDataArgs{FilterSession: o.FilterSession, Filters: filters, FromBlock: cursor, ToBlock: end, ChainID: chainID, Limit: len(o.Events)})
+			return queryErr
+		})
 		if err != nil {
 			return nil, err
 		}
 		if math.IsNaN(data.Cursor) || math.IsInf(data.Cursor, 0) || data.Cursor < cursor {
 			return nil, fmt.Errorf("source historical refetch cursor did not advance")
 		}
-		raw, err := sourceLocalBuild(SourceLocalHistoricalOptions{ChainID: chainID, EventCallbacks: o.EventCallbacks, Children: o.Children}, data)
+		raw, err := sourceLocalBuild(SourceLocalHistoricalOptions{FilterSession: o.FilterSession, ChainID: chainID, EventCallbacks: o.EventCallbacks, Children: o.Children}, data)
 		if err != nil {
 			return nil, err
 		}
@@ -128,7 +138,7 @@ func RefetchHistoricalSourceEvents(ctx context.Context, chains []SourceHistorica
 		if len(chainEvents) == 0 {
 			continue
 		}
-		raw, err := RefetchLocalSourceEvents(ctx, SourceHistoryRefetchOptions{Chain: chain.Chain, EventCallbacks: chain.Local.EventCallbacks, Children: chain.Local.Children, Events: chainEvents, Store: syncStore})
+		raw, err := RefetchLocalSourceEvents(ctx, SourceHistoryRefetchOptions{FilterSession: chain.Local.FilterSession, Chain: chain.Chain, EventCallbacks: chain.Local.EventCallbacks, Children: chain.Local.Children, Events: chainEvents, Store: syncStore, PersistenceContext: chain.Local.PersistenceContext})
 		if err != nil {
 			return nil, err
 		}
@@ -137,7 +147,7 @@ func RefetchHistoricalSourceEvents(ctx context.Context, chains []SourceHistorica
 			// undefined, and decodeEvents then rejects it as non-iterable.
 			return nil, fmt.Errorf("source historical refetch raw events are undefined")
 		}
-		decoded, err := decoder.DecodeEvents(chain.Chain, chain.Local.EventCallbacks, raw)
+		decoded, err := sourceHistoryDecodeSession(chain.Chain, chain.Local.EventCallbacks, chain.Local.FilterSession, decoder, raw)
 		if err != nil {
 			return nil, err
 		}

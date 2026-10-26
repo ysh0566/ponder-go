@@ -454,8 +454,16 @@ func DecodeEventLog(event Event, topics []string, data string) (any, error) {
 		return args, nil
 	}
 	out := map[string]any{}
-	for i, p := range event.Inputs {
-		out[p.Name] = args[i]
+	// Source decodeEventLog writes indexed topics first, then non-indexed data.
+	// With duplicate names, a non-indexed value wins even when its parameter
+	// appeared earlier in the ABI declaration. Go maps do not retain insertion
+	// order; events.ProfileFieldOrder recovers that separate profiling metadata.
+	for _, indexed := range []bool{true, false} {
+		for i, p := range event.Inputs {
+			if p.Indexed == indexed {
+				out[p.Name] = args[i]
+			}
+		}
 	}
 	return out, nil
 }

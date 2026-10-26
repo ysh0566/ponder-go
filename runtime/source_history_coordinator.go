@@ -14,6 +14,7 @@ import (
 	"ponder.local/ponder-go/filter"
 	"ponder.local/ponder-go/finality"
 	"ponder.local/ponder-go/rpc"
+	"ponder.local/ponder-go/store"
 )
 
 // SourceHistoricalChain binds the actual source chain object to its local sync
@@ -37,7 +38,9 @@ type SourceCrashRecoveryCheckpoint struct {
 // not the outer indexing transaction/realtime coordinator. Chains retains the
 // perChainSync insertion order. BuildChains optionally retains a distinct
 // indexingBuild order for finality refresh and query sizing.
-// The iterator owns all chain progress/maps until it completes or stop returns.
+// The iterator owns chain progress until it completes or stop returns. Callback
+// configuration is immutable; concurrent learned filter includes use the shared
+// Local.FilterSession on extraction, refetch and the indexing service.
 // Clock is the source Date.now boundary; nil uses time.Now.
 type SourceHistoricalCoordinatorOptions struct {
 	Chains        []SourceHistoricalChain
@@ -68,7 +71,7 @@ func sourceHistoryBuild(o SourceHistoricalCoordinatorOptions) []SourceHistorical
 func sourceHistoryChainID(c SourceHistoricalChain) (uint64, error) {
 	return sourceEventChainID(protocol.Object{"chain": c.Chain})
 }
-func sourceHistoryValidate(o SourceHistoricalCoordinatorOptions) error {
+func sourceHistoryValidate(ctx context.Context, o SourceHistoricalCoordinatorOptions) error {
 	seen := map[uint64]bool{}
 	for _, c := range o.Chains {
 		id, e := sourceHistoryChainID(c)
@@ -84,6 +87,9 @@ func sourceHistoryValidate(o SourceHistoricalCoordinatorOptions) error {
 		}
 		if c.Local.Children == nil {
 			return fmt.Errorf("historical child-address state required")
+		}
+		if err := sourceValidateHistoricalPersistence(ctx, c.Local.Store, c.Local.PersistenceContext); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -135,7 +141,12 @@ func sourceHistoryFrom(ctx context.Context, c SourceHistoricalChain, crash strin
 	if sourceLocalStoreMissing(c.Local.Store) {
 		return "", fmt.Errorf("historical recovery store required")
 	}
-	b, e := c.Local.Store.GetSafeCrashRecoveryBlock(ctx, id, int64(cp.BlockTimestamp))
+	var b *store.SourceRecoveryBlock
+	e = sourceWithHistoricalPersistence(ctx, c.Local.Store, c.Local.PersistenceContext, func(ioCtx context.Context, _ context.Context) error {
+		var queryErr error
+		b, queryErr = c.Local.Store.GetSafeCrashRecoveryBlock(ioCtx, id, int64(cp.BlockTimestamp))
+		return queryErr
+	})
 	if e != nil {
 		return "", e
 	}
@@ -164,7 +175,7 @@ func sourceHistoryLocal(o SourceHistoricalCoordinatorOptions, c SourceHistorical
 }
 func sourceHistoryDecode(c SourceHistoricalChain, raw []protocol.RawEvent) ([]protocol.Object, error) {
 	decoder := protocol.Decoder{}
-	return decoder.DecodeEvents(c.Chain, c.Local.EventCallbacks, raw)
+	return sourceHistoryDecodeSession(c.Chain, c.Local.EventCallbacks, c.Local.FilterSession, &decoder, raw)
 }
 func sourceHistoryRaw(ctx context.Context, c SourceHistoricalChain, local SourceLocalHistoricalOptions) iter.Seq2[*SourceRawEventBatch, error] {
 	if c.CacheRPCRequests {
@@ -444,7 +455,7 @@ func sourceHistoryRefresh(ctx context.Context, o SourceHistoricalCoordinatorOpti
 func HistoricalSourceMultichain(ctx context.Context, o SourceHistoricalCoordinatorOptions) iter.Seq2[SourceEventGroup, error] {
 	return func(yield func(SourceEventGroup, error) bool) {
 		fail := func(e error) { yield(SourceEventGroup{}, e) }
-		if e := sourceHistoryValidate(o); e != nil {
+		if e := sourceHistoryValidate(ctx, o); e != nil {
 			fail(e)
 			return
 		}
@@ -550,7 +561,7 @@ func HistoricalSourceMultichain(ctx context.Context, o SourceHistoricalCoordinat
 func HistoricalSourceIsolated(ctx context.Context, o SourceHistoricalCoordinatorOptions, chainID uint64) iter.Seq2[SourceEventGroup, error] {
 	return func(yield func(SourceEventGroup, error) bool) {
 		fail := func(e error) { yield(SourceEventGroup{}, e) }
-		if e := sourceHistoryValidate(o); e != nil {
+		if e := sourceHistoryValidate(ctx, o); e != nil {
 			fail(e)
 			return
 		}
@@ -635,7 +646,7 @@ func HistoricalSourceIsolated(ctx context.Context, o SourceHistoricalCoordinator
 func HistoricalSourceOmnichain(ctx context.Context, o SourceHistoricalCoordinatorOptions) iter.Seq2[SourceHistoricalOutput, error] {
 	return func(yield func(SourceHistoricalOutput, error) bool) {
 		fail := func(e error) { yield(SourceHistoricalOutput{}, e) }
-		if e := sourceHistoryValidate(o); e != nil {
+		if e := sourceHistoryValidate(ctx, o); e != nil {
 			fail(e)
 			return
 		}

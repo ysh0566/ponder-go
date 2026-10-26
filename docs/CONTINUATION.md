@@ -3,6 +3,21 @@
 任务没有完成。先读 `AGENTS.md`、本文件、`parity/runs/summary.json`、`parity/test-ledger.json` 和 `parity/feature-ledger.json`。不要把新增集成测试或差分向量算成上游逐例移植。
 
 
+## 当前执行入口：M43 有限历史功能本地验收通过，尚未发布（2026-10-26）
+
+`parity/runs/finite-historical-m43/rebuild-full-05/result.json` 的 73 个阶段全部通过；14 个显式 canonical collectors 和 summary 均退出 0。`parity/runs/summary.json` 记录 normal/race 各 3,356 个叶用例通过、0 fail/skip，每模式 98 个串行批次、24 个包。正式覆盖保持 543/905（539 Go + 4 SDK），362 未实现；M43 新增原例、断言和类型 credit 均为 0。
+
+生命周期修复把内部停止调度与已接纳 SQL/cache I/O 的生命周期分开：普通完成、handler 错误和提交边界错误须排空既有工作，不能自行取消 owner；真实 caller 取消、deadline 和 Owner.Close 仍有效。真实失效 PostgreSQL 连接仍 fail-closed，必须 close/reopen，不自动重连或盲目重放。范围仅为有限、已 finalized 的多链历史 runner，不包含 ready、realtime cutover 或完整运行时。
+
+原 `rebuild-full-05-launch/result.json` **仍为失败**：73 阶段、collector 和 summary 成功之后，最终输入不变性检查把 summary 派生的 `parity/test-ledger.json` 更新判为未声明输出。不能改写原结果为成功。独立的确定性重放与纠正收尾证明已完成并经独立复核接受，见 `parity/runs/finite-historical-m43/rebuild-full-05-closeout/result.json`。本地验收组合接受功能结果与这份单独纠正证明，保留原失败记录及冻结输入，不宣称原外层成功。
+
+当前接受上述本地功能结果及独立纠正收尾证明，尚未发布 M43。最新已发布基线仍是 M42 `ef93f2b567b1f0914dd5ce44d436a00f63abf688`。后续先完成发布证据审计，再继续未实现范围；不得以本批通过宣称整体移植完成。下方旧“当前执行入口”均为历史检查点，不代表新的发布或等待状态。
+
+## 历史记录：M43 重新执行完整验收前的状态（已由上方当前状态取代）
+
+已发布 M42 `ef93f2b567b1f0914dd5ce44d436a00f63abf688` 已重新 clone 核验。旧 M43 未推代码、完整本地证据和 PG 卷不可访问，未做旧库清理；新卷容量不是清理成果。旧 M43 完整工作树与原完整本地验收证据未恢复；这是基于已发布基线的新整合与重新实现，不声称原 WIP 的完整字节连续性。当前在本地 `work/m43-rebuild-20261026` 新整合与补写回归，旧日志片段不充新 proof。543/905、362 pending 和零新增 credit 不变；见 `M43_RECOVERY.md`。
+
+替代环境使用独立工具配置与缓存，不冒充已丢失的旧环境。pure 24 项 normal/race 和修复后的 focused02 九阶段通过，但不是完整验收。full01 在历史 validator 的 live fallback 缺口失败，已经用固定 M42 原字节闭包修复；full02 在 Go 发现了非执行诊断备份包时失败，不能声称全包通过。原文件字节保留为 `.go.txt`；重新完整执行前必须核 24 包全集与实际 Go 源文件的冻结覆盖。full03 仍须新跑 73 stages + 14 collectors + summary，不复用 focused 或失败 run 为全量成功。只用 fresh PG、同 execution namespace 的启动/SHOW 身份/stop/join，以及 5 GiB floor；原版输入、断言和 timeout 不改不 skip。未经完整验收及明确发布授权不推送。以下已发布历史段落保持原样，不覆盖此当前状态。
 
 ## 当前执行入口：M42 多链原子 setup / historical group 完整验收通过，待父级发布复核
 
@@ -288,7 +303,7 @@ M16完整verify退出0：Go/race479/479，PG141/PGlite138分别通过，无skip�
 ## 验证与台账更新
 
 ```sh
-export PONDER_TEST_POSTGRES='postgres://ponder:ponder-local-test@127.0.0.1:53398/ponder_test?sslmode=disable'
+export PONDER_TEST_POSTGRES='postgres://ponder:<redacted-local-fixture-password>@127.0.0.1:53398/ponder_test?sslmode=disable'
 ./tools/verify.sh
 ```
 

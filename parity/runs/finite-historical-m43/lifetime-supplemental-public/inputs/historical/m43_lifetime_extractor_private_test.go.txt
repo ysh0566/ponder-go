@@ -1,0 +1,168 @@
+package historical
+
+// PRIVATE BASELINE DIAGNOSTIC. New test only; no original parity credit.
+// Unapplied, uncompiled, unrun until explicitly executed by the fixture owner.
+import (
+ "context"
+ "database/sql"
+ "encoding/json"
+ "errors"
+ "fmt"
+ "os"
+ "reflect"
+ "runtime"
+ "strings"
+ "sync/atomic"
+ "testing"
+ "time"
+
+ "ponder.local/ponder-go/checkpoint"
+ "ponder.local/ponder-go/filter"
+ "ponder.local/ponder-go/indexing"
+ "ponder.local/ponder-go/schema"
+ "ponder.local/ponder-go/store"
+)
+
+type m43ExtractRead struct { Context context.Context; From float64; Chain uint64 }
+func m43ObserveBlockedSelect(ctx context.Context,db *sql.DB,syncPID,lockPID int,table string)(map[string]any,error){
+ polls:=0
+ for{polls++;var state,waitType,wait,query string;var blocked bool
+  err:=db.QueryRowContext(ctx,`SELECT state,coalesce(wait_event_type,''),coalesce(wait_event,''),query,$2=ANY(pg_blocking_pids(pid)) FROM pg_stat_activity WHERE pid=$1`,syncPID,lockPID).Scan(&state,&waitType,&wait,&query,&blocked)
+  if err!=nil{return nil,err}
+  if blocked&&waitType=="Lock"&&strings.HasPrefix(strings.ToLower(query),"select ")&&strings.Contains(query," from "+table+" "){return map[string]any{"sync_pid":syncPID,"blocker_pid":lockPID,"state":state,"wait_event_type":waitType,"wait_event":wait,"query":query,"polls":polls},nil}
+  if err=ctx.Err();err!=nil{return nil,fmt.Errorf("actual blocked extraction SELECT not observed: %w",err)};runtime.Gosched()
+ }
+}
+func m43ActualBlocksTable(ctx context.Context,db *sql.DB,namespace string)(string,error){
+ var schemaName,tableName string
+ err:=db.QueryRowContext(ctx,`SELECT n.nspname,c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='r' AND c.relname='blocks' AND n.nspname=$1||'_rpc_1'`,namespace).Scan(&schemaName,&tableName)
+ if err!=nil{return "",err};return schema.Quote(schemaName)+"."+schema.Quote(tableName),nil
+}
+func TestPrivateM43UnknownBeforeExtractorSQL(t *testing.T){
+ bound,stopBound:=context.WithTimeout(context.Background(),15*time.Second);defer stopBound()
+ caller,cancelCaller:=context.WithCancel(bound);defer cancelCaller()
+ rec:=&m43LifetimeRecorder{};cancelObservers:=&m43CancelObservers{}
+ defer func(){data,e:=json.Marshal(map[string]any{"status":"diagnostic_execution_only_not_original_parity","case":"unknown_before_extractor_sql","trace":rec.snapshot()});if e!=nil{t.Error(e)}else{t.Log(string(data))}}()
+ url,expected:=os.Getenv("PONDER_TEST_POSTGRES"),os.Getenv("PONDER_M43_LIFETIME_EXPECT_PGDATA")
+ if url==""||expected==""{t.Fatal("explicit fresh task PG URL and expected data_directory required; no skip")}
+ control,e:=sql.Open("pgx",url);if e!=nil{t.Fatal(e)};defer control.Close();control.SetMaxOpenConns(4)
+ var actual string;if e=control.QueryRowContext(bound,"SHOW data_directory").Scan(&actual);e!=nil||actual!=expected{t.Fatalf("task PG identity actual=%q expected=%q error=%v",actual,expected,e)}
+ rec.note("task-pg-identity",map[string]any{"data_directory":actual},nil)
+ const end=20
+ p:=newFiniteRPC(t,end)
+ var handlers,setups,groups,retries atomic.Int64
+ h:=indexing.Handler(func(ctx context.Context,a *indexing.HandlerArgs)error{handlers.Add(1);return finiteIncrement(ctx,a)})
+ build:=finiteBuild(t,p,end,true,h,indexing.Handler(func(context.Context,*indexing.HandlerArgs)error{setups.Add(1);return nil}))
+ f:=newFiniteFixture(t,"postgres",build);f.options.QuerySize=2
+ f.options.RetryWait=func(context.Context,time.Duration)error{retries.Add(1);return errors.New("private unexpected unknown retry")}
+ r:=f.start(t)
+ businessPID,businessLocks,e:=m43OwnerPID(bound,control,f.options.Owned.Storage.BusinessNamespace);if e!=nil{t.Fatal(e)}
+ syncPID,syncLocks,e:=m43OwnerPID(bound,control,f.options.Owned.Storage.SyncNamespace);if e!=nil{t.Fatal(e)}
+ if businessPID==0||syncPID==0||businessPID==syncPID||businessLocks!=4||syncLocks!=4{t.Fatal("independent owner identity",businessPID,businessLocks,syncPID,syncLocks)}
+ rec.note("owner-identities",map[string]any{"business_pid":businessPID,"sync_pid":syncPID,"business_locks":businessLocks,"sync_locks":syncLocks},nil)
+ blocksTable,e:=m43ActualBlocksTable(bound,control,f.options.Owned.Storage.SyncNamespace);if e!=nil{t.Fatal(e)}
+ pageGates:=[]chan struct{}{make(chan struct{}),make(chan struct{})};releasePage:=[]func(){m43OneClose(pageGates[0]),m43OneClose(pageGates[1])}
+ pages:=make(chan store.M43LifetimeEvent,2);var pageSeen [2]atomic.Bool
+ var active,armRead,readSeen,sqlSeen,stopSeen atomic.Bool;active.Store(true)
+ var persistedRanges atomic.Uint32;var mergeObserved atomic.Int64
+ nextRead:=make(chan m43ExtractRead,1);nextSQLContext:=make(chan context.Context,1)
+ groupEntered,allowUnknown,iteratorStopped,releaseIterator:=make(chan struct{}),make(chan struct{}),make(chan struct{}),make(chan struct{})
+ releaseUnknown,releaseStop:=m43OneClose(allowUnknown),m43OneClose(releaseIterator)
+ var groupReady atomic.Bool
+ resetObserver:=store.M43LifetimeObserve(func(ev store.M43LifetimeEvent){
+  rec.add(ev);if !active.Load(){return}
+  switch ev.Phase{
+  case "merge-next-started-before-yield":
+   encoded,_:=ev.Fields["checkpoint"].(string);cp,err:=checkpoint.Decode(encoded);if err==nil&&cp.ChainID==1{mergeObserved.Add(1)}
+  case "source-local-range-persisted":
+   chain,ok:=ev.Fields["chain"].(uint64);to,_:=ev.Fields["to"].(float64)
+   if ok&&chain>=1&&chain<=2&&to==end{persistedRanges.Or(uint32(1<<(chain-1)))}
+  case "source-raw-page-ready":
+   chain,ok:=ev.Fields["chain"].(uint64);if !ok||chain<1||chain>2{return}
+   if pageSeen[chain-1].CompareAndSwap(false,true){
+    pages<-ev // Exactly two admitted pages and a two-slot channel; never blocks.
+    select{case<-pageGates[chain-1]:case<-ev.Context.Done():case<-bound.Done():}
+   }
+  case "historical-event-read-admitted":
+   chain,_:=ev.Fields["chain"].(uint64);from,_:=ev.Fields["from"].(float64)
+   if armRead.Load()&&chain==1&&from>1&&readSeen.CompareAndSwap(false,true){
+    nextRead<-m43ExtractRead{ev.Context,from,chain}
+    if err:=cancelObservers.watch(ev.Context,func(){rec.note("extract-read-context-done",map[string]any{"caller_cancelled":caller.Err()!=nil,"error":fmt.Sprint(ev.Context.Err()),"cause":fmt.Sprint(context.Cause(ev.Context))},nil)});err!=nil{rec.note("observer-registration-error",nil,err)}
+   }
+  case "source-event-sql-before":
+   if armRead.Load()&&ev.Fields["table"]=="blocks"&&sqlSeen.CompareAndSwap(false,true){nextSQLContext<-ev.Context}
+  case "multichain-yield-false-after-cancel-before-join":
+   if stopSeen.CompareAndSwap(false,true){close(iteratorStopped);select{case<-releaseIterator:case<-bound.Done():}}
+  }
+ });defer resetObserver()
+ unknown:=&store.CommitOutcomeUnknownError{Err:errors.New("private controlled before-group acknowledgement loss; no disconnect")}
+ var initialState store.HistoricalSnapshot
+ r.transactions=&finiteDelegate{historicalTransactions:r.owner,
+  init:func(ctx context.Context,initial []indexing.InitialChainCheckpoint)error{
+   err:=r.owner.InitializeMultichain(ctx,initial);if err==nil{initialState,err=r.owner.HistoricalSnapshot(ctx)}
+   rec.note("actual-initial-business-state",map[string]any{"snapshot":initialState},err);return err
+  },beforeGroup:func(cp checkpoint.Checkpoint,events []indexing.Object)error{
+   groups.Add(1);rec.note("real-first-group-before-transaction",map[string]any{"checkpoint":checkpoint.MustEncode(cp),"chain":cp.ChainID,"events":len(events)},nil)
+   if groupReady.CompareAndSwap(false,true){close(groupEntered)}
+   select{case<-allowUnknown:case<-caller.Done():return caller.Err()}
+   rec.note("unknown-before-injected",map[string]any{"handlers":handlers.Load(),"setups":setups.Load()},unknown)
+   return unknown
+  }}
+ outcomes:=make(chan m43RunOutcome,1)
+ go func(){result,err:=r.Run(caller);outcomes<-m43RunOutcome{result,err}}()
+ var lockTx *sql.Tx;var lockPID int;var lockReleased bool
+ releaseSQL:=func()error{if lockTx==nil||lockReleased{return nil};lockReleased=true;err:=lockTx.Rollback();rec.note("external-blocks-lock-released",map[string]any{"pid":lockPID},err);return err}
+ defer func(){releasePage[0]();releasePage[1]();releaseUnknown();releaseStop();cancelCaller();_ = releaseSQL();ctx,cancel:=context.WithTimeout(context.Background(),5*time.Second);defer cancel();err:=r.Close(ctx);rec.note("emergency-or-idempotent-close",nil,err);observerErr:=cancelObservers.join(ctx);rec.note("emergency-observers-joined",nil,observerErr);if observerErr!=nil{t.Error(observerErr)}}()
+ first:=map[uint64]store.M43LifetimeEvent{}
+ for len(first)<2{select{case page:=<-pages:chain:=page.Fields["chain"].(uint64);first[chain]=page;case<-bound.Done():t.Fatal("both real first pages did not become ready",bound.Err())}}
+ for chain,page:=range first{
+  encoded,_:=page.Fields["checkpoint"].(string);cp,err:=checkpoint.Decode(encoded);from,_:=page.Fields["from"].(float64);to,_:=page.Fields["to"].(float64)
+  if err!=nil||cp.ChainID!=chain||cp.BlockNumber>=end||from!=1||to>=end||page.Fields["events"]!=7{t.Fatal("actual page does not prove pending second SELECT",chain,page.Fields,cp,err)}
+ }
+ if persistedRanges.Load()!=3{t.Fatal("real final acquisition transactions not observed for both chains",persistedRanges.Load())}
+ lockTx,e=control.BeginTx(bound,nil);if e!=nil{t.Fatal(e)}
+ if e=lockTx.QueryRowContext(bound,"SELECT pg_backend_pid()").Scan(&lockPID);e!=nil{t.Fatal(e)}
+ if _,e=lockTx.ExecContext(bound,"LOCK TABLE "+blocksTable+" IN ACCESS EXCLUSIVE MODE");e!=nil{t.Fatal(e)}
+ rec.note("external-blocks-lock-acquired",map[string]any{"pid":lockPID,"table":blocksTable},nil)
+ armRead.Store(true);releasePage[0]() // Preserve actual Merge next-before-yield; do not synthesize a batch.
+ if e=m43Await(bound,groupEntered,"real-first-group");e!=nil{t.Fatal(e)}
+ if mergeObserved.Load()!=1{t.Fatal("actual Merge did not start exactly the selected next before its first yield",mergeObserved.Load())}
+ var read m43ExtractRead;select{case read=<-nextRead:case<-bound.Done():t.Fatal("real second read not admitted",bound.Err())}
+ var sqlContext context.Context;select{case sqlContext=<-nextSQLContext:case<-bound.Done():t.Fatal("real second SQL not entered",bound.Err())}
+ expectedFrom:=first[1].Fields["to"].(float64)+1
+ if read.Chain!=1||read.From!=expectedFrom||read.Context!=sqlContext{t.Fatal("actual scope/read/SQL identity mismatch",read.Chain,read.From,expectedFrom,read.Context==sqlContext)}
+ blocked,e:=m43ObserveBlockedSelect(bound,control,syncPID,lockPID,blocksTable);rec.note("actual-blocked-extraction-select",blocked,e);if e!=nil{t.Fatal(e)}
+ if handlers.Load()!=0||setups.Load()!=2||groups.Load()!=1{t.Fatal("unexpected pre-injection business prefix",handlers.Load(),setups.Load(),groups.Load())}
+ releaseUnknown()
+ if e=m43Await(bound,iteratorStopped,"real-iterator-cancel-before-join");e!=nil{t.Fatal(e)}
+ cancelledBySoftStop:=sqlContext.Err()!=nil
+ rec.note("after-soft-stop-actual-sql-context",map[string]any{"cancelled":cancelledBySoftStop,"error":fmt.Sprint(sqlContext.Err()),"caller_error":fmt.Sprint(caller.Err()),"owner_close_requested":false},nil)
+ if caller.Err()!=nil{t.Error("diagnostic caller cancelled before causal observation",caller.Err())}
+ if e=releaseSQL();e!=nil{t.Error(e)};releaseStop();releasePage[1]()
+ var outcome m43RunOutcome;select{case outcome=<-outcomes:case<-bound.Done():t.Fatal("Run did not join after real SQL release",bound.Err())}
+ active.Store(false)
+ rec.note("run-returned",map[string]any{"result":outcome.Result,"handlers":handlers.Load(),"setups":setups.Load(),"groups":groups.Load(),"retry_waits":retries.Load()},outcome.Err)
+ inspection,stopInspection:=context.WithTimeout(context.Background(),5*time.Second);defer stopInspection()
+ snapshot,snapshotErr:=r.Owner().HistoricalSnapshot(inspection);balances,balanceErr:=m43ReadBalances(inspection,r)
+ rec.note("same-owner-durable-state",map[string]any{"snapshot":snapshot,"balances":balances},errors.Join(snapshotErr,balanceErr))
+ var intervalCount int
+ reuseErr:=r.Owner().WithHistoricalSync(inspection,0,func(scope context.Context,syncStore *indexing.HistoricalSync)error{
+  f:=r.build.EventCallbacks[0][0]["filter"].(map[string]any)
+  intervals,err:=syncStore.GetIntervals(scope,[]filter.Object{f});if err==nil&&intervals!=nil{intervalCount=intervals.Len()};return err
+ })
+ rec.note("same-owner-real-sync-read",map[string]any{"interval_filter_count":intervalCount},reuseErr)
+ closeErr:=r.Close(inspection);rec.note("strict-close-result",nil,closeErr)
+ released,releaseErr:=m43OwnerReleased(inspection,control,f.options.Owned.Storage.BusinessNamespace,f.options.Owned.Storage.SyncNamespace,businessPID,syncPID);rec.note("owner-locks-and-pids-released",released,releaseErr)
+ observerErr:=cancelObservers.join(inspection);rec.note("cancellation-observers-joined",nil,observerErr)
+ if cancelledBySoftStop{t.Error("ordinary iterator soft-stop cancelled admitted extraction SQL")}
+ if !errors.Is(outcome.Err,unknown)||m43OrdinaryCancellation(outcome.Err)||outcome.Result.Completed||outcome.Result.Resumed||len(outcome.Result.Groups)!=0||handlers.Load()!=0||setups.Load()!=2||groups.Load()!=1||retries.Load()!=0{t.Error("unknown identity/no-retry/business-prefix invariant",outcome.Result,m43ErrorLeaves(outcome.Err),handlers.Load(),setups.Load(),groups.Load(),retries.Load())}
+ if snapshotErr!=nil||balanceErr!=nil||len(balances)!=0||!reflect.DeepEqual(snapshot,initialState){t.Error("unknown-before changed durable business prefix",snapshot,initialState,balances,snapshotErr,balanceErr)}
+ if reuseErr!=nil||intervalCount!=1||closeErr!=nil||releaseErr!=nil||observerErr!=nil{t.Error("ordinary unknown stop damaged owner or did not join",reuseErr,intervalCount,m43ErrorLeaves(closeErr),releaseErr,observerErr)}
+ reopened,openErr:=f.open(inspection,f.options);rec.note("reopen-after-actual-release",nil,openErr);if openErr!=nil{t.Error(openErr);return}
+ reopenedResult,reopenedErr:=reopened.Run(inspection);reopenedBalances,reopenedBalanceErr:=m43ReadBalances(inspection,reopened);reopenedSnapshot,reopenedSnapshotErr:=reopened.Owner().HistoricalSnapshot(inspection)
+ rec.note("reopened-completion",map[string]any{"result":reopenedResult,"balances":reopenedBalances,"snapshot":reopenedSnapshot,"setups":setups.Load(),"handlers":handlers.Load()},errors.Join(reopenedErr,reopenedBalanceErr,reopenedSnapshotErr))
+ finalCloseErr:=reopened.Close(inspection);rec.note("reopened-strict-close",nil,finalCloseErr)
+ if reopenedErr!=nil||reopenedBalanceErr!=nil||reopenedSnapshotErr!=nil||finalCloseErr!=nil||!reopenedResult.Resumed||!reopenedResult.Completed||setups.Load()!=2||handlers.Load()!=40||!reflect.DeepEqual(reopenedBalances,map[string]string{"chain1":"20","chain2":"20"}){t.Error("real reopen did not finish exactly forty events without setup replay",reopenedResult,reopenedBalances,setups.Load(),handlers.Load(),reopenedErr,reopenedBalanceErr,reopenedSnapshotErr,finalCloseErr)}
+ if len(reopenedSnapshot.Chains)!=2{t.Error("reopened chain count",len(reopenedSnapshot.Chains))}
+ for _,chain:=range reopenedSnapshot.Chains{cp,err:=checkpoint.Decode(chain.Cursor);if err!=nil||cp.BlockNumber!=end||chain.Cursor!=chain.LatestCheckpoint||chain.Cursor!=chain.SafeCheckpoint||chain.Cursor!=chain.FinalizedCheckpoint{t.Error("reopened exact checkpoint",chain,err)}}
+}

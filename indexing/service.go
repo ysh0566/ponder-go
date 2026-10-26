@@ -123,18 +123,20 @@ func (s *Service) begin(ctx context.Context) error {
 	return nil
 }
 func (s *Service) resetFilterInclude(name string) {
-	filters := s.filters[name]
-	if len(filters) == 0 {
-		return
-	}
-	kind, _ := filters[0]["type"].(string)
-	receipts, _ := filters[0]["hasTransactionReceipt"].(bool)
-	include := DefaultFilterInclude(kind, receipts)
-	for _, f := range filters {
-		s.resolved[objectID(f)] = false
-		f["include"] = include
-	}
-	s.options.ColumnAccessPattern[name].Count = 0
+	s.options.Build.FilterSession.Update(func() {
+		filters := s.filters[name]
+		if len(filters) == 0 {
+			return
+		}
+		kind, _ := filters[0]["type"].(string)
+		receipts, _ := filters[0]["hasTransactionReceipt"].(bool)
+		include := DefaultFilterInclude(kind, receipts)
+		for _, f := range filters {
+			s.resolved[objectID(f)] = false
+			f["include"] = include
+		}
+		s.options.ColumnAccessPattern[name].Count = 0
+	})
 }
 func (s *Service) setChain(chain Object) error {
 	key, e := clientChainKey(chain)
@@ -353,18 +355,12 @@ func (s *Service) ProcessHistoricalEvents(ctx context.Context, events []Object, 
 		s.options.Clients.SetEvent(event)
 		s.options.Clients.SetEventCounts(s.options.EventCount)
 		chain, _ := event["chain"].(Object)
-		id, e := clientInteger(chain["id"])
+		projected, e := s.profileEvent(event)
 		if e != nil {
 			return e
 		}
-		body, _ := event["event"].(Object)
-		kind, _ := event["type"].(string)
-		var fieldOrder map[string][]string
-		if s.options.FieldOrder != nil {
-			fieldOrder = s.options.FieldOrder(event)
-		}
-		s.options.Clients.SetProfileFieldOrder(fieldOrder)
-		if e = s.options.Database.SetProfileEventContext(ctx, store.ProfileEvent{Callback: name, Count: s.options.EventCount[name], Type: kind, ChainID: id.Uint64(), Data: store.Row(body), FieldOrder: fieldOrder}); e != nil {
+		s.options.Clients.SetProfileFieldOrder(projected.FieldOrder)
+		if e = s.options.Database.SetProfileEventContext(ctx, projected); e != nil {
 			return e
 		}
 		view, e := s.historicalView(event, name)
@@ -393,26 +389,28 @@ func (s *Service) ProcessHistoricalEvents(ctx context.Context, events []Object, 
 		}
 	}
 	before, after := true, true
-	for _, group := range s.options.Build.EventCallbacks {
-		for _, cb := range group {
-			f := cb["filter"].(Object)
-			if s.resolved[objectID(f)] {
-				continue
+	s.options.Build.FilterSession.Update(func() {
+		for _, group := range s.options.Build.EventCallbacks {
+			for _, cb := range group {
+				f := cb["filter"].(Object)
+				if s.resolved[objectID(f)] {
+					continue
+				}
+				before = false
+				name := cb["name"].(string)
+				p := s.options.ColumnAccessPattern[name]
+				if p.Count < 100 {
+					after = false
+					continue
+				}
+				s.resolved[objectID(f)] = true
+				p.Resolved = true
+				kind, _ := f["type"].(string)
+				receipts, _ := f["hasTransactionReceipt"].(bool)
+				f["include"] = ResolveProfileInclude(p, kind, receipts)
 			}
-			before = false
-			name := cb["name"].(string)
-			p := s.options.ColumnAccessPattern[name]
-			if p.Count < 100 {
-				after = false
-				continue
-			}
-			s.resolved[objectID(f)] = true
-			p.Resolved = true
-			kind, _ := f["type"].(string)
-			receipts, _ := f["hasTransactionReceipt"].(bool)
-			f["include"] = ResolveProfileInclude(p, kind, receipts)
 		}
-	}
+	})
 	if !before && after && s.options.OnResolved != nil {
 		counts := map[string]int{}
 		total := 0

@@ -11,7 +11,7 @@ const names=['two-chain-completion-mixed-cache','two-chain-pending','two-chain-p
 const backend_cases={},captures={};
 for(const backend of ['postgres','pglite']){
  const dir=arg(backend);if(!dir)throw Error('Both backend probe directories required');const directory=path.resolve(root,dir);
- if(!['runtime-multichain-m37','indexing-service-m38','indexing-actions-m39','indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>directory.startsWith(root+'/parity/runs/'+stage+'/')))throw Error('Scoped new M37 evidence required');
+ if(!['runtime-multichain-m37','indexing-service-m38','indexing-actions-m39','indexing-profile-m40','independent-storage-m41','multichain-atomic-m42','finite-historical-m43'].some(stage=>directory.startsWith(root+'/parity/runs/'+stage+'/')))throw Error('Scoped new M37 evidence required');
  const result=JSON.parse(fs.readFileSync(directory+'/result.json','utf8')),original=JSON.parse(fs.readFileSync(directory+'/original.json','utf8')),probe=JSON.parse(fs.readFileSync(directory+'/probes.json','utf8'));
  if(!result.complete||!result.success||result.exit_code!==0||result.backend!==backend||result.environment_adapted!==true||result.pristine_file!==false||!result.adapter_verified_after||result.counts.passed!==names.length||result.counts.failed!==0||result.counts.pending!==0||!original.success||original.numPassedTests!==names.length||original.numFailedTests||original.numPendingTests||probe.backend!==backend||probe.source_credit!==0)throw Error('Complete current source probe execution required');
  for(const ref of [...result.inputs,result.context_archive])if(hash(ref.file).sha256!==ref.sha256)throw Error('Current source input changed: '+ref.file);

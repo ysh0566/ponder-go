@@ -55,7 +55,11 @@ assert.equal(guardSHA(guardProofFile),'b54469c2f4a941865a41b1abc6d46fbf1bdf3b9ec
 const guardManifest=JSON.parse(fs.readFileSync(root+'/'+guardManifestFile,'utf8'));
 const guardProof=JSON.parse(fs.readFileSync(root+'/'+guardProofFile,'utf8'));
 const guardReferences=new Map(guardManifest.files.map(e=>[e.original_file,e]));
-const archivedProofValid=ref=>{if(!ref||typeof ref.file!=='string'||path.isAbsolute(ref.file)||path.relative(root,path.resolve(root,ref.file))!==ref.file)return false;const entry=guardReferences.get(ref.file);return entry?entry.sha256===ref.sha256&&guardSHA(entry.archive)===ref.sha256:fs.existsSync(root+'/'+ref.file)&&guardSHA(ref.file)===ref.sha256};
+const guardClosureFile='tools/fixtures/m42-summary-guard-closure/provenance.json';
+assert.equal(guardSHA(guardClosureFile),'766ef278ac29bb30126b9ec896787a3f5da1ccf9b70a42d97f5125c072086039');
+const guardClosure=JSON.parse(fs.readFileSync(root+'/'+guardClosureFile,'utf8'));
+const guardClosureReferences=new Map(guardClosure.files.map(e=>[e.original_file,e]));
+const archivedProofValid=ref=>{if(!ref||typeof ref.file!=='string'||path.isAbsolute(ref.file)||path.relative(root,path.resolve(root,ref.file))!==ref.file)return false;const entry=guardReferences.get(ref.file)??guardClosureReferences.get(ref.file);return !!entry&&entry.sha256===ref.sha256&&fs.existsSync(root+'/'+entry.archive)&&guardSHA(entry.archive)===ref.sha256};
 assert(guardProof.inputs.every(archivedProofValid),'Real full02 proof inputs must match their immutable archived bytes');
 const summarySource=source('record-results');
 const wholeGuard=summarySource.split('\n').filter(line=>line.includes('throw Error("Complete indexing runtime proof and honest static gaps required")'));

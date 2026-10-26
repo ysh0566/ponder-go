@@ -1378,6 +1378,29 @@
         "docs/MULTICHAIN_ATOMIC_PRIMITIVES.md"
       ],
       "remaining": "Bounded one-transaction all-chain setup and already-extracted single-chain historical groups only; zero new original source credit. Actual M37 generator/refetch/decode orchestration, outer runner, readiness, views/realtime/cutover and recovery coordination remain unfinished. Silent business-only rollback invalidates row caches but does not atomically rewind independent sync or reset runner cursors. Native PGlite separate directories/SQL rollback intentionally differ from source callback-only transaction behavior. Commit uncertainty requires durable evidence, never blind retry."
+    },
+    {
+      "id": "finite-historical-runner-m43",
+      "status": "in_progress",
+      "implementation_files": [
+        "historical/runner.go",
+        "config/source_executable.go",
+        "filter/session.go",
+        "indexing/owned_historical.go",
+        "store/historical_snapshot.go",
+        "events/profile_order.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/multichain.ts",
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/database/queryBuilder.ts",
+        "packages/core/src/indexing/index.ts"
+      ],
+      "evidence": [
+        "docs/M43_RECOVERY.md",
+        "parity/runs/finite-historical-m43/rebuild-20261026/recovery-candidates-provenance.json"
+      ],
+      "remaining": "New reconstruction after original environment loss, not accepted or published. Five matching historical text hashes do not restore full M43 source or raw focused evidence; all integrated code and newly written tests require fresh complete 73-stage/14-collector acceptance and summary. Finite finalized-bound default multichain only; zero new original credit. No readiness/indexes/views/triggers/realtime/cutover, arbitrary ordering, persisted build fingerprint/hot reload or atomic cross-domain rewind claim. Native independent persistent PGlite SQL transactions and private predicted-text normalization intentionally differ from pinned source failure/rollback behavior. Source PGlite forced-eviction pressure must be classified expected original error after natural full backoff, never completion; actual default-cache completion is separate. Unknown commit needs strict durable reconciliation; owner loss fences until close/reopen. No old PostgreSQL data was deleted; lost old runs and recovered log fragments are not current proof."
     }
   ]
 }

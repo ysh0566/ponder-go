@@ -1,0 +1,816 @@
+{
+  "backend": "pglite",
+  "cases": [
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "52e137a2e81b50796e81",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "createInMemoryHistoricalSync()",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 2
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "8b91e36fa0105cdf8ac8",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log filter",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"eth_getBlockReceipts\",[\"0x4862a832f731616464e0b044325c00bc83559de3077d5302a7e1d251a42a1660\"]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "752e48dab7ef918c4fe0",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log filter and transaction receipts",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 2
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "4ed88e241ef6d778d897",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() skips transaction receipts for zero-hash logs",
+      "type_executions": [
+        {
+          "backend": "pglite",
+          "directive_index": 0,
+          "exit_error": "\u003cnil\u003e",
+          "native_backend_closed": true,
+          "passed": true,
+          "phase": "after_original_case_comparisons_before_original_setupAnvil_cleanup",
+          "positive_binary_sha256": "14fa04b050ce9d9695bd05224052d9285e22d70902ed2c7cc2a67e0e5675e228",
+          "program_output": {
+            "backend": "pglite",
+            "callback_mutated": false,
+            "directive_index": 0,
+            "endpoint": "http://127.0.0.1:8545/1",
+            "namespace": "",
+            "outcomes": [
+              {
+                "blocks": 1,
+                "interval_inserted": false,
+                "logs": 1,
+                "receipts": 0,
+                "requests": 2,
+                "transactions": 0
+              }
+            ],
+            "passed": true,
+            "source_id": "4ed88e241ef6d778d897"
+          },
+          "source_id": "4ed88e241ef6d778d897",
+          "stderr": "",
+          "stdout": "{\"backend\":\"pglite\",\"callback_mutated\":false,\"directive_index\":0,\"endpoint\":\"http://127.0.0.1:8545/1\",\"namespace\":\"\",\"outcomes\":[{\"blocks\":1,\"interval_inserted\":false,\"logs\":1,\"receipts\":0,\"requests\":2,\"transactions\":0}],\"passed\":true,\"source_id\":\"4ed88e241ef6d778d897\"}\n"
+        }
+      ],
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "e7dfeb5c55b2d59da8a4",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() dedupes logs matched by many log filters",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "5ee92f73f12d67fe7317",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with block filter",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\"],\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "a87094ef8544772d122e",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log factory",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x0\",\"toBlock\":\"0x0\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x1\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x2\",\"toBlock\":\"0x2\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\"],\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 6
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "65ec070fd0607112ac94",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log factory starting earlier than contract start block",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x0\",\"toBlock\":\"0x0\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x1\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x2\",\"toBlock\":\"0x2\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\"],\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 6
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "6493e2fc4786babcadbc",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log factory starting earlier than crash recovery",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x1\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x2\",\"toBlock\":\"0x2\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"debug_traceBlockByNumber\",[\"0x1\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"debug_traceBlockByNumber\",[\"0x2\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]",
+            "[\"debug_traceBlockByNumber\",[\"0x3\",{\"tracer\":\"callTracer\"}]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 9
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "b70f8a00d9bee56cb33c",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with trace factory waits for child addresses",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 1
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "0e083209e2f8fe89cd51",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() fetches child addresses without required intervals",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\"],\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 2
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "7fbad8d2a48052673283",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log factory and no factory interval",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\"],\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "e7360d814bb5552f5222",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log factory and no address",
+      "type_executions": [
+        {
+          "backend": "pglite",
+          "directive_index": 0,
+          "exit_error": "\u003cnil\u003e",
+          "native_backend_closed": true,
+          "passed": true,
+          "phase": "after_original_case_comparisons_before_original_setupAnvil_cleanup",
+          "positive_binary_sha256": "6b763d212757d3ea7b13ce315110e052ce4d44d9ec507b508ff931c879eed775",
+          "program_output": {
+            "backend": "pglite",
+            "callback_mutated": true,
+            "directive_index": 0,
+            "endpoint": "http://127.0.0.1:8545/1",
+            "namespace": "",
+            "outcomes": [
+              {
+                "blocks": 1,
+                "interval_inserted": false,
+                "logs": 1,
+                "receipts": 0,
+                "requests": 3,
+                "transactions": 1
+              }
+            ],
+            "passed": true,
+            "source_id": "e7360d814bb5552f5222"
+          },
+          "source_id": "e7360d814bb5552f5222",
+          "stderr": "",
+          "stdout": "{\"backend\":\"pglite\",\"callback_mutated\":true,\"directive_index\":0,\"endpoint\":\"http://127.0.0.1:8545/1\",\"namespace\":\"\",\"outcomes\":[{\"blocks\":1,\"interval_inserted\":false,\"logs\":1,\"receipts\":0,\"requests\":3,\"transactions\":1}],\"passed\":true,\"source_id\":\"e7360d814bb5552f5222\"}\n"
+        }
+      ],
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 1
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "da3e0236d21a83248db7",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with log factory error",
+      "type_executions": [
+        {
+          "backend": "pglite",
+          "directive_index": 0,
+          "exit_error": "\u003cnil\u003e",
+          "native_backend_closed": true,
+          "passed": true,
+          "phase": "after_original_case_comparisons_before_original_setupAnvil_cleanup",
+          "positive_binary_sha256": "6397fe6384e8094d1a2935410201db8a377eacc2b08aad3214126762b5706961",
+          "program_output": {
+            "backend": "pglite",
+            "callback_mutated": true,
+            "directive_index": 0,
+            "endpoint": "http://127.0.0.1:8545/1",
+            "namespace": "",
+            "outcomes": [
+              {
+                "blocks": 0,
+                "interval_inserted": false,
+                "logs": 0,
+                "receipts": 0,
+                "requests": 1,
+                "transactions": 0
+              }
+            ],
+            "passed": true,
+            "source_id": "da3e0236d21a83248db7"
+          },
+          "source_id": "da3e0236d21a83248db7",
+          "stderr": "",
+          "stdout": "{\"backend\":\"pglite\",\"callback_mutated\":true,\"directive_index\":0,\"endpoint\":\"http://127.0.0.1:8545/1\",\"namespace\":\"\",\"outcomes\":[{\"blocks\":0,\"interval_inserted\":false,\"logs\":0,\"receipts\":0,\"requests\":1,\"transactions\":0}],\"passed\":true,\"source_id\":\"da3e0236d21a83248db7\"}\n"
+        },
+        {
+          "backend": "pglite",
+          "directive_index": 1,
+          "exit_error": "\u003cnil\u003e",
+          "native_backend_closed": true,
+          "passed": true,
+          "phase": "after_original_case_comparisons_before_original_setupAnvil_cleanup",
+          "positive_binary_sha256": "9907f917bafe382e34fcb32e643603a1f80316c6bcb8e657801d92b8b8401934",
+          "program_output": {
+            "backend": "pglite",
+            "callback_mutated": true,
+            "directive_index": 1,
+            "endpoint": "http://127.0.0.1:8545/1",
+            "namespace": "",
+            "outcomes": [
+              {
+                "blocks": 0,
+                "interval_inserted": false,
+                "logs": 0,
+                "receipts": 0,
+                "requests": 1,
+                "transactions": 0
+              }
+            ],
+            "passed": true,
+            "source_id": "da3e0236d21a83248db7"
+          },
+          "source_id": "da3e0236d21a83248db7",
+          "stderr": "",
+          "stdout": "{\"backend\":\"pglite\",\"callback_mutated\":true,\"directive_index\":1,\"endpoint\":\"http://127.0.0.1:8545/1\",\"namespace\":\"\",\"outcomes\":[{\"blocks\":0,\"interval_inserted\":false,\"logs\":0,\"receipts\":0,\"requests\":1,\"transactions\":0}],\"passed\":true,\"source_id\":\"da3e0236d21a83248db7\"}\n"
+        },
+        {
+          "backend": "pglite",
+          "directive_index": 2,
+          "exit_error": "\u003cnil\u003e",
+          "native_backend_closed": true,
+          "passed": true,
+          "phase": "after_original_case_comparisons_before_original_setupAnvil_cleanup",
+          "positive_binary_sha256": "3eb85d85f72dbd5cbcdf582ef1d086ea7e19931374072ad076788a9a21135675",
+          "program_output": {
+            "backend": "pglite",
+            "callback_mutated": true,
+            "directive_index": 2,
+            "endpoint": "http://127.0.0.1:8545/1",
+            "namespace": "",
+            "outcomes": [
+              {
+                "blocks": 0,
+                "interval_inserted": false,
+                "logs": 0,
+                "receipts": 0,
+                "requests": 1,
+                "transactions": 0
+              }
+            ],
+            "passed": true,
+            "source_id": "da3e0236d21a83248db7"
+          },
+          "source_id": "da3e0236d21a83248db7",
+          "stderr": "",
+          "stdout": "{\"backend\":\"pglite\",\"callback_mutated\":true,\"directive_index\":2,\"endpoint\":\"http://127.0.0.1:8545/1\",\"namespace\":\"\",\"outcomes\":[{\"blocks\":0,\"interval_inserted\":false,\"logs\":0,\"receipts\":0,\"requests\":1,\"transactions\":0}],\"passed\":true,\"source_id\":\"da3e0236d21a83248db7\"}\n"
+        }
+      ],
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"debug_traceBlockByNumber\",[\"0x1\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"debug_traceBlockByNumber\",[\"0x2\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]",
+            "[\"debug_traceBlockByNumber\",[\"0x3\",{\"tracer\":\"callTracer\"}]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 6
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "f1730c928e9f0138507a",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with trace filter",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockReceipts\",[\"0x40c6db6b29f2c8e3c8ba2cbaaf9a0edd9dbb2a45728dccaaf9aff774a69459eb\"]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 2
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "2d4cc04bb5ceb9e835b1",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with transaction filter",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"debug_traceBlockByNumber\",[\"0x1\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 2
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "c52aac0263ce5ad1550f",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with transfer filter",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "37fcced2a60753802f4c",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() with many filters",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0xd\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"fromBlock\":\"0x1\",\"toBlock\":\"0xd\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0xd\",true]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 3
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "18407c46d5bf5ef7f901",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() handles many factory addresses",
+      "type_executions": [
+        {
+          "backend": "pglite",
+          "directive_index": 0,
+          "exit_error": "\u003cnil\u003e",
+          "native_backend_closed": true,
+          "passed": true,
+          "phase": "after_original_case_comparisons_before_original_setupAnvil_cleanup",
+          "positive_binary_sha256": "b7e135c26c8857bb48bc26496b09bbb7afd39cd4054468c6cdb3f7e2f0358637",
+          "program_output": {
+            "backend": "pglite",
+            "callback_mutated": false,
+            "directive_index": 0,
+            "endpoint": "http://127.0.0.1:8545/1",
+            "namespace": "",
+            "outcomes": [
+              {
+                "blocks": 1,
+                "interval_inserted": false,
+                "logs": 1,
+                "receipts": 0,
+                "requests": 3,
+                "transactions": 1
+              }
+            ],
+            "passed": true,
+            "source_id": "18407c46d5bf5ef7f901"
+          },
+          "source_id": "18407c46d5bf5ef7f901",
+          "stderr": "",
+          "stdout": "{\"backend\":\"pglite\",\"callback_mutated\":false,\"directive_index\":0,\"endpoint\":\"http://127.0.0.1:8545/1\",\"namespace\":\"\",\"outcomes\":[{\"blocks\":1,\"interval_inserted\":false,\"logs\":1,\"receipts\":0,\"requests\":3,\"transactions\":1}],\"passed\":true,\"source_id\":\"18407c46d5bf5ef7f901\"}\n"
+        }
+      ],
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/memory",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockReceipts\",[\"0x946309edb8d5af3bf8cb6ee3613abebe9ac629e83db6362d563145445190fe83\"]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"eth_getBlockReceipts\",[\"0x6f74cca644476589ce5b662ac30dd103540e6ea90185699acb11f93f46041d8f\"]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]",
+            "[\"eth_getBlockReceipts\",[\"0x6d12427f34f85cbca9c7fa660c9b4c325d4d559258f616eaa7fe6ea0cb4e1504\"]]"
+          ],
+          "operation": "memory/syncBlockData",
+          "physical_compared": false,
+          "provider_inputs": 8
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "11f76edbd93e38b0b8c5",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "syncBlockData() yields ordered block data",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "merge",
+          "physical_compared": false,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "a025833808a3334ec1aa",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "mergeGeneratorIntervals()",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "merge",
+          "physical_compared": false,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "acacab63db010a083c7f",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "mergeGeneratorIntervals() with different intervals",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "merge",
+          "physical_compared": false,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "47b554b28f8c73291690",
+      "source_sha256": "4a3bd9bcaac2cb2325a9830d2753171fd2a8a3b1bcf642a56e012b5ceb77e4cc",
+      "title": "mergeGeneratorIntervals() with no generators",
+      "type_executions": null,
+      "types_done": true
+    }
+  ],
+  "environment_adapted": true,
+  "kind": "in-memory",
+  "original_exit_error": "\u003cnil\u003e",
+  "pristine_file": false,
+  "source_credit": 0,
+  "state": "ENVIRONMENT-ADAPTED startup; NOT pristine. Actual full original historical public calls, raw provider replay, independent native acquisition/cache; native types/full acceptance pending, zero source credit"
+}

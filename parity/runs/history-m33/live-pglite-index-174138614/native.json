@@ -1,0 +1,1070 @@
+{
+  "backend": "pglite",
+  "cases": [
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "c7847f072279f8b6b0ed",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "createHistoricalSync()",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x9eb95e4b47aeccb131f20ae7af33a29832499067\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[[\"0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925\",\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "e38b35ef4bed931a01f3",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() batches log filters with wildcard indexed topics",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "5e23f5358b620b199868",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with log filter",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"eth_getBlockReceipts\",[\"0x78e7d807a1c301a05d761b82e9e98728592024c9cc88578692af61105e6126be\"]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 2
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "c8c7b9eeae4ee588a54d",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with log filter and transaction receipts",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "c5ca58c81d923d49529e",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() skips transaction receipts for zero-hash logs",
+      "type_executions": [
+        {
+          "backend": "pglite",
+          "directive_index": 0,
+          "exit_error": "\u003cnil\u003e",
+          "native_backend_closed": true,
+          "passed": true,
+          "phase": "after_original_case_comparisons_before_original_setupAnvil_cleanup",
+          "positive_binary_sha256": "de3ef5158c12a893f5a9c8a7b0ec3f204bd2b2296f38a4df4054d332e7458223",
+          "program_output": {
+            "backend": "pglite",
+            "callback_mutated": false,
+            "directive_index": 0,
+            "endpoint": "http://127.0.0.1:8545/1",
+            "namespace": "ponder_go_hist_type_18e20859221b6fd3",
+            "outcomes": [
+              {
+                "blocks": 1,
+                "interval_inserted": false,
+                "logs": 1,
+                "receipts": 0,
+                "requests": 2,
+                "transactions": 0
+              }
+            ],
+            "passed": true,
+            "source_id": "c5ca58c81d923d49529e"
+          },
+          "source_id": "c5ca58c81d923d49529e",
+          "stderr": "",
+          "stdout": "{\"backend\":\"pglite\",\"callback_mutated\":false,\"directive_index\":0,\"endpoint\":\"http://127.0.0.1:8545/1\",\"namespace\":\"ponder_go_hist_type_18e20859221b6fd3\",\"outcomes\":[{\"blocks\":1,\"interval_inserted\":false,\"logs\":1,\"receipts\":0,\"requests\":2,\"transactions\":0}],\"passed\":true,\"source_id\":\"c5ca58c81d923d49529e\"}\n"
+        }
+      ],
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 3
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "5da3c6f0b9b2653a81f9",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with block filter",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\"],\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 2
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "e06e2a3c88bb3fe0ef8e",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with log factory",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":[\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"0xe7f1725e7734ce288f8367e1bb143e90bb3f0512\"],\"fromBlock\":\"0x1\",\"toBlock\":\"0x5\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\",\"0xcafac3dd18ac6c6e92c921884f9e4176737c052c\"],\"fromBlock\":\"0x1\",\"toBlock\":\"0x5\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 2
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/getIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/getChildAddresses",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/getChildAddresses",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "dcc7494a89f50d6ad7df",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with log factory shares parents between factories",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"address\":[\"0xa16e02e87b7454126e5e10d957a927a7f5b5d2be\"],\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 2
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "97a5db3271fd8a51cce8",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with log factory and no address",
+      "type_executions": [
+        {
+          "backend": "pglite",
+          "directive_index": 0,
+          "exit_error": "\u003cnil\u003e",
+          "native_backend_closed": true,
+          "passed": true,
+          "phase": "after_original_case_comparisons_before_original_setupAnvil_cleanup",
+          "positive_binary_sha256": "fb832b11e72fb7e7bcad59745762fbbad2a89f2cdbf0b68b5deca4dad6b838a7",
+          "program_output": {
+            "backend": "pglite",
+            "callback_mutated": true,
+            "directive_index": 0,
+            "endpoint": "http://127.0.0.1:8545/1",
+            "namespace": "ponder_go_hist_type_18e2085cd59aacb8",
+            "outcomes": [
+              {
+                "blocks": 1,
+                "interval_inserted": true,
+                "logs": 1,
+                "receipts": 0,
+                "requests": 3,
+                "transactions": 0
+              }
+            ],
+            "passed": true,
+            "source_id": "97a5db3271fd8a51cce8"
+          },
+          "source_id": "97a5db3271fd8a51cce8",
+          "stderr": "",
+          "stdout": "{\"backend\":\"pglite\",\"callback_mutated\":true,\"directive_index\":0,\"endpoint\":\"http://127.0.0.1:8545/1\",\"namespace\":\"ponder_go_hist_type_18e2085cd59aacb8\",\"outcomes\":[{\"blocks\":1,\"interval_inserted\":true,\"logs\":1,\"receipts\":0,\"requests\":3,\"transactions\":0}],\"passed\":true,\"source_id\":\"97a5db3271fd8a51cce8\"}\n"
+        }
+      ],
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"fromBlock\":\"0x1\",\"toBlock\":\"0x3\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "9eaf4ba9f4488a48165e",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with log factory error",
+      "type_executions": [
+        {
+          "backend": "pglite",
+          "directive_index": 0,
+          "exit_error": "\u003cnil\u003e",
+          "native_backend_closed": true,
+          "passed": true,
+          "phase": "after_original_case_comparisons_before_original_setupAnvil_cleanup",
+          "positive_binary_sha256": "97f4cd3ee1373f27c3623e77f03bbf1793e314d7c8fc51b3bef2baef45d93cf4",
+          "program_output": {
+            "backend": "pglite",
+            "callback_mutated": true,
+            "directive_index": 0,
+            "endpoint": "http://127.0.0.1:8545/1",
+            "namespace": "ponder_go_hist_type_18e2085fa92d59dd",
+            "outcomes": [
+              {
+                "blocks": 0,
+                "interval_inserted": false,
+                "logs": 0,
+                "receipts": 0,
+                "requests": 1,
+                "transactions": 0
+              }
+            ],
+            "passed": true,
+            "source_id": "9eaf4ba9f4488a48165e"
+          },
+          "source_id": "9eaf4ba9f4488a48165e",
+          "stderr": "",
+          "stdout": "{\"backend\":\"pglite\",\"callback_mutated\":true,\"directive_index\":0,\"endpoint\":\"http://127.0.0.1:8545/1\",\"namespace\":\"ponder_go_hist_type_18e2085fa92d59dd\",\"outcomes\":[{\"blocks\":0,\"interval_inserted\":false,\"logs\":0,\"receipts\":0,\"requests\":1,\"transactions\":0}],\"passed\":true,\"source_id\":\"9eaf4ba9f4488a48165e\"}\n"
+        },
+        {
+          "backend": "pglite",
+          "directive_index": 1,
+          "exit_error": "\u003cnil\u003e",
+          "native_backend_closed": true,
+          "passed": true,
+          "phase": "after_original_case_comparisons_before_original_setupAnvil_cleanup",
+          "positive_binary_sha256": "a54bb3d858108f405361e6c82e6aca66193e6eaad489fd1083e5f822db9a092f",
+          "program_output": {
+            "backend": "pglite",
+            "callback_mutated": true,
+            "directive_index": 1,
+            "endpoint": "http://127.0.0.1:8545/1",
+            "namespace": "ponder_go_hist_type_18e2086045a6a394",
+            "outcomes": [
+              {
+                "blocks": 0,
+                "interval_inserted": false,
+                "logs": 0,
+                "receipts": 0,
+                "requests": 1,
+                "transactions": 0
+              }
+            ],
+            "passed": true,
+            "source_id": "9eaf4ba9f4488a48165e"
+          },
+          "source_id": "9eaf4ba9f4488a48165e",
+          "stderr": "",
+          "stdout": "{\"backend\":\"pglite\",\"callback_mutated\":true,\"directive_index\":1,\"endpoint\":\"http://127.0.0.1:8545/1\",\"namespace\":\"ponder_go_hist_type_18e2086045a6a394\",\"outcomes\":[{\"blocks\":0,\"interval_inserted\":false,\"logs\":0,\"receipts\":0,\"requests\":1,\"transactions\":0}],\"passed\":true,\"source_id\":\"9eaf4ba9f4488a48165e\"}\n"
+        }
+      ],
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"debug_traceBlockByNumber\",[\"0x2\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"debug_traceBlockByNumber\",[\"0x1\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getBlockByNumber\",[\"0x3\",true]]",
+            "[\"debug_traceBlockByNumber\",[\"0x3\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 6
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "0fa1c981c2dec7e89d5d",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with trace filter",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]",
+            "[\"eth_getBlockReceipts\",[\"0x95ee472283504cc38ed470a6d71d18be78960dcf400362a5c1d71853ee714b09\"]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 2
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "8fc41db64b6520908741",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with transaction filter",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"debug_traceBlockByNumber\",[\"0x1\",{\"tracer\":\"callTracer\"}]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 2
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "6a4eb173d60b39865c78",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with transfer filter",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]",
+            "[\"eth_getBlockByNumber\",[\"0x1\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 2
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "bff138edcd04ddcb1798",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with many filters",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/getIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "27d56af3b181c08ecad8",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with cache",
+      "type_executions": null,
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0x2\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/getIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":[\"0x0000000000000000000000000000000000000000\"],\"fromBlock\":\"0x1\",\"toBlock\":\"0x2\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/getIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":[\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"0x0000000000000000000000000000000000000000\"],\"fromBlock\":\"0x3\",\"toBlock\":\"0x3\",\"topics\":[\"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "1f021a7b846451889eae",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "sync() with partial cache",
+      "type_executions": [
+        {
+          "backend": "pglite",
+          "directive_index": 0,
+          "exit_error": "\u003cnil\u003e",
+          "native_backend_closed": true,
+          "passed": true,
+          "phase": "after_original_case_comparisons_before_original_setupAnvil_cleanup",
+          "positive_binary_sha256": "38ffba5ceea48a05102e0c0688f590ad638d17349666eddeaa197210a8d57d3d",
+          "program_output": {
+            "backend": "pglite",
+            "callback_mutated": true,
+            "directive_index": 0,
+            "endpoint": "http://127.0.0.1:8545/1",
+            "namespace": "ponder_go_hist_type_18e2086554a264d6",
+            "outcomes": [
+              {
+                "blocks": 1,
+                "interval_inserted": true,
+                "logs": 1,
+                "receipts": 0,
+                "requests": 2,
+                "transactions": 0
+              },
+              {
+                "blocks": 0,
+                "interval_inserted": true,
+                "logs": 0,
+                "receipts": 0,
+                "requests": 1,
+                "transactions": 0
+              },
+              {
+                "blocks": 0,
+                "interval_inserted": true,
+                "logs": 0,
+                "receipts": 0,
+                "requests": 1,
+                "transactions": 0
+              }
+            ],
+            "passed": true,
+            "source_id": "1f021a7b846451889eae"
+          },
+          "source_id": "1f021a7b846451889eae",
+          "stderr": "",
+          "stdout": "{\"backend\":\"pglite\",\"callback_mutated\":true,\"directive_index\":0,\"endpoint\":\"http://127.0.0.1:8545/1\",\"namespace\":\"ponder_go_hist_type_18e2086554a264d6\",\"outcomes\":[{\"blocks\":1,\"interval_inserted\":true,\"logs\":1,\"receipts\":0,\"requests\":2,\"transactions\":0},{\"blocks\":0,\"interval_inserted\":true,\"logs\":0,\"receipts\":0,\"requests\":1,\"transactions\":0},{\"blocks\":0,\"interval_inserted\":true,\"logs\":0,\"receipts\":0,\"requests\":1,\"transactions\":0}],\"passed\":true,\"source_id\":\"1f021a7b846451889eae\"}\n"
+        },
+        {
+          "backend": "pglite",
+          "directive_index": 1,
+          "exit_error": "\u003cnil\u003e",
+          "native_backend_closed": true,
+          "passed": true,
+          "phase": "after_original_case_comparisons_before_original_setupAnvil_cleanup",
+          "positive_binary_sha256": "e3ca878db93cebe4dc79b8968d710c90d759194d46bd6e12c2669bbff5eabdff",
+          "program_output": {
+            "backend": "pglite",
+            "callback_mutated": true,
+            "directive_index": 1,
+            "endpoint": "http://127.0.0.1:8545/1",
+            "namespace": "ponder_go_hist_type_18e20865b0e57e60",
+            "outcomes": [
+              {
+                "blocks": 1,
+                "interval_inserted": true,
+                "logs": 1,
+                "receipts": 0,
+                "requests": 2,
+                "transactions": 0
+              },
+              {
+                "blocks": 0,
+                "interval_inserted": true,
+                "logs": 0,
+                "receipts": 0,
+                "requests": 1,
+                "transactions": 0
+              },
+              {
+                "blocks": 0,
+                "interval_inserted": true,
+                "logs": 0,
+                "receipts": 0,
+                "requests": 1,
+                "transactions": 0
+              }
+            ],
+            "passed": true,
+            "source_id": "1f021a7b846451889eae"
+          },
+          "source_id": "1f021a7b846451889eae",
+          "stderr": "",
+          "stdout": "{\"backend\":\"pglite\",\"callback_mutated\":true,\"directive_index\":1,\"endpoint\":\"http://127.0.0.1:8545/1\",\"namespace\":\"ponder_go_hist_type_18e20865b0e57e60\",\"outcomes\":[{\"blocks\":1,\"interval_inserted\":true,\"logs\":1,\"receipts\":0,\"requests\":2,\"transactions\":0},{\"blocks\":0,\"interval_inserted\":true,\"logs\":0,\"receipts\":0,\"requests\":1,\"transactions\":0},{\"blocks\":0,\"interval_inserted\":true,\"logs\":0,\"receipts\":0,\"requests\":1,\"transactions\":0}],\"passed\":true,\"source_id\":\"1f021a7b846451889eae\"}\n"
+        }
+      ],
+      "types_done": true
+    },
+    {
+      "calls": [
+        {
+          "native_requests": [],
+          "operation": "store/create",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [],
+          "operation": "construct/persistent",
+          "physical_compared": false,
+          "provider_inputs": 0
+        },
+        {
+          "native_requests": [
+            "[\"eth_getLogs\",[{\"address\":\"0x5fbdb2315678afecb367f032d93f642f64180aa3\",\"fromBlock\":\"0x1\",\"toBlock\":\"0xd\",\"topics\":[\"0x17aa8d0e85db1d0531a8181b5bb84e1d4ed744db1cadd8814acd3d181ff30137\"]}]]",
+            "[\"eth_getLogs\",[{\"fromBlock\":\"0x1\",\"toBlock\":\"0xd\",\"topics\":[\"0x2a9237ff5aa599ef4c5ee4b1142b53429d5755e2685fe6288b2e3320202115f5\"]}]]"
+          ],
+          "operation": "persistent/syncBlockRangeData",
+          "physical_compared": true,
+          "provider_inputs": 2
+        },
+        {
+          "native_requests": [
+            "[\"eth_getBlockByNumber\",[\"0xd\",true]]"
+          ],
+          "operation": "persistent/syncBlockData",
+          "physical_compared": true,
+          "provider_inputs": 1
+        },
+        {
+          "native_requests": [],
+          "operation": "store/insertIntervals",
+          "physical_compared": true,
+          "provider_inputs": 0
+        }
+      ],
+      "comparison_backend_closed": true,
+      "complete": true,
+      "errors": [],
+      "id": "feb4f050a5e15ba79c2f",
+      "source_sha256": "0ab1ab1980f6fca024a36ae47e4a33e9bdb989f891bbb6101e51b18a0b57aa76",
+      "title": "syncAddress() handles many addresses",
+      "type_executions": null,
+      "types_done": true
+    }
+  ],
+  "environment_adapted": true,
+  "kind": "index",
+  "original_exit_error": "\u003cnil\u003e",
+  "pristine_file": false,
+  "source_credit": 0,
+  "state": "ENVIRONMENT-ADAPTED startup; NOT pristine. Actual full original historical public calls, raw provider replay, independent native acquisition/cache; native types/full acceptance pending, zero source credit"
+}

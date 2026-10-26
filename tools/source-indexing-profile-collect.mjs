@@ -11,12 +11,12 @@ const read=file=>JSON.parse(fs.readFileSync(path.resolve(root,file)));
 const check=(value,message)=>{if(!value)throw Error(message)};
 const fixturePath=arg('fixture'),output=arg('output');
 check(fixturePath&&output&&arg('postgres')&&arg('pglite'),'Explicit --postgres --pglite --fixture --output required');
-check(['indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>path.resolve(root,output).startsWith(root+'/parity/runs/'+stage+'/'))&&!fs.existsSync(path.resolve(root,output)),'New scoped collector output required');
+check(['indexing-profile-m40','independent-storage-m41','multichain-atomic-m42','finite-historical-m43'].some(stage=>path.resolve(root,output).startsWith(root+'/parity/runs/'+stage+'/'))&&!fs.existsSync(path.resolve(root,output)),'New scoped collector output required');
 const fixture=JSON.parse(gunzipSync(fs.readFileSync(path.resolve(root,fixturePath))));
 const declarations=read('parity/test-ledger.json').tests.filter(t=>['packages/core/src/indexing/profile.test.ts','packages/core/src/indexing/client.test.ts'].includes(t.source_file));
 const backends={};
 for(const backend of ['postgres','pglite']){
- const directory=path.resolve(root,arg(backend));check(['indexing-profile-m40','independent-storage-m41','multichain-atomic-m42'].some(stage=>directory.startsWith(root+'/parity/runs/'+stage+'/')),'Scoped original source required');
+ const directory=path.resolve(root,arg(backend));check(['indexing-profile-m40','independent-storage-m41','multichain-atomic-m42','finite-historical-m43'].some(stage=>directory.startsWith(root+'/parity/runs/'+stage+'/')),'Scoped original source required');
  const result=read(directory+'/result.json'),original=read(directory+'/original.json'),capture=JSON.parse(gunzipSync(fs.readFileSync(directory+'/calls.json.gz')));
  check(result.complete&&result.success&&result.exit_code===0&&result.backend===backend&&result.environment_adapted&&result.pristine_file===false&&result.adapter_verified_after&&result.counts.passed===24&&!result.counts.failed&&!result.counts.pending,'Complete unchanged original source execution required');
  for(const ref of [...result.inputs,result.context_archive])check(hash(ref.file).sha256===ref.sha256,'Current context/input differs: '+ref.file);

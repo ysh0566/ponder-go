@@ -15,6 +15,7 @@ import (
 )
 
 type SourceEventDataArgs struct {
+	FilterSession      *filter.Session
 	Filters            []filter.Object
 	FromBlock, ToBlock float64
 	ChainID            uint64
@@ -240,6 +241,9 @@ func sourceLowerField(row filter.Object, key string) {
 	}
 }
 func (s *SourceSyncStore) GetEventData(ctx context.Context, args SourceEventDataArgs) (SourceEventData, error) {
+	// One whole-filter snapshot before any SQL; recursive pagination retains it.
+	args.Filters = args.FilterSession.Snapshot(args.Filters)
+	args.FilterSession = nil
 	if err := s.scopeActive(ctx); err != nil {
 		return SourceEventData{}, err
 	}

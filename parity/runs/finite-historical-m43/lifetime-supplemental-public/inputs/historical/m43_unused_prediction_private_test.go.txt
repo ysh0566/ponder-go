@@ -1,0 +1,254 @@
+package historical
+
+// Zero-credit diagnostic overlay. Predictions are learned by actual handlers.
+// The only artificial action is delaying delivery of one actual RPC completion.
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"math/big"
+	"os"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"ponder.local/ponder-go/abi"
+	"ponder.local/ponder-go/indexing"
+	"ponder.local/ponder-go/rpc"
+	"ponder.local/ponder-go/store"
+)
+
+type m43UnusedPrediction struct {
+	Context context.Context
+	Chain   uint64
+	Params  any
+}
+type m43PredictionGate struct {
+	chosen   atomic.Bool
+	handler  *atomic.Bool
+	admitted chan m43UnusedPrediction
+	settled  chan struct{}
+	release  chan struct{}
+}
+type m43PredictionRequester struct {
+	base  *rpc.Client
+	chain uint64
+	gate  *m43PredictionGate
+}
+
+func (r *m43PredictionRequester) Actions() *rpc.Actions { return r.base.Actions() }
+func (r *m43PredictionRequester) Call(ctx context.Context, m string, p, out any) error {
+	return r.base.Call(ctx, m, p, out)
+}
+func (r *m43PredictionRequester) BeginCall(ctx context.Context, m string, p, out any) <-chan error {
+	// Invoke the real synchronous admission first, never advertise a goroutine
+	// around Call as an asynchronous requester.
+	actual := r.base.BeginCall(ctx, m, p, out)
+	if m != "eth_call" || r.gate.handler.Load() || !r.gate.chosen.CompareAndSwap(false, true) {
+		return actual
+	}
+	r.gate.admitted <- m43UnusedPrediction{ctx, r.chain, p}
+	relay := make(chan error, 1)
+	go func() { err := <-actual; close(r.gate.settled); <-r.gate.release; relay <- err; close(relay) }()
+	return relay
+}
+
+func TestPrivateM43UnusedPredictionLifetime(t *testing.T) {
+	for _, mode := range []string{"ordinary_error", "caller_cancel", "owner_close"} {
+		t.Run(mode, func(t *testing.T) {
+			bound, stop := context.WithTimeout(context.Background(), 60*time.Second)
+			defer stop()
+			caller, cancel := context.WithCancel(bound)
+			defer cancel()
+			url, expected := os.Getenv("PONDER_TEST_POSTGRES"), os.Getenv("PONDER_M43_LIFETIME_EXPECT_PGDATA")
+			if url == "" || expected == "" {
+				t.Fatal("fresh task PG URL and expected directory required; no skip")
+			}
+			control, err := sql.Open("pgx", url)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer control.Close()
+			var actual string
+			if err = control.QueryRowContext(bound, "SHOW data_directory").Scan(&actual); err != nil || actual != expected {
+				t.Fatalf("PG identity %q != %q: %v", actual, expected, err)
+			}
+			p := newFiniteRPC(t, 24)
+			contract, err := abi.Parse(`[{"type":"function","name":"value","inputs":[{"name":"n","type":"uint256"}],"outputs":[{"type":"uint256"}]}]`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			gate := &m43PredictionGate{handler: &p.handlerActive, admitted: make(chan m43UnusedPrediction, 1), settled: make(chan struct{}), release: make(chan struct{})}
+			releaseRPC := m43OneClose(gate.release)
+			marker := &store.NonRetryableUserError{Message: "controlled ordinary error before consuming learned prediction"}
+			var failedHandler atomic.Int64
+			handler := indexing.Handler(func(ctx context.Context, a *indexing.HandlerArgs) error {
+				p.handlerActive.Store(true)
+				defer p.handlerActive.Store(false)
+				if gate.chosen.Load() {
+					failedHandler.Add(1)
+					return marker
+				}
+				n, e := finiteNumber(a)
+				if e != nil {
+					return e
+				}
+				value, e := a.Context.Client.ReadContract(ctx, indexing.ContractCall{ABI: contract, Address: "0x0000000000000000000000000000000000000001", FunctionName: "value", Args: []any{new(big.Int).SetUint64(n)}})
+				if e != nil {
+					return e
+				}
+				if fmt.Sprint(value) != "42" {
+					return fmt.Errorf("real RPC decode %v", value)
+				}
+				return finiteIncrement(ctx, a)
+			})
+			build := finiteBuild(t, p, 24, true, handler, nil)
+			fixture := newFiniteFixture(t, "postgres", build)
+			for i, base := range build.Executable().RPCs {
+				fixture.options.Owned.Requesters = append(fixture.options.Owned.Requesters, &m43PredictionRequester{base: base, chain: uint64(i + 1), gate: gate})
+			}
+			runner, closeScope := fixture.startWithCloseScope(t)
+			// Emergency cleanup releases only this test's explicit relay barriers.
+			cleanupEntered, cleanupRelease := make(chan struct{}), make(chan struct{})
+			drainEntered, drainRelease := make(chan struct{}), make(chan struct{})
+			releaseCleanup, releaseDrain := m43OneClose(cleanupRelease), m43OneClose(drainRelease)
+			t.Cleanup(func() { releaseCleanup(); releaseDrain(); releaseRPC(); cancel() })
+			rec := &m43LifetimeRecorder{}
+			var cleanupSeen, drainSeen atomic.Bool
+			var postAdmissionWrites atomic.Int64
+			var cleanupErr error
+			var drainPending int
+			reset := store.M43LifetimeObserve(func(ev store.M43LifetimeEvent) {
+				rec.add(ev)
+				if !gate.chosen.Load() {
+					return
+				}
+				switch ev.Phase {
+				case "cache-job-admitted":
+					postAdmissionWrites.Add(1)
+				case "runner-cleanup-enter":
+					if cleanupSeen.CompareAndSwap(false, true) {
+						cleanupErr = ev.Err
+						close(cleanupEntered)
+						select {
+						case <-cleanupRelease:
+						case <-bound.Done():
+						}
+					}
+				case "client-wait-prefetch-rpc-enter":
+					if cleanupSeen.Load() && drainSeen.CompareAndSwap(false, true) {
+						drainPending, _ = ev.Fields["pending"].(int)
+						close(drainEntered)
+						select {
+						case <-drainRelease:
+						case <-bound.Done():
+						}
+					}
+				}
+			})
+			defer reset()
+			defer func() {
+				data, e := json.Marshal(map[string]any{"case": mode, "source_credit": 0, "trace": rec.snapshot()})
+				if e != nil {
+					t.Error(e)
+				} else {
+					t.Log(string(data))
+				}
+			}()
+			done := make(chan error, 1)
+			go func() { _, e := runner.Run(caller); done <- e }()
+			var prediction m43UnusedPrediction
+			select {
+			case prediction = <-gate.admitted:
+			case <-bound.Done():
+				t.Fatal("no real learned prefetch", bound.Err())
+			}
+			if err = m43Await(bound, cleanupEntered, "ordinary-error callback exit"); err != nil {
+				t.Fatal(err)
+			}
+			if !errors.Is(cleanupErr, marker) || failedHandler.Load() != 1 {
+				t.Fatalf("ordinary original error missing: %v, handlers=%d", cleanupErr, failedHandler.Load())
+			}
+			releaseCleanup()
+			if err = m43Await(bound, drainEntered, "actual prefetch RPC drain"); err != nil {
+				t.Fatal(err)
+			}
+			// This checkpoint is causal: the callback has returned its actual error,
+			// lookup jobs have drained, and the selected RPC completion is still owned.
+			if drainPending < 1 || prediction.Context.Err() != nil {
+				t.Fatalf("ordinary error canceled admitted prediction: pending=%d error=%v", drainPending, prediction.Context.Err())
+			}
+			rec.note("ordinary-drain-preserves-selected-context", map[string]any{"pending": drainPending, "chain": prediction.Chain}, nil)
+			var closing chan error
+			switch mode {
+			case "caller_cancel":
+				cancel()
+			case "owner_close":
+				closing = make(chan error, 1)
+				go func() { closing <- runner.Close(bound) }()
+			}
+			if mode != "ordinary_error" {
+				select {
+				case <-prediction.Context.Done():
+				case <-bound.Done():
+					t.Fatal("actual hard cancellation did not reach prediction", bound.Err())
+				}
+				closeScope.markTriggered(runner)
+				rec.note("real-hard-cancel-reaches-selected-context", map[string]any{"mode": mode}, prediction.Context.Err())
+			}
+			releaseDrain()
+			// Preserve the actual transport result; no fabricated successful completion.
+			if err = m43Await(bound, gate.settled, "actual RPC settles"); err != nil {
+				t.Fatal(err)
+			}
+			releaseRPC()
+			select {
+			case err = <-done:
+			case <-bound.Done():
+				t.Fatal("runner failed to join", bound.Err())
+			}
+			if !errors.Is(err, marker) {
+				t.Fatalf("original ordinary error lost: %v", err)
+			}
+			if mode == "ordinary_error" && m43OrdinaryCancellation(err) {
+				t.Fatalf("false ordinary cancellation: %v", err)
+			}
+			if mode != "ordinary_error" && !errors.Is(err, context.Canceled) {
+				t.Fatalf("real hard cancellation absent: %v", err)
+			}
+			if closing != nil {
+				select {
+				case err = <-closing:
+				case <-bound.Done():
+					t.Fatal("Close failed to join", bound.Err())
+				}
+			} else {
+				err = runner.Close(bound)
+			}
+			if !closeScope.accepts(runner, err) {
+				t.Fatalf("unexpected close: %v", err)
+			}
+			if mode == "ordinary_error" && err != nil {
+				t.Fatalf("ordinary Close must remain nil: %v", err)
+			}
+			if postAdmissionWrites.Load() != 0 {
+				t.Fatalf("unused prediction fabricated cache writes: %d", postAdmissionWrites.Load())
+			}
+			table, e := m43CacheTable(bound, control, fixture.options.Owned.Storage.SyncNamespace)
+			if e != nil {
+				t.Fatal(e)
+			}
+			hash, e := store.SourceRPCRequestHash(map[string]any{"method": "eth_call", "params": prediction.Params})
+			if e != nil {
+				t.Fatal(e)
+			}
+			var rows int
+			if e = control.QueryRowContext(bound, "SELECT count(*) FROM "+table+" WHERE chain_id=$1 AND request_hash=$2", prediction.Chain, hash).Scan(&rows); e != nil || rows != 0 {
+				t.Fatalf("unused prediction persisted: rows=%d err=%v", rows, e)
+			}
+			rec.note("unused-prediction-no-persistent-row", map[string]any{"chain": prediction.Chain, "request_hash": hash, "rows": rows}, nil)
+		})
+	}
+}

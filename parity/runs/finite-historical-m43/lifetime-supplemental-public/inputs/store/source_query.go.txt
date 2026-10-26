@@ -1,0 +1,469 @@
+package store
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"math"
+	"math/big"
+	"reflect"
+	"strconv"
+	"strings"
+
+	"ponder.local/ponder-go/filter"
+	"ponder.local/ponder-go/schema"
+)
+
+type SourceEventDataArgs struct {
+	FilterSession      *filter.Session
+	Filters            []filter.Object
+	FromBlock, ToBlock float64
+	ChainID            uint64
+	Limit              int
+}
+type SourceEventData struct {
+	Blocks, Transactions, TransactionReceipts, Logs, Traces []filter.Object
+	Cursor                                                  float64
+}
+type sourceQuery struct {
+	columns      []string
+	table        string
+	where, order []string
+	args         []any
+}
+
+func (q *sourceQuery) bind(value any) string {
+	if filter.IsUndefined(value) {
+		value = nil
+	}
+	q.args = append(q.args, value)
+	return "$" + strconv.Itoa(len(q.args))
+}
+func sourceNumberBigInt(n float64) (*big.Int, error) {
+	if math.IsNaN(n) || math.IsInf(n, 0) || math.Trunc(n) != n {
+		return nil, fmt.Errorf("source bound is not an integer")
+	}
+	out, _ := new(big.Float).SetFloat64(n).Int(nil)
+	return out, nil
+}
+func sourceFilterNumber(value any) (float64, error) {
+	switch v := value.(type) {
+	case float64:
+		return v, nil
+	case int:
+		return float64(v), nil
+	case int64:
+		return float64(v), nil
+	case uint64:
+		return float64(v), nil
+	case json.Number:
+		return v.Float64()
+	default:
+		return 0, fmt.Errorf("source filter bound must be a number")
+	}
+}
+func sourceRangeFromFilter(f filter.Object) (SourceFilterRange, error) {
+	var r SourceFilterRange
+	for key, target := range map[string]**float64{"fromBlock": &r.FromBlock, "toBlock": &r.ToBlock} {
+		if v, ok := f[key]; ok && v != nil && !filter.IsUndefined(v) {
+			n, e := sourceFilterNumber(v)
+			if e != nil {
+				return r, e
+			}
+			*target = &n
+		}
+	}
+	return r, nil
+}
+func sourceArray(value any) ([]any, bool) {
+	v := reflect.ValueOf(value)
+	if !v.IsValid() || (v.Kind() != reflect.Array && v.Kind() != reflect.Slice) {
+		return nil, false
+	}
+	out := make([]any, v.Len())
+	for i := range out {
+		out[i] = v.Index(i).Interface()
+	}
+	return out, true
+}
+func (q *sourceQuery) equal(column string, value any) string { return column + " = " + q.bind(value) }
+func (q *sourceQuery) address(column string, value any) string {
+	if filter.IsAddressFactory(value) {
+		return "true"
+	}
+	if values, ok := sourceArray(value); ok {
+		return q.in(column, values)
+	}
+	if _, ok := value.(string); ok {
+		return q.equal(column, value)
+	}
+	return "true"
+}
+func (q *sourceQuery) in(column string, values []any) string {
+	if len(values) == 0 {
+		return "false"
+	}
+	slots := []string{}
+	for _, v := range values {
+		slots = append(slots, q.bind(v))
+	}
+	return column + " in (" + strings.Join(slots, ",") + ")"
+}
+func (q *sourceQuery) condition(f filter.Object) string {
+	parts := []string{}
+	kind, _ := f["type"].(string)
+	switch kind {
+	case "log":
+		for i := 0; i < 4; i++ {
+			key := fmt.Sprintf("topic%d", i)
+			v := f[key]
+			if v == nil || filter.IsUndefined(v) {
+				continue
+			}
+			if values, ok := sourceArray(v); ok && len(values) == 1 {
+				v = values[0]
+			}
+			column := schema.Quote(key)
+			if values, ok := sourceArray(v); ok {
+				parts = append(parts, q.in(column, values))
+			} else {
+				parts = append(parts, q.equal(column, v))
+			}
+		}
+		parts = append(parts, q.address(`"address"`, f["address"]))
+	case "trace", "transfer":
+		parts = append(parts, q.address(`"from"`, f["fromAddress"]), q.address(`"to"`, f["toAddress"]))
+		if kind == "trace" {
+			if v, ok := f["callType"]; ok && !filter.IsUndefined(v) {
+				parts = append(parts, q.equal(`"type"`, v))
+			}
+			if v, ok := f["functionSelector"]; ok && !filter.IsUndefined(v) {
+				parts = append(parts, q.equal(`substring("input" from 1 for 10)`, v))
+			}
+		}
+	}
+	return "(" + strings.Join(parts, " and ") + ")"
+}
+func sourceProtocolSpec(table, column string) (string, bool) {
+	if column == "chainId" {
+		return "chainId#", true
+	}
+	for _, spec := range protocolFields[table] {
+		if strings.TrimRight(spec, "#?!@[]") == column {
+			return spec, true
+		}
+	}
+	return "", false
+}
+func sourceSourceColumns(table string, required []string, filters []filter.Object, include string) ([]string, error) {
+	columns := append([]string{}, required...)
+	seen := map[string]bool{}
+	for _, c := range columns {
+		seen[c] = true
+	}
+	selected := []string{}
+	if include != "" {
+		selected = filter.UnionInclude(filters, include)
+	}
+	for _, c := range selected {
+		if !seen[c] {
+			seen[c] = true
+			columns = append(columns, c)
+		}
+	}
+	out := []string{}
+	for _, c := range columns {
+		spec, ok := sourceProtocolSpec(table, c)
+		if !ok {
+			return nil, fmt.Errorf("unknown source selected column %s.%s", table, c)
+		}
+		column := schema.Quote(snakeField(c))
+		if strings.Contains(spec, "[]") {
+			column = "array_to_json(" + column + ")::text"
+		}
+		out = append(out, column+" as "+schema.Quote(c))
+	}
+	return out, nil
+}
+func (s *SourceSyncStore) runSourceQuery(ctx context.Context, q *sourceQuery, limit int) ([]filter.Object, error) {
+	out := []filter.Object{}
+	sql := "select " + strings.Join(q.columns, ",") + " from " + s.cache.table(q.table) + " where " + strings.Join(q.where, " and ") + " order by " + strings.Join(q.order, ",") + " limit " + q.bind(limit)
+	err := s.transaction(ctx, func(tx Transaction) error {
+		M43LifetimeEmit("source-event-sql-before",ctx,map[string]any{"table":q.table,"query":sql,"args":fmt.Sprint(q.args)},nil)
+		result, e := tx.Query(ctx, sql, q.args...)
+		M43LifetimeEmit("source-event-sql-after",ctx,map[string]any{"table":q.table,"query":sql},e)
+		if e != nil {
+			return e
+		}
+		for _, row := range result.Rows {
+			for column, value := range row {
+				if value == nil {
+					continue
+				}
+				spec, _ := sourceProtocolSpec(q.table, column)
+				if strings.Contains(spec, "#") {
+					n, ok := new(big.Int).SetString(fmt.Sprint(value), 10)
+					if !ok {
+						return fmt.Errorf("invalid source numeric %s.%s", q.table, column)
+					}
+					if column == "transactionIndex" || column == "logIndex" || (column == "nonce" && q.table == "transactions") {
+						row[column] = n.Int64()
+					} else {
+						row[column] = n
+					}
+				} else if strings.Contains(spec, "[]") {
+					var numbers []int
+					if e = json.Unmarshal([]byte(fmt.Sprint(value)), &numbers); e != nil {
+						return e
+					}
+					row[column] = numbers
+				}
+			}
+			out = append(out, row)
+		}
+		return nil
+	})
+	return out, err
+}
+func sourceRowNumber(row filter.Object, key string) float64 {
+	switch n := row[key].(type) {
+	case *big.Int:
+		f, _ := new(big.Float).SetInt(n).Float64()
+		return f
+	case float64:
+		return n
+	case int64:
+		return float64(n)
+	}
+	return math.NaN()
+}
+func sourceLowerField(row filter.Object, key string) {
+	if value, ok := row[key].(string); ok {
+		row[key] = strings.ToLower(value)
+	}
+}
+func (s *SourceSyncStore) GetEventData(ctx context.Context, args SourceEventDataArgs) (SourceEventData, error) {
+	// One whole-filter snapshot before any SQL; recursive pagination retains it.
+	args.Filters = args.FilterSession.Snapshot(args.Filters)
+	args.FilterSession = nil
+	if err := s.scopeActive(ctx); err != nil {
+		return SourceEventData{}, err
+	}
+	if args.Limit <= 0 {
+		return SourceEventData{}, fmt.Errorf("source event query requires positive limit")
+	}
+	from, e := sourceNumberBigInt(args.FromBlock)
+	if e != nil {
+		return SourceEventData{}, e
+	}
+	to, e := sourceNumberBigInt(args.ToBlock)
+	if e != nil {
+		return SourceEventData{}, e
+	}
+	grouped := map[string][]filter.Object{}
+	ranges := map[string][]SourceFilterRange{}
+	receipts := false
+	for _, f := range args.Filters {
+		r, e := sourceRangeFromFilter(f)
+		if e != nil {
+			return SourceEventData{}, e
+		}
+		low, high := math.Inf(-1), math.Inf(1)
+		if r.FromBlock != nil {
+			low = *r.FromBlock
+		}
+		if r.ToBlock != nil {
+			high = *r.ToBlock
+		}
+		if !(low <= args.ToBlock && high >= args.FromBlock) {
+			continue
+		}
+		kind, _ := f["type"].(string)
+		grouped[kind] = append(grouped[kind], f)
+		ranges[kind] = append(ranges[kind], r)
+		if f["hasTransactionReceipt"] == true {
+			receipts = true
+		}
+	}
+	logRange := GetSourceFilterBlockRange(ranges["log"], args.FromBlock, args.ToBlock)
+	traceRange := GetSourceFilterBlockRange(append(append([]SourceFilterRange{}, ranges["trace"]...), ranges["transfer"]...), args.FromBlock, args.ToBlock)
+	shouldLogs := len(grouped["log"]) > 0
+	shouldTraces := len(grouped["trace"])+len(grouped["transfer"]) > 0
+	shouldTransactions := len(grouped["transaction"]) > 0 || shouldLogs || shouldTraces
+	definitions := []struct {
+		table, include  string
+		required, order []string
+		enabled         bool
+	}{
+		{"blocks", "block", []string{"number", "hash", "timestamp"}, []string{`"number"`}, true},
+		{"transactions", "transaction", []string{"blockNumber", "transactionIndex", "from", "to", "hash", "type"}, []string{`"block_number"`, `"transaction_index"`}, shouldTransactions},
+		{"transaction_receipts", "transactionReceipt", []string{"blockNumber", "transactionIndex", "status", "from", "to"}, []string{`"block_number"`, `"transaction_index"`}, receipts},
+		{"logs", "", []string{"blockNumber", "logIndex", "transactionIndex", "address", "topic0", "topic1", "topic2", "topic3", "data"}, []string{`"block_number"`, `"log_index"`}, shouldLogs},
+		{"traces", "trace", []string{"blockNumber", "transactionIndex", "from", "to", "input", "output", "value", "type", "traceAddress"}, []string{`"block_number"`, `"transaction_index"`, `"trace_address"`}, shouldTraces},
+	}
+	rows := make([][]filter.Object, 5)
+	for i, d := range definitions {
+		rows[i] = []filter.Object{}
+		if !d.enabled {
+			continue
+		}
+		columns, e := sourceSourceColumns(d.table, d.required, args.Filters, d.include)
+		if e != nil {
+			return SourceEventData{}, e
+		}
+		q := &sourceQuery{table: d.table, columns: columns, order: d.order}
+		q.where = append(q.where, q.equal(`"chain_id"`, new(big.Int).SetUint64(args.ChainID)))
+		low, high := from, to
+		blockColumn := `"block_number"`
+		if d.table == "blocks" {
+			blockColumn = `"number"`
+		}
+		if d.table == "logs" {
+			low, e = sourceNumberBigInt(logRange.FromBlock)
+			if e != nil {
+				return SourceEventData{}, e
+			}
+			high, e = sourceNumberBigInt(logRange.ToBlock)
+			if e != nil {
+				return SourceEventData{}, e
+			}
+		}
+		if d.table == "traces" {
+			low, e = sourceNumberBigInt(traceRange.FromBlock)
+			if e != nil {
+				return SourceEventData{}, e
+			}
+			high, e = sourceNumberBigInt(traceRange.ToBlock)
+			if e != nil {
+				return SourceEventData{}, e
+			}
+		}
+		q.where = append(q.where, blockColumn+" >= "+q.bind(low), blockColumn+" <= "+q.bind(high))
+		filters := []filter.Object{}
+		if d.table == "logs" {
+			filters = grouped["log"]
+		}
+		if d.table == "traces" {
+			filters = append(append([]filter.Object{}, grouped["trace"]...), grouped["transfer"]...)
+		}
+		if len(filters) > 0 {
+			conditions := []string{}
+			for _, f := range filters {
+				conditions = append(conditions, q.condition(f))
+			}
+			q.where = append(q.where, "("+strings.Join(conditions, " or ")+")")
+		}
+		rows[i], e = s.runSourceQuery(ctx, q, args.Limit)
+		if e != nil {
+			return SourceEventData{}, e
+		}
+	}
+	supremum := math.Inf(1)
+	largest, largestEvents := 0, 0
+	for i, set := range rows {
+		largest = max(largest, len(set))
+		if i > 0 {
+			largestEvents = max(largestEvents, len(set))
+		}
+		if len(set) == args.Limit {
+			key := "blockNumber"
+			if i == 0 {
+				key = "number"
+			}
+			supremum = math.Min(supremum, sourceRowNumber(set[len(set)-1], key))
+		}
+	}
+	cursor := args.ToBlock
+	if largest == args.Limit {
+		if len(rows[0]) == args.Limit && largestEvents != args.Limit {
+			cursor = supremum
+		} else {
+			cursor = supremum - 1
+			if cursor < args.FromBlock {
+				next := args
+				next.Limit *= 2
+				if next.Limit <= args.Limit {
+					return SourceEventData{}, fmt.Errorf("source event query limit overflow")
+				}
+				return s.GetEventData(ctx, next)
+			}
+		}
+	}
+	for i, set := range rows {
+		key := "blockNumber"
+		if i == 0 {
+			key = "number"
+		}
+		for j, row := range set {
+			if sourceRowNumber(row, key) > cursor {
+				rows[i] = set[:j]
+				break
+			}
+			if i == 0 {
+				sourceLowerField(row, "miner")
+				continue
+			}
+			row["blockNumber"] = sourceRowNumber(row, key)
+			sourceLowerField(row, "from")
+			sourceLowerField(row, "to")
+			switch i {
+			case 1:
+				switch row["type"] {
+				case "0x0":
+					row["type"] = "legacy"
+					row["accessList"] = filter.Undefined
+					row["maxFeePerGas"] = filter.Undefined
+					row["maxPriorityFeePerGas"] = filter.Undefined
+				case "0x1":
+					row["type"] = "eip2930"
+					if value, ok := row["accessList"]; !ok {
+						row["accessList"] = filter.Undefined
+					} else if value != nil {
+						var list any
+						if e = json.Unmarshal([]byte(fmt.Sprint(value)), &list); e != nil {
+							return SourceEventData{}, e
+						}
+						row["accessList"] = list
+					}
+					row["maxFeePerGas"] = filter.Undefined
+					row["maxPriorityFeePerGas"] = filter.Undefined
+				case "0x2":
+					row["type"] = "eip1559"
+					row["gasPrice"] = filter.Undefined
+					row["accessList"] = filter.Undefined
+				case "0x7e":
+					row["type"] = "deposit"
+					row["gasPrice"] = filter.Undefined
+					row["accessList"] = filter.Undefined
+				}
+			case 2:
+				sourceLowerField(row, "contractAddress")
+				if row["status"] == "0x1" {
+					row["status"] = "success"
+				} else if row["status"] == "0x0" {
+					row["status"] = "reverted"
+				}
+				if text, ok := row["type"].(string); ok {
+					if label, ok := map[string]string{"0x0": "legacy", "0x1": "eip2930", "0x2": "eip1559", "0x7e": "deposit"}[text]; ok {
+						row["type"] = label
+					}
+				}
+				if _, present := row["type"]; !present {
+					row["type"] = filter.Undefined
+				}
+			case 3:
+				sourceLowerField(row, "address")
+				row["removed"] = false
+				row["topics"] = []any{row["topic0"], row["topic1"], row["topic2"], row["topic3"]}
+				for _, key := range []string{"topic0", "topic1", "topic2", "topic3"} {
+					row[key] = filter.Undefined
+				}
+			case 4:
+				if row["output"] == nil {
+					row["output"] = filter.Undefined
+				}
+			}
+		}
+	}
+	return SourceEventData{Blocks: rows[0], Transactions: rows[1], TransactionReceipts: rows[2], Logs: rows[3], Traces: rows[4], Cursor: cursor}, nil
+}

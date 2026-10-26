@@ -38,6 +38,7 @@ type Owned struct {
 	closing    bool
 	closeDone  chan struct{}
 	closeErr   error
+	historical *HistoricalSync
 }
 
 func OpenOwnedPostgres(ctx context.Context, o OwnedOptions) (*Owned, error) {
@@ -108,7 +109,7 @@ func (o *Owned) Batch(ctx context.Context, chain uint64, historical bool, fn fun
 	if fn == nil {
 		return fmt.Errorf("owned batch callback is required")
 	}
-	if _, err = o.enterWork(); err != nil {
+	if _, err = o.enterWork(ctx); err != nil {
 		return err
 	}
 	var binding *DatabaseBinding
@@ -140,10 +141,14 @@ func (o *Owned) Batch(ctx context.Context, chain uint64, historical bool, fn fun
 		return fn(bound, o.service, w)
 	})
 }
-func (o *Owned) enterWork() (func(), error) {
+func (o *Owned) enterWork(ctx context.Context) (func(), error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	o.mu.Lock()
 	defer o.mu.Unlock()
-	if o.closing || o.active {
+	scope, _ := ctx.Value(historicalScopeKey{}).(*HistoricalSync)
+	if o.closing || o.active || scope != o.historical || (scope != nil && scope.sealed.Load()) {
 		return nil, fmt.Errorf("owned indexing is closed or already bound")
 	}
 	o.active = true
@@ -161,7 +166,14 @@ func (o *Owned) Close(ctx context.Context) error {
 		o.closing = true
 		o.closeDone = make(chan struct{})
 		active := o.activeDone
+		historical := o.historical
+		if historical != nil {
+			historical.cancel()
+		}
 		go func() {
+			if historical != nil {
+				<-historical.done
+			}
 			<-active
 			err := o.closeResources()
 			o.mu.Lock()
@@ -249,8 +261,21 @@ func (g *ownedGate) close() {
 }
 
 type ownedRequester struct {
-	base rpc.Requester
-	gate *ownedGate
+	base        rpc.Requester
+	gate        *ownedGate
+	actionsOnce sync.Once
+	actions     *rpc.Actions
+}
+
+func (r *ownedRequester) actionOwner() *rpc.Actions {
+	r.actionsOnce.Do(func() {
+		if owner, ok := r.base.(interface{ Actions() *rpc.Actions }); ok {
+			r.actions = owner.Actions()
+		} else {
+			r.actions = rpc.NewActions(r.base)
+		}
+	})
+	return r.actions
 }
 
 func (r *ownedRequester) Call(ctx context.Context, method string, params, out any) error {

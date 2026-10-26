@@ -80,7 +80,7 @@ type Database struct {
 	session       *store.IndexingSession
 	bindingMu     sync.Mutex
 	binding       *DatabaseBinding
-	readOnlyScope func() (func(), error)
+	readOnlyScope func(context.Context) (func(), error)
 }
 
 func NewDatabase(db *store.IndexingStore, handler RetryableErrorHandler, classifiers ...DatabaseErrorClassifier) *Database {

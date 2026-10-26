@@ -1,0 +1,276 @@
+package historical
+
+// PRIVATE DRAFT: unapplied, uncompiled, unrun, unverified. Zero original credit.
+// This new virtual test observes real production calls; it does not replace a
+// storage backend, coordinator, handler dispatcher, SQL result, or future.
+import (
+ "context"
+ "database/sql"
+ "encoding/json"
+ "errors"
+ "fmt"
+ "math/big"
+ "os"
+ "reflect"
+ "runtime"
+ "strings"
+ "sync"
+ "sync/atomic"
+ "testing"
+ "time"
+
+ "ponder.local/ponder-go/checkpoint"
+ "ponder.local/ponder-go/indexing"
+ "ponder.local/ponder-go/schema"
+ "ponder.local/ponder-go/store"
+)
+
+type m43LifetimeRow struct {
+ Sequence int `json:"sequence"`
+ Phase string `json:"phase"`
+ ContextError string `json:"context_error,omitempty"`
+ ContextCause string `json:"context_cause,omitempty"`
+ Deadline string `json:"deadline,omitempty"`
+ Fields map[string]any `json:"fields,omitempty"`
+ ErrorLeaves []string `json:"error_leaves,omitempty"`
+}
+type m43LifetimeRecorder struct { mu sync.Mutex; rows []m43LifetimeRow }
+func m43ErrorLeaves(err error) []string {
+ var out []string
+ var visit func(error,int)
+ visit=func(e error,depth int){
+  if e==nil { return }; if depth>64 { out=append(out,"ERROR_UNWRAP_DEPTH_LIMIT"); return }
+  if many,ok:=e.(interface{Unwrap()[]error}); ok { for _,x:=range many.Unwrap(){visit(x,depth+1)};return }
+  if one,ok:=e.(interface{Unwrap()error});ok { if x:=one.Unwrap();x!=nil { visit(x,depth+1);return } }
+  out=append(out,fmt.Sprintf("%T: %s",e,e.Error()))
+ }
+ visit(err,0);return out
+}
+func (r *m43LifetimeRecorder) add(e store.M43LifetimeEvent) {
+ row:=m43LifetimeRow{Phase:e.Phase,Fields:e.Fields,ErrorLeaves:m43ErrorLeaves(e.Err)}
+ if e.Context!=nil { if e.Context.Err()!=nil {row.ContextError=e.Context.Err().Error()};if cause:=context.Cause(e.Context);cause!=nil {row.ContextCause=cause.Error()};if d,ok:=e.Context.Deadline();ok {row.Deadline=d.UTC().Format(time.RFC3339Nano)} }
+ r.mu.Lock();row.Sequence=len(r.rows)+1;r.rows=append(r.rows,row);r.mu.Unlock()
+}
+func (r *m43LifetimeRecorder) note(phase string, fields map[string]any, err error){r.add(store.M43LifetimeEvent{Phase:phase,Fields:fields,Err:err})}
+func (r *m43LifetimeRecorder) snapshot() []m43LifetimeRow {r.mu.Lock();defer r.mu.Unlock();return append([]m43LifetimeRow(nil),r.rows...)}
+func m43OneClose(c chan struct{}) func(){var once sync.Once;return func(){once.Do(func(){close(c)})}}
+func m43Await(ctx context.Context,c <-chan struct{},name string)error{select{case<-c:return nil;case<-ctx.Done():return fmt.Errorf("diagnostic stage %s: %w",name,ctx.Err())}}
+
+// The four exact family keys must all be held by one actual connection. No
+// basename matching, backend getter, or guessed PID is accepted.
+func m43OwnerPID(ctx context.Context,db *sql.DB,ns string)(int,int,error){
+ const q=`WITH wanted(k) AS (
+ SELECT hashtextextended(x || ':independent-owner',0)
+ FROM unnest(ARRAY[$1,$1||'_sync',$1||'_legacy',$1||'_rpc_1']) AS x
+ ) SELECT l.pid,count(*) FROM pg_locks l JOIN wanted w
+ ON l.classid::bigint=((w.k >> 32)&4294967295)
+ AND l.objid::bigint=(w.k&4294967295)
+ WHERE l.locktype='advisory' AND l.objsubid=1 AND l.granted
+ GROUP BY l.pid ORDER BY l.pid`
+ rows,err:=db.QueryContext(ctx,q,ns);if err!=nil{return 0,0,err};defer rows.Close()
+ pid,count,n:=0,0,0
+ for rows.Next(){n++;if err=rows.Scan(&pid,&count);err!=nil{return 0,0,err}}
+ if err=rows.Err();err!=nil{return 0,0,err};if n>1{return 0,0,fmt.Errorf("owner family split across %d PIDs",n)}
+ return pid,count,nil
+}
+func m43CacheTable(ctx context.Context,db *sql.DB,ns string)(string,error){
+ rows,err:=db.QueryContext(ctx,`SELECT n.nspname,c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='r' AND c.relname='rpc_request_results' AND n.nspname::text IN ($1::text,$1::text||'_sync',$1::text||'_legacy',$1::text||'_rpc_1')`,ns)
+ if err!=nil{return "",err};defer rows.Close();var names []string
+ for rows.Next(){var n,c string;if err=rows.Scan(&n,&c);err!=nil{return "",err};names=append(names,schema.Quote(n)+"."+schema.Quote(c))}
+ if err=rows.Err();err!=nil{return "",err};if len(names)!=1{return "",fmt.Errorf("actual cache table count=%d",len(names))};return names[0],nil
+}
+func m43ObserveBlockedInsert(ctx context.Context,db *sql.DB,syncPID,lockPID int,table string)(map[string]any,error){
+ polls:=0
+ for {
+  polls++
+  var state,waitType,wait,query string;var blocked bool
+  err:=db.QueryRowContext(ctx,`SELECT state,coalesce(wait_event_type,''),coalesce(wait_event,''),query,$2=ANY(pg_blocking_pids(pid)) FROM pg_stat_activity WHERE pid=$1`,syncPID,lockPID).Scan(&state,&waitType,&wait,&query,&blocked)
+  if err!=nil{return nil,err}
+  if blocked&&waitType=="Lock"&&strings.Contains(query,"INSERT INTO "+table){return map[string]any{"sync_pid":syncPID,"blocker_pid":lockPID,"state":state,"wait_event_type":waitType,"wait_event":wait,"query":query,"polls":polls},nil}
+  if err=ctx.Err();err!=nil{return nil,fmt.Errorf("no actual blocked cache INSERT observed: %w",err)}
+  runtime.Gosched() // Observation polling only; no elapsed-time success predicate.
+ }
+}
+func m43ReadBalances(ctx context.Context,r *Runner)(map[string]string,error){
+ out:=map[string]string{}
+ err:=r.Owner().Database().WithReadOnly(ctx,1,func(read context.Context)error{rows,e:=r.Owner().Database().Select(read,"account",nil);if e!=nil{return e};for _,row:=range rows{out[fmt.Sprint(row["id"])]=fmt.Sprint(row["balance"])};return nil})
+ return out,err
+}
+
+// Observer-owned cancellation callbacks are joined independently of production
+// futures. A bounded join failure is reported, never treated as a complete trace.
+type m43CancelWatch struct{ done chan struct{}; stop func() bool }
+type m43CancelObservers struct{ mu sync.Mutex; sealed bool; watches []*m43CancelWatch; errs []error }
+func (o *m43CancelObservers) watch(ctx context.Context,fn func())error{
+ o.mu.Lock();defer o.mu.Unlock();if o.sealed{err:=errors.New("observer registration after seal");o.errs=append(o.errs,err);return err}
+ w:=&m43CancelWatch{done:make(chan struct{})};o.watches=append(o.watches,w)
+ w.stop=context.AfterFunc(ctx,func(){defer close(w.done);fn()});return nil
+}
+func (o *m43CancelObservers) join(ctx context.Context)error{
+ o.mu.Lock();o.sealed=true;items:=append([]*m43CancelWatch(nil),o.watches...);errs:=append([]error(nil),o.errs...);o.mu.Unlock()
+ for _,w:=range items{select{case<-w.done:continue;default:};select{case<-w.done:case<-ctx.Done():
+  errs=append(errs,fmt.Errorf("cancellation observer did not join: %w",ctx.Err()))
+  if w.stop(){close(w.done)} // Prevent an unstarted observer from escaping cleanup.
+ }}
+ return errors.Join(errs...)
+}
+func m43OwnerReleased(ctx context.Context,db *sql.DB,businessNS,syncNS string,businessPID,syncPID int)(map[string]any,error){
+ polls:=0
+ for{polls++;bp,bn,be:=m43OwnerPID(ctx,db,businessNS);sp,sn,se:=m43OwnerPID(ctx,db,syncNS)
+  var live int;pe:=db.QueryRowContext(ctx,"SELECT count(*) FROM pg_stat_activity WHERE pid IN ($1,$2)",businessPID,syncPID).Scan(&live)
+  row:=map[string]any{"polls":polls,"business_pid":bp,"business_locks":bn,"sync_pid":sp,"sync_locks":sn,"original_pids_remaining":live}
+  if err:=errors.Join(be,se,pe);err!=nil{return row,err}
+  if bn==0&&sn==0&&live==0{return row,nil}
+  if err:=ctx.Err();err!=nil{return row,err};runtime.Gosched()
+ }
+}
+func m43OrdinaryCancellation(err error)bool{return errors.Is(err,context.Canceled)||errors.Is(err,context.DeadlineExceeded)}
+type m43RunOutcome struct{ Result Result; Err error }
+func TestPrivateM43LastWriteLifetimeSQL(t *testing.T){
+ for _,mode:=range []string{"finite_success","handler_error","on_committed_error","unknown_after_unreadable","caller_cancel","owner_close"}{
+  t.Run(mode,func(t *testing.T){
+   // Not parallel: the private global observation hook is scoped to this test.
+   bound,stopBound:=context.WithTimeout(context.Background(),15*time.Second);defer stopBound()
+   caller,cancelCaller:=context.WithCancel(bound);defer cancelCaller()
+   rec:=&m43LifetimeRecorder{}
+   cancelObservers:=&m43CancelObservers{}
+   defer func(){data,e:=json.Marshal(map[string]any{"status":"diagnostic_execution_only_not_original_parity","case":mode,"trace":rec.snapshot()});if e!=nil{t.Error(e)}else{t.Log(string(data))}}()
+   url,expected:=os.Getenv("PONDER_TEST_POSTGRES"),os.Getenv("PONDER_M43_LIFETIME_EXPECT_PGDATA")
+   if url==""||expected==""{t.Fatal("explicit fresh task PG URL and expected data_directory required; no skip")}
+   control,e:=sql.Open("pgx",url);if e!=nil{t.Fatal(e)};defer control.Close();control.SetMaxOpenConns(4)
+   var actual string;if e=control.QueryRowContext(bound,"SHOW data_directory").Scan(&actual);e!=nil||actual!=expected{t.Fatalf("task PG identity actual=%q expected=%q error=%v",actual,expected,e)}
+   rec.note("task-pg-identity",map[string]any{"data_directory":actual},nil)
+   p:=newFiniteRPC(t,1)
+   lockAcquired,handlerContinue,cleanupEnter,cleanupContinue,drainEnter,drainContinue:=make(chan struct{}),make(chan struct{}),make(chan struct{}),make(chan struct{}),make(chan struct{}),make(chan struct{})
+   releaseHandler,releaseCleanup,releaseDrain:=m43OneClose(handlerContinue),m43OneClose(cleanupContinue),m43OneClose(drainContinue)
+   var armed,cleanupUsed,drainUsed,closeRequested atomic.Bool
+   var ordinal,setupCount,commitCount,retries atomic.Int64
+   var targetChain atomic.Uint64
+   var lockMu sync.Mutex;var lockTx *sql.Tx;var lockPID int;var hookErr error
+   var table string
+   const address="0x0000000000000000000000000000000000001234"
+   admitted:=make(chan context.Context,1)
+   resetObserver:=store.M43LifetimeObserve(func(ev store.M43LifetimeEvent){
+    rec.add(ev)
+    if ev.Phase=="cache-job-admitted"&&armed.Load(){
+     select{case admitted<-ev.Context:default:}
+     if observerErr:=cancelObservers.watch(ev.Context,func(){rec.note("admitted-job-context-done",map[string]any{"caller_cancelled":caller.Err()!=nil,"owner_close_requested":closeRequested.Load(),"context_error":fmt.Sprint(ev.Context.Err()),"cause":fmt.Sprint(context.Cause(ev.Context))},nil)});observerErr!=nil{rec.note("observer-registration-error",nil,observerErr)}
+    }
+    if !armed.Load(){return}
+    switch ev.Phase {
+    case "runner-cleanup-enter":if cleanupUsed.CompareAndSwap(false,true){close(cleanupEnter);select{case<-cleanupContinue:case<-bound.Done():}}
+    case "client-wait-cache-writes-enter":if drainUsed.CompareAndSwap(false,true){close(drainEnter);select{case<-drainContinue:case<-bound.Done():}}
+    }
+   });defer resetObserver()
+   p.setHook(func(ctx context.Context,call finiteRPCRequest)error{
+    if call.Method!="eth_getBalance"||!armed.Load(){return nil}
+    lockMu.Lock();defer lockMu.Unlock()
+    if lockTx!=nil{return fmt.Errorf("unexpected duplicate target RPC before drainage")}
+    tx,err:=control.BeginTx(bound,nil);if err!=nil{hookErr=err;return err};lockTx=tx
+    if err=tx.QueryRowContext(bound,"SELECT pg_backend_pid()").Scan(&lockPID);err==nil{_,err=tx.ExecContext(bound,"LOCK TABLE "+table+" IN ACCESS EXCLUSIVE MODE")}
+    hookErr=err;rec.note("external-table-lock-acquired",map[string]any{"pid":lockPID,"table":table,"chain":call.Chain,"method":call.Method},err)
+    close(lockAcquired);return err
+   })
+   h:=indexing.Handler(func(ctx context.Context,a *indexing.HandlerArgs)error{
+    n:=ordinal.Add(1)
+    if n==2{
+     targetChain.Store(finiteChain(a));armed.Store(true)
+     if _,err:=a.Context.Client.GetBalance(ctx,address);err!=nil{return err}
+     rec.note("target-handler-cache-call-returned",map[string]any{"chain":finiteChain(a)},nil)
+     select{case<-handlerContinue:case<-ctx.Done():return ctx.Err()}
+    }
+    if err:=finiteIncrement(ctx,a);err!=nil{return err}
+    if n==2&&mode=="handler_error"{return &store.NonRetryableUserError{Message:"private actual-SQL lifetime terminal handler"}}
+    return nil
+   })
+   setup:=indexing.Handler(func(context.Context,*indexing.HandlerArgs)error{setupCount.Add(1);return nil})
+   build:=finiteBuild(t,p,1,true,h,setup);f:=newFiniteFixture(t,"postgres",build)
+   f.options.RetryWait=func(ctx context.Context,d time.Duration)error{retries.Add(1);return fmt.Errorf("diagnostic unexpectedly requested retry %s",d)}
+   if mode=="on_committed_error"{f.options.OnCommitted=func(context.Context,GroupResult)error{if commitCount.Add(1)==2{return finiteStop};return nil}}
+   r,closeScope:=f.startWithCloseScope(t)
+   businessPID,businessLocks,e:=m43OwnerPID(bound,control,f.options.Owned.Storage.BusinessNamespace);if e!=nil{t.Fatal(e)}
+   syncPID,syncLocks,e:=m43OwnerPID(bound,control,f.options.Owned.Storage.SyncNamespace);if e!=nil{t.Fatal(e)}
+   if businessPID==0||syncPID==0||businessPID==syncPID||businessLocks!=4||syncLocks!=4{t.Fatal("actual independent owner identity",businessPID,businessLocks,syncPID,syncLocks)}
+   rec.note("owner-identities",map[string]any{"business_pid":businessPID,"sync_pid":syncPID,"business_locks":businessLocks,"sync_locks":syncLocks},nil)
+   table,e=m43CacheTable(bound,control,f.options.Owned.Storage.SyncNamespace);if e!=nil{t.Fatal(e)}
+   unknown:=&store.CommitOutcomeUnknownError{Err:errors.New("private post-real-commit acknowledgment unavailable")}
+   if mode=="unknown_after_unreadable"{
+    var injected bool;var appliedGroups int
+    r.transactions=&finiteDelegate{historicalTransactions:r.owner,afterGroup:func(applied bool,err error)(bool,error){if err==nil{appliedGroups++;if appliedGroups==2{injected=true;return applied,unknown}};return applied,err},snapshot:func(ctx context.Context)(store.HistoricalSnapshot,error){if injected{return store.HistoricalSnapshot{},errors.New("private controlled unavailable reconciliation read")};return r.owner.HistoricalSnapshot(ctx)}}
+   }
+   outcomes:=make(chan m43RunOutcome,1);closeOut:=make(chan error,1)
+   go func(){result,err:=r.Run(caller);outcomes<-m43RunOutcome{result,err}}()
+   var lockReleased bool
+   releaseSQL:=func()error{lockMu.Lock();defer lockMu.Unlock();if lockTx==nil||lockReleased{return nil};lockReleased=true;err:=lockTx.Rollback();rec.note("external-lock-released",map[string]any{"pid":lockPID},err);return err}
+   // Failure cleanup also releases every explicit handshake. A deadline is a
+   // diagnostic failure, not proof that an owned task joined.
+   defer func(){releaseHandler();releaseCleanup();releaseDrain();cancelCaller();_ = releaseSQL();ctx,cancel:=context.WithTimeout(context.Background(),5*time.Second);defer cancel();err:=r.Close(ctx);rec.note("emergency-or-idempotent-close",nil,err);observerErr:=cancelObservers.join(ctx);rec.note("emergency-observers-joined",nil,observerErr);if observerErr!=nil{t.Error(observerErr)}}()
+   if e=m43Await(bound,lockAcquired,"table-lock-acquired");e!=nil{t.Fatal(e)}
+   lockMu.Lock();rpcLockPID,lockError:=lockPID,hookErr;lockMu.Unlock();if lockError!=nil{t.Fatal(lockError)}
+   var writeCtx context.Context;select{case writeCtx=<-admitted:case<-bound.Done():t.Fatal("no actual cache job admitted",bound.Err())}
+   blocked,e:=m43ObserveBlockedInsert(bound,control,syncPID,rpcLockPID,table);rec.note("actual-blocked-cache-insert",blocked,e);if e!=nil{t.Fatal(e)}
+   if mode=="caller_cancel"{rec.note("external-caller-cancel",nil,nil);cancelCaller()}
+   if mode=="owner_close"{closeRequested.Store(true);rec.note("external-owner-close",nil,nil);go func(){closeOut<-r.Close(bound)}()}
+   if mode=="caller_cancel"||mode=="owner_close"{select{case<-writeCtx.Done():closeScope.markTriggered(r);case<-bound.Done():t.Fatal("actual requested hard cancel did not reach admitted SQL",bound.Err())}}
+   if mode!="caller_cancel"&&mode!="owner_close"{releaseHandler()}
+   if e=m43Await(bound,cleanupEnter,"real-runner-cleanup-enter");e!=nil{t.Fatal(e)}
+   rec.note("cleanup-entry-actual-write-context",map[string]any{"error":fmt.Sprint(writeCtx.Err()),"caller_error":fmt.Sprint(caller.Err()),"owner_close_requested":closeRequested.Load()},nil)
+   releaseCleanup()
+   if e=m43Await(bound,drainEnter,"real-cache-drain-enter");e!=nil{t.Fatal(e)}
+   canceledAtDrain:=writeCtx.Err()!=nil
+   rec.note("drain-entry-actual-write-context",map[string]any{"cancelled":canceledAtDrain,"error":fmt.Sprint(writeCtx.Err()),"caller_error":fmt.Sprint(caller.Err()),"owner_close_requested":closeRequested.Load()},nil)
+   if e=releaseSQL();e!=nil{t.Error(e)};releaseDrain()
+   var outcome m43RunOutcome;select{case outcome=<-outcomes:case<-bound.Done():t.Fatal("Run did not join",bound.Err())}
+   armed.Store(false)
+   rec.note("run-returned",map[string]any{"result":outcome.Result,"setups":setupCount.Load(),"handlers":ordinal.Load(),"retry_waits":retries.Load()},outcome.Err)
+   inspection,stopInspection:=context.WithTimeout(context.Background(),5*time.Second);defer stopInspection()
+   snapshot,snapshotErr:=r.Owner().HistoricalSnapshot(inspection);rec.note("same-owner-durable-snapshot",map[string]any{"snapshot":snapshot},snapshotErr)
+   balances,balanceErr:=m43ReadBalances(inspection,r);rec.note("same-owner-business-rows",map[string]any{"balances":balances},balanceErr)
+   expectedHash,hashErr:=store.SourceRPCRequestHash(map[string]any{"method":"eth_getBalance","params":[]any{address,"0x1"}});if hashErr!=nil{t.Error(hashErr)}
+   var cacheRows int;cacheErr:=control.QueryRowContext(inspection,"SELECT count(*) FROM "+table+" WHERE chain_id=$1 AND request_hash=$2",targetChain.Load(),expectedHash).Scan(&cacheRows)
+   rec.note("actual-cache-row-after-run",map[string]any{"chain":targetChain.Load(),"request_hash":expectedHash,"rows":cacheRows},cacheErr)
+   ordinary:=mode!="caller_cancel"&&mode!="owner_close"
+   if ordinary{
+    beforeCalls:=len(p.snapshot());client,err:=r.Owner().Clients().GetClient(build.Executable().Chains[targetChain.Load()-1]);var balance *big.Int
+    if err==nil{balance,err=client.GetBalance(inspection,address,indexing.BalanceOptions{BlockNumber:big.NewInt(1)})}
+    rec.note("same-owner-sync-cache-reuse",map[string]any{"value":fmt.Sprint(balance),"rpc_count_before":beforeCalls,"rpc_count_after":len(p.snapshot())},err)
+    if err!=nil||balance==nil||balance.Cmp(big.NewInt(42))!=0||len(p.snapshot())!=beforeCalls{t.Error("ordinary return damaged owner/cache reuse",err,balance,beforeCalls,len(p.snapshot()))}
+    if mode=="finite_success"{again,err:=r.Run(inspection);rec.note("same-owner-second-run",map[string]any{"result":again},err);if err!=nil||!again.Completed||!again.Resumed||len(again.Groups)!=0{t.Error("ordinary finite owner not reusable",again,err)}}
+   }
+   var closeErr error
+   if mode=="owner_close"{select{case closeErr=<-closeOut:case<-inspection.Done():closeErr=inspection.Err()}}else{closeErr=r.Close(inspection)}
+   rec.note("strict-close-result",nil,closeErr)
+   released,releaseErr:=m43OwnerReleased(inspection,control,f.options.Owned.Storage.BusinessNamespace,f.options.Owned.Storage.SyncNamespace,businessPID,syncPID);rec.note("owner-locks-and-pids-released",released,releaseErr);if releaseErr!=nil{t.Error("owner release not observed",releaseErr)}
+   observerErr:=cancelObservers.join(inspection);rec.note("cancellation-observers-joined",nil,observerErr);if observerErr!=nil{t.Error(observerErr)}
+   if ordinary{
+    if m43OrdinaryCancellation(outcome.Err){t.Error("ordinary stop joined a cancellation/deadline error",m43ErrorLeaves(outcome.Err))}
+    if canceledAtDrain{t.Error("ordinary stop cancelled already admitted cache I/O")}
+    if closeErr!=nil{t.Error("ordinary stop self-fenced; exact leaves retained",m43ErrorLeaves(closeErr))}
+    if snapshotErr!=nil||balanceErr!=nil||cacheErr!=nil||cacheRows!=1{t.Error("ordinary stop lost durable state/cache",snapshotErr,balanceErr,cacheErr,cacheRows)}
+    if mode=="finite_success"&&(outcome.Err!=nil||!outcome.Result.Completed){t.Error(outcome.Result,outcome.Err)}
+    if mode=="handler_error"{var terminal *store.NonRetryableUserError;if !errors.As(outcome.Err,&terminal)||outcome.Result.Completed||len(balances)!=1{t.Error("handler rollback/prefix",outcome.Result,outcome.Err,balances)}}
+    if mode=="on_committed_error"&&(!errors.Is(outcome.Err,finiteStop)||outcome.Result.Completed||len(balances)!=2){t.Error("OnCommitted durable final prefix",outcome.Result,outcome.Err,balances)}
+    if mode=="unknown_after_unreadable"&&(!errors.Is(outcome.Err,unknown)||outcome.Result.Completed||len(balances)!=2){t.Error("unknown exact identity/durable prefix",outcome.Result,outcome.Err,balances)}
+   }else{
+    if !canceledAtDrain{t.Error("real caller/owner cancellation did not reach admitted I/O")}
+    if !errors.Is(outcome.Err,context.Canceled)||errors.Is(outcome.Err,context.DeadlineExceeded){t.Error("explicit cancellation did not retain its actual classification",m43ErrorLeaves(outcome.Err))}
+    // These two cases alone authorize connection-closed leaves after genuine
+    // cancellation of an actually blocked SQL call; ordinary cases require nil.
+    if !finiteClosedOnly(closeErr){t.Error("unexpected true-cancellation Close leaf",m43ErrorLeaves(closeErr))}
+   }
+   if setupCount.Load()!=2||retries.Load()!=0{t.Error("setup/retry changed",setupCount.Load(),retries.Load())}
+   reopened,openErr:=f.open(inspection,f.options);rec.note("reopen-after-release",nil,openErr)
+   if openErr!=nil{t.Error(openErr);return}
+   reopenPrefix,prefixErr:=m43ReadBalances(inspection,reopened);prefixSnapshot,prefixSnapshotErr:=reopened.Owner().HistoricalSnapshot(inspection)
+   expectedPrefix:=map[string]string{"chain1":"1","chain2":"1"}
+   if mode=="handler_error"||mode=="caller_cancel"||mode=="owner_close"{expectedPrefix=map[string]string{fmt.Sprintf("chain%d",3-targetChain.Load()):"1"}}
+   rec.note("reopened-before-any-new-handler",map[string]any{"balances":reopenPrefix,"snapshot":prefixSnapshot,"setups":setupCount.Load()},errors.Join(prefixErr,prefixSnapshotErr))
+   if prefixErr!=nil||prefixSnapshotErr!=nil||!prefixSnapshot.Initialized||len(prefixSnapshot.Chains)!=2||!reflect.DeepEqual(reopenPrefix,expectedPrefix)||setupCount.Load()!=2{t.Error("exact durable prefix after owner release",reopenPrefix,expectedPrefix,prefixSnapshot,prefixErr,prefixSnapshotErr,setupCount.Load())}
+   reopenedResult,reopenedErr:=reopened.Run(inspection);reopenedBalances,reopenedBalanceErr:=m43ReadBalances(inspection,reopened);reopenedSnapshot,reopenedSnapshotErr:=reopened.Owner().HistoricalSnapshot(inspection)
+   rec.note("reopened-completion",map[string]any{"result":reopenedResult,"balances":reopenedBalances,"snapshot":reopenedSnapshot,"setups":setupCount.Load()},errors.Join(reopenedErr,reopenedBalanceErr,reopenedSnapshotErr))
+   finalCloseErr:=reopened.Close(inspection);rec.note("reopened-strict-close",nil,finalCloseErr)
+   if reopenedErr!=nil||reopenedBalanceErr!=nil||reopenedSnapshotErr!=nil||finalCloseErr!=nil||!reopenedResult.Resumed||!reopenedResult.Completed||setupCount.Load()!=2||!reflect.DeepEqual(reopenedBalances,map[string]string{"chain1":"1","chain2":"1"}){t.Error("reopen durable resume failed",reopenedResult,reopenedBalances,setupCount.Load(),reopenedErr,reopenedBalanceErr,reopenedSnapshotErr,finalCloseErr)}
+   for _,chain:=range reopenedSnapshot.Chains{cp,err:=checkpoint.Decode(chain.Cursor);if err!=nil||cp.BlockNumber!=1||chain.Cursor!=chain.LatestCheckpoint||chain.Cursor!=chain.SafeCheckpoint||chain.Cursor!=chain.FinalizedCheckpoint{t.Error("reopened exact checkpoint",chain,err)}}
+  })
+ }
+}
