@@ -1,0 +1,64 @@
+{
+  "format": "managed-finite-same-exec-sequence-v1",
+  "complete": true,
+  "success": false,
+  "started_utc": "2026-10-26T11:20:09Z",
+  "finished_utc": "2026-10-26T13:05:59.485396+00:00",
+  "pid_namespace_before": "pid:[4026532383]",
+  "pid_namespace_after": "pid:[4026532383]",
+  "observer_exit_code": "1",
+  "collector_exit_code": "not_run",
+  "shell_exit_code": 1,
+  "interrupted": "",
+  "script_unchanged": true,
+  "commands": [
+    [
+      "python3",
+      "tools/managed-finite-observe.py",
+      "--output=parity/runs/managed-finite-m44/full-02-20261026",
+      "--baseline=parity/runs/finite-historical-m43/m44-regression-full-02-20261026",
+      "--budget-gib=4"
+    ],
+    [
+      "node",
+      "tools/managed-finite-results.mjs",
+      "--run-dir=parity/runs/managed-finite-m44/full-02-20261026",
+      "--output=parity/runs/managed-finite-m44/full-02-20261026/verification.json"
+    ]
+  ],
+  "references": [
+    {
+      "file": "parity/runs/managed-finite-m44/full-02-20261026-exec/launch.sh",
+      "sha256": "4dd3100ebde5691bc8fa97ee07eb91a968260c6b9d951f061ff53d7460ad9d5d"
+    },
+    {
+      "file": "parity/runs/managed-finite-m44/full-02-20261026-exec/observer.log",
+      "sha256": "9af9ad436879bcc06682a546d529557fe4ab0da877defbd40184b5601b04dfeb"
+    },
+    {
+      "file": "parity/runs/managed-finite-m44/full-02-20261026-exec/collector.log",
+      "missing": true
+    },
+    {
+      "file": "parity/runs/managed-finite-m44/full-02-20261026-observer/result.json",
+      "sha256": "50235c889553ec71cd802db14c64683560361a9951cc8a8fcf993a249c664d67"
+    },
+    {
+      "file": "parity/runs/managed-finite-m44/full-02-20261026/closeout.json",
+      "missing": true
+    },
+    {
+      "file": "parity/runs/managed-finite-m44/full-02-20261026/verification.json",
+      "missing": true
+    },
+    {
+      "file": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026-fixture/exit-code.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026-fixture/shutdown.log",
+      "sha256": "ca19178a35ab4153b75b494963b66ce8243e1b94c173107c87b44d09db23652d"
+    }
+  ],
+  "scope": "Observer and final collector ran sequentially inside this exact recorded execution PID namespace, not an unrelated later exec or a host-global process census."
+}

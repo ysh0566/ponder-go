@@ -44,7 +44,10 @@ type IndependentStorage struct {
 	closeDone                    chan struct{}
 	ownerLocks                   []independentOwnerLock
 	closeErr                     error
+	managed                      *ManagedFinite
 }
+
+func (s *IndependentStorage) ManagedFinite() *ManagedFinite { return s.managed }
 
 func (s *IndependentStorage) BusinessActions() *Actions { return s.business }
 func (s *IndependentStorage) BusinessStore() *Store     { return s.business.s }
@@ -58,6 +61,9 @@ func (s *IndependentStorage) Close(ctx context.Context) error {
 				_ = s.syncCache.Close()
 			}
 			var errs []error
+			if s.managed != nil {
+				errs = append(errs, s.managed.close())
+			}
 			for _, lock := range s.ownerLocks {
 				_, err := lock.connection.ExecContext(context.Background(), "SELECT pg_advisory_unlock(hashtextextended($1,0))", lock.key)
 				errs = append(errs, err)
@@ -111,6 +117,9 @@ func independentNamespaceFamily(n string) []string {
 // OpenIndependentPostgres always opens two distinct pools, even for the same URL.
 // No arbitrary Backend pair can be supplied as a purported isolation proof.
 func OpenIndependentPostgres(ctx context.Context, o IndependentStorageOptions) (*IndependentStorage, error) {
+	return openIndependentPostgres(ctx, o, nil)
+}
+func openIndependentPostgres(ctx context.Context, o IndependentStorageOptions, managed *ManagedFiniteOptions) (*IndependentStorage, error) {
 	if err := independentNames(o); err != nil {
 		return nil, err
 	}
@@ -189,7 +198,12 @@ func OpenIndependentPostgres(ctx context.Context, o IndependentStorageOptions) (
 			allKeys = append(allKeys, key)
 		}
 	}
-	if err = s.initialize(ctx, o); err != nil {
+	if managed != nil && managed.ViewsSchema != "" {
+		if err = s.reserveManagedAlias(ctx, managed.ViewsSchema, append(operational, allKeys...)); err != nil {
+			return fail(err)
+		}
+	}
+	if err = s.initializeMode(ctx, o, managed); err != nil {
 		return fail(err)
 	}
 	return s, nil
@@ -200,6 +214,9 @@ func OpenIndependentPostgres(ctx context.Context, o IndependentStorageOptions) (
 // atomic and sync persistence is independent. Initialization cancellation stops
 // initialization, but a successful owner's process lifetime is not tied to ctx.
 func OpenIndependentPGlite(ctx context.Context, o IndependentStorageOptions) (*IndependentStorage, error) {
+	return openIndependentPGlite(ctx, o, nil)
+}
+func openIndependentPGlite(ctx context.Context, o IndependentStorageOptions, managed *ManagedFiniteOptions) (*IndependentStorage, error) {
 	if err := independentNames(o); err != nil {
 		return nil, err
 	}
@@ -249,7 +266,7 @@ func OpenIndependentPGlite(ctx context.Context, o IndependentStorageOptions) (*I
 	if err != nil {
 		return fail(err)
 	}
-	if err = s.initialize(ctx, o); err != nil {
+	if err = s.initializeMode(ctx, o, managed); err != nil {
 		return fail(err)
 	}
 	stopWatcher()
@@ -259,8 +276,19 @@ func OpenIndependentPGlite(ctx context.Context, o IndependentStorageOptions) (*I
 	return s, nil
 }
 func (s *IndependentStorage) initialize(ctx context.Context, o IndependentStorageOptions) error {
+	return s.initializeMode(ctx, o, nil)
+}
+func (s *IndependentStorage) initializeMode(ctx context.Context, o IndependentStorageOptions, managed *ManagedFiniteOptions) error {
 	var err error
-	s.business, err = NewActions(ctx, s.businessBackend, o.Schema, o.BusinessNamespace, o.Ordering)
+	if managed == nil {
+		s.business, err = NewActions(ctx, s.businessBackend, o.Schema, o.BusinessNamespace, o.Ordering)
+	} else {
+		s.managed, err = s.initializeManagedFinite(ctx, o, *managed)
+		if err == nil {
+			s.business = &Actions{s.managed.s}
+			s.managed.start()
+		}
+	}
 	if err != nil {
 		return err
 	}
@@ -269,6 +297,11 @@ func (s *IndependentStorage) initialize(ctx context.Context, o IndependentStorag
 		return err
 	}
 	s.syncCache, err = syncStore.EnableProtocolCache(ctx)
+	if s.managed != nil {
+		if err == nil {
+			err = s.managed.requireLease(ctx, s.managed.reader())
+		}
+	}
 	return err
 }
 

@@ -1,0 +1,345 @@
+{
+  "complete": true,
+  "success": true,
+  "scope": "read_only_m44_inventory_not_test_acceptance",
+  "source_credit": 0,
+  "ported_original": 543,
+  "original_total": 905,
+  "recorded_utc": "2026-10-26T11:20:12.057Z",
+  "native_inputs": {
+    "files": 1191,
+    "sha256": "8740a07ed31d376f5143c297616f62198d455541202de7cef981ecada1720185"
+  },
+  "harness_inputs": [
+    {
+      "file": "tools/managed-finite-acceptance.mjs",
+      "sha256": "97847619f3d592f759c0a56fbfcfbc979c4a21420afa60d836ba3f33cac44156"
+    },
+    {
+      "file": "tools/managed-finite-evidence.mjs",
+      "sha256": "8767477762f6394be3bb2f5f9d0ce772519c6f7eb15629173304dd5cc6769102"
+    },
+    {
+      "file": "tools/managed-finite-preflight.mjs",
+      "sha256": "a4e4c352b6a27c3edfb40a0b64f51f6f8a8b5e66b56964e148ef2797df715318"
+    },
+    {
+      "file": "tools/managed-finite-results.mjs",
+      "sha256": "e51715ea60b374efd238707de848ff56bdf9b92d27c8890a3869e02a09ba6f6f"
+    },
+    {
+      "file": "tools/managed-finite-full-verify.mjs",
+      "sha256": "8e0e1f87651d274c675a5865e2cee92a571aa3de84094ea9aad6ca96a1a2154c"
+    },
+    {
+      "file": "tools/managed-finite-path-guards.test.mjs",
+      "sha256": "d671d1be03db9977758c6f10f58036a9b111776f91b78c986da1b09e6e50aa6c"
+    },
+    {
+      "file": "tools/managed-finite-observe.test.py",
+      "sha256": "d419c13df78e7a721b05b3aff61de5c2d48e0e2a0ae935877e4d737986db1f43"
+    },
+    {
+      "file": "tools/managed-finite-observer.test.mjs",
+      "sha256": "970de6da2885161eb70d049119133aad2afb3481fda4b0481b6cc51a1975e3ba"
+    },
+    {
+      "file": "tools/managed-finite-observe.py",
+      "sha256": "b1d6a51a28980a3f6b3a62ed546b2bebe72d4de83c26f093fa26d2fa8429c553"
+    },
+    {
+      "file": "tools/managed-finite-launch.sh",
+      "sha256": "318d04bc2ba5ec7de645a1b117f30731ac012fcde191b67329ebb81a1abce66c"
+    },
+    {
+      "file": "tools/managed-finite-launch.mjs",
+      "sha256": "5bac01681a1cfaf7f0ceb2d68c0a26a86b8c87dd83bfe0e0fbb388b8a57048b0"
+    },
+    {
+      "file": "tools/managed-finite-closeout.mjs",
+      "sha256": "f5956798139bbdb226361aca82f65c7c7a85bf617327caaaa85763eb78185b1f"
+    }
+  ],
+  "native_tests": [
+    {
+      "file": "historical/managed_test.go",
+      "package": "ponder.local/ponder-go/historical",
+      "name": "TestManagedFiniteReadyAndResume",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "historical/managed_test.go",
+      "package": "ponder.local/ponder-go/historical",
+      "name": "TestManagedFiniteRejectsUnmanagedAndIdentityChanges",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "historical/managed_test.go",
+      "package": "ponder.local/ponder-go/historical",
+      "name": "TestManagedFiniteFailureNeverReady",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "historical/managed_test.go",
+      "package": "ponder.local/ponder-go/historical",
+      "name": "TestManagedFiniteCloseRetainsOwnership",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "historical/managed_test.go",
+      "package": "ponder.local/ponder-go/historical",
+      "name": "TestManagedCanceledCloseErrorClassification",
+      "scope": "pure"
+    },
+    {
+      "file": "historical/managed_test.go",
+      "package": "ponder.local/ponder-go/historical",
+      "name": "TestManagedFiniteEscapedClientActivationBarrier",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "historical/managed_plan_test.go",
+      "package": "ponder.local/ponder-go/historical",
+      "name": "TestManagedPlanStableIdentity",
+      "scope": "pure"
+    },
+    {
+      "file": "historical/managed_plan_test.go",
+      "package": "ponder.local/ponder-go/historical",
+      "name": "TestManagedPlanRejectsSemanticDrift",
+      "scope": "pure"
+    },
+    {
+      "file": "historical/managed_plan_test.go",
+      "package": "ponder.local/ponder-go/historical",
+      "name": "TestManagedPlanFailClosed",
+      "scope": "pure"
+    },
+    {
+      "file": "historical/managed_plan_test.go",
+      "package": "ponder.local/ponder-go/historical",
+      "name": "TestManagedStableUndefinedIsNotNullOrUserMarker",
+      "scope": "pure"
+    },
+    {
+      "file": "indexing/client_managed_test.go",
+      "package": "ponder.local/ponder-go/indexing",
+      "name": "TestManagedClientRootsSealDescendantsAndLifetime",
+      "scope": "pure"
+    },
+    {
+      "file": "indexing/client_managed_test.go",
+      "package": "ponder.local/ponder-go/indexing",
+      "name": "TestManagedClientRootsStaleAndForeignPermits",
+      "scope": "pure"
+    },
+    {
+      "file": "indexing/client_managed_test.go",
+      "package": "ponder.local/ponder-go/indexing",
+      "name": "TestManagedClientRequestSealsBeforeCacheDescendantCompletes",
+      "scope": "pure"
+    },
+    {
+      "file": "indexing/client_managed_test.go",
+      "package": "ponder.local/ponder-go/indexing",
+      "name": "TestManagedClientMulticallRootIsJoinedAndSealed",
+      "scope": "pure"
+    },
+    {
+      "file": "indexing/client_managed_test.go",
+      "package": "ponder.local/ponder-go/indexing",
+      "name": "TestManagedReadContractRetryRetainsCanonicalRoot",
+      "scope": "pure"
+    },
+    {
+      "file": "indexing/client_managed_test.go",
+      "package": "ponder.local/ponder-go/indexing",
+      "name": "TestManagedClientRetainsFirstAsyncCacheFailureOnly",
+      "scope": "pure"
+    },
+    {
+      "file": "indexing/client_managed_sql_test.go",
+      "package": "ponder.local/ponder-go/indexing",
+      "name": "TestManagedSQLCacheFailureCompletion",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "indexing/client_managed_fallback_test.go",
+      "package": "ponder.local/ponder-go/indexing",
+      "name": "TestManagedClientSpeculativeFailureAllowsMulticallFallback",
+      "scope": "pure"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteOptionsAndSchemaSnapshot",
+      "scope": "pure"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteDeferredActivationAndRestart",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteRejectsUnmarkedIndex",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteCatalogTamperFailsClosed",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteCommitReconciliation",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFinitePostgresControlLane",
+      "scope": "postgres_only"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteRestartRejectsUnsupportedState",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteCanceledCommitStaysUnknown",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFinitePostgresIdentityFences",
+      "scope": "postgres_only"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFinitePostgresExpiryInsideHandler",
+      "scope": "postgres_only"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFinitePGliteCrossProcessExclusion",
+      "scope": "persistent_pglite_only"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteNotificationCommitBoundary",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteEveryActivationStageOutcome",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteEmptySchemaDistinctEnds",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteFreshBoundaryBetweenStages",
+      "scope": "postgres_and_persistent_pglite"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteActivationBusyPreservesCancellation",
+      "scope": "pure"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFinitePGliteBusyReadsAndRetainedClose",
+      "scope": "persistent_pglite_only"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "package": "ponder.local/ponder-go/store",
+      "name": "TestManagedFiniteActivationHeldStoreRespectsDeadline",
+      "scope": "pure"
+    }
+  ],
+  "managed_test_inputs": [
+    {
+      "file": "historical/managed_test.go",
+      "sha256": "da750453ffe54fa0aa5e3a397f7a938286e07c1619c26e86d5ab7f14465121c0"
+    },
+    {
+      "file": "historical/managed_plan_test.go",
+      "sha256": "72059114e5dbb08cb08a8170bea1b0d4358428746c2f3fbe6e286e196713ab94"
+    },
+    {
+      "file": "indexing/client_managed_test.go",
+      "sha256": "0d6d8b4053726cde8f9a4bed4a6608ab88ab3afd834cf7e7f03cd08962e120c9"
+    },
+    {
+      "file": "indexing/client_managed_sql_test.go",
+      "sha256": "639bd7b3bd36a1ae6e027183efd6b3ccf3951c1793458a305738fcdaae1f79c3"
+    },
+    {
+      "file": "indexing/client_managed_fallback_test.go",
+      "sha256": "ca8b7c09f076eae2b21de941649cc0885bc7eb7edd164301d2b52124683ad1aa"
+    },
+    {
+      "file": "store/managed_finite_test.go",
+      "sha256": "f8a6e3c5e4c9ead6c4308739de230d16f0830bb73a907a8e1ac67236fdd13c31"
+    }
+  ],
+  "discovery": {
+    "command": [
+      "go",
+      "list",
+      "-json",
+      "./..."
+    ],
+    "exit_code": 0,
+    "packages": [
+      "ponder.local/ponder-go/abi",
+      "ponder.local/ponder-go/bloom",
+      "ponder.local/ponder-go/checkpoint",
+      "ponder.local/ponder-go/cmd/abi-codegen",
+      "ponder.local/ponder-go/cmd/parity-probe",
+      "ponder.local/ponder-go/cmd/ponder",
+      "ponder.local/ponder-go/cmd/source-codegen",
+      "ponder.local/ponder-go/config",
+      "ponder.local/ponder-go/events",
+      "ponder.local/ponder-go/examples/erc20",
+      "ponder.local/ponder-go/factory",
+      "ponder.local/ponder-go/filter",
+      "ponder.local/ponder-go/finality",
+      "ponder.local/ponder-go/historical",
+      "ponder.local/ponder-go/indexing",
+      "ponder.local/ponder-go/internal/jsvalue",
+      "ponder.local/ponder-go/interval",
+      "ponder.local/ponder-go/orm",
+      "ponder.local/ponder-go/query",
+      "ponder.local/ponder-go/rpc",
+      "ponder.local/ponder-go/runtime",
+      "ponder.local/ponder-go/schema",
+      "ponder.local/ponder-go/sqlquery",
+      "ponder.local/ponder-go/store"
+    ],
+    "package_count": 24,
+    "source_file_count": 352
+  },
+  "note": "Leaf and batch counts are established only by actual executions, never inferred as passing evidence."
+}

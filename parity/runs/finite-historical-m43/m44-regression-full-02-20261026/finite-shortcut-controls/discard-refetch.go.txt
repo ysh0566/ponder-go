@@ -1,0 +1,645 @@
+// Package historical owns the bounded, default-multichain historical runner.
+// It deliberately ends before readiness, indexes/views/triggers and realtime.
+package historical
+
+import (
+	"context"
+	"database/sql"
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"math"
+	"math/big"
+	"reflect"
+	"strconv"
+	"sync"
+	"sync/atomic"
+	"time"
+
+	"ponder.local/ponder-go/checkpoint"
+	"ponder.local/ponder-go/config"
+	"ponder.local/ponder-go/events"
+	"ponder.local/ponder-go/filter"
+	"ponder.local/ponder-go/indexing"
+	"ponder.local/ponder-go/rpc"
+	source "ponder.local/ponder-go/runtime"
+	"ponder.local/ponder-go/schema"
+	"ponder.local/ponder-go/store"
+)
+
+// Options requires an actual compiled source build with executable indexing
+// handlers. M43 accepts only finite, already-finalized source ranges. It does
+// not manufacture filters from legacy runtime configuration or extend finality.
+// Supplied Requesters replace the build transports (in the same chain order),
+// but must implement AsyncRequester for source request admission semantics.
+// Service.Build, Database and Clients are constructed here, never injected.
+type Options struct {
+	Build              *config.SourceIndexingBuild
+	Owned              indexing.OwnedOptions
+	QuerySize          int
+	MaxQueryParameters int
+	Acquisition        source.SourceHistoricalOptions
+	// Clock is the actual source Date.now boundary, also used by extraction.
+	Clock func() time.Time
+	// RetryWait defaults to source's cancellable 125ms exponential delays. A
+	// replacement is an explicit scheduling adapter, not a retry-count change.
+	RetryWait func(context.Context, time.Duration) error
+	// OnCommitted observes a confirmed group OUTSIDE its business transaction.
+	// Returning an error stops acquisition and joins admitted work. The committed
+	// cursor is not rewound; reopening resumes strictly after that cursor.
+	OnCommitted func(context.Context, GroupResult) error
+}
+
+type GroupResult struct {
+	ChainID    uint64
+	Checkpoint string
+	BlockRange [2]float64
+	Events     int
+	Applied    bool
+	Attempts   int
+	Reconciled bool
+}
+type Result struct {
+	Resumed bool
+	Groups  []GroupResult
+	// Captured from actual source-progress endpoints, never caller supplied.
+	// Managed activation may use these only after successful outer Run return.
+	finiteEnds []store.CheckpointState
+	// Completed means every configured finite range reached its durable end.
+	// It is NOT the database ready flag or a realtime cutover indication.
+	Completed bool
+}
+
+// historicalTransactions is private so fault tests can wrap the real owner at
+// its acknowledgment boundary without exposing/replacing a production backend.
+type historicalTransactions interface {
+	HistoricalSnapshot(context.Context) (store.HistoricalSnapshot, error)
+	InitializeMultichain(context.Context, []indexing.InitialChainCheckpoint) error
+	HistoricalGroupWithRefetch(context.Context, checkpoint.Checkpoint, []indexing.Object, func(indexing.Object, indexing.Object), func(context.Context, []indexing.Object) error) (bool, error)
+}
+type Runner struct {
+	transactions historicalTransactions
+	releaseBuild func()
+	closeOnce    sync.Once
+	closeDone    chan struct{}
+	closeErr     error
+	owner        *indexing.Owned
+	build        *config.ExecutableSourceIndexingBuild
+	options      Options
+	active       atomic.Bool
+	filters      *filter.Session
+}
+
+func OpenPostgres(ctx context.Context, o Options) (*Runner, error) {
+	return open(ctx, o, indexing.OpenOwnedPostgres)
+}
+func OpenPGlite(ctx context.Context, o Options) (*Runner, error) {
+	return open(ctx, o, indexing.OpenOwnedPGlite)
+}
+func open(ctx context.Context, o Options, opener func(context.Context, indexing.OwnedOptions) (*indexing.Owned, error)) (*Runner, error) {
+	if o.Build == nil {
+		return nil, fmt.Errorf("finite historical source build required")
+	}
+	b := o.Build.Executable()
+	session, release, err := b.AcquireSession()
+	if err != nil {
+		return nil, err
+	}
+	opened := false
+	defer func() {
+		if !opened {
+			release()
+		}
+	}()
+	if err := validateBuild(b, o); err != nil {
+		return nil, err
+	}
+	if len(o.Owned.Service.Build.Chains) != 0 || o.Owned.Service.Database != nil || o.Owned.Service.Clients != nil {
+		return nil, fmt.Errorf("finite historical runner constructs its service build/database/clients")
+	}
+	if o.QuerySize == 0 {
+		o.QuerySize = 1000
+	}
+	if o.QuerySize < 1 {
+		return nil, fmt.Errorf("historical query size must be positive")
+	}
+	if o.MaxQueryParameters < 0 {
+		return nil, fmt.Errorf("historical query parameter limit must not be negative")
+	}
+	if o.Clock == nil {
+		o.Clock = time.Now
+	}
+	if o.RetryWait == nil {
+		o.RetryWait = waitRetry
+	}
+	if o.Owned.Service.FieldOrder == nil {
+		// Both profilers receive the source Object.keys order of the actual ABI
+		// decoded envelope. Explicit application projection hooks retain priority.
+		o.Owned.Service.FieldOrder = events.ProfileFieldOrder
+	}
+	o.Owned.Storage.Ordering = schema.Multichain
+	o.Owned.Service.Build = indexing.Build{Chains: b.Chains, Contracts: b.Contracts, EventCallbacks: b.EventCallbacks, SetupCallbacks: b.SetupCallbacks, IndexingFunctions: b.IndexingFunctions, FilterSession: session}
+	if o.Owned.Requesters == nil {
+		o.Owned.Requesters = make([]rpc.Requester, len(b.RPCs))
+		for i, r := range b.RPCs {
+			o.Owned.Requesters[i] = r
+		}
+	}
+	if len(o.Owned.Requesters) != len(b.Chains) {
+		return nil, fmt.Errorf("historical requester chain count mismatch")
+	}
+	for _, r := range o.Owned.Requesters {
+		v := reflect.ValueOf(r)
+		if !v.IsValid() || ((v.Kind() == reflect.Pointer || v.Kind() == reflect.Map || v.Kind() == reflect.Slice || v.Kind() == reflect.Func || v.Kind() == reflect.Interface || v.Kind() == reflect.Chan) && v.IsNil()) {
+			return nil, fmt.Errorf("finite historical runner requires a non-nil RPC requester")
+		}
+		if _, ok := r.(rpc.AsyncRequester); !ok {
+			return nil, fmt.Errorf("finite historical runner requires async RPC admission")
+		}
+	}
+	owner, err := opener(ctx, o.Owned)
+	if err != nil {
+		return nil, err
+	}
+	opened = true
+	return &Runner{transactions: owner, owner: owner, build: b, options: o, filters: session, releaseBuild: release, closeDone: make(chan struct{})}, nil
+}
+
+// Owner exposes the existing constrained business/client facade, not either
+// storage backend. Callers must not dispatch/mutate it while Run is active.
+func (r *Runner) Owner() *indexing.Owned { return r.owner }
+func (r *Runner) Close(ctx context.Context) error {
+	r.closeOnce.Do(func() {
+		go func() { r.closeErr = r.owner.Close(context.Background()); r.releaseBuild(); close(r.closeDone) }()
+	})
+	select {
+	case <-r.closeDone:
+		return r.closeErr
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func validateBuild(b *config.ExecutableSourceIndexingBuild, o Options) error {
+	if b == nil || len(b.Chains) == 0 || len(b.Chains) != len(b.Contracts) || len(b.Chains) != len(b.EventCallbacks) || len(b.Chains) != len(b.SetupCallbacks) || len(b.Chains) != len(b.FinalizedBlocks) || len(b.Chains) != len(b.RPCs) {
+		return fmt.Errorf("complete executable historical build required")
+	}
+	if b.Ordering != "multichain" || (o.Owned.Storage.Ordering != "" && o.Owned.Storage.Ordering != schema.Multichain) {
+		return fmt.Errorf("finite historical runner requires default multichain ordering")
+	}
+	ids := map[uint64]bool{}
+	names := map[string]bool{}
+	for i, c := range b.Chains {
+		id, e := uintQuantity(c["id"])
+		name, _ := c["name"].(string)
+		if e != nil || name == "" || ids[id] || names[name] {
+			return fmt.Errorf("invalid or duplicate historical chain")
+		}
+		ids[id] = true
+		names[name] = true
+		finalized, e := uintQuantity(b.FinalizedBlocks[i]["number"])
+		if e != nil {
+			return e
+		}
+		if len(b.EventCallbacks[i]) == 0 {
+			return fmt.Errorf("finite historical chain requires callbacks")
+		}
+		for _, cb := range b.EventCallbacks[i] {
+			if err := validateHandler(cb); err != nil {
+				return err
+			}
+			f, ok := cb["filter"].(map[string]any)
+			if !ok {
+				return fmt.Errorf("historical callback filter required")
+			}
+			end, exists := f["toBlock"]
+			if !exists || filter.IsUndefined(end) || end == nil {
+				return fmt.Errorf("finite historical callback endBlock required")
+			}
+			to, e := uintQuantity(end)
+			if e != nil || to > 9007199254740991 || to > finalized {
+				return fmt.Errorf("finite historical endBlock must be a finalized safe integer")
+			}
+			from := filter.FilterFromBlock(f)
+			if math.IsNaN(from) || math.IsInf(from, 0) || from < 0 || math.Trunc(from) != from || from > float64(to) {
+				return fmt.Errorf("invalid finite historical startBlock")
+			}
+		}
+	}
+	for _, group := range b.SetupCallbacks {
+		for _, cb := range group {
+			if e := validateHandler(cb); e != nil {
+				return e
+			}
+		}
+	}
+	return nil
+}
+func validateHandler(cb indexing.Object) error {
+	switch fn := cb["fn"].(type) {
+	case indexing.Handler:
+		if fn != nil {
+			return nil
+		}
+	case func(context.Context, *indexing.HandlerArgs) error:
+		if fn != nil {
+			return nil
+		}
+	}
+	return fmt.Errorf("callback %q must bind a non-nil indexing.Handler", cb["name"])
+}
+func uintQuantity(v any) (uint64, error) {
+	switch x := v.(type) {
+	case uint64:
+		return x, nil
+	case int:
+		if x >= 0 {
+			return uint64(x), nil
+		}
+	case int64:
+		if x >= 0 {
+			return uint64(x), nil
+		}
+	case float64:
+		if x >= 0 && x <= 9007199254740991 && !math.IsInf(x, 0) && math.Trunc(x) == x {
+			return uint64(x), nil
+		}
+	case json.Number:
+		return strconv.ParseUint(string(x), 10, 64)
+	case string:
+		base := 10
+		if len(x) > 2 && x[:2] == "0x" {
+			base = 16
+			x = x[2:]
+		}
+		return strconv.ParseUint(x, base, 64)
+	case *big.Int:
+		if x != nil && x.IsUint64() {
+			return x.Uint64(), nil
+		}
+	}
+	return 0, fmt.Errorf("invalid unsigned historical quantity %v", v)
+}
+
+func (r *Runner) Run(ctx context.Context) (result Result, err error) {
+	if !r.active.CompareAndSwap(false, true) {
+		return result, fmt.Errorf("historical runner already active")
+	}
+	defer r.active.Store(false)
+	err = r.owner.WithHistoricalSync(ctx, r.options.MaxQueryParameters, func(scope context.Context, syncStore *indexing.HistoricalSync) (runErr error) {
+		// Internal iterator stop is not caller cancellation or owner shutdown.
+		// The owned scope drains admitted independent I/O before local cleanup.
+		run := scope
+		snapshot, e := r.transactions.HistoricalSnapshot(run)
+		if e != nil {
+			return e
+		}
+		result.Resumed = snapshot.Initialized
+		if snapshot.Initialized {
+			// A new owner may have been configured for an empty complete cache.
+			// Durable resume proves that assumption unsafe. Keep learned profiles,
+			// but invalidate row completeness before any acquisition or prefetch.
+			if e = r.owner.Invalidate(run); e != nil {
+				return e
+			}
+		}
+		chains, buildChains, e := r.bootstrap(run, syncStore)
+		if e != nil {
+			return e
+		}
+		initial := make([]indexing.InitialChainCheckpoint, len(buildChains))
+		end := map[uint64]string{}
+		for i, c := range buildChains {
+			start, e := c.Local.Progress.GetCheckpoint(source.SourceSyncStart)
+			if e != nil {
+				return e
+			}
+			finalized, e := c.Local.Progress.GetCheckpoint(source.SourceSyncFinalized)
+			if e != nil {
+				return e
+			}
+			final, e := c.Local.Progress.GetCheckpoint(source.SourceSyncEnd)
+			if e != nil || final == nil {
+				return fmt.Errorf("finite historical end checkpoint missing: %w", e)
+			}
+			initial[i] = indexing.InitialChainCheckpoint{ChainID: c.Local.ChainID, Start: *start, Finalized: *finalized}
+			end[c.Local.ChainID] = *final
+		}
+		if !snapshot.Initialized {
+			if e = r.initialize(run, initial); e != nil {
+				return e
+			}
+			snapshot, e = r.transactions.HistoricalSnapshot(run)
+			if e != nil {
+				return e
+			}
+		}
+		cursors := map[uint64]string{}
+		crash := make([]source.SourceCrashRecoveryCheckpoint, len(snapshot.Chains))
+		for i, c := range snapshot.Chains {
+			if c.Cursor > end[c.ChainID] {
+				return fmt.Errorf("durable historical cursor exceeds configured finite range")
+			}
+			crash[i] = source.SourceCrashRecoveryCheckpoint{ChainID: c.ChainID, Checkpoint: c.Cursor}
+			cursors[c.ChainID] = c.Cursor
+		}
+		coordinator := source.SourceHistoricalCoordinatorOptions{Chains: chains, BuildChains: buildChains, CrashRecovery: crash, QuerySize: r.options.QuerySize, Clock: r.options.Clock}
+		if !finiteEndsReached(cursors, end) {
+			for group, e := range source.HistoricalSourceMultichain(run, coordinator) {
+				if e != nil {
+					return e
+				}
+				target, e := checkpoint.Decode(group.Checkpoint)
+				if e != nil {
+					return e
+				}
+				if group.Checkpoint > end[group.ChainID] {
+					return fmt.Errorf("extraction exceeded finite historical end")
+				}
+				// Both prefetch operations run before the business transaction and exactly
+				// once per extracted group, not once per retry of that group.
+				if e = r.prefetch(run, group); e != nil {
+					return e
+				}
+				done, e := r.processGroup(run, syncStore, buildChains, group, target)
+				if e != nil {
+					return e
+				}
+				result.Groups = append(result.Groups, done)
+				// Only a confirmed commit (including durable reconciliation) clears the
+				// ephemeral RPC values. Profiles/attempt counters are retained.
+				r.owner.Clients().Clear()
+				if r.options.OnCommitted != nil {
+					if e = r.options.OnCommitted(run, done); e != nil {
+						return e
+					}
+				}
+				cursors[group.ChainID] = group.Checkpoint
+				// Do not pull again after all finite ends are confirmed. The real M37
+				// iterator may otherwise refresh latest/finality after a long historical
+				// pass; range break cancels and joins its prestarted extraction work.
+				if finiteEndsReached(cursors, end) {
+					break
+				}
+			}
+		}
+		if e := run.Err(); e != nil {
+			return e
+		}
+		snapshot, e = r.transactions.HistoricalSnapshot(run)
+		if e != nil {
+			return e
+		}
+		for _, c := range snapshot.Chains {
+			if c.Cursor != end[c.ChainID] {
+				return fmt.Errorf("finite historical range did not reach durable end")
+			}
+		}
+		if e = r.owner.Invalidate(run); e != nil {
+			return e
+		}
+		for _, c := range snapshot.Chains {
+			result.finiteEnds = append(result.finiteEnds, store.CheckpointState{ChainID: c.ChainID, ChainName: c.ChainName, LatestCheckpoint: end[c.ChainID], FinalizedCheckpoint: end[c.ChainID], SafeCheckpoint: end[c.ChainID]})
+		}
+		result.Completed = true
+		return nil
+	})
+	return result, err
+}
+
+func (r *Runner) bootstrap(ctx context.Context, s *indexing.HistoricalSync) ([]source.SourceHistoricalChain, []source.SourceHistoricalChain, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	type item struct {
+		index int
+		chain source.SourceHistoricalChain
+		err   error
+	}
+	completed := make(chan item, len(r.build.Chains))
+	byBuild := make([]source.SourceHistoricalChain, len(r.build.Chains))
+	order := make([]source.SourceHistoricalChain, 0, len(byBuild))
+	for i, chain := range r.build.Chains {
+		go func(i int, chain indexing.Object) {
+			c := source.SourceHistoricalChain{Chain: chain}
+			id, e := uintQuantity(chain["id"])
+			if e == nil {
+				requester, reqErr := s.Requester(id)
+				e = reqErr
+				if e == nil {
+					requests := source.NewSourceSyncProgressRPC(requester.(rpc.AsyncRequester))
+					filters := make([]filter.Object, len(r.build.EventCallbacks[i]))
+					for j, cb := range r.build.EventCallbacks[i] {
+						filters[j] = cb["filter"].(map[string]any)
+					}
+					cache, _ := chain["cacheRpcRequests"].(bool)
+					c.CacheRPCRequests = cache
+					var cached []store.SourceIntervalEntry
+					e = s.WithHistoricalPersistenceContext(ctx, s.PersistenceContext(), func(ioCtx, workCtx context.Context) error {
+						var err error
+						cached, err = source.GetSourceCachedIntervals(ioCtx, cache, filters, s)
+						return err
+					})
+					if e == nil {
+						c.Local.Progress, e = source.GetLocalSourceSyncProgress(ctx, id, requests, filters, r.build.FinalizedBlocks[i], cached)
+					}
+					if e == nil {
+						e = s.WithHistoricalPersistenceContext(ctx, s.PersistenceContext(), func(ioCtx, workCtx context.Context) error {
+							var err error
+							c.Local.Children, err = source.GetSourceChildAddresses(ioCtx, cache, filters, s)
+							return err
+						})
+					}
+					c.Local.ChainID = id
+					c.Local.Requester = requester
+					c.Local.EventCallbacks = r.build.EventCallbacks[i]
+					c.Local.CachedIntervals = cached
+					c.Local.Store = s
+					c.Local.PersistenceContext = s.PersistenceContext()
+					c.Local.Acquisition = r.options.Acquisition
+					c.Local.FilterSession = r.filters
+					c.Local.Clock = r.options.Clock
+					c.RefreshRequests = requests
+					if n, err := uintQuantity(chain["reorgWindow"]); err == nil {
+						c.ReorgWindow = int(n)
+					}
+					if viem, ok := chain["viemChain"].(map[string]any); ok {
+						if n, ok := viem["blockTime"].(float64); ok {
+							c.BlockTimeMS = &n
+						}
+					}
+					if value, ok := chain["ethGetLogsBlockRange"]; ok && !filter.IsUndefined(value) && value != nil {
+						if n, err := uintQuantity(value); err == nil {
+							c.Local.Acquisition.EthGetLogsBlockRange = &n
+						} else if e == nil {
+							e = err
+						}
+					}
+				}
+			}
+			completed <- item{i, c, e}
+		}(i, chain)
+	}
+	var first error
+	for range byBuild {
+		next := <-completed
+		if next.err != nil {
+			if first == nil {
+				first = next.err
+				cancel()
+			}
+		} else {
+			byBuild[next.index] = next.chain
+			order = append(order, next.chain)
+		}
+	}
+	return order, byBuild, first
+}
+func (r *Runner) prefetch(ctx context.Context, group source.SourceEventGroup) error {
+	profile, e := r.owner.Service().ProfileEvents(group.Events)
+	if e != nil {
+		return e
+	}
+	outcomes := make(chan error, 2)
+	go func() {
+		outcomes <- r.owner.Database().WithReadOnly(ctx, group.ChainID, func(read context.Context) error { return r.owner.Database().Prefetch(read, profile) })
+	}()
+	go func() { outcomes <- r.owner.Clients().Prefetch(ctx, group.Events) }()
+	a := <-outcomes
+	b := <-outcomes
+	// An ordinary first error is not authority to cancel admitted independent
+	// lookup/RPC/cache jobs. The owned scope joins their actual descendants.
+	return errors.Join(a, b)
+}
+func (r *Runner) processGroup(ctx context.Context, syncStore *indexing.HistoricalSync, chains []source.SourceHistoricalChain, group source.SourceEventGroup, target checkpoint.Checkpoint) (out GroupResult, err error) {
+	out = GroupResult{ChainID: group.ChainID, Checkpoint: group.Checkpoint, BlockRange: group.BlockRange, Events: len(group.Events)}
+	events := group.Events
+	err = r.retry(ctx, func() error {
+		out.Attempts++
+		applied, e := r.transactions.HistoricalGroupWithRefetch(ctx, target, events, nil, func(refetch context.Context, failed []indexing.Object) error {
+			replacement, err := source.RefetchHistoricalSourceEvents(refetch, chains, failed, syncStore, nil)
+			if err != nil {
+				return err
+			}
+			_ = replacement
+			return nil
+		})
+		var unknown *store.CommitOutcomeUnknownError
+		if errors.As(e, &unknown) {
+			snapshot, readErr := r.transactions.HistoricalSnapshot(ctx)
+			if readErr != nil {
+				return errors.Join(e, readErr)
+			}
+			for _, c := range snapshot.Chains {
+				if c.ChainID == group.ChainID && c.Cursor == group.Checkpoint {
+					out.Reconciled = true
+					out.Applied = true
+					return nil
+				}
+			}
+			return e
+		}
+		if e == nil {
+			out.Applied = applied
+		}
+		return e
+	})
+	return out, err
+}
+func (r *Runner) initialize(ctx context.Context, initial []indexing.InitialChainCheckpoint) error {
+	return r.retry(ctx, func() error {
+		e := r.transactions.InitializeMultichain(ctx, initial)
+		var unknown *store.CommitOutcomeUnknownError
+		if errors.As(e, &unknown) {
+			snapshot, readErr := r.transactions.HistoricalSnapshot(ctx)
+			if readErr != nil {
+				return errors.Join(e, readErr)
+			}
+			if snapshot.Initialized && len(snapshot.Chains) == len(initial) {
+				for _, c := range snapshot.Chains {
+					found := false
+					for _, want := range initial {
+						value := want.Start
+						if want.Finalized < value {
+							value = want.Finalized
+						}
+						if want.ChainID == c.ChainID && c.Cursor == value {
+							found = true
+							break
+						}
+					}
+					if !found {
+						return e
+					}
+				}
+				return nil
+			}
+		}
+		return e
+	})
+}
+func (r *Runner) retry(ctx context.Context, fn func() error) error {
+	var first error
+	for attempt := 0; ; attempt++ {
+		if e := ctx.Err(); e != nil {
+			return e
+		}
+		e := fn()
+		if e == nil {
+			return nil
+		}
+		e = indexing.ParseDatabaseError(e)
+		if first == nil {
+			first = e
+		}
+		if r.owner.Dialect() != "postgres" || nonRetryable(e) {
+			return e
+		}
+		if attempt == 9 {
+			return first
+		}
+		if e = r.options.RetryWait(ctx, (125*time.Millisecond)<<attempt); e != nil {
+			return e
+		}
+	}
+}
+func nonRetryable(err error) bool {
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) || errors.Is(err, sql.ErrConnDone) || errors.Is(err, driver.ErrBadConn) {
+		return true
+	}
+	var unknown *store.CommitOutcomeUnknownError
+	var user *store.NonRetryableUserError
+	var record *store.RecordNotFoundError
+	var unique *store.UniqueConstraintError
+	var notnull *store.NotNullConstraintError
+	var bigint *store.BigIntSerializationError
+	var access *store.InvalidStoreAccessError
+	var function *indexing.IndexingFunctionError
+	var shutdown *indexing.ShutdownError
+	var db *indexing.DatabaseError
+	if errors.As(err, &unknown) || errors.As(err, &user) || errors.As(err, &record) || errors.As(err, &unique) || errors.As(err, &notnull) || errors.As(err, &bigint) || errors.As(err, &access) || errors.As(err, &function) || errors.As(err, &shutdown) {
+		return true
+	}
+	// Constructor-owned PG connections cannot reconnect after a lost lifetime
+	// lock. Unlike the source pool, retrying a disconnected owner is not safe.
+	return errors.As(err, &db) && (!db.Retryable() || db.Name == "DbConnectionError")
+}
+func waitRetry(ctx context.Context, d time.Duration) error {
+	timer := time.NewTimer(d)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
+}
+
+func finiteEndsReached(cursors, ends map[uint64]string) bool {
+	for id, end := range ends {
+		if cursors[id] != end {
+			return false
+		}
+	}
+	return true
+}

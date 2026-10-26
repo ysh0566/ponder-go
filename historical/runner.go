@@ -63,6 +63,9 @@ type GroupResult struct {
 type Result struct {
 	Resumed bool
 	Groups  []GroupResult
+	// Captured from actual source-progress endpoints, never caller supplied.
+	// Managed activation may use these only after successful outer Run return.
+	finiteEnds []store.CheckpointState
 	// Completed means every configured finite range reached its durable end.
 	// It is NOT the database ready flag or a realtime cutover indication.
 	Completed bool
@@ -395,6 +398,9 @@ func (r *Runner) Run(ctx context.Context) (result Result, err error) {
 		}
 		if e = r.owner.Invalidate(run); e != nil {
 			return e
+		}
+		for _, c := range snapshot.Chains {
+			result.finiteEnds = append(result.finiteEnds, store.CheckpointState{ChainID: c.ChainID, ChainName: c.ChainName, LatestCheckpoint: end[c.ChainID], FinalizedCheckpoint: end[c.ChainID], SafeCheckpoint: end[c.ChainID]})
 		}
 		result.Completed = true
 		return nil

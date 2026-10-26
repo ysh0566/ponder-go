@@ -1,0 +1,553 @@
+{
+  "source_credit": 0,
+  "real_database": true,
+  "real_rpc": false,
+  "backend": "postgres",
+  "topology": "source distinct QB handles, shared PG pool fixture",
+  "namespace_adaptation": "Only fixture table schema identifiers; production source bytes unchanged",
+  "pending_gate": "Wrapper admission delays invocation of original syncStore insertion until release; eventual SQL is real, not proof of source SQL queue admission or concurrent commit order",
+  "calls": [
+    {
+      "operation": "rpc",
+      "request": {
+        "method": "eth_getBalance",
+        "params": [
+          "0x1111111111111111111111111111111111111111",
+          "0x7"
+        ]
+      }
+    },
+    {
+      "operation": "cache-write-admit",
+      "args": {
+        "requests": [
+          {
+            "request": {
+              "method": "eth_getBalance",
+              "params": [
+                "0x1111111111111111111111111111111111111111",
+                "0x7"
+              ]
+            },
+            "blockNumber": 7,
+            "result": "\"0x2a\""
+          }
+        ],
+        "chainId": 1
+      },
+      "settled": true
+    },
+    {
+      "operation": "rpc",
+      "request": {
+        "method": "eth_call",
+        "params": [
+          {
+            "data": "0x3fa4f245",
+            "to": "0x1111111111111111111111111111111111111111"
+          },
+          "0x7"
+        ]
+      }
+    },
+    {
+      "operation": "cache-write-admit",
+      "args": {
+        "requests": [
+          {
+            "request": {
+              "method": "eth_call",
+              "params": [
+                {
+                  "data": "0x3fa4f245",
+                  "to": "0x1111111111111111111111111111111111111111"
+                },
+                "0x7"
+              ]
+            },
+            "blockNumber": 7,
+            "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+          }
+        ],
+        "chainId": 1
+      },
+      "settled": true
+    },
+    {
+      "operation": "rpc",
+      "request": {
+        "method": "eth_getBalance",
+        "params": [
+          "0x1111111111111111111111111111111111111111",
+          "0x8"
+        ]
+      }
+    },
+    {
+      "operation": "cache-write-admit",
+      "args": {
+        "requests": [
+          {
+            "request": {
+              "method": "eth_getBalance",
+              "params": [
+                "0x1111111111111111111111111111111111111111",
+                "0x8"
+              ]
+            },
+            "blockNumber": 8,
+            "result": "\"0x2a\""
+          }
+        ],
+        "chainId": 1
+      },
+      "settled": true
+    },
+    {
+      "operation": "rpc",
+      "request": {
+        "method": "eth_call",
+        "params": [
+          {
+            "data": "0x3fa4f245",
+            "to": "0x1111111111111111111111111111111111111111"
+          },
+          "0x8"
+        ]
+      }
+    },
+    {
+      "operation": "cache-write-admit",
+      "args": {
+        "requests": [
+          {
+            "request": {
+              "method": "eth_call",
+              "params": [
+                {
+                  "data": "0x3fa4f245",
+                  "to": "0x1111111111111111111111111111111111111111"
+                },
+                "0x8"
+              ]
+            },
+            "blockNumber": 8,
+            "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+          }
+        ],
+        "chainId": 1
+      },
+      "settled": true
+    },
+    {
+      "operation": "rpc",
+      "request": {
+        "method": "eth_getBalance",
+        "params": [
+          "0x1111111111111111111111111111111111111111",
+          "0x9"
+        ]
+      }
+    },
+    {
+      "operation": "cache-write-admit",
+      "args": {
+        "requests": [
+          {
+            "request": {
+              "method": "eth_getBalance",
+              "params": [
+                "0x1111111111111111111111111111111111111111",
+                "0x9"
+              ]
+            },
+            "blockNumber": 9,
+            "result": "\"0x2a\""
+          }
+        ],
+        "chainId": 1
+      },
+      "settled": true
+    },
+    {
+      "operation": "rpc",
+      "request": {
+        "method": "eth_call",
+        "params": [
+          {
+            "data": "0x3fa4f245",
+            "to": "0x1111111111111111111111111111111111111111"
+          },
+          "0x9"
+        ]
+      }
+    },
+    {
+      "operation": "cache-write-admit",
+      "args": {
+        "requests": [
+          {
+            "request": {
+              "method": "eth_call",
+              "params": [
+                {
+                  "data": "0x3fa4f245",
+                  "to": "0x1111111111111111111111111111111111111111"
+                },
+                "0x9"
+              ]
+            },
+            "blockNumber": 9,
+            "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+          }
+        ],
+        "chainId": 1
+      },
+      "settled": true
+    }
+  ],
+  "batches": [
+    {
+      "name": "setup",
+      "rollback": false,
+      "after": {
+        "business": [
+          {
+            "id": "setup",
+            "balance": "42"
+          }
+        ],
+        "cache": [
+          {
+            "request_hash": "45a282e61cb8b748bed86c05b3b3cad8",
+            "chain_id": "1",
+            "block_number": "7",
+            "result": "\"0x2a\""
+          },
+          {
+            "request_hash": "86f145f9dd1ad7ffa20f82795073cf18",
+            "chain_id": "1",
+            "block_number": "7",
+            "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+          }
+        ]
+      }
+    },
+    {
+      "name": "cache-hit",
+      "rollback": false,
+      "after": {
+        "business": [
+          {
+            "id": "cache-hit",
+            "balance": "42"
+          },
+          {
+            "id": "setup",
+            "balance": "42"
+          }
+        ],
+        "cache": [
+          {
+            "request_hash": "45a282e61cb8b748bed86c05b3b3cad8",
+            "chain_id": "1",
+            "block_number": "7",
+            "result": "\"0x2a\""
+          },
+          {
+            "request_hash": "86f145f9dd1ad7ffa20f82795073cf18",
+            "chain_id": "1",
+            "block_number": "7",
+            "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+          }
+        ]
+      }
+    },
+    {
+      "name": "rolled-back",
+      "rollback": true,
+      "error": "intentional rollback",
+      "error_stack": "NonRetryableUserError: intentional rollback\n    at /workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-go/tools/source-independent-storage.test.ts:69:425\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/tmp/ponder-loopback-adapted-MIeEuO/packages/core/src/database/queryBuilder.ts:367:30\n    at NodePgSession.transaction (file:///workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-upstream/node_modules/.pnpm/drizzle-orm@0.41.0_@electric-sql+pglite@0.2.13_@opentelemetry+api@1.7.0_@types+pg@8.10._1f0b5ccc7607fca472eabfdd81ce22df/node_modules/drizzle-orm/node-postgres/session.js:172:22)\n    at retryLogMetricErrorWrap (/workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/tmp/ponder-loopback-adapted-MIeEuO/packages/core/src/database/queryBuilder.ts:194:24)\n    at batch (/workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-go/tools/source-independent-storage.test.ts:69:136)\n    at /workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-go/tools/source-independent-storage.test.ts:72:3\n    at file:///workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-upstream/node_modules/.pnpm/vitest@5.0.2_@edge-runtime+vm@3.2.0_@types+node@22.20.1_vite@8.3.1_@types+node@22.20.1_jiti@2.4.2_tsx@4.19.2_yaml@2.3.4_/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:20",
+      "after": {
+        "business": [
+          {
+            "id": "cache-hit",
+            "balance": "42"
+          },
+          {
+            "id": "setup",
+            "balance": "42"
+          }
+        ],
+        "cache": [
+          {
+            "request_hash": "0affe8060ae1f3a4e909379918d3621d",
+            "chain_id": "1",
+            "block_number": "8",
+            "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+          },
+          {
+            "request_hash": "350f85e4b9136d33139c61a7dcaeb933",
+            "chain_id": "1",
+            "block_number": "8",
+            "result": "\"0x2a\""
+          },
+          {
+            "request_hash": "45a282e61cb8b748bed86c05b3b3cad8",
+            "chain_id": "1",
+            "block_number": "7",
+            "result": "\"0x2a\""
+          },
+          {
+            "request_hash": "86f145f9dd1ad7ffa20f82795073cf18",
+            "chain_id": "1",
+            "block_number": "7",
+            "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+          }
+        ]
+      }
+    },
+    {
+      "name": "pending-rollback",
+      "rollback": true,
+      "error": "intentional rollback",
+      "error_stack": "NonRetryableUserError: intentional rollback\n    at /workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-go/tools/source-independent-storage.test.ts:69:425\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/tmp/ponder-loopback-adapted-MIeEuO/packages/core/src/database/queryBuilder.ts:367:30\n    at NodePgSession.transaction (file:///workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-upstream/node_modules/.pnpm/drizzle-orm@0.41.0_@electric-sql+pglite@0.2.13_@opentelemetry+api@1.7.0_@types+pg@8.10._1f0b5ccc7607fca472eabfdd81ce22df/node_modules/drizzle-orm/node-postgres/session.js:172:22)\n    at retryLogMetricErrorWrap (/workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/tmp/ponder-loopback-adapted-MIeEuO/packages/core/src/database/queryBuilder.ts:194:24)\n    at batch (/workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-go/tools/source-independent-storage.test.ts:69:136)\n    at /workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-go/tools/source-independent-storage.test.ts:73:54\n    at file:///workspace/scratch/fac5abfa4c9e/ponder-restored-20261026/work/ponder-upstream/node_modules/.pnpm/vitest@5.0.2_@edge-runtime+vm@3.2.0_@types+node@22.20.1_vite@8.3.1_@types+node@22.20.1_jiti@2.4.2_tsx@4.19.2_yaml@2.3.4_/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:20",
+      "after": {
+        "business": [
+          {
+            "id": "cache-hit",
+            "balance": "42"
+          },
+          {
+            "id": "setup",
+            "balance": "42"
+          }
+        ],
+        "cache": [
+          {
+            "request_hash": "0affe8060ae1f3a4e909379918d3621d",
+            "chain_id": "1",
+            "block_number": "8",
+            "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+          },
+          {
+            "request_hash": "350f85e4b9136d33139c61a7dcaeb933",
+            "chain_id": "1",
+            "block_number": "8",
+            "result": "\"0x2a\""
+          },
+          {
+            "request_hash": "45a282e61cb8b748bed86c05b3b3cad8",
+            "chain_id": "1",
+            "block_number": "7",
+            "result": "\"0x2a\""
+          },
+          {
+            "request_hash": "86f145f9dd1ad7ffa20f82795073cf18",
+            "chain_id": "1",
+            "block_number": "7",
+            "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+          }
+        ]
+      }
+    }
+  ],
+  "identities": [
+    {
+      "args": true,
+      "context": true,
+      "db": true,
+      "client": true
+    },
+    {
+      "args": true,
+      "context": true,
+      "db": true,
+      "client": true
+    },
+    {
+      "args": true,
+      "context": true,
+      "db": true,
+      "client": true
+    },
+    {
+      "args": true,
+      "context": true,
+      "db": true,
+      "client": true
+    }
+  ],
+  "pending_before": {
+    "business": [
+      {
+        "id": "cache-hit",
+        "balance": "42"
+      },
+      {
+        "id": "setup",
+        "balance": "42"
+      }
+    ],
+    "cache": [
+      {
+        "request_hash": "0affe8060ae1f3a4e909379918d3621d",
+        "chain_id": "1",
+        "block_number": "8",
+        "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+      },
+      {
+        "request_hash": "350f85e4b9136d33139c61a7dcaeb933",
+        "chain_id": "1",
+        "block_number": "8",
+        "result": "\"0x2a\""
+      },
+      {
+        "request_hash": "45a282e61cb8b748bed86c05b3b3cad8",
+        "chain_id": "1",
+        "block_number": "7",
+        "result": "\"0x2a\""
+      },
+      {
+        "request_hash": "86f145f9dd1ad7ffa20f82795073cf18",
+        "chain_id": "1",
+        "block_number": "7",
+        "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+      }
+    ]
+  },
+  "final": {
+    "business": [
+      {
+        "id": "cache-hit",
+        "balance": "42"
+      },
+      {
+        "id": "setup",
+        "balance": "42"
+      }
+    ],
+    "cache": [
+      {
+        "request_hash": "0affe8060ae1f3a4e909379918d3621d",
+        "chain_id": "1",
+        "block_number": "8",
+        "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+      },
+      {
+        "request_hash": "350f85e4b9136d33139c61a7dcaeb933",
+        "chain_id": "1",
+        "block_number": "8",
+        "result": "\"0x2a\""
+      },
+      {
+        "request_hash": "4413f584f54ffa24aea940e2967924d1",
+        "chain_id": "1",
+        "block_number": "9",
+        "result": "\"0x2a\""
+      },
+      {
+        "request_hash": "4586d0e78d01720dfaef1b00c4e92449",
+        "chain_id": "1",
+        "block_number": "9",
+        "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+      },
+      {
+        "request_hash": "45a282e61cb8b748bed86c05b3b3cad8",
+        "chain_id": "1",
+        "block_number": "7",
+        "result": "\"0x2a\""
+      },
+      {
+        "request_hash": "86f145f9dd1ad7ffa20f82795073cf18",
+        "chain_id": "1",
+        "block_number": "7",
+        "result": "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+      }
+    ]
+  },
+  "final_cache_reads": [
+    {
+      "request": {
+        "method": "eth_getBalance",
+        "params": [
+          "0x1111111111111111111111111111111111111111",
+          "0x7"
+        ]
+      },
+      "result": [
+        "\"0x2a\""
+      ]
+    },
+    {
+      "request": {
+        "method": "eth_call",
+        "params": [
+          {
+            "data": "0x3fa4f245",
+            "to": "0x1111111111111111111111111111111111111111"
+          },
+          "0x7"
+        ]
+      },
+      "result": [
+        "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+      ]
+    },
+    {
+      "request": {
+        "method": "eth_getBalance",
+        "params": [
+          "0x1111111111111111111111111111111111111111",
+          "0x8"
+        ]
+      },
+      "result": [
+        "\"0x2a\""
+      ]
+    },
+    {
+      "request": {
+        "method": "eth_call",
+        "params": [
+          {
+            "data": "0x3fa4f245",
+            "to": "0x1111111111111111111111111111111111111111"
+          },
+          "0x8"
+        ]
+      },
+      "result": [
+        "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+      ]
+    },
+    {
+      "request": {
+        "method": "eth_getBalance",
+        "params": [
+          "0x1111111111111111111111111111111111111111",
+          "0x9"
+        ]
+      },
+      "result": [
+        "\"0x2a\""
+      ]
+    },
+    {
+      "request": {
+        "method": "eth_call",
+        "params": [
+          {
+            "data": "0x3fa4f245",
+            "to": "0x1111111111111111111111111111111111111111"
+          },
+          "0x9"
+        ]
+      },
+      "result": [
+        "\"0x0000000000000000000000000000000000000000000000000000000000000029\""
+      ]
+    }
+  ],
+  "intentional_native_difference": "Native PGlite uses two owned database directories and real SQL transactions; pinned source uses one instance with callback-only QB transaction, so flushed business writes survive source rollback."
+}

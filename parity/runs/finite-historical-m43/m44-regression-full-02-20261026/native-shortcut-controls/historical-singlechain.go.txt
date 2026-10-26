@@ -1,0 +1,300 @@
+package store
+
+import (
+	"context"
+	"fmt"
+
+	"ponder.local/ponder-go/checkpoint"
+)
+
+// CommitOutcomeUnknownError means COMMIT was attempted but its acknowledgment
+// failed. The caller must inspect durable checkpoints before deciding whether to
+// replay; this error alone is neither proof of rollback nor proof of commit.
+// It is deliberately limited to the bounded multichain primitives.
+type CommitOutcomeUnknownError struct{ Err error }
+
+func (e *CommitOutcomeUnknownError) Error() string {
+	return "multichain commit outcome is unknown: " + e.Err.Error()
+}
+func (e *CommitOutcomeUnknownError) Unwrap() error { return e.Err }
+
+func (a *Actions) multichainTransaction(ctx context.Context, fn func(Transaction) error) error {
+	a.s.mu.Lock()
+	defer a.s.mu.Unlock()
+	tx, err := a.s.Backend.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+	if err = a.s.lock(ctx, tx); err != nil {
+		return err
+	}
+	if err = a.s.requireLease(ctx, tx); err != nil {
+		return err
+	}
+	if a.s.managedFinite != nil {
+		rows, e := tx.Query(ctx, "SELECT 1 FROM "+a.s.internal("_ponder_go_managed_stages")+" LIMIT 1")
+		if e != nil {
+			return e
+		}
+		if len(rows.Rows) > 0 {
+			return fmt.Errorf("managed historical writes are sealed after activation starts")
+		}
+		if e = a.s.managedFinite.requireStageAbsent(ctx, tx, "capture"); e != nil {
+			return e
+		}
+	}
+	if err = prepareLiveQueryChanges(ctx, tx, a.s.Backend.Dialect()); err != nil {
+		return err
+	}
+	if err = tx.Exec(ctx, `SET LOCAL "ponder_go.suppress_notify"='1'`); err != nil {
+		return err
+	}
+	if err = fn(tx); err != nil {
+		return err
+	}
+	if a.s.managedFinite != nil {
+		if err := a.s.managedFinite.dropTransientCapture(ctx, tx); err != nil {
+			return err
+		}
+		if err := a.s.requireLease(ctx, tx); err != nil {
+			return err
+		}
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return &CommitOutcomeUnknownError{Err: err}
+	}
+	return nil
+}
+
+func initialMultichainStates(states []CheckpointState) (map[uint64]checkpoint.Checkpoint, error) {
+	if len(states) == 0 {
+		return nil, fmt.Errorf("initial multichain states are required")
+	}
+	targets := make(map[uint64]checkpoint.Checkpoint, len(states))
+	names := map[string]bool{}
+	for _, state := range states {
+		cp, err := checkpoint.Decode(state.SafeCheckpoint)
+		if err != nil {
+			return nil, err
+		}
+		if state.ChainName == "" || names[state.ChainName] || cp.ChainID != state.ChainID || state.SafeCheckpoint == checkpoint.MaxString || state.LatestCheckpoint != state.SafeCheckpoint || state.FinalizedCheckpoint != state.SafeCheckpoint {
+			return nil, fmt.Errorf("invalid initial multichain checkpoint state")
+		}
+		if _, exists := targets[state.ChainID]; exists {
+			return nil, fmt.Errorf("duplicate initial multichain chain")
+		}
+		targets[state.ChainID] = cp
+		names[state.ChainName] = true
+	}
+	return targets, nil
+}
+
+// flushAndSeal explicitly drains the ORM BEFORE assigning any pending journal
+// entries. commitBlock's multichain behavior deliberately covers every MAX row;
+// consequently each callback segment must be sealed before attribution changes.
+func (w *Writer) flushAndSeal(ctx context.Context, target checkpoint.Checkpoint) error {
+	if orm := w.indexingSession(); orm != nil {
+		if err := orm.Cache.Flush(ctx); err != nil {
+			return err
+		}
+	}
+	if w.err != nil {
+		return w.err
+	}
+	for _, table := range w.s.Schema.Tables {
+		if err := w.s.commitBlock(ctx, w.tx, table.Name, target); err != nil {
+			return err
+		}
+	}
+	return w.s.requireCommitted(ctx, w.tx, target.ChainID)
+}
+
+// InitializeMultichain commits all setup writes, journal attribution, all chain
+// metadata and private cursors in ONE SQL transaction. The attribution function
+// must be called immediately before every setup callback, preserving the build's
+// original callback order (including repeated callbacks on one chain). It seals
+// the previous segment before changing chain. One Writer is used throughout so
+// a persistent IndexingSession receives only the enclosing transaction outcome.
+// states are the source min(start,finalized), not setup RPC block checkpoints.
+func (a *Actions) InitializeMultichain(ctx context.Context, states []CheckpointState, setup func(*Writer, func(uint64) error) error) error {
+	states = append([]CheckpointState(nil), states...)
+	targets, err := initialMultichainStates(states)
+	if err != nil {
+		return err
+	}
+	if setup == nil {
+		return fmt.Errorf("multichain setup callback is required")
+	}
+	return a.multichainTransaction(ctx, func(tx Transaction) error {
+		for _, table := range []string{"_ponder_go_chains", "_ponder_go_progress", "_ponder_go_finalized", "_ponder_go_runtime_cursor", "_ponder_go_journal"} {
+			rows, err := tx.Query(ctx, "SELECT 1 FROM "+a.s.internal(table)+" LIMIT 1")
+			if err != nil {
+				return err
+			}
+			if len(rows.Rows) != 0 {
+				return fmt.Errorf("multichain runtime already initialized or has pending state")
+			}
+		}
+		if err := a.s.createJournalTriggers(ctx, tx); err != nil {
+			return err
+		}
+		// Establish search_path but no callback attribution yet. Any writes made
+		// before the first attribution are rejected by the first segment boundary.
+		if err := a.s.eventContext(ctx, tx, checkpoint.MaxString, states[0].ChainID, false); err != nil {
+			return err
+		}
+		w := &Writer{s: a.s, tx: tx, encoded: checkpoint.MaxString, changed: map[string]bool{}}
+		defer w.closed.Store(true)
+		var previous *checkpoint.Checkpoint
+		attribute := func(chain uint64) error {
+			if w.closed.Load() {
+				return &NonRetryableUserError{Message: "indexing function returned"}
+			}
+			target, ok := targets[chain]
+			if !ok {
+				return fmt.Errorf("unknown multichain setup chain %d", chain)
+			}
+			if previous != nil {
+				if err := w.flushAndSeal(ctx, *previous); err != nil {
+					return err
+				}
+			} else {
+				if orm := w.indexingSession(); orm != nil {
+					if err := orm.Cache.Flush(ctx); err != nil {
+						return err
+					}
+				}
+				if err := a.s.requireCommitted(ctx, tx, states[0].ChainID); err != nil {
+					return fmt.Errorf("setup writes precede chain attribution: %w", err)
+				}
+			}
+			if err := a.s.eventContext(ctx, tx, checkpoint.MaxString, chain, false); err != nil {
+				return err
+			}
+			w.event.Checkpoint.ChainID = chain
+			previous = &target
+			return nil
+		}
+		if err := setup(w, attribute); err != nil {
+			return err
+		}
+		if previous != nil {
+			if err := w.flushAndSeal(ctx, *previous); err != nil {
+				return err
+			}
+		} else {
+			if orm := w.indexingSession(); orm != nil {
+				if err := orm.Cache.Flush(ctx); err != nil {
+					return err
+				}
+			}
+			if err := a.s.requireCommitted(ctx, tx, states[0].ChainID); err != nil {
+				return err
+			}
+		}
+		if w.err != nil {
+			return w.err
+		}
+		for _, state := range states {
+			if err := tx.Exec(ctx, "INSERT INTO "+a.s.internal("_ponder_go_chains")+" VALUES($1,$2)", state.ChainID, state.ChainName); err != nil {
+				return err
+			}
+			if err := tx.Exec(ctx, "INSERT INTO "+a.s.internal("_ponder_go_progress")+" VALUES($1,$2)", state.ChainID, state.LatestCheckpoint); err != nil {
+				return err
+			}
+			if err := tx.Exec(ctx, "INSERT INTO "+a.s.internal("_ponder_go_finalized")+" VALUES($1,$2,$3)", state.ChainID, state.FinalizedCheckpoint, state.SafeCheckpoint); err != nil {
+				return err
+			}
+			if err := a.s.runtimeCursor(ctx, tx, targets[state.ChainID]); err != nil {
+				return err
+			}
+		}
+		return a.s.pruneInitialSafePrefix(ctx, tx)
+	})
+}
+
+// ProcessHistoricalGroup applies exactly one chain's already-extracted group.
+// Empty groups still advance; committed replay does not invoke handler. It does
+// not extract/refetch events, retry handlers, emit realtime notifications or
+// perform readiness/cutover. Callers must validate event-chain membership.
+func (a *Actions) ProcessHistoricalGroup(ctx context.Context, chainName string, target checkpoint.Checkpoint, handler func(*Writer) error) (bool, error) {
+	encoded, err := checkpoint.Encode(target)
+	if err != nil {
+		return false, err
+	}
+	if chainName == "" || encoded == checkpoint.MaxString || handler == nil {
+		return false, fmt.Errorf("invalid historical group")
+	}
+	applied := false
+	err = a.multichainTransaction(ctx, func(tx Transaction) error {
+		if err := a.singleRuntimeChain(ctx, tx, target.ChainID); err != nil { return err }
+		rows, err := tx.Query(ctx, "SELECT c.chain_name,p.checkpoint AS latest,f.safe_checkpoint AS safe,f.checkpoint AS finalized,r.checkpoint AS cursor FROM "+a.s.internal("_ponder_go_chains")+" c JOIN "+a.s.internal("_ponder_go_progress")+" p USING(chain_id) JOIN "+a.s.internal("_ponder_go_finalized")+" f USING(chain_id) JOIN "+a.s.internal("_ponder_go_runtime_cursor")+" r USING(chain_id) WHERE c.chain_id=$1", target.ChainID)
+		if err != nil {
+			return err
+		}
+		if len(rows.Rows) != 1 || fmt.Sprint(rows.Rows[0]["chain_name"]) != chainName {
+			return fmt.Errorf("historical group chain identity or durable cursor is missing")
+		}
+		row := rows.Rows[0]
+		for _, key := range []string{"latest", "safe", "finalized", "cursor"} {
+			cp, err := checkpoint.Decode(fmt.Sprint(row[key]))
+			if err != nil || cp.ChainID != target.ChainID || fmt.Sprint(row[key]) == checkpoint.MaxString {
+				return fmt.Errorf("invalid historical %s checkpoint", key)
+			}
+		}
+		cursor := fmt.Sprint(row["cursor"])
+		if fmt.Sprint(row["safe"]) > cursor || cursor > fmt.Sprint(row["latest"]) || fmt.Sprint(row["finalized"]) < fmt.Sprint(row["safe"]) || fmt.Sprint(row["finalized"]) > fmt.Sprint(row["latest"]) {
+			return fmt.Errorf("inconsistent historical checkpoint metadata")
+		}
+		if err := a.s.requireCommitted(ctx, tx, target.ChainID); err != nil {
+			return err
+		}
+		if encoded <= cursor {
+			return nil
+		}
+		if encoded < fmt.Sprint(row["latest"]) {
+			return fmt.Errorf("historical group would regress published checkpoints")
+		}
+		if err := a.s.createJournalTriggers(ctx, tx); err != nil {
+			return err
+		}
+		if err := a.s.eventContext(ctx, tx, checkpoint.MaxString, target.ChainID, false); err != nil {
+			return err
+		}
+		w := &Writer{s: a.s, tx: tx, event: Event{Checkpoint: checkpoint.Checkpoint{ChainID: target.ChainID}}, encoded: checkpoint.MaxString, changed: map[string]bool{}}
+		defer w.closed.Store(true)
+		if err := handler(w); err != nil {
+			return err
+		}
+		if err := w.flushAndSeal(ctx, target); err != nil {
+			return err
+		}
+		if err := a.s.advanceLatest(ctx, tx, target); err != nil {
+			return err
+		}
+		if err := tx.Exec(ctx, "UPDATE "+a.s.internal("_ponder_go_finalized")+" SET checkpoint=$1,safe_checkpoint=$1 WHERE chain_id=$2", encoded, target.ChainID); err != nil {
+			return err
+		}
+		if err := a.s.runtimeCursor(ctx, tx, target); err != nil {
+			return err
+		}
+		if err := a.s.pruneInitialSafePrefix(ctx, tx); err != nil {
+			return err
+		}
+		applied = true
+		return nil
+	})
+	if err != nil {
+		return false, err
+	}
+	return applied, nil
+}
+
+// RevertBusiness undoes the existing global suffix (or isolated chain suffix)
+// without realtime notifications. It does not rewind the independent sync
+// domain, change public latest, or reset runtime cursors. Session owners must
+// invalidate their row cache before invoking this external business mutation.
+func (a *Actions) RevertBusiness(ctx context.Context, target checkpoint.Checkpoint) error {
+	return a.s.revert(ctx, target, false, false, true)
+}

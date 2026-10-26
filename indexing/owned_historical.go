@@ -58,7 +58,7 @@ func (o *Owned) WithHistoricalSync(ctx context.Context, maxQueryParameters int, 
 		return err
 	}
 	o.mu.Lock()
-	if o.closing || o.historical != nil || o.active {
+	if o.closing || o.managedSealed || o.historical != nil || o.active {
 		o.mu.Unlock()
 		return fmt.Errorf("owned historical sync is closed or already active")
 	}
@@ -86,6 +86,7 @@ func (o *Owned) WithHistoricalSync(ctx context.Context, maxQueryParameters int, 
 		err = errors.Join(err, o.clients.WaitPrefetch(context.Background()), o.clients.WaitCacheWrites(context.Background()))
 		// Capture ONLY actual caller/owner cancellation. Sampling after cancel()
 		// would turn every ordinary return/error into a fake context.Canceled.
+		err = errors.Join(err, o.clients.managedRoots.failure())
 		genuineCancellation := scope.ctx.Err()
 		err = errors.Join(err, genuineCancellation)
 		cancel()

@@ -20,6 +20,7 @@ type Store struct {
 	staged                   bool
 	leaseToken               string
 	leaseTimeout             int64
+	managedFinite            *ManagedFinite
 	viewsSchema              string
 	profileState             *CacheProfile
 	protocol                 atomic.Pointer[ProtocolCache]
