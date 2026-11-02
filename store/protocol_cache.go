@@ -24,6 +24,9 @@ type ProtocolCache struct {
 }
 
 func (s *Store) EnableProtocolCache(ctx context.Context) (*ProtocolCache, error) {
+	if s.managedLive != nil {
+		return nil, s.managedLive.rejectLegacy(ctx)
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if cache := s.protocol.Load(); cache != nil {

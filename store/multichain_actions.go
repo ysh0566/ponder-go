@@ -19,6 +19,9 @@ func (e *CommitOutcomeUnknownError) Error() string {
 func (e *CommitOutcomeUnknownError) Unwrap() error { return e.Err }
 
 func (a *Actions) multichainTransaction(ctx context.Context, fn func(Transaction) error) error {
+	if a.s.managedLive != nil {
+		return a.s.managedLive.rejectLegacy(ctx)
+	}
 	a.s.mu.Lock()
 	defer a.s.mu.Unlock()
 	tx, err := a.s.Backend.Begin(ctx)
