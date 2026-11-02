@@ -215,7 +215,7 @@ func (r *RuntimeRunner) Run(ctx context.Context) (result RuntimeResult, runErr e
 				filters = append(filters, cb["filter"].(map[string]any))
 			}
 			var child *source.SourceHistoricalChildren
-			if runtimeRPCCacheEnabled(c) {
+			if runtimeRPCCacheEnabled(c) && !r.options.FactorySources {
 				if err := r.domains.WithRuntimeSync(epoch.Context(), func(io context.Context, s *store.SourceSyncStore) error {
 					var e error
 					child, e = source.GetSourceChildAddresses(io, true, filters, s)
@@ -228,6 +228,48 @@ func (r *RuntimeRunner) Run(ctx context.Context) (result RuntimeResult, runErr e
 				child, e = source.GetSourceChildAddresses(epoch.Context(), false, filters, nil)
 				if e != nil {
 					return e
+				}
+			}
+			if r.options.FactorySources {
+				if cursor, exists := control.Cursors[id]; exists {
+					raw, e := runtimeHashBlock(epoch.Context(), epoch.Requester(i), cursor.Hash)
+					if e != nil {
+						return e
+					}
+					actual, e := runtimeHead(id, raw)
+					if e != nil || actual != cursor {
+						return fmt.Errorf("factory prefix root differs from durable cursor: %w", e)
+					}
+					cp, e := checkpoint.Decode(cursor.Checkpoint)
+					if e != nil {
+						return e
+					}
+					scan := true
+					if !store.ManagedLiveReachedBlock(control, id, cp.BlockNumber) {
+						if cp.BlockNumber == 0 {
+							scan = false
+						} else {
+							expectedParent := raw["parentHash"]
+							beforeTime, _ := uintQuantity(raw["timestamp"])
+							raw, e = runtimeHashBlock(epoch.Context(), epoch.Requester(i), raw["parentHash"].(string))
+							if e == nil {
+								pn, pe := uintQuantity(raw["number"])
+								pt, te := uintQuantity(raw["timestamp"])
+								if pe != nil || te != nil || raw["hash"] != expectedParent || pn+1 != cp.BlockNumber || pt > beforeTime {
+									return fmt.Errorf("factory Down prefix parent differs")
+								}
+							}
+							if e != nil {
+								return e
+							}
+						}
+					}
+					if scan {
+						_, e = source.RestoreManagedFactoryBranch(epoch.Context(), epoch.Requester(i), child, raw, nil, filters, source.SourceRealtimeChain{ID: id, Name: fmt.Sprint(c["name"])})
+						if e != nil {
+							return e
+						}
+					}
 				}
 			}
 			children[i] = child
