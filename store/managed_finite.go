@@ -35,6 +35,15 @@ type ManagedFiniteOptions struct {
 	HeartbeatInterval, HeartbeatTimeout time.Duration
 }
 
+// Constructor-only mode selection preserves M44's public options shape.
+type managedStorageOptions struct {
+	ManagedFiniteOptions
+	live *ManagedLiveOptions
+	// Private transaction instrumentation is applied after capturing the concrete
+	// backend's owner/control lanes. Public constructors leave it nil.
+	transactionBackend func(Backend) Backend
+}
+
 // ManagedStageError never equates a failed COMMIT acknowledgement with rollback.
 // Outcome is "unknown" unless an ordered readback proved the stage absent.
 type ManagedStageError struct {
@@ -127,7 +136,7 @@ func OpenManagedIndependentPostgres(ctx context.Context, o IndependentStorageOpt
 	if err != nil {
 		return nil, err
 	}
-	return openIndependentPostgres(ctx, o, &m)
+	return openIndependentPostgres(ctx, o, &managedStorageOptions{ManagedFiniteOptions: m})
 }
 func OpenManagedIndependentPGlite(ctx context.Context, o IndependentStorageOptions, m ManagedFiniteOptions) (*IndependentStorage, error) {
 	if o.BusinessDirectory == "" || o.SyncDirectory == "" || o.BusinessDirectory == "memory://" || o.SyncDirectory == "memory://" {
@@ -138,7 +147,7 @@ func OpenManagedIndependentPGlite(ctx context.Context, o IndependentStorageOptio
 	if err != nil {
 		return nil, err
 	}
-	return openIndependentPGlite(ctx, o, &m)
+	return openIndependentPGlite(ctx, o, &managedStorageOptions{ManagedFiniteOptions: m})
 }
 
 func (s *IndependentStorage) reserveManagedAlias(ctx context.Context, alias string, other []string) error {
@@ -167,7 +176,7 @@ func (s *IndependentStorage) reserveManagedAlias(ctx context.Context, alias stri
 	return nil
 }
 
-func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o IndependentStorageOptions, opts ManagedFiniteOptions) (*ManagedFinite, error) {
+func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o IndependentStorageOptions, opts managedStorageOptions) (*ManagedFinite, error) {
 	// Snapshot the schema before publishing a managed owner; caller mutation must
 	// not change later activation DDL while its persisted identity stays fixed.
 	model := cloneManagedSchema(o.Schema)
@@ -183,8 +192,13 @@ func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o Inde
 	}
 	st.leaseToken = hex.EncodeToString(token[:])
 	st.leaseTimeout = opts.HeartbeatTimeout.Milliseconds()
-	m := &ManagedFinite{s: st, storage: s, opts: opts, mode: "pglite-inherited-filesystem-exclusion", done: make(chan struct{})}
+	m := &ManagedFinite{s: st, storage: s, opts: opts.ManagedFiniteOptions, mode: "pglite-inherited-filesystem-exclusion", done: make(chan struct{})}
 	close(m.done)
+	version, identityTable := managedFiniteVersion, "_ponder_go_managed_finite"
+	if opts.live != nil {
+		version, identityTable = (&ManagedLive{opts: *opts.live}).version(), "_ponder_go_managed_live_identity"
+		st.managedLive = &ManagedLive{owner: m, opts: *opts.live}
+	}
 	raw, encodeErr := json.Marshal(struct {
 		Build, Plan, Alias, Ordering, Sync string
 		Schema                             schema.Schema
@@ -194,7 +208,16 @@ func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o Inde
 	if encodeErr != nil {
 		return nil, fmt.Errorf("encode managed identity: %w", encodeErr)
 	}
+	if opts.live != nil && opts.live.liveRuntime {
+		raw, encodeErr = runtimeOptionsIdentityPayload(raw, *opts.live)
+		if encodeErr != nil {
+			return nil, encodeErr
+		}
+	}
 	digest := sha256.Sum256(raw)
+	if opts.live != nil {
+		digest = sha256.Sum256(append([]byte(version+"\x00"), raw...))
+	}
 	m.identity = hex.EncodeToString(digest[:])
 	if p, ok := s.businessBackend.(*independentPGBackend); ok {
 		m.mode = "postgres-session-lock-and-heartbeat"
@@ -207,6 +230,9 @@ func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o Inde
 			}
 			m.owners = append(m.owners, id)
 		}
+	}
+	if opts.transactionBackend != nil {
+		st.Backend = opts.transactionBackend(st.Backend)
 	}
 	tx, err := st.Backend.Begin(ctx)
 	if err != nil {
@@ -221,27 +247,43 @@ func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o Inde
 		return nil, err
 	}
 	if len(existing.Rows) > 0 {
-		probe, e := tx.Query(ctx, "SELECT to_regclass($1)::text AS name", st.internal("_ponder_go_managed_finite"))
+		probe, e := tx.Query(ctx, "SELECT to_regclass($1)::text AS name", st.internal(identityTable))
 		if e != nil {
 			return nil, e
 		}
 		if len(probe.Rows) != 1 || probe.Rows[0]["name"] == nil {
-			return nil, fmt.Errorf("existing namespace is not managed finite; use a new namespace")
+			if opts.live == nil {
+				return nil, fmt.Errorf("existing namespace is not managed finite; use a new namespace")
+			}
+			return nil, fmt.Errorf("existing namespace is not %s; use a new namespace", version)
 		}
 	}
-	if err = st.initializeInternal(ctx, tx); err != nil {
-		return nil, err
+	if st.managedLive != nil && len(existing.Rows) > 0 {
+		// Audit existing live state before any DDL or metadata repair can hide a
+		// missing table/row. A reopen must never bootstrap its own missing proof.
+		if err = st.managedLive.prepareReopen(ctx, tx); err != nil {
+			return nil, err
+		}
+	} else {
+		if err = st.initializeInternal(ctx, tx); err != nil {
+			return nil, err
+		}
+		if err = tx.Exec(ctx, "CREATE TABLE IF NOT EXISTS "+st.internal("_ponder_go_app")+" (key text PRIMARY KEY CHECK(key='app'),value jsonb NOT NULL,lease_token text NOT NULL)"); err != nil {
+			return nil, err
+		}
+		if err = tx.Exec(ctx, "CREATE TABLE IF NOT EXISTS "+st.internal(identityTable)+" (key text PRIMARY KEY CHECK(key='identity'),identity text NOT NULL,lease_mode text NOT NULL)"); err != nil {
+			return nil, err
+		}
+		if err = tx.Exec(ctx, "CREATE TABLE IF NOT EXISTS "+st.internal("_ponder_go_managed_stages")+" (name text PRIMARY KEY,owner_token text NOT NULL,catalog_hash text NOT NULL)"); err != nil {
+			return nil, err
+		}
+		if st.managedLive != nil {
+			if err = st.managedLive.createFormat(ctx, tx); err != nil {
+				return nil, err
+			}
+		}
 	}
-	if err = tx.Exec(ctx, "CREATE TABLE IF NOT EXISTS "+st.internal("_ponder_go_app")+" (key text PRIMARY KEY CHECK(key='app'),value jsonb NOT NULL,lease_token text NOT NULL)"); err != nil {
-		return nil, err
-	}
-	if err = tx.Exec(ctx, "CREATE TABLE IF NOT EXISTS "+st.internal("_ponder_go_managed_finite")+" (key text PRIMARY KEY CHECK(key='identity'),identity text NOT NULL,lease_mode text NOT NULL)"); err != nil {
-		return nil, err
-	}
-	if err = tx.Exec(ctx, "CREATE TABLE IF NOT EXISTS "+st.internal("_ponder_go_managed_stages")+" (name text PRIMARY KEY,owner_token text NOT NULL,catalog_hash text NOT NULL)"); err != nil {
-		return nil, err
-	}
-	old, err := tx.Query(ctx, "SELECT identity,lease_mode FROM "+st.internal("_ponder_go_managed_finite")+" WHERE key='identity'")
+	old, err := tx.Query(ctx, "SELECT identity,lease_mode FROM "+st.internal(identityTable)+" WHERE key='identity'")
 	if err != nil {
 		return nil, err
 	}
@@ -253,26 +295,31 @@ func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o Inde
 		if e != nil {
 			return nil, e
 		}
-		if len(app.Rows) != 1 || app.Rows[0]["version"] != managedFiniteVersion {
+		if len(app.Rows) != 1 || app.Rows[0]["version"] != version {
 			return nil, fmt.Errorf("incompatible managed metadata version")
 		}
-		if err = m.verifyBoundary(ctx, tx, nil, true); err != nil {
-			return nil, err
-		}
-		// Validate old owner markers before any destructive DDL, then restore the new token.
-		nextToken := st.leaseToken
-		st.leaseToken = fmt.Sprint(app.Rows[0]["lease_token"])
-		for _, stage := range m.activationStages() {
-			present, e := m.verifyStage(ctx, tx, stage)
-			if e == nil && !present {
-				e = m.requireStageAbsent(ctx, tx, stage.name)
+		// A prepared v3 recovery already verified the complete durable journal,
+		// public/private projection, catalog and operation lineage. Finite bootstrap
+		// gates cannot represent that nonempty boundary.
+		if st.managedLive == nil || st.managedLive.recovery == nil {
+			if err = m.verifyBoundary(ctx, tx, nil, true); err != nil {
+				return nil, err
 			}
-			if e != nil {
-				st.leaseToken = nextToken
-				return nil, e
+			// Validate old owner markers before any destructive DDL, then restore the new token.
+			nextToken := st.leaseToken
+			st.leaseToken = fmt.Sprint(app.Rows[0]["lease_token"])
+			for _, stage := range m.activationStages() {
+				present, e := m.verifyStage(ctx, tx, stage)
+				if e == nil && !present {
+					e = m.requireStageAbsent(ctx, tx, stage.name)
+				}
+				if e != nil {
+					st.leaseToken = nextToken
+					return nil, e
+				}
 			}
+			st.leaseToken = nextToken
 		}
-		st.leaseToken = nextToken
 		if err = m.dropActivation(ctx, tx); err != nil {
 			return nil, err
 		}
@@ -283,14 +330,14 @@ func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o Inde
 		if err = st.createUserObjects(ctx, tx, false); err != nil {
 			return nil, err
 		}
-		if err = tx.Exec(ctx, "INSERT INTO "+st.internal("_ponder_go_managed_finite")+" VALUES ('identity',$1,$2)", m.identity, m.mode); err != nil {
+		if err = tx.Exec(ctx, "INSERT INTO "+st.internal(identityTable)+" VALUES ('identity',$1,$2)", m.identity, m.mode); err != nil {
 			return nil, err
 		}
 	}
 	if err = m.verifyAliasOwnership(ctx, tx); err != nil {
 		return nil, err
 	}
-	app := AppMetadata{Version: managedFiniteVersion, BuildID: opts.BuildID, TableNames: []string{}, ViewNames: []string{}, IsLocked: 1, HeartbeatAt: time.Now().UnixMilli(), ViewsSchema: opts.ViewsSchema}
+	app := AppMetadata{Version: version, BuildID: opts.BuildID, TableNames: []string{}, ViewNames: []string{}, IsLocked: 1, HeartbeatAt: time.Now().UnixMilli(), ViewsSchema: opts.ViewsSchema}
 	for _, t := range st.Schema.Tables {
 		app.TableNames = append(app.TableNames, t.Name)
 	}
@@ -304,8 +351,19 @@ func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o Inde
 	if err = tx.Exec(ctx, "DELETE FROM "+st.internal("_ponder_go_managed_stages")); err != nil {
 		return nil, err
 	}
+	if st.managedLive != nil {
+		if err = st.managedLive.recordOpen(ctx, tx); err != nil {
+			return nil, err
+		}
+	}
 	if err = tx.Commit(ctx); err != nil {
-		return nil, &ManagedStageError{Stage: "initialize", Outcome: "unknown", Err: err}
+		if st.managedLive == nil {
+			return nil, &ManagedStageError{Stage: "initialize", Outcome: "unknown", Err: err}
+		}
+		_ = tx.Rollback(context.Background())
+		if err = st.managedLive.reconcileOpen(ctx, err); err != nil {
+			return nil, err
+		}
 	}
 	m.initialized = true
 	st.managedFinite = m

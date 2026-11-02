@@ -22,6 +22,9 @@ func (s *Store) RevertAndRewind(ctx context.Context, target checkpoint.Checkpoin
 }
 
 func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind, runtimeResume bool, quiet ...bool) error {
+	if s.managedLive != nil {
+		return s.managedLive.rejectLegacy(ctx)
+	}
 	silent := runtimeResume || (len(quiet) != 0 && quiet[0])
 	if s.staged && len(s.Schema.Tables) == 0 && !runtimeResume {
 		return nil
@@ -140,6 +143,9 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 // Finalize removes only an undo prefix that no future valid reorg may require.
 // Multichain retains finalized writes behind an unfinalized write on another chain.
 func (s *Store) Finalize(ctx context.Context, target checkpoint.Checkpoint) error {
+	if s.managedLive != nil {
+		return s.managedLive.rejectLegacy(ctx)
+	}
 	encoded, e := checkpoint.Encode(target)
 	if e != nil {
 		return e

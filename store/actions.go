@@ -25,6 +25,9 @@ func NewActions(ctx context.Context, backend Backend, model schema.Schema, names
 	return &Actions{s}, nil
 }
 func (a *Actions) transaction(ctx context.Context, fn func(Transaction) error) error {
+	if a.s.managedLive != nil {
+		return a.s.managedLive.rejectLegacy(ctx)
+	}
 	a.s.mu.Lock()
 	defer a.s.mu.Unlock()
 	tx, e := a.s.Backend.Begin(ctx)
@@ -144,6 +147,9 @@ func (w *Writer) CommitBlock(ctx context.Context, table string, target checkpoin
 	if w.closed.Load() {
 		return &NonRetryableUserError{Message: "indexing function returned"}
 	}
+	if w.s.managedLive != nil {
+		return ErrManagedLiveLegacyMutation
+	}
 	if !w.s.staged {
 		return fmt.Errorf("CommitBlock is only valid in staged actions")
 	}
@@ -170,6 +176,9 @@ func (a *Actions) AdvanceLatest(ctx context.Context, target checkpoint.Checkpoin
 func (w *Writer) AdvanceLatest(ctx context.Context, target checkpoint.Checkpoint) error {
 	if w.closed.Load() {
 		return &NonRetryableUserError{Message: "indexing function returned"}
+	}
+	if w.s.managedLive != nil {
+		return ErrManagedLiveLegacyMutation
 	}
 	if !w.s.staged {
 		return fmt.Errorf("AdvanceLatest is only valid in staged actions")

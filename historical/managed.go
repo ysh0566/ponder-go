@@ -100,6 +100,9 @@ func (r *ManagedRunner) Metadata(ctx context.Context) (store.AppMetadata, error)
 }
 
 func managedPlan(b *config.ExecutableSourceIndexingBuild) (store.ManagedFiniteOptions, error) {
+	return managedPlanWithUnbounded(b, false)
+}
+func managedPlanWithUnbounded(b *config.ExecutableSourceIndexingBuild, unbounded bool) (store.ManagedFiniteOptions, error) {
 	m := store.ManagedFiniteOptions{EndBlocks: map[uint64]uint64{}}
 	if b == nil || len(b.Chains) == 0 || len(b.EventCallbacks) != len(b.Chains) || len(b.SetupCallbacks) != len(b.Chains) {
 		return m, fmt.Errorf("complete managed plan required")
@@ -130,7 +133,11 @@ func managedPlan(b *config.ExecutableSourceIndexingBuild) (store.ManagedFiniteOp
 			if !ok {
 				return m, fmt.Errorf("managed callback filter required")
 			}
-			end, err := uintQuantity(f["toBlock"])
+			value, present := f["toBlock"]
+			end, err := uintQuantity(value)
+			if unbounded && (!present || value == nil || filter.IsUndefined(value)) {
+				end, err = 9007199254740991, nil
+			}
 			if err != nil {
 				return m, err
 			}

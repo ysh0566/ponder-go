@@ -35,7 +35,7 @@ func invalidBinding() error {
 	return &store.NonRetryableUserError{Message: "indexing database requires its active transaction context"}
 }
 func (db *Database) configured() bool {
-	return db != nil && (db.underlying != nil || db.session != nil)
+	return db != nil && (db.underlying != nil || db.session != nil || db.liveRuntime)
 }
 
 // acquire retains the binding lease through the entire operation, so revocation
@@ -44,7 +44,7 @@ func (db *Database) acquire(ctx context.Context) (*store.IndexingStore, func(), 
 	if err := ctx.Err(); err != nil {
 		return nil, nil, err
 	}
-	if db.session == nil {
+	if db.session == nil && !db.liveRuntime {
 		if db.underlying == nil {
 			return nil, nil, invalidBinding()
 		}
@@ -74,10 +74,16 @@ func (db *Database) Bind(ctx context.Context, writer *store.Writer) (context.Con
 	}
 	db.bindingMu.Lock()
 	defer db.bindingMu.Unlock()
-	if db.session == nil || db.binding != nil {
+	if (db.session == nil && !db.liveRuntime) || db.binding != nil {
 		return nil, nil, invalidBinding()
 	}
-	underlying, err := db.session.Bind(writer)
+	var underlying *store.IndexingStore
+	var err error
+	if db.liveRuntime {
+		underlying = writer.Indexing()
+	} else {
+		underlying, err = db.session.Bind(writer)
+	}
 	if err != nil {
 		return nil, nil, err
 	}
@@ -101,7 +107,9 @@ func (binding *DatabaseBinding) Finish(transactionErr error) error {
 	if binding.finished {
 		return binding.finishErr
 	}
-	binding.finishErr = binding.database.session.Finish(binding.underlying, transactionErr)
+	if !binding.database.liveRuntime {
+		binding.finishErr = binding.database.session.Finish(binding.underlying, transactionErr)
+	}
 	if binding.finishErr == nil {
 		binding.finished = true
 	}
@@ -144,4 +152,12 @@ func (db *Database) Prefetch(ctx context.Context, events []store.ProfileEvent) e
 	}
 	defer release()
 	return db.capture(underlying.Cache.Prefetch(ctx, events))
+}
+
+// NewRuntimeDatabase binds only the native per-block Writer supplied by the
+// versioned managed runtime transaction. It has no legacy/raw write session.
+func NewRuntimeDatabase(handler RetryableErrorHandler) *Database {
+	db := NewDatabase(nil, handler)
+	db.liveRuntime = true
+	return db
 }

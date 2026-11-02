@@ -21,6 +21,7 @@ type Store struct {
 	leaseToken               string
 	leaseTimeout             int64
 	managedFinite            *ManagedFinite
+	managedLive              *ManagedLive
 	viewsSchema              string
 	profileState             *CacheProfile
 	protocol                 atomic.Pointer[ProtocolCache]
@@ -257,6 +258,9 @@ func (s *Store) lock(ctx context.Context, tx Transaction) error {
 	return nil
 }
 func (s *Store) Apply(ctx context.Context, event Event, handler func(*Writer) error) error {
+	if s.managedLive != nil {
+		return s.managedLive.rejectLegacy(ctx)
+	}
 	if s.staged {
 		return fmt.Errorf("staged actions store cannot use atomic Apply")
 	}
