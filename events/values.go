@@ -45,6 +45,8 @@ func integer(v any) (*big.Int, error) {
 		return new(big.Int).Set(x), nil
 	case uint64:
 		return new(big.Int).SetUint64(x), nil
+	case int64:
+		return big.NewInt(x), nil
 	case int:
 		return big.NewInt(int64(x)), nil
 	case float64:
