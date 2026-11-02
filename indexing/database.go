@@ -78,6 +78,7 @@ type Database struct {
 	errors        RetryableErrorHandler
 	classify      DatabaseErrorClassifier
 	session       *store.IndexingSession
+	liveRuntime   bool
 	bindingMu     sync.Mutex
 	binding       *DatabaseBinding
 	readOnlyScope func(context.Context) (func(), error)

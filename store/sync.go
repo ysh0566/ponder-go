@@ -33,6 +33,9 @@ func (s *Store) SyncedBlock(ctx context.Context, chain, number uint64) (*SyncBlo
 	return &SyncBlock{ChainID: chain, Number: number, Hash: fmt.Sprint(row["hash"]), ParentHash: fmt.Sprint(row["parent_hash"]), Timestamp: timestamp, Payload: json.RawMessage(fmt.Sprint(row["payload"]))}, nil
 }
 func (s *Store) CompleteBlock(ctx context.Context, b SyncBlock, filter string) error {
+	if s.managedLive != nil {
+		return s.managedLive.rejectLegacy(ctx)
+	}
 	tx, e := s.Backend.Begin(ctx)
 	if e != nil {
 		return e
@@ -77,6 +80,9 @@ func (s *Store) CompleteBlock(ctx context.Context, b SyncBlock, filter string) e
 // history interval complete. A restart can then recognize an orphaned handler
 // commit even if the process exited before CompleteBlock.
 func (s *Store) SaveBlock(ctx context.Context, b SyncBlock) error {
+	if s.managedLive != nil {
+		return s.managedLive.rejectLegacy(ctx)
+	}
 	tx, e := s.Backend.Begin(ctx)
 	if e != nil {
 		return e
@@ -116,6 +122,9 @@ func (s *Store) Missing(ctx context.Context, chain uint64, filter string, wanted
 	return interval.Difference([]interval.Interval{wanted}, interval.Union(xs)), nil
 }
 func (s *Store) RewindSync(ctx context.Context, chain, number uint64) error {
+	if s.managedLive != nil {
+		return s.managedLive.rejectLegacy(ctx)
+	}
 	tx, e := s.Backend.Begin(ctx)
 	if e != nil {
 		return e
@@ -162,6 +171,9 @@ type FactoryChild struct {
 // Sync provenance survives handler failures and is replay-safe; it is kept out
 // of the indexing journal and removed when the sync store rewinds a fork.
 func (s *Store) RecordFactoryChildren(ctx context.Context, id string, chain, block uint64, hash string, children []FactoryChild) error {
+	if s.managedLive != nil {
+		return s.managedLive.rejectLegacy(ctx)
+	}
 	tx, e := s.Backend.Begin(ctx)
 	if e != nil {
 		return e
@@ -212,6 +224,9 @@ func (s *Store) CacheGet(ctx context.Context, key string) (json.RawMessage, bool
 	return json.RawMessage(fmt.Sprint(r.Rows[0]["value"])), true, nil
 }
 func (s *Store) CachePut(ctx context.Context, key string, value json.RawMessage) error {
+	if s.managedLive != nil {
+		return s.managedLive.rejectLegacy(ctx)
+	}
 	if s.leaseToken != "" {
 		tx, e := s.Backend.Begin(ctx)
 		if e != nil {

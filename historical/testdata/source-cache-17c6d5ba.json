@@ -1,0 +1,60 @@
+{
+  "scope": "Actual pinned cachedTransport with recorded durable-map storage boundary; clients/in-memory maps recreated; no source runtime or real SQL transaction claim",
+  "compatibility": {
+    "first": "0x2a",
+    "retry": "0x2a",
+    "requests": [
+      {
+        "attempt": 1,
+        "q": {
+          "method": "eth_getBalance",
+          "params": [
+            "0x1111111111111111111111111111111111111111",
+            "0x1"
+          ]
+        },
+        "value": "0x2a"
+      }
+    ],
+    "metrics": [
+      {
+        "attempt": 1,
+        "chain": "one",
+        "method": "eth_getBalance",
+        "type": "rpc"
+      },
+      {
+        "attempt": 2,
+        "chain": "one",
+        "method": "eth_getBalance",
+        "type": "database"
+      }
+    ],
+    "persisted": [
+      [
+        "1:{\"method\":\"eth_getbalance\",\"params\":[\"0x1111111111111111111111111111111111111111\",\"0x1\"]}",
+        {
+          "result": "\"0x2a\"",
+          "blockNumber": 1
+        }
+      ]
+    ]
+  },
+  "explicit_old_final0_prune": {
+    "result": "0x63",
+    "requests": [
+      {
+        "attempt": 3,
+        "q": {
+          "method": "eth_getBalance",
+          "params": [
+            "0x1111111111111111111111111111111111111111",
+            "0x1"
+          ]
+        },
+        "value": "0x63"
+      }
+    ]
+  },
+  "fork_finality_metadata": "Between attempts1/2 provider fork changed, freshfinal advanced0\u21921; transport only receives request block1 and no hash/finality metadata."
+}
