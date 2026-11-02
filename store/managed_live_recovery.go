@@ -14,6 +14,9 @@ const managedLiveRecoveryVersion = "managed-live-recovery-v3"
 const managedLiveRecoveryReceiptVersion = "managed-live-recovery-receipt-v2"
 
 func (m *ManagedLive) version() string {
+	if m.opts.runtimeFactories {
+		return managedLiveFactoryVersion
+	}
 	if m.opts.runtimeInitial {
 		return managedLiveSourceVersion
 	}

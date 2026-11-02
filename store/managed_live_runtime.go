@@ -8,6 +8,7 @@ import (
 const managedLiveRuntimeVersion = "managed-live-runtime-v5"
 const managedLiveContinuousVersion = "managed-live-continuous-v6"
 const managedLiveUncachedVersion = "managed-live-uncached-v7"
+const managedLiveFactoryVersion = "managed-live-factory-v10"
 const managedLiveSetupVersion = "managed-live-setup-v8"
 
 func isLiveRuntimeVersion(v string) bool {
@@ -15,7 +16,7 @@ func isLiveRuntimeVersion(v string) bool {
 }
 
 func isContinuousRuntimeVersion(v string) bool {
-	return v == managedLiveContinuousVersion || v == managedLiveUncachedVersion || v == managedLiveSetupVersion || v == managedLiveSourceVersion
+	return v == managedLiveContinuousVersion || v == managedLiveUncachedVersion || v == managedLiveSetupVersion || v == managedLiveSourceVersion || v == managedLiveFactoryVersion
 }
 
 type ManagedLiveRuntimeOptions struct {
@@ -26,6 +27,7 @@ type ManagedLiveRuntimeOptions struct {
 	Continuous        bool
 	Setup             bool
 	SourceCheckpoints bool
+	FactorySources    bool
 	ObserveDomain     func(context.Context, ManagedLiveDomainStage) error
 }
 
@@ -56,6 +58,10 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 		return nil, fmt.Errorf("source checkpoints require the v9 live lifecycle")
 	}
 	opts.runtimeInitial = in.SourceCheckpoints
+	if in.FactorySources && (!in.SourceCheckpoints || !in.Continuous) {
+		return nil, fmt.Errorf("factory runtime requires source positions continuous lifecycle")
+	}
+	opts.runtimeFactories = in.FactorySources
 	if in.CacheRPCRequests != nil {
 		if len(in.CacheRPCRequests) != len(opts.Chains) {
 			return nil, fmt.Errorf("runtime requires exact RPC cache policy")
