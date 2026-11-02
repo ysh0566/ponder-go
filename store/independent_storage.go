@@ -45,9 +45,17 @@ type IndependentStorage struct {
 	ownerLocks                   []independentOwnerLock
 	closeErr                     error
 	managed                      *ManagedFinite
+	live                         *ManagedLive
 }
 
-func (s *IndependentStorage) ManagedFinite() *ManagedFinite { return s.managed }
+func (s *IndependentStorage) ManagedFinite() *ManagedFinite {
+	if s.live != nil {
+		return nil
+	}
+	return s.managed
+}
+
+func (s *IndependentStorage) ManagedLive() *ManagedLive { return s.live }
 
 func (s *IndependentStorage) BusinessActions() *Actions { return s.business }
 func (s *IndependentStorage) BusinessStore() *Store     { return s.business.s }
@@ -119,7 +127,7 @@ func independentNamespaceFamily(n string) []string {
 func OpenIndependentPostgres(ctx context.Context, o IndependentStorageOptions) (*IndependentStorage, error) {
 	return openIndependentPostgres(ctx, o, nil)
 }
-func openIndependentPostgres(ctx context.Context, o IndependentStorageOptions, managed *ManagedFiniteOptions) (*IndependentStorage, error) {
+func openIndependentPostgres(ctx context.Context, o IndependentStorageOptions, managed *managedStorageOptions) (*IndependentStorage, error) {
 	if err := independentNames(o); err != nil {
 		return nil, err
 	}
@@ -216,7 +224,7 @@ func openIndependentPostgres(ctx context.Context, o IndependentStorageOptions, m
 func OpenIndependentPGlite(ctx context.Context, o IndependentStorageOptions) (*IndependentStorage, error) {
 	return openIndependentPGlite(ctx, o, nil)
 }
-func openIndependentPGlite(ctx context.Context, o IndependentStorageOptions, managed *ManagedFiniteOptions) (*IndependentStorage, error) {
+func openIndependentPGlite(ctx context.Context, o IndependentStorageOptions, managed *managedStorageOptions) (*IndependentStorage, error) {
 	if err := independentNames(o); err != nil {
 		return nil, err
 	}
@@ -278,13 +286,19 @@ func openIndependentPGlite(ctx context.Context, o IndependentStorageOptions, man
 func (s *IndependentStorage) initialize(ctx context.Context, o IndependentStorageOptions) error {
 	return s.initializeMode(ctx, o, nil)
 }
-func (s *IndependentStorage) initializeMode(ctx context.Context, o IndependentStorageOptions, managed *ManagedFiniteOptions) error {
+func (s *IndependentStorage) initializeMode(ctx context.Context, o IndependentStorageOptions, managed *managedStorageOptions) error {
+	if managed != nil && managed.live != nil && managed.live.coordinated {
+		if err := prepareLiveDomains(ctx, s, o, *managed.live); err != nil {
+			return err
+		}
+	}
 	var err error
 	if managed == nil {
 		s.business, err = NewActions(ctx, s.businessBackend, o.Schema, o.BusinessNamespace, o.Ordering)
 	} else {
 		s.managed, err = s.initializeManagedFinite(ctx, o, *managed)
 		if err == nil {
+			s.live = s.managed.s.managedLive
 			s.business = &Actions{s.managed.s}
 			s.managed.start()
 		}

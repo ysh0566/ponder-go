@@ -1,0 +1,290 @@
+{
+  "stage": "/root/repo/ponder-go/m45-source-init-z4-20261102T042916Z",
+  "baseline": "1670566fb6efe03cab63f3da43a5f16b79a14cbb",
+  "pinned_upstream": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "phase": "source-initial-v9",
+  "status": "candidate; final frozen validation recorded separately",
+  "previous_runs": [
+    {
+      "label": "source-initial-red-pg",
+      "command": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-vet=off",
+        "-timeout=15m",
+        "./historical",
+        "-run",
+        "^TestRuntimeSourceInitialCheckpoint$/^postgres$",
+        "-count=1",
+        "-json"
+      ],
+      "input_fingerprint": "f2f331e8b89a65b275dbb004dea2f0195888d039c631c121271038579078b00a",
+      "exit_code": 1,
+      "leaf_counts": {
+        "pass": 0,
+        "fail": 1,
+        "skip": 0
+      },
+      "finished_utc": "2026-11-02T04:41:58.157980+00:00"
+    },
+    {
+      "label": "source-initial-wired-pg",
+      "command": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-vet=off",
+        "-timeout=15m",
+        "./historical",
+        "-run",
+        "^TestRuntimeSourceInitialCheckpoint$/^postgres$",
+        "-count=1",
+        "-json"
+      ],
+      "input_fingerprint": "9875bc63e92fea7f09e12be0a49ea83a59a454f521813e6c03a3c53fd91a1de8",
+      "exit_code": 0,
+      "leaf_counts": {
+        "pass": 1,
+        "fail": 0,
+        "skip": 0
+      },
+      "finished_utc": "2026-11-02T04:48:55.104446+00:00"
+    },
+    {
+      "label": "source-native-red-pg",
+      "command": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-vet=off",
+        "-timeout=15m",
+        "./store",
+        "-run",
+        "^TestManagedLiveSource(Identity|FinalizeRequiresExecution|ReorgRestoresDown)$/^postgres$",
+        "-count=1",
+        "-json"
+      ],
+      "input_fingerprint": "c98c27a7bc26a239fc112f4a7a7e244478920268eb241ba5857021acb0a57238",
+      "exit_code": 1,
+      "leaf_counts": {
+        "pass": 0,
+        "fail": 4,
+        "skip": 0
+      },
+      "finished_utc": "2026-11-02T04:56:21.154484+00:00"
+    },
+    {
+      "label": "source-down-reorg-red-v2-pg",
+      "command": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-vet=off",
+        "-timeout=15m",
+        "./store",
+        "-run",
+        "^TestManagedLiveSourceReorgRestoresDown$/^postgres$",
+        "-count=1",
+        "-json"
+      ],
+      "input_fingerprint": "e4575673a0a3094cc95c3b4338eddabdf1c044173516365489e266b87194a50e",
+      "exit_code": 1,
+      "leaf_counts": {
+        "pass": 0,
+        "fail": 1,
+        "skip": 0
+      },
+      "finished_utc": "2026-11-02T04:58:13.215235+00:00"
+    },
+    {
+      "label": "source-native-fix1-pg",
+      "command": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-vet=off",
+        "-timeout=15m",
+        "./store",
+        "-run",
+        "^TestManagedLiveSource(Identity|FinalizeRequiresExecution|ReorgRestoresDown)$/^postgres$",
+        "-count=1",
+        "-json"
+      ],
+      "input_fingerprint": "4479cd08ffad67e08e0ed236a936fc9f526e43e03bbc271c41360a8ed08e5abe",
+      "exit_code": 0,
+      "leaf_counts": {
+        "pass": 4,
+        "fail": 0,
+        "skip": 0
+      },
+      "finished_utc": "2026-11-02T05:03:57.464533+00:00"
+    },
+    {
+      "label": "source-matrix-first-pg",
+      "command": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-vet=off",
+        "-timeout=15m",
+        "./historical",
+        "-run",
+        "^TestRuntimeSourceInitialMatrix$/^postgres$",
+        "-count=1",
+        "-json"
+      ],
+      "input_fingerprint": "450b0eeffc21338d5ebf913bd17e046427cd34f4172f3d5b3224d9a27c845470",
+      "exit_code": 1,
+      "leaf_counts": {
+        "pass": 3,
+        "fail": 3,
+        "skip": 0
+      },
+      "finished_utc": "2026-11-02T08:54:09.587970+00:00"
+    },
+    {
+      "label": "source-matrix-first-pglite",
+      "command": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-vet=off",
+        "-timeout=15m",
+        "./historical",
+        "-run",
+        "^TestRuntimeSourceInitialMatrix$/^pglite$",
+        "-count=1",
+        "-json"
+      ],
+      "input_fingerprint": "450b0eeffc21338d5ebf913bd17e046427cd34f4172f3d5b3224d9a27c845470",
+      "exit_code": -15,
+      "leaf_counts": {
+        "pass": 1,
+        "fail": 0,
+        "skip": 0
+      },
+      "finished_utc": "2026-11-02T08:56:20.114634+00:00"
+    },
+    {
+      "label": "source-v2-compile",
+      "command": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-vet=off",
+        "-timeout=15m",
+        "./...",
+        "-run",
+        "^$",
+        "-count=1",
+        "-json"
+      ],
+      "input_fingerprint": "f3acb91e6a3bb3c60d46a5d6da50cd8f91c74e797f7f1565d41cc69948025def",
+      "exit_code": 0,
+      "leaf_counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      },
+      "finished_utc": "2026-11-02T09:03:37.679470+00:00"
+    },
+    {
+      "label": "source-v2-historical-pg",
+      "command": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-vet=off",
+        "-timeout=15m",
+        "./historical",
+        "-run",
+        "^TestRuntimeSource(InitialCheckpoint|InitialMatrix|FailedSetupForkCache|CommitRecovery)$/^postgres$",
+        "-count=1",
+        "-json"
+      ],
+      "input_fingerprint": "f3acb91e6a3bb3c60d46a5d6da50cd8f91c74e797f7f1565d41cc69948025def",
+      "exit_code": 0,
+      "leaf_counts": {
+        "pass": 10,
+        "fail": 0,
+        "skip": 0
+      },
+      "finished_utc": "2026-11-02T09:05:08.752372+00:00"
+    },
+    {
+      "label": "source-v2-native-pg",
+      "command": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-vet=off",
+        "-timeout=15m",
+        "./store",
+        "-run",
+        "^TestManagedLiveSource(Identity|FinalizeRequiresExecution|ReorgRestoresDown|BootstrapAdmission|RetainedExecutedFinality)$/^postgres$",
+        "-count=1",
+        "-json"
+      ],
+      "input_fingerprint": "f3acb91e6a3bb3c60d46a5d6da50cd8f91c74e797f7f1565d41cc69948025def",
+      "exit_code": 0,
+      "leaf_counts": {
+        "pass": 6,
+        "fail": 0,
+        "skip": 0
+      },
+      "finished_utc": "2026-11-02T09:05:44.521719+00:00"
+    },
+    {
+      "label": "source-v3-boundary",
+      "command": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-vet=off",
+        "-timeout=15m",
+        "./historical",
+        "-run",
+        "^TestRuntimeSourceSetupOnlyBoundary$",
+        "-count=1",
+        "-json"
+      ],
+      "input_fingerprint": "fbdc3f29947415e5cce69629b1eda4b1661f138a5adb027f3d640bdc4f9426d2",
+      "exit_code": 0,
+      "leaf_counts": {
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      "finished_utc": "2026-11-02T09:07:34.797183+00:00"
+    },
+    {
+      "label": "source-v3-crash-pg",
+      "command": [
+        "go",
+        "test",
+        "-mod=readonly",
+        "-vet=off",
+        "-timeout=15m",
+        "./historical",
+        "-run",
+        "^TestRuntimeSourceCrash$/^postgres$",
+        "-count=1",
+        "-json"
+      ],
+      "input_fingerprint": "fbdc3f29947415e5cce69629b1eda4b1661f138a5adb027f3d640bdc4f9426d2",
+      "exit_code": 0,
+      "leaf_counts": {
+        "pass": 1,
+        "fail": 0,
+        "skip": 0
+      },
+      "finished_utc": "2026-11-02T09:07:50.226977+00:00"
+    }
+  ],
+  "final_evidence": "/root/repo/ponder-go/m45-source-init-z4-20261102T042916Z/SOURCE-INIT-CLOSEOUT.json",
+  "source_mapping_credit_added": 0,
+  "full_m45_acceptance": false,
+  "scope": "Real source progress and cachedTransport probes plus native RuntimeRunner and independent SQL domains. Setup-only empty filters preserve pinned failure boundary. This does not establish full upstream runtime/SQL equivalence or cache safety on every fork.",
+  "cache_boundary": "Fresh-final=setup-request-block preserves stale numeric result, matching actual transport probe. Explicit old-final prune is optional external hardening in the probe; inherited managed startup fence above fresh-final differs from pinned startup and remains an explicit compatibility gap."
+}

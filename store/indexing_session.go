@@ -52,6 +52,11 @@ func (s *IndexingSession) bind(w *Writer, readonlyAdmission bool) (*IndexingStor
 	if w.closed.Load() {
 		return nil, fmt.Errorf("indexing session writer is closed")
 	}
+	// Managed batches own per-block caches and their enclosing outcome. A
+	// caller-finished cross-transaction prediction session is a later admission.
+	if w.s.managedLive != nil {
+		return nil, ErrManagedLiveLegacyMutation
+	}
 	w.ormMu.Lock()
 	defer w.ormMu.Unlock()
 	if w.orm != nil {
