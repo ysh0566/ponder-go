@@ -1,0 +1,1382 @@
+{
+  "phase": "managed-live-factory-v10",
+  "source_input_fingerprint": "2229fa9d3d8dc29b72816458c8ad8e4a71629a0f8b44db4db4c7c2639a0c6edf",
+  "source_files": 120,
+  "tested_base": "1670566fb6efe03cab63f3da43a5f16b79a14cbb",
+  "publication_parent": "c2eb45aa885c906df416e954e1b0671b60d6ab57",
+  "native_unique_pass": 581,
+  "by_backend": {
+    "pure": 249,
+    "postgres": 190,
+    "pglite": 142
+  },
+  "original_530_rerun": true,
+  "new_supplemental_native": 51,
+  "old_results_transferred": 0,
+  "source_mapping": "543/905 unchanged",
+  "source_mapping_credit_added": 0,
+  "full_m45_acceptance": false,
+  "evidence_root": "/root/repo/ponder-go/m45-factory-z4-20261102T140000Z",
+  "independent_evidence": "/root/repo/ponder-go/m45-factory-release-z4-20261102T191144Z-y_25xt8g",
+  "audit_seal_sha256": "3607ea5cfcd95594cc9294a637d4ec2f9df5817d9f4cddcc5e3b1b196aa5a19f",
+  "command_template": [
+    "go",
+    "test",
+    "-mod=readonly",
+    "-vet=off",
+    "-timeout=15m",
+    "{package}",
+    "-run",
+    "{selection}",
+    "-count=1",
+    "-json"
+  ],
+  "cwd": "/root/repo/ponder-go/work/ponder-go-m44",
+  "evidence_file_templates": {
+    "receipt": "{label}.json",
+    "native_log": "{label}.log",
+    "input_archive": "{label}-inputs.tar.gz"
+  },
+  "groups": [
+    {
+      "label": "v10-new-pure",
+      "package": "./runtime",
+      "selection": "^TestManagedFactory",
+      "backend": "pure",
+      "native_pass": 27,
+      "receipt_sha256": "8ae43b3286947acc9f08c3a819468bea4733aa6914c9c51bb93cf521a951ef8b",
+      "native_log_sha256": "d24a9bb5188e5e3490ebe5d5fe2512ea8b4a2ddb2170dcaa8f483836ba04a88b",
+      "input_archive_sha256": "de461bed5674a8a47156b31ae79e678b2e0f31cb8f3378dd0c7028485dfb0ad6"
+    },
+    {
+      "label": "pg-new",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactory/^postgres$",
+      "backend": "postgres",
+      "native_pass": 12,
+      "receipt_sha256": "48f74ee120689857f7e24de32b7eed96ddeaf229b85d3612f5a35d24531808f6",
+      "native_log_sha256": "d19979cb98de67eee96f500923d1579901e6fd03fa90acfa942538657b52c0ef",
+      "input_archive_sha256": "ad47b7665bc2080536da8ca7497611c78ebf860164a6b6243c9ad3f0af685ef2"
+    },
+    {
+      "label": "pglite-new-01",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryLifecycle$/^pglite$/^early_birth_cached$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "39e043cb9c6ce77c5d8d6120f3763c5a8fdd457ba465533447f47b5899b76d32",
+      "native_log_sha256": "ef972fd859887839d0b1a9a47ab8db9c4cc8403b5dbfe2624efbee19b8c4991c",
+      "input_archive_sha256": "d3deb4949b1ebac8edec4b973bf554b475d32f2f94ea27a165696954210ba32c"
+    },
+    {
+      "label": "pglite-new-02",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryLifecycle$/^pglite$/^early_birth_uncached$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "7bbdbc9d6beb2fb7c4f864cd46e1913e11bc43479137076121f78524272342ce",
+      "native_log_sha256": "426d3602040844fc8106dc7eca5d6f19e50263e0e945fbaecbc83381e66db103",
+      "input_archive_sha256": "f787757adeb29c3d1d85ce94e705a82fa2238bc616bd35ba3fc6710bc557baf9"
+    },
+    {
+      "label": "pglite-new-03",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryLifecycle$/^pglite$/^same_block_cached$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "62def963480e6a5d0d89f98b374312e4fea90811c42fb9cd721dd79f49bb6cf7",
+      "native_log_sha256": "5b867f42b44b877248cd27cbe79b6c906209d781fd162fc465e7cfab36164d02",
+      "input_archive_sha256": "8826d3bdb368d119602aeba17a5c1ee342a556564faa0925acf56e27f551c20b"
+    },
+    {
+      "label": "pglite-new-04",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryLifecycle$/^pglite$/^same_block_uncached$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "4bf20307153fdf20c234a70decdbce880e4d0002534f6a3f62bc3ad5ba136c88",
+      "native_log_sha256": "39792d3944589a2e03a43666d46dafb0efa8c0da610e1ac025f395cd5f24f5ca",
+      "input_archive_sha256": "48846d4793e46468a153afb8d43a5bacb8d2374927654eeb131d5604e29c19ea"
+    },
+    {
+      "label": "pglite-new-05",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryReorg$/^pglite$/^cache_true$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "287202e8170398a5803fe0034b03b855783fdac22fab95007ff9b5009ea7c539",
+      "native_log_sha256": "406192f65d58e666be1e9a808b3ba5b63447b22e2e6715c239388899015451bf",
+      "input_archive_sha256": "565b9a6dbed6c85afdbe5f0b81a7c3acf10e268c87d2f21c801c9b30fea22069"
+    },
+    {
+      "label": "pglite-new-06",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryReorg$/^pglite$/^cache_false$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "947ba19c18e3e14fcdcc158c5a24bf5ce9e06dc6cc1a17740615fa697a46695b",
+      "native_log_sha256": "a5b3e7ee02901b0d063f41a3826a4d2189e1e1896c5206c987b65a57e1b6d13d",
+      "input_archive_sha256": "212d7f196a93a883ce74bdb3a3feb54e5c35c4f055c1fd716437c04ac363a988"
+    },
+    {
+      "label": "pglite-new-07",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryAcquisitionRetry$/^pglite$/^eth_getBlockByHash$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "0616dd5f5a848a0901fcb6945246add92d5e01fef48a6bfbb6403265cf77c85e",
+      "native_log_sha256": "f243f1e225952475aadb370b8635b6dc4882edf5b01412a240a2bb859b237c81",
+      "input_archive_sha256": "bf2b61aef53dd00607a3cab8188ee481c54a6c5b495c61361be67bd1919ce430"
+    },
+    {
+      "label": "pglite-new-08",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryAcquisitionRetry$/^pglite$/^eth_getLogs$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "c6dc5c1bb453004df5f94aff37661d9539ad27ab811e0e58ab1c9165db922f9e",
+      "native_log_sha256": "6495c7e2d88ae76ff93416f4a8173dc977c94eb314a5c380713fb75759396e0c",
+      "input_archive_sha256": "a1c597d2fb1471f1bb92fc447c72948cb21677e0c7ca3ac99bc6916f71f9fb02"
+    },
+    {
+      "label": "pglite-new-09",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryFailedCommitReopen$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "92aee28e6124611aafeadcb01c066a76a4b95270061cfbd5121fdbabad348b8e",
+      "native_log_sha256": "15cb7910fd6b125c4dbc076d3bc2c68f4aa30974765a859ee4d59a368c3eb189",
+      "input_archive_sha256": "40d64cb49737d2c568024b5276bd3d6de4afc3b744a1f88882049ab94cd9060a"
+    },
+    {
+      "label": "pglite-new-10",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryOverlappingParents$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "12b45de5cb62fab80dde2f959cf8e690e601f194c04c2fcf4a1e0f841ac74cc6",
+      "native_log_sha256": "c649d951b31ee267714a3c307d2dc96abbc3b6559bee246624cd4303abb3bd52",
+      "input_archive_sha256": "29ceab99c260fff05ae5c0abf98374e817ae8fd5b2221983f13691d36e91f966"
+    },
+    {
+      "label": "pglite-new-11",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryForgedRecoveryRoot$/^pglite$/^root$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "8251651899d74e3e7912c2a557ba9cea587088392cfe8d650237d1c19527b70a",
+      "native_log_sha256": "0df2c944643ecbe3ef0e94396c46d91a90258dcecc7b60c1c7870c737402d14e",
+      "input_archive_sha256": "bea5f9ef07d4277ad49fd9bea265a14b5e73478bb1f2a7e49bf3173a286f803d"
+    },
+    {
+      "label": "pglite-new-12",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryForgedRecoveryRoot$/^pglite$/^down_parent$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "4e3f1cf24a056fac29efc3cefffed2047282d21761b2e20566ffeedb8df3fbf4",
+      "native_log_sha256": "8bfbf3d14035389d3d308001ccddea6e668c61f937814cb59fbd18f2f89a781e",
+      "input_archive_sha256": "db9209a21902e8f120009b0901f47a648e81be8b414e779047436a888e22285d"
+    },
+    {
+      "label": "v10-reg-001",
+      "package": "./...",
+      "selection": "^$",
+      "backend": "pure",
+      "native_pass": 0,
+      "receipt_sha256": "d2b3c5ced908e904b079e4b1fc42cfb4bb4632bd1bb1c7efa10e3c2432c42349",
+      "native_log_sha256": "054849e4d782ac205c9c04f6e9659d135afe04bd0d1da3297369bcf01367acc4",
+      "input_archive_sha256": "71a472ab5ac228aab762d9cdf8f5693fa74370700bc954eb00d029f890e02395"
+    },
+    {
+      "label": "v10-reg-002",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceSetupOnlyBoundary$",
+      "backend": "pure",
+      "native_pass": 2,
+      "receipt_sha256": "9e6e86a34343e654eabe277b3366aefff0d2b2d9fd8f86304dd7d133e2b81c72",
+      "native_log_sha256": "c549818e6f7ddd49dedad92779f8d26452ad7e3c6cefd26b6fab4b20e5753ddd",
+      "input_archive_sha256": "930af744a7569a4c77f9d7fd5f6161d40bba20b91c939e4bc83dcf2170ac300e"
+    },
+    {
+      "label": "v10-reg-003",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupPreflight$",
+      "backend": "pure",
+      "native_pass": 5,
+      "receipt_sha256": "b6f43b706ac1b6a732b0af7f88435d2cd8ad10ffa1cc57efee35486437935e30",
+      "native_log_sha256": "f445f5c2c318f6d1527d3d617c0669ed58c1733ef98612002ba02ab4d6fdb0b4",
+      "input_archive_sha256": "3deba9b1d6844e10ae2adc8f4af994a9522011e994ddb755a62d2e29bda083a1"
+    },
+    {
+      "label": "v10-reg-004",
+      "package": "./...",
+      "selection": "^(TestManagedLive(FinalizeUnit.*|ReorgUnit.*|SegmentsUnit.*|Options|FreshFinalizedTimestamp|LegacyMutationGuard)|TestUpstreamFinality|TestSourceEventOrderOriginal|TestSourceEventOrderControls|TestSourceHistoryCompletionMerge|TestSourceHistoryAsyncTermination|TestSourceHistoryFinalizedModeBoundaries|TestSourceHistoryCursorAndRefreshThreshold|TestSourceHistoryRefreshAdmission|TestSourceHistoryRefreshFirstError|TestManagedPlanStableIdentity|TestManagedPlanRejectsSemanticDrift|TestManagedPlanFailClosed|TestManagedStableUndefinedIsNotNullOrUserMarker|TestRuntimePreflightRejectsUnsupported|TestRuntimeRejectsHistoricalOptions|TestRuntimeLiveHeadersBounded|TestRuntimeLiveHeaderCapacityPreflight|TestManagedLiveUncached(Identity|DeletionBounds))$",
+      "backend": "pure",
+      "native_pass": 215,
+      "receipt_sha256": "d744800a6809797eaaf620e4515bc2c17d6854c17bc13183c1c392ab42fcf1f2",
+      "native_log_sha256": "f0c1d419f98c874344c3b5e807ec0556dba83c0faab4ff0afde6a490487a9f64",
+      "input_archive_sha256": "d734f48db5b99537175895de338d46afc6546ce25a57a7c122d957552b732b66"
+    },
+    {
+      "label": "v10-reg-005",
+      "package": "./historical",
+      "selection": "^TestRuntimeSource(InitialCheckpoint|InitialMatrix|FailedSetupForkCache|CommitRecovery|Crash)$/^postgres$",
+      "backend": "postgres",
+      "native_pass": 11,
+      "receipt_sha256": "80c9c50b0a8d6237ea6f7bd6f21fb7db8a872f2c10377ca01093bbe8d9408f2e",
+      "native_log_sha256": "817cba613349a20081155d41644cf526c6c853d580528710c60412a744c4ea16",
+      "input_archive_sha256": "0f3e29afe3c841d8e649bf1a949254e7c5ebeebe09f136eb530f90af221650b1"
+    },
+    {
+      "label": "v10-reg-006",
+      "package": "./store",
+      "selection": "^TestManagedLiveSource(Identity|FinalizeRequiresExecution|ReorgRestoresDown|BootstrapAdmission|RetainedExecutedFinality)$/^postgres$",
+      "backend": "postgres",
+      "native_pass": 7,
+      "receipt_sha256": "eba4070ff5f51de69c06893f48186978f0febf8deb492bcc0c052f05c8852568",
+      "native_log_sha256": "482fa3b1a81042c8080e3a44bf0a926a6029287eef31713e063f23dddf7cd674",
+      "input_archive_sha256": "8aef8d100f19c0b958661ec8e51cd748c0eac32daca5ad0c2039aac463a4f9e1"
+    },
+    {
+      "label": "v10-reg-007",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetup(Lifecycle|History|CallbackClose|FrozenInput|Failures|Reorg|BaselineLineage|Crash)$/^postgres$",
+      "backend": "postgres",
+      "native_pass": 14,
+      "receipt_sha256": "0768570c48af290d900d139f37c8b67ca354e240aa6e67b17050df7b4090529d",
+      "native_log_sha256": "49b135e8b044b3e5a91907b3a17bf82ebedb6321a14a11e5de0ae58e03599843",
+      "input_archive_sha256": "bde5c40aef6048d3fc8580560dc11ac860057772068546d577bd4fa11ff7013c"
+    },
+    {
+      "label": "v10-reg-008",
+      "package": "./store",
+      "selection": "^TestManagedLiveSetup(Bootstrap|Namespace)$/^postgres$",
+      "backend": "postgres",
+      "native_pass": 6,
+      "receipt_sha256": "5cd9b0f7739ac5a61131e25c28c9b22d707f9e1584a7acb94100d69c05ae89cd",
+      "native_log_sha256": "ffd83eeaa914731635006ba76fbe0681d98bbd9db5e5d210e57f6bb153327717",
+      "input_archive_sha256": "9ed1c28d885066123eb3538cb81eb25a6f7d513614cf6740045322eed51ba4e4"
+    },
+    {
+      "label": "v10-reg-009",
+      "package": "./historical",
+      "selection": "^TestRuntime(Uncached.*|CachePolicySnapshot)$/^postgres$",
+      "backend": "postgres",
+      "native_pass": 7,
+      "receipt_sha256": "79d9194d88f3a2c6c1eef10dc85c6667ea419bb5f7633a85de551c91ce5168c8",
+      "native_log_sha256": "c7064aa257a7891ce995315db2adadb996395d603a428c544200491f05a6036a",
+      "input_archive_sha256": "4920609bbb6adf426ada76a94894b3b43dfbe8373e8c25cc230103c7b686621b"
+    },
+    {
+      "label": "v10-reg-010",
+      "package": "./store",
+      "selection": "^TestManagedLiveUncached(Transport|Namespace|PrepareAudit)$/^postgres$",
+      "backend": "postgres",
+      "native_pass": 8,
+      "receipt_sha256": "1b2f8f3932afb2515c99e634fb54db54d1a821372e0810de3045b1f70716a8b2",
+      "native_log_sha256": "f8a0ab1db124652e834c117c3448220ab19b21f17af3e59903941cf0d6f9adb4",
+      "input_archive_sha256": "d1350a64ce794b9506648efe29cb43654da8db48efa74639951bd7b6cac794d1"
+    },
+    {
+      "label": "v10-reg-011",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuous/^postgres$",
+      "backend": "postgres",
+      "native_pass": 16,
+      "receipt_sha256": "736f690ad87766850df8ff8e9ec7054167e653618ab22051adf6b07329f19718",
+      "native_log_sha256": "60a22b45479897ca35db73d4c8582ceac1642cad4bf997d2471af8e4f5e35803",
+      "input_archive_sha256": "298ee260fd95cc1576da419b49a74c6e8040a15c7ba4142408dbd7061610c8b4"
+    },
+    {
+      "label": "v10-reg-012",
+      "package": "./store",
+      "selection": "^TestManagedLiveContinuous(Transport|Namespace)$/^postgres$",
+      "backend": "postgres",
+      "native_pass": 7,
+      "receipt_sha256": "84e2bfe7fdb0639e51daafc844a7f50b5c7929a61590e5263edf82e58a57724a",
+      "native_log_sha256": "12257b79100368fdf4f3cbbf72791a2dde85b9804a6e7cefb6cc659591a2ff47",
+      "input_archive_sha256": "5466af42c77dbdbef3bccf8c1156b22f3d08e0efdaf325843ca68b79225eade4"
+    },
+    {
+      "label": "v10-reg-013",
+      "package": "./historical",
+      "selection": "^TestRuntime(BoundedLifecycle|SourceBoundaries|CancellationRecovery|AcquiredIdentity|HistoryBeforeLive|ForkRecoveryRefetch|FinalizedAncestorBeforeBusiness|TimestampFinality|CompletedMetricsRollback|CompletedMetricsFlushRollback|CompletelyEmptyLifecycle|CompletionOrderingSharedReplay)$/postgres",
+      "backend": "postgres",
+      "native_pass": 18,
+      "receipt_sha256": "c1cad467c6690e744283abc88a6f7efb7ff4b46597291832cb49d0f6e9d30454",
+      "native_log_sha256": "1765f8859fdf64cce7f3eade50619ab8ba76beb9ecd9b47878358f98bf6cee97",
+      "input_archive_sha256": "29cf01e854c0febe789d59f552c69c7cb854bf03161ff10663de8fb47f1d9dd8"
+    },
+    {
+      "label": "v10-reg-014",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomains(Bootstrap|Integrity|Database|Faults|ReplayData|RetainedFork|HistoricalAck|Guards|PostgresCrash)$/(postgres|prepare|business|ack)$",
+      "backend": "postgres",
+      "native_pass": 30,
+      "receipt_sha256": "99c7a88b06b2ff06274ad863011d04b4a3986a1280413c4184ec28bd49dfefde",
+      "native_log_sha256": "f1eb81ac593920c258302b1729035e47421f9d00429efc2e7e25212d3bdfee64",
+      "input_archive_sha256": "210c90669abb570f68776201a36cf9d4c5fbcc66bc4a14d20ae3e14971cac595"
+    },
+    {
+      "label": "v10-reg-015",
+      "package": "./store",
+      "selection": "^(TestManagedLiveBatchPostgres|TestManagedLiveCatalogCorruption|TestManagedLiveDatabaseClosure|TestManagedLivePersistence|TestManagedLivePostgresCrashBoundary|TestManagedLivePostgresOpenCommitReadback|TestManagedLiveRecoveryBoundedFork|TestManagedLiveRecoveryCommitReadback|TestManagedLiveRecoveryDatabase|TestManagedLiveRecoveryFinality|TestManagedLiveRecoveryFormatIsolation|TestManagedLiveRecoveryPostgresCrash|TestManagedLiveRecoveryPublicProjection|TestManagedLiveRecoveryRetainedFinality|TestManagedLiveRecoveryV2NamespaceFence)$/^(after_commit|after_commit_identity_change|after_commit_metadata_change|after_commit_owner_loss|after_commit_receipt_change|after_commit_session_lock_loss|after_commit_state_change|before_commit|catalog_tamper_rejects_new_batch_and_old_retry|commit|empty_blocks_persist_after_owner_close|handler_failure_rolls_back_all_blocks_and_capture_DDL|postgres|readback_failure|retained_batch_cannot_cross_actual_owner_generation|shared_rows_ordered_journal_and_exact_older_retry)$",
+      "backend": "postgres",
+      "native_pass": 52,
+      "receipt_sha256": "b712c41a4345c8dd23163d518520a4c9ccd0b662b4ac767243c6d61d1b1bde5a",
+      "native_log_sha256": "eff3c94c883c94b3ca60ea7c4ed6dd1a67f0d4f35a5eb15e147b341abc9e628b",
+      "input_archive_sha256": "efb5205e7a848b0fe1dd712679c569cacbbd6a2f7d15eaeedb6575c4fca498d8"
+    },
+    {
+      "label": "v10-reg-016",
+      "package": "./store",
+      "selection": "^Test(ManagedRuntimeScopeRejectsUnscopedBypass|ManagedLiveRuntimeActivation)$/postgres$",
+      "backend": "postgres",
+      "native_pass": 2,
+      "receipt_sha256": "61b56448a1f338031b120d12b35723b23ee5a0b994f77bd2f5b3e3caed2a3259",
+      "native_log_sha256": "5e4c936ca43d01b01885cf3624fb43943a41ce02ee0ec4b23a00daa45597f13e",
+      "input_archive_sha256": "ee83a03f434c0bc5393c4bb9d6b642233f181b7620a3e7b1fc0c126c11564f2f"
+    },
+    {
+      "label": "v10-reg-017",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceInitialCheckpoint$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "adc2d780cb91ef2b4203e8091bdaff4bf3156cdb38bcd3586b0a91b1c70a8ca3",
+      "native_log_sha256": "a1e15efcf9b7627e49a1fe4af646f2e1837d737982cdd85e3c1dfa8689a2a954",
+      "input_archive_sha256": "667e2b3657b263ce1202d1a78c21a6cf78c5e13608f162e84b3dbd31ad932ea2"
+    },
+    {
+      "label": "v10-reg-018",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceInitialMatrix$/^pglite$/^genesis$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "7b016135554b54ec483c7daa8165e950f9fccac8d1621fbeabda84145360692e",
+      "native_log_sha256": "1df6a803a138486abc105a73910b867f41810b55e0d604e9b6e4bcd16355c45b",
+      "input_archive_sha256": "c9536718adda1928d00287b27fd8e5888d73105fbc8f9d82f02ad57c31b509cd"
+    },
+    {
+      "label": "v10-reg-019",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceInitialMatrix$/^pglite$/^future_start$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "c0af62c775e832ad2eeecbbb8f2167b8b292a3a25c843e89ba21906d1f17aebb",
+      "native_log_sha256": "9e7a6dbb26fc5797c78c9baa8724cda5ab9424a9d19e728448839c4984e11600",
+      "input_archive_sha256": "9020c995d879b288966f6df3b46cd846c9010654793439dfeb0d7d6cde22130d"
+    },
+    {
+      "label": "v10-reg-020",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceInitialMatrix$/^pglite$/^equal_start_final$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "149dc5aacad5f58170f40936345b078c5c813fa5200520441b9625121d19a042",
+      "native_log_sha256": "a0806a0e2f618664faab91c054522913ac83ee172ed1baf8b1ad4e2f6102cbcc",
+      "input_archive_sha256": "8afe2bc0d27f56fac2cc83a5fbbdf4e572b106a8231abddfbd443a823f7192c4"
+    },
+    {
+      "label": "v10-reg-021",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceInitialMatrix$/^pglite$/^past_end$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "58d86beb442942a257ce7ad7160f6a7744e118c7d6f1e9a1127886510c3145c7",
+      "native_log_sha256": "0d26a634ecb03a70f8a1ec8ffed41c48d00bc9b9c3871e95dfedf690f8f05ddc",
+      "input_archive_sha256": "c6fd7256b75b201eec74b809d8428d2b9cc5b87fca5318a3f07616efcec8cab7"
+    },
+    {
+      "label": "v10-reg-022",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceInitialMatrix$/^pglite$/^no_setup$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "1019d8776b6b52f6b8747412659530a825dad352d8e853e8f930b5c91052a87f",
+      "native_log_sha256": "ef27cc6d5fe64f0e88837150762f81890afb33866d93890562e76312e52ca328",
+      "input_archive_sha256": "4365d1baaa7aae4366a87cce724d9fc487bce2599f30e3047d887570657a5637"
+    },
+    {
+      "label": "v10-reg-023",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceInitialMatrix$/^pglite$/^empty_events$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "be5c2253abca00ccb214736becb1fa914597e723ab9cae218520506593e170ce",
+      "native_log_sha256": "d3ff3c6418a745500fe198ff4fca98f7f552a6e8229dafe11bf4127f6b473145",
+      "input_archive_sha256": "44cadf6c22b93226f12ea0a70862aaa97d646701dbbf6ea66646d53530f3828a"
+    },
+    {
+      "label": "v10-reg-024",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceInitialMatrix$/^pglite$/^mixed_bounds$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "4da6586af4b7ac938d87f9d26164467cf44ee2c887763d13852ccf2d1319fe90",
+      "native_log_sha256": "22e73e86c9825a80f529bc4dda17a50cc9e39ad3612506aec9817271127fdd3e",
+      "input_archive_sha256": "ad0a8ab97f7d6e5d564e7452dea7f3bc50ab836655b646dfa20eb2df11f71fed"
+    },
+    {
+      "label": "v10-reg-025",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceFailedSetupForkCache$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "1a56514d5f78cf51245344f66947c60276f414b795c277c08812677848c7fd5d",
+      "native_log_sha256": "1165a5921564373cccef04dd28ab76cf3f16222f995af1cb527a50fb9716b4ec",
+      "input_archive_sha256": "dc5f36867cfb3f9eb99249d14dbb80c977f20e451006b8549873003c99c61fb8"
+    },
+    {
+      "label": "v10-reg-026",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceCommitRecovery$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "ea9e60791df15d793eb114496dbbda10afc4caf48f8a5f672bb0a25de8522ae9",
+      "native_log_sha256": "31af7132d9613d58e4e76baf541bbaddbba5d9d68b917c4007bff90b4a129085",
+      "input_archive_sha256": "a6b582c84a7d01fb3a56996dc293aca199af2be92a39c9781f8ba8a09009bce8"
+    },
+    {
+      "label": "v10-reg-027",
+      "package": "./store",
+      "selection": "^TestManagedLiveSourceIdentity$/^pglite$/^setup_false$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "69d964489bd93d54db5446ff2fb945bb6f18be60547edf42dca74cf0f3002b1e",
+      "native_log_sha256": "91ba1875f11cd2e0cadcfcf44892c3b3c82b13cb47e3aedc76b694f1e9e4c298",
+      "input_archive_sha256": "223055a8a3b8cf271dcae56469df77722250a5a68ffa8e1a37e186eb528b240d"
+    },
+    {
+      "label": "v10-reg-028",
+      "package": "./store",
+      "selection": "^TestManagedLiveSourceIdentity$/^pglite$/^setup_true$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "457b2fd79d7e24ea91c97373f02a1afd65e3d97d3d7966e0d221629ff27e77c1",
+      "native_log_sha256": "bb99098c7804a78594272186247bbe3f281199aa10849ef5f0ded823592cdf3c",
+      "input_archive_sha256": "0739edff093a4cb9167a929bd4da18662b85ca6ca185a88bcb2cfd0c6162f0c9"
+    },
+    {
+      "label": "v10-reg-029",
+      "package": "./store",
+      "selection": "^TestManagedLiveSourceFinalizeRequiresExecution$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "af2e70a970c36609bb942e3fcd30dcaefc5c1032a98efd37e2250b26c6c54ac9",
+      "native_log_sha256": "d0a5685997b8306270b75bdceea0a2769e41e424175eec0148154a4d17da5be3",
+      "input_archive_sha256": "86ca395a8da38856f1ed8b90968842998a82a892443a47a83a64b4b49f2e8fb7"
+    },
+    {
+      "label": "v10-reg-030",
+      "package": "./store",
+      "selection": "^TestManagedLiveSourceReorgRestoresDown$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "ca89a48e1db7ae7edbff67e85742c17991eb6b22ab1875c8ba94cb575b690a81",
+      "native_log_sha256": "bec7224b50c1655b76bb6fa4f2f6409950d2c56163199637397151007262a3d9",
+      "input_archive_sha256": "212ae14cfa80b4d827c3109201d8bb743971229329bdf741733b6bdc21accda5"
+    },
+    {
+      "label": "v10-reg-031",
+      "package": "./store",
+      "selection": "^TestManagedLiveSourceBootstrapAdmission$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "50c9180c7e7c1cb6865c053614dd7b3873a805398b2995ce04dc4507acf2ae37",
+      "native_log_sha256": "01079e67ee03a46d95219e666802e8f41a7dad6f17dcee51718cc76b699a68d0",
+      "input_archive_sha256": "e33b716e0323130abd82a11117f58040e886f833a8e883adfc9d639aff6443f0"
+    },
+    {
+      "label": "v10-reg-032",
+      "package": "./store",
+      "selection": "^TestManagedLiveSourceRetainedExecutedFinality$/^pglite$/^anchor$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "38567b000dba655a660590bd6e1436d6f9c699cf2cb13b35100609ffa2360b87",
+      "native_log_sha256": "4927193df6c648048d0c5fccee921854b379ab536421bb2264ed14a71e00794d",
+      "input_archive_sha256": "46537e60f02bf35323312df0097f49e0773a3a7ddc7b0dd9437a6636c59d8964"
+    },
+    {
+      "label": "v10-reg-033",
+      "package": "./store",
+      "selection": "^TestManagedLiveSourceRetainedExecutedFinality$/^pglite$/^higher$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "3989b937c14dedd60d70723f89a82966d1677f67f0fd8fb0044a366502830ae1",
+      "native_log_sha256": "9aa17ac573392c294225495bf951e62285087cbb7b0103a1bcc4df3689164d22",
+      "input_archive_sha256": "24d32389d3c43ba864bc1484baded9df3e9752e7fb1cd38c45e34b5ec11f9479"
+    },
+    {
+      "label": "v10-reg-034",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupReorg$/^pglite$/^empty_segments$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "263c2b2d05515727defac3e816c32137a994e92e8ee1b94bf2ba96aee869c4fb",
+      "native_log_sha256": "bb018e943aa357dd986d7bd03b4a67017df0e3268dad29a8488b1234fe1be7ea",
+      "input_archive_sha256": "0dc9828994b51929a2d268d4c91e46e43fb7d89e0c26ec97663b23494dc26c25"
+    },
+    {
+      "label": "v10-reg-035",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupLifecycle$/^pglite$/^cached$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "1dc5a91f1f7852c7e52cb10c6735f80279f11e8eb6c726b472fc19444ff17374",
+      "native_log_sha256": "0804c29f1451f73880d1ef754ad3ae0fb807f1a056fe34e1b533a8124b8e57ec",
+      "input_archive_sha256": "0603c16b5b1821c19ec97c124a044fd0a82d7e8abf8bbe057bbc5aac55c96273"
+    },
+    {
+      "label": "v10-reg-036",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupLifecycle$/^pglite$/^uncached$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "719272d3a3a4985bfb2eed4b0c043434196b3effb9daa4800b5f46ddebe5180c",
+      "native_log_sha256": "9ad5bca8d5d18e784a56b370cbe43cba85ee6fb0eee3fc28daa254117681a7bd",
+      "input_archive_sha256": "1149c009cf44ded363bceaa428021edf564799c1c93a5946ee8a087dc6eb9a1c"
+    },
+    {
+      "label": "v10-reg-037",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupFailures$/^pglite$/^after_setup_commit$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "23ddae56ecdf3c322d38316550f298ea05c3de5f6b6b208b3766e7c23af2c43b",
+      "native_log_sha256": "7ba6f37bf4d4ddcfe03b3203b87067ee0e3b13663441f0ad5a671bb1c72cd0f9",
+      "input_archive_sha256": "d4f77511af01a65c664567bffce640f7b3aed224b0e6da37c70c91cd7c2f4646"
+    },
+    {
+      "label": "v10-reg-038",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupReorg$/^pglite$/^shared_rows$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "e27bc84614bcbc5d7eab0dfc4cb7fd920e50715407e64e00d729488efacaa48d",
+      "native_log_sha256": "b1832e3f3d5037cbd5d32e4384b22bcba34d39da27a3e79317876e1960ee5a09",
+      "input_archive_sha256": "a51c136d1b0743375c3b01fadf6ebb965be34e481b6fadfbf25cbe3428844336"
+    },
+    {
+      "label": "v10-reg-039",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupBaselineLineage$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "bdce4edadf310be2a5d04907d16bcaf5b50a8ddcf94343bf75f8bb73c600e4ff",
+      "native_log_sha256": "7e508b610f5bc8d2468399a7fc1bc1dac72d64551ae95993ecb82000513591d4",
+      "input_archive_sha256": "bd4b73b638e229dee946d980075c2b70c7df389be593fce952580e5d5f6a9490"
+    },
+    {
+      "label": "v10-reg-040",
+      "package": "./store",
+      "selection": "^TestManagedLiveSetupNamespace$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "6fbea0e558ae9c5c0b28fb64fedc78d44a41e5935a2e50da2c017024dd47a4c4",
+      "native_log_sha256": "d519fc6c91fc1198a1ba2c347fb2a99909ba178e5fbff2dc8ac90365158f4d3c",
+      "input_archive_sha256": "39bc2c14fc45d6f32bb14a750afd97cc0454ceb5d28164d4aabaa5a91b28b135"
+    },
+    {
+      "label": "v10-reg-041",
+      "package": "./historical",
+      "selection": "^TestRuntimeUncachedReorg$/^pglite$/^shared_rows$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "006dfe1730eef2337a345305b6dda0f26cfa9d07650930cee0de4ddf7363f8f0",
+      "native_log_sha256": "5de2122091f47d58923423de827e8372ef5403ff6d694375a05ff3a3d9323a2b",
+      "input_archive_sha256": "2d6876fe8e3b1678474f59babd46f92045949d4fc5d9178aa6232c8793ecc5a4"
+    },
+    {
+      "label": "v10-reg-042",
+      "package": "./store",
+      "selection": "^TestManagedLiveUncachedNamespace$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "d4cc0da20b26ca72b539870dae56908dcc091512dc679848e884d9d2aaed5569",
+      "native_log_sha256": "f0621cfa1884c3bb30a6c3ba69e056cb8b5615ccbe7803291052fa145bb0d978",
+      "input_archive_sha256": "384a254279e4e046ece4a3690e50ba4bf29525f1145af0f790c4ae03cd38631b"
+    },
+    {
+      "label": "v10-reg-043",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuousReorg$/^pglite$/^shared_rows$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "8f906cc337cd1e1401b59651d3e8fd93b94247429cf6c77372839f6786ea6b8f",
+      "native_log_sha256": "c344616c77ff2c8bf05c1f0b09d2e0b13d9da0824cbc14121e02b931356f2f65",
+      "input_archive_sha256": "69d001f6ef787296f85624338743e0a937366891e5ef8f6951ab7f11ab6dea31"
+    },
+    {
+      "label": "v10-reg-044",
+      "package": "./store",
+      "selection": "^TestManagedLiveContinuousNamespace$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "b7e5ba13d1bfe793d224b972a332ddcdaa51fea23b74f9568e5a1dc479a238b6",
+      "native_log_sha256": "69b5385888ef0785556f9452a0815bdbfdf86a75eeb0e1538f57624792334675",
+      "input_archive_sha256": "43e86a42bdb0cc31f731bbdccb9bc290e09610bc60e11642845a8294148177a2"
+    },
+    {
+      "label": "v10-reg-045",
+      "package": "./historical",
+      "selection": "^TestRuntimeBoundedLifecycle$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "3ce0a6fc3ad5da5b36b09124ef36215fc5ad8ae18c2f484fcaf79ac7ba913d4f",
+      "native_log_sha256": "0528ff4e32e9afa24d8abacbae4ff6b47564ce615d06fbdc2ac788b93f9b65e8",
+      "input_archive_sha256": "837a12abe5b4d222ec38e891d9af8f2cf9ae91bc0bb0b21874b10e3d21af6667"
+    },
+    {
+      "label": "v10-reg-046",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuousBoundaryReopen$/^pglite$/^(ack|business)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "9cebda1200561a0d545af8c4177dfdbe361eb735be3a9d91b99ec22c3394c6ab",
+      "native_log_sha256": "222f2a3cdb183786e53562355564b1ef0947376e34bc4f1fe32317e96d9bd752",
+      "input_archive_sha256": "9d1c2404afa41f29f8a9bc9ccc75705e23e18f787c071b766aa2a2413b697642"
+    },
+    {
+      "label": "v10-reg-047",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuousRetainedFinality$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "36d952e38cd5e701cc1ac6290d396f240b0757e84fd1ad3fffb3686f223c6b6c",
+      "native_log_sha256": "ee5e2e64ea5496287839f8262c2fc1393c32d0d45ac0954152e4029a8143e54f",
+      "input_archive_sha256": "7bb7a6515a22ef308ebf9780ea5f8bcf75103112b0a5324b914383bc932343dd"
+    },
+    {
+      "label": "v10-reg-048",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuousFinalityEviction$/^pglite$/^(eviction_recovers|rpc_fork_rejected)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "04dd46403ebbb12b02adb4d895d861787d054e455560101a56a30659bb2123b7",
+      "native_log_sha256": "4b58acc0fdd25aa5f867780cdcfc4831065e995fa2e2c8b8ff8bd7ea2620b701",
+      "input_archive_sha256": "03801f7b8b60b590a09fc03479ea9a0e9b57d95f139bceb66626123993f7804b"
+    },
+    {
+      "label": "v10-reg-049",
+      "package": "./historical",
+      "selection": "^TestRuntimeUncachedReorg$/^pglite$/^empty_segments$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "5ae2adb68e6c448786f13618cb2017cebc6c61f905bd2750e2b5c3fdea3a03d1",
+      "native_log_sha256": "5c99a9ee324e34ebffbfe21d7eef6d52f610178a09b9024fa10b4b546a14987f",
+      "input_archive_sha256": "70899cea240cd73a34db7bfbb1905685878dd2ded25fafb719d15a311d66557e"
+    },
+    {
+      "label": "v10-reg-050",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuousReorg$/^pglite$/^empty_segments$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "47f35822c3fb6af6a647be081cf368752729118bf2707a554f4ba68396ffe599",
+      "native_log_sha256": "76d3dd8e60e66268f449c1f0e9cbb4afd4a1cdf063f8d6f8ebaaff5750619261",
+      "input_archive_sha256": "e4ebf033f12a89c3aa25c27004045795a162b9233093c58a28aa25cb411e28e6"
+    },
+    {
+      "label": "v10-reg-051",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceBoundaries$/^pglite$/^(empty_segments|historical_refetch)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "f28c90f2aca2d6bfafad5f6e10e8e3d196f36f8946517af814082040555ddaee",
+      "native_log_sha256": "4e364ff3e577f71d85516a723f6e5b32eca029de14d7cf17322499f17d75c2a6",
+      "input_archive_sha256": "65c2ac3e4dcd25fe47df2abd02edcf3fdf5d8fd4ac79f5c1adef7487d4e9271b"
+    },
+    {
+      "label": "v10-reg-052",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuousPendingReorg$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "6f4aa9476fd8778f3d5b27bf59eed87732a5bc016a14460851ecc18c957cdf36",
+      "native_log_sha256": "d7169eb2e3a6633605607044b6271e316a47e5c934f5a4b4f79702fd0a093dd4",
+      "input_archive_sha256": "96ddd16847a0a952f12cfb69b0f7a8e3b1528b60b30867de46cb2b17a74b58ff"
+    },
+    {
+      "label": "v10-reg-053",
+      "package": "./historical",
+      "selection": "^TestRuntimeUncachedHistoryLiveReopen$/^pglite$/^all_disabled$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "8438bbb72b452b6bfe9690e334f4103b13a55cf75d5c2f9ff4642a34ee7ff438",
+      "native_log_sha256": "b5f565eaf85786da8f00deb14afacfcc5ff442071a03479260a30027e8ea51fd",
+      "input_archive_sha256": "de3673ae1cf17ba8567680519d92ad9bf2ba8aa5daf0d1eb65d3305e815d078a"
+    },
+    {
+      "label": "v10-reg-054",
+      "package": "./historical",
+      "selection": "^TestRuntimeUncachedHistoryLiveReopen$/^pglite$/^mixed$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "8956649cd8389cc63b8b5f2e80bd092a177a7dd82b3ddbb58d982d918513906a",
+      "native_log_sha256": "f93c30111edf6a3095973d22d77979ba846533aad3183d4df933210802b42cc1",
+      "input_archive_sha256": "2f0f7a0dfb8d2c072c5ae546a8f2eaa92db835632443e0a7c228aae3b1b47bc9"
+    },
+    {
+      "label": "v10-reg-055",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceBoundaries$/^pglite$/^(inclusive_start_end|learned_projection_without_parent)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "d7ad83dcfbaad4ad9e8050dff10a1f3449ab995a560014f9fde37992a23d65b1",
+      "native_log_sha256": "e17d8f877a9d10b968a974026d2d960942759124e2770de1365c76d05520799c",
+      "input_archive_sha256": "54210fc2ec491c58aa66ecb74c5f6429e39e9790e543e6e2c174348aa78cf5fe"
+    },
+    {
+      "label": "v10-reg-056",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuousFutureEnd$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "c33e3e8ad513689e9c3ae22778d6e4973c36d6d1adb76ad6eba6de373f0a0c31",
+      "native_log_sha256": "488e6ce712b1969b0696cc7863fafccfe4eff561778b79c62a31003249a422d1",
+      "input_archive_sha256": "d76632b30ead871c49bad63b24023bc2311cc4f0b2d0bb774689ecf49585aca0"
+    },
+    {
+      "label": "v10-reg-057",
+      "package": "./historical",
+      "selection": "^TestRuntimeForkRecoveryRefetch$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "43d385ee4fe71beb31e2c0bef774368c28becb53ea2643d28f526ebaf4de7970",
+      "native_log_sha256": "9af8ae1b50ec6f0395236bbe3d43c83ccb85cb12c67c1a27772ed9477e3ff744",
+      "input_archive_sha256": "122e0a3ab6c63aafaa53d3eb15bd63303bafa09e6b72be1af9445a7ece96bfb0"
+    },
+    {
+      "label": "v10-reg-058",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuousInfiniteRetry$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "18c7358708e7638469fde080110e81a0139e3fa3bc7ced52ba505796574709ae",
+      "native_log_sha256": "c31920c74f140b1f5d459426f42ed284a6fd1417435faefb6f64567b2bdafa19",
+      "input_archive_sha256": "47334e05e808f143a034331092472939bcb8a407c929c7854e9b6e3fbef6d006"
+    },
+    {
+      "label": "v10-reg-059",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuousBoundaryReopen$/^pglite$/^(prepare)$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "6124eb646d60b81b52b1ef331b8a8751497c2a9ebab53e203353ee2e6013ac13",
+      "native_log_sha256": "fb277a362cd0be97463bb7fef6047af4aa103f2a10ddaea49f6ee96ab61468c0",
+      "input_archive_sha256": "cf028917dbe35de892ed08d0f404b9b7b21bafd0cccf96f1dd87a159cca04af4"
+    },
+    {
+      "label": "v10-reg-060",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuousFinalityGuard$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "1e0653c569172e16a997870ecf12a97ed3f92a31173faff5109c0e7e3af36768",
+      "native_log_sha256": "0dcf3a8f62bbf5a1424d0a5acf735ae91db5063b6b4fddabfc182fb263124515",
+      "input_archive_sha256": "42ff11ba059042748e99c57af8966fb98c4af1591b1eaedda5f2fb64c5da0e30"
+    },
+    {
+      "label": "v10-reg-061",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsFaults$/^pglite$/^(ack_readback_failure_reopen_true|business_after_commit_reopen_false)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "56d1cf45f5d765c652ba7add3c6d3f5d5933aa83c4dd1e6fce4f86ae7ae59856",
+      "native_log_sha256": "13d6c3a3e7494fc1c3a3c71d9ba4989b891fd995494ca616cacd4c574858c85d",
+      "input_archive_sha256": "421d66871a1b7880dcf47c9caf197a11de6d4db4e576e136613e11ab9985d18a"
+    },
+    {
+      "label": "v10-reg-062",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsFaults$/^pglite$/^(business_exec_abort_reopen_true|business_readback_failure_reopen_true)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "551574fdf6dfeb62b5b5cc6d05440b6817698eb50bbd8e1e72c565e12bbd0fb3",
+      "native_log_sha256": "3101d826cec545ca8fade4ee7ccaab0815c8da492180c348794754ba52b897e8",
+      "input_archive_sha256": "993869c7bf93c2bc31a78ba4a24810f05ec494ab28de3fffc1abb37690e38256"
+    },
+    {
+      "label": "v10-reg-063",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsIntegrity$/^pglite$/^(impossible_orphan|missing_business)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "5c302447cf3373fb58e5b0d310b03e1b790c011ecaf05046658e59879addd0f7",
+      "native_log_sha256": "695b9613ccb9ad5e80fb2af1fc5fe46c5b687ffee1e622f410c0af112a0cb109",
+      "input_archive_sha256": "30aa5838a1ec2c09b69d47de3485091717ea6e5ce56d13aab88bd08f42397313"
+    },
+    {
+      "label": "v10-reg-064",
+      "package": "./historical",
+      "selection": "^TestRuntimeCompletelyEmptyLifecycle$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "f7b6c8364851e25d77a06451b2a2250d3855c7ff8c2b89e354cd57430f34f802",
+      "native_log_sha256": "0fbd2c9ec591a0305cd69d4fd1ce10a28628b012b394a9def27d95c26acdf497",
+      "input_archive_sha256": "20d9474fd7ecd3d82ce943cadceb51649342816711e35c88b54bbe6f01207de4"
+    },
+    {
+      "label": "v10-reg-065",
+      "package": "./historical",
+      "selection": "^TestRuntimeHistoryBeforeLive$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "9630b55a9ee4c0992d99626c4371c4523b8c26406c7e918d065d4b974677ccfa",
+      "native_log_sha256": "1f6f2eb7c4e2216ce03c6887e415a8dad2de618f6196af19410867afe91bb25e",
+      "input_archive_sha256": "27156e2fffe110fa27dce676d1ff51b677ef65d2301b479ace25271ccae40dea"
+    },
+    {
+      "label": "v10-reg-066",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsFaults$/^pglite$/^(business_before_commit_reopen_true|business_exec_abort_reopen_false)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "881ca821fff95a0f1dcfe1f27b72a7eda5af94878171185c9809950ccb7df4e5",
+      "native_log_sha256": "33c7b3577ec00b6e6c1968b2b1ef0e52bd1cb733bdcacd5edce3dbf79ae6466c",
+      "input_archive_sha256": "93b8cd99b75d2ed3e115bd54d664e1554c98889cf35b5385bd080c4087c0e5df"
+    },
+    {
+      "label": "v10-reg-067",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsFaults$/^pglite$/^(ack_after_commit_reopen_false|ack_before_commit_reopen_false)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "809440d3169be8544f38a947e7c5008fdac8f2a569ac6a8bebce288661f370aa",
+      "native_log_sha256": "be58c21e43aa71b5c938386e154487cdff39d54c3e80cdf2e6211bd941adc9c7",
+      "input_archive_sha256": "ee6f735ca306d672ff0a9d69487bf6e63dcb1d4f3c1002a189318fc8b3e68d53"
+    },
+    {
+      "label": "v10-reg-068",
+      "package": "./store",
+      "selection": "^TestManagedLiveRecoveryPublicProjection$/^pglite$/^(cross_fork_timestamp|global_reorg_height)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "7d2ef86042b1518afcac7c2e1edc8b5fcc6ee60624d1eb177beb5b10f673d4bd",
+      "native_log_sha256": "eafc3364ea1c05cd79fb3acf18ab9a20838f232494a1b8e58cc41ba3e75a9603",
+      "input_archive_sha256": "f72be5b63716dfd583c3217747e5fa97293e3e6a12015e7f13cba669d51f2fde"
+    },
+    {
+      "label": "v10-reg-069",
+      "package": "./store",
+      "selection": "^TestManagedLiveUncachedTransport$/^pglite$/^business_",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "21aa517282e8c505531228d439427bbaabccffd7f55ada40e389f2d20091275b",
+      "native_log_sha256": "adc8b52b0aa96285464bfeb7bdcf3b118fb67987e8e70387e0289b0f0d192b92",
+      "input_archive_sha256": "b152881a2d8dd2d373f408c04eac3be788c335dcc5fda14eb3a53964987dd703"
+    },
+    {
+      "label": "v10-reg-070",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupHistory$/^pglite$/^uncached$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "b0eabf245a05e834ab2b9ffbb16a0728fcbfc688c277497608bb8f038b29c09a",
+      "native_log_sha256": "47f8a003925eada698d6ca3cacca28a83a79065ecb63d51a6a49b4ef48050d4e",
+      "input_archive_sha256": "5c541fb8b6af0b041de430807480662846fafa16579d1cba226885dbd75a13cf"
+    },
+    {
+      "label": "v10-reg-071",
+      "package": "./store",
+      "selection": "^TestManagedLiveUncachedTransport$/^pglite$/^prepare_",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "a93782df37eb79edc9ebd227c7a381600c157632d7dbf8d621daef1ae59988bd",
+      "native_log_sha256": "72e27e771cbaee852862436962d12b106817877c7698130b472047b67b5366f5",
+      "input_archive_sha256": "ad2ec55e897c49952859b6003b663d45723ad084bd7cc0b9a6b9bdcfef2bf435"
+    },
+    {
+      "label": "v10-reg-072",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupHistory$/^pglite$/^cached$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "6d0a1de6eebc5f20ecff7ee85af9a43e632e2000c984b2190d6c4ed3dab76be8",
+      "native_log_sha256": "26ab4824ec30b1ae455d5cb502780681c3ad60e50c4a0b8a5d41623f26b88a3f",
+      "input_archive_sha256": "3a0d43f083bd748feaff05d4a3cd41df30489d5a2024ca6ff9df4bd2a87df201"
+    },
+    {
+      "label": "v10-reg-073",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsIntegrity$/^pglite$/^(cache_owner|impossible_intent)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "feb534f842cfad313018f08fca0c16cfbee4d91f7122c3314ea20f16e2f8cc2e",
+      "native_log_sha256": "7a2fd8b38b2ec20710fc20b24b216677a74c6ea0cdc21131df4221a537c88843",
+      "input_archive_sha256": "cec96ab4df6bbf3b8b004d4178f5e8af1e9f4457b17bd17be8d7d2c187c9b6c2"
+    },
+    {
+      "label": "v10-reg-074",
+      "package": "./historical",
+      "selection": "^TestRuntimeCompletionOrderingSharedReplay$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "3ee57648c629cf955981e9ee9e8af8b1e0c1fee5e9d05ee20a2a3aff37f2b084",
+      "native_log_sha256": "a9ce77ce1cdd410b8d3e00cac541b1273564b2a2e2e78bbfcc7765c7c914fb71",
+      "input_archive_sha256": "b197feba935973cce900ac94ab7ba40ec26d424cf13f86e3383ef45702367941"
+    },
+    {
+      "label": "v10-reg-075",
+      "package": "./store",
+      "selection": "^TestManagedLiveRecoveryBoundedFork$/^pglite$/^(end_5|end_6)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "9721500af0d0f14e0c9bde86b59338fd70c8129fbca937cb3c2ba3e8d1d1dafd",
+      "native_log_sha256": "fd247bd1c5d644704d55ed77e806641d5940f13f5f6a8f99577f05d86b0cdd18",
+      "input_archive_sha256": "31b6ba129ae4874976097c3c9e501650ae141ccb363ece1b3ad54ec726fa6cee"
+    },
+    {
+      "label": "v10-reg-076",
+      "package": "./store",
+      "selection": "^TestManagedLiveRecoveryCommitReadback$/^pglite$/^(after_commit|before_commit)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "be811458d5c1f38c84f6d74c23dbf4bca4d91e423f41a297208574fdf415e32f",
+      "native_log_sha256": "0190def184692793acc73454308a028411e87c4fcc8236213f14ff56d7d61a29",
+      "input_archive_sha256": "718d5d6157a6f263393c1ec8cf586328b9b5142ce6c111ad1694ce443d38def6"
+    },
+    {
+      "label": "v10-reg-077",
+      "package": "./store",
+      "selection": "^TestManagedLiveUncachedTransport$/^pglite$/^ack_",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "770df0ad6f429c8676ab35152e7ba8224f9a7f29afd7eda9592dbdf158e4e9ad",
+      "native_log_sha256": "5ecb83052ac450aec79ec0acbef14df4922768f76ae0ff2dfbeff2dc52d5c7fc",
+      "input_archive_sha256": "3ac8248f397ce1ce908b0d7394fd059b2236a342cc507566b732b906ce7b28cf"
+    },
+    {
+      "label": "v10-reg-078",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsFaults$/^pglite$/^(prepare_after_commit_reopen_false|prepare_exec_abort_reopen_false)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "938c97e8d703f4859f76a6b630c86cc4914c4aa5c32c699f60db73b178974f63",
+      "native_log_sha256": "6edd61a84befa94433e00d31c32e9f274ca23301d7ed349e2063b144b1be6f5f",
+      "input_archive_sha256": "ee5fc206134aa342c58a57662ddef789fa536ff8abe5a3a33846a7e032c4f66a"
+    },
+    {
+      "label": "v10-reg-079",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsIntegrity$/^pglite$/^(native_meta_value|rpc_trigger)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "98630c2687cd7dd2c954c3814c5bb119a54042d515eccb71bf348e0e3bcdec8e",
+      "native_log_sha256": "80b7872bb22a824cab81cacec81c1aff975d5e4b751860dd08c5eca5aa6bfe67",
+      "input_archive_sha256": "1c4048d9f43be682391c57e4bcf3e20fea2f9e2a1d9f99ebf7bd180d40361a47"
+    },
+    {
+      "label": "v10-reg-080",
+      "package": "./store",
+      "selection": "^TestManagedLiveContinuousTransport$/^pglite$/^(business_after_commit|business_readback_failure)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "d0280620c9422c7eafcff902566e3091266f0141783bca2be149ae7bbdc6c600",
+      "native_log_sha256": "4a2578604a92eee72d8bb121ce2556a13dcff83ea3c97e254dcedc8679ddfeb6",
+      "input_archive_sha256": "ed2d6831c93ba6382a8b5dedb67ea3965147fbff62b292f85897aa632b951c78"
+    },
+    {
+      "label": "v10-reg-081",
+      "package": "./historical",
+      "selection": "^TestRuntimeUncachedStaticLogs$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "e63d54d66da73b266ba90554912e7614c7855b5cddb55c0e7ba279f43ced8752",
+      "native_log_sha256": "8cb1306735c3ed2f791d91cc771eb5698a8e23f339e4ee856bc5d2f574dcb6e2",
+      "input_archive_sha256": "fc2628d2a1ca3428284817017b48a6cc1a68afca7e7e442711af32f88a84cbfd"
+    },
+    {
+      "label": "v10-reg-082",
+      "package": "./store",
+      "selection": "^TestManagedLiveContinuousTransport$/^pglite$/^(ack_after_commit|ack_readback_failure)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "35fb40f25b898a813cd05ee7ac62327d27f31536b11454d2176b377f4f64512e",
+      "native_log_sha256": "290bc763d09901eeff2f1df8ef28a864f3ae976a164ee378de1736e443254c3d",
+      "input_archive_sha256": "1d4c090e95670e154025e079df8cb0f4536bf7830a88bb32bca8a6ca4d68e670"
+    },
+    {
+      "label": "v10-reg-083",
+      "package": "./historical",
+      "selection": "^TestRuntimeTimestampFinality$/^pglite$/^(same_second_burst|slow_blocks)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "6d6c61fa8aecae2045993c1e87c9bfa47c4fbb969d7fd06d29f7e2812644b3b3",
+      "native_log_sha256": "bdcc9f7ef00810b276181c80b65c2f94fb801f4859e0d2b5160e4e91bdbf6401",
+      "input_archive_sha256": "eabf814918261bfefd34a75c88da49be15b71893c707227e69fcf4e3f9922cf3"
+    },
+    {
+      "label": "v10-reg-084",
+      "package": "./historical",
+      "selection": "^TestRuntimeCancellationRecovery$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "b53d19416e10f7ef9e817df95e2d1efcf794a33bdd509f0af81df03f6af62307",
+      "native_log_sha256": "396b4baea9b07c6edf448c7c02b8ff39100f07f04225f7a98c50d3d632ae8d4f",
+      "input_archive_sha256": "0156fe6eb01efeafde9b7a2582cd7cee66cadefc4032f413ca1e62b6117f9da8"
+    },
+    {
+      "label": "v10-reg-085",
+      "package": "./store",
+      "selection": "^TestManagedLiveContinuousTransport$/^pglite$/^(prepare_after_commit|prepare_readback_failure)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "0321a991fb021c20039d52ae7a9a7d6148631fa3f8f9a9d14c69a74972faed89",
+      "native_log_sha256": "ce1a2d52a600a7ed78045cabc72ee15232eb9e2441c08410024a4f1d2d1b6495",
+      "input_archive_sha256": "9ebbccf35a7c4394e13e8e1172c72fd7cdeee741d34432bade1b75ed6ec779ae"
+    },
+    {
+      "label": "v10-reg-086",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsIntegrity$/^pglite$/^(missing_sync|native_meta_missing)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "90dab2e0de08c1b1735cd9ab535ab3be31ca0c5b14eb32af4ed5ddbdbd9aa282",
+      "native_log_sha256": "11579b1bdd809ab609b8a0b790a80eb43f0d5acc51512b728ae952570fade415",
+      "input_archive_sha256": "c460effc01865fde629ddb2624ff4936ca4722fcc3a8d153e81fffc2b300361e"
+    },
+    {
+      "label": "v10-reg-087",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupFailures$/^pglite$/^handler_second$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "f76c3752c57ecd1eaae0dbb411b74487c6f9b1b961e7f7f13a65d2a5757bafdf",
+      "native_log_sha256": "e2e82a9b88849a29b49ad3baff6a6e33fd9c099296def568cb09f4178eeb86eb",
+      "input_archive_sha256": "32169dde412d25c63579aab5110daf64c8b63662ec54c25dc1fb1fea3bc3f5d0"
+    },
+    {
+      "label": "v10-reg-088",
+      "package": "./store",
+      "selection": "^TestManagedLiveRecoveryFormatIsolation$/^pglite$/^(initial_v2_false|initial_v2_true)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "48a95aadb3a94e9af64b9bdf9ced1f3cfbbce5cdcb3fec779279900e23297b27",
+      "native_log_sha256": "9cd89b441e22d4095086161f4dce31fa051c0a4d7e0a2db6c763a5dc337a0bde",
+      "input_archive_sha256": "5d17ddfe1d8e7acbac441c611c88c3849a6cb00d61c8fa8c1e1ce8bc4bca2c81"
+    },
+    {
+      "label": "v10-reg-089",
+      "package": "./historical",
+      "selection": "^TestRuntimeCachePolicySnapshot$/^pglite$/^bounded_v5$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "3156e4a341a08a0aac03e874141d85062c354e0a33b4d44b6faefafe7a789116",
+      "native_log_sha256": "7574b90e5c06b273a11720db5ff981deb0c20e514cd55fb81855b4cfc8e57009",
+      "input_archive_sha256": "590b3e0d1ba619c3834d6d980d7a755adc02aea0b995230cb770a150639eb2b1"
+    },
+    {
+      "label": "v10-reg-090",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsBootstrap$/^pglite$/^(after_commit|before_commit)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "64a4a39bef43c98e7d0534a9cd6edaa13ad1df655ae442824a23c7e5637c5f2f",
+      "native_log_sha256": "5cf5f021d1e4afbc19f43602419c9237afbf23b78074f1a6f6b0167e96e8c9de",
+      "input_archive_sha256": "48a1f8c090ca8df28078fcc4c11f9173efdcc9b5ad19bb25ff0e2d2f26715b5d"
+    },
+    {
+      "label": "v10-reg-091",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupFailures$/^pglite$/^rpc_error$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "c8b55f53ecff19f05718f3754f6402a4b3566895e80184c1f39f8cbe76fd0162",
+      "native_log_sha256": "782563da2bb9d7c64ce3e456979e39d73c5335c9784bd75df1843da7f7475bb6",
+      "input_archive_sha256": "24e9e6e7be2be8655b535259632e9bc6bf34b5bcbc8097814ee0b27c245addca"
+    },
+    {
+      "label": "v10-reg-092",
+      "package": "./historical",
+      "selection": "^TestRuntimeCachePolicySnapshot$/^pglite$/^continuous_v6$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "2db297ff9231f4cbd81a9ed9dc391e9df70f8ad312880c7ad60a2e4fd28b0332",
+      "native_log_sha256": "29676f3e5b63fbb816342f0d7a669d4db97f4278b0fb68a567734ba5d107010c",
+      "input_archive_sha256": "f59c5ee71f5106a77fb8cd0ef3629005531db942cf57155d76683d611687efad"
+    },
+    {
+      "label": "v10-reg-093",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupFailures$/^pglite$/^cancel_second$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "7025c9cc86dec76dff789bb4205a3c2c6f301cbf398415e8ddb13d2f8e55c95f",
+      "native_log_sha256": "e3d25d9e98f1f2de8152c42ea7b87887d11f1574d15fd95e5c56bd35e5e57c37",
+      "input_archive_sha256": "0849afa050afe2f71873c5aacf50d20cc4498a5eaa7f3c65461c723c01f9ea6f"
+    },
+    {
+      "label": "v10-reg-094",
+      "package": "./historical",
+      "selection": "^TestRuntimeCompletedMetricsRollback$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "e84920555aab646e6366886d9721ec99c86742daecd28aa2f486d9d7afade4fc",
+      "native_log_sha256": "860c5104015b7a0b4c11716c0ca09f76197f0ed017a1713f5dd160a3626c64a2",
+      "input_archive_sha256": "aff7fe6867d4edb075080024454e8db4b3f89acfd411a9e1ea57098dadf68bf6"
+    },
+    {
+      "label": "v10-reg-095",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsHistoricalAck$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "f1a9d913b758e1bbe16c6d002163d21c2469f720ac0848b6bae4576c3353b734",
+      "native_log_sha256": "acc400ca9095ca05676bb280835e0ebf7ff154a359e7eafa8d96f7fd179c0cc1",
+      "input_archive_sha256": "34e58546760493ae4b0c1bf79b2e1109888a32a64041230b6d12977a31fc1d3c"
+    },
+    {
+      "label": "v10-reg-096",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupCallbackClose$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "142459f7bff1e8953f3afc947bfdc9f53c7c7d75ca99bc220f0be74f7bd67e91",
+      "native_log_sha256": "bbac8fcae31142ef1a6c9f642889fb93b80ba120db78506f2cbc43808f3c8be5",
+      "input_archive_sha256": "407df7cc551cc0351b2eeb19d49a22c0767251e36f962f9d5e48556ce2d39ed1"
+    },
+    {
+      "label": "v10-reg-097",
+      "package": "./historical",
+      "selection": "^TestRuntimeAcquiredIdentity$/^pglite$/^(finalized_identity_changes|two_fetches_change_fork)$",
+      "backend": "pglite",
+      "native_pass": 2,
+      "receipt_sha256": "9eba85d6aaf8a54e9a807b1a9eece3b2fc4ed806f75e9c3e6bc642bc26c42daa",
+      "native_log_sha256": "73714e119559e0843a74659867dfbd803ad6d94a8d359406b3ce89b56966159e",
+      "input_archive_sha256": "b8cf6ee64a2a9ed7353beb8b3b637eaaed223e84b82da7f8494f6bcb3ec53137"
+    },
+    {
+      "label": "v10-reg-098",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuousCompletion$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "ffa960a756119dd59b440e194c99cea82c9de4c8b1967a45ad23924f73d88b5a",
+      "native_log_sha256": "1b70fa68e1c6c619581ddfe9489ddf383563cb36e99525b474320089c75cca8a",
+      "input_archive_sha256": "fc3fc8821562d722ce4553dff02b2a8e3e5071e8a594b29421fe5fcc29cda36f"
+    },
+    {
+      "label": "v10-reg-099",
+      "package": "./historical",
+      "selection": "^TestRuntimeSetupFrozenInput$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "09e3afad625e314314189559c502874f7644d93258d8b48a89e62fa0dae93f82",
+      "native_log_sha256": "b7229a4d427c16f666b580436e927380187f3de77c7d849ab914165c5ab6a61a",
+      "input_archive_sha256": "927793f9a7e2c15dfa624d63b79b27d82112fa46e38beb00880fb4a7f000ed83"
+    },
+    {
+      "label": "v10-reg-100",
+      "package": "./historical",
+      "selection": "^TestRuntimeTimestampFinality$/^pglite$/^(window_larger_than_height)$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "7590b0fc6f619615def1b9c97d7ef7da7893e634e91be2138c764f04982e17af",
+      "native_log_sha256": "2924bcd332fcaf2b155cc23b4a5327fe594d31b2abce7ff7e0133127998b2eb4",
+      "input_archive_sha256": "4a739c6d2e3428867ace2128a9ef615b07e1958317de1c8ea4f64d70c15eee77"
+    },
+    {
+      "label": "v10-reg-101",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsGuards$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "22301bffb44416fcce6ea1c232175234913c081228e3648a43c9a08961bfcd85",
+      "native_log_sha256": "708b64a8481d2d811a5f590a382e548cd43139008cba743cb10b15ce9d9cbc9e",
+      "input_archive_sha256": "9ab031b0f1bff60ad18f486d63cd3463742be120dc81e83fbeef7aa5851bf7a5"
+    },
+    {
+      "label": "v10-reg-102",
+      "package": "./store",
+      "selection": "^TestManagedLiveRecoveryFinality$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "e38deb14cb5ac0db0d8bc07bbb8b982dd2ad9cbb6bbd31e4b95bfdee727c9096",
+      "native_log_sha256": "998bb51a1e069ac6455574af63b61e48e53ec1da57f88be4c4369f37025a48e1",
+      "input_archive_sha256": "fc00ebffc7bba53a19ed089e1b941d1b5623b4e163c879d07d862ed2b258a58b"
+    },
+    {
+      "label": "v10-reg-103",
+      "package": "./store",
+      "selection": "^TestManagedLiveSetupBootstrap$/^pglite$/^flush_abort$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "a40608a3563164ec8b49c619c06bc58bb744c2ea06709736b440fbbdcb127c2a",
+      "native_log_sha256": "5c6c8d6af3d70a1f59b12133ec7156afa68a7fca6ed987b8d0e66f3a2bf9fc66",
+      "input_archive_sha256": "c285565a21b0108efa44db1d1a6d20d4f61c85d05f02b62be8d4b6c74e7a641f"
+    },
+    {
+      "label": "v10-reg-104",
+      "package": "./store",
+      "selection": "^TestManagedLiveSetupBootstrap$/^pglite$/^before_commit$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "9531f5f245820f44f2dee16d7cdde68376485e50bd53ba602acfd98278a02acb",
+      "native_log_sha256": "95073f8f1b56235c50577f84f7b7c07ed85e1b94e4ce69597b803fea530b132e",
+      "input_archive_sha256": "9c85f2f014dc52f29b5501933f1c2d9bdecce3e8a1d1bddcb2f734f628dab3d3"
+    },
+    {
+      "label": "v10-reg-105",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsRetainedFork$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "821523a9bcb4ba94b28872594035327b7933e35a426cca8132190b6c84e834d2",
+      "native_log_sha256": "147943a41900bebf4222560ec3dc79b92602fbbd52e332ef0868b34296a0b3ba",
+      "input_archive_sha256": "987a967dc185eff0c7c1c92cb6ca520e6f629b22003bffe1fda260b57e3bf527"
+    },
+    {
+      "label": "v10-reg-106",
+      "package": "./store",
+      "selection": "^TestManagedLiveSetupBootstrap$/^pglite$/^readback_failure$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "29014bc73130b679604c4b4803aa071b3f5b6ae7f23cd9e81a264b738a854299",
+      "native_log_sha256": "95f67cb048732b69c73f8dd0bda52228fb2352eae8fcc43d53448529ddbb68bc",
+      "input_archive_sha256": "4d44e987b6928c19facc6f6b91b629727491044a1422cd9336f0b21eaddff129"
+    },
+    {
+      "label": "v10-reg-107",
+      "package": "./store",
+      "selection": "^TestManagedLiveRecoveryCommitReadback$/^pglite$/^(readback_failure)$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "ab6fbd8a1a9ca9b857bcdff7d35773412c56ee9155fe4bf4137824c44b05ac2a",
+      "native_log_sha256": "0a7e3107f865119803b11c416cc2ae519a481bb51e2a4be13f02688fe6c125ce",
+      "input_archive_sha256": "3833e5654320b4b967610621555fbe1ffb6ceb67a190a745287fbbe198c24d23"
+    },
+    {
+      "label": "v10-reg-108",
+      "package": "./historical",
+      "selection": "^TestRuntimeFinalizedAncestorBeforeBusiness$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "6d991bcae047fccbd1472e248b5debd7c77a4eed02d60d179e220c8c97add643",
+      "native_log_sha256": "d7ba4736dec9fc5c8c03dee69fb1abf1d02d14cf4e77c991aff5f8940366b9b4",
+      "input_archive_sha256": "18501603ce5f5a292935d5a0185788827b8341c7cd0b0f3f23de74dbdffb07b1"
+    },
+    {
+      "label": "v10-reg-109",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsIntegrity$/^pglite$/^(sync_catalog)$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "a9520af8e725275c09c080da4be1c64664112522ad27e8fcf7203a067c1e6117",
+      "native_log_sha256": "fc32acdef9f118f888586d81cd4eead54e4826c6821cd5846d819827410de535",
+      "input_archive_sha256": "cf73ebaf3c1344813b35ece85b4b3545d71758cdf2f18da76c3f610275349f4f"
+    },
+    {
+      "label": "v10-reg-110",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsDatabase$/^pglite$/^(exact_prune_global_suffix_and_idempotent_ack)$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "2150a19349c126ba44c1c87b8f79719c00137dc02b7714ed3c0b050cc053d059",
+      "native_log_sha256": "86d1b2034d38a8af5c5a2b8677e1f504f094784a1dd5bbed77a26d5666c1997e",
+      "input_archive_sha256": "a497fbb60e6354b5676eb769173082d027cbadf71224203353d44c3f80bc54c8"
+    },
+    {
+      "label": "v10-reg-111",
+      "package": "./store",
+      "selection": "^TestManagedLiveRecoveryDatabase$/^pglite$/^(nonempty_reopen_undoes_global_suffix_and_replays_empty_segment)$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "9b05902eac74ac8dd47b0a5d04d3f170cb85dc1673bea8072cb95778f6b9c0a1",
+      "native_log_sha256": "9809c34ab1be92270a9746604abe61c61007a824010c0967d455381af67bed68",
+      "input_archive_sha256": "096c94e26cf562861aff09698c95f20c9d947a009a45b8fe2c7a9ebab7bc4592"
+    },
+    {
+      "label": "v10-reg-112",
+      "package": "./historical",
+      "selection": "^TestRuntimeCompletedMetricsFlushRollback$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "18a1c2f21956fa630ab3b135294756d9cce34e8a1c5676f5561d3491550c5c4c",
+      "native_log_sha256": "9a36a9f1290a89350afdf9c9472bfb6d53f3de2575cd54328ab71f0bb8044b35",
+      "input_archive_sha256": "1ad208e62563fc3e92c1073404bd302134eedd9d2e37e5609fb4de0ef1f622b3"
+    },
+    {
+      "label": "v10-reg-113",
+      "package": "./store",
+      "selection": "^TestManagedLiveRecoveryRetainedFinality$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "b671b0fb3e01a2285ac873df920e9d3b86ce01c1cf591148a7389ed6ddecbd9b",
+      "native_log_sha256": "f1013494f8c4b2f574027bd3ed782c8c5e8bd18c836a2ba0f4555abdf01be913",
+      "input_archive_sha256": "adea0a8ed96b1194d925feeed10a5593d5fca51b0c89abf78d126185960ca04e"
+    },
+    {
+      "label": "v10-reg-114",
+      "package": "./store",
+      "selection": "^TestManagedLiveSetupBootstrap$/^pglite$/^missing_callback$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "b0a72d8ed000b8f7adc9bf6dd171a72e59ece16f6aef502f35e03bb9fe666b54",
+      "native_log_sha256": "d1bcd9cb777d66c0656b14690b4c87e97b2592674e1dc898d98c2feeb8befac6",
+      "input_archive_sha256": "9587cd53e232b45863147bc29ae8c7fd7736ee2d2597d6256773b19b2745d810"
+    },
+    {
+      "label": "v10-reg-115",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsFaults$/^pglite$/^(prepare_readback_failure_reopen_false)$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "26fd6136e89895e7c8081afae68b276ba65b2c41902f4f8a75e68938fb8abe5d",
+      "native_log_sha256": "a6b24171886129ee611373c4e464535189b8d9e54e4a50385a946298fec63c1b",
+      "input_archive_sha256": "c1185070f5fdc6b105fb9a9d52c87488008e8429b8eea4df90f9484d104fd23c"
+    },
+    {
+      "label": "v10-reg-116",
+      "package": "./store",
+      "selection": "^TestManagedLiveDomainsReplayData$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "5889edb387030624e891a51df4d9b0832aca0e83a76cf6a29c003875303970de",
+      "native_log_sha256": "fd835276217d97ff03bbae391a9c39e8934cefe72fd134e5f0f448eff69132d9",
+      "input_archive_sha256": "f4ee65f9952c5d4a0998155dbdbf114ca122113b68bcb2f12c7b26edf996ec19"
+    },
+    {
+      "label": "v10-reg-117",
+      "package": "./store",
+      "selection": "^TestManagedLiveRuntimeActivation$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "25bed3cac2f15af682d1dd9b2db109d165f1306cd82cf5cdd160eb3499f9b409",
+      "native_log_sha256": "35a176fe4cfeb7113db053fd9a1f4ab4bac19828a4ca3e53ed1ea6700203db00",
+      "input_archive_sha256": "695bb56587fb01317e5cefa80c75745e2ca8cac196cadd57cbfcb346fa2aaeb3"
+    },
+    {
+      "label": "v10-reg-118",
+      "package": "./store",
+      "selection": "^TestManagedLiveSetupBootstrap$/^pglite$/^after_commit$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "1a2319017d49d68b34a05429ec24f6ef99fcb77cc0c836860867d98af931adc5",
+      "native_log_sha256": "c58aa95c7e3d99e6f3be2e7e21bc3b40c8ec9c062153d6feee2a9c392a0062db",
+      "input_archive_sha256": "4aaf79ee5f21e2d5809cea76caa3f4649f8a6a070a4b86f2c8218f6a372a5de9"
+    },
+    {
+      "label": "v10-reg-119",
+      "package": "./store",
+      "selection": "^TestManagedLiveUncachedPrepareAudit$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "0d6db5c7d753c217278eaae27ce0a661c631bcebc32ae0120191f5bf6cbdb501",
+      "native_log_sha256": "6a7aeed63c9fea9325d41eda6bc34c441c5e2422c87602f684a248d6cde31143",
+      "input_archive_sha256": "d3ca1b2675b68ddf98c03732153f52b98b2fd50529f0e326a250204709cd163c"
+    },
+    {
+      "label": "v10-reg-120",
+      "package": "./store",
+      "selection": "^TestManagedRuntimeScopeRejectsUnscopedBypass$/^pglite$",
+      "backend": "pglite",
+      "native_pass": 1,
+      "receipt_sha256": "d7172fbc9a0a0b954f3dbe42bf3f91967a90e2f1080ef15927a10b82527c41d9",
+      "native_log_sha256": "30795552cb755e2c1ecc5d75abdcc1953a6c0abdc0881a0302ff4e13596e1c83",
+      "input_archive_sha256": "f22264910baa9e5c63ee5e08d7481155a9d5d2d8ee2cca3fa7ff419d873cf49d"
+    }
+  ]
+}

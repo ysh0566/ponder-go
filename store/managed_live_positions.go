@@ -18,7 +18,7 @@ func cloneLiveCheckpoints(in map[uint64]string) map[uint64]string {
 	}
 	return out
 }
-func liveSourceVersion(c ManagedLiveControl) bool { return c.Version == managedLiveSourceVersion }
+func liveSourceVersion(c ManagedLiveControl) bool { return c.Version == managedLiveSourceVersion || c.Version == managedLiveFactoryVersion }
 func liveCanonicalPosition(raw string) (checkpoint.Checkpoint, bool) {
 	cp, e := checkpoint.Decode(raw)
 	return cp, e == nil && cp != checkpoint.Max && (cp == checkpoint.Block(cp.BlockTimestamp, cp.ChainID, cp.BlockNumber, false) || cp == checkpoint.Block(cp.BlockTimestamp, cp.ChainID, cp.BlockNumber, true))

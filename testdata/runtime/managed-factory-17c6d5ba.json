@@ -1,0 +1,631 @@
+[
+  {
+    "name": "build_topic_parameter",
+    "input": {
+      "event": {
+        "type": "event",
+        "name": "Spawn",
+        "inputs": [
+          {
+            "name": "child",
+            "type": "address",
+            "indexed": true
+          }
+        ]
+      },
+      "parameter": "child"
+    },
+    "value": {
+      "id": "log_0x1111111111111111111111111111111111111111_1_topic1_0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862_2_4",
+      "type": "log",
+      "chainId": 1,
+      "sourceId": "Child",
+      "address": "0x1111111111111111111111111111111111111111",
+      "eventSelector": "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862",
+      "childAddressLocation": "topic1",
+      "fromBlock": 2,
+      "toBlock": 4
+    }
+  },
+  {
+    "name": "build_data_parameter",
+    "input": {
+      "event": {
+        "type": "event",
+        "name": "SpawnData",
+        "inputs": [
+          {
+            "name": "salt",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "name": "child",
+            "type": "address",
+            "indexed": false
+          }
+        ]
+      },
+      "parameter": "child"
+    },
+    "value": {
+      "id": "log_0x1111111111111111111111111111111111111111_1_offset32_0x80f545b925850d85fc4935feb89c27d1aab76bfa7a35650fb36323858c25024d_2_4",
+      "type": "log",
+      "chainId": 1,
+      "sourceId": "DataChild",
+      "address": "0x1111111111111111111111111111111111111111",
+      "eventSelector": "0x80f545b925850d85fc4935feb89c27d1aab76bfa7a35650fb36323858c25024d",
+      "childAddressLocation": "offset32",
+      "fromBlock": 2,
+      "toBlock": 4
+    }
+  },
+  {
+    "name": "extract_topic1",
+    "input": {
+      "location": "topic1",
+      "log": {
+        "topics": [
+          "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862",
+          "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556",
+          "0x0000000000000000000000003333333333333333333333333333333333333333",
+          "0x0000000000000000000000002222222222222222222222222222222222222222"
+        ],
+        "data": "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f5560000000000000000000000003333333333333333333333333333333333333333"
+      }
+    },
+    "value": "0xa21a16ec22a940990922220e4ab5bf4c2310f556"
+  },
+  {
+    "name": "extract_topic2",
+    "input": {
+      "location": "topic2",
+      "log": {
+        "topics": [
+          "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862",
+          "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556",
+          "0x0000000000000000000000003333333333333333333333333333333333333333",
+          "0x0000000000000000000000002222222222222222222222222222222222222222"
+        ],
+        "data": "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f5560000000000000000000000003333333333333333333333333333333333333333"
+      }
+    },
+    "value": "0x3333333333333333333333333333333333333333"
+  },
+  {
+    "name": "extract_topic3",
+    "input": {
+      "location": "topic3",
+      "log": {
+        "topics": [
+          "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862",
+          "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556",
+          "0x0000000000000000000000003333333333333333333333333333333333333333",
+          "0x0000000000000000000000002222222222222222222222222222222222222222"
+        ],
+        "data": "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f5560000000000000000000000003333333333333333333333333333333333333333"
+      }
+    },
+    "value": "0x2222222222222222222222222222222222222222"
+  },
+  {
+    "name": "extract_offset0",
+    "input": {
+      "location": "offset0",
+      "log": {
+        "topics": [
+          "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862",
+          "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556",
+          "0x0000000000000000000000003333333333333333333333333333333333333333",
+          "0x0000000000000000000000002222222222222222222222222222222222222222"
+        ],
+        "data": "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f5560000000000000000000000003333333333333333333333333333333333333333"
+      }
+    },
+    "value": "0xa21a16ec22a940990922220e4ab5bf4c2310f556"
+  },
+  {
+    "name": "extract_offset32",
+    "input": {
+      "location": "offset32",
+      "log": {
+        "topics": [
+          "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862",
+          "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556",
+          "0x0000000000000000000000003333333333333333333333333333333333333333",
+          "0x0000000000000000000000002222222222222222222222222222222222222222"
+        ],
+        "data": "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f5560000000000000000000000003333333333333333333333333333333333333333"
+      }
+    },
+    "value": "0x3333333333333333333333333333333333333333"
+  },
+  {
+    "name": "extract_offset-1",
+    "input": {
+      "location": "offset-1",
+      "log": {
+        "topics": [
+          "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862",
+          "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556",
+          "0x0000000000000000000000003333333333333333333333333333333333333333",
+          "0x0000000000000000000000002222222222222222222222222222222222222222"
+        ],
+        "data": "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f5560000000000000000000000003333333333333333333333333333333333333333"
+      }
+    },
+    "value": "0x00a21a16ec22a940990922220e4ab5bf4c2310f5"
+  },
+  {
+    "name": "extract_data_parameter",
+    "input": {
+      "log": {
+        "data": "0x0000000000000000000000003333333333333333333333333333333333333333000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556"
+      }
+    },
+    "value": "0xa21a16ec22a940990922220e4ab5bf4c2310f556"
+  },
+  {
+    "name": "extract_topic_case_preserved",
+    "input": {
+      "topic": "0x000000000000000000000000A21A16EC22A940990922220E4AB5BF4C2310F556"
+    },
+    "value": "0xA21A16EC22A940990922220E4AB5BF4C2310F556"
+  },
+  {
+    "name": "extract_missing_topic",
+    "input": {
+      "log": {
+        "topics": [
+          "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862"
+        ],
+        "data": "0x"
+      }
+    },
+    "error": {
+      "name": "TypeError",
+      "message": "Cannot read properties of undefined (reading 'substring')"
+    }
+  },
+  {
+    "name": "extract_short_topic",
+    "input": {
+      "log": {
+        "topics": [
+          "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862",
+          "0x1234"
+        ],
+        "data": "0x"
+      }
+    },
+    "value": "0x"
+  },
+  {
+    "name": "extract_short_data",
+    "input": {
+      "log": {
+        "topics": [],
+        "data": "0x12"
+      }
+    },
+    "value": "0x"
+  },
+  {
+    "name": "extract_missing_data",
+    "input": {
+      "log": {
+        "topics": []
+      }
+    },
+    "error": {
+      "name": "TypeError",
+      "message": "Cannot read properties of undefined (reading 'substring')"
+    }
+  },
+  {
+    "name": "build_and_extract_nested_parameter",
+    "input": {
+      "parameter": "args.child",
+      "event": {
+        "type": "event",
+        "name": "SpawnTuple",
+        "inputs": [
+          {
+            "name": "salt",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "name": "args",
+            "type": "tuple",
+            "indexed": false,
+            "components": [
+              {
+                "name": "nonce",
+                "type": "uint256"
+              },
+              {
+                "name": "child",
+                "type": "address"
+              }
+            ]
+          }
+        ]
+      },
+      "data": "0x00000000000000000000000033333333333333333333333333333333333333330000000000000000000000001111111111111111111111111111111111111111000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556"
+    },
+    "value": {
+      "factory": {
+        "id": "log_0x1111111111111111111111111111111111111111_1_offset64_0x0eb2652ad59d794ca00cb74325e79613e74b22934ceca64260a00c7def4c7f3c_2_4",
+        "type": "log",
+        "chainId": 1,
+        "sourceId": "Nested",
+        "address": "0x1111111111111111111111111111111111111111",
+        "eventSelector": "0x0eb2652ad59d794ca00cb74325e79613e74b22934ceca64260a00c7def4c7f3c",
+        "childAddressLocation": "offset64",
+        "fromBlock": 2,
+        "toBlock": 4
+      },
+      "child": "0xa21a16ec22a940990922220e4ab5bf4c2310f556"
+    }
+  },
+  {
+    "name": "build_missing_parameter",
+    "input": {
+      "parameter": "absent"
+    },
+    "error": {
+      "name": "Error",
+      "message": "Factory event parameter not found in factory event signature. Got 'absent', expected one of ['salt', 'child']."
+    }
+  },
+  {
+    "name": "factory_birth_bounds_1",
+    "input": {
+      "number": 1,
+      "from": 2,
+      "to": 4
+    },
+    "value": false
+  },
+  {
+    "name": "factory_birth_bounds_2",
+    "input": {
+      "number": 2,
+      "from": 2,
+      "to": 4
+    },
+    "value": true
+  },
+  {
+    "name": "factory_birth_bounds_3",
+    "input": {
+      "number": 3,
+      "from": 2,
+      "to": 4
+    },
+    "value": true
+  },
+  {
+    "name": "factory_birth_bounds_4",
+    "input": {
+      "number": 4,
+      "from": 2,
+      "to": 4
+    },
+    "value": true
+  },
+  {
+    "name": "factory_birth_bounds_5",
+    "input": {
+      "number": 5,
+      "from": 2,
+      "to": 4
+    },
+    "value": false
+  },
+  {
+    "name": "factory_wrong_parent",
+    "input": {
+      "parent": "0x2222222222222222222222222222222222222222"
+    },
+    "value": false
+  },
+  {
+    "name": "factory_wrong_selector",
+    "input": {},
+    "value": false
+  },
+  {
+    "name": "factory_no_parent",
+    "input": {
+      "parent": "0x2222222222222222222222222222222222222222"
+    },
+    "value": true
+  },
+  {
+    "name": "effective_filter_bounds",
+    "input": {
+      "childFrom": 5,
+      "childTo": 10,
+      "factoryFrom": 2,
+      "factoryTo": 4
+    },
+    "value": {
+      "from": 2,
+      "to": 10
+    }
+  },
+  {
+    "name": "child_membership_2",
+    "input": {
+      "address": "0xa21a16ec22a940990922220e4ab5bf4c2310f556",
+      "birthBlock": 3,
+      "eventBlock": 2,
+      "creationLogIndex": 5
+    },
+    "value": false
+  },
+  {
+    "name": "child_membership_3",
+    "input": {
+      "address": "0xa21a16ec22a940990922220e4ab5bf4c2310f556",
+      "birthBlock": 3,
+      "eventBlock": 3,
+      "creationLogIndex": 5
+    },
+    "value": true
+  },
+  {
+    "name": "child_membership_4",
+    "input": {
+      "address": "0xa21a16ec22a940990922220e4ab5bf4c2310f556",
+      "birthBlock": 3,
+      "eventBlock": 4,
+      "creationLogIndex": 5
+    },
+    "value": true
+  },
+  {
+    "name": "child_membership_5",
+    "input": {
+      "address": "0xa21a16ec22a940990922220e4ab5bf4c2310f556",
+      "birthBlock": 3,
+      "eventBlock": 5,
+      "creationLogIndex": 5
+    },
+    "value": true
+  },
+  {
+    "name": "child_address_casefold",
+    "input": {},
+    "value": true
+  },
+  {
+    "name": "buildEvents_birth_block_not_logindex",
+    "input": {
+      "creation": {
+        "address": "0x1111111111111111111111111111111111111111",
+        "topics": [
+          "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862",
+          "0x000000000000000000000000a21a16ec22a940990922220e4ab5bf4c2310f556"
+        ],
+        "data": "0x",
+        "blockNumber": "0x3",
+        "transactionIndex": "0x0",
+        "logIndex": "0x5"
+      },
+      "childBirthBoundary": "Map derived from creation log block; does not execute historical/realtime discovery",
+      "eventCandidates": [
+        {
+          "block": 2,
+          "logIndex": 0
+        },
+        {
+          "block": 3,
+          "logIndex": 0
+        },
+        {
+          "block": 3,
+          "logIndex": 9
+        },
+        {
+          "block": 4,
+          "logIndex": 0
+        },
+        {
+          "block": 5,
+          "logIndex": 0
+        },
+        {
+          "block": 11,
+          "logIndex": 0
+        }
+      ],
+      "filterFrom": 1,
+      "filterTo": 10,
+      "factoryTo": 4
+    },
+    "value": [
+      {
+        "chainId": 1,
+        "block": 3,
+        "logIndex": 0,
+        "checkpoint": "000000100300000000000000010000000000000003000000000000000050000000000000000"
+      },
+      {
+        "chainId": 1,
+        "block": 3,
+        "logIndex": 9,
+        "checkpoint": "000000100300000000000000010000000000000003000000000000000050000000000000009"
+      },
+      {
+        "chainId": 1,
+        "block": 4,
+        "logIndex": 0,
+        "checkpoint": "000000100400000000000000010000000000000004000000000000000050000000000000000"
+      },
+      {
+        "chainId": 1,
+        "block": 5,
+        "logIndex": 0,
+        "checkpoint": "000000100500000000000000010000000000000005000000000000000050000000000000000"
+      }
+    ]
+  },
+  {
+    "name": "required_factory_before_events",
+    "input": {
+      "scan": [
+        0,
+        10
+      ]
+    },
+    "value": {
+      "intervals": [
+        {
+          "filter": {
+            "type": "log",
+            "chainId": 1,
+            "sourceId": "Child",
+            "address": {
+              "id": "log_0x1111111111111111111111111111111111111111_1_topic1_0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862_2_4",
+              "type": "log",
+              "chainId": 1,
+              "sourceId": "Child",
+              "address": "0x1111111111111111111111111111111111111111",
+              "eventSelector": "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862",
+              "childAddressLocation": "topic1",
+              "fromBlock": 2,
+              "toBlock": 4
+            },
+            "fromBlock": 5,
+            "toBlock": 10,
+            "hasTransactionReceipt": false,
+            "include": [],
+            "topic1": [
+              null
+            ],
+            "topic2": [
+              null
+            ],
+            "topic3": [
+              null
+            ]
+          },
+          "interval": [
+            5,
+            10
+          ]
+        }
+      ],
+      "factoryIntervals": [
+        {
+          "factory": {
+            "id": "log_0x1111111111111111111111111111111111111111_1_topic1_0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862_2_4",
+            "type": "log",
+            "chainId": 1,
+            "sourceId": "Child",
+            "address": "0x1111111111111111111111111111111111111111",
+            "eventSelector": "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862",
+            "childAddressLocation": "topic1",
+            "fromBlock": 2,
+            "toBlock": 4
+          },
+          "interval": [
+            2,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "factory_parent_fragments",
+    "input": {},
+    "value": {
+      "factory": {
+        "id": "log_0x1111111111111111111111111111111111111111_0x2222222222222222222222222222222222222222_1_topic1_0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862_2_4",
+        "type": "log",
+        "chainId": 1,
+        "sourceId": "Parents",
+        "address": [
+          "0x1111111111111111111111111111111111111111",
+          "0x2222222222222222222222222222222222222222"
+        ],
+        "eventSelector": "0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862",
+        "childAddressLocation": "topic1",
+        "fromBlock": 2,
+        "toBlock": 4
+      },
+      "fragments": [
+        "factory_log_1_0x1111111111111111111111111111111111111111_0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862_topic1_2_4",
+        "factory_log_1_0x2222222222222222222222222222222222222222_0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862_topic1_2_4"
+      ]
+    }
+  },
+  {
+    "name": "factory_sourceid_identity",
+    "input": {},
+    "value": {
+      "sameId": true
+    }
+  },
+  {
+    "name": "factory_range_identity",
+    "input": {},
+    "value": {
+      "sameId": false
+    }
+  },
+  {
+    "name": "factory_chain_identity",
+    "input": {},
+    "value": {
+      "sameId": false
+    }
+  },
+  {
+    "name": "startup_children_cache_true",
+    "input": {
+      "cacheRpcRequests": true
+    },
+    "value": {
+      "children": {
+        "map": [
+          [
+            "log_0x1111111111111111111111111111111111111111_1_topic1_0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862_2_4",
+            {
+              "map": [
+                [
+                  "0xa21a16ec22a940990922220e4ab5bf4c2310f556",
+                  3
+                ]
+              ]
+            }
+          ]
+        ]
+      },
+      "reads": 1
+    }
+  },
+  {
+    "name": "startup_children_cache_false",
+    "input": {
+      "cacheRpcRequests": false
+    },
+    "value": {
+      "children": {
+        "map": [
+          [
+            "log_0x1111111111111111111111111111111111111111_1_topic1_0x916f35ba24f3be9802a8b5ffca961b5cd764d08fcfd24c270bc1c58b948e8862_2_4",
+            {
+              "map": []
+            }
+          ]
+        ]
+      },
+      "reads": 0
+    }
+  }
+]
