@@ -45,6 +45,7 @@ type ManagedLiveOptions struct {
 	runtimeCachePolicy map[uint64]bool
 	runtimeSetup       bool
 	runtimeInitial     bool
+	runtimeFactories   bool
 }
 
 // ManagedLiveControl binds numeric ordinals, durable finality and safe headers.

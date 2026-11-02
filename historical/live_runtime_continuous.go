@@ -196,7 +196,7 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 			filters = append(filters, cb["filter"].(map[string]any))
 		}
 		var child *source.SourceHistoricalChildren
-		if runtimeRPCCacheEnabled(chain) {
+		if runtimeRPCCacheEnabled(chain) && !r.options.FactorySources {
 			err = r.domains.WithRuntimeSync(epoch.Context(), func(io context.Context, s *store.SourceSyncStore) error {
 				var e error
 				child, e = source.GetSourceChildAddresses(io, true, filters, s)
@@ -218,6 +218,13 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 			return nil, e
 		}
 		syncer, e := source.NewManagedSourceRealtimeSync(epoch.Requester(i), child, final, retained, filters, source.SourceRealtimeChain{ID: id, Name: fmt.Sprint(chain["name"]), ReorgWindow: window, PollingInterval: 1000})
+		if e == nil && r.options.FactorySources {
+			syncer, e = source.RestoreManagedFactoryBranch(run, epoch.Requester(i), child, final, retained, filters, source.SourceRealtimeChain{ID: id, Name: fmt.Sprint(chain["name"]), ReorgWindow: window, PollingInterval: 1000})
+			if errors.Is(e, source.ErrManagedFactoryAcquisition) {
+				e = &runtimeLiveFetchError{e}
+			}
+
+		}
 		if e != nil {
 			return nil, e
 		}

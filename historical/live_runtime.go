@@ -32,6 +32,7 @@ type runtimeRunnerCallbackKey struct{}
 type RuntimeOptions struct {
 	// SourceCheckpoints opts into the distinct source initial-position format.
 	SourceCheckpoints            bool
+	FactorySources               bool
 	Live                         *RuntimeLiveOptions
 	Historical                   Options
 	BuildID, OpenID, ViewsSchema string
@@ -95,6 +96,9 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		}
 		o.Live = &copy
 	}
+	if o.FactorySources && (!o.SourceCheckpoints || o.Live == nil) {
+		return nil, fmt.Errorf("factory sources require source checkpoints and continuous lifecycle")
+	}
 	b := o.Historical.Build.Executable()
 	session, release, err := b.AcquireSession()
 	if err != nil {
@@ -148,8 +152,10 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 			if !ok {
 				return nil, fmt.Errorf("runtime callback filter missing")
 			}
-			if len(filter.GetFilterFactories(f)) != 0 {
-				return nil, fmt.Errorf("runtime-v5 bounded closure does not support dynamic address factories")
+			if factories := filter.GetFilterFactories(f); len(factories) != 0 {
+				if !o.FactorySources || f["type"] != "log" {
+					return nil, fmt.Errorf("runtime factory sources currently require opt-in log filters")
+				}
 			}
 			from, e := uintQuantity(filter.FilterFromBlock(f))
 			if e != nil || (!o.SourceCheckpoints && from == 0) {
@@ -266,7 +272,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	for _, chain := range r.build.Chains {
 		cachePolicy[runtimeChainID(chain)] = runtimeRPCCacheEnabled(chain)
 	}
-	r.domains, err = opener(ctx, storage, store.ManagedLiveRuntimeOptions{SourceCheckpoints: o.SourceCheckpoints, Setup: r.setup, CacheRPCRequests: cachePolicy, ManagedLiveOptions: store.ManagedLiveOptions{ManagedFiniteOptions: plan, OpenID: o.OpenID, FinalizedHeads: r.finalized}, StartBlocks: r.starts, Continuous: o.Live != nil, ObserveDomain: runtimeDomainObserver(r)})
+	r.domains, err = opener(ctx, storage, store.ManagedLiveRuntimeOptions{FactorySources: o.FactorySources, SourceCheckpoints: o.SourceCheckpoints, Setup: r.setup, CacheRPCRequests: cachePolicy, ManagedLiveOptions: store.ManagedLiveOptions{ManagedFiniteOptions: plan, OpenID: o.OpenID, FinalizedHeads: r.finalized}, StartBlocks: r.starts, Continuous: o.Live != nil, ObserveDomain: runtimeDomainObserver(r)})
 	if err != nil {
 		return nil, err
 	}
