@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 
 	"ponder.local/ponder-go/checkpoint"
+	"ponder.local/ponder-go/schema"
 )
 
 const managedLiveVersion = "managed-live-v1"
@@ -46,6 +47,7 @@ type ManagedLiveOptions struct {
 	runtimeSetup       bool
 	runtimeInitial     bool
 	runtimeFactories   bool
+	runtimeOmnichain   bool
 }
 
 // ManagedLiveControl binds numeric ordinals, durable finality and safe headers.
@@ -94,7 +96,11 @@ type ManagedLive struct {
 }
 
 func normalizeManagedLiveOptions(o IndependentStorageOptions, in ManagedLiveOptions) (ManagedLiveOptions, error) {
-	base, err := normalizeManagedOptions(o, in.ManagedFiniteOptions)
+	validation := o
+	if in.runtimeOmnichain {
+		validation.Ordering = schema.Multichain
+	}
+	base, err := normalizeManagedOptions(validation, in.ManagedFiniteOptions)
 	if err != nil {
 		return ManagedLiveOptions{}, err
 	}
@@ -104,7 +110,7 @@ func normalizeManagedLiveOptions(o IndependentStorageOptions, in ManagedLiveOpti
 	if len(in.FinalizedHeads) != len(base.Chains) {
 		return ManagedLiveOptions{}, fmt.Errorf("managed live requires exactly the configured fresh finalized heads")
 	}
-	out := ManagedLiveOptions{ManagedFiniteOptions: base, OpenID: in.OpenID, FinalizedHeads: map[uint64]ManagedLiveHead{}}
+	out := ManagedLiveOptions{runtimeOmnichain: in.runtimeOmnichain, ManagedFiniteOptions: base, OpenID: in.OpenID, FinalizedHeads: map[uint64]ManagedLiveHead{}}
 	for _, chain := range base.Chains {
 		head, ok := in.FinalizedHeads[chain.ID]
 		cp, e := checkpoint.Decode(head.Checkpoint)

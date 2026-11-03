@@ -14,6 +14,9 @@ const managedLiveRecoveryVersion = "managed-live-recovery-v3"
 const managedLiveRecoveryReceiptVersion = "managed-live-recovery-receipt-v2"
 
 func (m *ManagedLive) version() string {
+	if m.opts.runtimeOmnichain {
+		return managedLiveOmnichainVersion
+	}
 	if m.opts.runtimeFactories {
 		return managedLiveFactoryVersion
 	}
@@ -120,6 +123,24 @@ func planLiveRecovery(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 	if err := liveActiveJournal(c, active, journal); err != nil {
 		return e, err
 	}
+	if opts.runtimeOmnichain {
+		watermark := ""
+		for _, head := range opts.FinalizedHeads {
+			if watermark == "" || head.Checkpoint < watermark {
+				watermark = head.Checkpoint
+			}
+		}
+		for id, head := range c.Cursors {
+			cp, err := checkpoint.Decode(head.Checkpoint)
+			fresh, fe := checkpoint.Decode(opts.FinalizedHeads[id].Checkpoint)
+			if err != nil || fe != nil {
+				return e, ErrManagedLiveBatchConflict
+			}
+			if cp.BlockNumber >= opts.runtimeStarts[id] && !liveDown(c.LogicalCursors[id]) && (head.Checkpoint > watermark || cp.BlockNumber > fresh.BlockNumber) {
+				return e, fmt.Errorf("omnichain executed cursor exceeds fresh global finalized watermark")
+			}
+		}
+	}
 	safe, finalized := liveSafeHeads(c, baseline), livePublicFinality(c, baseline)
 	byChain := map[uint64]managedLiveCursorState{}
 	for _, state := range states {
@@ -138,7 +159,7 @@ func planLiveRecovery(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 		// Latest is the authenticated public projection, possibly stale across a
 		// fork/global rewind. Neither timestamp nor height orders it against
 		// finality; complete durable replay already proved both exact identities.
-		if !ok || state.Name != chain.Name || state.Finalized != liveFinalCheckpoint(c, baseline, chain.ID) || state.Safe != liveSafeCheckpoint(c, baseline, chain.ID) || state.Cursor != liveCursorCheckpoint(c, chain.ID) || le != nil || latest.ChainID != chain.ID || latest == checkpoint.Max || (latest != checkpoint.Block(latest.BlockTimestamp, latest.ChainID, latest.BlockNumber, true) && !(opts.runtimeInitial && latest == checkpoint.Block(latest.BlockTimestamp, latest.ChainID, latest.BlockNumber, false))) || prior.ChainID != chain.ID || err != nil || pe != nil || head != opts.FinalizedHeads[chain.ID] || fresh.ChainID != chain.ID {
+		if !ok || state.Name != chain.Name || state.Finalized != liveFinalCheckpoint(c, baseline, chain.ID) || state.Safe != liveSafeCheckpoint(c, baseline, chain.ID) || state.Cursor != liveCursorCheckpoint(c, chain.ID) || le != nil || latest.ChainID != chain.ID || latest == checkpoint.Max || (latest != checkpoint.Block(latest.BlockTimestamp, latest.ChainID, latest.BlockNumber, true) && !(opts.runtimeInitial && latest == checkpoint.Block(latest.BlockTimestamp, latest.ChainID, latest.BlockNumber, false)) && !(opts.runtimeOmnichain && livePositionForHead(state.Latest, c.Cursors[chain.ID], true))) || prior.ChainID != chain.ID || err != nil || pe != nil || head != opts.FinalizedHeads[chain.ID] || fresh.ChainID != chain.ID {
 			return e, ErrManagedLiveBatchConflict
 		}
 		if fresh.BlockNumber < prior.BlockNumber || fresh.BlockTimestamp < prior.BlockTimestamp {

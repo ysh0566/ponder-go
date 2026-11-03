@@ -19,6 +19,9 @@ func TestRuntimePreflightRejectsUnsupported(t *testing.T) {
 			case "experimental_isolated", "omnichain":
 				x.Ordering = kind
 				reason = "default multichain"
+				if kind == "omnichain" {
+					reason = "chain finality"
+				}
 			case "setup":
 				x.SetupCallbacks[0] = []indexing.Object{{"name": "bad:setup"}}
 				reason = "setup callbacks"

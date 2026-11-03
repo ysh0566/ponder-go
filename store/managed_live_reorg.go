@@ -152,6 +152,9 @@ func partitionLiveJournal(segments []ManagedLiveSegment, rows []managedLiveJourn
 
 func planLiveReorg(opts ManagedLiveOptions, c ManagedLiveControl, baselines map[uint64]ManagedLiveHead, active []ManagedLiveSegment, journal []managedLiveJournalEntry, proofs []ManagedLiveHead, r ManagedLiveReorg) (managedLiveReorgPlan, error) {
 	var plan managedLiveReorgPlan
+	if opts.runtimeOmnichain {
+		return plan, fmt.Errorf("bounded finalized omnichain has no live reorg transition")
+	}
 	if err := validateLiveControl(c); err != nil {
 		return plan, err
 	}

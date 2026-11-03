@@ -3,16 +3,19 @@ package store
 import (
 	"context"
 	"fmt"
+	"ponder.local/ponder-go/checkpoint"
+	"ponder.local/ponder-go/schema"
 )
 
 const managedLiveRuntimeVersion = "managed-live-runtime-v5"
+const managedLiveOmnichainVersion = "managed-live-omnichain-finalized-v11"
 const managedLiveContinuousVersion = "managed-live-continuous-v6"
 const managedLiveUncachedVersion = "managed-live-uncached-v7"
 const managedLiveFactoryVersion = "managed-live-factory-v10"
 const managedLiveSetupVersion = "managed-live-setup-v8"
 
 func isLiveRuntimeVersion(v string) bool {
-	return v == managedLiveRuntimeVersion || isContinuousRuntimeVersion(v)
+	return v == managedLiveRuntimeVersion || v == managedLiveOmnichainVersion || isContinuousRuntimeVersion(v)
 }
 
 func isContinuousRuntimeVersion(v string) bool {
@@ -42,6 +45,23 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 	if in.ObserveDomain != nil && !in.Continuous {
 		return nil, fmt.Errorf("domain observer requires continuous-v6")
 	}
+	if o.Ordering == schema.Omnichain {
+		if in.Continuous || in.Setup || !in.SourceCheckpoints || in.FactorySources || in.ObserveDomain != nil {
+			return nil, fmt.Errorf("omnichain requires the bounded finalized runtime format")
+		}
+		for _, chain := range in.Chains {
+			cp, err := checkpoint.Decode(in.FinalizedHeads[chain.ID].Checkpoint)
+			if err != nil || cp.ChainID != chain.ID || cp.BlockNumber < in.EndBlocks[chain.ID] {
+				return nil, fmt.Errorf("omnichain runtime end exceeds acquired finality")
+			}
+		}
+		for _, enabled := range in.CacheRPCRequests {
+			if !enabled {
+				return nil, fmt.Errorf("omnichain finalized runtime requires RPC cache")
+			}
+		}
+		in.ManagedLiveOptions.runtimeOmnichain = true
+	}
 	opts, err := normalizeManagedLiveOptions(o, in.ManagedLiveOptions)
 	if err != nil {
 		return nil, err
@@ -54,7 +74,7 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 		return nil, fmt.Errorf("setup runtime requires continuous-v8 lifecycle")
 	}
 	opts.runtimeSetup = in.Setup
-	if in.SourceCheckpoints && !in.Continuous {
+	if in.SourceCheckpoints && !in.Continuous && !opts.runtimeOmnichain {
 		return nil, fmt.Errorf("source checkpoints require the v9 live lifecycle")
 	}
 	opts.runtimeInitial = in.SourceCheckpoints

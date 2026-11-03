@@ -1,0 +1,222 @@
+{
+  "source_commit": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "cases": [
+    {
+      "name": "third",
+      "fail_at": 3,
+      "source_receipt": "omni-source-05",
+      "probe_sha256": "da14f4c894668949090a6af646aa57e4e4087bb93f70d1184b0c4d60b8520706",
+      "oracle_stdout_sha256": "df6d114fae698689c0c4e9cb2bdf5d63934a4d907e6e780d11243ec6f222b9e0",
+      "source_common_options": {
+        "syncEventsQuerySize": 12000,
+        "indexingCacheMaxBytes": 16777216
+      },
+      "native_expected": {
+        "failed_handler_order": [
+          "2:1",
+          "1:1",
+          "1:2"
+        ],
+        "failed_business_rows": [],
+        "failed_checkpoints": [
+          {
+            "chain_name": "one",
+            "chain_id": 1,
+            "safe_checkpoint": "000000011000000000000000010000000000000001000000000000000000000000000000000",
+            "latest_checkpoint": "000000011000000000000000010000000000000001000000000000000000000000000000000",
+            "finalized_checkpoint": "000000011000000000000000010000000000000001000000000000000000000000000000000"
+          },
+          {
+            "chain_name": "two",
+            "chain_id": 2,
+            "safe_checkpoint": "000000010000000000000000020000000000000001000000000000000000000000000000000",
+            "latest_checkpoint": "000000010000000000000000020000000000000001000000000000000000000000000000000",
+            "finalized_checkpoint": "000000010000000000000000020000000000000001000000000000000000000000000000000"
+          }
+        ],
+        "failed_undo_rows": [],
+        "failed_ready": 0,
+        "failed_error": {
+          "name": "IndexingFunctionError",
+          "message": "omni-source controlled handler failure after shared write"
+        },
+        "retry_handler_order": [
+          "2:1",
+          "1:1",
+          "1:2",
+          "2:2"
+        ],
+        "retry_handler_events": [
+          {
+            "pass": 2,
+            "key": "2:1",
+            "checkpoint": "000000010000000000000000020000000000000001999999999999999950000000000000000",
+            "timestamp": "100",
+            "hash": "0x4178d24dabca25b3773bedea25f1c38fdfca7e7a86c1be41c1f530ba5f879912"
+          },
+          {
+            "pass": 2,
+            "key": "1:1",
+            "checkpoint": "000000011000000000000000010000000000000001999999999999999950000000000000000",
+            "timestamp": "110",
+            "hash": "0xb3abd22c36c4bc15866a19adc58202b8207bcaddbb5e75c2a2706594e8a20477"
+          },
+          {
+            "pass": 2,
+            "key": "1:2",
+            "checkpoint": "000000012000000000000000010000000000000002999999999999999950000000000000000",
+            "timestamp": "120",
+            "hash": "0xeb6186b7b60d60eaaf7e8944d8eb505b014647bcac1b466ec00651d58303ccfe"
+          },
+          {
+            "pass": 2,
+            "key": "2:2",
+            "checkpoint": "000000012000000000000000020000000000000002999999999999999950000000000000000",
+            "timestamp": "120",
+            "hash": "0xa5adae02ebb4b534ed34c9e6557669865dca8608546d6dc723bbaa1d33078035"
+          }
+        ],
+        "retry_business_rows": [
+          {
+            "id": "shared",
+            "value": "2:1|1:1|1:2|2:2"
+          }
+        ],
+        "retry_checkpoints": [
+          {
+            "chain_name": "one",
+            "chain_id": 1,
+            "safe_checkpoint": "000000012000000000000000010000000000000002999999999999999999999999999999999",
+            "latest_checkpoint": "000000012000000000000000010000000000000002999999999999999999999999999999999",
+            "finalized_checkpoint": "000000012000000000000000010000000000000002999999999999999999999999999999999"
+          },
+          {
+            "chain_name": "two",
+            "chain_id": 2,
+            "safe_checkpoint": "000000012000000000000000020000000000000002999999999999999999999999999999999",
+            "latest_checkpoint": "000000012000000000000000020000000000000002999999999999999999999999999999999",
+            "finalized_checkpoint": "000000012000000000000000020000000000000002999999999999999999999999999999999"
+          }
+        ],
+        "retry_undo_rows": [],
+        "retry_ready": 1
+      }
+    },
+    {
+      "name": "fourth",
+      "fail_at": 4,
+      "source_receipt": "omni-source-04",
+      "probe_sha256": "5b462a1bda91447d4e9f20eea3a5782ed5fc2250317a12507f5cb8b8ba601755",
+      "oracle_stdout_sha256": "c990b20956908d3c68ef54b384c7196422ee6e0d5d202caecec7685db6daafc7",
+      "source_common_options": {
+        "syncEventsQuerySize": 12000,
+        "indexingCacheMaxBytes": 16777216
+      },
+      "native_expected": {
+        "failed_handler_order": [
+          "2:1",
+          "1:1",
+          "1:2",
+          "2:2"
+        ],
+        "failed_business_rows": [
+          {
+            "id": "shared",
+            "value": "2:1|1:1|1:2"
+          }
+        ],
+        "failed_checkpoints": [
+          {
+            "chain_name": "one",
+            "chain_id": 1,
+            "safe_checkpoint": "000000012000000000000000010000000000000002999999999999999999999999999999999",
+            "latest_checkpoint": "000000012000000000000000010000000000000002999999999999999999999999999999999",
+            "finalized_checkpoint": "000000012000000000000000010000000000000002999999999999999999999999999999999"
+          },
+          {
+            "chain_name": "two",
+            "chain_id": 2,
+            "safe_checkpoint": "000000010000000000000000020000000000000001999999999999999950000000000000000",
+            "latest_checkpoint": "000000010000000000000000020000000000000001999999999999999950000000000000000",
+            "finalized_checkpoint": "000000010000000000000000020000000000000001999999999999999950000000000000000"
+          }
+        ],
+        "failed_undo_rows": [],
+        "failed_ready": 0,
+        "failed_error": {
+          "name": "IndexingFunctionError",
+          "message": "omni-source controlled handler failure after shared write"
+        },
+        "first_run_transactions": [
+          {
+            "pass": 1,
+            "committed": true,
+            "calls": []
+          },
+          {
+            "pass": 1,
+            "committed": true,
+            "calls": [
+              "2:1",
+              "1:1",
+              "1:2"
+            ]
+          },
+          {
+            "pass": 1,
+            "committed": false,
+            "calls": [
+              "2:2"
+            ],
+            "error": "IndexingFunctionError"
+          }
+        ],
+        "retry_handler_order": [
+          "2:2"
+        ],
+        "retry_handler_events": [
+          {
+            "pass": 2,
+            "key": "2:2",
+            "checkpoint": "000000012000000000000000020000000000000002999999999999999950000000000000000",
+            "timestamp": "120",
+            "hash": "0xa5adae02ebb4b534ed34c9e6557669865dca8608546d6dc723bbaa1d33078035"
+          }
+        ],
+        "retry_business_rows": [
+          {
+            "id": "shared",
+            "value": "2:1|1:1|1:2|2:2"
+          }
+        ],
+        "retry_checkpoints": [
+          {
+            "chain_name": "one",
+            "chain_id": 1,
+            "safe_checkpoint": "000000012000000000000000010000000000000002999999999999999999999999999999999",
+            "latest_checkpoint": "000000012000000000000000010000000000000002999999999999999999999999999999999",
+            "finalized_checkpoint": "000000012000000000000000010000000000000002999999999999999999999999999999999"
+          },
+          {
+            "chain_name": "two",
+            "chain_id": 2,
+            "safe_checkpoint": "000000012000000000000000020000000000000002999999999999999999999999999999999",
+            "latest_checkpoint": "000000012000000000000000020000000000000002999999999999999999999999999999999",
+            "finalized_checkpoint": "000000012000000000000000020000000000000002999999999999999999999999999999999"
+          }
+        ],
+        "retry_undo_rows": [],
+        "retry_ready": 1,
+        "retry_transactions": [
+          {
+            "pass": 2,
+            "committed": true,
+            "calls": [
+              "2:2"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

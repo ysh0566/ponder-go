@@ -23,14 +23,16 @@ import (
 	"sync/atomic"
 )
 
-// RuntimeOptions opts into the new runtime-v5 namespace. This first bounded
-// closure supports default multichain ordering, finite ranges at or below the
-// acquired latest heads, and event handlers without setup. Other modes fail
-// before storage DDL. BuildID identifies handler code; OpenID is unique per open.
+// RuntimeOptions selects the owned RuntimeRunner lifecycle. Default multichain
+// supports its validated bounded/continuous source subsets. Omnichain uses a
+// separate finalized, cached, interval1 block-callback format with source logical
+// positions; unsupported combinations fail before storage DDL. BuildID identifies
+// handler code; OpenID is unique per open. See docs/RUNTIME_SUPPORT.md.
 type runtimeRunnerCallbackKey struct{}
 
 type RuntimeOptions struct {
-	// SourceCheckpoints opts into the distinct source initial-position format.
+	// SourceCheckpoints opts into source initial positions for multichain.
+	// The finalized omnichain format enables these positions automatically.
 	SourceCheckpoints            bool
 	FactorySources               bool
 	Live                         *RuntimeLiveOptions
@@ -110,10 +112,16 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 			release()
 		}
 	}()
-	if b == nil || b.Ordering != "multichain" || len(b.Chains) == 0 || len(b.Chains) != len(b.EventCallbacks) || len(b.Chains) != len(b.Contracts) || len(b.Chains) != len(b.SetupCallbacks) {
-		return nil, fmt.Errorf("runtime closure requires complete default multichain executable build")
+	if b == nil || (b.Ordering != "multichain" && b.Ordering != "omnichain") || len(b.Chains) == 0 || len(b.Chains) != len(b.EventCallbacks) || len(b.Chains) != len(b.Contracts) || len(b.Chains) != len(b.SetupCallbacks) {
+		return nil, fmt.Errorf("runtime closure requires complete default multichain or supported finalized omnichain executable build")
 	}
-	if o.Historical.Owned.Storage.Ordering != "" && o.Historical.Owned.Storage.Ordering != schema.Multichain {
+	if b.Ordering == "omnichain" && (o.Live != nil || o.FactorySources) {
+		return nil, fmt.Errorf("omnichain currently requires bounded finalized non-factory runtime")
+	}
+	if b.Ordering == "omnichain" {
+		o.SourceCheckpoints = true
+	}
+	if o.Historical.Owned.Storage.Ordering != "" && o.Historical.Owned.Storage.Ordering != schema.Ordering(b.Ordering.(string)) {
 		return nil, fmt.Errorf("unsupported runtime ordering")
 	}
 	if o.Historical.Owned.Service.Database != nil || o.Historical.Owned.Service.Clients != nil || len(o.Historical.Owned.Service.Build.Chains) != 0 {
@@ -143,6 +151,9 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 			}
 			return nil, fmt.Errorf("runtime chain requires callbacks")
 		}
+		if b.Ordering == "omnichain" && len(b.EventCallbacks[i]) != 1 {
+			return nil, fmt.Errorf("omnichain finalized closure requires one interval1 block callback per chain")
+		}
 		first := uint64(^uint64(0))
 		for _, cb := range b.EventCallbacks[i] {
 			if e := validateHandler(cb); e != nil {
@@ -158,8 +169,15 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 					return nil, fmt.Errorf("runtime factory sources currently require opt-in log, transaction or transfer filters, or contract CALL trace filters")
 				}
 			}
+			if b.Ordering == "omnichain" {
+				interval, ie := uintQuantity(f["interval"])
+				offset, oe := uintQuantity(f["offset"])
+				if cb["type"] != "block" || f["type"] != "block" || ie != nil || oe != nil || interval != 1 || offset != 0 {
+					return nil, fmt.Errorf("omnichain finalized closure requires one interval1 block callback per chain")
+				}
+			}
 			from, e := uintQuantity(filter.FilterFromBlock(f))
-			if e != nil || (!o.SourceCheckpoints && from == 0) {
+			if e != nil || ((!o.SourceCheckpoints || b.Ordering == "omnichain") && from == 0) {
 				return nil, fmt.Errorf("runtime-v5 requires startBlock>=1")
 			}
 			first = min(first, from)
@@ -268,7 +286,12 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		r.finalBlocks[i] = final
 	}
 	storage := o.Historical.Owned.Storage
-	storage.Ordering = schema.Multichain
+	storage.Ordering = schema.Ordering(b.Ordering.(string))
+	if b.Ordering == "omnichain" {
+		if err = r.validateOmnichainFinalizedRange(ctx, reqs); err != nil {
+			return nil, err
+		}
+	}
 	cachePolicy := map[uint64]bool{}
 	for _, chain := range r.build.Chains {
 		cachePolicy[runtimeChainID(chain)] = runtimeRPCCacheEnabled(chain)

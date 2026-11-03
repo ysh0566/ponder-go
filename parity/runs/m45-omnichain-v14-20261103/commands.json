@@ -1,0 +1,1066 @@
+{
+  "base": "510cb73e2791b07cb6f3342a2048a09eb98b6b36",
+  "scope": "bounded globally finalized cachetrue interval1 block-callback omnichain actual RuntimeRunner source batching; complete v13 selected regression plus affected legacy store controls; not full repository/full race",
+  "max_active_groups": 2,
+  "expected_unique_cases": 669,
+  "expected_group_case_executions": 945,
+  "expected_race_repeats": 276,
+  "commands": [
+    {
+      "label": "v14-reg-v13-reg-race-compile",
+      "package": "./historical",
+      "selection": "^$",
+      "backend": "pure",
+      "race": true,
+      "expected_count": 0
+    },
+    {
+      "label": "v14-reg-v13-reg-rpc-traces",
+      "package": "./rpc",
+      "selection": "^TestUpstreamTraceActions$",
+      "backend": "pure",
+      "race": false,
+      "expected_count": 2
+    },
+    {
+      "label": "v14-reg-v13-reg-source-trace-identity",
+      "package": "./runtime",
+      "selection": "^TestSourceTraceIdentityVectors$",
+      "backend": "pure",
+      "race": false,
+      "expected_count": 12
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-capability",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferCapability$",
+      "backend": "pure",
+      "race": false,
+      "expected_count": 4
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pg-core",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransfer(Lifecycle|Reorg|FailedCommit)$/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 8
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pg-crash",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransfer(Crash)$/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 6
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pg-extra",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransfer(AcquisitionRetry|DefaultReceipts)$/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 6
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-001",
+      "package": "./...",
+      "selection": "^$",
+      "backend": "pure",
+      "race": false,
+      "expected_count": 0
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-events",
+      "package": "./events",
+      "selection": ".",
+      "backend": "pure",
+      "race": false,
+      "expected_count": 162
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-capability",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransactionCapability$",
+      "backend": "pure",
+      "race": false,
+      "expected_count": 4
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-new-pure",
+      "package": "./runtime",
+      "selection": "^TestManagedFactory",
+      "backend": "pure",
+      "race": false,
+      "expected_count": 27
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-004",
+      "package": "./...",
+      "selection": "^(TestManagedLive(FinalizeUnit.*|ReorgUnit.*|SegmentsUnit.*|Options|FreshFinalizedTimestamp|LegacyMutationGuard)|TestUpstreamFinality|TestSourceEventOrderOriginal|TestSourceEventOrderControls|TestSourceHistoryCompletionMerge|TestSourceHistoryAsyncTermination|TestSourceHistoryFinalizedModeBoundaries|TestSourceHistoryCursorAndRefreshThreshold|TestSourceHistoryRefreshAdmission|TestSourceHistoryRefreshFirstError|TestManagedPlanStableIdentity|TestManagedPlanRejectsSemanticDrift|TestManagedPlanFailClosed|TestManagedStableUndefinedIsNotNullOrUserMarker|TestRuntimePreflightRejectsUnsupported|TestRuntimeRejectsHistoricalOptions|TestRuntimeLiveHeadersBounded|TestRuntimeLiveHeaderCapacityPreflight|TestManagedLiveUncached(Identity|DeletionBounds))$",
+      "backend": "pure",
+      "race": false,
+      "expected_count": 215
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-transactions-pg",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransaction(Lifecycle|Reorg|FailedCommit|Crash)$/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 14
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-transactions-pglite-01",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransactionLifecycle$/^pglite$/^cache_true$/^start_1$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-transactions-pglite-02",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransactionLifecycle$/^pglite$/^cache_true$/^start_3$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-transactions-pglite-03",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransactionReorg$/^pglite$/^cache_true$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-transactions-pglite-04",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransactionFailedCommit$/^pglite$/^cache_true$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-transactions-pglite-05",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransactionLifecycle$/^pglite$/^cache_false$/^start_1$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-transactions-pglite-06",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransactionLifecycle$/^pglite$/^cache_false$/^start_3$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-transactions-pglite-07",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransactionReorg$/^pglite$/^cache_false$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-transactions-pglite-08",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransactionFailedCommit$/^pglite$/^cache_false$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pg-new",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactory(Lifecycle|Reorg|AcquisitionRetry|FailedCommitReopen|OverlappingParents|ForgedRecoveryRoot)$/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 12
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pglite-new-01",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryLifecycle$/^pglite$/^early_birth_cached$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pglite-new-02",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryLifecycle$/^pglite$/^early_birth_uncached$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pglite-new-03",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryLifecycle$/^pglite$/^same_block_cached$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pglite-new-04",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryLifecycle$/^pglite$/^same_block_uncached$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pglite-new-05",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryReorg$/^pglite$/^cache_true$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pglite-new-06",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryReorg$/^pglite$/^cache_false$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pglite-new-07",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryAcquisitionRetry$/^pglite$/^eth_getBlockByHash$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pglite-new-08",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryAcquisitionRetry$/^pglite$/^eth_getLogs$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pglite-new-09",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryFailedCommitReopen$/^pglite$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pglite-new-10",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryOverlappingParents$/^pglite$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pglite-new-11",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryForgedRecoveryRoot$/^pglite$/^root$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-log-pglite-new-12",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryForgedRecoveryRoot$/^pglite$/^down_parent$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-005",
+      "package": "./historical",
+      "selection": "^TestRuntimeSource(InitialCheckpoint|InitialMatrix|FailedSetupForkCache|CommitRecovery|Crash)$/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 11
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-009",
+      "package": "./historical",
+      "selection": "^TestRuntime(Uncached.*|CachePolicySnapshot)$/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 7
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-011",
+      "package": "./historical",
+      "selection": "^TestRuntimeContinuous/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 16
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-013",
+      "package": "./historical",
+      "selection": "^TestRuntime(BoundedLifecycle|SourceBoundaries|CancellationRecovery|AcquiredIdentity|HistoryBeforeLive|ForkRecoveryRefetch|FinalizedAncestorBeforeBusiness|TimestampFinality|CompletedMetricsRollback|CompletedMetricsFlushRollback|CompletelyEmptyLifecycle|CompletionOrderingSharedReplay)$/postgres",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 18
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-017",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceInitialCheckpoint$/^pglite$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-018",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceInitialMatrix$/^pglite$/^genesis$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-020",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceInitialMatrix$/^pglite$/^equal_start_final$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-024",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceInitialMatrix$/^pglite$/^mixed_bounds$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-025",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceFailedSetupForkCache$/^pglite$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-026",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceCommitRecovery$/^pglite$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-041",
+      "package": "./historical",
+      "selection": "^TestRuntimeUncachedReorg$/^pglite$/^shared_rows$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-049",
+      "package": "./historical",
+      "selection": "^TestRuntimeUncachedReorg$/^pglite$/^empty_segments$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-051",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceBoundaries$/^pglite$/^(empty_segments|historical_refetch)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 2
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-053",
+      "package": "./historical",
+      "selection": "^TestRuntimeUncachedHistoryLiveReopen$/^pglite$/^all_disabled$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-054",
+      "package": "./historical",
+      "selection": "^TestRuntimeUncachedHistoryLiveReopen$/^pglite$/^mixed$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-055",
+      "package": "./historical",
+      "selection": "^TestRuntimeSourceBoundaries$/^pglite$/^(inclusive_start_end|learned_projection_without_parent)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 2
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-v10-reg-081",
+      "package": "./historical",
+      "selection": "^TestRuntimeUncachedStaticLogs$/^pglite$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-01",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferLifecycle$/^pglite$/^cache_true$/^start_1$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-02",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferLifecycle$/^pglite$/^cache_true$/^start_3$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-03",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferReorg$/^pglite$/^cache_true$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-04",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferFailedCommit$/^pglite$/^cache_true$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-05",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferAcquisitionRetry$/^pglite$/^cache_true$/^debug_traceBlockByHash$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-06",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferAcquisitionRetry$/^pglite$/^cache_true$/^eth_getTransactionReceipt$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-07",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferDefaultReceipts$/^pglite$/^cache_true$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-08",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferLifecycle$/^pglite$/^cache_false$/^start_1$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-09",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferLifecycle$/^pglite$/^cache_false$/^start_3$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-10",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferReorg$/^pglite$/^cache_false$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-11",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferFailedCommit$/^pglite$/^cache_false$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-12",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferAcquisitionRetry$/^pglite$/^cache_false$/^debug_traceBlockByHash$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-13",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferAcquisitionRetry$/^pglite$/^cache_false$/^eth_getTransactionReceipt$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-transfer-pglite-14",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferDefaultReceipts$/^pglite$/^cache_false$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-race-events",
+      "package": "./events",
+      "selection": ".",
+      "backend": "pure",
+      "race": true,
+      "expected_count": 162
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-final-race-transaction-pglite",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransactionLifecycle$/^pglite$/^cache_true$/^start_1$",
+      "backend": "pglite",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-retry-race-transactions-pg-lifecycle",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransaction(Lifecycle|Reorg|FailedCommit)$/^postgres$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 8
+    },
+    {
+      "label": "v14-reg-v13-reg-reg-retry-race-transactions-pg-crash",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransactionCrash$/^postgres$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 6
+    },
+    {
+      "label": "v14-reg-v13-reg-race-transfer-pg-core",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransfer(Lifecycle|Reorg|FailedCommit)$/^postgres$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 8
+    },
+    {
+      "label": "v14-reg-v13-reg-race-transfer-pg-crash",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransfer(Crash)$/^postgres$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 6
+    },
+    {
+      "label": "v14-reg-v13-reg-race-transfer-pg-fault",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransfer(AcquisitionRetry)$/^postgres$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 4
+    },
+    {
+      "label": "v14-reg-v13-reg-race-transfer-pg-default",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransfer(DefaultReceipts)$/^postgres$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 2
+    },
+    {
+      "label": "v14-reg-v13-reg-race-transfer-pglite",
+      "package": "./historical",
+      "selection": "^TestRuntimeFactoryTransferLifecycle$/^pglite$/^cache_true$/^start_1$",
+      "backend": "pglite",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-capability",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceCapability)$/^(opt_out|account_trace|non_call|missing_source_checkpoints|missing_live)$",
+      "backend": "pure",
+      "race": false,
+      "expected_count": 5
+    },
+    {
+      "label": "v14-reg-v13-trace-pg-core",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceLifecycle|TestRuntimeFactoryTraceReorg|TestRuntimeFactoryTraceFailedCommit)$/^(postgres)$/^(cache_true|cache_false)$/^(start_1|start_3)$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 8
+    },
+    {
+      "label": "v14-reg-v13-trace-pg-crash",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceCrash)$/^(postgres)$/^(cache_true|cache_false)$/^(prepare|business|ack)$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 6
+    },
+    {
+      "label": "v14-reg-v13-trace-pg-fault",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceAcquisitionRetry)$/^(postgres)$/^(cache_true|cache_false)$/^(debug_traceBlockByHash|eth_getTransactionReceipt)$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 4
+    },
+    {
+      "label": "v14-reg-v13-trace-pg-default",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceDefaultReceipts)$/^(postgres)$/^(cache_true|cache_false)$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 2
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-01",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceLifecycle)$/^(pglite)$/^(cache_true)$/^(start_1)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-02",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceLifecycle)$/^(pglite)$/^(cache_true)$/^(start_3)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-03",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceLifecycle)$/^(pglite)$/^(cache_false)$/^(start_1)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-04",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceLifecycle)$/^(pglite)$/^(cache_false)$/^(start_3)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-05",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceReorg)$/^(pglite)$/^(cache_true)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-06",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceReorg)$/^(pglite)$/^(cache_false)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-07",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceFailedCommit)$/^(pglite)$/^(cache_true)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-08",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceFailedCommit)$/^(pglite)$/^(cache_false)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-09",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceAcquisitionRetry)$/^(pglite)$/^(cache_true)$/^(debug_traceBlockByHash)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-10",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceAcquisitionRetry)$/^(pglite)$/^(cache_true)$/^(eth_getTransactionReceipt)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-11",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceAcquisitionRetry)$/^(pglite)$/^(cache_false)$/^(debug_traceBlockByHash)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-12",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceAcquisitionRetry)$/^(pglite)$/^(cache_false)$/^(eth_getTransactionReceipt)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-13",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceDefaultReceipts)$/^(pglite)$/^(cache_true)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-trace-pglite-14",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceDefaultReceipts)$/^(pglite)$/^(cache_false)$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-reg-v13-race-trace-pg-core",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceLifecycle|TestRuntimeFactoryTraceReorg|TestRuntimeFactoryTraceFailedCommit)$/^(postgres)$/^(cache_true|cache_false)$/^(start_1|start_3)$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 8
+    },
+    {
+      "label": "v14-reg-v13-race-trace-pg-crash",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceCrash)$/^(postgres)$/^(cache_true|cache_false)$/^(prepare|business|ack)$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 6
+    },
+    {
+      "label": "v14-reg-v13-race-trace-pg-fault",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceAcquisitionRetry)$/^(postgres)$/^(cache_true|cache_false)$/^(debug_traceBlockByHash|eth_getTransactionReceipt)$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 4
+    },
+    {
+      "label": "v14-reg-v13-race-trace-pg-default",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceDefaultReceipts)$/^(postgres)$/^(cache_true|cache_false)$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 2
+    },
+    {
+      "label": "v14-reg-v13-race-trace-pglite",
+      "package": "./historical",
+      "selection": "^(TestRuntimeFactoryTraceLifecycle)$/^(pglite)$/^(cache_true)$/^(start_1)$",
+      "backend": "pglite",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-tie-postgres",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainFinalizedOrderAndReopen$/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-tie-postgres-race",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainFinalizedOrderAndReopen$/^postgres$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-source-postgres",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainSourceOracle$/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-source-postgres-race",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainSourceOracle$/^postgres$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-starts-postgres",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainDifferentStarts$/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-starts-postgres-race",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainDifferentStarts$/^postgres$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-failure-third-postgres",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainSourceHandlerFailure$/^postgres$/^third$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-failure-third-postgres-race",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainSourceHandlerFailure$/^postgres$/^third$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-failure-fourth-postgres",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainSourceHandlerFailure$/^postgres$/^fourth$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-failure-fourth-postgres-race",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainSourceHandlerFailure$/^postgres$/^fourth$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-tie-pglite",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainFinalizedOrderAndReopen$/^pglite$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-tie-pglite-race",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainFinalizedOrderAndReopen$/^pglite$",
+      "backend": "pglite",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-source-pglite",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainSourceOracle$/^pglite$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-source-pglite-race",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainSourceOracle$/^pglite$",
+      "backend": "pglite",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-starts-pglite",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainDifferentStarts$/^pglite$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-starts-pglite-race",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainDifferentStarts$/^pglite$",
+      "backend": "pglite",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-failure-third-pglite",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainSourceHandlerFailure$/^pglite$/^third$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-failure-third-pglite-race",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainSourceHandlerFailure$/^pglite$/^third$",
+      "backend": "pglite",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-failure-fourth-pglite",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainSourceHandlerFailure$/^pglite$/^fourth$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-failure-fourth-pglite-race",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainSourceHandlerFailure$/^pglite$/^fourth$",
+      "backend": "pglite",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-omni-app-exit-pg",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainApplicationExit$/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 2
+    },
+    {
+      "label": "v14-omni-app-exit-pg-race",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainApplicationExit$/^postgres$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 2
+    },
+    {
+      "label": "v14-omni-guards",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainPreflightBoundary$",
+      "backend": "pure",
+      "race": false,
+      "expected_count": 8
+    },
+    {
+      "label": "v14-omni-guards-race",
+      "package": "./historical",
+      "selection": "^TestRuntimeOmnichainPreflightBoundary$",
+      "backend": "pure",
+      "race": true,
+      "expected_count": 8
+    },
+    {
+      "label": "v14-omni-receipts",
+      "package": "./store",
+      "selection": "^Test(OmnichainAtomicSafeReceiptBinding|LegacyLiveRejectsOmnichainWireFields)$",
+      "backend": "pure",
+      "race": false,
+      "expected_count": 16
+    },
+    {
+      "label": "v14-omni-receipts-race",
+      "package": "./store",
+      "selection": "^Test(OmnichainAtomicSafeReceiptBinding|LegacyLiveRejectsOmnichainWireFields)$",
+      "backend": "pure",
+      "race": true,
+      "expected_count": 16
+    },
+    {
+      "label": "v14-legacy-batch-pg",
+      "package": "./store",
+      "selection": "^TestManagedLiveBatchPostgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 10
+    },
+    {
+      "label": "v14-legacy-batch-pg-race",
+      "package": "./store",
+      "selection": "^TestManagedLiveBatchPostgres$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 10
+    },
+    {
+      "label": "v14-legacy-modes-pg",
+      "package": "./store",
+      "selection": "^TestManagedLive(DatabaseClosure|SourceIdentity|SourceFinalizeRequiresExecution|RuntimeActivation|DomainsDatabase)$/^postgres$",
+      "backend": "postgres",
+      "race": false,
+      "expected_count": 9
+    },
+    {
+      "label": "v14-legacy-modes-pg-race",
+      "package": "./store",
+      "selection": "^TestManagedLive(DatabaseClosure|SourceIdentity|SourceFinalizeRequiresExecution|RuntimeActivation|DomainsDatabase)$/^postgres$",
+      "backend": "postgres",
+      "race": true,
+      "expected_count": 9
+    },
+    {
+      "label": "v14-legacy-closure-pglite",
+      "package": "./store",
+      "selection": "^TestManagedLiveDatabaseClosure$/^pglite$/^global_suffix_replay_finalize_and_empty_reorg$",
+      "backend": "pglite",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-legacy-closure-pglite-race",
+      "package": "./store",
+      "selection": "^TestManagedLiveDatabaseClosure$/^pglite$/^global_suffix_replay_finalize_and_empty_reorg$",
+      "backend": "pglite",
+      "race": true,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-legacy-finite-options",
+      "package": "./store",
+      "selection": "^TestManagedFiniteOptionsAndSchemaSnapshot$",
+      "backend": "pure",
+      "race": false,
+      "expected_count": 1
+    },
+    {
+      "label": "v14-legacy-finite-options-race",
+      "package": "./store",
+      "selection": "^TestManagedFiniteOptionsAndSchemaSnapshot$",
+      "backend": "pure",
+      "race": true,
+      "expected_count": 1
+    }
+  ]
+}

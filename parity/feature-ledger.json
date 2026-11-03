@@ -374,27 +374,40 @@
     },
     {
       "id": "ordering-multichain",
-      "status": "storage_verified_runtime_pending",
+      "status": "verified_subset",
       "implementation_files": [
+        "historical/live_runtime.go",
+        "historical/live_runtime_continuous.go",
         "store/reorg.go"
       ],
       "upstream_sources": [
         "packages/core/src/database/actions.ts"
       ],
-      "evidence": [],
-      "remaining": "Default rollback uses target-chain min operation_id then global suffix. Native multichain scheduler intentionally rejects until implemented."
+      "evidence": [
+        "docs/RUNTIME_SUPPORT.md",
+        "parity/runs/m45-factory-traces-v13-20261103/VALIDATION.md"
+      ],
+      "remaining": "Selected actual RuntimeRunner default multichain history/live, factory logs/transactions/transfers/contract CALL, cache policies and recovery are verified. Complete source combinations, CLI/full/full-race/engine-crash and full runtime/type mappings remain open."
     },
     {
       "id": "ordering-omnichain",
-      "status": "partial",
+      "status": "verified_subset",
       "implementation_files": [
+        "historical/live_runtime_omnichain_history.go",
+        "historical/live_runtime_omnichain_store.go",
+        "store/managed_live_omnichain_receipts.go",
         "store/reorg.go"
       ],
       "upstream_sources": [
-        "packages/core/src/database/actions.ts"
+        "packages/core/src/database/actions.ts",
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/omnichain.ts"
       ],
-      "evidence": [],
-      "remaining": "Checkpoint rollback predicate exists; full global timestamp scheduling and oracle mapping remain."
+      "evidence": [
+        "parity/runs/m45-omnichain-v14-20261103/VALIDATION.md",
+        "docs/RUNTIME_SUPPORT.md"
+      ],
+      "remaining": "Only bounded globally finalized cachetrue ranges, one interval1 block callback per chain, start>=1. Actual source batching, Down/partial CP, ordinary failure/cold retry and selected PG/PGlite business closure are compared with actual pinned runOmnichain. Live/pending/reorg, non-block/factory, cachefalse/setup/start0 and complete mapping remain unsupported."
     },
     {
       "id": "ordering-isolated",
@@ -550,7 +563,7 @@
         "parity/runs/reorg-provenance-go.jsonl",
         "parity/runs/batch-11.json"
       ],
-      "remaining": "Native single-database indexing/sync rewind is atomic; block headers precede handler commits. 6 additional process-exit boundaries and lost-commit-ack fork recovery pass on PG/PGlite. Original full reorg/crash source parity, multichain runtime and separate physical-database coordination pending; server/host power-loss not tested. json-v3 adds persisted operation/row_data and a mode fingerprint. Separate staged source actions now expose MAX/assigned/latest/finalized durability; 14 process-exit tests and 6 guard/ordering leaves pass on PG/PGlite. CrashRecovery leaves metadata unchanged until caller resets latest to safe. No automatic staged runtime/migration or server/host crash claim."
+      "remaining": "Native single-database rewind and selected durable receipt/application-exit controls are verified. For M45 RuntimeRunner, PG abrupt application exit and PG/PGlite graceful reopen are distinct; PGlite abrupt exit and database-engine/server/power-loss crash acceptance remain open."
     },
     {
       "id": "finalize",
@@ -1012,7 +1025,7 @@
         "docs/PROTOCOL_CACHE.md",
         "parity/runs/batch-16.json"
       ],
-      "remaining": "Full original CRUD fixtures, source request hash/block cache metadata, full include/pagination/history planner, automatic traces and multichain remain incomplete. Automatic single-chain staged handoff is now connected and separately verified. Cold re-enable does not backfill logs/receipts for the uncached period; complete missing-interval fetch remains."
+      "remaining": "Selected source-shaped cache/actions/store helpers and actual default multichain RuntimeRunner cache policies are verified by later M32–M45 records. Complete provider/archive behavior, all source combinations and old-database takeover remain open; see docs/RUNTIME_SUPPORT.md."
     },
     {
       "id": "staged-runtime-single-chain",
@@ -1033,7 +1046,7 @@
         "parity/runtime-source-cases.json",
         "docs/STAGED_RUNTIME.md"
       ],
-      "remaining": "Single-chain native per-block history/live scheduling, account/contract traces/transfers and shared ABI decoder verified. Original eight-file fixture oracle runs, but complete original runtime/source range batching/concurrent fetch/profile/metrics and multichain/query/SSE/CLI integration remain. NOTIFY reconnect reads current state and later commits; not durable replay."
+      "remaining": "This historical row describes the original single-chain staged API. Selected later actual multichain RuntimeRunner closures are recorded by runtime-runner-m45. Complete source batching/concurrency across all modes, CLI and full compatibility remain open."
     },
     {
       "id": "runtime-filter-fragments",
@@ -1377,7 +1390,7 @@
         "parity/runs/batch-41.json",
         "docs/MULTICHAIN_ATOMIC_PRIMITIVES.md"
       ],
-      "remaining": "Bounded one-transaction all-chain setup and already-extracted single-chain historical groups only; zero new original source credit. Actual M37 generator/refetch/decode orchestration, outer runner, readiness, views/realtime/cutover and recovery coordination remain unfinished. Silent business-only rollback invalidates row caches but does not atomically rewind independent sync or reset runner cursors. Native PGlite separate directories/SQL rollback intentionally differ from source callback-only transaction behavior. Commit uncertainty requires durable evidence, never blind retry."
+      "remaining": "This row records the M42 primitive subset. Later selected actual RuntimeRunner/default multichain and bounded omnichain closures are described by runtime-runner-m45 and docs/RUNTIME_SUPPORT.md. Complete modes/oracles/types and M45 acceptance remain open; no added original-source credit."
     },
     {
       "id": "finite-historical-runner-m43",
@@ -1401,6 +1414,26 @@
         "parity/runs/finite-historical-m43/rebuild-20261026/recovery-candidates-provenance.json"
       ],
       "remaining": "New reconstruction after original environment loss, not accepted or published. Five matching historical text hashes do not restore full M43 source or raw focused evidence; all integrated code and newly written tests require fresh complete 73-stage/14-collector acceptance and summary. Finite finalized-bound default multichain only; zero new original credit. No readiness/indexes/views/triggers/realtime/cutover, arbitrary ordering, persisted build fingerprint/hot reload or atomic cross-domain rewind claim. Native independent persistent PGlite SQL transactions and private predicted-text normalization intentionally differ from pinned source failure/rollback behavior. Source PGlite forced-eviction pressure must be classified expected original error after natural full backoff, never completion; actual default-cache completion is separate. Unknown commit needs strict durable reconciliation; owner loss fences until close/reopen. No old PostgreSQL data was deleted; lost old runs and recovered log fragments are not current proof."
+    },
+    {
+      "id": "runtime-runner-m45",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "historical/live_runtime_continuous.go",
+        "historical/live_runtime_omnichain_history.go",
+        "indexing/managed_runtime_epoch.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/multichain.ts",
+        "packages/core/src/runtime/omnichain.ts"
+      ],
+      "evidence": [
+        "docs/RUNTIME_SUPPORT.md",
+        "parity/runs/m45-factory-traces-v13-20261103/VALIDATION.md",
+        "parity/runs/m45-omnichain-v14-20261103/VALIDATION.md"
+      ],
+      "remaining": "Only selected default multichain and bounded globally finalized block-only omnichain closures. Other ordering/runtime modes, complete CLI/type/source coverage, full/full-race/engine crashes and M45 acceptance remain open. Formal mapping543/905 unchanged."
     }
   ]
 }
