@@ -649,12 +649,12 @@ func TestRuntimeFactoryTransactionCrash(t *testing.T) {
 
 // Rejection must precede requester creation and storage DDL.
 func TestRuntimeFactoryTransactionCapability(t *testing.T) {
-	for _, kind := range []string{"opt_out", "trace", "transfer", "missing_source_checkpoints", "missing_live"} {
+	for _, kind := range []string{"opt_out", "trace", "missing_source_checkpoints", "missing_live"} {
 		t.Run(kind, func(t *testing.T) {
 			g := factoryTransactionGoldens(t)
 			s, _ := factoryTransactionRPC(t, 3, g)
 			b := factoryTransactionBuild(t, s.p, 1, 1, true, factoryTransactionOracleHandler(g))
-			if kind == "trace" || kind == "transfer" {
+			if kind == "trace" {
 				for _, group := range b.Executable().EventCallbacks {
 					for _, cb := range group {
 						cb["filter"].(map[string]any)["type"] = kind
@@ -666,7 +666,7 @@ func TestRuntimeFactoryTransactionCapability(t *testing.T) {
 				requested = true
 				return nil, fmt.Errorf("unexpected requester creation")
 			}}
-			want := "require opt-in log or transaction"
+			want := "require opt-in log, transaction or transfer"
 			switch kind {
 			case "opt_out":
 				o.FactorySources = false

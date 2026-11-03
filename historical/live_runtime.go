@@ -153,8 +153,8 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 				return nil, fmt.Errorf("runtime callback filter missing")
 			}
 			if factories := filter.GetFilterFactories(f); len(factories) != 0 {
-				if !o.FactorySources || (f["type"] != "log" && f["type"] != "transaction") {
-					return nil, fmt.Errorf("runtime factory sources currently require opt-in log or transaction filters")
+				if !o.FactorySources || (f["type"] != "log" && f["type"] != "transaction" && f["type"] != "transfer") {
+					return nil, fmt.Errorf("runtime factory sources currently require opt-in log, transaction or transfer filters")
 				}
 			}
 			from, e := uintQuantity(filter.FilterFromBlock(f))
