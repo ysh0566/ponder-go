@@ -144,6 +144,17 @@ func (e *RuntimeEpoch) ProcessHistoricalBlocks(ctx context.Context, b store.Mana
 	return e.processBlocks(ctx, b, a, events, true)
 }
 func (e *RuntimeEpoch) processBlocks(ctx context.Context, b store.ManagedLiveBatch, a *store.ManagedLiveAcquisition, partitions [][]Object, history bool) (result store.ManagedLiveBatchResult, err error) {
+	for i, events := range partitions {
+		inputs := make([]store.RuntimeEventInput, len(events))
+		for j, event := range events {
+			kind, _ := event["type"].(string)
+			cp, _ := event["checkpoint"].(string)
+			inputs[j] = store.RuntimeEventInput{Kind: kind, Checkpoint: cp}
+		}
+		if err := e.domains.ValidateRuntimeBlockInputs(b.Blocks[i], inputs); err != nil {
+			return result, err
+		}
+	}
 	completed := map[string]uint64{}
 	for k, v := range e.service.Metrics().Completed {
 		completed[k] = v

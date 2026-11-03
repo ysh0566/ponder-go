@@ -16,12 +16,19 @@ type managedRuntimeServe struct {
 	Before                ManagedLiveControl
 	Heads                 map[uint64]ManagedLiveHead
 	Stages                []managedRuntimeStage
+	LogOnlyScan           map[uint64]managedLogOnlyScan `json:"logOnlyScan,omitempty"`
 	After                 ManagedLiveControl
 }
 
 func (m *ManagedLive) planRuntimeServe(before ManagedLiveControl, e managedRuntimeServe) (ManagedLiveControl, error) {
 	after := before
-	if !m.opts.liveRuntime || e.Version != "runtime-serve-v1" || !liveID(e.ID) || e.ID == before.LastOperation || e.Generation != before.Generation || managedHash(e.Before) != managedHash(before) || !liveDigest(e.SyncHead) || e.Ready == before.Serving {
+	expectedVersion := "runtime-serve-v1"
+	if logOnlyOptions(m.opts) {
+		expectedVersion = "runtime-serve-logonly-v16"
+	} else if len(e.LogOnlyScan) != 0 {
+		return after, ErrManagedLiveBatchConflict
+	}
+	if !m.opts.liveRuntime || e.Version != expectedVersion || !liveID(e.ID) || e.ID == before.LastOperation || e.Generation != before.Generation || managedHash(e.Before) != managedHash(before) || !liveDigest(e.SyncHead) || e.Ready == before.Serving {
 		return after, ErrManagedLiveBatchConflict
 	}
 	if e.Ready {
@@ -31,9 +38,16 @@ func (m *ManagedLive) planRuntimeServe(before ManagedLiveControl, e managedRunti
 		for _, chain := range m.opts.Chains {
 			head, ok := e.Heads[chain.ID]
 			normalized, _, err := normalizeLiveHead(head)
-			if !ok || err != nil || head != normalized || head != before.Cursors[chain.ID] || !ManagedLiveReachedBlock(before, chain.ID, before.HistoryCuts[chain.ID]) {
+			if !ok || err != nil || head != normalized || head != before.Cursors[chain.ID] || (!logOnlyOptions(m.opts) && !ManagedLiveReachedBlock(before, chain.ID, before.HistoryCuts[chain.ID])) {
 				return after, ErrManagedLivePendingActions
 			}
+		}
+		if logOnlyOptions(m.opts) {
+			ends, err := m.validateLogOnlyScan(before, e.LogOnlyScan)
+			if err != nil {
+				return after, err
+			}
+			after.LogOnlyScanHeads = ends
 		}
 		expected := m.owner.activationStages()
 		if len(expected) != len(e.Stages) {
@@ -46,7 +60,7 @@ func (m *ManagedLive) planRuntimeServe(before ManagedLiveControl, e managedRunti
 			}
 		}
 		after.Activations++
-	} else if len(e.Heads) != 0 || len(e.Stages) != 0 || e.After.CatalogHash != before.CatalogHash {
+	} else if len(e.LogOnlyScan) != 0 || len(e.Heads) != 0 || len(e.Stages) != 0 || e.After.CatalogHash != before.CatalogHash {
 		return after, ErrManagedLiveBatchConflict
 	}
 	after.Serving = e.Ready
@@ -72,6 +86,9 @@ func (d *ManagedLiveDomains) PauseRuntime(ctx context.Context, id string) error 
 	return d.setRuntimeServing(ctx, id, false, nil)
 }
 func (d *ManagedLiveDomains) setRuntimeServing(ctx context.Context, id string, ready bool, heads map[uint64]ManagedLiveHead) error {
+	return d.setRuntimeServingWithScan(ctx, id, ready, heads, nil)
+}
+func (d *ManagedLiveDomains) setRuntimeServingWithScan(ctx context.Context, id string, ready bool, heads map[uint64]ManagedLiveHead, lineage map[uint64][]ManagedLiveHead) error {
 	if !d.mu.TryLock() {
 		return ErrManagedLiveBusy
 	}
@@ -93,7 +110,7 @@ func (d *ManagedLiveDomains) setRuntimeServing(ctx context.Context, id string, r
 	for _, op := range b.Operations {
 		if op.ID == id {
 			var e managedRuntimeServe
-			if op.Kind != "serve" || decodeLiveJSON(op.Payload, &e) != nil || e.Ready != ready || managedHash(e.Heads) != managedHash(heads) || e.Generation != m.opened.Generation || op.OwnerToken != m.owner.s.leaseToken {
+			if op.Kind != "serve" || decodeLiveJSON(op.Payload, &e) != nil || e.Ready != ready || managedHash(e.Heads) != managedHash(heads) || e.Generation != m.opened.Generation || op.OwnerToken != m.owner.s.leaseToken || (logOnlyOptions(m.opts) && !logOnlySameLineage(e.LogOnlyScan, lineage)) || (!logOnlyOptions(m.opts) && lineage != nil) {
 				return ErrManagedLiveReceiptConflict
 			}
 			return nil
@@ -101,6 +118,17 @@ func (d *ManagedLiveDomains) setRuntimeServing(ctx context.Context, id string, r
 	}
 	d.servingPublication.Store(false)
 	e := managedRuntimeServe{Version: "runtime-serve-v1", ID: id, SyncHead: l.Head, Generation: b.Control.Generation, Ready: ready, Before: b.Control, Heads: cloneLiveHeads(heads)}
+	if logOnlyOptions(m.opts) {
+		e.Version = "runtime-serve-logonly-v16"
+		if ready {
+			e.LogOnlyScan, err = d.logOnlyScan(ctx, b.Control, lineage)
+			if err != nil {
+				return err
+			}
+		}
+	} else if lineage != nil {
+		return ErrManagedLiveBatchConflict
+	}
 	if !ready {
 		e.Heads = nil
 	}
@@ -136,8 +164,13 @@ func (d *ManagedLiveDomains) setRuntimeServing(ctx context.Context, id string, r
 		for _, chain := range m.opts.Chains {
 			h, ok := heads[chain.ID]
 			_, _, he := normalizeLiveHead(h)
-			if !ok || he != nil || h != before.Control.Cursors[chain.ID] || !ManagedLiveReachedBlock(before.Control, chain.ID, before.Control.HistoryCuts[chain.ID]) {
+			if !ok || he != nil || h != before.Control.Cursors[chain.ID] || (!logOnlyOptions(m.opts) && !ManagedLiveReachedBlock(before.Control, chain.ID, before.Control.HistoryCuts[chain.ID])) {
 				return ErrManagedLivePendingActions
+			}
+		}
+		if logOnlyOptions(m.opts) {
+			if _, err = m.validateLogOnlyScan(before.Control, e.LogOnlyScan); err != nil {
+				return err
 			}
 		}
 		for _, stage := range m.owner.activationStages() {

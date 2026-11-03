@@ -29,6 +29,9 @@ type ManagedLiveBlock struct {
 	Head             ManagedLiveHead `json:"head"`
 	InputDigest      string          `json:"inputDigest"`
 	SourceCheckpoint string          `json:"sourceCheckpoint,omitempty"`
+	LogEventCount    uint64          `json:"omnichainEventCount,omitempty"`
+	LogFirstEvent    string          `json:"omnichainFirstEvent,omitempty"`
+	LogLastEvent     string          `json:"omnichainLastEvent,omitempty"`
 }
 
 // ManagedLiveBatch follows actual execution order, never checkpoint sort order.
@@ -147,7 +150,7 @@ func cloneLiveHeads(in map[uint64]ManagedLiveHead) map[uint64]ManagedLiveHead {
 func normalizeLiveBatch(opts ManagedLiveOptions, in ManagedLiveBatch) (ManagedLiveBatch, error) {
 	limit := managedLiveMaxBatchBlocks
 	if opts.runtimeOmnichain {
-		limit = 12000 + 6*len(opts.Chains)
+		limit = ManagedLiveOmnichainBlockLimit(len(opts.Chains))
 	}
 	if !liveID(in.ID) || !liveID(in.ExpectedLastOperation) || in.ID == in.ExpectedLastOperation || in.Generation == 0 || in.Generation >= math.MaxInt64 || in.ExpectedTail >= math.MaxInt64-1 || (len(in.Blocks) == 0 && !(opts.liveRuntime && len(in.Baselines) > 0)) || len(in.Blocks) > limit {
 		return in, ErrManagedLiveBatchConflict
@@ -176,8 +179,11 @@ func normalizeLiveBatch(opts ManagedLiveOptions, in ManagedLiveBatch) (ManagedLi
 	for i, block := range out.Blocks {
 		head, cp, err := normalizeLiveHead(block.Head)
 		block.InputDigest = strings.ToLower(block.InputDigest)
-		if err != nil || !chains[cp.ChainID] || !liveDigest(block.InputDigest) || (block.SourceCheckpoint != "" && (!opts.runtimeOmnichain || !livePositionForHead(block.SourceCheckpoint, head, true) || liveDown(block.SourceCheckpoint))) {
+		if err != nil || !chains[cp.ChainID] || !liveDigest(block.InputDigest) || (block.SourceCheckpoint != "" && (!opts.runtimeOmnichain || !positionForOptions(block.SourceCheckpoint, head, opts) || liveDown(block.SourceCheckpoint))) {
 			return out, ErrManagedLiveBatchConflict
+		}
+		if err := validateLogOnlyBlock(opts, block); err != nil {
+			return out, err
 		}
 		block.Head = head
 		out.Blocks[i] = block
@@ -231,6 +237,9 @@ func (m *ManagedLive) requireAcquisition(batch ManagedLiveBatch, acquired *Manag
 }
 
 func validateLiveControl(c ManagedLiveControl) error {
+	if err := validateLogOnlyControl(c); err != nil {
+		return err
+	}
 	if err := validateLivePositions(c); err != nil {
 		return err
 	}
@@ -316,13 +325,16 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 				watermark = head.Checkpoint
 			}
 		}
+		if logOnlyOptions(opts) {
+			lastOmnichain = c.LogOnlyLastEvent
+		}
 		for id, head := range cursors {
 			cp, err := checkpoint.Decode(head.Checkpoint)
 			if err != nil {
 				return nil, nil, c, err
 			}
 			// A bootstrap cursor authenticates a parent, not an executed event.
-			if cp.BlockNumber >= opts.runtimeStarts[id] && !liveDown(positions[id]) && head.Checkpoint > lastOmnichain {
+			if !logOnlyOptions(opts) && cp.BlockNumber >= opts.runtimeStarts[id] && !liveDown(positions[id]) && head.Checkpoint > lastOmnichain {
 				lastOmnichain = head.Checkpoint
 			}
 		}
@@ -343,14 +355,26 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 			return nil, nil, c, fmt.Errorf("managed block must extend its exact acquired cursor without gaps")
 		}
 		if opts.runtimeOmnichain {
-			if block.Head.Checkpoint > watermark || block.Head.Checkpoint <= lastOmnichain {
-				return nil, nil, c, fmt.Errorf("omnichain block must advance global order below finalized watermark")
+			if block.Head.Checkpoint > watermark {
+				return nil, nil, c, fmt.Errorf("omnichain block exceeds finalized watermark")
 			}
-			lastOmnichain = block.Head.Checkpoint
+			if logOnlyOptions(opts) {
+				if block.LogEventCount > 0 {
+					if block.LogFirstEvent <= lastOmnichain {
+						return nil, nil, c, fmt.Errorf("log-only events do not advance global source order")
+					}
+					lastOmnichain = block.LogLastEvent
+				}
+			} else {
+				if block.Head.Checkpoint <= lastOmnichain {
+					return nil, nil, c, fmt.Errorf("omnichain block must advance global order below finalized watermark")
+				}
+				lastOmnichain = block.Head.Checkpoint
+			}
 		}
 		position := block.Head.Checkpoint
 		if block.SourceCheckpoint != "" {
-			if !opts.runtimeOmnichain || !livePositionForHead(block.SourceCheckpoint, block.Head, true) || liveDown(block.SourceCheckpoint) {
+			if !opts.runtimeOmnichain || !positionForOptions(block.SourceCheckpoint, block.Head, opts) || liveDown(block.SourceCheckpoint) {
 				return nil, nil, c, ErrManagedLiveBatchConflict
 			}
 			position = block.SourceCheckpoint
@@ -365,6 +389,9 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 		cursors[cp.ChainID] = block.Head
 	}
 	next := c
+	if logOnlyOptions(opts) {
+		next.LogOnlyLastEvent = lastOmnichain
+	}
 	next.Next += uint64(len(segments))
 	next.Tail = next.Next - 1
 	next.Batches++
@@ -464,3 +491,7 @@ func exactLiveRetry(batch ManagedLiveBatch, requestHash, owner string, op manage
 	}
 	return evidence, nil
 }
+
+// ManagedLiveOmnichainBlockLimit is the physical receipt budget, independent
+// of source SQL QuerySize. v16 preflights total configured work against it.
+func ManagedLiveOmnichainBlockLimit(chainCount int) int { return 12000 + 6*chainCount }

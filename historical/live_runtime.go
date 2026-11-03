@@ -53,6 +53,7 @@ type RuntimeResult struct {
 type RuntimeRunner struct {
 	domains           *store.ManagedLiveDomains
 	setup             bool
+	logOnly           bool
 	build             *config.ExecutableSourceIndexingBuild
 	session           *filter.Session
 	release           func()
@@ -121,6 +122,9 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		return nil, fmt.Errorf("omnichain currently requires bounded finalized non-factory runtime")
 	}
 	if b.Ordering == "omnichain" {
+		if err := validateOmnichainCallbackModes(b.EventCallbacks); err != nil {
+			return nil, err
+		}
 		if o.Historical.QuerySize < 0 || o.Historical.QuerySize > 12000 {
 			return nil, fmt.Errorf("omnichain query size must be between1 and12000, or0 for the source default")
 		}
@@ -206,6 +210,16 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		}
 	}
 	r.build = b
+	r.logOnly = b.Ordering == "omnichain"
+	if r.logOnly {
+		for _, group := range b.EventCallbacks {
+			for _, cb := range group {
+				if cb["filter"].(map[string]any)["type"] == "block" {
+					r.logOnly = false
+				}
+			}
+		}
+	}
 	plan, err := managedPlanWithUnbounded(b, o.Live != nil)
 	if err != nil {
 		return nil, err
@@ -298,7 +312,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	for _, chain := range r.build.Chains {
 		cachePolicy[runtimeChainID(chain)] = runtimeRPCCacheEnabled(chain)
 	}
-	r.domains, err = opener(ctx, storage, store.ManagedLiveRuntimeOptions{FactorySources: o.FactorySources, SourceCheckpoints: o.SourceCheckpoints, Setup: r.setup, CacheRPCRequests: cachePolicy, ManagedLiveOptions: store.ManagedLiveOptions{ManagedFiniteOptions: plan, OpenID: o.OpenID, FinalizedHeads: r.finalized}, StartBlocks: r.starts, Continuous: o.Live != nil, ObserveDomain: runtimeDomainObserver(r)})
+	r.domains, err = opener(ctx, storage, store.ManagedLiveRuntimeOptions{LogOnlyFilters: r.logOnlyFilters(), FactorySources: o.FactorySources, SourceCheckpoints: o.SourceCheckpoints, Setup: r.setup, CacheRPCRequests: cachePolicy, ManagedLiveOptions: store.ManagedLiveOptions{ManagedFiniteOptions: plan, OpenID: o.OpenID, FinalizedHeads: r.finalized}, StartBlocks: r.starts, Continuous: o.Live != nil, ObserveDomain: runtimeDomainObserver(r)})
 	if err != nil {
 		return nil, err
 	}
@@ -493,7 +507,7 @@ func (r *RuntimeRunner) acquireFinalizedLineage(ctx context.Context, requester r
 		return nil, fmt.Errorf("private safe cursor exceeds acquired finality")
 	}
 	for {
-		if cp.BlockNumber <= r.ends[id] {
+		if r.logOnly || cp.BlockNumber <= r.ends[id] {
 			out[cp.BlockNumber] = head
 		}
 		if cp.BlockNumber == target.BlockNumber {

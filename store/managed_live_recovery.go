@@ -14,6 +14,9 @@ const managedLiveRecoveryVersion = "managed-live-recovery-v3"
 const managedLiveRecoveryReceiptVersion = "managed-live-recovery-receipt-v2"
 
 func (m *ManagedLive) version() string {
+	if logOnlyOptions(m.opts) {
+		return managedLiveOmnichainLogOnlyVersion
+	}
 	if m.opts.runtimeOmnichain {
 		return managedLiveOmnichainVersion
 	}
@@ -159,7 +162,7 @@ func planLiveRecovery(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 		// Latest is the authenticated public projection, possibly stale across a
 		// fork/global rewind. Neither timestamp nor height orders it against
 		// finality; complete durable replay already proved both exact identities.
-		if !ok || state.Name != chain.Name || state.Finalized != liveFinalCheckpoint(c, baseline, chain.ID) || state.Safe != liveSafeCheckpoint(c, baseline, chain.ID) || state.Cursor != liveCursorCheckpoint(c, chain.ID) || le != nil || latest.ChainID != chain.ID || latest == checkpoint.Max || (latest != checkpoint.Block(latest.BlockTimestamp, latest.ChainID, latest.BlockNumber, true) && !(opts.runtimeInitial && latest == checkpoint.Block(latest.BlockTimestamp, latest.ChainID, latest.BlockNumber, false)) && !(opts.runtimeOmnichain && livePositionForHead(state.Latest, c.Cursors[chain.ID], true))) || prior.ChainID != chain.ID || err != nil || pe != nil || head != opts.FinalizedHeads[chain.ID] || fresh.ChainID != chain.ID {
+		if !ok || state.Name != chain.Name || state.Finalized != liveFinalCheckpoint(c, baseline, chain.ID) || state.Safe != liveSafeCheckpoint(c, baseline, chain.ID) || state.Cursor != liveCursorCheckpoint(c, chain.ID) || le != nil || latest.ChainID != chain.ID || latest == checkpoint.Max || (latest != checkpoint.Block(latest.BlockTimestamp, latest.ChainID, latest.BlockNumber, true) && !(opts.runtimeInitial && latest == checkpoint.Block(latest.BlockTimestamp, latest.ChainID, latest.BlockNumber, false)) && !(opts.runtimeOmnichain && positionForOptions(state.Latest, c.Cursors[chain.ID], opts))) || prior.ChainID != chain.ID || err != nil || pe != nil || head != opts.FinalizedHeads[chain.ID] || fresh.ChainID != chain.ID {
 			return e, ErrManagedLiveBatchConflict
 		}
 		if fresh.BlockNumber < prior.BlockNumber || fresh.BlockTimestamp < prior.BlockTimestamp {

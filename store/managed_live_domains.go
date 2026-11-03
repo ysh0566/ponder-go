@@ -86,11 +86,18 @@ func liveDomainSpec(o IndependentStorageOptions, opts ManagedLiveOptions) string
 			Starts map[uint64]uint64
 		}{base, opts.runtimeStarts})
 		if opts.runtimeInitial {
-			return managedHash(struct {
+			identity := managedHash(struct {
 				Runtime  string
 				RPCCache map[uint64]bool
 				Setup    bool
 			}{runtime, opts.runtimeCachePolicy, opts.runtimeSetup})
+			if logOnlyOptions(opts) {
+				return managedHash(struct {
+					Runtime string
+					Filters any
+				}{identity, opts.runtimeLogFilters})
+			}
+			return identity
 		}
 		if opts.runtimeCachePolicy != nil {
 			return managedHash(struct {
