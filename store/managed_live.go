@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 
 	"ponder.local/ponder-go/checkpoint"
+	"ponder.local/ponder-go/filter"
 	"ponder.local/ponder-go/schema"
 )
 
@@ -48,6 +49,7 @@ type ManagedLiveOptions struct {
 	runtimeInitial     bool
 	runtimeFactories   bool
 	runtimeOmnichain   bool
+	runtimeLogFilters  map[uint64][]filter.Object
 }
 
 // ManagedLiveControl binds numeric ordinals, durable finality and safe headers.
@@ -79,6 +81,8 @@ type ManagedLiveControl struct {
 	LogicalCursors      map[uint64]string          `json:"logicalCursors,omitempty"`
 	LogicalSafe         map[uint64]string          `json:"logicalSafe,omitempty"`
 	LogicalFinality     map[uint64]string          `json:"logicalFinality,omitempty"`
+	LogOnlyScanHeads    map[uint64]ManagedLiveHead `json:"logOnlyScanHeads,omitempty"`
+	LogOnlyLastEvent    string                     `json:"logOnlyLastEvent,omitempty"`
 }
 
 // ManagedLive reuses the finite owner's actual locks, lease lane and retained
@@ -206,6 +210,11 @@ func (m *ManagedLive) readControl(ctx context.Context, q Querier) (ManagedLiveCo
 		return ManagedLiveControl{}, fmt.Errorf("managed live control is missing")
 	}
 	var c ManagedLiveControl
+	if !logOnlyOptions(m.opts) {
+		if err := rejectLogOnlyJSON([]byte(fmt.Sprint(r.Rows[0]["payload"]))); err != nil {
+			return c, err
+		}
+	}
 	decoder := json.NewDecoder(strings.NewReader(fmt.Sprint(r.Rows[0]["payload"])))
 	decoder.DisallowUnknownFields()
 	if err = decoder.Decode(&c); err != nil {

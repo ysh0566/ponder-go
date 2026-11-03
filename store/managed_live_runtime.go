@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"ponder.local/ponder-go/checkpoint"
+	"ponder.local/ponder-go/filter"
 	"ponder.local/ponder-go/schema"
 )
 
@@ -15,7 +16,7 @@ const managedLiveFactoryVersion = "managed-live-factory-v10"
 const managedLiveSetupVersion = "managed-live-setup-v8"
 
 func isLiveRuntimeVersion(v string) bool {
-	return v == managedLiveRuntimeVersion || v == managedLiveOmnichainVersion || isContinuousRuntimeVersion(v)
+	return v == managedLiveRuntimeVersion || v == managedLiveOmnichainVersion || v == managedLiveOmnichainLogOnlyVersion || isContinuousRuntimeVersion(v)
 }
 
 func isContinuousRuntimeVersion(v string) bool {
@@ -30,6 +31,7 @@ type ManagedLiveRuntimeOptions struct {
 	Continuous        bool
 	Setup             bool
 	SourceCheckpoints bool
+	LogOnlyFilters    map[uint64][]filter.Object
 	FactorySources    bool
 	ObserveDomain     func(context.Context, ManagedLiveDomainStage) error
 }
@@ -115,6 +117,12 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 		opts.runtimeStarts[chain.ID] = start
 	}
 
+	if in.LogOnlyFilters != nil {
+		opts.runtimeLogFilters, err = normalizeLogOnlyFilters(in.LogOnlyFilters, opts)
+		if err != nil {
+			return nil, err
+		}
+	}
 	if !pg && (o.BusinessDirectory == "" || o.SyncDirectory == "" || o.BusinessDirectory == "memory://" || o.SyncDirectory == "memory://") {
 		return nil, fmt.Errorf("managed runtime requires persistent directories")
 	}

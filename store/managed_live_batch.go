@@ -126,6 +126,11 @@ func (m *ManagedLive) readDurableState(ctx context.Context, q Querier, prior boo
 	if err != nil {
 		return d, "", err
 	}
+	if !logOnlyOptions(m.opts) {
+		if err := validateLegacyLogOnlyExtensions(d.Operations); err != nil {
+			return d, "", err
+		}
+	}
 	if m.opts.runtimeOmnichain {
 		pending, _ := ctx.Value(omnichainPendingBatchKey{}).(string)
 		if err := validateOmnichainBatchSafes(d, pending); err != nil {

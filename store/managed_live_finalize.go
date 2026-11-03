@@ -76,7 +76,7 @@ func normalizeLiveFinalize(opts ManagedLiveOptions, in ManagedLiveFinalize) (Man
 	out.Finalized = map[uint64]ManagedLiveHead{}
 	for id, head := range in.Finalized {
 		normalized, cp, err := normalizeLiveHead(head)
-		if err != nil || !chains[id] || cp.ChainID != id || (opts.runtimeOmnichain && (!livePositionForHead(in.SourceCheckpoints[id], normalized, true) || liveDown(in.SourceCheckpoints[id]))) {
+		if err != nil || !chains[id] || cp.ChainID != id || (opts.runtimeOmnichain && (!positionForOptions(in.SourceCheckpoints[id], normalized, opts) || liveDown(in.SourceCheckpoints[id]))) {
 			return out, errors.Join(ErrManagedLiveBatchConflict, err)
 		}
 		out.Finalized[id] = normalized
@@ -273,7 +273,7 @@ func planLiveFinalize(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 		// Only validated batch segments prove execution; a bootstrap header is
 		// insufficient. Keep this evidence across global undo, where a legitimate
 		// confirmed target can stand above a private Down replay cursor.
-		if opts.runtimeInitial && !livePositionReached(logicalFinal[id], head.Checkpoint, opts.runtimeOmnichain) && (len(execution) != 1 || execution[0][liveProofKey(head)] != head) {
+		if opts.runtimeInitial && !positionReachedForOptions(logicalFinal[id], head.Checkpoint, opts) && (len(execution) != 1 || execution[0][liveProofKey(head)] != head) {
 			return plan, ErrManagedLiveBatchConflict
 		}
 		confirmed[id] = head
@@ -292,7 +292,7 @@ func planLiveFinalize(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 	for _, segment := range active {
 		_, cp, _ := normalizeLiveHead(segment.Block.Head)
 		_, finalized, _ := normalizeLiveHead(confirmed[cp.ChainID])
-		if cp.BlockNumber > finalized.BlockNumber || (opts.runtimeInitial && !livePositionReached(logicalFinal[cp.ChainID], segment.Block.Head.Checkpoint, opts.runtimeOmnichain)) {
+		if cp.BlockNumber > finalized.BlockNumber || (opts.runtimeInitial && !positionReachedForOptions(logicalFinal[cp.ChainID], segment.Block.Head.Checkpoint, opts)) {
 			break
 		}
 		count++ // Including no-DML blocks, in actual global execution order.
