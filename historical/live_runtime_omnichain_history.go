@@ -88,8 +88,8 @@ func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *inde
 		previous := control.Cursors[g.ChainID]
 		for n := next; n <= end.BlockNumber; n++ {
 			input := events[n]
-			if len(input) != 1 {
-				return nil, nil, fmt.Errorf("omnichain finalized block closure requires one interval1 block event per block")
+			if len(input) == 0 {
+				return nil, nil, fmt.Errorf("omnichain block partition lacks its closing callback")
 			}
 			raw, err := rpc.NewActions(epoch.Requester(i)).GetSourceBlockByNumber(ctx, source.Hex(n), true)
 			if err != nil {
@@ -103,6 +103,9 @@ func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *inde
 			initial := n == prior.BlockNumber && head == previous
 			if head != proofs[g.ChainID][n] || (!initial && head.ParentHash != previous.Hash) {
 				return nil, nil, fmt.Errorf("omnichain block differs from acquired finalized lineage")
+			}
+			if err := validateOmnichainBlockPartition(input, head); err != nil {
+				return nil, nil, err
 			}
 			blocks = append(blocks, &runtimeAcquiredBlock{index: i, id: g.ChainID, head: head, raw: raw, events: input, history: true})
 			previous = head
@@ -126,7 +129,11 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 	for _, c := range chains {
 		crash = append(crash, source.SourceCrashRecoveryCheckpoint{ChainID: c.Local.ChainID, Checkpoint: store.ManagedLiveCursorCheckpoint(control, c.Local.ChainID)})
 	}
-	options := source.SourceHistoricalCoordinatorOptions{Chains: chains, BuildChains: chains, CrashRecovery: crash, QuerySize: 12000}
+	querySize := r.options.Historical.QuerySize
+	if querySize == 0 {
+		querySize = 12000
+	}
+	options := source.SourceHistoricalCoordinatorOptions{Chains: chains, BuildChains: chains, CrashRecovery: crash, QuerySize: querySize}
 	for output, e := range source.HistoricalSourceOmnichain(epoch.Context(), options) {
 		if e != nil {
 			return out, e

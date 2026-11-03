@@ -33,9 +33,11 @@ type runtimeRunnerCallbackKey struct{}
 type RuntimeOptions struct {
 	// SourceCheckpoints opts into source initial positions for multichain.
 	// The finalized omnichain format enables these positions automatically.
-	SourceCheckpoints            bool
-	FactorySources               bool
-	Live                         *RuntimeLiveOptions
+	SourceCheckpoints bool
+	FactorySources    bool
+	Live              *RuntimeLiveOptions
+	// Historical.QuerySize is the bounded omnichain SQL target (1..12000);
+	// zero uses12000. Other historical scheduling options remain unsupported.
 	Historical                   Options
 	BuildID, OpenID, ViewsSchema string
 	// Requesters must construct fresh transport owners for every fetch epoch.
@@ -82,7 +84,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	if o.Historical.Build == nil || o.BuildID == "" || o.OpenID == "" || o.Requesters == nil {
 		return nil, fmt.Errorf("compiled build, BuildID, OpenID and fresh requester factory required")
 	}
-	if o.Historical.QuerySize != 0 || o.Historical.MaxQueryParameters != 0 || o.Historical.Clock != nil || o.Historical.RetryWait != nil || o.Historical.OnCommitted != nil {
+	if o.Historical.MaxQueryParameters != 0 || o.Historical.Clock != nil || o.Historical.RetryWait != nil || o.Historical.OnCommitted != nil {
 		return nil, fmt.Errorf("runtime-v5 does not support historical scheduling, query or observer options")
 	}
 	if len(o.Historical.Owned.Requesters) != 0 || !reflect.ValueOf(o.Historical.Owned.Cache).IsZero() {
@@ -119,7 +121,12 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		return nil, fmt.Errorf("omnichain currently requires bounded finalized non-factory runtime")
 	}
 	if b.Ordering == "omnichain" {
+		if o.Historical.QuerySize < 0 || o.Historical.QuerySize > 12000 {
+			return nil, fmt.Errorf("omnichain query size must be between1 and12000, or0 for the source default")
+		}
 		o.SourceCheckpoints = true
+	} else if o.Historical.QuerySize != 0 {
+		return nil, fmt.Errorf("runtime-v5 does not support historical scheduling, query or observer options")
 	}
 	if o.Historical.Owned.Storage.Ordering != "" && o.Historical.Owned.Storage.Ordering != schema.Ordering(b.Ordering.(string)) {
 		return nil, fmt.Errorf("unsupported runtime ordering")
@@ -151,8 +158,10 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 			}
 			return nil, fmt.Errorf("runtime chain requires callbacks")
 		}
-		if b.Ordering == "omnichain" && len(b.EventCallbacks[i]) != 1 {
-			return nil, fmt.Errorf("omnichain finalized closure requires one interval1 block callback per chain")
+		if b.Ordering == "omnichain" {
+			if err := validateOmnichainCallbacks(b.EventCallbacks[i]); err != nil {
+				return nil, err
+			}
 		}
 		first := uint64(^uint64(0))
 		for _, cb := range b.EventCallbacks[i] {
@@ -167,13 +176,6 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 				contractCall := f["type"] == "trace" && cb["type"] == "contract" && f["callType"] == "CALL"
 				if !o.FactorySources || (f["type"] != "log" && f["type"] != "transaction" && f["type"] != "transfer" && !contractCall) {
 					return nil, fmt.Errorf("runtime factory sources currently require opt-in log, transaction or transfer filters, or contract CALL trace filters")
-				}
-			}
-			if b.Ordering == "omnichain" {
-				interval, ie := uintQuantity(f["interval"])
-				offset, oe := uintQuantity(f["offset"])
-				if cb["type"] != "block" || f["type"] != "block" || ie != nil || oe != nil || interval != 1 || offset != 0 {
-					return nil, fmt.Errorf("omnichain finalized closure requires one interval1 block callback per chain")
 				}
 			}
 			from, e := uintQuantity(filter.FilterFromBlock(f))
