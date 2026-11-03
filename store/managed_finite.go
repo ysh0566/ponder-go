@@ -181,7 +181,8 @@ func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o Inde
 	// not change later activation DDL while its persisted identity stays fixed.
 	model := cloneManagedSchema(o.Schema)
 	o.Schema = model
-	st, err := describeStore(s.businessBackend, model, o.BusinessNamespace, schema.Multichain, true)
+	ordering := managedStorageOrdering(opts.live)
+	st, err := describeStore(s.businessBackend, model, o.BusinessNamespace, ordering, true)
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +205,7 @@ func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o Inde
 		Schema                             schema.Schema
 		Chains                             []MigrationChain
 		Ends                               map[uint64]uint64
-	}{opts.BuildID, opts.PlanID, opts.ViewsSchema, string(schema.Multichain), o.SyncNamespace, o.Schema, opts.Chains, opts.EndBlocks})
+	}{opts.BuildID, opts.PlanID, opts.ViewsSchema, string(ordering), o.SyncNamespace, o.Schema, opts.Chains, opts.EndBlocks})
 	if encodeErr != nil {
 		return nil, fmt.Errorf("encode managed identity: %w", encodeErr)
 	}

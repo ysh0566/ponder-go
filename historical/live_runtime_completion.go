@@ -373,6 +373,11 @@ func (r *RuntimeRunner) Run(ctx context.Context) (result RuntimeResult, runErr e
 			return result, e
 		}
 	}
+	if r.build.Ordering == "omnichain" {
+		owned := epoch
+		epoch = nil
+		return r.runOmnichainFinalized(run, owned, control, proofs, result)
+	}
 	activated := false
 	for {
 		if err = run.Err(); err != nil {

@@ -26,8 +26,9 @@ var (
 // no events or DML. InputDigest is the SHA256 of the caller's extracted inputs;
 // BuildID remains the identity of the handler implementation.
 type ManagedLiveBlock struct {
-	Head        ManagedLiveHead `json:"head"`
-	InputDigest string          `json:"inputDigest"`
+	Head             ManagedLiveHead `json:"head"`
+	InputDigest      string          `json:"inputDigest"`
+	SourceCheckpoint string          `json:"sourceCheckpoint,omitempty"`
 }
 
 // ManagedLiveBatch follows actual execution order, never checkpoint sort order.
@@ -144,7 +145,11 @@ func cloneLiveHeads(in map[uint64]ManagedLiveHead) map[uint64]ManagedLiveHead {
 }
 
 func normalizeLiveBatch(opts ManagedLiveOptions, in ManagedLiveBatch) (ManagedLiveBatch, error) {
-	if !liveID(in.ID) || !liveID(in.ExpectedLastOperation) || in.ID == in.ExpectedLastOperation || in.Generation == 0 || in.Generation >= math.MaxInt64 || in.ExpectedTail >= math.MaxInt64-1 || (len(in.Blocks) == 0 && !(opts.liveRuntime && len(in.Baselines) > 0)) || len(in.Blocks) > managedLiveMaxBatchBlocks {
+	limit := managedLiveMaxBatchBlocks
+	if opts.runtimeOmnichain {
+		limit = 12000 + 6*len(opts.Chains)
+	}
+	if !liveID(in.ID) || !liveID(in.ExpectedLastOperation) || in.ID == in.ExpectedLastOperation || in.Generation == 0 || in.Generation >= math.MaxInt64 || in.ExpectedTail >= math.MaxInt64-1 || (len(in.Blocks) == 0 && !(opts.liveRuntime && len(in.Baselines) > 0)) || len(in.Blocks) > limit {
 		return in, ErrManagedLiveBatchConflict
 	}
 	chains := map[uint64]bool{}
@@ -171,7 +176,7 @@ func normalizeLiveBatch(opts ManagedLiveOptions, in ManagedLiveBatch) (ManagedLi
 	for i, block := range out.Blocks {
 		head, cp, err := normalizeLiveHead(block.Head)
 		block.InputDigest = strings.ToLower(block.InputDigest)
-		if err != nil || !chains[cp.ChainID] || !liveDigest(block.InputDigest) {
+		if err != nil || !chains[cp.ChainID] || !liveDigest(block.InputDigest) || (block.SourceCheckpoint != "" && (!opts.runtimeOmnichain || !livePositionForHead(block.SourceCheckpoint, head, true) || liveDown(block.SourceCheckpoint))) {
 			return out, ErrManagedLiveBatchConflict
 		}
 		block.Head = head
@@ -303,6 +308,25 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 	before := cloneLiveHeads(cursors)
 	segments := make([]ManagedLiveSegment, 0, len(batch.Blocks))
 	predecessor := c.Tail
+	lastOmnichain := ""
+	watermark := ""
+	if opts.runtimeOmnichain {
+		for _, head := range opts.FinalizedHeads {
+			if watermark == "" || head.Checkpoint < watermark {
+				watermark = head.Checkpoint
+			}
+		}
+		for id, head := range cursors {
+			cp, err := checkpoint.Decode(head.Checkpoint)
+			if err != nil {
+				return nil, nil, c, err
+			}
+			// A bootstrap cursor authenticates a parent, not an executed event.
+			if cp.BlockNumber >= opts.runtimeStarts[id] && !liveDown(positions[id]) && head.Checkpoint > lastOmnichain {
+				lastOmnichain = head.Checkpoint
+			}
+		}
+	}
 	for i, block := range batch.Blocks {
 		_, cp, err := normalizeLiveHead(block.Head)
 		prior, ok := cursors[cp.ChainID]
@@ -318,11 +342,24 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 		if err != nil || pe != nil || !ok || !extends || cp.BlockTimestamp < previous.BlockTimestamp || cp.BlockNumber > opts.EndBlocks[cp.ChainID] {
 			return nil, nil, c, fmt.Errorf("managed block must extend its exact acquired cursor without gaps")
 		}
+		if opts.runtimeOmnichain {
+			if block.Head.Checkpoint > watermark || block.Head.Checkpoint <= lastOmnichain {
+				return nil, nil, c, fmt.Errorf("omnichain block must advance global order below finalized watermark")
+			}
+			lastOmnichain = block.Head.Checkpoint
+		}
+		position := block.Head.Checkpoint
+		if block.SourceCheckpoint != "" {
+			if !opts.runtimeOmnichain || !livePositionForHead(block.SourceCheckpoint, block.Head, true) || liveDown(block.SourceCheckpoint) {
+				return nil, nil, c, ErrManagedLiveBatchConflict
+			}
+			position = block.SourceCheckpoint
+		}
 		ordinal := c.Next + uint64(i)
 		segments = append(segments, ManagedLiveSegment{Ordinal: ordinal, Predecessor: predecessor, OperationID: batch.ID, Generation: c.Generation, Block: block, BeforeCursor: prior})
 		if opts.runtimeInitial {
 			segments[len(segments)-1].BeforeCheckpoint = beforePosition
-			positions[cp.ChainID] = block.Head.Checkpoint
+			positions[cp.ChainID] = position
 		}
 		predecessor = ordinal
 		cursors[cp.ChainID] = block.Head

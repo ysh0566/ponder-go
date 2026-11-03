@@ -18,17 +18,22 @@ func cloneLiveCheckpoints(in map[uint64]string) map[uint64]string {
 	}
 	return out
 }
-func liveSourceVersion(c ManagedLiveControl) bool { return c.Version == managedLiveSourceVersion || c.Version == managedLiveFactoryVersion }
-func liveCanonicalPosition(raw string) (checkpoint.Checkpoint, bool) {
+func liveSourceVersion(c ManagedLiveControl) bool {
+	return c.Version == managedLiveSourceVersion || c.Version == managedLiveFactoryVersion || c.Version == managedLiveOmnichainVersion
+}
+func liveCanonicalPosition(raw string, omni ...bool) (checkpoint.Checkpoint, bool) {
 	cp, e := checkpoint.Decode(raw)
-	return cp, e == nil && cp != checkpoint.Max && (cp == checkpoint.Block(cp.BlockTimestamp, cp.ChainID, cp.BlockNumber, false) || cp == checkpoint.Block(cp.BlockTimestamp, cp.ChainID, cp.BlockNumber, true))
+	event := checkpoint.Block(cp.BlockTimestamp, cp.ChainID, cp.BlockNumber, true)
+	event.EventType = checkpoint.Blocks
+	event.EventIndex = 0
+	return cp, e == nil && cp != checkpoint.Max && (cp == checkpoint.Block(cp.BlockTimestamp, cp.ChainID, cp.BlockNumber, false) || cp == checkpoint.Block(cp.BlockTimestamp, cp.ChainID, cp.BlockNumber, true) || (len(omni) == 1 && omni[0] && cp == event))
 }
 func liveDown(raw string) bool {
 	cp, ok := liveCanonicalPosition(raw)
 	return ok && cp == checkpoint.Block(cp.BlockTimestamp, cp.ChainID, cp.BlockNumber, false)
 }
-func livePositionForHead(raw string, head ManagedLiveHead) bool {
-	cp, ok := liveCanonicalPosition(raw)
+func livePositionForHead(raw string, head ManagedLiveHead, omni ...bool) bool {
+	cp, ok := liveCanonicalPosition(raw, omni...)
 	_, h, e := normalizeLiveHead(head)
 	return ok && e == nil && cp.BlockTimestamp == h.BlockTimestamp && cp.ChainID == h.ChainID && cp.BlockNumber == h.BlockNumber
 }
@@ -52,9 +57,9 @@ func liveFinalCheckpoint(c ManagedLiveControl, base map[uint64]ManagedLiveHead, 
 }
 
 // Positions order execution boundaries by height and edge, never fork timestamp.
-func livePositionReached(actual, target string) bool {
-	a, ok := liveCanonicalPosition(actual)
-	b, bok := liveCanonicalPosition(target)
+func livePositionReached(actual, target string, omni ...bool) bool {
+	a, ok := liveCanonicalPosition(actual, omni...)
+	b, bok := liveCanonicalPosition(target, omni...)
 	return ok && bok && a.ChainID == b.ChainID && (a.BlockNumber > b.BlockNumber || (a.BlockNumber == b.BlockNumber && (!liveDown(actual) || liveDown(target))))
 }
 func liveControlReplayComplete(c ManagedLiveControl, targets map[uint64]string) bool {
@@ -62,7 +67,7 @@ func liveControlReplayComplete(c ManagedLiveControl, targets map[uint64]string) 
 		return liveReplayComplete(c.Cursors, targets)
 	}
 	for id, t := range targets {
-		if !livePositionReached(liveCursorCheckpoint(c, id), t) {
+		if !livePositionReached(liveCursorCheckpoint(c, id), t, c.Version == managedLiveOmnichainVersion) {
 			return false
 		}
 	}
@@ -76,7 +81,7 @@ func ManagedLiveCursorCheckpoint(c ManagedLiveControl, id uint64) string {
 
 // ManagedLiveNextBlock preserves the inclusive first block at a Down boundary.
 func ManagedLiveNextBlock(c ManagedLiveControl, id uint64) (uint64, error) {
-	cp, ok := liveCanonicalPosition(liveCursorCheckpoint(c, id))
+	cp, ok := liveCanonicalPosition(liveCursorCheckpoint(c, id), c.Version == managedLiveOmnichainVersion)
 	if !ok || cp.ChainID != id {
 		return 0, ErrManagedLiveBatchConflict
 	}
@@ -89,7 +94,7 @@ func ManagedLiveNextBlock(c ManagedLiveControl, id uint64) (uint64, error) {
 	return cp.BlockNumber + 1, nil
 }
 func ManagedLiveReachedBlock(c ManagedLiveControl, id, n uint64) bool {
-	cp, ok := liveCanonicalPosition(liveCursorCheckpoint(c, id))
+	cp, ok := liveCanonicalPosition(liveCursorCheckpoint(c, id), c.Version == managedLiveOmnichainVersion)
 	return ok && (cp.BlockNumber > n || (cp.BlockNumber == n && !liveDown(liveCursorCheckpoint(c, id))))
 }
 func validateLivePositions(c ManagedLiveControl) error {
@@ -109,11 +114,11 @@ func validateLivePositions(c ManagedLiveControl) error {
 		return ErrManagedLiveBatchConflict
 	}
 	for id, head := range c.Cursors {
-		if !livePositionForHead(c.LogicalCursors[id], head) {
+		if !livePositionForHead(c.LogicalCursors[id], head, c.Version == managedLiveOmnichainVersion) {
 			return ErrManagedLiveBatchConflict
 		}
 		for _, p := range []string{c.LogicalSafe[id], c.LogicalFinality[id]} {
-			cp, ok := liveCanonicalPosition(p)
+			cp, ok := liveCanonicalPosition(p, c.Version == managedLiveOmnichainVersion)
 			if !ok || cp.ChainID != id {
 				return ErrManagedLiveBatchConflict
 			}

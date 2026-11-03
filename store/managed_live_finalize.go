@@ -21,6 +21,7 @@ type ManagedLiveFinalize struct {
 	ExpectedTail          uint64                     `json:"expectedTail"`
 	ExpectedSafeOrdinal   uint64                     `json:"expectedSafeOrdinal"`
 	Finalized             map[uint64]ManagedLiveHead `json:"finalized"`
+	SourceCheckpoints     map[uint64]string          `json:"sourceCheckpoints,omitempty"`
 }
 
 type ManagedLiveFinalizeAcquisition struct {
@@ -68,10 +69,14 @@ func normalizeLiveFinalize(opts ManagedLiveOptions, in ManagedLiveFinalize) (Man
 		chains[chain.ID] = true
 	}
 	out := in
+	if (!opts.runtimeOmnichain && in.SourceCheckpoints != nil) || (opts.runtimeOmnichain && len(in.SourceCheckpoints) != len(in.Finalized)) {
+		return out, ErrManagedLiveBatchConflict
+	}
+	out.SourceCheckpoints = cloneLiveCheckpoints(in.SourceCheckpoints)
 	out.Finalized = map[uint64]ManagedLiveHead{}
 	for id, head := range in.Finalized {
 		normalized, cp, err := normalizeLiveHead(head)
-		if err != nil || !chains[id] || cp.ChainID != id {
+		if err != nil || !chains[id] || cp.ChainID != id || (opts.runtimeOmnichain && (!livePositionForHead(in.SourceCheckpoints[id], normalized, true) || liveDown(in.SourceCheckpoints[id]))) {
 			return out, errors.Join(ErrManagedLiveBatchConflict, err)
 		}
 		out.Finalized[id] = normalized
@@ -268,12 +273,15 @@ func planLiveFinalize(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 		// Only validated batch segments prove execution; a bootstrap header is
 		// insufficient. Keep this evidence across global undo, where a legitimate
 		// confirmed target can stand above a private Down replay cursor.
-		if opts.runtimeInitial && !livePositionReached(logicalFinal[id], head.Checkpoint) && (len(execution) != 1 || execution[0][liveProofKey(head)] != head) {
+		if opts.runtimeInitial && !livePositionReached(logicalFinal[id], head.Checkpoint, opts.runtimeOmnichain) && (len(execution) != 1 || execution[0][liveProofKey(head)] != head) {
 			return plan, ErrManagedLiveBatchConflict
 		}
 		confirmed[id] = head
 		if opts.runtimeInitial {
 			logicalFinal[id] = head.Checkpoint
+			if opts.runtimeOmnichain {
+				logicalFinal[id] = r.SourceCheckpoints[id]
+			}
 		}
 	}
 	safe := liveSafeHeads(c, baseline)
@@ -284,7 +292,7 @@ func planLiveFinalize(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 	for _, segment := range active {
 		_, cp, _ := normalizeLiveHead(segment.Block.Head)
 		_, finalized, _ := normalizeLiveHead(confirmed[cp.ChainID])
-		if cp.BlockNumber > finalized.BlockNumber || (opts.runtimeInitial && !livePositionReached(logicalFinal[cp.ChainID], segment.Block.Head.Checkpoint)) {
+		if cp.BlockNumber > finalized.BlockNumber || (opts.runtimeInitial && !livePositionReached(logicalFinal[cp.ChainID], segment.Block.Head.Checkpoint, opts.runtimeOmnichain)) {
 			break
 		}
 		count++ // Including no-DML blocks, in actual global execution order.
@@ -307,6 +315,9 @@ func planLiveFinalize(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 			safe[cp.ChainID] = segment.Block.Head
 			if opts.runtimeInitial {
 				plan.After.LogicalSafe[cp.ChainID] = segment.Block.Head.Checkpoint
+				if opts.runtimeOmnichain && segment.Block.SourceCheckpoint != "" {
+					plan.After.LogicalSafe[cp.ChainID] = segment.Block.SourceCheckpoint
+				}
 			}
 		}
 		plan.After.SafeHeads = safe

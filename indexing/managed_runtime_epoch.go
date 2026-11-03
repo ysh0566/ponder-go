@@ -132,6 +132,18 @@ func (e *RuntimeEpoch) Process(ctx context.Context, b store.ManagedLiveBatch, a 
 	if len(b.Blocks) != 1 {
 		return store.ManagedLiveBatchResult{}, fmt.Errorf("runtime service dispatch requires exactly one block")
 	}
+	return e.processBlocks(ctx, b, a, [][]Object{events}, history)
+}
+
+// ProcessHistoricalBlocks preserves one source merged-output transaction while
+// retaining per-block writer attribution inside that same native transaction.
+func (e *RuntimeEpoch) ProcessHistoricalBlocks(ctx context.Context, b store.ManagedLiveBatch, a *store.ManagedLiveAcquisition, events [][]Object) (store.ManagedLiveBatchResult, error) {
+	if len(b.Blocks) == 0 || len(events) != len(b.Blocks) {
+		return store.ManagedLiveBatchResult{}, fmt.Errorf("historical merged blocks require exact event partitions")
+	}
+	return e.processBlocks(ctx, b, a, events, true)
+}
+func (e *RuntimeEpoch) processBlocks(ctx context.Context, b store.ManagedLiveBatch, a *store.ManagedLiveAcquisition, partitions [][]Object, history bool) (result store.ManagedLiveBatchResult, err error) {
 	completed := map[string]uint64{}
 	for k, v := range e.service.Metrics().Completed {
 		completed[k] = v
@@ -149,7 +161,13 @@ func (e *RuntimeEpoch) Process(ctx context.Context, b store.ManagedLiveBatch, a 
 			}
 		}
 	}()
+	index := 0
 	result, err = e.domains.ApplyRuntimeBatch(ctx, b, a, func(run context.Context, w *store.Writer, block store.ManagedLiveBlock) error {
+		if index >= len(partitions) || block != b.Blocks[index] {
+			return fmt.Errorf("historical block callback order differs")
+		}
+		events := partitions[index]
+		index++
 		bound, binding, err := e.database.Bind(run, w)
 		if err != nil {
 			return err

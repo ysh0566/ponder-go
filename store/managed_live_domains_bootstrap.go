@@ -14,7 +14,8 @@ import (
 type liveDomainBinding struct{ Identity, Operation, Hash, CacheCatalog string }
 
 func domainPriorOwner(s *IndependentStorage, o IndependentStorageOptions, opts ManagedLiveOptions) (*ManagedLiveDomains, error) {
-	st, err := describeStore(s.businessBackend, cloneManagedSchema(o.Schema), o.BusinessNamespace, schema.Multichain, true)
+	ordering := managedStorageOrdering(&opts)
+	st, err := describeStore(s.businessBackend, cloneManagedSchema(o.Schema), o.BusinessNamespace, ordering, true)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +25,7 @@ func domainPriorOwner(s *IndependentStorage, o IndependentStorageOptions, opts M
 		Schema                             schema.Schema
 		Chains                             []MigrationChain
 		Ends                               map[uint64]uint64
-	}{opts.BuildID, opts.PlanID, opts.ViewsSchema, string(schema.Multichain), o.SyncNamespace, o.Schema, opts.Chains, opts.EndBlocks})
+	}{opts.BuildID, opts.PlanID, opts.ViewsSchema, string(ordering), o.SyncNamespace, o.Schema, opts.Chains, opts.EndBlocks})
 	if err != nil {
 		return nil, err
 	}

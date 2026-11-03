@@ -252,6 +252,9 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 				cp, _ := checkpoint.Decode(segment.Block.Head.Checkpoint)
 				if liveReplayPublishes(segment.Block.Head, rolling.ReplayTargets) {
 					latest[cp.ChainID] = segment.Block.Head.Checkpoint
+					if rollingOpts.runtimeOmnichain && segment.Block.SourceCheckpoint != "" {
+						latest[cp.ChainID] = segment.Block.SourceCheckpoint
+					}
 				}
 			}
 			if rolling.Finalizations > 0 {
