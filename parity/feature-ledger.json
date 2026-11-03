@@ -396,7 +396,8 @@
         "historical/live_runtime_omnichain_history.go",
         "historical/live_runtime_omnichain_store.go",
         "store/managed_live_omnichain_receipts.go",
-        "store/reorg.go"
+        "store/reorg.go",
+        "historical/live_runtime_omnichain_callbacks.go"
       ],
       "upstream_sources": [
         "packages/core/src/database/actions.ts",
@@ -405,9 +406,11 @@
       ],
       "evidence": [
         "parity/runs/m45-omnichain-v14-20261103/VALIDATION.md",
-        "docs/RUNTIME_SUPPORT.md"
+        "docs/RUNTIME_SUPPORT.md",
+        "parity/runs/m45-omnichain-events-v15-20261103/VALIDATION.md",
+        "parity/runs/m45-omnichain-events-v15-20261103/SOURCE-CONTRACT.md"
       ],
-      "remaining": "Only bounded globally finalized cachetrue ranges, one interval1 block callback per chain, start>=1. Actual source batching, Down/partial CP, ordinary failure/cold retry and selected PG/PGlite business closure are compared with actual pinned runOmnichain. Live/pending/reorg, non-block/factory, cachefalse/setup/start0 and complete mapping remain unsupported."
+      "remaining": "Only bounded globally finalized cachetrue ranges with one interval1/offset0 closing block callback per chain covering static ABI log ranges, start>=1. Actual source SQL pages/overlap callbacks and complete Groups transactions, source logical positions, PG/PGlite failure/cold replay and selected PG application exits are covered. Live/pending/reorg, factory/log-only/account/trace, cachefalse/setup/start0, PGlite abrupt exits, engine failures and complete mapping remain outside this closure."
     },
     {
       "id": "ordering-isolated",
@@ -1422,7 +1425,8 @@
         "historical/live_runtime.go",
         "historical/live_runtime_continuous.go",
         "historical/live_runtime_omnichain_history.go",
-        "indexing/managed_runtime_epoch.go"
+        "indexing/managed_runtime_epoch.go",
+        "historical/live_runtime_omnichain_callbacks.go"
       ],
       "upstream_sources": [
         "packages/core/src/runtime/multichain.ts",
@@ -1431,9 +1435,10 @@
       "evidence": [
         "docs/RUNTIME_SUPPORT.md",
         "parity/runs/m45-factory-traces-v13-20261103/VALIDATION.md",
-        "parity/runs/m45-omnichain-v14-20261103/VALIDATION.md"
+        "parity/runs/m45-omnichain-v14-20261103/VALIDATION.md",
+        "parity/runs/m45-omnichain-events-v15-20261103/VALIDATION.md"
       ],
-      "remaining": "Only selected default multichain and bounded globally finalized block-only omnichain closures. Other ordering/runtime modes, complete CLI/type/source coverage, full/full-race/engine crashes and M45 acceptance remain open. Formal mapping543/905 unchanged."
+      "remaining": "Only selected default multichain and bounded globally finalized closing-block plus static ABI log omnichain closures. v15 selects528 v14 leaves, explicitly omits141 on the new snapshot, and adds31 native supplements;559 unique/250 race/809 executions is a selected plan. Other ordering/runtime modes, complete CLI/type/source coverage, full/full-race/engine crashes and M45 acceptance remain open. Formal mapping543/905 unchanged."
     }
   ]
 }

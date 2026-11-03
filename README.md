@@ -8,7 +8,7 @@
 
 ## 当前验证与计数
 
-当前能力以 [模块支持矩阵](docs/RUNTIME_SUPPORT.md) 为准；下方历史阶段说明保留当时边界。新增 omnichain 有限历史 RuntimeRunner 采用真实源合并批次、全局最终水位和源 checkpoint，范围及同输入验证见 [v14阶段记录](parity/runs/m45-omnichain-v14-20261103/VALIDATION.md)。整体 M45、full/full-race 与完整兼容性仍未验收。
+当前能力以 [模块支持矩阵](docs/RUNTIME_SUPPORT.md) 为准；下方历史阶段说明保留当时边界。omnichain 有限历史 RuntimeRunner 现包含每链一个完整范围 block 回调及静态 ABI 日志，采用真实源合并批次、全局最终水位和源 checkpoint；范围、分页/重叠回调及精确回归差异见 [v15阶段记录](parity/runs/m45-omnichain-events-v15-20261103/VALIDATION.md)。[v14阶段记录](parity/runs/m45-omnichain-v14-20261103/VALIDATION.md) 保留原 block 闭环。整体 M45、full/full-race 与完整兼容性仍未验收。
 
 M45 追加的 factory 日志、交易、账户 transfer 及合约函数 CALL 的选定 RuntimeRunner 闭环，范围与验证说明见 [factory 函数 trace 阶段](parity/runs/m45-factory-traces-v13-20261103/VALIDATION.md)。这些补充运行测试不增加正式 543/905 映射；其他运行模式、完整 CLI、引擎崩溃及 M45 整体验收仍未完成。
 
