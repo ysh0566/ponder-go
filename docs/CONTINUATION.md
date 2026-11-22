@@ -2,6 +2,8 @@
 
 任务没有完成。先读 `AGENTS.md`、本文件、`parity/runs/summary.json`、`parity/test-ledger.json` 和 `parity/feature-ledger.json`。不要把新增集成测试或差分向量算成上游逐例移植。
 
+历史运行大文件已按原始 Git 提交和 SHA-256 编入 `parity/archive-manifest.json`。继续历史审计或完整验收前运行 `python3 tools/parity_archive.py restore`，以恢复被摘要引用的日志和冻结输入；详见 `parity/README.md`。新 run 产物默认忽略，只逐个提交核验后的摘要；不能用缺失归档作为跳过测试的理由。此次存储整理没有新增功能或 source credit。
+
 
 ## 当前执行入口：M43 有限历史功能本地验收通过，尚未发布（2026-10-26）
 

@@ -9,3 +9,4 @@
 - Preserve original test source, nested names, parameters, inputs, assertions, skip/todo/fails states. Add exact mappings before marking a port complete.
 - Keep business write, undo journal, event checkpoint, and progress in one transaction. Default multichain rollback undoes the global operation suffix; isolated rollback is chain-scoped.
 - Run `go test ./...`, `go test -race ./...`, and focused upstream oracles as relevant. Record exact commands and results in `parity/runs/`.
+- Historical run payloads are indexed by `parity/archive-manifest.json`; restore referenced evidence with `python3 tools/parity_archive.py restore` before historical audits/full verification. Preserve the source Git objects, author-repair map, and backup bundle. New raw runs are ignored; explicitly track only reviewed summaries. Archive checks provide no new product-test or upstream-parity credit.

@@ -1,0 +1,456 @@
+{
+  "recorded_utc": "2026-11-22T16:49:45.753529+00:00",
+  "status": "archive_cleanup_verified_product_acceptance_not_claimed",
+  "source_commit": "fe9f4729693c8040340656c6ce49dd2a788ad999",
+  "source_tree": "0297f371c4be8631b7a39018a490ba76b8649a80",
+  "archival_acceptance": {
+    "passed": true,
+    "unit_command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/parity_archive_test.py",
+    "unit_tests": 14,
+    "unit_exit_code": 0,
+    "unit_log": "archive-tests-05.log",
+    "object_verification_command": "python3 tools/parity_archive.py verify",
+    "object_verification": {
+      "verified": true,
+      "files": 34319,
+      "unique_blobs": 9227,
+      "bytes": 6706788632,
+      "source_commit": "fe9f4729693c8040340656c6ce49dd2a788ad999"
+    },
+    "cleanup_command": "python3 tools/parity_archive.py prune",
+    "cleanup": {
+      "removed_worktree_files": 34319,
+      "archive_objects_preserved": true
+    },
+    "independent_recovery_command": "PYTHONDONTWRITEBYTECODE=1 python3 parity/runs/archive-cleanup-20261122/full_restore_check.py",
+    "independent_recovery": {
+      "destination": "/tmp/ponder-go-parity-full-restore-jox4_ugl",
+      "passed": true,
+      "restore": {
+        "restored": 34319,
+        "already_present": 0,
+        "destination": "/tmp/ponder-go-parity-full-restore-jox4_ugl"
+      },
+      "archived_files_restored": 34319,
+      "all_original_files_sha256_and_modes_verified": 35389,
+      "original_bytes_verified": 6721093426,
+      "independent_git_object_store": true,
+      "network_used": false,
+      "temporary_restore_removed": true,
+      "elapsed_seconds": 485.079
+    }
+  },
+  "original": {
+    "files": 35389,
+    "bytes": 6721093426
+  },
+  "retained": {
+    "files": 1070,
+    "bytes": 14304794
+  },
+  "archived": {
+    "files": 34319,
+    "bytes": 6706788632
+  },
+  "native_source_fingerprint": {
+    "before": {
+      "files": 1329,
+      "sha256": "9a951a73efd33709b366c3681d81db1eb393a263168fb2c0eccb2a72d5cdfc12"
+    },
+    "after": {
+      "files": 1329,
+      "sha256": "9a951a73efd33709b366c3681d81db1eb393a263168fb2c0eccb2a72d5cdfc12"
+    },
+    "identical": true
+  },
+  "original_source_audit": {
+    "original_test_files_sha256_verified": 104,
+    "original_support_records": 247,
+    "historical_discovery_mismatches_already_in_HEAD": [
+      {
+        "source": "packages/core/src/bin/utils/codegen.ts",
+        "expected_sha256": "905f6302dea56e504b80a135230cc053bc7c78d4c10a9620dd6dde89d00910f1",
+        "actual_sha256": null
+      },
+      {
+        "source": "packages/core/src/bin/utils/exit.ts",
+        "expected_sha256": "381c2f1f42270c543128e8127c1282c7bdec9b0898ae2b80c1ae69a21406fd95",
+        "actual_sha256": null
+      },
+      {
+        "source": "packages/core/src/bin/commands/codegen.ts",
+        "expected_sha256": "fabaf54f6bae7d12168937cb51fd7b292bbe098909034d31e66097cca7ac8bf4",
+        "actual_sha256": null
+      },
+      {
+        "source": "packages/core/src/bin/commands/createViews.ts",
+        "expected_sha256": "3c58e244f1e244835f6159823f845568271d9955c542b8b4784ed120809917bc",
+        "actual_sha256": null
+      },
+      {
+        "source": "packages/core/src/bin/isolatedWorker.ts",
+        "expected_sha256": "c682b0487fa0006849da7cc01419cac87ddb7592e60f940bc959f375f91e9e54",
+        "actual_sha256": null
+      },
+      {
+        "source": "packages/core/src/bin/isolatedController.ts",
+        "expected_sha256": "6ad00bdc3ad57fd1fd46e0518dfb36495a2a000669dc280f272633996cdc1bb2",
+        "actual_sha256": null
+      },
+      {
+        "source": "packages/core/src/bin/commands/dev.ts",
+        "expected_sha256": "08059e5d73d8174d284a07c07dd2d51c108d04ce5b962d854e749b9c8c4ee651",
+        "actual_sha256": null
+      },
+      {
+        "source": "packages/core/src/bin/commands/list.ts",
+        "expected_sha256": "b0ea8e60439bbe10c39934b200495eca3f62adf46eed85873131730532934227",
+        "actual_sha256": null
+      },
+      {
+        "source": "packages/core/src/bin/commands/prune.ts",
+        "expected_sha256": "29100b4158ef88161cbecc43047678bb29334c8a945d7ffc5010d9dee0353ed4",
+        "actual_sha256": null
+      },
+      {
+        "source": "packages/core/src/bin/commands/serve.ts",
+        "expected_sha256": "e4793abb2c9b44ec5600539aa7173e275f57f6bab015c1c2baee956066034ace",
+        "actual_sha256": null
+      },
+      {
+        "source": "packages/core/src/bin/commands/start.ts",
+        "expected_sha256": "92408f8e9e00d18d03200369bcbaac505a104ab123a7b8f97e280a03fb580f75",
+        "actual_sha256": null
+      },
+      {
+        "source": "packages/core/src/bin/ponder.ts",
+        "expected_sha256": "11b2e33eddacf04d169ff9d9f81d4ff02d2d0f49dd0f9d2e6e273cff6d77db84",
+        "actual_sha256": null
+      }
+    ],
+    "original_sources_ledgers_and_mappings_identical_to_HEAD": true,
+    "coverage": {
+      "source_files": 104,
+      "test_declarations": 897,
+      "expanded_static_records": 905,
+      "unresolved_expansion_records": 0,
+      "assertion_expressions": 1905,
+      "type_records": 73,
+      "inline_type_assertions": 63,
+      "type_error_directives": 84,
+      "source_states": {
+        "active": 893,
+        "skip": 10,
+        "todo": 2,
+        "expected_failure": 0
+      },
+      "ported": 543,
+      "executed": 550,
+      "passed": 543,
+      "failed": 0,
+      "blocked": 0,
+      "unimplemented": 362,
+      "go_ports": 539,
+      "retained_sdk": 4,
+      "oracle_passed": 543,
+      "oracle_blocked": 0,
+      "go_passed": 539,
+      "sdk_passed": 4,
+      "go_and_original_oracle_passed": 539,
+      "target_and_original_oracle_passed": 543,
+      "current_original_oracle_passed": 543,
+      "historical_only_original_oracles": 0,
+      "runtime_passed_type_pending": 7
+    },
+    "credit_added": 0
+  },
+  "product_test_suites": [
+    {
+      "command": "PATH=/tmp/ponder-go-parity-tools/go/bin:$PATH GOMODCACHE=/root/go/pkg/mod GOCACHE=/tmp/ponder-go-parity-gocache go test ./...",
+      "log": "before-go-test.log",
+      "exit_code": 1,
+      "sandbox": "restricted",
+      "stage": "before cleanup",
+      "status": "failed",
+      "package_results": {
+        "packages": 24,
+        "passed_packages": 9,
+        "failed_packages": 9,
+        "no_test_files": 6,
+        "outcomes": {
+          "ponder.local/ponder-go/abi": "ok",
+          "ponder.local/ponder-go/bloom": "ok",
+          "ponder.local/ponder-go/checkpoint": "ok",
+          "ponder.local/ponder-go/cmd/abi-codegen": "?",
+          "ponder.local/ponder-go/cmd/parity-probe": "?",
+          "ponder.local/ponder-go/cmd/ponder": "?",
+          "ponder.local/ponder-go/cmd/source-codegen": "?",
+          "ponder.local/ponder-go/config": "FAIL",
+          "ponder.local/ponder-go/events": "ok",
+          "ponder.local/ponder-go/examples/erc20": "?",
+          "ponder.local/ponder-go/factory": "ok",
+          "ponder.local/ponder-go/filter": "FAIL",
+          "ponder.local/ponder-go/finality": "ok",
+          "ponder.local/ponder-go/historical": "FAIL",
+          "ponder.local/ponder-go/indexing": "FAIL",
+          "ponder.local/ponder-go/internal/jsvalue": "?",
+          "ponder.local/ponder-go/interval": "ok",
+          "ponder.local/ponder-go/orm": "FAIL",
+          "ponder.local/ponder-go/query": "FAIL",
+          "ponder.local/ponder-go/rpc": "FAIL",
+          "ponder.local/ponder-go/runtime": "FAIL",
+          "ponder.local/ponder-go/schema": "ok",
+          "ponder.local/ponder-go/sqlquery": "ok",
+          "ponder.local/ponder-go/store": "FAIL"
+        }
+      }
+    },
+    {
+      "command": "PATH=/tmp/ponder-go-parity-tools/go/bin:$PATH GOMODCACHE=/root/go/pkg/mod GOCACHE=/tmp/ponder-go-parity-gocache go test ./...",
+      "log": "after-go-test.log",
+      "exit_code": 1,
+      "sandbox": "local ports enabled",
+      "stage": "after cleanup",
+      "status": "failed",
+      "package_results": {
+        "packages": 24,
+        "passed_packages": 10,
+        "failed_packages": 8,
+        "no_test_files": 6,
+        "outcomes": {
+          "ponder.local/ponder-go/abi": "ok",
+          "ponder.local/ponder-go/bloom": "ok",
+          "ponder.local/ponder-go/checkpoint": "ok",
+          "ponder.local/ponder-go/cmd/abi-codegen": "?",
+          "ponder.local/ponder-go/cmd/parity-probe": "?",
+          "ponder.local/ponder-go/cmd/ponder": "?",
+          "ponder.local/ponder-go/cmd/source-codegen": "?",
+          "ponder.local/ponder-go/config": "FAIL",
+          "ponder.local/ponder-go/events": "ok",
+          "ponder.local/ponder-go/examples/erc20": "?",
+          "ponder.local/ponder-go/factory": "ok",
+          "ponder.local/ponder-go/filter": "FAIL",
+          "ponder.local/ponder-go/finality": "ok",
+          "ponder.local/ponder-go/historical": "FAIL",
+          "ponder.local/ponder-go/indexing": "FAIL",
+          "ponder.local/ponder-go/internal/jsvalue": "?",
+          "ponder.local/ponder-go/interval": "ok",
+          "ponder.local/ponder-go/orm": "FAIL",
+          "ponder.local/ponder-go/query": "FAIL",
+          "ponder.local/ponder-go/rpc": "ok",
+          "ponder.local/ponder-go/runtime": "FAIL",
+          "ponder.local/ponder-go/schema": "ok",
+          "ponder.local/ponder-go/sqlquery": "ok",
+          "ponder.local/ponder-go/store": "FAIL"
+        }
+      }
+    },
+    {
+      "command": "PATH=/tmp/ponder-go-parity-tools/go/bin:$PATH GOMODCACHE=/root/go/pkg/mod GOCACHE=/tmp/ponder-go-parity-gocache go test -race ./...",
+      "log": "after-go-race.log",
+      "exit_code": 1,
+      "sandbox": "local ports enabled",
+      "stage": "after cleanup",
+      "status": "failed",
+      "package_results": {
+        "packages": 24,
+        "passed_packages": 10,
+        "failed_packages": 8,
+        "no_test_files": 6,
+        "outcomes": {
+          "ponder.local/ponder-go/abi": "ok",
+          "ponder.local/ponder-go/bloom": "ok",
+          "ponder.local/ponder-go/checkpoint": "ok",
+          "ponder.local/ponder-go/cmd/abi-codegen": "?",
+          "ponder.local/ponder-go/cmd/parity-probe": "?",
+          "ponder.local/ponder-go/cmd/ponder": "?",
+          "ponder.local/ponder-go/cmd/source-codegen": "?",
+          "ponder.local/ponder-go/config": "FAIL",
+          "ponder.local/ponder-go/events": "ok",
+          "ponder.local/ponder-go/examples/erc20": "?",
+          "ponder.local/ponder-go/factory": "ok",
+          "ponder.local/ponder-go/filter": "FAIL",
+          "ponder.local/ponder-go/finality": "ok",
+          "ponder.local/ponder-go/historical": "FAIL",
+          "ponder.local/ponder-go/indexing": "FAIL",
+          "ponder.local/ponder-go/internal/jsvalue": "?",
+          "ponder.local/ponder-go/interval": "ok",
+          "ponder.local/ponder-go/orm": "FAIL",
+          "ponder.local/ponder-go/query": "FAIL",
+          "ponder.local/ponder-go/rpc": "ok",
+          "ponder.local/ponder-go/runtime": "FAIL",
+          "ponder.local/ponder-go/schema": "ok",
+          "ponder.local/ponder-go/sqlquery": "ok",
+          "ponder.local/ponder-go/store": "FAIL"
+        }
+      }
+    }
+  ],
+  "full_product_acceptance": false,
+  "test_environment_blockers": [
+    "No explicit task-only PONDER_TEST_POSTGRES URL was configured; no database connection was supplied.",
+    "Pinned sibling ponder-upstream and its Node/PGlite dependencies are absent (MODULE_NOT_FOUND).",
+    "Existing Anvil is required by local-chain integration tests but is unavailable.",
+    "The initial restricted run also disallowed local test sockets; subsequent normal/race runs enabled local sockets and still failed on missing prerequisites."
+  ],
+  "focused_upstream_oracles": {
+    "status": "not_run",
+    "reason": "Storage-only cleanup; all 104 retained original test source hashes were checked, native sources are unchanged, and the pinned upstream runtime is unavailable."
+  },
+  "parity_credit_added": 0,
+  "history": {
+    "rewritten": false,
+    "refs_deleted": false,
+    "force_push": false,
+    "reason": "The existing compressed pack was 432.58 MiB. Keeping unchanged ancestor history makes every indexed evidence blob recoverable offline; rewriting is unnecessary to remove 6.4 GiB from the working tree.",
+    "independent_backup": {
+      "file": ".local/parity-archive/before-cleanup.bundle",
+      "bytes": 453223734,
+      "sha256": "7b62e61405fb4d9f2f8d52d18ab958400ca040634b32eac784109af5fe3f6c76",
+      "complete_history": true,
+      "refs": [
+        "0297f371c4be8631b7a39018a490ba76b8649a80 refs/codex/turn-diffs/captures/1795364523993/c6f35b0b-1c8f-4fde-b72a-131560d3e553/base",
+        "fe9f4729693c8040340656c6ce49dd2a788ad999 refs/heads/main",
+        "fe9f4729693c8040340656c6ce49dd2a788ad999 refs/remotes/origin/HEAD",
+        "ea5913b7bf5282ce71e8798626afb83a5e261329 refs/remotes/origin/m45-managed-live-store",
+        "fe9f4729693c8040340656c6ce49dd2a788ad999 refs/remotes/origin/main",
+        "510cb73e2791b07cb6f3342a2048a09eb98b6b36 refs/remotes/origin/publish/factory-traces-v13-20261103",
+        "6d2b88ac6b6843ed4b5d650ec278a78207d2329b refs/remotes/origin/publish/factory-transactions-v11-20261102",
+        "597375f566fb75f24f651ea4b8e3f44cfcaa377a refs/remotes/origin/publish/factory-transfers-v12-20261103",
+        "a7cbf53b4ff7d79f1def47fceb88634b8ac1ec23 refs/remotes/origin/publish/factory-v10-20261102",
+        "2762a6bf5a2fbf339604306fbc1eee6f8f5554d3 refs/remotes/origin/publish/omnichain-finalized-v14-20261103",
+        "fe9f4729693c8040340656c6ce49dd2a788ad999 refs/remotes/origin/publish/omnichain-logonly-v16-20261103",
+        "b92979aed1ed5f396be3365a905e4414d2b1acb0 refs/remotes/origin/publish/omnichain-static-logs-v15-20261103",
+        "c2eb45aa885c906df416e954e1b0671b60d6ab57 refs/remotes/origin/publish/source-init-v9-20261102",
+        "fe9f4729693c8040340656c6ce49dd2a788ad999 HEAD"
+      ],
+      "verification_command": [
+        "git",
+        "bundle",
+        "verify",
+        ".local/parity-archive/before-cleanup.bundle"
+      ]
+    }
+  },
+  "publication": {
+    "performed": false,
+    "verified_github_login": "ysh0566",
+    "verified_github_user_id": 19503475,
+    "repository_visibility_observed": "public",
+    "reason": "Existing authorization permits publication only to a private ysh0566 repository. No remote write was made."
+  },
+  "diagnostics": "Intermediate tool-test failures are preserved in the evidence archive. Historical discovery-audit support hash mismatches already present in HEAD are recorded separately; their source bytes and the ledger were preserved, not repaired or credited.",
+  "evidence": {
+    "file": "parity/runs/archive-cleanup-20261122/evidence.tar.gz",
+    "bytes": 63566,
+    "sha256": "25ff07be8fbc335a00ab68f048a39a02761dc45c9a843b07933ad200fc2e9dda",
+    "members": [
+      {
+        "member": "archive-cleanup-20261122/after-go-race.log",
+        "bytes": 515343,
+        "sha256": "491e0d0c314ea9ab4b73d224b28b4618ca0fa8d98e8f42da26f968b41d60b915"
+      },
+      {
+        "member": "archive-cleanup-20261122/after-go-test.log",
+        "bytes": 515361,
+        "sha256": "4c3f1fb779d837f16f61214d08c3bca0f48cbfd3f73344308d793292af45ffb0"
+      },
+      {
+        "member": "archive-cleanup-20261122/archive-tests-01.log",
+        "bytes": 1803,
+        "sha256": "1d9f39b1ee667a9fbfe8fb7c3e96c36bf9f6f94672c3bb5175e942779dc547b8"
+      },
+      {
+        "member": "archive-cleanup-20261122/archive-tests-02.log",
+        "bytes": 1055,
+        "sha256": "270bc7660a4033ee20e08b7ac0853195bc4d5a7f7af600eea2f5d22db6b4c3a3"
+      },
+      {
+        "member": "archive-cleanup-20261122/archive-tests-03.log",
+        "bytes": 1055,
+        "sha256": "66806b76f748ced500b40bbf916843834bb2fe8c6b11c106cdd9cc3cd941c537"
+      },
+      {
+        "member": "archive-cleanup-20261122/archive-tests-04.log",
+        "bytes": 1901,
+        "sha256": "ae9848ada3ed7d2cc905a313c591a31cc8b3a68e2ee2b3d3901d52c116c2a04e"
+      },
+      {
+        "member": "archive-cleanup-20261122/archive-tests-05.log",
+        "bytes": 1210,
+        "sha256": "f7d3cb7a5437f92bf9ed4d5c684bfb11c8f91470e33045c9b8cef2dbf6b76a5a"
+      },
+      {
+        "member": "archive-cleanup-20261122/archive-verify.json",
+        "bytes": 151,
+        "sha256": "f5f90c5ad27750328e4f070fc821623fbf9d1e089bc67e5c4b01b3acf6cba2ea"
+      },
+      {
+        "member": "archive-cleanup-20261122/backup.json",
+        "bytes": 1662,
+        "sha256": "733b8ac9c520ad03b395c6cc91b8d659a93f0242f22e025bdf82dcd283348f05"
+      },
+      {
+        "member": "archive-cleanup-20261122/before-go-test.log",
+        "bytes": 297065,
+        "sha256": "a5e8e1e4c116676ee5639ac260a53726805b62352bc5d8aafb099095091c8e02"
+      },
+      {
+        "member": "archive-cleanup-20261122/full-restore-progress.log",
+        "bytes": 2440,
+        "sha256": "b8257930526a2b450f047389157aa0535333d7ab3226a94b18ed6d2327945fcd"
+      },
+      {
+        "member": "archive-cleanup-20261122/full-restore.json",
+        "bytes": 485,
+        "sha256": "f59bcf1559bbb7150cd9a958785e71a404ed7faea565a1cd7ea22a127c5423b8"
+      },
+      {
+        "member": "archive-cleanup-20261122/full-restore.stdout.json",
+        "bytes": 485,
+        "sha256": "f59bcf1559bbb7150cd9a958785e71a404ed7faea565a1cd7ea22a127c5423b8"
+      },
+      {
+        "member": "archive-cleanup-20261122/full_restore_check.py",
+        "bytes": 2498,
+        "sha256": "43fe2c47a45d60fc9b225370fc8270eef3df2ef8f080a88167580fb58556e155"
+      },
+      {
+        "member": "archive-cleanup-20261122/go-package-results.json",
+        "bytes": 3902,
+        "sha256": "4b53eeef64097624c13cb5e51d85f481611d6e255282caf088add2dda51b4f00"
+      },
+      {
+        "member": "archive-cleanup-20261122/original-source-audit.json",
+        "bytes": 3403,
+        "sha256": "05d6a49de3a73122ce4dfcd5596976d763ff2ac8949b8ca61bdc3d030ac20d12"
+      },
+      {
+        "member": "archive-cleanup-20261122/packages-after.txt",
+        "bytes": 779,
+        "sha256": "7d813b1e0caa7e1dac0f07f6d850204b6db80e9d0bb17abfff337d2b03e6ada6"
+      },
+      {
+        "member": "archive-cleanup-20261122/prune.json",
+        "bytes": 75,
+        "sha256": "2799b67194826eeb692eaae81c6c2f3cc15a42aa1fdc4d8d048194403fa8ec64"
+      },
+      {
+        "member": "archive-cleanup-20261122/record_cleanup.py",
+        "bytes": 6701,
+        "sha256": "8488d07aba418b7c298a6eac7f2b5514cf3210c6ab3ede6f8e610886aba84f00"
+      },
+      {
+        "member": "archive-cleanup-20261122/source-fingerprint.json",
+        "bytes": 261,
+        "sha256": "2fb7e0ad55eb19aadbc80b91d71dcdef0e4b9d81db176910ac1e98e0621a3990"
+      }
+    ]
+  },
+  "review": {
+    "native_sources_unchanged": true,
+    "archive_deletions_match_catalog": true,
+    "new_runs_ignored_by_default": true,
+    "whitespace_check": "git diff --cached --no-renames --diff-filter=AM --check"
+  }
+}
