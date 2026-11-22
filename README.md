@@ -30,7 +30,7 @@ M45 追加的 factory 日志、交易、账户 transfer 及合约函数 CALL 的
 
 ## 验证
 
-历史大体积运行证据已移出当前工作树，原始文件可从未改写的 Git 历史按 SHA-256 校验恢复。运行历史审计或完整验证前先执行 `python3 tools/parity_archive.py restore`；新运行日志默认忽略，只显式提交已复核的摘要。详见 [parity 归档说明](parity/README.md)。这项整理不改变原有移植覆盖或验证结论。
+历史大体积运行证据已从 Git 历史移出，普通克隆仅携带代码、测试、台账和已选摘要。历史审计或完整验证前，需单独取得原始历史 bundle，再执行 `python3 tools/parity_archive.py restore --bundle /path/to/original.bundle`；旧对象只进入忽略的 `.local` 缓存。详见 [parity 归档说明](parity/README.md) 和 [历史重写记录](docs/HISTORY_REWRITE.md)。这项整理不改变原有移植覆盖或验证结论。
 
 当前云端工具为Go1.25.0、Node24.22.1、pnpm12.10.1、Vitest5.0.2、Foundry/Anvil1.8.5、PG14.24和真实PGlite0.2.13，M39 实际版本记录在 `parity/runs/indexing-actions-m39/tool-versions.txt`（旧 `parity/runs/tool-versions.txt` 为历史快照）。当前专用PG仅监听127.0.0.1:55432，数据在任务云目录；此前Mac Docker/Anvil0.2环境为冻结历史。M42完整验收只创建新的任务测试cluster并验证SHOW data_directory，绝不重置旧cluster或连接业务库。
 

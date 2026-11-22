@@ -3,7 +3,7 @@
   "source_repository": "https://github.com/ysh0566/ponder-go",
   "source_commit": "fe9f4729693c8040340656c6ce49dd2a788ad999",
   "source_tree": "0297f371c4be8631b7a39018a490ba76b8649a80",
-  "storage": "Original Git blobs remain reachable through unchanged ancestor history. No network access or new service is required.",
+  "storage": "Historical Git objects live in an independent external bundle, not in the slim repository. Restore imports the bundle only into ignored .local storage.",
   "catalog": {
     "path": "parity/archive-files.json.gz",
     "sha256": "ef83a3ef72ce75584c9fa9f22d4c40aea08e868fa9148abba91aecf4e0c5aa17"
@@ -8582,5 +8582,13 @@
       "reason": "publication record"
     }
   ],
-  "policy": "Preserve every original byte and status. Indexing/archiving provides no new test or parity credit. Future raw runs are ignored; promote reviewed summaries explicitly."
+  "policy": "Preserve every original byte and status. Indexing/archiving provides no new test or parity credit. Future raw runs are ignored; promote reviewed summaries explicitly.",
+  "external_store": {
+    "kind": "git_bundle",
+    "default_file": ".local/history-rewrite-20261122/original.bundle",
+    "bytes": 455394081,
+    "sha256": "69754ef0d06241ba2d1c739d821c9fb8e0e72ba1de65f6ba7f9f091d5580ec37",
+    "bundle_ref": "refs/heads/main",
+    "delivery": "Copy this standalone bundle separately; it is intentionally excluded from ordinary clones."
+  }
 }

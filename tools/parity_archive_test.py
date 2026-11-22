@@ -3,9 +3,11 @@
 
 import gzip
 import json
+import hashlib
 from pathlib import Path
 import tempfile
 import unittest
+import shutil
 from unittest import mock
 
 import parity_archive as archive
@@ -183,6 +185,65 @@ class ArchiveTests(unittest.TestCase):
         result = archive.restore(fresh)
         self.assertEqual(result["restored"], 5)
         self.assertEqual(archive.verify(fresh)["source_commit"], self.source)
+
+    def external_checkout(self):
+        archive.prune(self.root)
+        backup = self.root / "external.bundle"
+        archive.git(self.root, "bundle", "create", str(backup), "HEAD")
+        fresh = self.root / "lean"
+        fresh.mkdir()
+        archive.git(fresh, "init", "-b", "main")
+        archive.git(fresh, "config", "user.name", "Archive Test")
+        archive.git(fresh, "config", "user.email", "archive-test@example.invalid")
+        for name in [archive.MANIFEST, archive.CATALOG, *self.files]:
+            source = self.root / name
+            if source.is_file():
+                target = fresh / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source, target)
+        path = fresh / archive.MANIFEST
+        manifest = json.loads(path.read_text())
+        manifest["external_store"] = {"kind": "git_bundle", "default_file": ".local/external.bundle",
+                                      "bytes": backup.stat().st_size, "sha256": archive.digest(backup), "bundle_ref": "HEAD"}
+        path.write_text(json.dumps(manifest))
+        (fresh / ".gitignore").write_text((archive.ROOT / ".gitignore").read_text())
+        archive.git(fresh, "add", "-f", ".")
+        archive.git(fresh, "commit", "-m", "lean history without original objects")
+        return fresh, backup
+
+    def test_external_bundle_never_imports_old_objects_into_main_git(self):
+        fresh, backup = self.external_checkout()
+        before = archive.git(fresh, "rev-list", "--objects", "--all")
+        self.assertEqual(archive.restore(fresh, bundle=backup)["restored"], 5)
+        self.assertEqual(archive.git(fresh, "rev-list", "--objects", "--all"), before)
+        with self.assertRaises(ValueError):
+            archive.git(fresh, "cat-file", "-e", self.source)
+        self.assertEqual(archive.verify(fresh)["files"], 5)
+        cache = archive.archive_repository(fresh)
+        self.assertTrue(str(cache).startswith(str(fresh / ".local")))
+        self.assertFalse((cache / "objects/info/alternates").exists())
+
+    def test_missing_external_bundle_fails_with_explicit_recovery_instruction(self):
+        fresh, _ = self.external_checkout()
+        with self.assertRaisesRegex(ValueError, "Supply --bundle"):
+            archive.verify(fresh)
+        self.assertFalse((fresh / ".local").exists())
+
+    def test_wrong_external_bundle_is_rejected_without_creating_cache(self):
+        fresh, _ = self.external_checkout()
+        wrong = self.root / "wrong.bundle"
+        wrong.write_bytes(b"not the original bundle")
+        with self.assertRaisesRegex(ValueError, "SHA-256/size differs"):
+            archive.restore(fresh, bundle=wrong)
+        self.assertFalse((fresh / ".local").exists())
+
+    def test_changed_external_cache_identity_is_rejected(self):
+        fresh, backup = self.external_checkout()
+        cache = archive.archive_repository(fresh, backup)
+        marker = cache / "ponder-parity-source.json"
+        marker.write_text('{}\n')
+        with self.assertRaisesRegex(ValueError, "cache identity differs"):
+            archive.verify(fresh)
 
     def test_new_runs_stay_ignored_and_summaries_can_be_promoted(self):
         (self.root / ".gitignore").write_text((archive.ROOT / ".gitignore").read_text())

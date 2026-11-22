@@ -5,9 +5,9 @@
 需要查看历史日志、冻结源码或运行完整历史验证时，先从仓库根目录执行：
 
 ```sh
-python3 tools/parity_archive.py restore
+python3 tools/parity_archive.py restore --bundle /path/to/original.bundle
 ```
 
-默认完整 clone 可以离线恢复。详细的校验、按目录恢复、独立备份与未来证据保存规则见 [`../README.md`](../README.md)。新运行产物默认忽略，只逐个提交经过复核的结果摘要。
+普通 clone 不再包含原始历史对象。需单独取得清单指定 SHA-256 的 bundle；恢复器只将它导入忽略的 `.local` 缓存，不会重新撑大主 `.git`。详细规则见 [`../README.md`](../README.md)。新运行产物默认忽略，只逐个提交经过复核的结果摘要。
 
 归档校验通过只说明证据可完整恢复，不代表这些历史测试刚刚重跑，也不增加上游移植通过数。

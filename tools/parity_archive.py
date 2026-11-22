@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Index historical parity evidence and restore verified bytes from Git, offline."""
+"""Restore historical evidence from a verified external bundle, without bloating .git."""
 
 import argparse
 import gzip
@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -37,6 +38,59 @@ def digest(path):
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             h.update(block)
     return h.hexdigest()
+
+
+def archive_repository(root, bundle=None):
+    """Open legacy objects separately; never fetch them into the working repo."""
+    manifest = json.loads((root / MANIFEST).read_text())
+    external = manifest.get("external_store")
+    if external is None:
+        return root  # Compatibility with original snapshots and their tests.
+    if external.get("kind") != "git_bundle" or not re.fullmatch(r"[0-9a-f]{64}", external["sha256"]):
+        raise ValueError("Unsupported external archive store")
+    cache = root / ".local/parity-archive" / ("objects-" + external["sha256"][:16] + ".git")
+    if cache.resolve() != cache.absolute():
+        raise ValueError("External archive cache must not contain symlinks")
+    marker = {key: external[key] for key in ("sha256", "bytes", "bundle_ref")}
+    marker["source_commit"] = manifest["source_commit"]
+    supplied = bundle or os.environ.get("PONDER_PARITY_BUNDLE")
+    default = PurePosixPath(external["default_file"])
+    if default.is_absolute() or ".." in default.parts or default.parts[:1] != (".local",):
+        raise ValueError("Default archive bundle must be an ignored .local path")
+    path = Path(supplied).absolute() if supplied else root / default
+    # An explicitly supplied bundle is always checked, even when a cache exists.
+    if supplied:
+        if not path.is_file() or path.stat().st_size != external["bytes"] or digest(path) != external["sha256"]:
+            raise ValueError("External archive bundle SHA-256/size differs")
+    if cache.exists():
+        if not (cache / "ponder-parity-source.json").is_file() or json.loads((cache / "ponder-parity-source.json").read_text()) != marker:
+            raise ValueError("External archive cache identity differs; refusing reuse")
+        git(cache, "cat-file", "-e", manifest["source_commit"] + "^{commit}")
+        return cache
+    if not path.is_file():
+        raise ValueError("Historical evidence is outside this repository. Supply --bundle /path/to/original.bundle or PONDER_PARITY_BUNDLE. Ordinary clones intentionally omit the old objects.")
+    if not supplied and (path.stat().st_size != external["bytes"] or digest(path) != external["sha256"]):
+        raise ValueError("External archive bundle SHA-256/size differs")
+    if not re.fullmatch(r"(?:HEAD|refs/[A-Za-z0-9._/-]+)", external["bundle_ref"]):
+        raise ValueError("Invalid external archive ref")
+    git(root, "bundle", "verify", str(path))
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    temporary = Path(tempfile.mkdtemp(prefix="import-", dir=cache.parent))
+    try:
+        git(temporary, "init", "--bare")
+        git(temporary, "-c", "gc.auto=0", "-c", "maintenance.auto=false", "fetch", "--no-tags", str(path), external["bundle_ref"] + ":refs/archive/source")
+        if git(temporary, "rev-parse", manifest["source_commit"] + "^{tree}").decode().strip() != manifest["source_tree"]:
+            raise ValueError("External bundle source tree differs")
+        (temporary / "ponder-parity-source.json").write_text(json.dumps(marker, sort_keys=True) + "\n")
+        try:
+            temporary.rename(cache)
+        except FileExistsError:
+            if json.loads((cache / "ponder-parity-source.json").read_text()) != marker:
+                raise ValueError("Concurrent archive cache identity differs")
+        return cache
+    finally:
+        if temporary.exists():
+            shutil.rmtree(temporary)
 
 
 def safe_path(root, name):
@@ -180,7 +234,7 @@ def snapshot(root, source="HEAD"):
     return {key: manifest[key] for key in ("source_commit", "original", "retained", "archived")}
 
 
-def load_archive(root):
+def load_archive(root, repository=None):
     manifest = json.loads((root / MANIFEST).read_text())
     if manifest["format"] != FORMAT or manifest["catalog"]["path"] != CATALOG:
         raise ValueError("Unsupported archive manifest")
@@ -192,13 +246,14 @@ def load_archive(root):
         raise ValueError("Archive source differs")
     if not re.fullmatch(r"[0-9a-f]{40}", manifest["source_commit"]):
         raise ValueError("Invalid source commit")
+    repository = repository if repository is not None else archive_repository(root)
     try:
-        source_tree = git(root, "rev-parse", manifest["source_commit"] + "^{tree}").decode().strip()
+        source_tree = git(repository, "rev-parse", manifest["source_commit"] + "^{tree}").decode().strip()
     except ValueError as error:
-        raise ValueError("Archive source commit is unavailable; use a full clone or import the backup bundle documented in parity/README.md") from error
+        raise ValueError("Archive source commit is unavailable; supply the external bundle documented in parity/README.md") from error
     if source_tree != manifest["source_tree"]:
         raise ValueError("Archive source tree differs")
-    source = {x["path"]: x for x in tree_entries(root, manifest["source_commit"])}
+    source = {x["path"]: x for x in tree_entries(repository, manifest["source_commit"])}
     seen = set()
     blob_hashes = {}
     for entries, key in ((catalog["files"], "archived"), (manifest["retained_files"], "retained")):
@@ -237,11 +292,12 @@ def select(entries, prefixes):
     return list({x["path"]: x for x in chosen}.values())
 
 
-def verify(root, prefixes=()):
-    manifest, entries = load_archive(root)
+def verify(root, prefixes=(), bundle=None, repository=None):
+    repository = repository if repository is not None else archive_repository(root, bundle)
+    manifest, entries = load_archive(root, repository)
     selected = select(entries, prefixes)
     unique = {x["git_blob"]: x for x in selected}
-    with Blobs(root) as blobs:
+    with Blobs(repository) as blobs:
         for number, entry in enumerate(unique.values(), 1):
             blobs.copy(entry)
             progress("verify blobs", number, len(unique))
@@ -266,8 +322,9 @@ def unchanged(path, entry):
     return stat_identity(after)
 
 
-def restore(root, prefixes=(), destination=None):
-    _, entries = load_archive(root)
+def restore(root, prefixes=(), destination=None, bundle=None, repository=None):
+    repository = repository if repository is not None else archive_repository(root, bundle)
+    _, entries = load_archive(root, repository)
     entries = select(entries, prefixes)
     destination = Path(destination).absolute() if destination is not None else root
     if destination.resolve() != destination:
@@ -278,7 +335,7 @@ def restore(root, prefixes=(), destination=None):
         if target.exists():
             unchanged(target, entry)
     restored = existing = 0
-    with Blobs(root) as blobs:
+    with Blobs(repository) as blobs:
         for number, entry in enumerate(entries, 1):
             target = safe_path(destination, entry["path"])
             if target.exists():
@@ -305,10 +362,11 @@ def restore(root, prefixes=(), destination=None):
     return {"restored": restored, "already_present": existing, "destination": str(destination)}
 
 
-def prune(root):
-    _, entries = load_archive(root)
+def prune(root, bundle=None):
+    repository = archive_repository(root, bundle)
+    _, entries = load_archive(root, repository)
     # All source blobs must be recoverable before removing any working copy.
-    verify(root)
+    verify(root, repository=repository)
     existing = []
     for number, entry in enumerate(entries, 1):
         target = safe_path(root, entry["path"])
@@ -336,20 +394,23 @@ def main():
     parser.add_argument("command", choices=("snapshot", "verify", "restore", "prune"))
     parser.add_argument("--prefix", action="append", default=[], help="Exact archived file or directory; repeatable")
     parser.add_argument("--destination", type=Path, help="Restore into a separate directory instead of this checkout")
+    parser.add_argument("--bundle", type=Path, help="External original.bundle; imported only into ignored .local storage")
     args = parser.parse_args()
     if args.command not in ("restore", "verify") and args.prefix:
         parser.error("--prefix applies only to verify/restore")
     if args.command != "restore" and args.destination:
         parser.error("--destination applies only to restore")
+    if args.command == "snapshot" and args.bundle:
+        parser.error("--bundle does not apply to snapshot")
     try:
         if args.command == "snapshot":
             result = snapshot(ROOT)
         elif args.command == "verify":
-            result = verify(ROOT, args.prefix)
+            result = verify(ROOT, args.prefix, bundle=args.bundle)
         elif args.command == "restore":
-            result = restore(ROOT, args.prefix, args.destination)
+            result = restore(ROOT, args.prefix, args.destination, bundle=args.bundle)
         else:
-            result = prune(ROOT)
+            result = prune(ROOT, bundle=args.bundle)
         print(json.dumps(result, indent=2))
     except (ValueError, KeyError, OSError, json.JSONDecodeError) as error:
         parser.exit(1, str(error) + "\n")
