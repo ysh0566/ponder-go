@@ -11,8 +11,12 @@
 - `.local/history-rewrite-20261122/original.git`：安装精简 Git 元数据时保留的原始目录，含原 refs、reflog 和对象。
 - `.local/history-rewrite-20261122/commit-map.tsv`：旧/新 SHA 映射；逐提交审计报告与其一并保存。
 
+同一映射和审计结论也以压缩 JSON 保存为 `parity/history-commit-map.json.gz`，随精简克隆获取。表中的旧 SHA 是文本索引，不会让 Git 重新保留原对象。
+
 这些备份不跟踪、不推送，须独立保管。不要在同一远端保留原始历史的备份分支或标签，否则仍会携带旧对象。历史证据恢复方式见 `parity/README.md`，缓存只写入忽略的 `.local`。
 
 本轮结果见 `parity/runs/history-rewrite-20261122/result.json`，包括独立完整克隆的 Git 大小、旧大对象不可达、逐提交内容核对、外部 bundle 恢复验证。首次只减少工作树的 `archive-cleanup-20261122/result.json` 保留为历史记录，其中“保留原历史”的决定已由本轮目标取代。
 
 发布需使用逐 ref 原 SHA 的租约，覆盖所有相关分支和标签，不能覆盖并发新提交。现有授权仍只允许私有 `ysh0566` 仓库发布；当前公开远端不会在本地验证期间修改。远端释放不可达对象的时间不由本地操作控制，克隆体积以从新 refs 实测的结果为准。
+
+远端尚未替换时，本地 `origin` 的 fetch 暂时指向不存在的占位 ref，阻止自动 fetch 把旧历史重新导回。成功按租约发布后，再恢复 `+refs/heads/*:refs/remotes/origin/*` 并获取远端。原始 fetch/跟踪配置保存在独立原始 Git 元数据中。
