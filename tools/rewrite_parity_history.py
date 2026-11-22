@@ -141,11 +141,20 @@ def rewrite(source, mirror, output):
     for ref in refs:
         if ref["symbolic"]:
             continue
-        # The current repository has commit refs only. Refuse unsupported tag
-        # types instead of dropping a tag or silently retaining its old history.
-        if ref["old"] not in mapping:
-            raise ValueError("Non-commit ref requires explicit migration: " + ref["name"])
-        ref["new"] = mapping[ref["old"]]
+        ref["type"] = git(mirror, "cat-file", "-t", ref["old"]).decode().strip()
+        if ref["type"] == "commit":
+            ref["new"] = mapping[ref["old"]]
+        elif ref["type"] == "tree":
+            # Codex turn-diff snapshots can point directly to root trees.
+            # Filtering commits alone would leave their payloads reachable.
+            ref["new"] = transform.root(ref["old"])
+            original_leaves = leaves(mirror, ref["old"])
+            expected = {p: meta for p, meta in original_leaves.items() if not p.startswith(b"parity/runs/") or p.decode() in retained}
+            if leaves(mirror, ref["new"]) != expected:
+                raise ValueError("Snapshot ref changed non-archive content: " + ref["name"])
+            ref["all_retained_blobs_and_modes_identical"] = True
+        else:
+            raise ValueError("Ref type requires explicit migration: " + ref["name"] + " (" + ref["type"] + ")")
         commands.append(f"update {ref['name']} {ref['new']} {ref['old']}")
     commands.extend(["prepare", "commit"])
     git(mirror, "update-ref", "--stdin", data=("\n".join(commands) + "\n").encode())
