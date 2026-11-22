@@ -1,6 +1,6 @@
 {
   "recorded_utc": "2026-11-22T17:26:48.828938+00:00",
-  "status": "local_history_rewrite_verified_remote_publication_pending",
+  "status": "history_rewrite_published_and_remote_full_clone_verified",
   "user_objective": "Reduce repository and full-clone size, preserving original evidence separately.",
   "history_acceptance": {
     "passed": true,
@@ -197,7 +197,7 @@
   },
   "parity_credit_added": 0,
   "remote_publication": {
-    "performed": false,
+    "performed": true,
     "remote_visibility_observed": "public",
     "existing_remote_heads": 10,
     "tags": 0,
@@ -211,7 +211,7 @@
       "push_permission": true,
       "git_helper_verified": true,
       "remote_heads_unchanged": 10,
-      "remote_writes": false,
+      "remote_writes": true,
       "new_tokens_created": false,
       "token_path_ignored": true,
       "ssh_credential_used_for_push": false,
@@ -219,7 +219,7 @@
     },
     "push_plan": ".local/history-rewrite-20261122/push-plan.json",
     "publisher": ".local/history-rewrite-20261122/publish_history.py",
-    "origin_fetch_suspended_until_publication": true,
+    "origin_fetch_suspended_until_publication": false,
     "authorization": {
       "approved": true,
       "keep_repository_public": true,
@@ -228,7 +228,106 @@
       "identity_required": "ysh0566",
       "source": "Explicit user reply: 保持公开，授权本次历史重写发布"
     },
-    "credential_blocker": null
+    "credential_blocker": null,
+    "execution": {
+      "started_utc": "2026-11-22T17:34:04.444193+00:00",
+      "finished_utc": "2026-11-22T17:34:12.125078+00:00",
+      "exit_code": 0,
+      "log": "publication-push.log",
+      "published": true,
+      "verified_login": "ysh0566",
+      "atomic_leased_refs": 10
+    },
+    "normal_origin_fetch_restored": true,
+    "main_tracking": "origin/main",
+    "remote_full_clone": {
+      "verified_utc": "2026-11-22T17:34:54.069662+00:00",
+      "repository": "https://github.com/ysh0566/ponder-go.git",
+      "head": "97dc093007f7fa771a44e15ded587ab3cafbc7b5",
+      "full_clone_verified": true,
+      "shallow": false,
+      "shared_objects": false,
+      "remote_branches_verified": 10,
+      "tags": 0,
+      "clone_git_bytes": 18058673,
+      "clone_git_mib": 17.222,
+      "downloaded_pack_bytes": 17425852,
+      "old_source_commit_absent": true,
+      "old_largest_blob_absent": true,
+      "token_absent_from_all_history": true,
+      "fsck_passed": true,
+      "elapsed_seconds": 8.234,
+      "temporary_clone_removed": true,
+      "refs": {
+        "refs/heads/m45-managed-live-store": "82e92b08a19a1170818fdc069e5bc2386ee54484",
+        "refs/heads/main": "97dc093007f7fa771a44e15ded587ab3cafbc7b5",
+        "refs/heads/publish/factory-traces-v13-20261103": "d5689d73737180032d12ddb3799fab6e5f261a28",
+        "refs/heads/publish/factory-transactions-v11-20261102": "d19f777e534c2bfbe8e4e1cfa89697718ad592ab",
+        "refs/heads/publish/factory-transfers-v12-20261103": "2860d2b723dbf0f692fea0c1c505c44e144b745d",
+        "refs/heads/publish/factory-v10-20261102": "ae711389f26ce5e27c199d9e90c23c85aaf93cce",
+        "refs/heads/publish/omnichain-finalized-v14-20261103": "c6eb0747fbda90ace96b583b332ea91d54a42767",
+        "refs/heads/publish/omnichain-logonly-v16-20261103": "7a9a27bad365c57478216d85cc9701d5909f19ac",
+        "refs/heads/publish/omnichain-static-logs-v15-20261103": "b59dc1b94bf4c45ac4408e0db52299717e840077",
+        "refs/heads/publish/source-init-v9-20261102": "bbce40f4ffd88c3fbf481a0e7625a742ce7f5f2c"
+      }
+    },
+    "evidence": {
+      "file": "parity/runs/history-rewrite-20261122/publication-evidence.tar.gz",
+      "bytes": 9869,
+      "sha256": "6a2ab3fd847589e321ae8c13047e424e690f3a78ce2e91617e81e974e9808692",
+      "members": [
+        {
+          "member": "history-rewrite-20261122/publication-execution.json",
+          "bytes": 241,
+          "sha256": "5cb269f75e707b0a5c1b771c090a6c3636eac6b1a89544e5960dfd61120bdaa2"
+        },
+        {
+          "member": "history-rewrite-20261122/publication-push.log",
+          "bytes": 48118,
+          "sha256": "5c2ff3b0d7333b447f4371774be327b3216a48580f720ac4e563b5a75364c37e"
+        },
+        {
+          "member": "history-rewrite-20261122/credential-verified.json",
+          "bytes": 300,
+          "sha256": "6bd80ef7e3d5ad520d0f7d30c99a305537967ad380c4b206c028bd8c6b2f89dd"
+        },
+        {
+          "member": "history-rewrite-20261122/remote-clone.json",
+          "bytes": 1554,
+          "sha256": "cd74865731b080c4f69dfe37658deac9f438a34690f62ce72af058b3caf0cd7f"
+        },
+        {
+          "member": "history-rewrite-20261122/remote-clone.log",
+          "bytes": 13697,
+          "sha256": "47c7bafdb598b3a97fca8425da9bcb73e4d480871c9ceb723e577039e0e37f2a"
+        },
+        {
+          "member": "history-rewrite-20261122/remote-clone-fsck.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "member": "history-rewrite-20261122/final-export.json",
+          "bytes": 215,
+          "sha256": "cee0619a9c5404919bae456e478e1ca1cac0aadf0cac5e46ae02f9d1a3e09e36"
+        },
+        {
+          "member": "history-rewrite-20261122/push-plan-at-publication.json",
+          "bytes": 2090,
+          "sha256": "e9ab2bf68ac3076f857919e2b5191217c0ff47d31fc3a871cb803ec41ac879b7"
+        },
+        {
+          "member": "history-rewrite-20261122/publish_history.py",
+          "bytes": 3734,
+          "sha256": "9bcacf55ae2a62aa67458f1bc566512d0bc66af11ce98509429568273eeefac0"
+        },
+        {
+          "member": "history-rewrite-20261122/credential_helper.py",
+          "bytes": 769,
+          "sha256": "3f4ff6ba0d8c46a9fb3807b3c0e061889acd57be61c0a0da1843916cd88a64f9"
+        }
+      ]
+    }
   },
   "diagnostics": "The first isolated filter candidate refused direct Codex tree refs. The corrected candidate filters and audits them; the original failure log and candidate metadata are retained. No original evidence or test failure was rewritten as success.",
   "evidence": {
@@ -363,7 +462,7 @@
       }
     ]
   },
-  "state_updated_utc": "2026-11-22T17:33:18.953014+00:00",
+  "state_updated_utc": "2026-11-22T17:35:48.937347+00:00",
   "final_export_verification": {
     "head": "f3cc7e7e0741a6a2ca9a1b63194188ca4c011652",
     "clone_git_bytes": 18245812,
