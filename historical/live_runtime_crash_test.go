@@ -101,15 +101,7 @@ func TestRuntimeContinuousCrash(t *testing.T) {
 				c["reorgWindow"] = uint64(600)
 			}
 			f := newManagedFiniteFixture(t, "postgres", b)
-			root := os.Getenv("PONDER_M45_TEST_ROOT")
-			dir, err := os.MkdirTemp(root, "runtime-app-crash-"+phase+"-")
-			if err != nil {
-				t.Fatal(err)
-			}
-			resolved, err := filepath.EvalSymlinks(dir)
-			if err != nil || !strings.HasPrefix(resolved, "/root/repo/") {
-				t.Fatalf("child evidence escaped /root/repo: %s %v", resolved, err)
-			}
+			dir := newRuntimeExitDirectory(t, "runtime-app-crash-"+phase+"-")
 			marker := filepath.Join(dir, "exit-marker.json")
 			spec := continuousCrashSpec{RPC: s.p.server.URL, Phase: phase, Marker: marker, Storage: f.options.Owned.Storage}
 			raw, err := json.Marshal(spec)

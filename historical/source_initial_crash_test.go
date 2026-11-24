@@ -12,7 +12,6 @@ import (
 	"ponder.local/ponder-go/indexing"
 	"ponder.local/ponder-go/schema"
 	"ponder.local/ponder-go/store"
-	"strings"
 	"testing"
 	"time"
 )
@@ -70,14 +69,7 @@ func TestRuntimeSourceCrash(t *testing.T) {
 		calls := 0
 		b := sourceMatrixBuild(t, s.p, 1, 2, 1, "both", false, indexing.Handler(finiteIncrement), setupCrashHandler(&calls))
 		f := newManagedFiniteFixture(t, "postgres", b)
-		dir, e := os.MkdirTemp(os.Getenv("PONDER_M45_TEST_ROOT"), "source-app-crash-")
-		if e != nil {
-			t.Fatal(e)
-		}
-		real, e := filepath.EvalSymlinks(dir)
-		if e != nil || !strings.HasPrefix(real, "/root/repo/") {
-			t.Fatalf("crash storage path %s %v", real, e)
-		}
+		dir := newRuntimeExitDirectory(t, "source-app-crash-")
 		marker := filepath.Join(dir, "exit-marker.json")
 		spec, e := json.Marshal(setupCrashSpec{RPC: s.p.server.URL, Marker: marker, Storage: f.options.Owned.Storage})
 		if e != nil {

@@ -103,7 +103,7 @@ func TestRuntimeOmnichainLogOnlyApplicationExit(t *testing.T) {
 				b := omniLogOnlyBuild(t, g, p, handlers)
 				f := newManagedFiniteFixture(t, "postgres", b)
 				omnichainGoldenStorage(&f)
-				dir := newOmnichainExitDirectory(t, "omni-logonly-exit-"+name+"-"+phase+"-")
+				dir := newRuntimeExitDirectory(t, "omni-logonly-exit-"+name+"-"+phase+"-")
 				golden, err := os.ReadFile("testdata/runtime_omnichain_logonly_source_golden.json")
 				if err != nil {
 					t.Fatal(err)

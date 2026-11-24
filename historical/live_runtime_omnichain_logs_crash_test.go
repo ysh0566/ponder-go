@@ -116,7 +116,7 @@ func TestRuntimeOmnichainStaticLogsApplicationExit(t *testing.T) {
 				b := omniLogsBuild(t, g, p, handlers)
 				f := newManagedFiniteFixture(t, "postgres", b)
 				omnichainGoldenStorage(&f)
-				dir := newOmnichainExitDirectory(t, "omni-static-log-exit-"+name+"-"+phase+"-")
+				dir := newRuntimeExitDirectory(t, "omni-static-log-exit-"+name+"-"+phase+"-")
 				golden, err := os.ReadFile("testdata/runtime_omnichain_logs_source_golden.json")
 				if err != nil {
 					t.Fatal(err)

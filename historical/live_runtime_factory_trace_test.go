@@ -466,14 +466,7 @@ func TestRuntimeFactoryTraceCrash(t *testing.T) {
 				s, _ := factoryTraceRPC(t, 3, g)
 				b := factoryTraceBuild(t, s.p, g, 1, 600, cache, true, factoryTraceHandler(g, true))
 				f := newManagedFiniteFixture(t, "postgres", b)
-				dir, err := os.MkdirTemp(os.Getenv("PONDER_M45_TEST_ROOT"), "factory-trace-app-crash-")
-				if err != nil {
-					t.Fatal(err)
-				}
-				resolved, err := filepath.EvalSymlinks(dir)
-				if err != nil || !strings.HasPrefix(resolved, "/root/repo/") {
-					t.Fatalf("crash evidence path %s %v", resolved, err)
-				}
+				dir := newRuntimeExitDirectory(t, "factory-trace-app-crash-")
 				marker := filepath.Join(dir, "exit-marker.json")
 				spec := factoryTraceCrashSpec{continuousCrashSpec: continuousCrashSpec{RPC: s.p.server.URL, Phase: phase, Marker: marker, Storage: f.options.Owned.Storage}, Cache: cache}
 				raw, err := json.Marshal(spec)

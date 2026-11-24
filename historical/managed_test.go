@@ -37,6 +37,27 @@ var managedHistoricalShared struct {
 	poisoned        atomic.Bool
 }
 
+func newRuntimeExitDirectory(t *testing.T, pattern string) string {
+	t.Helper()
+	root := os.Getenv("PONDER_M45_TEST_ROOT")
+	if !filepath.IsAbs(root) {
+		t.Fatal("an absolute PONDER_M45_TEST_ROOT is required")
+	}
+	root, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, err := os.MkdirTemp(root, pattern)
+	if err != nil {
+		t.Fatal(err)
+	}
+	real, err := filepath.EvalSymlinks(dir)
+	if err != nil || filepath.Dir(real) != root {
+		t.Fatalf("invalid retained crash directory %q under %q: %v", real, root, err)
+	}
+	return real
+}
+
 func managedHistoricalDirectory(t *testing.T, root string) string {
 	t.Helper()
 	if strings.HasPrefix(t.Name(), "TestManagedFiniteCloseRetainsOwnership/") {

@@ -335,27 +335,6 @@ func omnichainCrashChild(t *testing.T, path string) {
 	_, err = r.Run(context.Background())
 	t.Fatalf("child did not exit: %v", err)
 }
-func newOmnichainExitDirectory(t *testing.T, pattern string) string {
-	t.Helper()
-	root := os.Getenv("PONDER_M45_TEST_ROOT")
-	if !filepath.IsAbs(root) {
-		t.Fatal("an absolute PONDER_M45_TEST_ROOT is required")
-	}
-	root, err := filepath.EvalSymlinks(root)
-	if err != nil {
-		t.Fatal(err)
-	}
-	dir, err := os.MkdirTemp(root, pattern)
-	if err != nil {
-		t.Fatal(err)
-	}
-	real, err := filepath.EvalSymlinks(dir)
-	if err != nil || filepath.Dir(real) != root {
-		t.Fatalf("invalid retained crash directory %q under %q: %v", real, root, err)
-	}
-	return real
-}
-
 func TestRuntimeOmnichainApplicationExit(t *testing.T) {
 	if path := os.Getenv("PONDER_M45_OMNICHAIN_CRASH_SPEC"); path != "" {
 		omnichainCrashChild(t, path)
@@ -370,7 +349,7 @@ func TestRuntimeOmnichainApplicationExit(t *testing.T) {
 			b := omnichainGoldenBuild(t, p, omnichainGoldenHandler(g, &calls, nil))
 			f := newManagedFiniteFixture(t, "postgres", b)
 			omnichainGoldenStorage(&f)
-			dir := newOmnichainExitDirectory(t, "omni-app-exit-"+phase+"-")
+			dir := newRuntimeExitDirectory(t, "omni-app-exit-"+phase+"-")
 			marker := filepath.Join(dir, "exit-marker.json")
 			spec := omnichainCrashSpec{RPC: p.server.URL, Phase: phase, Marker: marker, Storage: f.options.Owned.Storage}
 			raw, err := json.Marshal(spec)
