@@ -152,3 +152,45 @@ tacchaind start --home "$dev_root"
 Use the URL adapter above for the Swell and Avalanche literals, including Avalanche’s RPC path. For TAC, set `RPC_URL_ANKR_239=http://127.0.0.1:8545` directly in the upstream test process. The original Viem client receives the node's JSON-RPC response.
 
 The tagged sources define each limit. [OP Labs proxyd](https://github.com/ethereum-optimism/infra/blob/b17cf26e2828340494cc43fbc8e2b2c36466a93b/proxyd/backend.go#L2142) · [Coreth](https://github.com/ava-labs/coreth/blob/v0.15.3-rc.1/eth/filters/filter.go#L201) · [TAC EVM](https://github.com/TacBuild/evm/blob/v0.6.0-tac.15/rpc/namespaces/ethereum/eth/filters/filters.go#L168) · [TAC localnet initialization](https://github.com/TacBuild/tacchain/blob/v1.6.4/contrib/localnet/init.sh)
+
+## Run every original utils declaration
+
+Use Python 3.12+, the installed upstream checkout at the revision in the test ledger, and the reviewed seven-index archive from the six-chain collection. The archive SHA-256 is `04bb929c0e160d13784115650afe8131df3f937ee90ea12dd404c641ad61c858`. The three supplemental chain fixtures ship with this checkout. Each invocation requires a new output directory.
+
+```sh
+python3 tools/upstream_utils_suite.py --upstream "$PONDER_UPSTREAM" \
+  --archive "$REVIEWED_INDEX_ARCHIVE" --output "$REPORTS/utils"
+```
+
+The runner starts nine loopback listeners for 19 complete test files. Eight original environment variables point to these listeners. The HTTP adapter maps 11 original URL literals. The remaining runtime files use their original transports. A separate Vitest invocation runs the type declarations. The three pairs of JSON and exit-code files retain failures from all partitions. Public endpoint results can change between runs.
+
+## Check the complete upstream inventory
+
+Use a disposable checkout of Ponder `17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`. With the pinned pnpm and Foundry executables on PATH, prepare the five workspaces from the upstream root.
+
+```sh
+pnpm --filter ponder... --filter @ponder/react... --filter @ponder/client... \
+  --filter create-ponder... --filter @ponder/utils... install --frozen-lockfile
+pnpm --filter @ponder/client --filter @ponder/utils run build
+(cd packages/core && pnpm exec wagmi generate)
+```
+
+For each row below, run its command from the indicated upstream package. Set `CI=1` and append `--configLoader native --maxWorkers=1 --reporter=json --outputFile="$REPORTS/$name.json"`. Record the actual process exit code in `"$REPORTS/$name.exit"` even on failure. Explicit file arguments can be selected from the matching `files[].path` entries in the Go repository's `parity/test-ledger.json`. Run core in an isolated network namespace with Anvil 1.8.5 on PATH. The PostgreSQL run needs a disposable server dedicated to the tests. The upstream setup creates and removes test databases.
+
+| Report name | Directory under packages | Command | Ledger file suffix |
+| --- | --- | --- | --- |
+| core-postgres | core | `DATABASE_URL="$TASK_POSTGRES_URL" pnpm exec vitest run` | `.test.ts` |
+| core-pglite | core | `env -u DATABASE_URL pnpm exec vitest run` | `.test.ts` |
+| core-types | core | `env -u DATABASE_URL pnpm exec vitest run --typecheck.only` | `.test-d.ts` |
+| client | client | `pnpm exec vitest run` | `.test.ts` |
+| react | react | `pnpm exec vitest run --typecheck.only` | `.test-d.ts` |
+| create-ponder | create-ponder | `pnpm test` | `.test.ts` |
+
+The report checker verifies all source digests, expanded titles and multiplicities. Each runtime core declaration counts once, with a failure on either backend retained. Where mixed outcomes on both backends prevent assignment to identically titled declarations, the report lists all candidate IDs as ambiguous. Exit 0 means every active declaration passed. Exit 1 means a complete set of reports contains unresolved cases. Exit 2 means the evidence could not be reconciled or the summary could not be written.
+
+```sh
+python3 tools/upstream_suite_report.py --upstream "$PONDER_UPSTREAM" \
+  --pglite "$REPORTS/core-pglite.json" --postgres "$REPORTS/core-postgres.json" \
+  --output "$REPORTS/summary.json" "$REPORTS/core-types.json" "$REPORTS/client.json" \
+  "$REPORTS/react.json" "$REPORTS/create-ponder.json" "$REPORTS/utils"/utils-*.json
+```
