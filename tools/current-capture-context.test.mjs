@@ -60,7 +60,7 @@ test("a fresh SQL run authenticates its own source and reports", t => {
 
 test("a failed or foreign capture report cannot validate a fixture", t => {
   const {project, report, put} = sqlCapture(t);
-  for (const change of [{success: false}, {original_passed: 13}, {command: [...report.command, "--passWithNoTests"]},
+  for (const change of [{success: false}, {success: "false"}, {original_passed: 13}, {command: [...report.command, "--passWithNoTests"]},
     {capture: {...report.capture, sha256: "0".repeat(64)}}]) {
     put(dir + "/result.json", {...report, ...change});
     assert.throws(() => currentCaptureContext(project, file, run));

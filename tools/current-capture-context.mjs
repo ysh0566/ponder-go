@@ -68,9 +68,9 @@ export function currentCaptureContext(project, fixtureFile, run) {
       fixture.cases.length !== caseCount || proof.scope !== scope || proof.pristine_original_acceptance !== false ||
       !isDeepStrictEqual(report.command, command) ||
       proof.original_passed !== passed || proof.original_pending !== 0 ||
-      !report.complete || !report.success || report.exit_code !== 0 || report.signal !== null || report.error !== null ||
+      report.complete !== true || report.success !== true || report.exit_code !== 0 || report.signal !== null || report.error !== null ||
       report.original_passed !== passed || proof.raw_oracle.file !== oracleFile || proof.raw_oracle.sha256 !== digest(raw) ||
-      !oracle.success || oracle.numPassedTests !== passed || oracle.numFailedTests !== 0 || oracle.numPendingTests !== 0 ||
+      oracle.success !== true || oracle.numPassedTests !== passed || oracle.numFailedTests !== 0 || oracle.numPendingTests !== 0 ||
       oracle.testResults.length !== 1 || suite.status !== "passed" || suite.assertionResults.length !== passed ||
       suite.assertionResults.some(result => result.status !== "passed") || suite.name !== path.resolve(project, "../ponder-upstream", source)) {
     throw Error("Incomplete or mismatched current " + mode + " capture");
@@ -81,7 +81,8 @@ export function currentCaptureContext(project, fixtureFile, run) {
         report.capture.sha256 !== digest(fixtureBytes) ||
         !isDeepStrictEqual(report.source_context, proof.source_context)) throw Error("Mismatched SQL capture report");
   } else if (report.mode !== mode || report.file !== source || report.selected_source_cases !== caseCount ||
-             report.capture_file !== dir + "/calls.json" || report.anvil_version !== proof.anvil_version) {
+             report.capture_file !== dir + "/calls.json" || typeof report.anvil_version !== "string" ||
+             !report.anvil_version.trim() || report.anvil_version !== proof.anvil_version) {
     throw Error("Mismatched source capture report for " + mode);
   }
   const expected = sourceFiles(mode, test).sort();
