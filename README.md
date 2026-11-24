@@ -30,6 +30,8 @@ M45 追加的 factory 日志、交易、账户 transfer 及合约函数 CALL 的
 
 ## 验证
 
+缺少服务商测试端点时，可以采集指定区块范围的真实日志，在本机运行上游的历史数据断言。采集、启动和 Vitest 命令见[自建历史日志 RPC](docs/HISTORICAL_LOG_RPC.md)。
+
 历史大体积运行证据已从 Git 历史移出，普通克隆仅携带代码、测试、台账和已选摘要。历史审计或完整验证前，需单独取得原始历史 bundle，再执行 `python3 tools/parity_archive.py restore --bundle /path/to/original.bundle`；旧对象只进入忽略的 `.local` 缓存。详见 [parity 归档说明](parity/README.md) 和 [历史重写记录](docs/HISTORY_REWRITE.md)。这项整理不改变原有移植覆盖或验证结论。
 
 当前云端工具为Go1.25.0、Node24.22.1、pnpm12.10.1、Vitest5.0.2、Foundry/Anvil1.8.5、PG14.24和真实PGlite0.2.13，M39 实际版本记录在 `parity/runs/indexing-actions-m39/tool-versions.txt`（旧 `parity/runs/tool-versions.txt` 为历史快照）。当前专用PG仅监听127.0.0.1:55432，数据在任务云目录；此前Mac Docker/Anvil0.2环境为冻结历史。M42完整验收只创建新的任务测试cluster并验证SHOW data_directory，绝不重置旧cluster或连接业务库。
