@@ -49,6 +49,10 @@ bash tools/multichain-atomic-postgres-fixture.sh "$RUN-fixture" \
 
 脚本先生成原例/差分fixture和ABI/ORM/callback编译证明，再列出全部Go包及顶层测试，按每组4函数串行执行normal/race，保存完整执行计划和前后源码指纹。此分组适应云端内存，原测试体及Go默认timeout不改。随后执行vet、CLI/示例构建、原版core201活动用例/2原skip、选择性4+15声明、完整events/filter采集、参数类型、SDK及差分。云端并行工作须用任务 `flock` 串行化重测试。缺PG变量时单独Go测试会标记相关集成未运行；完整脚本直接拒绝缺失变量。
 
+普通入口 `sh tools/verify.sh` 在准备输入后记录各验证步骤的退出码，路径为 `parity/runs/original-captures/<本次运行编号>/verification.tsv`。普通 Go 测试或 SDK 测试失败时，其余独立检查和竞态测试继续运行。任一必需检查失败，命令返回非零并保留已有台账。Go 批次报告的 `not_started` 列出未启动的顶层测试，`unfinished` 列出已启动但缺少终态的测试。
+
+`PONDER_GO_TEST_BATCH_SIZE=1` 可让每个顶层函数独占一次 Go 调用。如果单个集成测试矩阵超过 Go 默认的包级时限，可显式设置 `PONDER_GO_TEST_TIMEOUT_MINUTES=60`。执行报告会记录实际时限与命令。上游 Vitest 用例沿用各自原有的时限。
+
 SDK 测试单独运行，保留原断言与 inline snapshots：
 
 ```sh

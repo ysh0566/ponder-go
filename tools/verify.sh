@@ -4,6 +4,9 @@ cd "$(dirname "$0")/.."
 : "${PONDER_TEST_POSTGRES:?Set the explicit task-only PostgreSQL URL; no environment fallback is used.}"
 export GOMODCACHE="$PWD/.toolcache/gomod"
 export GOCACHE="$PWD/.toolcache/gobuild"
+# The result collectors below read this directory. A prior focused run may
+# have exported a different destination for the standalone package runner.
+export PONDER_RUN_DIR="$PWD/parity/runs"
 export PATH="$PWD/../ponder-upstream/node_modules/.bin:$PATH"
 mkdir -p parity/runs bin
 go version > parity/runs/tool-versions.txt
@@ -60,22 +63,50 @@ node tools/source-realtime-controls.mjs
 node tools/source-realtime-observer-probe.mjs
 node tools/source-realtime-pristine.mjs
 node tools/record-native-inputs.mjs
-go test -count=1 -json ./abi/testdata/compile/generated > parity/runs/abi-typed-go.jsonl
-go test -count=1 -race -json ./abi/testdata/compile/generated > parity/runs/abi-typed-race.jsonl
-node tools/go-tests.mjs
-go vet ./... > parity/runs/go-vet.txt 2>&1
-go build -o bin/ponder ./cmd/ponder
-go build -o bin/erc20 ./examples/erc20
-CI=1 ../ponder-upstream/packages/core/node_modules/.bin/vitest run --config tools/oracle.config.mjs --configLoader native src/utils/checkpoint.test.ts src/utils/interval.test.ts --reporter=json --outputFile="$PWD/parity/runs/foundation-oracle.json"
-CI=1 ../ponder-upstream/packages/core/node_modules/.bin/vitest run --config tools/oracle.config.mjs --configLoader native src/utils/checkpoint.test.ts src/utils/interval.test.ts src/utils/finality.test.ts src/build/schema.test.ts src/utils/decodeEventLog.test.ts src/utils/decodeAbiParameters.test.ts src/build/factory.test.ts src/utils/offset.test.ts src/indexing-store/utils.test.ts src/runtime/fragments.test.ts src/rpc/actions.test.ts --reporter=json --outputFile="$PWD/parity/runs/core-oracle.json"
-node tools/parameters-typecheck.mjs
-(cd sdk/typescript/client && CI=1 ./node_modules/.bin/vitest run --configLoader native --reporter=json --outputFile="$PWD/../../../parity/client-original.json")
-(cd sdk/typescript/react && CI=1 ./node_modules/.bin/vitest run --typecheck.only --configLoader native --reporter=json --outputFile="$PWD/../../../parity/react-original-typecheck-supported.json")
-node tools/differential.mjs
-node tools/compiler-cache-cutover.mjs --phase=normal-to-race
-node tools/go-tests.mjs --race
-node tools/config-live-results.mjs
-node tools/source-sync-results.mjs
-node tools/source-historical-results.mjs
-node tools/source-realtime-results.mjs
-node tools/record-results.mjs
+# Preparations above supply shared inputs. After they succeed, execute every
+# independent check and keep its exit code beside this invocation's captures.
+verification_status="parity/runs/original-captures/$capture_run/verification.tsv"
+printf 'stage\tstatus\n' > "$verification_status"
+checks_failed=0
+run_check() {
+	check_name=$1
+	shift
+	check_status=0
+	"$@" || check_status=$?
+	printf '%s\t%s\n' "$check_name" "$check_status" >> "$verification_status"
+	if [ "$check_status" -ne 0 ]; then
+		printf 'Verification stage %s exited %s\n' "$check_name" "$check_status" >&2
+		checks_failed=1
+	fi
+}
+run_check abi-normal go test -count=1 -json ./abi/testdata/compile/generated > parity/runs/abi-typed-go.jsonl
+run_check abi-race go test -count=1 -race -json ./abi/testdata/compile/generated > parity/runs/abi-typed-race.jsonl
+run_check native-normal node tools/go-tests.mjs
+normal_status=$check_status
+run_check native-vet go vet ./... > parity/runs/go-vet.txt 2>&1
+run_check build-ponder go build -o bin/ponder ./cmd/ponder
+run_check build-erc20 go build -o bin/erc20 ./examples/erc20
+run_check foundation-original env CI=1 ../ponder-upstream/packages/core/node_modules/.bin/vitest run --config tools/oracle.config.mjs --configLoader native src/utils/checkpoint.test.ts src/utils/interval.test.ts --reporter=json --outputFile="$PWD/parity/runs/foundation-oracle.json"
+run_check core-original env CI=1 ../ponder-upstream/packages/core/node_modules/.bin/vitest run --config tools/oracle.config.mjs --configLoader native src/utils/checkpoint.test.ts src/utils/interval.test.ts src/utils/finality.test.ts src/build/schema.test.ts src/utils/decodeEventLog.test.ts src/utils/decodeAbiParameters.test.ts src/build/factory.test.ts src/utils/offset.test.ts src/indexing-store/utils.test.ts src/runtime/fragments.test.ts src/rpc/actions.test.ts --reporter=json --outputFile="$PWD/parity/runs/core-oracle.json"
+run_check parameter-types node tools/parameters-typecheck.mjs
+run_check client-original sh -c 'cd sdk/typescript/client && CI=1 ./node_modules/.bin/vitest run --configLoader native --reporter=json --outputFile="$PWD/../../../parity/client-original.json"'
+run_check react-types sh -c 'cd sdk/typescript/react && CI=1 ./node_modules/.bin/vitest run --typecheck.only --configLoader native --reporter=json --outputFile="$PWD/../../../parity/react-original-typecheck-supported.json"'
+run_check differential node tools/differential.mjs
+if [ "$normal_status" -eq 0 ]; then
+	run_check compiler-cache node tools/compiler-cache-cutover.mjs --phase=normal-to-race
+else
+	printf 'compiler-cache\tnormal-run-failed\n' >> "$verification_status"
+fi
+run_check native-race node tools/go-tests.mjs --race
+if [ "$checks_failed" -ne 0 ]; then
+	printf 'Verification failed. See %s\n' "$verification_status" >&2
+	exit 1
+fi
+run_check config-results node tools/config-live-results.mjs
+run_check sync-results node tools/source-sync-results.mjs
+run_check historical-results node tools/source-historical-results.mjs
+run_check realtime-results node tools/source-realtime-results.mjs
+if [ "$checks_failed" -eq 0 ]; then
+	run_check parity-results node tools/record-results.mjs
+fi
+exit "$checks_failed"
