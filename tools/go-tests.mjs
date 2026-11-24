@@ -8,6 +8,10 @@ const root = path.resolve(import.meta.dirname, "..");
 const directory = path.resolve(root, process.env.PONDER_RUN_DIR ?? "parity/runs");
 const race = process.argv.includes("--race");
 const selections = process.argv.filter(x => x.startsWith("--package=")).map(x => x.slice(10));
+const batchSize = Number(process.env.PONDER_GO_TEST_BATCH_SIZE ?? 4);
+if (!Number.isSafeInteger(batchSize) || batchSize < 1) {
+	throw new Error("PONDER_GO_TEST_BATCH_SIZE must be a positive integer");
+}
 const name = race ? "go-race" : "go-test";
 fs.mkdirSync(directory, { recursive: true });
 const output = fs.openSync(path.join(directory, `${name}.jsonl`), "w");
@@ -15,8 +19,9 @@ const reportPath = path.join(directory, `${name}-execution.json`);
 const report = {
 	started_utc: new Date().toISOString(),
 	race,
+	batch_size: batchSize,
 	scope: selections.length ? "explicit_package_subset" : "all_module_packages",
-	policy: "Run every listed Test, Fuzz seed and Example once. Partition top-level functions into disjoint groups of four, sequentially. Go's original default test timeout and all test bodies are unchanged. This limits simultaneous PGlite memory and avoids the measured ten-minute whole-store timeout.",
+	policy: `Run every listed Test, Fuzz seed and Example once. Run disjoint batches of up to ${batchSize} top-level functions in sequence. Each batch uses Go's default test timeout.`,
 	packages: [],
 	complete: false,
 	source_fingerprint: sourceFingerprint(root),
@@ -37,7 +42,7 @@ try {
 		const entry = { package: pkg, listed_functions: names, batches: [] };
 		report.packages.push(entry);
 		const groups = [];
-		for (let i = 0; i < names.length; i += 4) groups.push(names.slice(i, i + 4));
+		for (let i = 0; i < names.length; i += batchSize) groups.push(names.slice(i, i + batchSize));
 		if (!groups.length) groups.push([]);
 		for (const selected of groups) {
 			const args = ["test", "-count=1", ...flags, "-json"];
