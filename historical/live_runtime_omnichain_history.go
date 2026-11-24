@@ -86,12 +86,15 @@ func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *inde
 			events[cp.BlockNumber] = append(events[cp.BlockNumber], ev)
 		}
 		previous := control.Cursors[g.ChainID]
+		actions := rpc.NewActions(epoch.Requester(i))
 		for n := next; n <= end.BlockNumber; n++ {
 			input := events[n]
 			if len(input) == 0 && !r.logOnly {
 				return nil, nil, fmt.Errorf("omnichain block partition lacks its closing callback")
 			}
-			raw, err := rpc.NewActions(epoch.Requester(i)).GetSourceBlockByNumber(ctx, source.Hex(n), true)
+			// Empty log-only heights still need a fresh lineage check. Their
+			// partitions have no callback inputs that require transaction bodies.
+			raw, err := actions.GetSourceBlockByNumber(ctx, source.Hex(n), len(input) != 0)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -107,7 +110,7 @@ func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *inde
 			if err := r.validateOmnichainPartition(input, head); err != nil {
 				return nil, nil, err
 			}
-			blocks = append(blocks, &runtimeAcquiredBlock{index: i, id: g.ChainID, head: head, raw: raw, events: input, history: true})
+			blocks = append(blocks, &runtimeAcquiredBlock{index: i, id: g.ChainID, head: head, events: input, history: true})
 			previous = head
 		}
 	}

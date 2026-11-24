@@ -182,6 +182,9 @@ func TestRuntimeOmnichainLogOnlySource(t *testing.T) {
 					}
 					counts.mu.Lock()
 					defer counts.mu.Unlock()
+					if fixture.Name == "small" && counts.FullAt["0x2"] != 0 {
+						t.Fatalf("transaction bodies requested for empty middle block %d times", counts.FullAt["0x2"])
+					}
 					for _, id := range []uint64{1, 2} {
 						if counts.Logs[id] == 0 {
 							t.Fatalf("chain%d skipped actual source RPC %+v", id, counts)

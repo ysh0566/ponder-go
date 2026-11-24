@@ -11,7 +11,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 
@@ -117,13 +116,7 @@ func TestRuntimeOmnichainStaticLogsApplicationExit(t *testing.T) {
 				b := omniLogsBuild(t, g, p, handlers)
 				f := newManagedFiniteFixture(t, "postgres", b)
 				omnichainGoldenStorage(&f)
-				dir, err := os.MkdirTemp(os.Getenv("PONDER_M45_TEST_ROOT"), "omni-static-log-exit-"+name+"-"+phase+"-")
-				if err != nil {
-					t.Fatal(err)
-				}
-				if real, e := filepath.EvalSymlinks(dir); e != nil || !strings.HasPrefix(real, "/root/repo/") {
-					t.Fatalf("invalid retained log crash root %s %v", real, e)
-				}
+				dir := newOmnichainExitDirectory(t, "omni-static-log-exit-"+name+"-"+phase+"-")
 				golden, err := os.ReadFile("testdata/runtime_omnichain_logs_source_golden.json")
 				if err != nil {
 					t.Fatal(err)

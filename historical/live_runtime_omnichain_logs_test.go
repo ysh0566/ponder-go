@@ -78,6 +78,7 @@ func loadOmniLogsGolden(t *testing.T) omniLogsGolden {
 type omniLogsRPCCounts struct {
 	mu         sync.Mutex
 	Logs, Full map[uint64]int
+	FullAt     map[string]int
 }
 
 func omniLogsRPC(t *testing.T, g omniLogsGolden) (*finiteRPC, *omniLogsRPCCounts) {
@@ -95,7 +96,7 @@ func omniLogsRPC(t *testing.T, g omniLogsGolden) (*finiteRPC, *omniLogsRPCCounts
 			hashes[fmt.Sprint(b["hash"])] = b
 		}
 	}
-	counts := &omniLogsRPCCounts{Logs: map[uint64]int{}, Full: map[uint64]int{}}
+	counts := &omniLogsRPCCounts{Logs: map[uint64]int{}, Full: map[uint64]int{}, FullAt: map[string]int{}}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var q struct {
 			ID     json.RawMessage
@@ -158,6 +159,7 @@ func omniLogsRPC(t *testing.T, g omniLogsGolden) (*finiteRPC, *omniLogsRPCCounts
 			if full {
 				counts.mu.Lock()
 				counts.Full[id]++
+				counts.FullAt[fmt.Sprint(b["number"])]++
 				counts.mu.Unlock()
 			} else {
 				txs := []any{}
