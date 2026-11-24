@@ -1,0 +1,139 @@
+{
+  "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "inventory_files": 104,
+  "inventory_records": 905,
+  "comparison": "Matched file, suite path, expanded title, multiplicity and source skip/todo state. Both core database runs produced identical outcomes. Core runtime records count once in the total.",
+  "unique_outcomes": {
+    "failed": 59,
+    "passed": 834,
+    "skipped": 10,
+    "todo": 2
+  },
+  "runs": {
+    "core_pglite": {
+      "files": 57,
+      "passed": 723,
+      "skipped": 6,
+      "todo": 1,
+      "exit": 0,
+      "report": "parity/runs/original-core-full-isolated/pglite.json",
+      "sha256": "6da9d3ea141a1aeeec192b588b05e6fcd3125bd07a97ff133c06626d3865212e"
+    },
+    "core_postgres": {
+      "files": 57,
+      "passed": 723,
+      "skipped": 6,
+      "todo": 1,
+      "exit": 0,
+      "report": "parity/runs/original-core-built-packages/postgres.json",
+      "sha256": "27835a6036c05e1238b20a5610444b6dc048d0627d478fdd76e947562bdde34b"
+    },
+    "core_types": {
+      "files": 6,
+      "passed": 69,
+      "exit": 0,
+      "report": "parity/runs/original-core-built-packages/core-types.json",
+      "sha256": "439e85b4390d97f94efde281225d3abdfec780905b732c50738b7eac042ef2b0"
+    },
+    "utils_runtime": {
+      "files": 6,
+      "passed": 34,
+      "todo": 1,
+      "exit": 0,
+      "report": "parity/runs/original-utils-create-regression/utils-runtime.json",
+      "sha256": "b976c0da1c15b9e2708c770a0a39d2b895d6444c9bc564b3465b14264c2df6ae"
+    },
+    "utils_types": {
+      "files": 2,
+      "passed": 3,
+      "exit": 0,
+      "report": "parity/runs/original-utils-create-regression/utils-types.json",
+      "sha256": "fcb63136c02b1fa37560f0cfbe7fca0c82f9dcaf306bc90edd1b95fed5a09b58"
+    },
+    "create_ponder": {
+      "files": 1,
+      "passed": 1,
+      "exit": 0,
+      "report": "parity/runs/original-cli-core-types-regression/create-ponder.json",
+      "sha256": "956870c0ff2bf5913f14b86acfca822827f8f6985afeb6050b6e9275dc28d4e1"
+    },
+    "client": {
+      "files": 1,
+      "passed": 3,
+      "exit": 0,
+      "report": "parity/runs/original-sdk-regression/client.json",
+      "sha256": "2517c7f9bf0e0ff8671c741b778633cb1a15977dd9425db1e4df5718f11ee0bf"
+    },
+    "react_types": {
+      "files": 1,
+      "passed": 1,
+      "exit": 0,
+      "report": "parity/runs/original-sdk-regression/react.json",
+      "sha256": "c6e85d40a0ca63d807204a2f0e220d5cb27ea322e814bc7448b06632e1881650"
+    },
+    "utils_public_rpc": {
+      "files": 22,
+      "failed": 41,
+      "skipped": 4,
+      "exit": 1,
+      "report": "parity/runs/original-public-rpc-compatibility/public-original.json",
+      "sha256": "7a2458bb89402f7aa2db70ae71d70c3eb370bf133b0f47b29da23c1ef977017f"
+    },
+    "utils_configured_rpc_local_substitution": {
+      "files": 8,
+      "failed": 18,
+      "exit": 1,
+      "report": "parity/runs/self-hosted-rpc-validation/upstream-local.json",
+      "sha256": "a039fb2393432a34cf8b52959376f191b3d5f52f4431c4db54c3605f5d77b46e"
+    }
+  },
+  "failures": {
+    "utils_public_rpc": "41 active declarations reached the original public transport and failed. Four original declarations were skipped.",
+    "utils_configured_rpc_local_substitution": "18 active declarations executed on four loopback Anvil development chains. The configured historical blocks are absent and Anvil has different error semantics. No provider compatibility credit."
+  },
+  "native_port_ledger": {
+    "ported": 543,
+    "unimplemented": 362
+  },
+  "self_hosted_rpc": {
+    "client": "Anvil 1.8.5",
+    "network": "four isolated loopback development chains",
+    "contract": "packages/core/src/_test/contracts/src/ERC20.sol",
+    "checks": [
+      "deploy and mint with successful transaction receipts",
+      "decode Transfer sender, recipient and amount",
+      "compare block-range and block-hash eth_getLogs with the receipt",
+      "check a nonmatching range and balanceOf"
+    ],
+    "probes": [
+      {
+        "chain_id": 1,
+        "history_probe": 18000000,
+        "history_probe_present": false,
+        "mint_block_hash": "0xcf30e8685b7fdddcbd73a2538eb026ff7be7c24982b9170faab5349fe1a53626",
+        "report_sha256": "dcdbf783f9ad128bfe3945f38b243486cbde6c5f030b6e9a57207e16a589de1e"
+      },
+      {
+        "chain_id": 239,
+        "history_probe": 3105972,
+        "history_probe_present": false,
+        "mint_block_hash": "0x150ca89bb8661ead5ab1ac128b10470d57c6095612b989e50515e5dd163381e2",
+        "report_sha256": "d446395086b3bd12aea7b5cebcc8355564f520713f09bdd4205c31637fe1e0f5"
+      },
+      {
+        "chain_id": 8453,
+        "history_probe": 10000000,
+        "history_probe_present": false,
+        "mint_block_hash": "0x84a118704a38e6280b27cd29af346889f8c9c6dff3f2c2f233cc28c2eaac7dde",
+        "report_sha256": "7951b9349fe9917b84cd546296e72cb94e4564be4a8481e83333560a2a6df057"
+      },
+      {
+        "chain_id": 999,
+        "history_probe": 9419400,
+        "history_probe_present": false,
+        "mint_block_hash": "0x5be7e3073cc7f36a8c9fe0741b6cfc99caf0feb1d3495f0f9d3afe813cd7f580",
+        "report_sha256": "b50f03f51832b026e6c7ca55453f60df35e8698a3501608ff36e4ec5972f0073"
+      }
+    ]
+  }
+}

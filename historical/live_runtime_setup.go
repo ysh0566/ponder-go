@@ -48,7 +48,7 @@ func freezeRuntimeSetup(b *config.ExecutableSourceIndexingBuild) error {
 }
 
 // The managed plan validates metadata/cycles before this copier is used.
-func frozenSetupValue(v reflect.Value) reflect.Value {
+func frozenRuntimeValue(v reflect.Value) reflect.Value {
 	if !v.IsValid() {
 		return v
 	}
@@ -69,7 +69,7 @@ func frozenSetupValue(v reflect.Value) reflect.Value {
 			return v
 		}
 		o := reflect.New(v.Type()).Elem()
-		o.Set(frozenSetupValue(v.Elem()))
+		o.Set(frozenRuntimeValue(v.Elem()))
 		return o
 	case reflect.Map:
 		if v.IsNil() {
@@ -78,7 +78,7 @@ func frozenSetupValue(v reflect.Value) reflect.Value {
 		o := reflect.MakeMapWithSize(v.Type(), v.Len())
 		it := v.MapRange()
 		for it.Next() {
-			o.SetMapIndex(it.Key(), frozenSetupValue(it.Value()))
+			o.SetMapIndex(it.Key(), frozenRuntimeValue(it.Value()))
 		}
 		return o
 	case reflect.Slice:
@@ -87,13 +87,13 @@ func frozenSetupValue(v reflect.Value) reflect.Value {
 		}
 		o := reflect.MakeSlice(v.Type(), v.Len(), v.Len())
 		for i := 0; i < v.Len(); i++ {
-			o.Index(i).Set(frozenSetupValue(v.Index(i)))
+			o.Index(i).Set(frozenRuntimeValue(v.Index(i)))
 		}
 		return o
 	case reflect.Array:
 		o := reflect.New(v.Type()).Elem()
 		for i := 0; i < v.Len(); i++ {
-			o.Index(i).Set(frozenSetupValue(v.Index(i)))
+			o.Index(i).Set(frozenRuntimeValue(v.Index(i)))
 		}
 		return o
 	case reflect.Pointer:
@@ -101,7 +101,7 @@ func frozenSetupValue(v reflect.Value) reflect.Value {
 			return v
 		}
 		o := reflect.New(v.Type().Elem())
-		o.Elem().Set(frozenSetupValue(v.Elem()))
+		o.Elem().Set(frozenRuntimeValue(v.Elem()))
 		return o
 	}
 	return v

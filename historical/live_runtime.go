@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"math/big"
 	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/config"
@@ -193,17 +194,22 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	if o.OnSetupCommitted != nil && !r.setup {
 		return nil, fmt.Errorf("setup observer requires setup callbacks")
 	}
-	// Freeze chain objects before binding identity for every runtime format.
-	snapshot := *b
-	snapshot.Chains = make([]indexing.Object, len(b.Chains))
+	// Keep the session lease on the original graph. Setup callbacks bind to
+	// these private chain maps when their execution metadata is frozen.
+	chains := make([]indexing.Object, len(b.Chains))
 	for i, chain := range b.Chains {
-		copy := indexing.Object{}
-		for k, v := range chain {
-			copy[k] = v
-		}
-		snapshot.Chains[i] = copy
+		chains[i] = maps.Clone(chain)
 	}
-	b = &snapshot
+	b = &config.ExecutableSourceIndexingBuild{
+		Chains:            chains,
+		FinalizedBlocks:   b.FinalizedBlocks,
+		Contracts:         b.Contracts,
+		EventCallbacks:    b.EventCallbacks,
+		SetupCallbacks:    b.SetupCallbacks,
+		IndexingFunctions: b.IndexingFunctions,
+		RPCs:              b.RPCs,
+		Ordering:          b.Ordering,
+	}
 	if r.setup {
 		if err := freezeRuntimeSetup(b); err != nil {
 			return nil, err
@@ -224,9 +230,18 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	if err != nil {
 		return nil, err
 	}
+	// The plan has checked these values for cycles and bound them to its ID.
+	// Keep nested metadata such as viemChain.blockTime stable for later epochs.
+	for _, chain := range b.Chains {
+		for key, value := range chain {
+			if key != "rpc" && key != "ws" && value != nil {
+				chain[key] = frozenRuntimeValue(reflect.ValueOf(value)).Interface()
+			}
+		}
+	}
 	if r.setup {
-		b.Contracts = frozenSetupValue(reflect.ValueOf(b.Contracts)).Interface().([]indexing.Object)
-		b.IndexingFunctions = frozenSetupValue(reflect.ValueOf(b.IndexingFunctions)).Interface().([]indexing.Object)
+		b.Contracts = frozenRuntimeValue(reflect.ValueOf(b.Contracts)).Interface().([]indexing.Object)
+		b.IndexingFunctions = frozenRuntimeValue(reflect.ValueOf(b.IndexingFunctions)).Interface().([]indexing.Object)
 	}
 	r.ends = plan.EndBlocks
 	plan.BuildID = o.BuildID

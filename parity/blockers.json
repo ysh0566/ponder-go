@@ -3,19 +3,20 @@
   "items": [
     {
       "id": "foundry-v1.8.5",
-      "status": "pending_approval",
+      "status": "resolved",
       "action": "Download and verify official Foundry v1.8.5 release into a project-only tool directory",
       "source": "https://github.com/foundry-rs/foundry/releases/tag/v1.8.5",
       "requirement_source": "../ponder-upstream/.github/actions/setup/action.yml:30",
-      "installed": "anvil/forge 0.2.0",
-      "executed": false,
-      "reason": "Parent has requested human approval and explicitly instructed not to install until authorization is forwarded.",
+      "installed": "anvil/forge 1.8.5 (workspace toolcache)",
+      "executed": true,
+      "reason": "The official Linux amd64 archive passed its published SHA-256 check. The original generated-contract setup and both database runs completed.",
       "affected": [
-        "Full core oracle setup/generated Solidity fixtures",
-        "57 mapped original fixture cases blocked: 44 database/indexing-store/cache +13 profile. Native targets passed; original fixture oracle has no pass credit.",
-        "Original full factory E2E and source-dependent oracle suites"
+        "Full core oracle setup and generated Solidity fixtures",
+        "Original ERC-20 and factory end-to-end tests",
+        "PostgreSQL and PGlite core runtime suites"
       ],
-      "generation_evidence": "parity/foundry-generation-dependencies.json"
+      "generation_evidence": "parity/foundry-generation-dependencies.json",
+      "verification": "parity/runs/native-upstream-regression/original-suite.json"
     },
     {
       "id": "reference-plan-pdf",

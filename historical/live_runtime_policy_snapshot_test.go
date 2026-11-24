@@ -24,6 +24,10 @@ func TestRuntimeCachePolicySnapshot(t *testing.T) {
 					return finiteIncrement(ctx, a)
 				})
 				b := runtimeBuild(t, p, 3, 1, h)
+				const blockTime = float64(12_000)
+				for _, chain := range b.Executable().Chains {
+					chain["viemChain"] = indexing.Object{"blockTime": blockTime}
+				}
 				f := newManagedFiniteFixture(t, backend, b)
 				epochs := []uint64{}
 				o := RuntimeOptions{Historical: runtimeFixtureInput(f), BuildID: "cache-policy-frozen", OpenID: "cache-policy-first", Requesters: runtimeFactory(p, &epochs)}
@@ -31,12 +35,20 @@ func TestRuntimeCachePolicySnapshot(t *testing.T) {
 					o.Live = &RuntimeLiveOptions{PollingInterval: time.Millisecond}
 				}
 				r := runtimeOpen(t, backend, o)
+				if _, release, err := b.Executable().AcquireSession(); err == nil {
+					release()
+					t.Fatal("second owner acquired the build while the runtime was open")
+				}
 				for _, chain := range b.Executable().Chains {
 					chain["cacheRpcRequests"] = false
+					chain["viemChain"].(indexing.Object)["blockTime"] = float64(1)
 				}
 				for _, chain := range r.build.Chains {
 					if !runtimeRPCCacheEnabled(chain) {
 						t.Fatal("caller changed opened runtime cache policy without a new identity")
+					}
+					if got := chain["viemChain"].(indexing.Object)["blockTime"]; got != blockTime {
+						t.Fatalf("caller changed opened runtime block time to %v", got)
 					}
 				}
 				out, err := r.Run(context.Background())
@@ -54,6 +66,11 @@ func TestRuntimeCachePolicySnapshot(t *testing.T) {
 				if err = r.Close(context.Background()); err != nil {
 					t.Fatal(err)
 				}
+				_, release, err := b.Executable().AcquireSession()
+				if err != nil {
+					t.Fatalf("closed runtime retained its build session: %v", err)
+				}
+				release()
 				syncf := f
 				syncf.options.Owned.Storage.BusinessDirectory = f.options.Owned.Storage.SyncDirectory
 				managedInspect(t, syncf, func(db store.Backend) {
