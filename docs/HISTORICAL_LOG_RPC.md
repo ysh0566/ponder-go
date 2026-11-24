@@ -155,14 +155,23 @@ The tagged sources define each limit. [OP Labs proxyd](https://github.com/ethere
 
 ## Run every original utils declaration
 
-Use Python 3.12+, the installed upstream checkout at the revision in the test ledger, and the reviewed seven-index archive from the six-chain collection. The archive SHA-256 is `04bb929c0e160d13784115650afe8131df3f937ee90ea12dd404c641ad61c858`. The three supplemental chain fixtures ship with this checkout. Each invocation requires a new output directory.
+Use Python 3.11+ and the installed upstream checkout at the revision in the test ledger. The reviewed seven-index archive is included at `testdata/rpc/provider-indexes.tar.gz`. Its SHA-256 is `04bb929c0e160d13784115650afe8131df3f937ee90ea12dd404c641ad61c858`. The three supplemental chain fixtures ship with this checkout. Each invocation requires a new output directory.
 
 ```sh
 python3 tools/upstream_utils_suite.py --upstream "$PONDER_UPSTREAM" \
-  --archive "$REVIEWED_INDEX_ARCHIVE" --output "$REPORTS/utils"
+  --output "$REPORTS/utils"
 ```
 
 The runner starts nine loopback listeners for 19 complete test files. Eight original environment variables point to these listeners. The HTTP adapter maps 11 original URL literals. The remaining runtime files use their original transports. A separate Vitest invocation runs the type declarations. The three pairs of JSON and exit-code files retain failures from all partitions. Public endpoint results can change between runs.
+
+## Run the native provider cases offline
+
+The Go RPC package runs 21 original historical data assertions and the Moonriver error and retry assertion against the same nine loopback listeners. A clean checkout includes the fixtures. The launcher requires Python 3.11+ and uses the standard library. The Alchemy WETH case raises the client's per-response limit to 128 MiB to retrieve all 140,192 logs in the original single request.
+
+```sh
+go test -count=1 -run '^TestUpstreamProviderArchives$' ./rpc
+go test -race -count=1 -run '^TestUpstreamProviderArchives$' ./rpc
+```
 
 ## Check the complete upstream inventory
 

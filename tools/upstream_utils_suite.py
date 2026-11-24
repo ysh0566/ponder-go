@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
 """Run every pinned upstream utils file against local archives or its original public URL."""
 import argparse
-from contextlib import ExitStack
 import hashlib
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
-import tarfile
-import tempfile
+from provider_archive_nodes import ARCHIVE, archive_nodes
 
 
 ROOT = Path(__file__).resolve().parents[1]
-FIXTURES = ROOT / "tools/rpcnode-fixtures"
 # Each entry binds the original file and endpoint to the chain holding its data.
 ROUTES = [
     ("alchemy", "RPC_URL_ALCHEMY_1", "ethereum"),
@@ -36,45 +33,6 @@ ROUTES = [
     ("blast", "https://rpc.blast.io", "blast"),
     ("zkevm", "https://zkevm-rpc.com", "zkevm"),
 ]
-
-
-def extract_bundle(path, expected, destination):
-    with path.open("rb") as stream:
-        if hashlib.file_digest(stream, "sha256").hexdigest() != expected:
-            raise ValueError(f"archive digest does not match the reviewed fixture: {path}")
-        stream.seek(0)
-        with tarfile.open(fileobj=stream, mode="r:gz") as bundle:
-            bundle.extractall(destination, filter="data")
-
-
-def stop_server(process):
-    try:
-        process.terminate()
-        try:
-            process.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait()
-    finally:
-        process.stdout.close()
-
-
-def start_server(name, indexes, output, stack):
-    args = [str(indexes / ("index-" + name))]
-    if name == "ethereum":
-        args.append(str(indexes / "index-weth"))
-    if name == "moon":
-        args += ["--error-capture", str(FIXTURES / "moonriver-error.json")]
-    if name == "celo":
-        args = ["--log-capture", str(FIXTURES / "celo-10000000-10001000.json.gz")]
-    log = stack.enter_context((output / (name + ".log")).open("w"))
-    process = subprocess.Popen([sys.executable, "-B", str(ROOT / "tools/historical_log_rpc.py"), "serve", *args],
-                               stderr=log, stdout=subprocess.PIPE, text=True)
-    stack.callback(stop_server, process)
-    url = process.stdout.readline().strip()
-    if not url.startswith("http://127.0.0.1:"):
-        raise RuntimeError(f"could not start {name} archive, see {log.name}")
-    return url
 
 
 def run_files(name, files, utils, output, env, typecheck=False):
@@ -119,17 +77,7 @@ def run(upstream, archive, output):
     env.pop("NODE_OPTIONS", None)
     env.pop("PONDER_LOG_RPC_ROUTES", None)
     utils = upstream / prefix
-    evidence = json.loads((ROOT / "parity/runs/self-hosted-log-replay/cases.json").read_bytes())
-    extra = json.loads((ROOT / "parity/runs/historical-log-availability/results.json").read_bytes())
-    with ExitStack() as stack:
-        indexes = Path(stack.enter_context(tempfile.TemporaryDirectory(dir=output)))
-        extract_bundle(archive, evidence["portableArchive"]["sha256"], indexes)
-        supplemental = FIXTURES / "historical-blast-zkevm.tar.gz"
-        extract_bundle(supplemental, extra["files"][supplemental.name]["sha256"], indexes)
-        celo = FIXTURES / "celo-10000000-10001000.json.gz"
-        if hashlib.sha256(celo.read_bytes()).hexdigest() != extra["files"][celo.name]["sha256"]:
-            raise ValueError("Celo capture differs from the reviewed fixture")
-        servers = {name: start_server(name, indexes, output, stack) for name in sorted({r[2] for r in ROUTES})}
+    with archive_nodes(archive, output) as servers:
         literals = {url: servers[chain] for _, url, chain in ROUTES if url.startswith("https://")}
         routes = output / "routes.json"
         routes.write_text(json.dumps(literals, indent=2) + "\n")
@@ -145,7 +93,7 @@ def run(upstream, archive, output):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--upstream", required=True, type=Path)
-    parser.add_argument("--archive", required=True, type=Path)
+    parser.add_argument("--archive", default=ARCHIVE, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
     sys.exit(run(args.upstream.resolve(), args.archive.resolve(), args.output.resolve()))

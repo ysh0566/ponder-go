@@ -57,6 +57,15 @@ test('actual historical source mutation changes fingerprint and prepared invento
   const before=sourceFingerprint(fixture),prepared=prepare();assert.equal(before.files,3);assert.deepEqual(prepared.fingerprint,before);assert(prepared.files.some(f=>f.file==='historical/runner.go'));
   fs.appendFileSync(fixture+'/historical/runner.go','const mutation = 2\n');const after=sourceFingerprint(fixture);assert.equal(after.files,before.files);assert.notEqual(after.sha256,before.sha256);assert.deepEqual(prepare().fingerprint,after);
   fs.writeFileSync(fixture+'/historical/new_test.go','package historical\n');const added=sourceFingerprint(fixture);assert.equal(added.files,4);assert.notEqual(added.sha256,after.sha256);assert.deepEqual(prepare().fingerprint,added);
+  fs.mkdirSync(path.join(fixture, "tools/rpcnode-fixtures"));
+  for (const file of ["tools/historical_log_rpc.py", "tools/provider_archive_nodes.py", "tools/rpcnode-fixtures/moonriver-error.json", "tools/rpcnode-fixtures/historical-blast-zkevm.tar.gz", "tools/rpcnode-fixtures/celo-10000000-10001000.json.gz"]) {
+   fs.writeFileSync(path.join(fixture, file), "initial fixture bytes");
+  }
+  const archives = sourceFingerprint(fixture);
+  assert.equal(archives.files, added.files + 5);
+  fs.appendFileSync(path.join(fixture, "tools/provider_archive_nodes.py"), "changed");
+  assert.notEqual(sourceFingerprint(fixture).sha256, archives.sha256);
+  assert.deepEqual(prepare().fingerprint, sourceFingerprint(fixture));
  }finally{fs.rmSync(fixture,{recursive:true,force:true})}
 });
 test('historical type preparation inventories runner and indexing production inputs',()=>{const s=fs.readFileSync(root+'/tools/source-historical-types/compile.mjs','utf8'),m=s.match(/const prefixes=(\[[^;]+\]);const production=/);assert(m);const prefixes=vm.runInNewContext(m[1]);assert(prefixes.includes('historical/'));assert(prefixes.includes('indexing/'));assert(source('finite-historical-acceptance').includes('tools/source-historical-types/compile.mjs'));assert(source('finite-historical-acceptance').includes('tools/source-sync-compile.mjs'));assert(source('go-tests').includes('selections : ["./..."]'))});
@@ -81,9 +90,12 @@ test('M43 runner boundary, transport learning, and PostgreSQL-only fencing scope
 test('M43 native inventory covers new production-package test files, not archived candidates',async()=>{
  const {finiteHistoricalNativeFiles}=await import('./finite-historical-acceptance.mjs');
  assert(finiteHistoricalNativeFiles.includes('config/source_executable_live_test.go'));
+ // Later milestones can register a native case directly against an original source declaration.
+ const mappings = JSON.parse(fs.readFileSync(path.join(root, 'parity/mappings.json')));
+ const mappedSourceFiles = new Set(mappings.filter(m => m.source_id && m.go_package && m.go_test).map(m => m.target_file));
  const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8'}).split('\0').filter(Boolean);
  const changed=[...git('diff','--name-only','-z','HEAD','--','*_test.go'),...git('ls-files','--others','--exclude-standard','-z')].filter(f=>/^(abi|config|events|filter|historical|indexing|rpc|runtime|store)\/.*_test\.go$/.test(f));
- for(const file of new Set(changed))assert(finiteHistoricalNativeFiles.includes(file),'New test file omitted from finite inventory: '+file);
+ for(const file of new Set(changed))assert(finiteHistoricalNativeFiles.includes(file)||mappedSourceFiles.has(file),'Unregistered native test file: '+file);
  assert.equal(new Set(finiteHistoricalNativeFiles).size,finiteHistoricalNativeFiles.length);
 });
 test('M43 collector requires all real dual-backend tests and new backend roots',async()=>{
