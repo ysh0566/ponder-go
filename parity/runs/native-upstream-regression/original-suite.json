@@ -185,6 +185,20 @@
         "Base": "The public endpoint returned HTTP 429.",
         "TAC and HyperEVM": "The public endpoints enforce smaller log request ranges than the configured providers in the original tests."
       }
+    },
+    "historical_log_crosscheck": {
+      "chain_id": 1,
+      "upstream": "https://eth.drpc.org",
+      "contract": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+      "from_block": 18000000,
+      "to_block": 18000110,
+      "page_width": 100,
+      "matching_logs": 1,
+      "matching_transaction": "0x25f702c25512d6deb8f3ef6485a4d141db4baaf2e12c4ade801cd6fa427dd11b",
+      "fork_block_hash": "0x858f71b82284841eedd8c4ca4855345ddf728ae034ebe03e21d5f30fb88c0f4d",
+      "method": "Two supported eth_getLogs pages on a local Anvil fork. The log data, index, topics and block hash matched the genuine transaction receipt. This checks the historical data for the Chainstack success case independently of its original single-request transport.",
+      "report": "parity/runs/self-hosted-archive-rpc/authenticated-historical-logs.json",
+      "sha256": "eaf6dac957bd8610210c98bf3bafcd5aca1875d4f43bbc833f48cede75620ae4"
     }
   }
 }

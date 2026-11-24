@@ -1,0 +1,54 @@
+{
+  "checked_code": "ad66e7beccc033fec782476b14348f8420bff663",
+  "go": "1.25.11",
+  "vet": "go vet -p 2 ./... passed",
+  "builds": [
+    "./cmd/ponder",
+    "./examples/erc20"
+  ],
+  "normal_and_race": {
+    "runtime_ownership_and_setup": 12,
+    "plan_validation_and_runtime_preflight": 33,
+    "generated_typed_abi": 53,
+    "other_module_packages": {
+      "module_packages": 21,
+      "packages_with_tests": 15,
+      "top_level": 146,
+      "passed_nodes": 2057,
+      "distinct_passed_leaves": 1952,
+      "normal_and_race_names_equal": true,
+      "initial_fixture_error": "One test function required PONDER_M44_TEST_ROOT. It passed in both modes on fresh task-specific PostgreSQL/PGlite fixtures after setting the required evidence directory.",
+      "excluded": [
+        "historical",
+        "runtime",
+        "store"
+      ]
+    },
+    "runtime_package": {
+      "scope": "runtime package only",
+      "base": "87df4acf5422091055435e7249be3fc93803944c",
+      "normal_initial_failed_top_level_functions": [
+        "TestUpstreamSourceHistorical",
+        "TestUpstreamSourceRealtime"
+      ],
+      "retry": "Both complete original subtrees repeated independently with PONDER_UPSTREAM_ROOT unset and dedicated PostgreSQL fixture",
+      "top_level_count": 85,
+      "test_nodes": 771,
+      "distinct_leaves": 661,
+      "normal_and_race_same_result": true,
+      "source_fingerprint": {
+        "files": 1329,
+        "sha256": "2befb5e094229b039a8ff514e01f02b861368b7122453112a23dada78026fcd6"
+      },
+      "driver_sha256": "ca7014551b6b013fbc13d9036a83951650220c306f3dc67c744b2d4c1e30e56c"
+    }
+  },
+  "scope": "Leaf counts are per suite and measured independently. The runtime package ran on the preceding main commit, and its files are identical in this change. Full historical and store results are tracked separately.",
+  "tool_tests": {
+    "python": 19,
+    "node_default_files_passed": 310,
+    "node_cases_in_three_archive_dependent_files": 166,
+    "indexing_evidence_controls": 38,
+    "notes": "The three archive-dependent files were rerun after verified restoration of 1296 historical inputs."
+  }
+}
