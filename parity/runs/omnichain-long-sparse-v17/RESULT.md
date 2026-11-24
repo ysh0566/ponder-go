@@ -31,6 +31,14 @@ go test -timeout 90m -race -count=1 -json ./historical ./store \
 
 The recorded executions partition these expressions by test, backend, query size and failure scenario. The source probe uses `tools/source-runtime-omnichain-sparse.config.mjs` with `PONDER_UPSTREAM_ROOT` set to the pinned checkout. Run once on PGlite and again with `PONDER_SPARSE_POSTGRES` set to the isolated PostgreSQL URL. The supplemental probes do not change the formal mapping of 543 out of 905 upstream records.
 
+## Review and regression results
+
+Both ordinary and race runs passed the same 206 distinct leaf tests, including all 141 names from the v16 acceptance set. Each mode includes 16 long sparse integration cases and three process-exit cases. No selected case was skipped. [cases.json](cases.json) records the input fingerprint, exact additions, retained and omitted sets, and SHA-256 of every selected run. The comparison counts each package and complete subtest name once and excludes parent nodes, including implicit nodes between named subtests.
+
+The code review checked the finalized walk, receipt and legacy format fences, source coverage, callback and journal transaction boundaries, retry and cold-open paths against the pinned source behavior. It found an early return in coverage validation that accepted a reversed trailing interval after an earlier interval had covered the request. The fix checks every interval and has a regression case on the submitted snapshot. The compiled CLI identifies its clean product revision as `b2a6be1ccfafc169cb1008c45b3045648fa723c2`.
+
+The stage PostgreSQL container and its temporary data volume were removed after the last race run. All task-owned sparse test directories were released.
+
 ## Historical RPC test fixtures
 
 Nine distinct upstream RPC success declarations passed on a locally served index of canonical historical data. The index served only the covered ranges and addresses. It retained the underlying log payloads and the original Vitest reports. Ethereum reads included 140,192 WETH logs and 3,773 Uniswap factory logs. Base returned 77 logs, TAC returned 185 and HyperEVM returned 4,217. For 641 HyperEVM heights missing from the primary archive, the index checked the full receipt list against the block's transactions using the official Hyperliquid RPC. The local archive and the original test source hashes are recorded in [archive-rpc.json](archive-rpc.json).
