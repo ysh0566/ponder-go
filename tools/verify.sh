@@ -23,6 +23,7 @@ node tools/event-build-fixtures.mjs
 node tools/rpc-actions-fixtures.mjs
 node tools/bloom-fixtures.mjs
 capture_run="$(date -u +%Y%m%dT%H%M%S)-$$"
+export PONDER_CAPTURE_RUN="$capture_run"
 node tools/capture-original.mjs --mode=events --output="parity/runs/original-captures/$capture_run/events" --fixture=testdata/runtime/captured-original-events.json
 node tools/capture-original.mjs --mode=filters --output="parity/runs/original-captures/$capture_run/filters" --fixture=testdata/runtime/captured-original-filters.json
 node tools/capture-original.mjs --mode=blooms --output="parity/runs/original-captures/$capture_run/blooms" --fixture=testdata/bloom/captured-original-blooms.json

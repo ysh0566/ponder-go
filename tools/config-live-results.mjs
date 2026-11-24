@@ -1,6 +1,7 @@
 // Validate actual executions in both complete Go logs; never substitute a
 // previously captured Go result for running the native source builder.
 import fs from "node:fs";
+import { isDeepStrictEqual } from "node:util";
 import path from "node:path";
 import crypto from "node:crypto";
 const root=path.resolve(import.meta.dirname,'..'),arg=name=>process.argv.find(a=>a.startsWith('--'+name+'='))?.slice(name.length+3),read=file=>JSON.parse(fs.readFileSync(path.resolve(root,file),'utf8'));
@@ -89,7 +90,7 @@ for(const mode of ["go-test","go-race"]){
  if(extraDirectives.length!==9||controls.length!==9||!validHash(literalCompile.generated)||![...typedCompile.inputs,...literalCompile.inputs].every(validHash))throw Error("Actual typed/generated production controls missing or stale");
  for(const directive of extraDirectives){
   const control=controls.find(c=>c.source_id===directive.source_id&&c.mode===directive.mode);
-  if(!control||control.exit_code!==0||!control.output||!validHash(directive.positive)||!validHash(directive.negative)||directive.build_positive.exit_code!==0||directive.build_negative.exit_code<=0)throw Error("Typed directive lacks positive/build/native-negative proof: "+directive.mode);
+  if(!control||!isDeepStrictEqual(control.input,directive.original_input)||control.exit_code!==0||!control.output||!validHash(directive.positive)||!validHash(directive.negative)||directive.build_positive.exit_code!==0||directive.build_negative.exit_code<=0)throw Error("Typed directive lacks positive/build/native-negative proof: "+directive.mode);
  }
  typedModes.push({mode,directives:extraDirectives,controls,compile:hash(path.join(directory,"typed-compile.json")),literal_compile:hash(path.join(directory,"literal-compile.json")),generated:literalCompile.generated,corrected_event_source_error:literalCompile.corrected_event_source_error});
  const proofs=native.calls.filter(c=>c.type_proof);

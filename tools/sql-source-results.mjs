@@ -4,7 +4,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import {sourceFingerprint} from "./go-source-fingerprint.mjs";
 import {validateContextEntry} from "./loopback-context.mjs";
-import {historicalCaptureContext,manifestFile as historicalManifest} from "./historical-capture-context.mjs";
+import {captureContext} from "./current-capture-context.mjs";
 
 const root=path.resolve(import.meta.dirname,".."),arg=name=>process.argv.find(a=>a.startsWith("--"+name+"="))?.slice(name.length+3);
 const read=file=>JSON.parse(fs.readFileSync(path.resolve(root,file),"utf8"));
@@ -61,7 +61,8 @@ const file="packages/core/src/utils/sql-parse.test.ts";
 const source=ledger.tests.filter(t=>t.source_file===file);
 if(source.length!==14||source.reduce((n,c)=>n+c.assertions.length,0)!==19||source.some(c=>c.type_error_directives.length||c.source_state!=="active"))throw Error("Unexpected original SQL declarations");
 const fixture=read("testdata/sql/captured-original-sql.json");
-const historicalContext=historicalCaptureContext("testdata/sql/captured-original-sql.json");
+const captureRun=adapted ? undefined : process.env.PONDER_CAPTURE_RUN;
+const {sources: historicalContext, evidence: captureEvidence}=captureContext("testdata/sql/captured-original-sql.json",captureRun);
 if(fixture.baseline.revision!==ledger.baseline.revision||fixture.cases.length!==14||fixture.capture_proof?.scope!=="complete_original_with_call_through"||!historicalContext.every(valid)||!valid(fixture.capture_proof.raw_oracle))throw Error("Incomplete/stale SQL capture context");
 const captureOracle=read(fixture.capture_proof.raw_oracle.file);
 if(!captureOracle.success||captureOracle.numPassedTests!==14||captureOracle.numPendingTests!==0||captureOracle.numFailedTests!==0)throw Error("Incomplete captured original file");
@@ -128,10 +129,10 @@ const proof={
   source_sha256:source[0].source_sha256,
   summary:{source_cases:14,source_assertions:19,source_error_directives:0,captured_operations:38,actual_relational_inputs:8,source_vectors:61,source_parser_version:160001},
   ...(!adapted?{pristine:{report:hash(pristinePath),raw_oracle:pristine.raw_oracle,source_context:pristine.source_context}}:{}),
-  capture:{fixture:hash("testdata/sql/captured-original-sql.json"),raw_oracle:fixture.capture_proof.raw_oracle,source_context:historicalContext,historical_archive:hash(historicalManifest),original_source_context:fixture.capture_proof.source_context},
+  capture:{fixture:hash("testdata/sql/captured-original-sql.json"),raw_oracle:fixture.capture_proof.raw_oracle,source_context:historicalContext,...(captureRun ? {current_capture_report:hash(captureEvidence)} : {historical_archive:hash(captureEvidence)}),original_source_context:fixture.capture_proof.source_context},
   vectors:{fixture:hash("testdata/sql/source-vectors.json"),sources:vectors.sources},
   rules:hash("parity/runs/sql-rules.json"),
-  inputs:[hash(historicalManifest),hash("tools/historical-capture-context.mjs"),...currentRunInputs,...["sqlquery/sql.go","sqlquery/cache.go","sqlquery/upstream_test.go","sqlquery/cache_test.go","sqlquery/differential_test.go","sqlquery/rules.json","store/sql.go","store/sql_parser_cache_test.go","query/sql_validation_test.go","tools/sql-source-results.mjs"].map(hash)],
+  inputs:[hash(captureEvidence),hash("tools/current-capture-context.mjs"),hash("tools/historical-capture-context.mjs"),...currentRunInputs,...["sqlquery/sql.go","sqlquery/cache.go","sqlquery/upstream_test.go","sqlquery/cache_test.go","sqlquery/differential_test.go","sqlquery/rules.json","store/sql.go","store/sql_parser_cache_test.go","query/sql_validation_test.go","tools/sql-source-results.mjs"].map(hash)],
 };
 fs.writeFileSync(path.resolve(root,destination),JSON.stringify(proof,null,2)+"\n");
 console.log(proof.summary);

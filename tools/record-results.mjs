@@ -12,7 +12,7 @@ import crypto from "node:crypto";
 import { sourceFingerprint } from "./go-source-fingerprint.mjs";
 import { backendLabelMatches } from "./backend-labels.mjs";
 import { validateContextEntry } from "./loopback-context.mjs";
-import { historicalCaptureContext } from "./historical-capture-context.mjs";
+import { captureContext } from "./current-capture-context.mjs";
 const root = path.resolve(import.meta.dirname, "..");
 const read = (file) =>
 	JSON.parse(fs.readFileSync(path.resolve(root, file), "utf8"));
@@ -295,10 +295,11 @@ if(executions.every(Boolean)) {
 }
 const configOriginal=!runDir&&exists("parity/runs/config-oracle.json")?read("parity/runs/config-oracle.json"):null;
 if(configOriginal&&(!configOriginal.complete||!configOriginal.success||![configOriginal.raw_oracle,...configOriginal.source_context].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256)))throw Error("Pristine config oracle context changed");
+const captureRun = runDir ? undefined : process.env.PONDER_CAPTURE_RUN;
 for (const fixtureFile of ["testdata/runtime/captured-original-events.json", "testdata/runtime/captured-original-filters.json", "testdata/bloom/captured-original-blooms.json"]) {
-	if (!exists(fixtureFile)) continue;
+	if (!exists(fixtureFile) && captureRun === undefined) continue;
 	const fixture = read(fixtureFile), proof = fixture.capture_proof;
-	if (fixture.baseline?.revision !== ledger.baseline.revision || proof?.scope !== "instrumented_original_file_with_call_through" || !historicalCaptureContext(fixtureFile).every(x => exists(x.file) && fileHash(x.file) === x.sha256) || !exists(proof.raw_oracle.file) || fileHash(proof.raw_oracle.file) !== proof.raw_oracle.sha256 || !read(proof.raw_oracle.file).success) throw Error("Original capture context changed or is incomplete: " + fixtureFile);
+	if (fixture.baseline?.revision !== ledger.baseline.revision || proof?.scope !== "instrumented_original_file_with_call_through" || !captureContext(fixtureFile,captureRun).sources.every(x => exists(x.file) && fileHash(x.file) === x.sha256) || !exists(proof.raw_oracle.file) || fileHash(proof.raw_oracle.file) !== proof.raw_oracle.sha256 || !read(proof.raw_oracle.file).success) throw Error("Original capture context changed or is incomplete: " + fixtureFile);
 	for (const captured of fixture.cases) {
 		const source = ledger.tests.find(x => x.id === captured.id);
 		if (!source || source.source_sha256 !== captured.source_sha256 || source.test_source !== captured.test_source || !captured.calls.length) throw Error("Stale or incomplete original captured declaration: " + captured.id);
@@ -307,7 +308,9 @@ for (const fixtureFile of ["testdata/runtime/captured-original-events.json", "te
 const sqlVerification=exists("parity/runs/sql-source-verification.json")?read("parity/runs/sql-source-verification.json"):null;
 if(ledger.tests.some(t=>t.mapping&&t.source_file==="packages/core/src/utils/sql-parse.test.ts")&&!sqlVerification)throw Error("SQL source mappings require original/input/rules proof");
 if(sqlVerification){
- if(JSON.stringify(sqlVerification.capture.source_context)!==JSON.stringify(historicalCaptureContext("testdata/sql/captured-original-sql.json")))throw Error("SQL historical archive differs from pinned capture");
+ const sqlContext=captureContext("testdata/sql/captured-original-sql.json",captureRun);
+ if(JSON.stringify(sqlVerification.capture.source_context)!==JSON.stringify(sqlContext.sources))throw Error("SQL capture context differs");
+ if(captureRun && (sqlVerification.capture.current_capture_report?.file!==sqlContext.evidence || !diskValid(sqlVerification.capture.current_capture_report)))throw Error("SQL report belongs to another capture run");
  if(runDir)validateCurrentProof(sqlVerification,"sql");
  const originals=runDir?sqlVerification.current_original?.executions:[];
  if(runDir&&(!Array.isArray(originals)||originals.length!==2||new Set(originals.map(execution=>execution.backend)).size!==2||originals.some(execution=>!["postgres","pglite"].includes(execution.backend)||execution.source_cases!==14||execution.source_assertions!==19||path.resolve(root,execution.raw_oracle.file)!==path.join(runDirectory,"remaining-mapped-original-"+execution.backend+".json"))))throw Error("SQL requires this run's two complete original backend reports");

@@ -1,21 +1,14 @@
 // Seven exact original obligations: real production typed constructor and
 // consumers. Positive runtime evidence must come from the original live Anvil.
 import fs from "node:fs";
+import { configCompileInput, configCompileInputsFile } from "./config-compile-inputs.mjs";
 import path from "node:path";
 import crypto from "node:crypto";
 import {spawnSync} from "node:child_process";
 const root=path.resolve(import.meta.dirname,".."),read=file=>JSON.parse(fs.readFileSync(path.join(root,file),"utf8"));
-const ledger=read("parity/test-ledger.json"),previous=read("parity/runs/config-live-verification.json"),capture=read(previous.executions[0].capture.file);
+const ledger=read("parity/test-ledger.json");
 const ids={network:"55a01f0bc082946abd42",bounds:"03426bf3f44186f9b02b"};
 const destination=path.join(root,"config/testdata/compile/typed"),binaryDirectory=path.join(root,".parity-build/config-types/typed");fs.mkdirSync(destination,{recursive:true});fs.mkdirSync(binaryDirectory,{recursive:true});
-function plain(value){
- if(Array.isArray(value))return value.map(plain);
- if(value&&typeof value==="object"){
-  if(value.$object)return Object.fromEntries(value.$object.map(([key,value])=>[key,plain(value)]));
-  throw Error("Unexpected special value in exact source type input");
- }
- return value;
-}
 const hash=file=>({file:path.relative(root,file),sha256:crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex")});
 const run=args=>{const r=spawnSync("go",args,{cwd:root,encoding:"utf8"});return{command:["go",...args],exit_code:r.status,error:r.error?.message??null,stdout:r.stdout,stderr:r.stderr};};
 const write=process.argv.includes("--write");
@@ -23,11 +16,8 @@ function fixture(file,text){if(write){if(!fs.existsSync(file)||fs.readFileSync(f
 function format(text){const r=spawnSync("gofmt",[],{cwd:root,encoding:"utf8",input:text});if(r.error||r.status!==0)throw Error(r.error?.message??r.stderr);return r.stdout;}
 const reports=[];
 for(const[kind,id]of Object.entries(ids)){
- const source=ledger.tests.find(t=>t.id===id),original=capture.cases.find(c=>c.id===id);
- if(!source||!original||source.test_source!==original.test_source||source.source_sha256!==original.source_sha256)throw Error("Actual original input is missing or stale");
- const captured=original.calls.find(c=>c.operation==="safeBuildIndexingFunctions");if(!captured)throw Error("Expected exact unsafe input reaching original safe consumer");
- const configWire=captured.args.$object.find(([key])=>key==="config")?.[1];if(!configWire)throw Error("Original config wire object missing");
- const input=plain(configWire),contract=input.contracts.a;
+ const source=ledger.tests.find(t=>t.id===id);
+ const input=configCompileInput(source),contract=input.contracts.a;
  if(kind==="network"&&(!contract.network||contract.chain!==undefined))throw Error("Original network typo changed");
  if(kind==="bounds"&&(contract.startBlock!=="16370000"||contract.endBlock!=="16370100"))throw Error("Original string bounds changed");
  const selection=kind==="network"?'config.SourceOnChains(config.SourceChainOverride{Name:"mainnet"},config.SourceChainOverride{Name:"optimism"})':'config.SourceOnChains(config.SourceChainOverride{Name:"mainnet"})';
@@ -60,5 +50,5 @@ for(const[kind,id]of Object.entries(ids)){
 }
 const outputArgument=process.argv.slice(2).find(x=>!x.startsWith("--"));
 const output=outputArgument?path.resolve(outputArgument):path.join(root,"parity/runs/config-types-m29/compile-fixtures.json");
-const report={state:"Compiled controls only; runtime on actual original live Anvil and real runtime integration required before source credit",directives:reports,inputs:["config/typed_source.go","tools/config-typed-compile-fixtures.mjs"].map(f=>hash(path.join(root,f))),summary:{source_error_directives:7,compiled:reports.filter(r=>r.status==="compiled_runtime_pending").length,failed:reports.filter(r=>r.status==="failed").length,positive_runtime_verified:0}};
+const report={state:"Compiled controls only; runtime on actual original live Anvil and real runtime integration required before source credit",directives:reports,inputs:[configCompileInputsFile,"tools/config-compile-inputs.mjs","config/typed_source.go","tools/config-typed-compile-fixtures.mjs"].map(f=>hash(path.join(root,f))),summary:{source_error_directives:7,compiled:reports.filter(r=>r.status==="compiled_runtime_pending").length,failed:reports.filter(r=>r.status==="failed").length,positive_runtime_verified:0}};
 fs.writeFileSync(output,JSON.stringify(report,null,2)+"\n");console.log(report.summary);if(report.summary.failed)process.exitCode=1;

@@ -1,6 +1,7 @@
 // Derive closed app references from actual source chain definitions/ABI, and
 // exercise the generated production constructor instead of toy missing map keys.
 import fs from "node:fs";
+import { configCompileInput, configCompileInputsFile } from "./config-compile-inputs.mjs";
 import path from "node:path";
 import crypto from "node:crypto";
 import {spawnSync} from "node:child_process";
@@ -8,20 +9,22 @@ import {createRequire} from "node:module";
 const root=path.resolve(import.meta.dirname,".."),read=file=>JSON.parse(fs.readFileSync(path.join(root,file),"utf8"));
 const write=process.argv.includes("--write"),outputArgument=process.argv.slice(2).find(x=>!x.startsWith("--"));
 const output=outputArgument?path.resolve(outputArgument):path.join(root,"parity/runs/config-types-m29/literal-compile-fixtures.json");
-const ledger=read("parity/test-ledger.json"),previous=read("parity/runs/config-live-verification.json"),capture=read(previous.executions[0].capture.file);
+const ledger=read("parity/test-ledger.json");
 const directory=path.join(root,".parity-build/config-types/literals"),fixtures=path.join(root,"config/testdata/compile/literals");fs.mkdirSync(directory,{recursive:true});fs.mkdirSync(fixtures,{recursive:true});
 const hash=file=>({file:path.relative(root,file),sha256:crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex")});
 function run(command,args,options={}){const r=spawnSync(command,args,{cwd:root,encoding:"utf8",...options});return{command:[command,...args],exit_code:r.status,error:r.error?.message??null,stdout:r.stdout,stderr:r.stderr};}
 function fixture(file,text){if(write){fs.mkdirSync(path.dirname(file),{recursive:true});if(!fs.existsSync(file)||fs.readFileSync(file,"utf8")!==text)fs.writeFileSync(file,text);}else if(!fs.existsSync(file)||fs.readFileSync(file,"utf8")!==text)throw Error("Prepare native literal fixture before execution with --write: "+file);}
-function plain(value){if(Array.isArray(value))return value.map(plain);if(value&&typeof value==="object"){if(value.$object)return Object.fromEntries(value.$object.map(([k,v])=>[k,plain(v)]));throw Error("Unexpected config special marker");}return value;}
-const rows=[['chain','af7907267becd4bf907c'],['event','b40ef8e8610beacf808b']].map(([kind,id])=>{const source=ledger.tests.find(t=>t.id===id),original=capture.cases.find(t=>t.id===id);if(!source||source.source_sha256!==original?.source_sha256||source.test_source!==original.test_source)throw Error("Stale original literal source");const call=original.calls.find(c=>c.operation==="safeBuildIndexingFunctions");const input=plain(call.args.$object.find(([k])=>k==="config")[1]);return {kind,id,source,input};});
+const rows=[['chain','af7907267becd4bf907c'],['event','b40ef8e8610beacf808b']].map(([kind,id])=>{
+ const source=ledger.tests.find(t=>t.id===id);
+ return {kind,id,source,input:configCompileInput(source)};
+});
 const manifest={Package:"sourcebindings",Chains:Object.keys(rows[0].input.chains),ABI:rows[0].input.contracts.a.abi};
 if(JSON.stringify(manifest.Chains)!==JSON.stringify(Object.keys(rows[1].input.chains))||JSON.stringify(manifest.ABI)!==JSON.stringify(rows[1].input.contracts.a.abi))throw Error("The exact source literal controls no longer share this actual chain/ABI definition");
 const manifestFile=path.join(directory,"bindings.json");fs.writeFileSync(manifestFile,JSON.stringify(manifest,null,2)+"\n");
 const cli=path.join(directory,"source-codegen"),buildCLI=run("go",["build","-o",cli,"./cmd/source-codegen"]);if(buildCLI.exit_code!==0)throw Error(buildCLI.stderr);
 const generatedTemporary=path.join(directory,"bindings.go"),generation=run(cli,[manifestFile,generatedTemporary]);if(generation.exit_code!==0)throw Error(generation.stderr);
 const generatedFile=path.join(root,"config/testdata/sourcebindings/bindings.go");fixture(generatedFile,fs.readFileSync(generatedTemporary,"utf8"));
-const report={state:"Compile-only controls; actual original live native positive execution required before source credit",definition:manifest,generated:hash(generatedFile),generator:{build:buildCLI,execute:generation},directives:[],inputs:["config/source_bindings.go","config/typed_source.go","cmd/source-codegen/main.go","tools/config-literal-compile-fixtures.mjs"].map(f=>hash(path.join(root,f)))};
+const report={state:"Compile-only controls; actual original live native positive execution required before source credit",definition:manifest,generated:hash(generatedFile),generator:{build:buildCLI,execute:generation},directives:[],inputs:[configCompileInputsFile,"tools/config-compile-inputs.mjs","config/source_bindings.go","config/typed_source.go","cmd/source-codegen/main.go","tools/config-literal-compile-fixtures.mjs"].map(f=>hash(path.join(root,f)))};
 for(const row of rows){
  const {kind,id,source,input}=row;
  const common=`package main\nimport("context";"fmt";"io";"os";"strings";"ponder.local/ponder-go/config";bindings "ponder.local/ponder-go/config/testdata/sourcebindings")\nfunc main(){raw,err:=io.ReadAll(os.Stdin);if err!=nil{panic(err)};base,err:=config.ParseSourceConfiguration(raw);if err!=nil{panic(err)};input:=base.Value()["contracts"].(map[string]any)["a"].(map[string]any);_=strings.Contains\n`;

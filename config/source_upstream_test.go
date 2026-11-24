@@ -161,13 +161,15 @@ func TestUpstreamConfigRuntime(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var typedProof struct {
+	type compilerProof struct {
 		Directives []struct {
 			SourceID       string `json:"source_id"`
 			Mode           string
 			PositiveBinary string `json:"positive_binary"`
+			OriginalInput  any    `json:"original_input"`
 		}
 	}
+	var typedProof compilerProof
 	if err := json.Unmarshal(typedRaw, &typedProof); err != nil {
 		t.Fatal(err)
 	}
@@ -181,13 +183,7 @@ func TestUpstreamConfigRuntime(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var literalProof struct {
-		Directives []struct {
-			SourceID       string `json:"source_id"`
-			Mode           string
-			PositiveBinary string `json:"positive_binary"`
-		}
-	}
+	var literalProof compilerProof
 	if err := json.Unmarshal(literalRaw, &literalProof); err != nil {
 		t.Fatal(err)
 	}
@@ -336,6 +332,10 @@ func TestUpstreamConfigRuntime(t *testing.T) {
 		if call.Operation == "safeBuildIndexingFunctions" {
 			for _, directive := range typedProof.Directives {
 				if directive.SourceID != call.CaseID {
+					continue
+				}
+				if sourceCanonical(directive.OriginalInput) != sourceCanonical(cfg.value) {
+					call.Differences = append(call.Differences, "compiler fixture differs from live original input: "+directive.Mode)
 					continue
 				}
 				input, err := json.Marshal(cfg.Value())

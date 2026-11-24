@@ -1,0 +1,153 @@
+{
+  "source_file": "packages/core/src/build/config.test.ts",
+  "capture_sha256": "0513f81e7d41a481f3377035f76931cf08c00c1be11377841b4b62d6d4de8181",
+  "cases": [
+    {
+      "id": "55a01f0bc082946abd42",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "test_source": "test(\"buildIndexingFunctions() throw useful error for common 0.11 migration mistakes\", async () => {\n  const indexingFunctions = [{ name: \"a:Event0\", fn: () => {} }];\n\n  const config = createConfig({\n    chains: {\n      mainnet: { id: 1, rpc: `http://127.0.0.1:8545/${TEST_POOL_ID}` },\n      optimism: { id: 10, rpc: `http://127.0.0.1:8545/${TEST_POOL_ID}` },\n    },\n    contracts: {\n      a: {\n        // @ts-expect-error\n        network: { mainnet: {}, optimism: {} },\n        abi: [event0],\n      },\n    },\n  });\n\n  const configBuild = buildConfig({\n    common: context.common,\n    // @ts-expect-error\n    config,\n  });\n\n  const result = await safeBuildIndexingFunctions({\n    common: context.common,\n    // @ts-expect-error\n    config,\n    indexingFunctions,\n    configBuild,\n  });\n\n  expect(result.status).toBe(\"error\");\n  expect(result.error?.message).toBe(\n    \"Validation failed: Chain for 'a' is null or undefined. Expected one of ['mainnet', 'optimism']. Did you forget to change 'network' to 'chain' when migrating to 0.11?\",\n  );\n})",
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "network": {
+              "mainnet": {},
+              "optimism": {}
+            },
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "af7907267becd4bf907c",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "test_source": "test(\"buildIndexingFunctions() validates chain name\", async () => {\n  const config = createConfig({\n    chains: {\n      mainnet: { id: 1, rpc: `http://127.0.0.1:8545/${TEST_POOL_ID}` },\n    },\n    contracts: {\n      a: {\n        // @ts-expect-error\n        chain: \"mainnetz\",\n        abi: [event0],\n        address: address1,\n      },\n    },\n  });\n\n  const configBuild = buildConfig({\n    common: context.common,\n    config,\n  });\n  const result = await safeBuildIndexingFunctions({\n    common: context.common,\n    config,\n    indexingFunctions: [{ name: \"a:Event0\", fn: () => {} }],\n    configBuild,\n  });\n\n  expect(result.status).toBe(\"error\");\n  expect(result.error?.message).toBe(\n    \"Validation failed: Invalid chain for 'a'. Got 'mainnetz', expected one of ['mainnet'].\",\n  );\n})",
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "chain": "mainnetz",
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              }
+            ],
+            "address": "0x0000000000000000000000000000000000000001"
+          }
+        }
+      }
+    },
+    {
+      "id": "b40ef8e8610beacf808b",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "test_source": "test(\"buildIndexingFunctions() validates event filter event name must be present in ABI\", async () => {\n  const config = createConfig({\n    chains: {\n      mainnet: { id: 1, rpc: `http://127.0.0.1:8545/${TEST_POOL_ID}` },\n    },\n    contracts: {\n      a: {\n        chain: \"mainnet\",\n        abi: [event0],\n        // @ts-expect-error\n        filter: {\n          event: \"Event2\",\n          args: {\n            arg: \"0x\",\n          },\n        },\n      },\n    },\n  });\n\n  const configBuild = buildConfig({\n    common: context.common,\n    config,\n  });\n  const result = await safeBuildIndexingFunctions({\n    common: context.common,\n    config,\n    indexingFunctions: [{ name: \"a:Event0\", fn: () => {} }],\n    configBuild,\n  });\n\n  expect(result.status).toBe(\"error\");\n  expect(result.error?.message).toBe(\n    \"Validation failed: Invalid filter for contract 'a'. Got event name 'Event2', expected one of ['Event0'].\",\n  );\n})",
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "chain": "mainnet",
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              }
+            ],
+            "filter": {
+              "event": "Event2",
+              "args": {
+                "arg": "0x"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "03426bf3f44186f9b02b",
+      "source_sha256": "d67362d9ecebfaa9f93d994b7fe7c2e493f9d7c06b590f468bdb807ccc3f3670",
+      "test_source": "test(\"buildIndexingFunctions() validates start and end block\", async () => {\n  const config = createConfig({\n    chains: {\n      mainnet: { id: 1, rpc: `http://127.0.0.1:8545/${TEST_POOL_ID}` },\n    },\n    contracts: {\n      a: {\n        chain: { mainnet: {} },\n        abi: [event0, event1],\n        // @ts-expect-error\n        startBlock: \"16370000\",\n        // @ts-expect-error\n        endBlock: \"16370100\",\n      },\n    },\n  });\n\n  // @ts-expect-error\n  const configBuild = buildConfig({ common: context.common, config });\n  const result = await safeBuildIndexingFunctions({\n    common: context.common,\n    // @ts-expect-error\n    config,\n    indexingFunctions: [{ name: \"a:Event0\", fn: () => {} }],\n    configBuild,\n  });\n\n  expect(result).toMatchInlineSnapshot(`\n    {\n      \"error\": [BuildError: Validation failed: Invalid start block for 'a'. Got 16370000 typeof string, expected an integer.],\n      \"status\": \"error\",\n    }\n  `);\n})",
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "http://127.0.0.1:8545/1"
+          }
+        },
+        "contracts": {
+          "a": {
+            "chain": {
+              "mainnet": {}
+            },
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "startBlock": "16370000",
+            "endBlock": "16370100"
+          }
+        }
+      }
+    }
+  ]
+}
