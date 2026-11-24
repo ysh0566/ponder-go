@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"iter"
 	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/filter"
 	"ponder.local/ponder-go/indexing"
@@ -49,7 +50,43 @@ func (r *RuntimeRunner) omnichainHistoricalSources(ctx context.Context, epoch *i
 	}
 	return sources, nil
 }
-func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *indexing.RuntimeEpoch, control store.ManagedLiveControl, groups []source.SourceEventGroup, proofs map[uint64]map[uint64]store.ManagedLiveHead) ([]*runtimeAcquiredBlock, map[uint64]string, error) {
+
+// Only source-bearing heights, the initial Down block and the logical group
+// endpoint require journal segments. The intervening headers are authenticated
+// by one persisted range per gap.
+func omnichainGroupHeights(start, end uint64, includeStart, paged bool, events map[uint64][]indexing.Object) iter.Seq[uint64] {
+	return func(yield func(uint64) bool) {
+		if !paged {
+			for n := start; n <= end; n++ {
+				if !yield(n) {
+					return
+				}
+			}
+			return
+		}
+		if start > end {
+			return
+		}
+		heights := make([]uint64, 0, len(events)+2)
+		for n := range events {
+			heights = append(heights, n)
+		}
+		if includeStart && start != end && len(events[start]) == 0 {
+			heights = append(heights, start)
+		}
+		if len(events[end]) == 0 {
+			heights = append(heights, end)
+		}
+		sort.Slice(heights, func(i, j int) bool { return heights[i] < heights[j] })
+		for _, n := range heights {
+			if !yield(n) {
+				return
+			}
+		}
+	}
+}
+
+func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *indexing.RuntimeEpoch, control store.ManagedLiveControl, groups []source.SourceEventGroup, proofs map[uint64]*runtimeLineage) ([]*runtimeAcquiredBlock, map[uint64]string, error) {
 	positions := map[uint64]string{}
 	blocks := []*runtimeAcquiredBlock{}
 	byID := map[uint64]int{}
@@ -87,7 +124,9 @@ func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *inde
 		}
 		previous := control.Cursors[g.ChainID]
 		actions := rpc.NewActions(epoch.Requester(i))
-		for n := next; n <= end.BlockNumber; n++ {
+		priorCP, _ := checkpoint.Decode(previous.Checkpoint)
+		paged := r.domains.UsesPagedLogOnly()
+		for n := range omnichainGroupHeights(next, end.BlockNumber, next == priorCP.BlockNumber, paged, events) {
 			input := events[n]
 			if len(input) == 0 && !r.logOnly {
 				return nil, nil, fmt.Errorf("omnichain block partition lacks its closing callback")
@@ -104,20 +143,33 @@ func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *inde
 			}
 			prior, _ := checkpoint.Decode(previous.Checkpoint)
 			initial := n == prior.BlockNumber && head == previous
-			if head != proofs[g.ChainID][n] || (!initial && head.ParentHash != previous.Hash) {
+			proven, err := proofs[g.ChainID].head(n)
+			if err != nil {
+				return nil, nil, err
+			}
+			var first store.ManagedLiveHead
+			parent := head.ParentHash
+			if paged && n > prior.BlockNumber+1 {
+				first, err = proofs[g.ChainID].head(prior.BlockNumber + 1)
+				if err != nil {
+					return nil, nil, err
+				}
+				parent = first.ParentHash
+			}
+			if head != proven || (!initial && parent != previous.Hash) {
 				return nil, nil, fmt.Errorf("omnichain block differs from acquired finalized lineage")
 			}
 			if err := r.validateOmnichainPartition(input, head); err != nil {
 				return nil, nil, err
 			}
-			blocks = append(blocks, &runtimeAcquiredBlock{index: i, id: g.ChainID, head: head, events: input, history: true})
+			blocks = append(blocks, &runtimeAcquiredBlock{rangeFirst: first, index: i, id: g.ChainID, head: head, events: input, history: true})
 			previous = head
 		}
 	}
 	sort.Slice(blocks, func(i, j int) bool { return blocks[i].head.Checkpoint < blocks[j].head.Checkpoint })
 	return blocks, positions, nil
 }
-func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexing.RuntimeEpoch, control store.ManagedLiveControl, proofs map[uint64]map[uint64]store.ManagedLiveHead, result RuntimeResult) (out RuntimeResult, err error) {
+func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexing.RuntimeEpoch, control store.ManagedLiveControl, proofs map[uint64]*runtimeLineage, result RuntimeResult) (out RuntimeResult, err error) {
 	out = result
 	defer func() {
 		if epoch != nil {
@@ -126,7 +178,11 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 	}()
 	for id, head := range control.LogOnlyScanHeads {
 		cp, _ := checkpoint.Decode(head.Checkpoint)
-		if proofs[id][cp.BlockNumber] != head {
+		proven, err := proofs[id].head(cp.BlockNumber)
+		if err != nil {
+			return out, fmt.Errorf("log-only scanned endpoint: %w", err)
+		}
+		if proven != head {
 			return out, fmt.Errorf("log-only scanned endpoint differs from finalized lineage")
 		}
 	}
@@ -163,6 +219,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 		if len(blocks) == 0 {
 			continue
 		}
+		readHeader := func(chain, number uint64) (store.ManagedLiveHead, error) { return proofs[chain].head(number) }
 		for {
 			b := store.ManagedLiveBatch{ID: r.nextID("omni-history"), Generation: control.Generation, ExpectedLastOperation: control.LastOperation, ExpectedTail: control.Tail}
 			partitions := make([][]indexing.Object, len(blocks))
@@ -176,6 +233,11 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 					return out, e
 				}
 				entry := store.ManagedLiveBlock{Head: block.head, InputDigest: digest}
+				if block.rangeFirst != (store.ManagedLiveHead{}) {
+					if err := entry.BindLogOnlyRange(ctx, block.rangeFirst, readHeader); err != nil {
+						return out, err
+					}
+				}
 				if r.logOnly {
 					entry.LogEventCount = uint64(len(block.events))
 					if len(block.events) > 0 {
@@ -190,7 +252,12 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 				}
 				b.Blocks = append(b.Blocks, entry)
 			}
-			acquired, e := r.domains.RetainBatch(ctx, b)
+			var acquired *store.ManagedLiveAcquisition
+			if r.domains.UsesPagedLogOnly() {
+				acquired, e = r.domains.RetainPagedLogOnlyBatch(ctx, b, readHeader)
+			} else {
+				acquired, e = r.domains.RetainBatch(ctx, b)
+			}
 			if e != nil {
 				return out, e
 			}
@@ -215,6 +282,13 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 			out.Refetches++
 		}
 		out.HistoricalBlocks += len(blocks)
+		for _, block := range blocks {
+			if block.rangeFirst != (store.ManagedLiveHead{}) {
+				first, _ := checkpoint.Decode(block.rangeFirst.Checkpoint)
+				last, _ := checkpoint.Decode(block.head.Checkpoint)
+				out.HistoricalBlocks += int(last.BlockNumber - first.BlockNumber)
+			}
+		}
 		control, e = r.domains.Control(ctx)
 		if e != nil {
 			return out, e
@@ -231,14 +305,20 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 		return out, err
 	}
 	epoch = nil
-	if r.logOnly {
+	if r.domains.UsesPagedLogOnly() {
+		err = r.domains.ActivatePagedLogOnlyRuntime(ctx, r.nextID("omni-activate"), control.Cursors, func(chain, number uint64) (store.ManagedLiveHead, error) { return proofs[chain].head(number) })
+	} else if r.logOnly {
 		lineage := map[uint64][]store.ManagedLiveHead{}
 		for _, chain := range r.build.Chains {
 			id := runtimeChainID(chain)
 			cursor, _ := checkpoint.Decode(control.Cursors[id].Checkpoint)
 			final, _ := checkpoint.Decode(r.finalized[id].Checkpoint)
 			for n := cursor.BlockNumber; n <= final.BlockNumber; n++ {
-				lineage[id] = append(lineage[id], proofs[id][n])
+				head, err := proofs[id].head(n)
+				if err != nil {
+					return out, err
+				}
+				lineage[id] = append(lineage[id], head)
 			}
 		}
 		err = r.domains.ActivateLogOnlyRuntime(ctx, r.nextID("omni-activate"), control.Cursors, lineage)

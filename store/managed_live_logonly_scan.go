@@ -19,28 +19,35 @@ type managedLogOnlyFragment struct {
 type managedLogOnlyScan struct {
 	FiltersHash string
 	Lineage     []ManagedLiveHead
+	Scanned     *managedLineageRange `json:"scannedRange,omitempty"`
+	FinalTail   *managedLineageRange `json:"finalTailRange,omitempty"`
 	Coverage    [][]managedLogOnlyFragment
 	EmptyFrom   uint64
 }
 
 func logOnlySpanCovered(spans []SourceInterval, start, end uint64) bool {
+	if start > end {
+		return false
+	}
 	next := float64(start)
+	covered := false
 	for _, span := range spans {
 		if math.IsNaN(span[0]) || math.IsNaN(span[1]) || math.IsInf(span[0], 0) || math.IsInf(span[1], 0) || math.Trunc(span[0]) != span[0] || math.Trunc(span[1]) != span[1] || span[0] < 0 || span[1] < span[0] {
 			return false
 		}
-		if span[1] < next {
+		if covered || span[1] < next {
 			continue
 		}
 		if span[0] > next {
 			return false
 		}
 		if span[1] >= float64(end) {
-			return true
+			covered = true
+		} else {
+			next = span[1] + 1
 		}
-		next = span[1] + 1
 	}
-	return false
+	return covered
 }
 
 func (m *ManagedLive) validateLogOnlyScan(c ManagedLiveControl, scans map[uint64]managedLogOnlyScan) (map[uint64]ManagedLiveHead, error) {
@@ -52,23 +59,34 @@ func (m *ManagedLive) validateLogOnlyScan(c ManagedLiveControl, scans map[uint64
 		id := chain.ID
 		scan, ok := scans[id]
 		filters := m.opts.runtimeLogFilters[id]
-		if !ok || scan.FiltersHash != managedHash(filters) || len(scan.Coverage) != len(filters) || len(scan.Lineage) == 0 || scan.Lineage[0] != c.Cursors[id] || scan.Lineage[len(scan.Lineage)-1] != c.FinalizedHeads[id] {
+		if !ok || scan.FiltersHash != managedHash(filters) || len(scan.Coverage) != len(filters) {
 			return nil, ErrManagedLiveBatchConflict
 		}
-		for i, h := range scan.Lineage {
-			normalized, cp, err := normalizeLiveHead(h)
-			if err != nil || normalized != h || cp.ChainID != id {
+		if pagedLogOnlyOptions(m.opts) {
+			end, err := scan.pagedScanEnd(c, id)
+			if err != nil {
+				return nil, err
+			}
+			ends[id] = end
+		} else {
+			if scan.Scanned != nil || scan.FinalTail != nil || len(scan.Lineage) == 0 || scan.Lineage[0] != c.Cursors[id] || scan.Lineage[len(scan.Lineage)-1] != c.FinalizedHeads[id] {
 				return nil, ErrManagedLiveBatchConflict
 			}
-			if i > 0 {
-				previous := scan.Lineage[i-1]
-				prior, _ := checkpoint.Decode(previous.Checkpoint)
-				if cp.BlockNumber != prior.BlockNumber+1 || cp.BlockTimestamp < prior.BlockTimestamp || h.ParentHash != previous.Hash {
+			for i, h := range scan.Lineage {
+				normalized, cp, err := normalizeLiveHead(h)
+				if err != nil || normalized != h || cp.ChainID != id {
 					return nil, ErrManagedLiveBatchConflict
 				}
-			}
-			if cp.BlockNumber == m.opts.EndBlocks[id] {
-				ends[id] = h
+				if i > 0 {
+					previous := scan.Lineage[i-1]
+					prior, _ := checkpoint.Decode(previous.Checkpoint)
+					if cp.BlockNumber != prior.BlockNumber+1 || cp.BlockTimestamp < prior.BlockTimestamp || h.ParentHash != previous.Hash {
+						return nil, ErrManagedLiveBatchConflict
+					}
+				}
+				if cp.BlockNumber == m.opts.EndBlocks[id] {
+					ends[id] = h
+				}
 			}
 		}
 		end, ok := ends[id]
@@ -78,17 +96,8 @@ func (m *ManagedLive) validateLogOnlyScan(c ManagedLiveControl, scans map[uint64
 		if prior, ok := c.LogOnlyScanHeads[id]; ok && prior != end {
 			return nil, ErrManagedLiveBatchConflict
 		}
-		for i, f := range filters {
-			fragments, err := filter.GetFragments(f)
-			if err != nil || len(scan.Coverage[i]) != len(fragments) {
-				return nil, ErrManagedLiveBatchConflict
-			}
-			for j, fragment := range fragments {
-				p := scan.Coverage[i][j]
-				if p.ID != filter.EncodeFragment(fragment["fragment"].(filter.Object)) || !logOnlySpanCovered(p.Intervals, m.opts.runtimeStarts[id], m.opts.EndBlocks[id]) {
-					return nil, ErrManagedLivePendingActions
-				}
-			}
+		if err := validateLogCoverage(filters, scan.Coverage, m.opts.runtimeStarts[id], m.opts.EndBlocks[id]); err != nil {
+			return nil, err
 		}
 		from := uint64(0)
 		if !ManagedLiveReachedBlock(c, id, m.opts.EndBlocks[id]) {
@@ -107,12 +116,11 @@ func (m *ManagedLive) validateLogOnlyScan(c ManagedLiveControl, scans map[uint64
 
 // This reads the owned source cache after all admitted sync work has joined.
 // Callers supply RPC header lineage, never coverage or an "empty" boolean.
-func (d *ManagedLiveDomains) logOnlyScan(ctx context.Context, c ManagedLiveControl, lineage map[uint64][]ManagedLiveHead) (map[uint64]managedLogOnlyScan, error) {
+func (d *ManagedLiveDomains) logOnlyScan(ctx context.Context, c ManagedLiveControl, scans map[uint64]managedLogOnlyScan) (map[uint64]managedLogOnlyScan, error) {
 	m := d.live()
-	if !logOnlyOptions(m.opts) || len(lineage) != len(m.opts.Chains) {
+	if !logOnlyOptions(m.opts) || len(scans) != len(m.opts.Chains) {
 		return nil, ErrManagedLivePendingActions
 	}
-	scans := map[uint64]managedLogOnlyScan{}
 	source, err := d.storage.syncCache.SourceSyncStore(0)
 	if err != nil {
 		return nil, err
@@ -121,23 +129,11 @@ func (d *ManagedLiveDomains) logOnlyScan(ctx context.Context, c ManagedLiveContr
 		for _, chain := range m.opts.Chains {
 			id := chain.ID
 			filters := m.opts.runtimeLogFilters[id]
-			intervals, err := s.GetIntervals(ctx, filters)
+			scan := scans[id]
+			scan.FiltersHash = managedHash(filters)
+			scan.Coverage, err = readLogCoverage(ctx, s, filters)
 			if err != nil {
 				return err
-			}
-			scan := managedLogOnlyScan{FiltersHash: managedHash(filters), Lineage: append([]ManagedLiveHead{}, lineage[id]...)}
-			for _, f := range filters {
-				parts, ok := intervals.Get(f)
-				if !ok {
-					return ErrManagedLivePendingActions
-				}
-				coverage := []managedLogOnlyFragment{}
-				for _, p := range parts {
-					spans := append([]SourceInterval{}, p.Intervals...)
-					sort.Slice(spans, func(i, j int) bool { return spans[i][0] < spans[j][0] })
-					coverage = append(coverage, managedLogOnlyFragment{ID: filter.EncodeFragment(p.Fragment), Intervals: spans})
-				}
-				scan.Coverage = append(scan.Coverage, coverage)
 			}
 			if !ManagedLiveReachedBlock(c, id, m.opts.EndBlocks[id]) {
 				scan.EmptyFrom, err = ManagedLiveNextBlock(c, id)
@@ -160,7 +156,7 @@ func (d *ManagedLiveDomains) logOnlyScan(ctx context.Context, c ManagedLiveContr
 }
 
 func (d *ManagedLiveDomains) ActivateLogOnlyRuntime(ctx context.Context, id string, heads map[uint64]ManagedLiveHead, lineage map[uint64][]ManagedLiveHead) error {
-	return d.setRuntimeServingWithScan(ctx, id, true, heads, lineage)
+	return d.setRuntimeServingWithScan(ctx, id, true, heads, lineage, nil)
 }
 
 func logOnlyEmptyTail(ctx context.Context, args SourceEventDataArgs, read func(context.Context, SourceEventDataArgs) (SourceEventData, error)) error {
@@ -195,4 +191,47 @@ func logOnlySameLineage(scans map[uint64]managedLogOnlyScan, lineage map[uint64]
 		}
 	}
 	return true
+}
+
+func validateLogCoverage(filters []filter.Object, coverage [][]managedLogOnlyFragment, start, end uint64) error {
+	if len(coverage) != len(filters) {
+		return ErrManagedLiveBatchConflict
+	}
+	for i, f := range filters {
+		fragments, err := filter.GetFragments(f)
+		if err != nil || len(coverage[i]) != len(fragments) {
+			return ErrManagedLiveBatchConflict
+		}
+		for j, fragment := range fragments {
+			p := coverage[i][j]
+			if p.ID != filter.EncodeFragment(fragment["fragment"].(filter.Object)) || !logOnlySpanCovered(p.Intervals, start, end) {
+				return ErrManagedLivePendingActions
+			}
+		}
+	}
+
+	return nil
+}
+
+func readLogCoverage(ctx context.Context, s *SourceSyncStore, filters []filter.Object) ([][]managedLogOnlyFragment, error) {
+	intervals, err := s.GetIntervals(ctx, filters)
+	if err != nil {
+		return nil, err
+	}
+	var result [][]managedLogOnlyFragment
+	for _, f := range filters {
+		parts, ok := intervals.Get(f)
+		if !ok {
+			return nil, ErrManagedLivePendingActions
+		}
+		coverage := []managedLogOnlyFragment{}
+		for _, p := range parts {
+			spans := append([]SourceInterval{}, p.Intervals...)
+			sort.Slice(spans, func(i, j int) bool { return spans[i][0] < spans[j][0] })
+			coverage = append(coverage, managedLogOnlyFragment{ID: filter.EncodeFragment(p.Fragment), Intervals: spans})
+		}
+		result = append(result, coverage)
+	}
+
+	return result, nil
 }

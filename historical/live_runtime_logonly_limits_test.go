@@ -3,6 +3,7 @@ package historical
 import (
 	"ponder.local/ponder-go/indexing"
 	"ponder.local/ponder-go/store"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -35,7 +36,7 @@ func TestRuntimeOmnichainLogOnlyPhysicalRange(t *testing.T) {
 				groups[1] = []indexing.Object{{"type": "block", "filter": map[string]any{"type": "block"}}}
 			}
 			err := validateOmnichainCallbackModes(groups)
-			want := name == "boundary" || name == "overlap-counts-once"
+			want := name != "mixed-preserved"
 			if (err == nil) != want {
 				t.Fatalf("physical budget %s err=%v", name, err)
 			}
@@ -43,5 +44,20 @@ func TestRuntimeOmnichainLogOnlyPhysicalRange(t *testing.T) {
 				t.Fatalf("mixed rejection changed %v", err)
 			}
 		})
+	}
+}
+
+func TestRuntimeOmnichainSparseGroupHeights(t *testing.T) {
+	const end = 9007199254740991
+	events := map[uint64][]indexing.Object{12: {{}}, end - 3: {{}, {}}}
+	for _, initial := range []bool{true, false} {
+		want := []uint64{12, end - 3, end}
+		if initial {
+			want = append([]uint64{1}, want...)
+		}
+		got := slices.Collect(omnichainGroupHeights(1, end, initial, true, events))
+		if !slices.Equal(got, want) {
+			t.Fatalf("physical segments %v want %v", got, want)
+		}
 	}
 }

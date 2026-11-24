@@ -353,7 +353,7 @@ func liveFinalizeUnitRetainedForks(t *testing.T) (*ManagedLive, managedLiveDurab
 		t.Fatal(err)
 	}
 	alternate := blocks[len(blocks)-1].Head
-	line, err := liveHeadLineage(alternate, b.Baselines[1], proofs)
+	line, err := liveHeadLineage(alternate, b.Baselines[1], proofs, nil)
 	if err != nil || line[5] != b.Blocks[1].Head || line[9] == b.Blocks[9].Head || proofs[liveProofKey(b.Blocks[9].Head)] != b.Blocks[9].Head || proofs[liveProofKey(original.Head)] != original.Head {
 		t.Fatal("fixture must contain both complete acquired forks sharing B5")
 	}

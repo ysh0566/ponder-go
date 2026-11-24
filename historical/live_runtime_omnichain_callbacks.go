@@ -118,19 +118,11 @@ func validateOmnichainCallbackModes(groups [][]indexing.Object) error {
 		return fmt.Errorf("mixed closing-block and log-only omnichain chains are not supported")
 	}
 	if logOnly {
-		remaining := uint64(store.ManagedLiveOmnichainBlockLimit(len(groups)))
 		for _, callbacks := range groups {
 			if err := validateOmnichainLogOnlyCallbacks(callbacks); err != nil {
 				return err
 			}
-			f := callbacks[0]["filter"].(map[string]any)
-			from, _ := uintQuantity(filter.FilterFromBlock(f))
-			to, _ := uintQuantity(filter.FilterToBlock(f))
-			span := to - from + 1
-			if span > remaining {
-				return fmt.Errorf("log-only configured physical range exceeds atomic receipt budget")
-			}
-			remaining -= span
+
 		}
 	}
 	return nil

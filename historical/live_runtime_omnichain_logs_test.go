@@ -82,6 +82,9 @@ type omniLogsRPCCounts struct {
 }
 
 func omniLogsRPC(t *testing.T, g omniLogsGolden) (*finiteRPC, *omniLogsRPCCounts) {
+	return omniLogsRPCWithHeaders(t, g, nil)
+}
+func omniLogsRPCWithHeaders(t *testing.T, g omniLogsGolden, header func(uint64, uint64) map[string]any) (*finiteRPC, *omniLogsRPCCounts) {
 	t.Helper()
 	blocks := map[uint64]map[string]map[string]any{}
 	logs := map[uint64][]map[string]any{}
@@ -147,6 +150,11 @@ func omniLogsRPC(t *testing.T, g omniLogsGolden) (*finiteRPC, *omniLogsRPCCounts
 					n = latest[id]
 				}
 				b = blocks[id][n]
+				if b == nil && header != nil {
+					if number, err := uintQuantity(n); err == nil {
+						b = header(id, number)
+					}
+				}
 			}
 			if b == nil {
 				http.Error(w, "fixture block absent", 400)

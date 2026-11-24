@@ -13,6 +13,32 @@ import (
 
 const managedLiveOmnichainLogOnlyVersion = "managed-live-omnichain-logonly-v16"
 
+const managedLivePagedLogOnlyVersion = "managed-live-omnichain-logonly-v17"
+
+func logOnlyVersion(version string) bool {
+	return version == managedLiveOmnichainLogOnlyVersion || version == managedLivePagedLogOnlyVersion
+}
+
+func (d *ManagedLiveDomains) UsesPagedLogOnly() bool { return pagedLogOnlyOptions(d.live().opts) }
+
+func pagedLogOnlyOptions(o ManagedLiveOptions) bool {
+	if !logOnlyOptions(o) {
+		return false
+	}
+	remaining := uint64(ManagedLiveOmnichainBlockLimit(len(o.Chains)))
+	for _, chain := range o.Chains {
+		from, to := o.runtimeStarts[chain.ID], o.EndBlocks[chain.ID]
+		if to < from {
+			return false
+		}
+		if to-from >= remaining {
+			return true
+		}
+		remaining -= to - from + 1
+	}
+	return false
+}
+
 func logOnlyOptions(o ManagedLiveOptions) bool { return o.runtimeLogFilters != nil }
 func logOnlyQuantity(v any) (uint64, bool) {
 	if n, ok := v.(*big.Int); ok {
@@ -134,13 +160,7 @@ func normalizeLogOnlyFilters(in map[uint64][]filter.Object, o ManagedLiveOptions
 		return nil, ErrManagedLiveBatchConflict
 	}
 	out := map[uint64][]filter.Object{}
-	remaining := uint64(ManagedLiveOmnichainBlockLimit(len(o.Chains)))
 	for _, c := range o.Chains {
-		span := o.EndBlocks[c.ID] - o.runtimeStarts[c.ID] + 1
-		if span > remaining {
-			return nil, fmt.Errorf("log-only configured physical range exceeds atomic receipt budget")
-		}
-		remaining -= span
 		rows, ok := in[c.ID]
 		if !ok || len(rows) == 0 {
 			return nil, ErrManagedLiveBatchConflict
@@ -179,7 +199,7 @@ func logOnlyPosition(raw string) (checkpoint.Checkpoint, bool) {
 	return cp, cp.EventType == checkpoint.Logs
 }
 func controlPosition(raw string, c ManagedLiveControl) (checkpoint.Checkpoint, bool) {
-	if c.Version == managedLiveOmnichainLogOnlyVersion {
+	if logOnlyVersion(c.Version) {
 		return logOnlyPosition(raw)
 	}
 	return liveCanonicalPosition(raw, c.Version == managedLiveOmnichainVersion)
@@ -267,7 +287,7 @@ func (d *ManagedLiveDomains) ValidateRuntimeBlockInputs(b ManagedLiveBlock, even
 	return nil
 }
 func validateLogOnlyControl(c ManagedLiveControl) error {
-	if c.Version != managedLiveOmnichainLogOnlyVersion {
+	if !logOnlyVersion(c.Version) {
 		if c.LogOnlyLastEvent != "" || len(c.LogOnlyScanHeads) != 0 {
 			return ErrManagedLiveBatchConflict
 		}

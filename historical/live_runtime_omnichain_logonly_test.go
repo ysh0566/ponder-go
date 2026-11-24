@@ -40,12 +40,15 @@ func loadOmniLogOnlyGolden(t *testing.T) []omniLogOnlyCase {
 	return g.Cases
 }
 func omniLogOnlyBuild(t *testing.T, g omniLogsGolden, p *finiteRPC, handlers map[string]indexing.Handler) *config.SourceIndexingBuild {
+	return omniLogOnlyRangeBuild(t, g, p, handlers, 3)
+}
+func omniLogOnlyRangeBuild(t *testing.T, g omniLogsGolden, p *finiteRPC, handlers map[string]indexing.Handler, end uint64) *config.SourceIndexingBuild {
 	t.Helper()
 	chains := map[string]any{"one": map[string]any{"id": 1, "rpc": p.server.URL + "/1", "reorgWindow": 0, "cacheRpcRequests": true}, "two": map[string]any{"id": 2, "rpc": p.server.URL + "/2", "reorgWindow": 0, "cacheRpcRequests": true}}
 	selected := map[string]any{"one": map[string]any{}, "two": map[string]any{}}
 	contracts := map[string]any{}
 	for _, kind := range []string{"A", "B"} {
-		contracts["Token"+kind] = map[string]any{"abi": []any{g.ABIItem}, "address": g.Address, "chain": selected, "startBlock": 1, "endBlock": 3}
+		contracts["Token"+kind] = map[string]any{"abi": []any{g.ABIItem}, "address": g.Address, "chain": selected, "startBlock": 1, "endBlock": end}
 	}
 	raw, err := json.Marshal(map[string]any{"ordering": "omnichain", "chains": chains, "contracts": contracts})
 	if err != nil {
@@ -167,7 +170,7 @@ func TestRuntimeOmnichainLogOnlySource(t *testing.T) {
 							if err != nil {
 								t.Fatal(err)
 							}
-							_, err = r.runOmnichainFinalized(context.Background(), faultEpoch, control, map[uint64]map[uint64]store.ManagedLiveHead{}, RuntimeResult{})
+							_, err = r.runOmnichainFinalized(context.Background(), faultEpoch, control, map[uint64]*runtimeLineage{}, RuntimeResult{})
 							if err == nil || !strings.Contains(err.Error(), "scanned endpoint") {
 								_ = faultEpoch.Abort(context.Background())
 								t.Fatalf("endpoint mismatch accepted: %v", err)

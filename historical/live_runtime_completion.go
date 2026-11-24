@@ -15,12 +15,13 @@ import (
 )
 
 type runtimeAcquiredBlock struct {
-	index   int
-	id      uint64
-	head    store.ManagedLiveHead
-	raw     indexing.Object
-	events  []indexing.Object
-	history bool
+	rangeFirst store.ManagedLiveHead
+	index      int
+	id         uint64
+	head       store.ManagedLiveHead
+	raw        indexing.Object
+	events     []indexing.Object
+	history    bool
 }
 type runtimeBlockQueue struct {
 	cancel context.CancelFunc
@@ -30,7 +31,7 @@ type runtimeBlockQueue struct {
 }
 
 func (q *runtimeBlockQueue) close() { q.stop(); q.cancel(); q.jobs.Wait() }
-func (r *RuntimeRunner) newBlockQueue(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl, ends map[uint64]uint64, proofs map[uint64]map[uint64]store.ManagedLiveHead, headers map[uint64]indexing.Object, children []*source.SourceHistoricalChildren, syncers []*source.SourceHistoricalSync, realtime []*source.SourceRealtimeSync) *runtimeBlockQueue {
+func (r *RuntimeRunner) newBlockQueue(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl, ends map[uint64]uint64, proofs map[uint64]*runtimeLineage, headers map[uint64]indexing.Object, children []*source.SourceHistoricalChildren, syncers []*source.SourceHistoricalSync, realtime []*source.SourceRealtimeSync) *runtimeBlockQueue {
 	run, cancel := context.WithCancel(ctx)
 	q := &runtimeBlockQueue{cancel: cancel}
 	generators := make([]source.SourceEventGenerator, len(r.build.Chains))
@@ -77,7 +78,7 @@ func (r *RuntimeRunner) newBlockQueue(ctx context.Context, epoch *indexing.Runti
 	q.next, q.stop = iter.Pull2(source.MergeSourceEventsByCompletion(run, generators))
 	return q
 }
-func (r *RuntimeRunner) acquireRuntimeBlock(ctx context.Context, epoch *indexing.RuntimeEpoch, i int, number uint64, previous store.ManagedLiveHead, rawPrevious indexing.Object, proofs map[uint64]map[uint64]store.ManagedLiveHead, children []*source.SourceHistoricalChildren, syncers []*source.SourceHistoricalSync, realtime []*source.SourceRealtimeSync) (*runtimeAcquiredBlock, error) {
+func (r *RuntimeRunner) acquireRuntimeBlock(ctx context.Context, epoch *indexing.RuntimeEpoch, i int, number uint64, previous store.ManagedLiveHead, rawPrevious indexing.Object, proofs map[uint64]*runtimeLineage, children []*source.SourceHistoricalChildren, syncers []*source.SourceHistoricalSync, realtime []*source.SourceRealtimeSync) (*runtimeAcquiredBlock, error) {
 	chain := r.build.Chains[i]
 	id, _ := uintQuantity(chain["id"])
 	raw, err := rpc.NewActions(epoch.Requester(i)).GetSourceBlockByNumber(ctx, source.Hex(number), true)
@@ -100,7 +101,11 @@ func (r *RuntimeRunner) acquireRuntimeBlock(ctx context.Context, epoch *indexing
 		if number == final.BlockNumber && head != r.finalized[id] {
 			return nil, fmt.Errorf("canonical finalized identity changed")
 		}
-		if proofs[id][number] != head {
+		proven, err := proofs[id].head(number)
+		if err != nil {
+			return nil, err
+		}
+		if proven != head {
 			return nil, fmt.Errorf("historical block differs from authenticated finalized lineage")
 		}
 		prepared, err := source.PrepareManagedSourceBlock(ctx, chain, r.build.EventCallbacks[i], r.session, children[i], syncers[i], number, raw)
@@ -168,6 +173,7 @@ func (r *RuntimeRunner) Run(ctx context.Context) (result RuntimeResult, runErr e
 	r.mu.Unlock()
 	var epoch *indexing.RuntimeEpoch
 	var queue *runtimeBlockQueue
+	proofs := make(map[uint64]*runtimeLineage)
 	defer func() {
 		if runErr != nil {
 			r.failed.Store(true)
@@ -176,6 +182,11 @@ func (r *RuntimeRunner) Run(ctx context.Context) (result RuntimeResult, runErr e
 		}
 		if queue != nil {
 			queue.close()
+		}
+		for _, lineage := range proofs {
+			if err := lineage.close(); err != nil {
+				runErr = errors.Join(runErr, err)
+			}
 		}
 		if epoch != nil {
 			runErr = errors.Join(runErr, epoch.Abort(context.Background()))
@@ -320,7 +331,7 @@ func (r *RuntimeRunner) Run(ctx context.Context) (result RuntimeResult, runErr e
 		if r.setup || r.options.SourceCheckpoints {
 			for i, c := range r.build.Chains {
 				id, _ := uintQuantity(c["id"])
-				if _, e := r.acquireFinalizedLineage(epoch.Context(), epoch.Requester(i), id, baselines[id]); e != nil {
+				if e := r.walkFinalizedLineage(epoch.Context(), epoch.Requester(i), id, baselines[id], nil); e != nil {
 					return result, e
 				}
 			}
@@ -351,7 +362,6 @@ func (r *RuntimeRunner) Run(ctx context.Context) (result RuntimeResult, runErr e
 			}
 		}
 	}
-	proofs := map[uint64]map[uint64]store.ManagedLiveHead{}
 	for i, c := range r.build.Chains {
 		id, _ := uintQuantity(c["id"])
 		cursor := control.Cursors[id]
@@ -368,8 +378,29 @@ func (r *RuntimeRunner) Run(ctx context.Context) (result RuntimeResult, runErr e
 			return result, fmt.Errorf("safe restart header differs from canonical RPC: %w", e)
 		}
 		headers[id] = raw
-		proofs[id], e = r.acquireFinalizedLineage(epoch.Context(), epoch.Requester(i), id, cursor)
+		final, e := checkpoint.Decode(r.finalized[id].Checkpoint)
 		if e != nil {
+			return result, e
+		}
+		high := final.BlockNumber
+		if !r.logOnly {
+			high = min(high, r.ends[id])
+		}
+		lineage, e := newRuntimeLineage(id, high, n.BlockNumber)
+		if e != nil {
+			return result, e
+		}
+		proofs[id] = lineage
+		e = r.walkFinalizedLineage(epoch.Context(), epoch.Requester(i), id, cursor, func(number uint64, head store.ManagedLiveHead) error {
+			if number <= high {
+				return lineage.append(number, head)
+			}
+			return nil
+		})
+		if e != nil {
+			return result, e
+		}
+		if e = lineage.finish(); e != nil {
 			return result, e
 		}
 	}

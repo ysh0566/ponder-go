@@ -50,6 +50,8 @@ type ManagedLiveOptions struct {
 	runtimeFactories   bool
 	runtimeOmnichain   bool
 	runtimeLogFilters  map[uint64][]filter.Object
+	// Populated on a local copy for planning after the page contents have been verified.
+	verifiedRangeParents map[ManagedLiveHead]ManagedLiveHead
 }
 
 // ManagedLiveControl binds numeric ordinals, durable finality and safe headers.
@@ -197,6 +199,9 @@ func (m *ManagedLive) createFormat(ctx context.Context, tx Transaction) error {
 		if err := tx.Exec(ctx, statement); err != nil {
 			return err
 		}
+	}
+	if pagedLogOnlyOptions(m.opts) {
+		return s.createLineagePages(ctx, tx)
 	}
 	return nil
 }

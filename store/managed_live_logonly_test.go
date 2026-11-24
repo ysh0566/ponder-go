@@ -96,7 +96,7 @@ func logOnlyScanFixture(t *testing.T) (*ManagedLive, ManagedLiveControl, map[uin
 }
 
 func TestLogOnlyScanReceiptBinding(t *testing.T) {
-	for _, name := range []string{"valid", "missing-chain", "foreign-chain", "filter", "missing-fragment", "coverage-gap", "missing-final", "broken-parent", "skipped-header", "wrong-empty-start", "stale-scan-end", "wrong-end-cut"} {
+	for _, name := range []string{"valid", "missing-chain", "foreign-chain", "filter", "missing-fragment", "coverage-gap", "malformed-after-covered", "missing-final", "broken-parent", "skipped-header", "wrong-empty-start", "stale-scan-end", "wrong-end-cut"} {
 		t.Run(name, func(t *testing.T) {
 			m, c, scans := logOnlyScanFixture(t)
 			scan := scans[1]
@@ -111,6 +111,8 @@ func TestLogOnlyScanReceiptBinding(t *testing.T) {
 				scan.Coverage[0] = nil
 			case "coverage-gap":
 				scan.Coverage[0][0].Intervals = []SourceInterval{{1, 1}, {3, 3}}
+			case "malformed-after-covered":
+				scan.Coverage[0][0].Intervals = []SourceInterval{{1, 3}, {5, 4}}
 			case "missing-final":
 				scan.Lineage = scan.Lineage[:3]
 			case "broken-parent":

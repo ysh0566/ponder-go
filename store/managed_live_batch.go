@@ -122,9 +122,22 @@ func (m *ManagedLive) readDurableState(ctx context.Context, q Querier, prior boo
 		}
 		token, generation, heads = fmt.Sprint(app.Rows[0]["lease_token"]), c.Generation, c.FinalizedHeads
 	}
+	if pagedLogOnlyOptions(m.opts) {
+		d.rangeParents, err = m.auditLineagePages(ctx, q, d.Operations)
+		if err != nil {
+			return d, "", err
+		}
+	}
 	ordered, err := m.validateDurableOwner(d, token, generation, heads)
 	if err != nil {
 		return d, "", err
+	}
+	if !pagedLogOnlyOptions(m.opts) {
+		for _, op := range d.Operations {
+			if err := rejectPagedReceipt(op); err != nil {
+				return d, "", err
+			}
+		}
 	}
 	if !logOnlyOptions(m.opts) {
 		if err := validateLegacyLogOnlyExtensions(d.Operations); err != nil {
@@ -365,6 +378,23 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 	if err != nil {
 		return ManagedLiveBatchResult{}, err
 	}
+	for _, segment := range segments {
+		if segment.Block.RangeDigest == "" {
+			continue
+		}
+		expected := segment.Block.rangeProof()
+		got, err := s.writeLineageRange(ctx, tx, batch.ID, expected.First, expected.Last, acquired.readHeaders)
+		if err != nil {
+			return ManagedLiveBatchResult{}, err
+		}
+		if got != expected || d.rangeParents == nil {
+			return ManagedLiveBatchResult{}, ErrManagedLiveBatchConflict
+		}
+		if prior, ok := d.rangeParents[segment.Block.Head]; ok && prior != segment.BeforeCursor {
+			return ManagedLiveBatchResult{}, ErrManagedLiveBatchConflict
+		}
+		d.rangeParents[segment.Block.Head] = segment.BeforeCursor
+	}
 	if err := m.validateBatchFinality(d, after, segments); err != nil {
 		return ManagedLiveBatchResult{}, err
 	}
@@ -415,7 +445,7 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 	if err := tx.Exec(ctx, "UPDATE "+s.internal("_ponder_go_live_control")+" SET payload=$1::jsonb WHERE key='control'", string(controlJSON)); err != nil {
 		return ManagedLiveBatchResult{}, err
 	}
-	evidence := managedLiveBatchEvidence{Version: managedLiveBatchVersion, Batch: batch, AcquisitionHash: acquired.requestHash, BeforeCursors: cursors, Segments: segments, AfterControl: after}
+	evidence := managedLiveBatchEvidence{GapScans: acquired.gapScans, Version: managedLiveBatchVersion, Batch: batch, AcquisitionHash: acquired.requestHash, BeforeCursors: cursors, Segments: segments, AfterControl: after}
 	payload, err := json.Marshal(evidence)
 	if err != nil {
 		return ManagedLiveBatchResult{}, err

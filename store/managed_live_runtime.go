@@ -16,7 +16,7 @@ const managedLiveFactoryVersion = "managed-live-factory-v10"
 const managedLiveSetupVersion = "managed-live-setup-v8"
 
 func isLiveRuntimeVersion(v string) bool {
-	return v == managedLiveRuntimeVersion || v == managedLiveOmnichainVersion || v == managedLiveOmnichainLogOnlyVersion || isContinuousRuntimeVersion(v)
+	return v == managedLiveRuntimeVersion || v == managedLiveOmnichainVersion || logOnlyVersion(v) || isContinuousRuntimeVersion(v)
 }
 
 func isContinuousRuntimeVersion(v string) bool {

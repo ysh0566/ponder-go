@@ -26,6 +26,8 @@ var (
 // no events or DML. InputDigest is the SHA256 of the caller's extracted inputs;
 // BuildID remains the identity of the handler implementation.
 type ManagedLiveBlock struct {
+	RangeFirst       ManagedLiveHead `json:"rangeFirst,omitzero"`
+	RangeDigest      string          `json:"rangeDigest,omitempty"`
 	Head             ManagedLiveHead `json:"head"`
 	InputDigest      string          `json:"inputDigest"`
 	SourceCheckpoint string          `json:"sourceCheckpoint,omitempty"`
@@ -53,6 +55,8 @@ type ManagedLiveBatch struct {
 // constructor-owned generation and exact header/input snapshot cannot be
 // retargeted by later mutation of the caller's batch.
 type ManagedLiveAcquisition struct {
+	readHeaders ManagedLiveHeaderReader
+	gapScans    map[int]managedGapScan
 	owner       *ManagedLive
 	generation  uint64
 	requestHash string
@@ -85,6 +89,7 @@ type ManagedLiveBatchResult struct {
 // Evidence is copied into the independent operations table. No foreign key or
 // cascade ties it to segment retention; reorg archives retain removed evidence.
 type managedLiveBatchEvidence struct {
+	GapScans        map[int]managedGapScan     `json:"gapScans,omitempty"`
 	Version         string                     `json:"version"`
 	Batch           ManagedLiveBatch           `json:"batch"`
 	AcquisitionHash string                     `json:"acquisitionHash"`
@@ -181,6 +186,12 @@ func normalizeLiveBatch(opts ManagedLiveOptions, in ManagedLiveBatch) (ManagedLi
 		block.InputDigest = strings.ToLower(block.InputDigest)
 		if err != nil || !chains[cp.ChainID] || !liveDigest(block.InputDigest) || (block.SourceCheckpoint != "" && (!opts.runtimeOmnichain || !positionForOptions(block.SourceCheckpoint, head, opts) || liveDown(block.SourceCheckpoint))) {
 			return out, ErrManagedLiveBatchConflict
+		}
+		if block.RangeDigest != "" || block.RangeFirst != (ManagedLiveHead{}) {
+			first, at, e := normalizeLiveHead(block.RangeFirst)
+			if !pagedLogOnlyOptions(opts) || !liveDigest(block.RangeDigest) || e != nil || first != block.RangeFirst || at.ChainID != cp.ChainID || at.BlockNumber >= cp.BlockNumber || at.BlockTimestamp > cp.BlockTimestamp {
+				return out, ErrManagedLiveBatchConflict
+			}
 		}
 		if err := validateLogOnlyBlock(opts, block); err != nil {
 			return out, err
@@ -348,7 +359,10 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 			beforePosition = positions[cp.ChainID]
 		}
 		extends := cp.BlockNumber == previous.BlockNumber+1 && block.Head.ParentHash == prior.Hash
-		if opts.runtimeInitial && liveDown(beforePosition) {
+		if block.RangeDigest != "" {
+			_, first, err := normalizeLiveHead(block.RangeFirst)
+			extends = pagedLogOnlyOptions(opts) && err == nil && !liveDown(beforePosition) && first.BlockNumber == previous.BlockNumber+1 && first.BlockTimestamp >= previous.BlockTimestamp && block.RangeFirst.ParentHash == prior.Hash
+		} else if opts.runtimeInitial && liveDown(beforePosition) {
 			extends = cp.BlockNumber == previous.BlockNumber && block.Head == prior
 		}
 		if err != nil || pe != nil || !ok || !extends || cp.BlockTimestamp < previous.BlockTimestamp || cp.BlockNumber > opts.EndBlocks[cp.ChainID] {

@@ -20,12 +20,20 @@ type managedRuntimeServe struct {
 	After                 ManagedLiveControl
 }
 
+func (m *ManagedLive) serveVersion() string {
+	if pagedLogOnlyOptions(m.opts) {
+		return "runtime-serve-logonly-v17"
+	}
+	if logOnlyOptions(m.opts) {
+		return "runtime-serve-logonly-v16"
+	}
+	return "runtime-serve-v1"
+}
+
 func (m *ManagedLive) planRuntimeServe(before ManagedLiveControl, e managedRuntimeServe) (ManagedLiveControl, error) {
 	after := before
-	expectedVersion := "runtime-serve-v1"
-	if logOnlyOptions(m.opts) {
-		expectedVersion = "runtime-serve-logonly-v16"
-	} else if len(e.LogOnlyScan) != 0 {
+	expectedVersion := m.serveVersion()
+	if !logOnlyOptions(m.opts) && len(e.LogOnlyScan) != 0 {
 		return after, ErrManagedLiveBatchConflict
 	}
 	if !m.opts.liveRuntime || e.Version != expectedVersion || !liveID(e.ID) || e.ID == before.LastOperation || e.Generation != before.Generation || managedHash(e.Before) != managedHash(before) || !liveDigest(e.SyncHead) || e.Ready == before.Serving {
@@ -86,9 +94,9 @@ func (d *ManagedLiveDomains) PauseRuntime(ctx context.Context, id string) error 
 	return d.setRuntimeServing(ctx, id, false, nil)
 }
 func (d *ManagedLiveDomains) setRuntimeServing(ctx context.Context, id string, ready bool, heads map[uint64]ManagedLiveHead) error {
-	return d.setRuntimeServingWithScan(ctx, id, ready, heads, nil)
+	return d.setRuntimeServingWithScan(ctx, id, ready, heads, nil, nil)
 }
-func (d *ManagedLiveDomains) setRuntimeServingWithScan(ctx context.Context, id string, ready bool, heads map[uint64]ManagedLiveHead, lineage map[uint64][]ManagedLiveHead) error {
+func (d *ManagedLiveDomains) setRuntimeServingWithScan(ctx context.Context, id string, ready bool, heads map[uint64]ManagedLiveHead, lineage map[uint64][]ManagedLiveHead, get ManagedLiveHeaderReader) error {
 	if !d.mu.TryLock() {
 		return ErrManagedLiveBusy
 	}
@@ -110,23 +118,37 @@ func (d *ManagedLiveDomains) setRuntimeServingWithScan(ctx context.Context, id s
 	for _, op := range b.Operations {
 		if op.ID == id {
 			var e managedRuntimeServe
-			if op.Kind != "serve" || decodeLiveJSON(op.Payload, &e) != nil || e.Ready != ready || managedHash(e.Heads) != managedHash(heads) || e.Generation != m.opened.Generation || op.OwnerToken != m.owner.s.leaseToken || (logOnlyOptions(m.opts) && !logOnlySameLineage(e.LogOnlyScan, lineage)) || (!logOnlyOptions(m.opts) && lineage != nil) {
+			if op.Kind != "serve" || decodeLiveJSON(op.Payload, &e) != nil || e.Ready != ready || managedHash(e.Heads) != managedHash(heads) || e.Generation != m.opened.Generation || op.OwnerToken != m.owner.s.leaseToken || (!logOnlyOptions(m.opts) && (lineage != nil || get != nil)) {
+				return ErrManagedLiveReceiptConflict
+			}
+			if pagedLogOnlyOptions(m.opts) && ready {
+				ranges, err := m.acquiredScanRanges(ctx, e.Before, lineage, get)
+				if err != nil {
+					return err
+				}
+				if !samePagedScanInputs(e.LogOnlyScan, ranges) {
+					return ErrManagedLiveReceiptConflict
+				}
+			} else if logOnlyOptions(m.opts) && (!logOnlySameLineage(e.LogOnlyScan, lineage) || get != nil) {
 				return ErrManagedLiveReceiptConflict
 			}
 			return nil
 		}
 	}
 	d.servingPublication.Store(false)
-	e := managedRuntimeServe{Version: "runtime-serve-v1", ID: id, SyncHead: l.Head, Generation: b.Control.Generation, Ready: ready, Before: b.Control, Heads: cloneLiveHeads(heads)}
+	e := managedRuntimeServe{Version: m.serveVersion(), ID: id, SyncHead: l.Head, Generation: b.Control.Generation, Ready: ready, Before: b.Control, Heads: cloneLiveHeads(heads)}
 	if logOnlyOptions(m.opts) {
-		e.Version = "runtime-serve-logonly-v16"
 		if ready {
-			e.LogOnlyScan, err = d.logOnlyScan(ctx, b.Control, lineage)
+			ranges, err := m.acquiredScanRanges(ctx, b.Control, lineage, get)
+			if err != nil {
+				return err
+			}
+			e.LogOnlyScan, err = d.logOnlyScan(ctx, b.Control, ranges)
 			if err != nil {
 				return err
 			}
 		}
-	} else if lineage != nil {
+	} else if lineage != nil || get != nil {
 		return ErrManagedLiveBatchConflict
 	}
 	if !ready {
@@ -170,6 +192,11 @@ func (d *ManagedLiveDomains) setRuntimeServingWithScan(ctx context.Context, id s
 		}
 		if logOnlyOptions(m.opts) {
 			if _, err = m.validateLogOnlyScan(before.Control, e.LogOnlyScan); err != nil {
+				return err
+			}
+		}
+		if pagedLogOnlyOptions(m.opts) {
+			if err := s.writeScanPages(ctx, tx, id, e.LogOnlyScan, get); err != nil {
 				return err
 			}
 		}

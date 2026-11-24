@@ -82,7 +82,7 @@ func (d *ManagedLiveDomains) RuntimeFinalizeHeaders(ctx context.Context, request
 	confirmed := livePublicFinality(b.Control, baselines)
 	out := map[uint64]map[uint64]ManagedLiveHead{}
 	for id, head := range request.Finalized {
-		lineage, err := liveHeadLineage(head, confirmed[id], proofs)
+		lineage, err := liveHeadLineage(head, confirmed[id], proofs, nil)
 		if err != nil {
 			return nil, err
 		}

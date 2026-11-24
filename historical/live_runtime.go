@@ -349,7 +349,14 @@ func runtimeHead(id uint64, b indexing.Object) (store.ManagedLiveHead, error) {
 	if !ok || !pok {
 		return store.ManagedLiveHead{}, fmt.Errorf("acquired header lacks hashes")
 	}
-	return store.ManagedLiveHead{Checkpoint: cp, Hash: strings.ToLower(h), ParentHash: strings.ToLower(p)}, e
+	h, p = strings.ToLower(h), strings.ToLower(p)
+	var decoded [32]byte
+	for _, hash := range [2]string{h, p} {
+		if err := decodeLineageHash(decoded[:], hash); err != nil {
+			return store.ManagedLiveHead{}, err
+		}
+	}
+	return store.ManagedLiveHead{Checkpoint: cp, Hash: h, ParentHash: p}, e
 }
 func (r *RuntimeRunner) Ready(ctx context.Context) (bool, error) {
 	r.mu.Lock()
@@ -506,42 +513,49 @@ func runtimeHistoricalComplete(c store.ManagedLiveControl) bool {
 	return true
 }
 
-func (r *RuntimeRunner) acquireFinalizedLineage(ctx context.Context, requester rpc.Requester, id uint64, boundary store.ManagedLiveHead) (map[uint64]store.ManagedLiveHead, error) {
-	out := map[uint64]store.ManagedLiveHead{}
+func (r *RuntimeRunner) walkFinalizedLineage(ctx context.Context, requester rpc.Requester, id uint64, boundary store.ManagedLiveHead, visit func(uint64, store.ManagedLiveHead) error) error {
 	target, err := checkpoint.Decode(boundary.Checkpoint)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	head := r.finalized[id]
 	cp, err := checkpoint.Decode(head.Checkpoint)
 	if err != nil {
-		return nil, err
+		return err
+	}
+	if cp.ChainID != id || target.ChainID != id {
+		return fmt.Errorf("finalized range refers to another chain")
 	}
 	a := rpc.NewActions(requester)
 	if target.BlockNumber > cp.BlockNumber {
-		return nil, fmt.Errorf("private safe cursor exceeds acquired finality")
+		return fmt.Errorf("private safe cursor exceeds acquired finality")
 	}
 	for {
-		if r.logOnly || cp.BlockNumber <= r.ends[id] {
-			out[cp.BlockNumber] = head
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		if visit != nil {
+			if err := visit(cp.BlockNumber, head); err != nil {
+				return err
+			}
 		}
 		if cp.BlockNumber == target.BlockNumber {
 			if head != boundary {
-				return nil, fmt.Errorf("safe boundary differs from authenticated finalized lineage")
+				return fmt.Errorf("safe boundary differs from authenticated finalized lineage")
 			}
-			return out, nil
+			return nil
 		}
 		b, e := a.GetSourceBlockByNumber(ctx, source.Hex(cp.BlockNumber-1), false)
 		if e != nil {
-			return nil, e
+			return e
 		}
 		previous, e := runtimeHead(id, b)
 		if e != nil {
-			return nil, e
+			return e
 		}
 		next, e := checkpoint.Decode(previous.Checkpoint)
 		if e != nil || next.BlockNumber+1 != cp.BlockNumber || next.BlockTimestamp > cp.BlockTimestamp || previous.Hash != head.ParentHash {
-			return nil, fmt.Errorf("finalized predecessor chain changed")
+			return fmt.Errorf("finalized predecessor chain changed")
 		}
 		head, cp = previous, next
 	}

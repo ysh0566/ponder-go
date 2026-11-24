@@ -69,7 +69,7 @@ func validateDomainOrphans(in ManagedLiveDomainReorg, control ManagedLiveControl
 	if err != nil {
 		return err
 	}
-	lineage, err := liveHeadLineage(control.Cursors[ancestor.ChainID], in.Reorg.Ancestor, byKey)
+	lineage, err := liveHeadLineage(control.Cursors[ancestor.ChainID], in.Reorg.Ancestor, byKey, nil)
 	if err != nil {
 		return err
 	}

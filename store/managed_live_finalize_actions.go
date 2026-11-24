@@ -122,7 +122,9 @@ func (m *ManagedLive) applyFinalizeTransaction(ctx context.Context, tx Transacti
 	if err != nil {
 		return ManagedLiveFinalizeResult{}, err
 	}
-	plan, err := planLiveFinalize(m.opts, d.Control, baseline, d.Segments, d.Journal, d.Proofs, r, liveExecutedHeads(d.Operations))
+	opts := m.opts
+	opts.verifiedRangeParents = d.rangeParents
+	plan, err := planLiveFinalize(opts, d.Control, baseline, d.Segments, d.Journal, d.Proofs, r, liveExecutedHeads(d.Operations))
 	if err != nil {
 		return ManagedLiveFinalizeResult{}, err
 	}

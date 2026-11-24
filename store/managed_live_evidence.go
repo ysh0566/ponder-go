@@ -12,12 +12,13 @@ type managedLiveCursorState struct {
 }
 
 type managedLiveDurable struct {
-	Control    ManagedLiveControl
-	Operations []managedLiveOperation
-	Segments   []ManagedLiveSegment
-	Proofs     []ManagedLiveHead
-	Journal    []managedLiveJournalEntry
-	States     []managedLiveCursorState
+	rangeParents map[ManagedLiveHead]ManagedLiveHead
+	Control      ManagedLiveControl
+	Operations   []managedLiveOperation
+	Segments     []ManagedLiveSegment
+	Proofs       []ManagedLiveHead
+	Journal      []managedLiveJournalEntry
+	States       []managedLiveCursorState
 }
 
 func liveProofKey(head ManagedLiveHead) string {
@@ -145,7 +146,11 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 	expectedProofs := map[string]ManagedLiveHead{}
 	seenSegments := map[uint64]bool{}
 	var historicalJournalHigh int64
-	rollingOpts := m.opts
+	auditOpts := m.opts
+	if pagedLogOnlyOptions(m.opts) {
+		auditOpts.verifiedRangeParents = make(map[ManagedLiveHead]ManagedLiveHead)
+	}
+	rollingOpts := auditOpts
 	executedHeads := map[string]ManagedLiveHead{}
 	for _, op := range ordered {
 		switch op.Kind {
@@ -195,6 +200,9 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 			if err := decodeLiveJSON(op.Payload, &evidence); err != nil {
 				return nil, err
 			}
+			if err := validateGapScans(m.opts, evidence.Batch, evidence.GapScans); err != nil {
+				return nil, err
+			}
 			normalized, err := normalizeLiveBatch(m.opts, evidence.Batch)
 			if err != nil || managedHash(normalized) != managedHash(evidence.Batch) || normalized.ExpectedLastOperation != op.PreviousOperation {
 				return nil, ErrManagedLiveBatchConflict
@@ -240,6 +248,12 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 					}
 					historicalJournalHigh = row.ID
 				}
+				if segment.Block.RangeDigest != "" {
+					if d.rangeParents[segment.Block.Head] != segment.BeforeCursor || auditOpts.verifiedRangeParents == nil {
+						return nil, ErrManagedLiveBatchConflict
+					}
+					auditOpts.verifiedRangeParents[segment.Block.Head] = segment.BeforeCursor
+				}
 				seenSegments[segment.Ordinal] = true
 				active = append(active, segment)
 				activeJournal = append(activeJournal, archived.Rows...)
@@ -262,7 +276,7 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 				for _, head := range expectedProofs {
 					proofs = append(proofs, head)
 				}
-				if err := validateLiveFinalityBranch(m.opts, baseline, rolling.Finality, liveSafeHeads(rolling, baseline), after.Cursors, active, proofs); err != nil {
+				if err := validateLiveFinalityBranch(auditOpts, baseline, rolling.Finality, liveSafeHeads(rolling, baseline), after.Cursors, active, proofs); err != nil {
 					return nil, err
 				}
 			}
@@ -347,7 +361,7 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 			for _, head := range expectedProofs {
 				proofs = append(proofs, head)
 			}
-			plan, err := planLiveFinalize(m.opts, rolling, baseline, active, activeJournal, proofs, normalized, executedHeads)
+			plan, err := planLiveFinalize(auditOpts, rolling, baseline, active, activeJournal, proofs, normalized, executedHeads)
 			if err != nil {
 				return nil, err
 			}
@@ -395,7 +409,7 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 		seen[key] = true
 	}
 	if d.Control.Finalizations > 0 {
-		if err := validateLiveFinalityBranch(m.opts, baseline, d.Control.Finality, liveSafeHeads(d.Control, baseline), d.Control.Cursors, d.Segments, d.Proofs); err != nil {
+		if err := validateLiveFinalityBranch(auditOpts, baseline, d.Control.Finality, liveSafeHeads(d.Control, baseline), d.Control.Cursors, d.Segments, d.Proofs); err != nil {
 			return nil, err
 		}
 	}

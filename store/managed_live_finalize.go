@@ -162,7 +162,7 @@ func liveProofMap(proofs []ManagedLiveHead) (map[string]ManagedLiveHead, error) 
 
 // Walk exact parent hashes through retained acquisitions, bounded by their
 // count. A checkpoint comparison alone cannot confirm a competing fork.
-func liveHeadLineage(head, baseline ManagedLiveHead, proofs map[string]ManagedLiveHead) (map[uint64]ManagedLiveHead, error) {
+func liveHeadLineage(head, baseline ManagedLiveHead, proofs map[string]ManagedLiveHead, rangeParents map[ManagedLiveHead]ManagedLiveHead) (map[uint64]ManagedLiveHead, error) {
 	_, base, be := normalizeLiveHead(baseline)
 	_, cp, err := normalizeLiveHead(head)
 	if err != nil || be != nil || cp.ChainID != base.ChainID || cp.BlockNumber < base.BlockNumber || proofs[liveProofKey(head)] != head {
@@ -178,8 +178,14 @@ func liveHeadLineage(head, baseline ManagedLiveHead, proofs map[string]ManagedLi
 			return lineage, nil
 		}
 		prior, exists := proofs[fmt.Sprintf("%d/%d/%s", cp.ChainID, cp.BlockNumber-1, head.ParentHash)]
+		if parent, ok := rangeParents[head]; ok {
+			prior, exists = proofs[liveProofKey(parent)]
+			if !exists || prior != parent {
+				return nil, ErrManagedLiveBatchConflict
+			}
+		}
 		_, previous, err := normalizeLiveHead(prior)
-		if !exists || err != nil || previous.BlockTimestamp > cp.BlockTimestamp {
+		if !exists || previous.ChainID != cp.ChainID || previous.BlockNumber >= cp.BlockNumber || err != nil || previous.BlockTimestamp > cp.BlockTimestamp {
 			return nil, ErrManagedLiveBatchConflict
 		}
 		head, cp = prior, previous
@@ -200,11 +206,11 @@ func validateLiveFinalityBranch(opts ManagedLiveOptions, baseline, confirmed, sa
 	}
 	currentLines := map[uint64]map[uint64]ManagedLiveHead{}
 	for _, chain := range opts.Chains {
-		finalLine, err := liveHeadLineage(confirmed[chain.ID], baseline[chain.ID], byKey)
+		finalLine, err := liveHeadLineage(confirmed[chain.ID], baseline[chain.ID], byKey, opts.verifiedRangeParents)
 		if err != nil {
 			return err
 		}
-		currentLine, err := liveHeadLineage(cursors[chain.ID], baseline[chain.ID], byKey)
+		currentLine, err := liveHeadLineage(cursors[chain.ID], baseline[chain.ID], byKey, opts.verifiedRangeParents)
 		if err != nil {
 			return err
 		}
@@ -267,7 +273,7 @@ func planLiveFinalize(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 		// Global undo can leave private/safe heads below both retained forks.
 		// Require exact ancestry through the previous finalized identity too.
 		// Durable receipt replay uses this same planner for every transition.
-		if _, err := liveHeadLineage(head, confirmed[id], retained); err != nil {
+		if _, err := liveHeadLineage(head, confirmed[id], retained, opts.verifiedRangeParents); err != nil {
 			return plan, err
 		}
 		// Only validated batch segments prove execution; a bootstrap header is

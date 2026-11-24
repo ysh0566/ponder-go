@@ -28,5 +28,7 @@ func (m *ManagedLive) validateBatchFinality(d managedLiveDurable, after ManagedL
 		}
 	}
 	active := append(append([]ManagedLiveSegment(nil), d.Segments...), segments...)
-	return validateLiveFinalityBranch(m.opts, baseline, d.Control.Finality, liveSafeHeads(d.Control, baseline), after.Cursors, active, proofs)
+	opts := m.opts
+	opts.verifiedRangeParents = d.rangeParents
+	return validateLiveFinalityBranch(opts, baseline, d.Control.Finality, liveSafeHeads(d.Control, baseline), after.Cursors, active, proofs)
 }
