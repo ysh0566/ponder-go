@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Collect mined eth_getLogs pages and serve verified inclusive ranges on loopback."""
 import argparse
+import gzip
 import hashlib
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
@@ -99,6 +100,16 @@ def block_hash(url, height):
 
 def check_receipt(url, row):
     receipt = rpc(url, "eth_getTransactionReceipt", [row["transactionHash"]])
+    if receipt is None:
+        # Some archives retain block receipts after pruning their transaction-hash index.
+        receipts = rpc(url, "eth_getBlockReceipts", [row["blockNumber"]])
+        if not isinstance(receipts, list) or any(not isinstance(item, dict) for item in receipts):
+            raise ValueError("missing historical block receipts")
+        matches = [item for item in receipts
+                   if fixed_hex(item.get("transactionHash"), 32) == row["transactionHash"].lower()]
+        if len(matches) != 1:
+            raise ValueError("expected one matching transaction in block receipts")
+        receipt = matches[0]
     location = ("blockHash", "blockNumber", "transactionHash", "transactionIndex")
     def values(record, fields):
         return tuple(record[k].lower() for k in fields)
@@ -222,7 +233,7 @@ def check_rpc_error(error):
     return error
 
 
-def capture_error(url, chain, first, last, address, output):
+def capture_request(url, chain, first, last, address, output):
     source = urlsplit(url)
     if source.scheme not in ("http", "https") or not source.hostname:
         raise ValueError("expected an HTTP RPC endpoint")
@@ -236,6 +247,12 @@ def capture_error(url, chain, first, last, address, output):
     if quantity(rpc(url, "eth_chainId", [])) != chain:
         raise ValueError("wrong RPC chain")
 
+    return source.hostname, query
+
+
+def capture_error(url, chain, first, last, address, output):
+    host, query = capture_request(url, chain, first, last, address, output)
+
     def anchors():
         header = block_header(url, last)
         return fixed_hex(header["hash"], 32), fixed_hex(header["parentHash"], 32)
@@ -246,38 +263,89 @@ def capture_error(url, chain, first, last, address, output):
     repeated = check_rpc_error(rpc_response(url, "eth_getLogs", params).get("error"))
     if error != repeated or anchors() != (anchor, parent):
         raise ValueError("error or historical block changed during capture")
-    record = dict(version=1, chain=chain, source=source.hostname, anchor=anchor, parentHash=parent,
+    record = dict(version=1, chain=chain, source=host, anchor=anchor, parentHash=parent,
                   method="eth_getLogs", params=params, error=error)
+    publish_capture(output, (json.dumps(record, indent=2) + "\n").encode())
+
+
+def publish_capture(output, payload):
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=output.parent) as temporary:
-        ready = Path(temporary) / "capture.json"
-        ready.write_text(json.dumps(record, indent=2) + "\n")
+        ready = Path(temporary) / "capture"
+        ready.write_bytes(payload)
         output.hardlink_to(ready)
 
 
-def server(indexes, port, error_captures=()):
-    if not indexes or len({index.chain for index in indexes}) != 1:
+def log_digest(rows):
+    return digest(json.dumps(rows, sort_keys=True, separators=(",", ":")).encode())
+
+
+def capture_logs(url, chain, first, last, width, address, output):
+    if width < 1:
+        raise ValueError("invalid page width")
+    host, query = capture_request(url, chain, first, last, address, output)
+    address = query.get("address")
+    rows = rpc(url, "eth_getLogs", [query])
+    validate_logs(rows, first, last, address)
+    offset = 0
+    for low in range(first, last + 1, width):
+        high = min(last, low + width - 1)
+        subquery = {**query, "fromBlock": hex(low), "toBlock": hex(high)}
+        page = rpc(url, "eth_getLogs", [subquery])
+        validate_logs(page, low, high, address)
+        if log_digest(page) != log_digest(rows[offset:offset + len(page)]):
+            raise ValueError("paged response differs from the full log response")
+        offset += len(page)
+    if offset != len(rows) or quantity(rpc(url, "eth_chainId", [])) != chain:
+        raise ValueError("log count or chain changed during capture")
+    record = dict(version=1, chain=chain, source=host, method="eth_getLogs", params=[query],
+                  pageWidth=width, resultSha256=log_digest(rows), result=rows)
+    publish_capture(output, gzip.compress(json.dumps(record, separators=(",", ":")).encode(), mtime=0))
+
+
+def capture_filter(record):
+    if (not isinstance(record, dict) or type(record.get("version")) is not int or record["version"] != 1
+            or type(record.get("chain")) is not int or record["chain"] < 1 or record.get("method") != "eth_getLogs"
+            or not isinstance(record.get("source"), str) or not record["source"].strip()):
+        raise ValueError("incompatible historical RPC capture")
+    return filter_bounds(record.get("params"))
+
+
+def server(indexes, port, error_captures=(), log_captures=()):
+    chains = {index.chain for index in indexes}
+    observed = {}
+    for record in log_captures:
+        key = capture_filter(record)
+        chains.add(record["chain"])
+        rows = record.get("result")
+        validate_logs(rows, *key)
+        if (type(record.get("pageWidth")) is not int or record["pageWidth"] < 1 or "error" in record
+                or log_digest(rows) != record.get("resultSha256")):
+            raise ValueError("invalid observed log response")
+        if key in observed:
+            raise ValueError("duplicate observed log filter")
+        if any(idx.first <= key[0] <= key[1] <= idx.last and idx.address in (None, key[2]) for idx in indexes):
+            raise ValueError("observed log filter already covered by an archive index")
+        observed[key] = {"result": rows}
+    if len(chains) != 1:
         raise ValueError("one chain per listener is required")
+    chain = chains.pop()
     for i, index in enumerate(indexes):
         for other in indexes[:i]:
             if (index.first <= other.last and other.first <= index.last and
                     (index.address == other.address or None in (index.address, other.address))):
                 raise ValueError("ambiguous overlapping indexes")
-    observed = {}
     for capture in error_captures:
-        if (not isinstance(capture, dict) or type(capture.get("version")) is not int or capture["version"] != 1
-                or type(capture.get("chain")) is not int or capture["chain"] != indexes[0].chain
-                or capture.get("method") != "eth_getLogs" or not isinstance(capture.get("source"), str)
-                or not capture["source"].strip()):
+        key = capture_filter(capture)
+        if capture["chain"] != chain or "result" in capture:
             raise ValueError("incompatible historical error capture")
-        key = filter_bounds(capture.get("params"))
         anchors = {key[1]: fixed_hex(capture.get("anchor"), 32),
                    key[1] - 1: fixed_hex(capture.get("parentHash"), 32)}
         if any(index.last in anchors and index.anchor != anchors[index.last] for index in indexes):
             raise ValueError("historical error and archive disagree on the block hash")
         if key in observed:
             raise ValueError("duplicate historical error capture")
-        observed[key] = check_rpc_error(capture.get("error"))
+        observed[key] = {"error": check_rpc_error(capture.get("error"))}
 
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self):
@@ -295,11 +363,11 @@ def server(indexes, port, error_captures=()):
                     if req["method"] == "eth_chainId":
                         if req.get("params", []) != []:
                             raise ValueError("eth_chainId takes no parameters")
-                        result["result"] = hex(indexes[0].chain)
+                        result["result"] = hex(chain)
                     elif req["method"] == "eth_getLogs":
                         params = req.get("params")
                         if observed and (key := filter_bounds(params)) in observed:
-                            result["error"] = observed[key]
+                            result.update(observed[key])
                         else:
                             result["result"] = get_logs(indexes, params)
                     else:
@@ -335,18 +403,28 @@ def main():
         error.add_argument("--" + name, type=int, required=True)
     error.add_argument("--address")
     error.add_argument("output", type=Path)
+    logs = commands.add_parser("capture-logs")
+    logs.add_argument("--rpc-url", required=True)
+    for name in ("chain", "first", "last", "page-width"):
+        logs.add_argument("--" + name, type=int, required=True)
+    logs.add_argument("--address")
+    logs.add_argument("output", type=Path)
     host = commands.add_parser("serve")
     host.add_argument("--port", type=int, default=0)
     host.add_argument("--error-capture", action="append", type=Path, default=[])
-    host.add_argument("directories", type=Path, nargs="+")
+    host.add_argument("--log-capture", action="append", type=Path, default=[])
+    host.add_argument("directories", type=Path, nargs="*")
     args = parser.parse_args()
     if args.command == "collect":
         collect(args.rpc_url, args.chain, args.first, args.last, args.page_width, args.address, args.directory)
+    elif args.command == "capture-logs":
+        capture_logs(args.rpc_url, args.chain, args.first, args.last, args.page_width, args.address, args.output)
     elif args.command == "capture-error":
         capture_error(args.rpc_url, args.chain, args.first, args.last, args.address, args.output)
     else:
         captures = [json.loads(path.read_bytes()) for path in args.error_capture]
-        with server([Index(path) for path in args.directories], args.port, captures) as http:
+        responses = [json.loads(gzip.decompress(path.read_bytes())) for path in args.log_capture]
+        with server([Index(path) for path in args.directories], args.port, captures, responses) as http:
             print(f"http://127.0.0.1:{http.server_port}", flush=True)
             http.serve_forever()
 

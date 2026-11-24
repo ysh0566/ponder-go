@@ -1,3 +1,4 @@
+import gzip
 from io import BytesIO
 import json
 from pathlib import Path
@@ -199,3 +200,93 @@ class HistoricalLogTest(unittest.TestCase):
                 with self.assertRaises((ValueError, OSError)):
                     archive.capture_error("https://origin.example", 1, 1, 3, None, output)
                 self.assertFalse(output.exists())
+
+    def test_block_receipt_lookup_checks_transaction_block_and_log(self):
+        direct = self.upstream(None, "eth_getTransactionReceipt", [self.tx])
+        for failure in ["absent", "duplicate", "wrong transaction", "wrong block", "different data", None]:
+            def upstream(url, method, params):
+                if method == "eth_getTransactionReceipt":
+                    return None
+                if method == "eth_getBlockReceipts":
+                    self.assertEqual(params, [self.log["blockNumber"]])
+                    if failure == "absent":
+                        return None
+                    if failure == "duplicate":
+                        return [direct, direct]
+                    if failure == "wrong transaction":
+                        return [{**direct, "transactionHash": self.block}]
+                    if failure == "wrong block":
+                        return [{**direct, "blockHash": self.tx}]
+                    if failure == "different data":
+                        return [{**direct, "logs": [{**self.log, "data": "0xff"}]}]
+                    return [direct]
+                return self.upstream(url, method, params)
+
+            with self.subTest(failure=failure), patch.object(archive, "rpc", side_effect=upstream):
+                if failure:
+                    with self.assertRaises(ValueError):
+                        archive.check_receipt("http://localhost", self.log)
+                else:
+                    archive.check_receipt("http://localhost", self.log)
+
+    def test_observed_logs_check_pages_and_serve_only_the_captured_filter(self):
+        output = self.output.parent / "logs.json.gz"
+        with patch.object(archive, "rpc", side_effect=self.upstream) as remote:
+            archive.capture_logs("https://archive.example/key", 1, 1, 3, 2, self.address, output)
+        self.assertEqual([c.args[1] for c in remote.call_args_list],
+                         ["eth_chainId", "eth_getLogs", "eth_getLogs", "eth_getLogs", "eth_chainId"])
+        record = json.loads(gzip.decompress(output.read_bytes()))
+        self.assertEqual(record["source"], "archive.example")
+        self.assertEqual(record["result"], [self.log])
+        self.assertEqual(record["pageWidth"], 2)
+        with self.assertRaises(FileExistsError):
+            archive.capture_logs("http://localhost", 1, 1, 3, 2, self.address, output)
+
+        with archive.server([], 0, log_captures=[record]) as http:
+            thread = Thread(target=http.serve_forever)
+            thread.start()
+            try:
+                url = f"http://127.0.0.1:{http.server_port}"
+                query = record["params"][0]
+                self.assertEqual(archive.rpc(url, "eth_chainId", []), "0x1")
+                self.assertEqual(archive.rpc(url, "eth_getLogs", [query]), [self.log])
+                for other in [{**query, "fromBlock": "0x2"}, {**query, "toBlock": "0x4"},
+                              {k: v for k, v in query.items() if k != "address"}, {**query, "topics": []}]:
+                    with self.assertRaises(ValueError):
+                        archive.rpc(url, "eth_getLogs", [other])
+            finally:
+                http.shutdown()
+                thread.join()
+        for records in [[record, record], [{**record, "result": []}], [{**record, "pageWidth": False}],
+                        [{**record, "error": {}}], [record, {**record, "chain": 2, "params": [
+                            {"fromBlock": "0x1", "toBlock": "0x2", "address": self.address}]}]]:
+            with self.subTest(records=records), self.assertRaises(ValueError):
+                archive.server([], 0, log_captures=records)
+        index = self.collect()
+        with self.assertRaises(ValueError):
+            archive.server([index], 0, log_captures=[record])
+
+    def test_invalid_or_inconsistent_log_observations_are_never_published(self):
+        path = self.output.parent / "invalid.json.gz"
+        for change in ["missing", "different data", "malformed", "unordered", "changed chain", "wrong chain"]:
+            def remote(url, method, params):
+                answer = self.upstream(url, method, params)
+                if method == "eth_chainId":
+                    if change == "wrong chain" or (change == "changed chain" and len(traces) > 1):
+                        return "0x2"
+                elif answer and params[0]["toBlock"] == "0x2":
+                    if change == "missing":
+                        return []
+                    if change == "different data":
+                        return [{**answer[0], "data": "0xff"}]
+                    if change == "malformed":
+                        return [{**answer[0], "blockHash": "0xff"}]
+                    if change == "unordered":
+                        return answer + answer
+                traces.append(method)
+                return answer
+
+            traces = []
+            with self.subTest(change=change), patch.object(archive, "rpc", side_effect=remote), self.assertRaises(ValueError):
+                archive.capture_logs("https://public.example", 1, 1, 3, 2, self.address, path)
+            self.assertFalse(path.exists())

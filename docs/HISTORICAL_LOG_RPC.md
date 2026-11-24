@@ -16,7 +16,7 @@ python3 tools/historical_log_rpc.py collect \
 python3 tools/historical_log_rpc.py serve --port 18545 parity/runs/local-base-index
 ```
 
-Collection checks the chain ID, the range-end block hash before and after collection, the bounds and ordering of every log, and canonical receipts for the first and last returned logs. It publishes the completed directory with the page hashes. Keep the manifest and its pages together. The server binds to loopback and prints its URL. Omitting `--port` selects an available port.
+Collection checks the chain ID, the range-end block hash before and after collection, the bounds and ordering of every log, and canonical receipts for the first and last returned logs. If a transaction-hash lookup returns null, it looks up the block receipts and requires exactly one matching transaction. Both lookup paths verify the log fields, block height and canonical block hash. It publishes the completed directory with the page hashes. Keep the manifest and its pages together. The server binds to loopback and prints its URL. Omitting `--port` selects an available port.
 
 Ranges are inclusive. Omitting `--address` during collection captures all logs for the range. An address-specific index accepts queries for that address. Queries outside coverage return an error. The server can load multiple indexes for the same chain. Each query must fit in a single index, and ambiguous overlaps are rejected.
 
@@ -48,6 +48,54 @@ printf '%s\n' '{"https://mainnet.base.org":"http://127.0.0.1:18545"}' > parity/r
 
 The original test, Viem HTTP client, JSON-RPC method, parameters and assertion run against the local HTTP listener. Record these executions separately from tests against the original service. A node can also exercise a specific implementation’s range policy. Record the implementation, configuration and chain used for those runs.
 
+
+## Run the Celo, Blast and Polygon zkEVM fixtures
+
+The included Blast and Polygon zkEVM indexes contain 109 and 2,979 logs respectively. The stated ranges are inclusive. The server verifies page hashes and mined-log ordering on load.
+
+```sh
+index_dir=$(mktemp -d)
+tar -xzf tools/rpcnode-fixtures/historical-blast-zkevm.tar.gz -C "$index_dir"
+python3 tools/historical_log_rpc.py serve --port 18551 "$index_dir/index-blast"
+# In another terminal with the same index_dir
+python3 tools/historical_log_rpc.py serve --port 18552 "$index_dir/index-zkevm"
+```
+
+The Celo endpoint returned historical logs at blocks 10,000,000 through 10,001,000 while its block and receipt lookups returned null. Its fixture holds the exact observed query and all 3,649 log records. To reproduce the observation, query the whole range and compare every field of every result with a second traversal in 100-block pages.
+
+```sh
+python3 tools/historical_log_rpc.py capture-logs \
+  --rpc-url https://celo.gateway.tenderly.co --chain 42220 \
+  --first 10000000 --last 10001000 --page-width 100 \
+  --address 0x471EcE3750Da237f93B8E339c536989b8978a438 \
+  parity/runs/celo-observed.json.gz
+
+python3 tools/historical_log_rpc.py serve --port 18553 \
+  --log-capture tools/rpcnode-fixtures/celo-10000000-10001000.json.gz
+```
+
+The exact-response listener checks the result digest, bounds, address and log ordering. Only the captured filter is available. If the source cannot supply block headers or receipts, the record supports a claim about that source's response. Use `collect` for a receipt-verified historical index that supports subranges.
+
+Save this mapping as `parity/runs/three-chain-routes.json`, then run the complete upstream files with the adapter described above.
+
+```json
+{
+  "https://rpc.blast.io": "http://127.0.0.1:18551",
+  "https://zkevm-rpc.com": "http://127.0.0.1:18552",
+  "https://forno.celo.org": "http://127.0.0.1:18553"
+}
+```
+
+```sh
+project=$(pwd)
+(cd ../ponder-upstream/packages/utils && \
+  PONDER_LOG_RPC_ROUTES="$project/parity/runs/three-chain-routes.json" \
+  NODE_OPTIONS="--import=$project/tools/historical-log-routes.mjs" \
+  ./node_modules/.bin/vitest run --configLoader native \
+    src/_test/celo.test.ts src/_test/blast.test.ts src/_test/zkevm.test.ts)
+```
+
+The three historical success assertions pass on these fixtures. The Blast service-specific range error still fails on the archive, and the Polygon zkEVM response-size assertion is skipped in upstream source.
 
 ## Reproduce an observed RPC error offline
 
