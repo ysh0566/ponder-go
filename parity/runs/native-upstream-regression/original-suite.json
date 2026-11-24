@@ -4,8 +4,8 @@
   "inventory_records": 905,
   "comparison": "Matched file, suite path, expanded title, multiplicity and source skip/todo state. Both core database runs produced identical outcomes. Core runtime records count once in the total.",
   "unique_outcomes": {
-    "failed": 59,
-    "passed": 834,
+    "failed": 44,
+    "passed": 849,
     "skipped": 10,
     "todo": 2
   },
@@ -73,11 +73,21 @@
     },
     "utils_public_rpc": {
       "files": 22,
-      "failed": 41,
+      "failed": 26,
+      "passed": 15,
       "skipped": 4,
       "exit": 1,
-      "report": "parity/runs/original-public-rpc-compatibility/public-original.json",
-      "sha256": "7a2458bb89402f7aa2db70ae71d70c3eb370bf133b0f47b29da23c1ef977017f"
+      "report": "parity/runs/original-public-rpc-proxy/public-original.json",
+      "sha256": "5908e2b73b0a16371662c4a50edadac7a7f363ee5341c8840e7023853ca66f88",
+      "transport": "Node native HTTPS proxy support (NODE_USE_ENV_PROXY=1)",
+      "first_attempt": {
+        "files": 22,
+        "failed": 41,
+        "skipped": 4,
+        "exit": 1,
+        "report": "parity/runs/original-public-rpc-compatibility/public-original.json",
+        "sha256": "7a2458bb89402f7aa2db70ae71d70c3eb370bf133b0f47b29da23c1ef977017f"
+      }
     },
     "utils_configured_rpc_local_substitution": {
       "files": 8,
@@ -88,7 +98,7 @@
     }
   },
   "failures": {
-    "utils_public_rpc": "41 active declarations reached the original public transport and failed. Four original declarations were skipped.",
+    "utils_public_rpc": "The configured public endpoints produced 15 passes and 26 failures. Observed failures include changed range limits and error responses, HTTP errors, differing historical log counts and a timeout. Four cases retain their upstream skip.",
     "utils_configured_rpc_local_substitution": "18 active declarations executed on four loopback Anvil development chains. The configured historical blocks are absent and Anvil has different error semantics. No provider compatibility credit."
   },
   "native_port_ledger": {
@@ -134,6 +144,47 @@
         "mint_block_hash": "0x5be7e3073cc7f36a8c9fe0741b6cfc99caf0feb1d3495f0f9d3afe813cd7f580",
         "report_sha256": "b50f03f51832b026e6c7ca55453f60df35e8698a3501608ff36e4ec5972f0073"
       }
-    ]
+    ],
+    "historical_forks": {
+      "client": "Anvil 1.8.5",
+      "validation": "For each public upstream, matched chainId and the fork block hash over loopback before running the unmodified provider tests.",
+      "anchors": [
+        {
+          "chain_id": 1,
+          "upstream": "https://ethereum-rpc.publicnode.com",
+          "block_number": 19000001,
+          "block_hash": "0x858f71b82284841eedd8c4ca4855345ddf728ae034ebe03e21d5f30fb88c0f4d"
+        },
+        {
+          "chain_id": 8453,
+          "upstream": "https://mainnet.base.org",
+          "block_number": 10002000,
+          "block_hash": "0xeec6b838c21e2a50e32dd4c75ec1c0646d12a42aef3c284cf417047d59fb713e"
+        },
+        {
+          "chain_id": 999,
+          "upstream": "https://rpc.hyperliquid.xyz/evm",
+          "block_number": 9450000,
+          "block_hash": "0xf30369eb1d327e1e8b353180eab9664d721373640305f47b817e38d414cfc426"
+        },
+        {
+          "chain_id": 239,
+          "upstream": "https://rpc-public.tac.build",
+          "block_number": 3117000,
+          "block_hash": "0x24e4692e635f4f8a4e8dd7b4cce7a50a39e9440c57bdfa4180bc0f9c675bb1ee"
+        }
+      ],
+      "provider_tests": {
+        "passed": 0,
+        "failed": 18,
+        "report": "parity/runs/self-hosted-archive-rpc/original-fork.json",
+        "sha256": "9ef777062fd2ba96ad4d5bdff30a62da1ba1efa4ba6eb7ab1b7598bc1c38ab9d"
+      },
+      "observations": {
+        "Ethereum": "The public endpoint requires a personal token for archive log queries.",
+        "Base": "The public endpoint returned HTTP 429.",
+        "TAC and HyperEVM": "The public endpoints enforce smaller log request ranges than the configured providers in the original tests."
+      }
+    }
   }
 }
