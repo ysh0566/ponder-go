@@ -90,9 +90,12 @@ test('M43 runner boundary, transport learning, and PostgreSQL-only fencing scope
 test('M43 native inventory covers new production-package test files, not archived candidates',async()=>{
  const {finiteHistoricalNativeFiles}=await import('./finite-historical-acceptance.mjs');
  assert(finiteHistoricalNativeFiles.includes('config/source_executable_live_test.go'));
+ // Later milestones can register a native case directly against an original source declaration.
+ const mappings = JSON.parse(fs.readFileSync(path.join(root, 'parity/mappings.json')));
+ const mappedSourceFiles = new Set(mappings.filter(m => m.source_id && m.go_package && m.go_test).map(m => m.target_file));
  const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8'}).split('\0').filter(Boolean);
  const changed=[...git('diff','--name-only','-z','HEAD','--','*_test.go'),...git('ls-files','--others','--exclude-standard','-z')].filter(f=>/^(abi|config|events|filter|historical|indexing|rpc|runtime|store)\/.*_test\.go$/.test(f));
- for(const file of new Set(changed))assert(finiteHistoricalNativeFiles.includes(file),'New test file omitted from finite inventory: '+file);
+ for(const file of new Set(changed))assert(finiteHistoricalNativeFiles.includes(file)||mappedSourceFiles.has(file),'Unregistered native test file: '+file);
  assert.equal(new Set(finiteHistoricalNativeFiles).size,finiteHistoricalNativeFiles.length);
 });
 test('M43 collector requires all real dual-backend tests and new backend roots',async()=>{

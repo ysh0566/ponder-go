@@ -75,13 +75,14 @@ test('M44 registers exactly six supplemental files while preserving accepted M43
  assert.deepEqual(finiteHistoricalStages,[...acceptedInventory.finiteHistoricalStages]);
  assert.deepEqual(finiteHistoricalHarness,[...acceptedInventory.finiteHistoricalHarness]);
 });
-test('actual unchanged M43 new-test registration guard rejects unknown supplemental test file',()=>{
+test('native registration guard accepts mapped originals and rejects unknown supplemental files',()=>{
  const original=fs.readFileSync(root+'/tools/finite-historical-path-guards.test.mjs','utf8');
  const start=original.indexOf("test('M43 native inventory covers new production-package test files, not archived candidates'");
  assert(start>=0);const end=original.indexOf('\n});',start);assert(end>start);
  const body=original.slice(start,end),lines=body.split('\n').filter(l=>l.trim().startsWith('const changed=')||l.trim().startsWith('for(const file of new Set(changed))')||l.trim().startsWith('assert.equal(new Set(finiteHistoricalNativeFiles)'));
- assert.equal(lines.length,3,'Use the actual unchanged guard predicate, never a rewritten approximation');
- const run=files=>vm.runInNewContext(lines.join('\n'),{finiteHistoricalNativeFiles,assert,git:(command)=>command==='ls-files'?files:[]});
+ assert.equal(lines.length,3,'Use the actual guard predicate, never a rewritten approximation');
+ const run=(files,mappedSourceFiles=new Set())=>vm.runInNewContext(lines.join('\n'),{finiteHistoricalNativeFiles,mappedSourceFiles,assert,git:(command)=>command==='ls-files'?files:[]});
  assert.doesNotThrow(()=>run(managedFiniteNativeFiles));
- assert.throws(()=>run([...managedFiniteNativeFiles,'store/m44_unregistered_probe_test.go']),/New test file omitted from finite inventory: store\/m44_unregistered_probe_test.go/);
+ assert.throws(()=>run([...managedFiniteNativeFiles,'store/m44_unregistered_probe_test.go']),/Unregistered native test file: store\/m44_unregistered_probe_test.go/);
+ assert.doesNotThrow(()=>run(['rpc/provider_archives_test.go'], new Set(['rpc/provider_archives_test.go'])));
 });
