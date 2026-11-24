@@ -1,10 +1,10 @@
 """Start OP Labs proxyd in front of the captured Base archive and a Swell development chain."""
 from contextlib import closing
+from http.client import HTTPConnection, HTTPException
+import json
 import socket
 import subprocess
 import time
-
-from historical_log_rpc import rpc
 
 
 def available_port():
@@ -29,17 +29,25 @@ def start_process(args, output, name, stack):
 
 def ready(process, port, chain):
     url = f"http://127.0.0.1:{port}"
-    for _ in range(100):
+    request = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "eth_chainId", "params": []})
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
         if process.poll() is not None:
             raise RuntimeError(f"{process.args[0]} exited during startup")
+        connection = HTTPConnection("127.0.0.1", port, timeout=0.5)
         try:
-            with socket.create_connection(("127.0.0.1", port), timeout=0.1):
-                break
-        except OSError:
-            time.sleep(0.05)
-    if int(rpc(url, "eth_chainId", []), 16) != chain:
-        raise RuntimeError(f"unexpected chain on {url}")
-    return url
+            connection.request("POST", "/", request, {"Content-Type": "application/json"})
+            response = connection.getresponse()
+            if response.status == 200:
+                if int(json.load(response)["result"], 16) != chain:
+                    raise RuntimeError(f"unexpected chain on {url}")
+                return url
+        except (OSError, HTTPException):
+            pass
+        finally:
+            connection.close()
+        time.sleep(0.05)
+    raise TimeoutError(f"{process.args[0]} did not become ready at {url}")
 
 
 def start_gateways(proxyd, anvil, base_backend, output, stack):
