@@ -7,14 +7,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"io"
 	"net/http"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
+
+// ErrHTTPResponseTooLarge reports that the decoded HTTP body exceeded the client's limit.
+var ErrHTTPResponseTooLarge = errors.New("RPC HTTP response too large")
+
+const defaultHTTPResponseBytes int64 = 32 << 20
 
 type Error struct {
 	Code    int             `json:"code"`
@@ -57,6 +63,10 @@ type Client struct {
 	asyncPending      []*asyncCallTask
 	asyncRunning      bool
 	asyncStarted      atomic.Bool
+
+	// MaxHTTPResponseBytes limits the decoded size of each HTTP response. A
+	// nonpositive value uses 32 MiB. Set it on the transport before use.
+	MaxHTTPResponseBytes int64
 }
 
 // ConfigureConcurrency sets the shared transport limit before its first call.
@@ -211,6 +221,9 @@ func (c *Client) callWithAdmission(ctx context.Context, cached bool, method stri
 			}
 		}
 		last = e
+		if len(base.URLs) == 1 && errors.Is(e, ErrHTTPResponseTooLarge) {
+			return e
+		}
 		var rpcError *Error
 		if errors.As(e, &rpcError) && (rpcError.Code == -32601 || rpcError.Code == -32602) {
 			return e
@@ -259,8 +272,30 @@ func (c *Client) request(ctx context.Context, url string, data []byte) ([]byte, 
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, fmt.Errorf("RPC HTTP status %d", response.StatusCode)
 	}
-	raw, e := io.ReadAll(io.LimitReader(response.Body, 32<<20))
-	return raw, e
+	limit := c.MaxHTTPResponseBytes
+	if limit <= 0 {
+		limit = defaultHTTPResponseBytes
+	}
+	oversize := func() error { return fmt.Errorf("%w: limit %d bytes", ErrHTTPResponseTooLarge, limit) }
+	if response.ContentLength > limit {
+		return nil, oversize()
+	}
+	body := &io.LimitedReader{R: response.Body, N: limit}
+	raw, err := io.ReadAll(body)
+	if err != nil || body.N > 0 {
+		return raw, err
+	}
+	// A chunked or transparently decompressed response may have no known
+	// length. Read one extra byte to distinguish an exact fit from truncation.
+	var extra [1]byte
+	_, err = io.ReadFull(response.Body, extra[:])
+	if err == io.EOF {
+		return raw, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return nil, oversize()
 }
 
 // Subscribe uses a dedicated connection and closes it on cancellation.

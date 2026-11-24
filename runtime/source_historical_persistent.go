@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"strings"
@@ -110,8 +111,11 @@ func (s *SourceHistoricalSync) syncLogsDynamic(ctx context.Context, input filter
 				return rangeErr
 			}
 			size := finish - start
-			// The pinned persistent implementation uses the endpoint difference here.
-			// The RPC-owned memory pagination helper uses its distinct inclusive size.
+			// Provider hints use the pinned source's endpoint difference. A local
+			// response limit splits by block count, including a one-block page.
+			if errors.Is(err, rpc.ErrHTTPResponseTooLarge) {
+				size++
+			}
 			s.logsMu.Lock()
 			s.estimatedRange = size
 			s.confirmedRange = nil

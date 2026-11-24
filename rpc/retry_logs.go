@@ -3,6 +3,7 @@ package rpc
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"regexp"
@@ -149,6 +150,9 @@ func GetLogsRetryHelper(query map[string]any, failure any) (LogsRetryPlan, error
 		}
 	}
 	fallback := logsRetryFallback.MatchString(serialized)
+	if err, ok := failure.(error); ok && from.Cmp(to) < 0 && errors.Is(err, ErrHTTPResponseTooLarge) {
+		fallback = true
+	}
 	for _, text := range logsRetrySubstrings {
 		fallback = fallback || strings.Contains(serialized, text)
 	}

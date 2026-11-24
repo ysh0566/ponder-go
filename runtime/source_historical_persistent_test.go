@@ -3,8 +3,13 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"reflect"
+	"sort"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -12,6 +17,7 @@ import (
 	"ponder.local/ponder-go/abi"
 	"ponder.local/ponder-go/config"
 	"ponder.local/ponder-go/filter"
+	"ponder.local/ponder-go/rpc"
 	"ponder.local/ponder-go/schema"
 	"ponder.local/ponder-go/store"
 )
@@ -215,5 +221,57 @@ func TestSourceHistoricalPersistentLive(t *testing.T) {
 				t.Fatal(err)
 			}
 		})
+	}
+}
+
+func TestHistoricalHTTPResponseSize(t *testing.T) {
+	var mu sync.Mutex
+	var ranges []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		var request struct {
+			ID     uint64
+			Params []struct{ FromBlock, ToBlock string }
+		}
+		if err := json.NewDecoder(req.Body).Decode(&request); err != nil || len(request.Params) != 1 {
+			http.Error(w, "invalid request", http.StatusBadRequest)
+			return
+		}
+		bounds := request.Params[0]
+		mu.Lock()
+		ranges = append(ranges, bounds.FromBlock+"-"+bounds.ToBlock)
+		mu.Unlock()
+		if bounds.FromBlock != bounds.ToBlock || bounds.FromBlock == "0x3" {
+			fmt.Fprint(w, strings.Repeat(" ", 1024))
+		}
+		log := filter.Object{
+			"blockNumber": bounds.FromBlock, "blockHash": "0x" + strings.Repeat("1", 64),
+			"logIndex": "0x0", "address": "0x" + strings.Repeat("2", 40), "topics": []string{}, "data": "0x",
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"jsonrpc": "2.0", "id": request.ID, "result": []filter.Object{log}})
+	}))
+	defer server.Close()
+	client := rpc.New(server.URL)
+	client.MaxHTTPResponseBytes = 1024
+	client.RequestsPerSecond = 0
+	s, err := NewSourceHistoricalSync(1, client, nil, NewSourceHistoricalChildren(nil), SourceHistoricalOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	rows, err := s.syncLogsDynamic(ctx, filter.Object{"fromBlock": "0x1", "toBlock": "0x2"})
+	if err != nil || len(rows) != 2 || rows[0]["blockNumber"] != "0x1" || rows[1]["blockNumber"] != "0x2" {
+		t.Fatalf("two-block interval: logs=%v, err=%v", rows, err)
+	}
+	_, err = s.syncLogsDynamic(ctx, filter.Object{"fromBlock": "0x3", "toBlock": "0x3"})
+	if !errors.Is(err, rpc.ErrHTTPResponseTooLarge) {
+		t.Fatalf("oversized single block: %v", err)
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	sort.Strings(ranges)
+	want := []string{"0x1-0x1", "0x1-0x2", "0x2-0x2", "0x3-0x3"}
+	if !reflect.DeepEqual(ranges, want) {
+		t.Fatalf("ranges: got %v, want %v", ranges, want)
 	}
 }

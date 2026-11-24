@@ -1,5 +1,26 @@
 # RPC pagination, receipts and response validation
 
+## HTTP response size
+
+Each native HTTP request accepts up to 32 MiB of decoded JSON by default. This
+also covers chunked transfers and transparently decompressed gzip responses.
+For a large, trusted archive query that must return in one response, set the
+limit on the transport before issuing requests.
+
+```go
+client := rpc.New(archiveURL)
+client.MaxHTTPResponseBytes = 128 << 20
+err := client.Call(ctx, "eth_getLogs", []any{query}, &logs)
+```
+
+An oversized response returns `rpc.ErrHTTPResponseTooLarge`, detectable with
+`errors.Is`. The client discards its contents. Cache-scoped clients share the
+transport limit. Automatic log pagination can keep a smaller limit and retry
+the same cursor over a narrower range. A single block that exceeds the limit,
+or a caller-specified fixed block range, returns the error to the caller.
+
+## Upstream action coverage
+
 M24 adds the remaining ten declarations from the pinned `rpc/actions.test.ts`:
 six lazy pagination cases, two receipt fallback/sorting cases, and two log/block
 validation cases. Their exact original statements, shared fixtures, inputs and
