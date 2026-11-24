@@ -1,0 +1,152 @@
+{
+  "unique_outcomes": {
+    "failed": 23,
+    "passed": 870,
+    "skipped": 10,
+    "todo": 2
+  },
+  "backend_differences": [
+    {
+      "file": "packages/core/src/database/index.test.ts",
+      "name": "migrate() succeeds with crash recovery after waiting for lock",
+      "source_ids": [
+        "27e6122359c0c7dc5ab0"
+      ],
+      "pglite": {
+        "passed": 1
+      },
+      "postgres": {
+        "failed": 1
+      }
+    }
+  ],
+  "runs": [
+    {
+      "partition": "core_pglite",
+      "report": "core-pglite.json",
+      "sha256": "2c9097f04a35af20a6f63236b45c7ad01957d944fc1ea1b786ff03c175cedf66",
+      "files": 57,
+      "outcomes": {
+        "passed": 723,
+        "skipped": 6,
+        "todo": 1
+      },
+      "exit": 0
+    },
+    {
+      "partition": "core_postgres",
+      "report": "core-postgres.json",
+      "sha256": "cdae9c4c4c103a275e064976dd660c37bb77e3878481c337cc7ca4edc09c2021",
+      "files": 57,
+      "outcomes": {
+        "failed": 1,
+        "passed": 722,
+        "skipped": 6,
+        "todo": 1
+      },
+      "exit": 1
+    },
+    {
+      "partition": "other",
+      "report": "core-types.json",
+      "sha256": "d956640a76391b2cd9112f40f0d97a201dc0fd93a6a9d98a827c2846d43333cf",
+      "files": 6,
+      "outcomes": {
+        "passed": 69
+      },
+      "exit": 0
+    },
+    {
+      "partition": "other",
+      "report": "create-ponder.json",
+      "sha256": "e3f9d0e84e2cf69ac9f133abf4386466b32c5e6faaa77c2b6644b237e8af5eac",
+      "files": 1,
+      "outcomes": {
+        "passed": 1
+      },
+      "exit": 0
+    },
+    {
+      "partition": "other",
+      "report": "client.json",
+      "sha256": "21c18cde129082adb6a693b0068dc175ca71d2baadfbb57b51d643506ff2ddbb",
+      "files": 1,
+      "outcomes": {
+        "passed": 3
+      },
+      "exit": 0
+    },
+    {
+      "partition": "other",
+      "report": "react.json",
+      "sha256": "5125ff0c0b7a57af1995df5a71c40c7fb41e3959596739f77460675a459d5891",
+      "files": 1,
+      "outcomes": {
+        "passed": 1
+      },
+      "exit": 0
+    },
+    {
+      "partition": "other",
+      "report": "utils-local.json",
+      "sha256": "6e27201184194f9ad05e99d43770d90747c40b4388417aef7b3bd3987a8cac78",
+      "files": 19,
+      "outcomes": {
+        "failed": 18,
+        "passed": 22,
+        "skipped": 1
+      },
+      "exit": 1
+    },
+    {
+      "partition": "other",
+      "report": "utils-public.json",
+      "sha256": "de28b5b7f2919e71f8035b0529681f9ee1e8f3dfd2d890b9a391eb8376301c20",
+      "files": 17,
+      "outcomes": {
+        "failed": 4,
+        "passed": 49,
+        "skipped": 3,
+        "todo": 1
+      },
+      "exit": 1
+    },
+    {
+      "partition": "other",
+      "report": "utils-types.json",
+      "sha256": "6c7981c2bcac89384ad29a12ac0cfee7f4d6fbe7c5ecc6d27e6dfc8551716d8b",
+      "files": 2,
+      "outcomes": {
+        "passed": 3
+      },
+      "exit": 0
+    }
+  ],
+  "additional_failures": [
+    {
+      "file": "packages/core/src/database/index.test.ts",
+      "name": "migrate() succeeds with crash recovery after waiting for lock",
+      "source_ids": [
+        "27e6122359c0c7dc5ab0"
+      ],
+      "outcomes": {
+        "failed": 1
+      }
+    },
+    {
+      "file": "packages/utils/src/_test/tron.test.ts",
+      "name": "tron response size",
+      "source_ids": [
+        "63f54fafb85170cd5ca6"
+      ],
+      "outcomes": {
+        "failed": 1
+      }
+    }
+  ],
+  "direct_cli_attempt": {
+    "sha256": "2fd31a65c6296e59e563f13bf9fe19c7413f48a6a372f46ee34e987df31d55ca",
+    "exit": 1,
+    "error": "Undetectable package manager"
+  }
+}
