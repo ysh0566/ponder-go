@@ -1,0 +1,22 @@
+[server]
+rpc_host = "127.0.0.1"
+rpc_port = 18546
+max_body_size_bytes = 65536
+max_concurrent_rpcs = 16
+
+[backend]
+response_timeout_seconds = 10
+max_response_size_bytes = 33554432
+max_retries = 0
+
+[backends.local]
+rpc_url = "http://127.0.0.1:18545"
+
+[backend_groups.local]
+backends = ["local"]
+max_block_range = 1000
+
+[rpc_method_mappings]
+eth_chainId = "local"
+eth_blockNumber = "local"
+eth_getLogs = "local"

@@ -15,7 +15,7 @@ test("route only configured requests and preserve viem's HTTP payload", async t 
   const listener = http.createServer(async (req, res) => {
     const chunks = [];
     for await (const chunk of req) chunks.push(chunk);
-    seen.push([req.method, req.headers["content-type"], Buffer.concat(chunks).toString()]);
+    seen.push([req.url, req.method, req.headers["content-type"], Buffer.concat(chunks).toString()]);
     res.writeHead(200, {"Content-Type": "application/json"});
     res.end(JSON.stringify({jsonrpc: "2.0", id: 1, result: []}));
   });
@@ -24,7 +24,7 @@ test("route only configured requests and preserve viem's HTTP payload", async t 
   t.after(() => new Promise(resolve => listener.close(resolve)));
   const routes = path.join(temp, "routes.json");
   const source = "https://upstream.invalid/test";
-  await fs.writeFile(routes, JSON.stringify({[source]: "http://127.0.0.1:" + listener.address().port}));
+  await fs.writeFile(routes, JSON.stringify({[source]: "http://127.0.0.1:" + listener.address().port + "/ext/bc/C/rpc"}));
   const body = JSON.stringify({jsonrpc:"2.0", id:1, method:"eth_getLogs", params:[{fromBlock:"0x0", toBlock:"0x1"}]});
   const program = `
     import assert from "node:assert/strict";
@@ -38,5 +38,5 @@ test("route only configured requests and preserve viem's HTTP payload", async t 
     "--input-type=module", "-e", program, source, body], {env:{...process.env, PONDER_LOG_RPC_ROUTES:routes}, stdio:"inherit"});
   const [code] = await once(child, "exit");
   assert.equal(code, 0);
-  assert.deepEqual(seen, [["POST","application/json",body], ["POST","application/json",body]]);
+  assert.deepEqual(seen, [["/ext/bc/C/rpc","POST","application/json",body], ["/ext/bc/C/rpc","POST","application/json",body]]);
 });

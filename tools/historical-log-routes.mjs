@@ -8,7 +8,7 @@ for (const [source, endpoint] of Object.entries(JSON.parse(fs.readFileSync(proce
   const from = new URL(source);
   const to = new URL(endpoint);
   if (from.protocol !== "https:" || to.protocol !== "http:" || to.hostname !== "127.0.0.1" ||
-      to.username || to.password || !to.port || to.pathname !== "/" || to.search || to.hash || routes.has(from.href)) {
+      to.username || to.password || !to.port || to.search || to.hash || routes.has(from.href)) {
     throw Error("Expected a unique source HTTPS URL and a loopback HTTP listener");
   }
   routes.set(from.href, to.href);

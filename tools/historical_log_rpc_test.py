@@ -1,3 +1,4 @@
+from io import BytesIO
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -25,7 +26,7 @@ class HistoricalLogTest(unittest.TestCase):
         if method == "eth_chainId":
             return "0x1"
         if method == "eth_getBlockByNumber":
-            return {"number": params[0], "hash": self.block}
+            return {"number": params[0], "hash": self.block, "parentHash": self.tx}
         if method == "eth_getTransactionReceipt":
             tx = "0x" + self.tx[2:].upper()
             return dict(blockHash=self.block, blockNumber="0x2", transactionHash=tx, transactionIndex="0x1",
@@ -120,3 +121,81 @@ class HistoricalLogTest(unittest.TestCase):
             with self.subTest(failure=failure), self.assertRaises(ValueError):
                 self.collect(bad, self.address)
             self.assertFalse(self.output.exists())
+
+    def test_capture_and_replay_observed_rpc_error(self):
+        index = self.collect()
+        capture = self.output.parent / "error.json"
+        failure = {"code": -32603, "message": "historical range limit", "data": {"limit": 1}}
+        calls = []
+
+        def upstream(url, method, params):
+            calls.append(method)
+            reply = {"jsonrpc": "2.0", "id": 1}
+            if method == "eth_getLogs":
+                reply["error"] = failure
+            else:
+                reply["result"] = self.upstream(url, method, params)
+            return reply
+
+        with patch.object(archive, "rpc_response", side_effect=upstream):
+            archive.capture_error("https://origin.example/private-path", 1, 1, 3, self.address, capture)
+        self.assertEqual(calls, ["eth_chainId", "eth_getBlockByNumber", "eth_getLogs", "eth_getLogs", "eth_getBlockByNumber"])
+        record = json.loads(capture.read_bytes())
+        self.assertEqual(record["source"], "origin.example")
+        self.assertEqual(record["anchor"], self.block)
+        self.assertEqual(record["parentHash"], self.tx)
+        self.assertEqual(record["error"], failure)
+        with self.assertRaises(FileExistsError):
+            archive.capture_error("https://origin.example", 1, 1, 3, self.address, capture)
+
+        for incompatible in [[], {**record, "source": 1}, {**record, "anchor": self.tx},
+                             {**record, "params": [{"fromBlock": "0x1", "toBlock": "0x4"}]},
+                             {**record, "chain": 2}, {**record, "method": "eth_sendTransaction"},
+                             {**record, "error": {"code": True, "message": "wrong type"}}]:
+            with self.assertRaises(ValueError):
+                archive.server([index], 0, [incompatible])
+        with self.assertRaises(ValueError):
+            archive.server([index], 0, [record, record])
+
+        with archive.server([index], 0, [record]) as http:
+            thread = Thread(target=http.serve_forever)
+            thread.start()
+            try:
+                url = f"http://127.0.0.1:{http.server_port}"
+                query = {"fromBlock": "0x1", "toBlock": "0x3", "address": self.address}
+                payload = {"jsonrpc": "2.0", "id": "original-id", "method": "eth_getLogs", "params": [query]}
+                with urlopen(Request(url, data=json.dumps(payload).encode())) as response:
+                    self.assertEqual(json.load(response), {"jsonrpc": "2.0", "id": "original-id", "error": failure})
+                self.assertEqual(archive.rpc(url, "eth_getLogs", [{**query, "toBlock": "0x2"}]), [self.log])
+                self.assertEqual(archive.rpc(url, "eth_getLogs", [{"fromBlock": "0x1", "toBlock": "0x3"}]), [self.log])
+            finally:
+                http.shutdown()
+                thread.join()
+
+    def test_invalid_rpc_envelopes_cannot_be_recorded(self):
+        normal = {"jsonrpc": "2.0", "id": 1}
+        error = {"code": -32602, "message": "range limit"}
+        for reply in [[], normal, {**normal, "error": error, "result": []},
+                      {**normal, "id": True, "error": error}, {**normal, "id": "1", "error": error},
+                      {**normal, "jsonrpc": "1.0", "error": error}]:
+            with self.subTest(reply=reply), patch.object(archive, "urlopen", return_value=BytesIO(json.dumps(reply).encode())):
+                with self.assertRaises(ValueError):
+                    archive.rpc_response("http://localhost", "eth_getLogs", [])
+
+    def test_error_capture_rejects_success_instability_and_transport_failure(self):
+        output = self.output.parent / "never-published.json"
+        error = {"error": {"code": -32603, "message": "range limit"}}
+        chain = {"result": "0x1"}
+        header = {"result": {"number": "0x3", "hash": self.block, "parentHash": self.tx}}
+        changed = {"result": {"number": "0x3", "hash": self.tx, "parentHash": self.block}}
+        for replies in [
+            [{"result": "0x2"}],
+            [chain, header, {"result": []}],
+            [chain, header, OSError("network unavailable")],
+            [chain, header, error, {"error": {"code": -32602, "message": "different"}}],
+            [chain, header, error, error, changed],
+        ]:
+            with self.subTest(replies=replies), patch.object(archive, "rpc_response", side_effect=replies):
+                with self.assertRaises((ValueError, OSError)):
+                    archive.capture_error("https://origin.example", 1, 1, 3, None, output)
+                self.assertFalse(output.exists())
