@@ -1,0 +1,110 @@
+{
+  "upstream": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "candidate": "79639d0907aa531cfab8f0b1a3cc0d2dc6733bc7",
+  "cases": [
+    {
+      "source_id": "1ab90e83d8e5577b80c0",
+      "source_file": "packages/utils/src/_test/base.test.ts",
+      "title": "base success",
+      "status": "passed"
+    },
+    {
+      "source_id": "406b16820b5ebb1a90fe",
+      "source_file": "packages/utils/src/_test/base.test.ts",
+      "title": "base block range",
+      "status": "passed"
+    },
+    {
+      "source_id": "51499e4858745db713da",
+      "source_file": "packages/utils/src/_test/swell.test.ts",
+      "title": "swell success",
+      "status": "failed"
+    },
+    {
+      "source_id": "f6fcaf43d5a1a8b4119c",
+      "source_file": "packages/utils/src/_test/swell.test.ts",
+      "title": "swell block range",
+      "status": "passed"
+    },
+    {
+      "source_id": "89e7985acad1175f1eb4",
+      "source_file": "packages/utils/src/_test/tron.test.ts",
+      "title": "tron success",
+      "status": "passed"
+    },
+    {
+      "source_id": "63f54fafb85170cd5ca6",
+      "source_file": "packages/utils/src/_test/tron.test.ts",
+      "title": "tron response size",
+      "status": "passed"
+    }
+  ],
+  "base": {
+    "archive-1000": {
+      "status": 200,
+      "bodyBytes": 48746,
+      "error": null,
+      "rows": 77
+    },
+    "proxy-1000": {
+      "status": 200,
+      "bodyBytes": 48747,
+      "error": null,
+      "rows": 77
+    },
+    "archive-20000": {
+      "status": 200,
+      "bodyBytes": 1530685,
+      "error": null,
+      "rows": 2420
+    },
+    "proxy-20000": {
+      "status": 503,
+      "bodyBytes": 110,
+      "error": {
+        "code": -32011,
+        "message": "no backend is currently healthy to serve traffic"
+      },
+      "rows": null
+    }
+  },
+  "configuration": {
+    "gateway_launcher_sha256": "77dc027829877fba502556a6174ce707f207d80aea5460eca98bb74ebe8006a9",
+    "bandwidth_bytes_per_second": 262144,
+    "gateway_timeout_seconds": 2,
+    "proxyd_release": "4.37.0",
+    "proxyd_linux_amd64_sha256": "dc918d467e6b6e32edadfe85f792be7eb5f92f1dbc5e8987990e5deee57e7fc6",
+    "anvil_release": "1.8.5",
+    "anvil_linux_amd64_sha256": "00f97668e1ae0fcca118fd7d2d1b6d25c0496447a523ca6bc2dfd10958c99604"
+  },
+  "data": {
+    "bundle_sha256": "e6763e4f812e41c91d031a7c5c7a4c952345e1ca93a116ef239fea8741e4b70a",
+    "base_anchor": "0x3212b2365280164efdd8f55cbd5d4a061346b60c77a9b8decb63cf75738c61c9",
+    "base_pages": 21,
+    "tron_anchor": "0x0000000004445bceca9dcac5cfee9c9b448305b15582be00c5f231166e99c913",
+    "tron_range_error_anchor": "0x0000000004445bcf8cc7292935d99747c06528f42144a3970eed084a896cccb7",
+    "tron_error_sha256": "ab522e53ff8ccdb34f2a0e7ce63a5f51bf4c27476a4747529a5eb3175968e636"
+  },
+  "native_rpc": {
+    "normal": {
+      "top_level": 23,
+      "subtests": 173,
+      "provider_cases": 24,
+      "sha256": "59b0c46131fff2c48a430ba5d0e247e0b76d098d40d94346b01671e1d289c4c6"
+    },
+    "race": {
+      "top_level": 23,
+      "subtests": 173,
+      "provider_cases": 24,
+      "sha256": "41c8acd1afce4259fe07919861225627c5f98614772da8c925a1a38cd3508a6c"
+    }
+  },
+  "tools": {
+    "python": 35,
+    "node": 500
+  },
+  "native_mapping": {
+    "mapped": 567,
+    "unimplemented": 338
+  }
+}

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Collect mined eth_getLogs pages and serve verified inclusive ranges on loopback."""
 import argparse
+from contextvars import ContextVar
 import gzip
 import hashlib
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -9,9 +10,12 @@ from pathlib import Path
 import re
 import tempfile
 import time
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
+
+
+REQUEST_INTERVAL = ContextVar("historical_rpc_request_interval", default=0)
 
 
 def quantity(value):
@@ -34,6 +38,8 @@ def rpc_response(url, method, params):
     payload = json.dumps(dict(jsonrpc="2.0", id=1, method=method, params=params)).encode()
     request = Request(url, data=payload, headers={"Content-Type": "application/json"})
     for attempt in range(3):
+        if interval := REQUEST_INTERVAL.get():
+            time.sleep(interval)
         try:
             with urlopen(request, timeout=45) as response:
                 result = json.load(response)
@@ -43,6 +49,11 @@ def rpc_response(url, method, params):
             if error.code not in (429, 502, 503, 504) or attempt == 2 or not delay.isdigit() or int(delay) > 60:
                 raise ValueError(f"{method} returned HTTP {error.code}") from None
             time.sleep(int(delay))
+        except (ConnectionResetError, TimeoutError, URLError) as error:
+            reason = error.reason if isinstance(error, URLError) else error
+            if attempt == 2 or not isinstance(reason, (ConnectionResetError, TimeoutError)):
+                raise
+            time.sleep(2 ** (attempt + 1))
     if (not isinstance(result, dict) or type(result.get("id")) is not int or result["id"] != 1 or result.get("jsonrpc") != "2.0"
             or ("result" in result) == ("error" in result)):
         raise ValueError(f"{method} returned an invalid JSON-RPC response")
@@ -135,6 +146,7 @@ def collect(url, chain, first, last, width, address, output):
         raise FileExistsError(output)
     if quantity(rpc(url, "eth_chainId", [])) != chain:
         raise ValueError("wrong RPC chain")
+    request_address = address
     address = fixed_hex(address, 20) if address is not None else None
     anchor = block_hash(url, last)
     manifest = dict(version=1, chain=chain, first=first, last=last, address=address,
@@ -148,7 +160,7 @@ def collect(url, chain, first, last, width, address, output):
             high = min(last, low + width - 1)
             query = {"fromBlock": hex(low), "toBlock": hex(high)}
             if address:
-                query["address"] = address
+                query["address"] = request_address
             rows = rpc(url, "eth_getLogs", [query])
             validate_logs(rows, low, high, address)
             if rows:
@@ -311,7 +323,9 @@ def capture_filter(record):
     return filter_bounds(record.get("params"))
 
 
-def server(indexes, port, error_captures=(), log_captures=()):
+def server(indexes, port, error_captures=(), log_captures=(), bytes_per_second=None):
+    if bytes_per_second is not None and bytes_per_second <= 0:
+        raise ValueError("bytes per second must be positive")
     chains = {index.chain for index in indexes}
     observed = {}
     for record in log_captures:
@@ -383,7 +397,16 @@ def server(indexes, port, error_captures=(), log_captures=()):
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(raw)))
             self.end_headers()
-            self.wfile.write(raw)
+            try:
+                if bytes_per_second is None:
+                    self.wfile.write(raw)
+                else:
+                    for start in range(0, len(raw), 16384):
+                        chunk = raw[start:start+16384]
+                        time.sleep(len(chunk) / bytes_per_second)
+                        self.wfile.write(chunk)
+            except (BrokenPipeError, ConnectionResetError):
+                return
 
     return HTTPServer(("127.0.0.1", port), Handler)
 
@@ -411,10 +434,25 @@ def main():
     logs.add_argument("output", type=Path)
     host = commands.add_parser("serve")
     host.add_argument("--port", type=int, default=0)
+    host.add_argument("--bytes-per-second", type=int, help="limit the transfer rate of all response bodies")
     host.add_argument("--error-capture", action="append", type=Path, default=[])
     host.add_argument("--log-capture", action="append", type=Path, default=[])
     host.add_argument("directories", type=Path, nargs="*")
+    for collecting in (capture, error, logs):
+        collecting.add_argument("--request-interval", type=int, default=0,
+                                help="pause this many seconds before each remote read, including retries")
     args = parser.parse_args()
+    interval = getattr(args, "request_interval", 0)
+    if interval < 0:
+        parser.error("--request-interval must be nonnegative")
+    token = REQUEST_INTERVAL.set(interval)
+    try:
+        run_command(args)
+    finally:
+        REQUEST_INTERVAL.reset(token)
+
+
+def run_command(args):
     if args.command == "collect":
         collect(args.rpc_url, args.chain, args.first, args.last, args.page_width, args.address, args.directory)
     elif args.command == "capture-logs":
@@ -424,7 +462,7 @@ def main():
     else:
         captures = [json.loads(path.read_bytes()) for path in args.error_capture]
         responses = [json.loads(gzip.decompress(path.read_bytes())) for path in args.log_capture]
-        with server([Index(path) for path in args.directories], args.port, captures, responses) as http:
+        with server([Index(path) for path in args.directories], args.port, captures, responses, args.bytes_per_second) as http:
             print(f"http://127.0.0.1:{http.server_port}", flush=True)
             http.serve_forever()
 
