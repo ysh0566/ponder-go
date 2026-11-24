@@ -87,9 +87,18 @@ def block_hash(url, height):
 
 def check_receipt(url, row):
     receipt = rpc(url, "eth_getTransactionReceipt", [row["transactionHash"]])
-    fields = ("blockHash", "blockNumber", "transactionHash", "transactionIndex", "logIndex", "address", "topics", "data")
-    if (not receipt or receipt["blockHash"] != block_hash(url, quantity(row["blockNumber"])) or
-            not any(all(log[k] == row[k] for k in fields) for log in receipt["logs"])):
+    location = ("blockHash", "blockNumber", "transactionHash", "transactionIndex")
+    def values(record, fields):
+        return tuple(record[k].lower() for k in fields)
+
+    def same_log(log):
+        return (values(log, (*location, "logIndex", "address", "data")) ==
+                values(row, (*location, "logIndex", "address", "data")) and
+                [topic.lower() for topic in log["topics"]] == [topic.lower() for topic in row["topics"]])
+
+    if (not receipt or values(receipt, location) != values(row, location) or
+            receipt["blockHash"].lower() != block_hash(url, quantity(row["blockNumber"])) or
+            not any(same_log(log) for log in receipt["logs"])):
         raise ValueError("historical log does not match its canonical receipt")
 
 

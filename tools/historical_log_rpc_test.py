@@ -27,7 +27,9 @@ class HistoricalLogTest(unittest.TestCase):
         if method == "eth_getBlockByNumber":
             return {"number": params[0], "hash": self.block}
         if method == "eth_getTransactionReceipt":
-            return {"blockHash": self.block, "logs": [self.log]}
+            tx = "0x" + self.tx[2:].upper()
+            return dict(blockHash=self.block, blockNumber="0x2", transactionHash=tx, transactionIndex="0x1",
+                        logs=[{**self.log, "transactionHash": tx}])
         self.assertEqual(method, "eth_getLogs")
         q = params[0]
         return [self.log] if int(q["fromBlock"], 16) <= 2 <= int(q["toBlock"], 16) else []
@@ -90,7 +92,7 @@ class HistoricalLogTest(unittest.TestCase):
             archive.Index(self.output)
 
     def test_collection_publishes_only_verified_pages(self):
-        for failure in ["chain", "receipt", "anchor", "duplicate", "foreign", "wrong height"]:
+        for failure in ["chain", "receipt", "wrong receipt transaction", "anchor", "duplicate", "foreign", "wrong height"]:
             seen_end = False
 
             def bad(url, method, params):
@@ -100,6 +102,8 @@ class HistoricalLogTest(unittest.TestCase):
                     return "0x2"
                 if method == "eth_getTransactionReceipt" and failure == "receipt":
                     return {**v, "logs": []}
+                if method == "eth_getTransactionReceipt" and failure == "wrong receipt transaction":
+                    return {**v, "transactionHash": self.block}
                 if method == "eth_getBlockByNumber" and params[0] == "0x3":
                     if failure == "anchor" and seen_end:
                         return {**v, "hash": self.tx}
