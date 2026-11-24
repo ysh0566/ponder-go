@@ -57,6 +57,15 @@ test('actual historical source mutation changes fingerprint and prepared invento
   const before=sourceFingerprint(fixture),prepared=prepare();assert.equal(before.files,3);assert.deepEqual(prepared.fingerprint,before);assert(prepared.files.some(f=>f.file==='historical/runner.go'));
   fs.appendFileSync(fixture+'/historical/runner.go','const mutation = 2\n');const after=sourceFingerprint(fixture);assert.equal(after.files,before.files);assert.notEqual(after.sha256,before.sha256);assert.deepEqual(prepare().fingerprint,after);
   fs.writeFileSync(fixture+'/historical/new_test.go','package historical\n');const added=sourceFingerprint(fixture);assert.equal(added.files,4);assert.notEqual(added.sha256,after.sha256);assert.deepEqual(prepare().fingerprint,added);
+  fs.mkdirSync(path.join(fixture, "tools/rpcnode-fixtures"));
+  for (const file of ["tools/historical_log_rpc.py", "tools/provider_archive_nodes.py", "tools/rpcnode-fixtures/moonriver-error.json", "tools/rpcnode-fixtures/historical-blast-zkevm.tar.gz", "tools/rpcnode-fixtures/celo-10000000-10001000.json.gz"]) {
+   fs.writeFileSync(path.join(fixture, file), "initial fixture bytes");
+  }
+  const archives = sourceFingerprint(fixture);
+  assert.equal(archives.files, added.files + 5);
+  fs.appendFileSync(path.join(fixture, "tools/provider_archive_nodes.py"), "changed");
+  assert.notEqual(sourceFingerprint(fixture).sha256, archives.sha256);
+  assert.deepEqual(prepare().fingerprint, sourceFingerprint(fixture));
  }finally{fs.rmSync(fixture,{recursive:true,force:true})}
 });
 test('historical type preparation inventories runner and indexing production inputs',()=>{const s=fs.readFileSync(root+'/tools/source-historical-types/compile.mjs','utf8'),m=s.match(/const prefixes=(\[[^;]+\]);const production=/);assert(m);const prefixes=vm.runInNewContext(m[1]);assert(prefixes.includes('historical/'));assert(prefixes.includes('indexing/'));assert(source('finite-historical-acceptance').includes('tools/source-historical-types/compile.mjs'));assert(source('finite-historical-acceptance').includes('tools/source-sync-compile.mjs'));assert(source('go-tests').includes('selections : ["./..."]'))});
