@@ -16,6 +16,8 @@ Every core runtime declaration had the same outcome on both backends and counts 
 
 The first complete pass produced 870 passed, 23 failed, 10 skipped and 2 todo. The PostgreSQL crash-recovery lock assertion failed once and passed when all 57 files reran against a fresh server. The public Tron response-size assertion failed once and passed in a second complete utils run. Both attempts are identified in the evidence. The CLI also failed in an initial direct Vitest launch with “Undetectable package manager”. It passed using the upstream `pnpm test` script.
 
+During code review, a further run with an inherited HTTP proxy and an empty proxy bypass list reproduced every outcome in the 19 loopback files after explicitly disabling proxy use for those files.
+
 The repository’s Node controls passed 500 checks after restoring their verified historical inputs and supplying the three fixture-specific entry points. The Python suite passed 34 tests. The 1,338 native verification inputs match the preceding phase and formal port coverage remains 543 of 905.
 
 [Final report and unresolved declarations](results.json) · [First attempt evidence](first-attempt.json) · [Reproduction](../../../docs/HISTORICAL_LOG_RPC.md#check-the-complete-upstream-inventory)

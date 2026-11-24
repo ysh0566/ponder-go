@@ -133,7 +133,7 @@ def run(upstream, archive, output):
         literals = {url: servers[chain] for _, url, chain in ROUTES if url.startswith("https://")}
         routes = output / "routes.json"
         routes.write_text(json.dumps(literals, indent=2) + "\n")
-        local_env = dict(env, PONDER_LOG_RPC_ROUTES=str(routes),
+        local_env = dict(env, NODE_USE_ENV_PROXY="0", PONDER_LOG_RPC_ROUTES=str(routes),
                          NODE_OPTIONS="--import=" + (ROOT / "tools/historical-log-routes.mjs").as_uri())
         local_env.update({key: servers[chain] for _, key, chain in ROUTES if key.startswith("RPC_URL_")})
         local_status = run_files("utils-local", local, utils, output, local_env)
