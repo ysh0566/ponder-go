@@ -123,6 +123,20 @@ class HistoricalLogTest(unittest.TestCase):
                 self.collect(bad, self.address)
             self.assertFalse(self.output.exists())
 
+    def test_transient_reads_respect_spacing_and_stop_retrying(self):
+        response = b'{"jsonrpc":"2.0","id":1,"result":"0x1"}'
+        token = archive.REQUEST_INTERVAL.set(5)
+        self.addCleanup(archive.REQUEST_INTERVAL.reset, token)
+        with patch.object(archive, "urlopen", side_effect=[ConnectionResetError(), BytesIO(response)]) as read, \
+             patch.object(archive.time, "sleep") as sleep:
+            self.assertEqual(archive.rpc("https://node.example", "eth_chainId", []), "0x1")
+            self.assertEqual(read.call_count, 2)
+            self.assertEqual([call.args[0] for call in sleep.call_args_list], [5, 2, 5])
+        with patch.object(archive, "urlopen", side_effect=TimeoutError()) as read, patch.object(archive.time, "sleep"):
+            with self.assertRaises(TimeoutError):
+                archive.rpc("https://node.example", "eth_chainId", [])
+            self.assertEqual(read.call_count, 3)
+
     def test_capture_and_replay_observed_rpc_error(self):
         index = self.collect()
         capture = self.output.parent / "error.json"

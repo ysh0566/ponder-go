@@ -82,6 +82,7 @@ func TestUpstreamProviderArchives(t *testing.T) {
 		{"moonriver", "moonriver success", "moon", "", 12_000_000, 1_024, definedOnly},
 		{"publicnode", "publicnode success", "ethereum", uni, 18_000_000, 50_000, 203},
 		{"quicknode", "quicknode success", "ethereum", uni, 18_000_000, 10_000, 49},
+		{"tron", "tron success", "tron", "0x543208eB34ecad8f91a4D83e597d3c39D67ca47B", 71_583_814, 5_000, 4},
 		{"zkevm", "zkevm success", "zkevm", "", 950_000, 1_000, 2_979},
 	}
 	for _, tc := range cases {
@@ -138,4 +139,27 @@ func TestUpstreamProviderArchives(t *testing.T) {
 			t.Fatalf("got %+v, want %+v", plan, expected)
 		}
 	})
+	t.Run("tron/tron response size", func(t *testing.T) {
+		client := New(urls["tron"])
+		client.Retries = 0
+		client.HTTP = &http.Client{Timeout: 15 * time.Second, Transport: &http.Transport{}}
+		defer client.HTTP.CloseIdleConnections()
+		const first = 71_583_814
+		query := map[string]any{"fromBlock": fmt.Sprintf("0x%x", first), "toBlock": fmt.Sprintf("0x%x", first+5001)}
+		var logs []json.RawMessage
+		callErr := client.Call(t.Context(), "eth_getLogs", []any{query}, &logs)
+		var rpcErr *Error
+		if !errors.As(callErr, &rpcErr) || rpcErr.Code != -32602 || !strings.Contains(rpcErr.Message, "exceed max block range") {
+			t.Fatalf("unexpected Tron RPC error: %v", callErr)
+		}
+		plan, err := GetLogsRetryHelper(query, rpcErr)
+		if err != nil || !plan.ShouldRetry || len(plan.Ranges) != 2 {
+			t.Fatalf("retry plan: %+v (%v)", plan, err)
+		}
+		want := LogRange{fmt.Sprintf("0x%x", first), fmt.Sprintf("0x%x", first+4999)}
+		if plan.Ranges[0] != want {
+			t.Fatalf("first retry range %+v, want %+v", plan.Ranges[0], want)
+		}
+	})
+
 }

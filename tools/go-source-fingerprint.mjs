@@ -10,6 +10,7 @@ const individualInputs = new Set([
 	"tools/rpcnode-fixtures/celo-10000000-10001000.json.gz",
 	"tools/rpcnode-fixtures/historical-blast-zkevm.tar.gz",
 	"tools/rpcnode-fixtures/moonriver-error.json",
+	"tools/rpcnode-fixtures/tron-and-base-indexes.tar.gz", "tools/rpcnode-fixtures/tron-error.json",
 ]);
 
 export function isNativeInput(file) {

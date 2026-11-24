@@ -155,18 +155,41 @@ The tagged sources define each limit. [OP Labs proxyd](https://github.com/ethere
 
 ## Run every original utils declaration
 
-Use Python 3.11+ and the installed upstream checkout at the revision in the test ledger. The reviewed seven-index archive is included at `testdata/rpc/provider-indexes.tar.gz`. Its SHA-256 is `04bb929c0e160d13784115650afe8131df3f937ee90ea12dd404c641ad61c858`. The three supplemental chain fixtures ship with this checkout. Each invocation requires a new output directory.
+Use Python 3.11+ and the installed upstream checkout at the revision in the test ledger. The reviewed seven-index archive is included at `testdata/rpc/provider-indexes.tar.gz`. Its SHA-256 is `04bb929c0e160d13784115650afe8131df3f937ee90ea12dd404c641ad61c858`. The supplemental chain fixtures ship with this checkout. Each invocation requires a new output directory.
 
 ```sh
 python3 tools/upstream_utils_suite.py --upstream "$PONDER_UPSTREAM" \
   --output "$REPORTS/utils"
 ```
 
-The runner starts nine loopback listeners for 19 complete test files. Eight original environment variables point to these listeners. The HTTP adapter maps 11 original URL literals. The remaining runtime files use their original transports. A separate Vitest invocation runs the type declarations. The three pairs of JSON and exit-code files retain failures from all partitions. Public endpoint results can change between runs.
+The default runner starts ten loopback listeners for 20 complete test files. Eight original environment variables point to these listeners. The HTTP adapter maps 12 original URL literals. The remaining runtime files use their original transports. A separate Vitest invocation runs the type declarations. The three pairs of JSON and exit-code files retain failures from all partitions. Public endpoint results can change between runs.
+
+## Run Base and Swell behind a real gateway
+
+Pass OP Labs proxyd 4.37.0 and Foundry Anvil 1.8.5 to run the full Base and Swell files with local gateway processes. The launcher uses ephemeral loopback ports and releases its processes after Vitest finishes.
+
+```sh
+python3 tools/upstream_utils_suite.py --upstream "$PONDER_UPSTREAM" \
+  --gateway-binaries /path/to/proxyd /path/to/anvil --output "$REPORTS/utils-gateways"
+```
+
+The Base backend has historical logs for blocks 10,000,000 through 10,020,000. It serves all responses at 256 KiB/s and the gateway has a two-second response timeout. The smaller query returns 77 logs. The full query returns 2,420 logs directly, taking longer than two seconds at the configured rate. Proxyd returns its own HTTP 503 and JSON-RPC error. Swell uses the gateway’s 1,000-block range limit in front of a fresh development chain at height 6,003,001. Its range assertion passes. Its historical success case still requires the 58 mainnet logs.
+
+The Tron fixture comes from TronGrid’s public JSON-RPC endpoint. The index verifies the block hash at 71,588,814 and the edge receipts. Its separate range-error record includes that same hash as the parent of block 71,588,815. The collector can space requests to respect public endpoint quotas.
+
+```sh
+python3 tools/historical_log_rpc.py collect --request-interval 5 \
+  --rpc-url https://api.trongrid.io/jsonrpc --chain 728126428 \
+  --first 71583814 --last 71588814 --page-width 5001 \
+  --address 0x543208eB34ecad8f91a4D83e597d3c39D67ca47B "$REPORTS/tron-index"
+python3 tools/historical_log_rpc.py capture-error --request-interval 5 \
+  --rpc-url https://api.trongrid.io/jsonrpc --chain 728126428 \
+  --first 71583814 --last 71588815 "$REPORTS/tron-error.json"
+```
 
 ## Run the native provider cases offline
 
-The Go RPC package runs 21 original historical data assertions and the Moonriver error and retry assertion against the same nine loopback listeners. A clean checkout includes the fixtures. The launcher requires Python 3.11+ and uses the standard library. The Alchemy WETH case raises the client's per-response limit to 128 MiB to retrieve all 140,192 logs in the original single request.
+The Go RPC package runs 22 original historical data assertions plus the Moonriver and Tron error and retry assertions against the same ten loopback listeners. A clean checkout includes the fixtures. The launcher requires Python 3.11+ and uses the standard library. The Alchemy WETH case raises the client's per-response limit to 128 MiB to retrieve all 140,192 logs in the original single request.
 
 ```sh
 go test -count=1 -run '^TestUpstreamProviderArchives$' ./rpc
