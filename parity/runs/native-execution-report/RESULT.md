@@ -6,7 +6,7 @@ The default batch size is four and the default package deadline still comes from
 
 ## Historical integration matrix
 
-The complete `TestRuntimeOmnichainLogOnlySource` matrix passed in normal mode on PostgreSQL and PGlite. All 18 scenarios completed in 653.61 seconds using a 60-minute Go package deadline. Each backend exercised all nine source fixtures in one invocation of the original top-level test.
+The complete `TestRuntimeOmnichainLogOnlySource` matrix passed all 18 scenarios in both modes on PostgreSQL and PGlite. The normal run took 653.61 seconds and the race run took 1163.00 seconds with a 60-minute Go package deadline. Both runs exercised the same nine scenarios per backend in one invocation of the original top-level test.
 
 ## Verified behavior
 
