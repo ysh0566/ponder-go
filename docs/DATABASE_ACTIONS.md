@@ -50,11 +50,12 @@ installed and rejects ordinary business writes without an active capture trigger
 Only controlled internal undo can write under the reverting context. Dropping
 capture triggers never creates a public path for unjournaled DML or TRUNCATE.
 
-Storage format is `json-v3`; default namespaces are
-`ponder_go_shadow_v3_<hash>` or `ponder_go_actions_v3_<hash>`. Existing earlier
-formats require a new shadow. No in-place journal conversion or old database
-takeover is implemented. Lossless JSON before-images and raw numeric values from
-the v2 implementation remain preserved.
+The journal uses `json-v3` and preserves lossless JSON before-images and raw numeric values.
+Its default namespaces are `ponder_go_shadow_v3_<hash>` and `ponder_go_actions_v3_<hash>`.
+On first open, the business and sync namespaces are created in the same transaction.
+Reopening requires the matching business fingerprint and sync owner. A managed
+application also requires its current application metadata. Use a fresh namespace
+to reindex when either namespace or a required marker is missing or incompatible.
 
 Real process-exit tests cover raw transaction rollback, same-transaction block
 assignment rollback, durable MAX, assigned block, latest, finalization and an

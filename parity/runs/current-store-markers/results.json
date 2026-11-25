@@ -1,0 +1,88 @@
+{
+  "code_revision": "61154a2ad3b704b947d04bbef1911d152dd9e76b",
+  "original_inventory": "../public-provider-archives/upstream.json",
+  "before": {
+    "unexpected_successful_reopens": 12,
+    "cases": [
+      "TestStoreFormatMarkers/pglite/business_schema_missing",
+      "TestStoreFormatMarkers/pglite/fingerprint_missing",
+      "TestStoreFormatMarkers/pglite/lifecycle_application_metadata_missing",
+      "TestStoreFormatMarkers/pglite/sync_owner_changed",
+      "TestStoreFormatMarkers/pglite/sync_owner_missing",
+      "TestStoreFormatMarkers/pglite/sync_schema_missing",
+      "TestStoreFormatMarkers/postgres/business_schema_missing",
+      "TestStoreFormatMarkers/postgres/fingerprint_missing",
+      "TestStoreFormatMarkers/postgres/lifecycle_application_metadata_missing",
+      "TestStoreFormatMarkers/postgres/sync_owner_changed",
+      "TestStoreFormatMarkers/postgres/sync_owner_missing",
+      "TestStoreFormatMarkers/postgres/sync_schema_missing"
+    ],
+    "jsonl_sha256": "01e74458fa9dac654a95f4d44ed9cf83b4aa0178a54c2aa566fe281a75961cbe"
+  },
+  "native": {
+    "normal": {
+      "top_level": [
+        "TestHistoricalSafeSealing",
+        "TestLifecycleBoundaries",
+        "TestManagedFiniteDeferredActivationAndRestart",
+        "TestManagedLivePersistence",
+        "TestORMJSONNullCharacterUndo",
+        "TestPGliteCancelledCommit",
+        "TestPGliteStore",
+        "TestPostgresStore",
+        "TestStorageVersionRejectsOldJournal",
+        "TestStoreFormatMarkers",
+        "TestUpstreamDatabaseActions",
+        "TestUpstreamDatabaseLifecycle",
+        "TestUpstreamRemainingLifecycle",
+        "TestViewsSchemaBoundaries"
+      ],
+      "passed_leaves": 92,
+      "jsonl_sha256": "af0aaad6b87b09d6fb8ff17c27894ee643bb3c3521e4dd3049fdaa12256c5d2c"
+    },
+    "race": {
+      "top_level": [
+        "TestHistoricalSafeSealing",
+        "TestLifecycleBoundaries",
+        "TestManagedFiniteDeferredActivationAndRestart",
+        "TestManagedLivePersistence",
+        "TestORMJSONNullCharacterUndo",
+        "TestPGliteCancelledCommit",
+        "TestPGliteStore",
+        "TestPostgresStore",
+        "TestStorageVersionRejectsOldJournal",
+        "TestStoreFormatMarkers",
+        "TestUpstreamDatabaseActions",
+        "TestUpstreamDatabaseLifecycle",
+        "TestUpstreamRemainingLifecycle",
+        "TestViewsSchemaBoundaries"
+      ],
+      "passed_leaves": 92,
+      "jsonl_sha256": "080a5dc6ae8b59e7318c422f35801cce4f18060f0258753844b0271342064fa0"
+    }
+  },
+  "upstream": {
+    "postgres": {
+      "file": "packages/core/src/database/index.test.ts",
+      "passed": 18,
+      "report_sha256": "483d9899b98ca49e5788c5ea37ab66a3577a931c42f6e8de1c07e86b42ed6f70"
+    },
+    "pglite": {
+      "file": "packages/core/src/database/index.test.ts",
+      "passed": 18,
+      "report_sha256": "a37324375add576fcba1b1c04c3db5fa830062eba7fb79d127618325c3318f6f"
+    }
+  },
+  "clean_module": {
+    "build": "passed",
+    "vet": "passed"
+  },
+  "earlier_selection_failures": {
+    "normal": {
+      "cases": [
+        "TestLifecycleBoundaries/postgres/slow_startup_publishes_a_fresh_lease"
+      ],
+      "jsonl_sha256": "42ea8455884fca03b32ecc8e1afae932c90f8276b47a45266c0491307e7801c8"
+    }
+  }
+}
