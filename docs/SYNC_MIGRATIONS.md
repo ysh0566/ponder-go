@@ -9,7 +9,8 @@ comment and catalog, then preserves the cached results. Scope names start with
 Startup requires a fresh scope or an existing current cache. If only an old
 `<scope>_legacy` namespace exists, choose a fresh scope and let indexing
 rebuild the cache. When a valid current cache already exists, startup uses it
-directly. Historical contents are never copied or dropped.
+directly. Managed live domains also verify exclusive ownership of their entire
+namespace family before opening either database.
 
 PostgreSQL serializes concurrent creators with an advisory transaction lock.
 A namespace conflict triggers a fresh owner and catalog check. PGlite uses

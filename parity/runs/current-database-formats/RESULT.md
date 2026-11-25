@@ -6,12 +6,34 @@ Static log-only omnichain history uses the same v17 paged header proofs across a
 
 | Verification | Result |
 | --- | --- |
-| Native storage on PostgreSQL 14.24 and PGlite 0.2.13 | Normal and race each passed 16 top-level tests and 106 subtests. |
+| Native storage on PostgreSQL 14.24 and PGlite 0.2.13 | Normal and race each passed 16 top-level tests and 106 subtests (98 leaf cases). |
+| Native log-only runtime | All 44 normal leaf cases passed across short histories, sparse histories and PostgreSQL application exits. The combined race job is in progress. |
 | Original `packages/core/src/database/index.test.ts` | All 18 declarations passed in a fresh run on each backend, including the five historical migration cases. |
 | Go module | Build and vet passed. The full normal and race suite is running separately. |
 | Repository checks | All 500 Node checks and 35 Python tests passed. |
 | Scope accounting | The original 905 records retain their inputs, assertions and source states. The Go project maps 562, has 338 pending implementation and excludes five old-cache migrations. |
 
-The full original inventory combines unchanged upstream reports at the pinned Ponder revision. It records 874 passes, 19 failures, 10 upstream skips and two upstream todos. The 19 failures belong to the provider RPC tests. The fresh database runs above cover the entire original database test file. [Inventory and source IDs](upstream.json)
+The full original inventory combines unchanged upstream reports at the pinned Ponder revision. It records 874 passes, 19 failures, 10 upstream skips and two upstream todos. The 19 failures belong to the provider RPC tests. The fresh database runs above cover the entire original database test file. The upstream snapshot-copy case returns early on PGlite and exercises the database lock on PostgreSQL. [Inventory and source IDs](upstream.json)
 
 The machine-readable report contains native test names, unique leaf counts and SHA-256 digests. Final runtime jobs are listed as pending until each process exits successfully. [Stage results](results.json)
+
+## Reproduce the database checks
+
+Use the pinned sibling upstream checkout with its Node dependencies, Go 1.25.11, and an isolated PostgreSQL 14.24 test database. Set `PONDER_TEST_POSTGRES` to its connection URL, `PONDER_M45_POSTGRES_DIRECTORY` to its server-side data directory, and `PONDER_M45_POSTGRES_DATABASE` to its database name. Point `PONDER_M44_TEST_ROOT` and `PONDER_M45_TEST_ROOT` at a fresh directory for each run.
+
+```bash
+storage='^(TestLogOnly.*|TestPaged.*|TestManagedLiveRecoveryDatabase|TestManagedLiveRecoveryBoundedFork|TestManagedLiveRecoveryFormatIsolation|TestUpstreamSyncMigration|TestSyncMigration.*)$'
+go test -count=1 -timeout=60m -json -run "$storage" ./store
+go test -count=1 -timeout=60m -json -race -run "$storage" ./store
+
+go test -count=1 -timeout=60m -json -run '^TestRuntimeOmnichainLogOnlySource$' ./historical
+go test -count=1 -timeout=60m -json -run '^TestRuntimeOmnichain(LogOnlyApplicationExit|SparseRanges|SparseApplicationExit)$' ./historical
+go test -count=1 -timeout=60m -json -race -run '^TestRuntimeOmnichain(LogOnlySource|LogOnlyApplicationExit|SparseRanges|SparseApplicationExit)$' ./historical
+```
+
+For the original database verification, build the pinned upstream client and utils packages and generate the upstream test contracts with Foundry 1.8.5. Run the following from upstream `packages/core` once with `DATABASE_URL` pointing to a dedicated PostgreSQL test cluster and once with it unset for PGlite.
+
+```bash
+./node_modules/.bin/vitest run --configLoader native --maxWorkers=1 \
+  --reporter=json --outputFile="$report" src/database/index.test.ts
+```

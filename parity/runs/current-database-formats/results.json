@@ -1,5 +1,15 @@
 {
   "native_code_revision": "35abf3b23db1d892247b5f396716ffa8eddabac4",
+  "reviewed_inputs": {
+    "verified_code_revision": "35abf3b23db1d892247b5f396716ffa8eddabac4",
+    "input_trees": {
+      "historical": "a3e91079dfcb40b0cd658b14b306d70d05009b10",
+      "store": "b12499b9878fe19bd26e9c4d5c2edd3dc3ea8a74",
+      "tools": "448f6c0966a3694b9385a7ae387ced03c873d100",
+      "rpc": "b0a454a9dff8604d15540eda1273bdb51d2099b7"
+    },
+    "rpc_cache_ddl_sha256": "7696380cc63a526f1496744857735ca265cf264e09706ec48127c028ee6dd2fa"
+  },
   "formats": {
     "generic_journal": "json-v3",
     "standalone_recovery": "managed-live-recovery-v3",
@@ -125,7 +135,7 @@
           "TestUpstreamSyncMigration"
         ],
         "subtests": 106,
-        "leaves": 99,
+        "leaves": 98,
         "elapsed_seconds": 493.409,
         "jsonl_sha256": "420cd257ca8b943442b670b0ac36d1ddc793957c1c9ad8b6905868690c7fb790"
       },
@@ -150,14 +160,34 @@
           "TestUpstreamSyncMigration"
         ],
         "subtests": 106,
-        "leaves": 99,
+        "leaves": 98,
         "elapsed_seconds": 278.756,
         "jsonl_sha256": "dd9913e23848f131918eb12b9c300ca21d0b761c167641e2b9dd24f2a881ecb3"
+      },
+      "final-short-runtime": {
+        "package": "ponder.local/ponder-go/historical",
+        "top_level": [
+          "TestRuntimeOmnichainLogOnlySource"
+        ],
+        "subtests": 20,
+        "leaves": 18,
+        "elapsed_seconds": 735.872,
+        "jsonl_sha256": "5ef2412dfb0e6617cd95b7f40b2294c06af21b04d32bcca5cc1f93153855171d"
+      },
+      "runtime-additional": {
+        "package": "ponder.local/ponder-go/historical",
+        "top_level": [
+          "TestRuntimeOmnichainLogOnlyApplicationExit",
+          "TestRuntimeOmnichainSparseApplicationExit",
+          "TestRuntimeOmnichainSparseRanges"
+        ],
+        "subtests": 26,
+        "leaves": 26,
+        "elapsed_seconds": 1608.803,
+        "jsonl_sha256": "9226e3a5d90798995d5886b0fe1389a1afc11a01d123990e748600132f37c911"
       }
     },
     "pending_jobs": [
-      "final-short-runtime",
-      "runtime-additional",
       "runtime-race"
     ]
   },
