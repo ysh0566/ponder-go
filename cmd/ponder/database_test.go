@@ -58,6 +58,9 @@ func TestDeploymentCommands(t *testing.T) {
 		return s
 	}
 	oldWriter := writer(old, 11, model)
+	if err := oldWriter.EnableQueryNotifications(ctx); err != nil {
+		t.Fatal(err)
+	}
 	nextModel := schema.Schema{Tables: []schema.Table{{Name: "balance", Columns: []schema.Column{{Name: "id", Type: "text", Primary: true}, {Name: "value", Type: "int8", NotNull: true}}}, {Name: "new_only", Columns: []schema.Column{{Name: "id", Type: "text", Primary: true}}}}}
 	newWriter := writer(next, 22, nextModel)
 	publish := func(source, target string) error {

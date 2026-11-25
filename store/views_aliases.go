@@ -56,16 +56,7 @@ func (s *Store) createAliasViews(ctx context.Context, tx Transaction) error {
 		if e = s.aliasView(ctx, tx, "_ponder_checkpoint", "SELECT COALESCE(c.chain_name,p.chain_id::text) AS chain_name,p.chain_id::bigint AS chain_id,f.safe_checkpoint,p.checkpoint AS latest_checkpoint,f.checkpoint AS finalized_checkpoint FROM "+s.internal("_ponder_go_progress")+" p LEFT JOIN "+s.internal("_ponder_go_chains")+" c USING(chain_id) LEFT JOIN "+s.internal("_ponder_go_finalized")+" f USING(chain_id)"); e != nil {
 			return e
 		}
-		fn := s.aliasTable("live_query_notify")
-		if e = tx.Exec(ctx, "CREATE OR REPLACE FUNCTION "+fn+"() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN PERFORM pg_notify(TG_ARGV[0],json_build_array(TG_TABLE_NAME)::text); RETURN NULL; END $$"); e != nil {
-			return e
-		}
-		for _, table := range s.Schema.Tables {
-			if e = tx.Exec(ctx, "CREATE OR REPLACE TRIGGER "+schema.Quote(s.viewsSchema+"_live_query_notify")+" AFTER INSERT OR UPDATE OR DELETE ON "+s.table(table.Name)+" FOR EACH STATEMENT EXECUTE FUNCTION "+fn+"('"+s.viewsSchema+"_live_query')"); e != nil {
-				return e
-			}
-		}
-		return nil
+		return s.installQueryNotifications(ctx, tx, s.viewsSchema, s.aliasTable("live_query_notify"))
 	}
 	if e = s.aliasView(ctx, tx, "_ponder_meta", "SELECT key,value FROM "+s.internal("_ponder_go_app")); e != nil {
 		return e

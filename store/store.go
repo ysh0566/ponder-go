@@ -110,12 +110,8 @@ func newStore(ctx context.Context, backend Backend, model schema.Schema, namespa
 	if e = s.initializeInternal(ctx, tx); e != nil {
 		return nil, e
 	}
-	managed, e := tx.Query(ctx, "SELECT to_regclass($1)::text AS name", s.internal("_ponder_go_app"))
-	if e != nil {
+	if e = s.checkUnmanaged(ctx, tx); e != nil {
 		return nil, e
-	}
-	if len(managed.Rows) > 0 && managed.Rows[0]["name"] != nil {
-		return nil, fmt.Errorf("managed namespace requires the database lifecycle")
 	}
 	if e = s.createUserObjects(ctx, tx, true); e != nil {
 		return nil, e
@@ -135,11 +131,46 @@ func newStore(ctx context.Context, backend Backend, model schema.Schema, namespa
 	return s, nil
 }
 
+func (s *Store) checkUnmanaged(ctx context.Context, tx Transaction) error {
+	managed, e := tx.Query(ctx, "SELECT to_regclass($1)::text AS name", s.internal("_ponder_go_app"))
+	if e != nil {
+		return e
+	}
+	if len(managed.Rows) > 0 && managed.Rows[0]["name"] != nil {
+		return fmt.Errorf("managed namespace requires the database lifecycle")
+	}
+	return nil
+}
+
+func (s *Store) storageFingerprint() (string, error) {
+	encoded, err := json.Marshal(s.Schema)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s:%x:%s:staged=%t", storageVersion, sha256.Sum256(encoded), s.Ordering, s.staged), nil
+}
+
+func (s *Store) verifyStorageMarkers(ctx context.Context, tx Transaction, fingerprint string) error {
+	markers, err := tx.Query(ctx, "SELECT (SELECT value FROM "+s.internal("_ponder_go_meta")+" WHERE key='fingerprint') AS fingerprint, "+
+		"(SELECT value FROM "+s.syncTable("_ponder_go_meta")+" WHERE key='owner') AS owner")
+	if err != nil {
+		return err
+	}
+	if len(markers.Rows) != 1 || markers.Rows[0]["fingerprint"] != fingerprint {
+		return &MigrationError{Message: "schema, ordering, or storage format changed; rebuild into a new shadow schema"}
+	}
+	if markers.Rows[0]["owner"] != s.Namespace {
+		return &MigrationError{Message: "sync schema owner is missing or differs; rebuild into a new shadow schema"}
+	}
+	return nil
+}
+
 func (s *Store) initializeInternal(ctx context.Context, tx Transaction) error {
 	namespace := s.Namespace
-	encoded, _ := json.Marshal(s.Schema)
-	hash := sha256.Sum256(encoded)
-	fingerprint := fmt.Sprintf("%s:%x:%s:staged=%t", storageVersion, hash, s.Ordering, s.staged)
+	fingerprint, e := s.storageFingerprint()
+	if e != nil {
+		return e
+	}
 	// Both namespaces and their identifying rows are committed together on first open.
 	found, e := tx.Query(ctx, `SELECT n.nspname, c.relkind = 'r' AND c.relpersistence = 'p' AS has_meta
 		FROM pg_namespace n LEFT JOIN pg_class c ON c.relnamespace = n.oid AND c.relname = '_ponder_go_meta'
@@ -157,16 +188,8 @@ func (s *Store) initializeInternal(ctx context.Context, tx Transaction) error {
 		if len(found.Rows) != 2 {
 			return &MigrationError{Message: "incomplete storage namespace pair; rebuild into a new shadow schema"}
 		}
-		markers, err := tx.Query(ctx, "SELECT (SELECT value FROM "+s.internal("_ponder_go_meta")+" WHERE key='fingerprint') AS fingerprint, "+
-			"(SELECT value FROM "+s.syncTable("_ponder_go_meta")+" WHERE key='owner') AS owner")
-		if err != nil {
-			return err
-		}
-		if len(markers.Rows) != 1 || markers.Rows[0]["fingerprint"] != fingerprint {
-			return &MigrationError{Message: "schema, ordering, or storage format changed; rebuild into a new shadow schema"}
-		}
-		if markers.Rows[0]["owner"] != namespace {
-			return &MigrationError{Message: "sync schema owner is missing or differs; rebuild into a new shadow schema"}
+		if e = s.verifyStorageMarkers(ctx, tx, fingerprint); e != nil {
+			return e
 		}
 	}
 	if fresh {

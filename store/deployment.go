@@ -119,6 +119,48 @@ func readDeployment(ctx context.Context, backend Backend, tx Transaction, ns str
 	return s, nil
 }
 
+// OpenExisting opens the current atomic deployment without creating or changing
+// database objects. Closing its backend releases the shared deployment pin.
+func OpenExisting(ctx context.Context, backend Backend, model schema.Schema, namespace string, ordering schema.Ordering) (*Store, error) {
+	s, err := describeStore(backend, model, namespace, ordering, false)
+	if err != nil {
+		return nil, err
+	}
+	tx, err := backend.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(context.Background())
+	if err = tx.Exec(ctx, "SET TRANSACTION READ ONLY"); err != nil {
+		return nil, err
+	}
+	pg, postgres := backend.(*pgBackend)
+	if postgres {
+		if err = tx.Exec(ctx, "SELECT pg_advisory_xact_lock_shared(hashtextextended($1,0))", s.Namespace); err != nil {
+			return nil, err
+		}
+	}
+	fingerprint, err := s.storageFingerprint()
+	if err != nil {
+		return nil, err
+	}
+	if err = s.verifyStorageMarkers(ctx, tx, fingerprint); err != nil {
+		return nil, err
+	}
+	if err = s.checkUnmanaged(ctx, tx); err != nil {
+		return nil, err
+	}
+	if postgres {
+		if s.deploymentSession, err = pg.pinDeployment(ctx, s.Namespace); err != nil {
+			return nil, err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
 // PublishViews creates a published schema alongside a current native deployment.
 func PublishViews(ctx context.Context, backend Backend, namespace, views string) error {
 	if err := schema.ValidateNamespaces(namespace, views); err != nil {

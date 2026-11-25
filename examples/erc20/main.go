@@ -25,9 +25,9 @@ func main() {
 	}
 }
 func run(ctx context.Context) error {
-	url, rpcURL, address := os.Getenv("PONDER_LOCAL_DATABASE_URL"), os.Getenv("PONDER_LOCAL_RPC_URL"), os.Getenv("PONDER_LOCAL_CONTRACT")
-	if url == "" || rpcURL == "" || address == "" {
-		return fmt.Errorf("set explicit PONDER_LOCAL_DATABASE_URL, PONDER_LOCAL_RPC_URL and PONDER_LOCAL_CONTRACT for a task-owned local database and chain")
+	url := os.Getenv("PONDER_LOCAL_DATABASE_URL")
+	if url == "" {
+		return fmt.Errorf("set PONDER_LOCAL_DATABASE_URL")
 	}
 	backend, e := store.OpenPostgres(ctx, url)
 	if e != nil {
@@ -42,8 +42,28 @@ func run(ctx context.Context) error {
 	if e = json.Unmarshal(raw, &model); e != nil {
 		return e
 	}
-	s, e := store.New(ctx, backend, model, os.Getenv("PONDER_SHADOW_SCHEMA"), schema.Multichain)
+	namespace := os.Getenv("PONDER_SHADOW_SCHEMA")
+	if os.Getenv("PONDER_COMMAND") == "serve" {
+		s, err := store.OpenExisting(ctx, backend, model, namespace, schema.Multichain)
+		if err != nil {
+			return err
+		}
+		server, err := query.NewAtNamespace(ctx, s, s.Namespace)
+		if err != nil {
+			return err
+		}
+		defer server.Close()
+		return serve(ctx, nil, server)
+	}
+	rpcURL, address := os.Getenv("PONDER_LOCAL_RPC_URL"), os.Getenv("PONDER_LOCAL_CONTRACT")
+	if rpcURL == "" || address == "" {
+		return fmt.Errorf("set PONDER_LOCAL_RPC_URL and PONDER_LOCAL_CONTRACT to index events")
+	}
+	s, e := store.New(ctx, backend, model, namespace, schema.Multichain)
 	if e != nil {
+		return e
+	}
+	if e = s.EnableQueryNotifications(ctx); e != nil {
 		return e
 	}
 	abi := `[{"type":"event","name":"Transfer","inputs":[{"name":"from","type":"address","indexed":true},{"name":"to","type":"address","indexed":true},{"name":"value","type":"uint256","indexed":false}]}]`
@@ -74,15 +94,15 @@ func run(ctx context.Context) error {
 	if e != nil {
 		return e
 	}
-	server := query.New(s)
+	return serve(ctx, worker, query.New(s))
+}
+
+func serve(ctx context.Context, worker indexer.ApplicationIndexer, server *query.Server) error {
 	server.ChainNames[1] = "local"
-	if os.Getenv("PONDER_COMMAND") == "serve" {
-		worker = nil
-	}
 	app, err := indexer.LaunchApplication(ctx, worker, server, "127.0.0.1", 42069)
 	if err != nil {
 		return err
 	}
-	log.Printf("local example at http://%s; indexing schema %s", app.Addr(), s.Namespace)
+	log.Printf("local example at http://%s; indexing schema %s", app.Addr(), server.Store.Namespace)
 	return app.Wait()
 }
