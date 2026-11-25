@@ -22,6 +22,7 @@ var aggregate3ABI = func() ponderabi.ABI {
 
 type MulticallOptions struct {
 	BlockOptions
+	CCIPRead         CCIPReadOptions
 	MulticallAddress string
 	Account          string
 	StateOverride    StateOverride
@@ -78,7 +79,7 @@ func (c *Client) Multicall(ctx context.Context, contracts []ContractCall, option
 	if err != nil {
 		return nil, err
 	}
-	execution := aggregateExecution{address: address, account: options.Account, override: override}
+	execution := aggregateExecution{address: address, account: options.Account, override: override, ccip: &options.CCIPRead}
 	if !execution.custom() {
 		if err := c.recordContracts(contracts, options.BlockOptions, true); err != nil {
 			return nil, err
@@ -186,6 +187,7 @@ func (c *Client) Multicall(ctx context.Context, contracts []ContractCall, option
 }
 
 type aggregateExecution struct {
+	ccip     *CCIPReadOptions
 	address  string
 	account  string
 	override Object
@@ -355,7 +357,13 @@ func (c *Client) beginMulticallChunk(ctx context.Context, items []multicallItem,
 		}
 		return func() ([]multicallWireResult, error) {
 			if err := <-completion; err != nil {
-				return nil, err
+				if execution.ccip == nil {
+					return nil, err
+				}
+				raw, err = c.resolveCCIP(ctx, execution.address, err, *execution.ccip)
+				if err != nil {
+					return nil, err
+				}
 			}
 			hex, err := decodeHexResponse(raw)
 			if err != nil {

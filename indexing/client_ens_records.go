@@ -74,7 +74,8 @@ func (c *Client) resolveENSRecord(ctx context.Context, name string, textKey *str
 	if err != nil {
 		return nil, err
 	}
-	raw, err := c.rpcRequest(ctx, "eth_call", []any{Object{"to": resolver, "data": data}, tag}, cacheStateAt(tag))
+	tx := Object{"to": resolver, "data": data}
+	raw, err := c.readEVM(ctx, tx, []any{tx, tag}, cacheStateAt(tag), opt.CCIPRead)
 	if err != nil {
 		if !opt.Strict {
 			errorsABI, parseErr := ensReverseABI()

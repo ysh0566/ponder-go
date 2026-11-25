@@ -1762,7 +1762,7 @@
       "evidence": [
         "parity/runs/native-contract-simulation/RESULT.md"
       ],
-      "remaining": "Automatic EIP-3668 offchain reads remain open. The Go transaction type uses node-ready JSON-RPC fields."
+      "remaining": "The Go transaction type uses node-ready JSON-RPC fields."
     },
     {
       "id": "native-ens-address-and-text",
@@ -1780,7 +1780,7 @@
       "evidence": [
         "parity/runs/native-ens-records/RESULT.md"
       ],
-      "remaining": "Automatic EIP-3668 offchain lookup remains open."
+      "remaining": "External gateway behavior depends on the endpoint."
     },
     {
       "id": "native-ens-avatar",
@@ -1798,7 +1798,30 @@
       "evidence": [
         "parity/runs/native-ens-avatar/RESULT.md"
       ],
-      "remaining": "Automatic EIP-3668 lookup is separate. Hosted media is fetched when read. The default media client allows public destinations."
+      "remaining": "Hosted media is fetched when read. The default media client allows public destinations."
+    },
+    {
+      "id": "native-ccip-read",
+      "status": "verified_subset",
+      "implementation_files": [
+        "indexing/client_ccip.go",
+        "indexing/client_actions.go",
+        "indexing/client_simulation.go",
+        "indexing/client_multicall.go",
+        "indexing/client_ens_records.go",
+        "indexing/client_ens_resolver.go",
+        "indexing/gateway_http.go"
+      ],
+      "native_test_files": [
+        "indexing/client_ccip_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing/client.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-ccip-read/RESULT.md"
+      ],
+      "remaining": "The external gateway response depends on current HTTP availability and the verification callback runs at latest, following pinned viem. The Go client bounds nested requests and total response bytes."
     }
   ]
 }

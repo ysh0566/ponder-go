@@ -17,6 +17,7 @@ import (
 // BlockOverrides holds RPC-formatted block fields and applies to eth_call.
 type CallOptions struct {
 	BlockOptions
+	CCIPRead       CCIPReadOptions
 	StateOverride  StateOverride
 	BlockOverrides Object
 	Deployless     *DeploylessCall
@@ -126,9 +127,10 @@ func (c *Client) executionRequest(ctx context.Context, method string, transactio
 	}
 	// Explicit overrides have their own execution environment. A numeric
 	// height can also change meaning when the callback is replayed on a fork.
+	if method == "eth_call" {
+		return c.readEVM(ctx, transaction, params, override == nil && cacheStateAt(tag), opt.CCIPRead)
+	}
 	if override == nil && cacheStateAt(tag) {
-		// Cache this exact execution. An arbitrary contract may implement an
-		// aggregate3 selector without using Multicall3's member semantics.
 		return c.request(ctx, method, params)
 	}
 	return c.rpcRequest(ctx, method, params, false)

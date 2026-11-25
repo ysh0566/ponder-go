@@ -19,6 +19,7 @@ var findResolverABI = sync.OnceValues(func() (abi.ABI, error) { return abi.Parse
 // ENSResolverOptions selects the historical block and optional Universal Resolver.
 type ENSResolverOptions struct {
 	BlockOptions
+	CCIPRead                 CCIPReadOptions
 	UniversalResolverAddress string
 }
 
@@ -52,7 +53,8 @@ func (c *Client) GetEnsResolver(ctx context.Context, name string, options ...ENS
 	if err != nil {
 		return "", err
 	}
-	raw, err := c.rpcRequest(ctx, "eth_call", []any{Object{"to": resolver, "data": data}, tag}, cacheStateAt(tag))
+	tx := Object{"to": resolver, "data": data}
+	raw, err := c.readEVM(ctx, tx, []any{tx, tag}, cacheStateAt(tag), opt.CCIPRead)
 	if err != nil {
 		return "", err
 	}
