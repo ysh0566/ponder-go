@@ -10,15 +10,23 @@ import (
 	"net/http"
 	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/metrics"
+	"ponder.local/ponder-go/schema"
 	"ponder.local/ponder-go/sqlquery"
 	"ponder.local/ponder-go/store"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 )
 
 type Server struct {
+	validatorOnce  sync.Once
+	validator      *sqlquery.Validator
+	results        resultCache
+	queryNamespace string
+	published      *store.QueryChanges
+	subscription   *store.QueryNotifications
 	Store          *store.Store
 	Ready          atomic.Bool
 	Readiness      Readiness
@@ -33,6 +41,71 @@ type Server struct {
 
 func New(s *store.Store) *Server {
 	return &Server{Store: s, Metrics: metrics.New(), MaxLive: 1000, ChainNames: map[uint64]string{}}
+}
+
+// NewAtNamespace serves SQL from an explicitly selected published schema and
+// listens on its writer's live-query channel. Close it when serving ends.
+func NewAtNamespace(ctx context.Context, s *store.Store, namespace string) (*Server, error) {
+	if s == nil || !schema.Identifier(namespace) || len(namespace) > 63 {
+		return nil, fmt.Errorf("invalid SQL namespace %q", namespace)
+	}
+	server := New(s)
+	server.queryNamespace = namespace
+	if namespace != s.Namespace {
+		server.published = &store.QueryChanges{}
+	}
+	watch, err := server.StartQueryNotifications(ctx)
+	if err != nil {
+		return nil, err
+	}
+	server.subscription = watch
+	return server, nil
+}
+
+func (s *Server) changes() *store.QueryChanges {
+	if s.published != nil {
+		return s.published
+	}
+	return s.Store.QueryChanges()
+}
+
+// StartQueryNotifications subscribes to the writer's live-query channel.
+func (s *Server) StartQueryNotifications(ctx context.Context) (*store.QueryNotifications, error) {
+	if s.Store == nil {
+		return nil, fmt.Errorf("database unavailable")
+	}
+	namespace := s.queryNamespace
+	if namespace == "" {
+		namespace = s.Store.Namespace
+	}
+	return s.changes().Listen(ctx, s.Store.Backend, namespace, s.Store.Schema.Tables)
+}
+
+// Close releases the database listener opened by NewAtNamespace.
+func (s *Server) Close() error {
+	if s.subscription != nil {
+		return s.subscription.Close()
+	}
+	return nil
+}
+
+func (s *Server) queryResult(ctx context.Context, key string, q request, relations []string, ready bool) (*store.Result, error) {
+	namespace := s.queryNamespace
+	if namespace == "" {
+		namespace = s.Store.Namespace
+	}
+	load := func(read context.Context) (store.Result, error) {
+		return s.Store.QueryReadOnlyInNamespace(read, namespace, q.SQL, q.Params...)
+	}
+	if !ready {
+		result, err := load(ctx)
+		return &result, err
+	}
+	version, listening := s.changes().QueryVersion(relations)
+	// Completed table results need notifications from the actual query schema.
+	// Without that subscription overlapping readers still share one transaction.
+	retain := len(relations) == 0 || listening
+	return s.results.read(ctx, key, version, retain, load)
 }
 
 type request struct {
@@ -82,13 +155,15 @@ func decodeQuery(encoded string) (request, error) {
 	return q, nil
 }
 func (s *Server) validate(q request) ([]string, error) {
-	if e := sqlquery.Validate(q.SQL); e != nil {
+	s.validatorOnce.Do(func() { s.validator = sqlquery.NewValidator() })
+	if e := s.validator.Validate(q.SQL); e != nil {
 		return nil, e
 	}
-	relations, e := sqlquery.Relations(q.SQL)
+	set, e := s.validator.Relations(q.SQL)
 	if e != nil {
 		return nil, e
 	}
+	relations := set.Values()
 	ctes, e := sqlquery.CTEs(q.SQL)
 	if e != nil {
 		return nil, e
@@ -105,7 +180,7 @@ func (s *Server) validate(q request) ([]string, error) {
 	}
 	for _, r := range relations {
 		if !allowed[r] {
-			return nil, fmt.Errorf("unknown query relation %q", r)
+			return nil, fmt.Errorf("relation %q does not exist", r)
 		}
 	}
 	return s.Store.QueryDependencies(relations)
@@ -181,8 +256,9 @@ func (s *Server) serveRoute(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, status)
 		return
 	}
+	ready, readyErr := s.isReady(r.Context())
 	if r.URL.Path == "/sql/live" {
-		ready, err := s.isReady(r.Context())
+		err := readyErr
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -191,12 +267,23 @@ func (s *Server) serveRoute(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Live queries are not available until the backfill is complete", 503)
 			return
 		}
+		maxLive := s.MaxLive
+		if maxLive <= 0 {
+			maxLive = 1000
+		}
+		if s.live.Add(1) > maxLive {
+			s.live.Add(-1)
+			http.Error(w, "Maximum number of live queries reached", 503)
+			return
+		}
+		defer s.live.Add(-1)
 	}
 	if s.Store == nil {
 		http.Error(w, "Database unavailable", 503)
 		return
 	}
-	q, e := decodeQuery(r.URL.Query().Get("sql"))
+	queryKey := r.URL.Query().Get("sql")
+	q, e := decodeQuery(queryKey)
 	if e != nil {
 		status := 500
 		if r.URL.Query().Get("sql") == "" {
@@ -211,7 +298,7 @@ func (s *Server) serveRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.URL.Path == "/sql/db" {
-		result, e := s.Store.QueryReadOnly(r.Context(), q.SQL, q.Params...)
+		result, e := s.queryResult(r.Context(), queryKey, q, relations, ready && readyErr == nil)
 		if e != nil {
 			http.Error(w, e.Error(), 500)
 			return
@@ -219,32 +306,26 @@ func (s *Server) serveRoute(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, result)
 		return
 	}
-	s.stream(w, r, q, relations)
+	s.stream(w, r, queryKey, q, relations)
 }
 func rowHash(result store.Result) string {
 	raw, _ := json.Marshal(result.Rows)
 	sum := md5.Sum(raw)
 	return hex.EncodeToString(sum[:])[:10]
 }
-func (s *Server) stream(w http.ResponseWriter, r *http.Request, q request, relations []string) {
-	maxLive := s.MaxLive
-	if maxLive <= 0 {
-		maxLive = 1000
+func (s *Server) stream(w http.ResponseWriter, r *http.Request, queryKey string, q request, relations []string) {
+	var stopped <-chan struct{}
+	if s.subscription != nil {
+		stopped = s.subscription.Done()
 	}
-	if s.live.Add(1) > maxLive {
-		s.live.Add(-1)
-		http.Error(w, "Maximum number of live queries reached", 503)
-		return
-	}
-	defer s.live.Add(-1)
-	changes, unsubscribe := s.Store.Subscribe()
+	changes, unsubscribe := s.changes().Subscribe()
 	defer unsubscribe()
-	initial, e := s.Store.QueryReadOnly(r.Context(), q.SQL, q.Params...)
+	initial, e := s.queryResult(r.Context(), queryKey, q, relations, true)
 	if e != nil {
 		http.Error(w, e.Error(), 500)
 		return
 	}
-	last := rowHash(initial)
+	last := rowHash(*initial)
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		http.Error(w, "Streaming unsupported", 500)
@@ -265,6 +346,8 @@ func (s *Server) stream(w http.ResponseWriter, r *http.Request, q request, relat
 	defer heartbeat.Stop()
 	for {
 		select {
+		case <-stopped:
+			return
 		case <-r.Context().Done():
 			return
 		case <-heartbeat.C:
@@ -280,11 +363,11 @@ func (s *Server) stream(w http.ResponseWriter, r *http.Request, q request, relat
 			if !related {
 				continue
 			}
-			result, e := s.Store.QueryReadOnly(r.Context(), q.SQL, q.Params...)
+			result, e := s.queryResult(r.Context(), queryKey, q, relations, true)
 			if e != nil {
 				return
 			}
-			hash := rowHash(result)
+			hash := rowHash(*result)
 			if hash == last {
 				continue
 			}

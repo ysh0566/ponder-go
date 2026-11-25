@@ -30,8 +30,7 @@ type Store struct {
 	Schema                   schema.Schema
 	Ordering                 schema.Ordering
 	mu                       sync.Mutex
-	subMu                    sync.Mutex
-	subscribers              map[chan Change]struct{}
+	changes                  QueryChanges
 }
 type Change struct{ Tables []string }
 type Event struct {
@@ -88,7 +87,7 @@ func describeStore(backend Backend, model schema.Schema, namespace string, order
 	if !schema.Identifier(namespace) || len(namespace) > 45 || !strings.HasPrefix(namespace, "ponder_go_") {
 		return nil, fmt.Errorf("task schemas must start with ponder_go_ and contain at most 45 identifier characters")
 	}
-	return &Store{Backend: backend, Namespace: namespace, SyncNamespace: namespace + "_sync", Schema: model, Ordering: ordering, subscribers: map[chan Change]struct{}{}, profileState: NewCacheProfile(), staged: staged}, nil
+	return &Store{Backend: backend, Namespace: namespace, SyncNamespace: namespace + "_sync", Schema: model, Ordering: ordering, profileState: NewCacheProfile(), staged: staged}, nil
 }
 
 func newStore(ctx context.Context, backend Backend, model schema.Schema, namespace string, ordering schema.Ordering, staged bool) (*Store, error) {
@@ -567,43 +566,6 @@ func (s *Store) Progress(ctx context.Context) (map[string]string, error) {
 	}
 	return m, nil
 }
-func (s *Store) Subscribe() (chan Change, func()) {
-	ch := make(chan Change, 1)
-	s.subMu.Lock()
-	s.subscribers[ch] = struct{}{}
-	s.subMu.Unlock()
-	return ch, func() { s.subMu.Lock(); delete(s.subscribers, ch); s.subMu.Unlock() }
-}
-func (s *Store) notify(tables []string) {
-	if len(tables) == 0 {
-		return
-	}
-	s.subMu.Lock()
-	defer s.subMu.Unlock()
-	for ch := range s.subscribers {
-		select {
-		case ch <- Change{tables}:
-		default:
-			var old Change
-			select {
-			case old = <-ch:
-			default:
-			}
-			merged := map[string]bool{}
-			for _, name := range old.Tables {
-				merged[name] = true
-			}
-			for _, name := range tables {
-				merged[name] = true
-			}
-			all := []string{}
-			for name := range merged {
-				all = append(all, name)
-			}
-			select {
-			case ch <- Change{all}:
-			default:
-			}
-		}
-	}
-}
+func (s *Store) Subscribe() (chan Change, func()) { return s.changes.Subscribe() }
+func (s *Store) notify(tables []string)           { s.changes.notify(tables) }
+func (s *Store) QueryChanges() *QueryChanges      { return &s.changes }
