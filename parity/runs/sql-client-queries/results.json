@@ -1,0 +1,175 @@
+{
+  "code_commit": "c0f76995cc63f5c574c3f49d9247260d5d3c451f",
+  "upstream_commit": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "sources": {
+    "packages/core/src/client/index.test.ts": "f239a4153fc95212ab9f4b73ad51221c8b5158d8451a9c5dd6037e6f0d150476"
+  },
+  "original": {
+    "postgres": {
+      "passed": 8,
+      "vitest_json_sha256": "35685d1b65e8c8d99df0dd9e13fbf11a016b2eac7daa572bf662a96e5c8ac40e"
+    },
+    "pglite": {
+      "passed": 8,
+      "vitest_json_sha256": "66fa22ea4a79660353d52ef66aab73e29904f759dc3915d76e35896f55607c7c"
+    }
+  },
+  "go": {
+    "normal": {
+      "ponder.local/ponder-go/query": {
+        "passed_leaves": 62,
+        "go_test_json_sha256": "68e62a70dcb5c5fde3a9278f4c564cc05c60a2c221b2dd3787539d78e7b900dd"
+      },
+      "ponder.local/ponder-go/store": {
+        "passed_leaves": 28,
+        "go_test_json_sha256": "b7d16a137fa391763d2b47de1d0f0d170aa0bc598a40b449b62b20ce1d5656e6"
+      }
+    },
+    "race": {
+      "ponder.local/ponder-go/query": {
+        "passed_leaves": 62,
+        "go_test_json_sha256": "d01554e9cd3c65a05f288b79c11a368a8489038b0a2432b2831749d14cdf28af"
+      },
+      "ponder.local/ponder-go/store": {
+        "passed_leaves": 28,
+        "go_test_json_sha256": "024deef9377ccdab18043ef1037dcc8d8cbed75463a096554beda6ae3207ea80"
+      }
+    }
+  },
+  "maps": [
+    {
+      "source_id": "93d8b0104442452b010e",
+      "file": "packages/core/src/client/index.test.ts",
+      "case": "client.db",
+      "native_test": "TestSourceSQLClient/postgres/client.db",
+      "assertions_sha256": "61de94a7d69443174487d992ed28c9f700905789dd713224ef8bf4269b2a22af"
+    },
+    {
+      "source_id": "08f857d1bf9793ac470f",
+      "file": "packages/core/src/client/index.test.ts",
+      "case": "client.db error",
+      "native_test": "TestSourceSQLClient/postgres/client.db_error",
+      "assertions_sha256": "699c9035d3fa0721be9541014894451fa2332b67d5dd45c9284176afb598e48d"
+    },
+    {
+      "source_id": "c2b71e8edf1a23d61107",
+      "file": "packages/core/src/client/index.test.ts",
+      "case": "client.db search_path",
+      "native_test": "TestSourceSQLClient/postgres/client.db_search_path",
+      "assertions_sha256": "351a1b7a91c22873e8744d7351f462bbaf3ab00dc3b41792efc36d57ae111d90"
+    },
+    {
+      "source_id": "b0a4ec5dbce92cafeeeb",
+      "file": "packages/core/src/client/index.test.ts",
+      "case": "client.db readonly",
+      "native_test": "TestSourceSQLClient/postgres/client.db_readonly",
+      "assertions_sha256": "f2e58ffebd3767f0c889da78d20e16b5eadd26700b15534137e4eaa532555383"
+    },
+    {
+      "source_id": "1e6c8f549c4882706e13",
+      "file": "packages/core/src/client/index.test.ts",
+      "case": "client.db recursive",
+      "native_test": "TestSourceSQLClient/postgres/client.db_recursive",
+      "assertions_sha256": "080fe3bf88f1226ad9c42f3f2b9d54008c9481e93f1321bd6f489a786fb85432"
+    },
+    {
+      "source_id": "1bc032a39182c6ef0115",
+      "file": "packages/core/src/client/index.test.ts",
+      "case": "client.db load",
+      "native_test": "TestSourceSQLClient/postgres/client.db_load",
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_id": "29d62272803c772603c6",
+      "file": "packages/core/src/client/index.test.ts",
+      "case": "client.db cache",
+      "native_test": "TestSourceSQLClient/postgres/client.db_cache",
+      "assertions_sha256": "0a0a5d4e5aefb54e871412890298deee764ebffefbc80c559a80dc51386d0b30"
+    },
+    {
+      "source_id": "023a03bd3a95ba1eb501",
+      "file": "packages/core/src/client/index.test.ts",
+      "case": "client.live releases quota when request fails before streaming",
+      "native_test": "TestSourceSQLClient/postgres/client.live_releases_quota_when_request_fails_before_streaming",
+      "assertions_sha256": "1da729232f79773af13cd1b0a98d66fccde2e0458d490890dda07b14ca3f3acf"
+    }
+  ],
+  "ledger": {
+    "ported": 702,
+    "go_ports": 698,
+    "retained_sdk": 4,
+    "unimplemented": 198,
+    "out_of_scope": 5
+  },
+  "independent_inventory_fields": [
+    "id",
+    "source_file",
+    "source_sha256",
+    "source_state",
+    "full_name",
+    "assertions",
+    "inputs",
+    "port_status",
+    "mapping",
+    "scope_reason"
+  ],
+  "module": {
+    "build": "passed",
+    "vet": "passed"
+  },
+  "commands": {
+    "original": "vitest run --configLoader native --maxWorkers=1 src/client/index.test.ts",
+    "query": "go test -count=1 [-race] ./query",
+    "store": "go test -count=1 [-race] -run \"^(Test.*LiveQuery.*|Test.*Notification.*|TestSQL.*|TestReadOnly.*|Test.*View.*)$\" ./store",
+    "repeat_cache": "go test -race -count=25 -run \"^TestSQLCache\" ./query",
+    "upstream_dense_control": "vitest run --configLoader native --maxWorkers=1 --testTimeout=120000 src/client/dense-control.test.ts"
+  },
+  "controls": {
+    "upstream_dense_source_sha256": "80ac0db4ac96a886a41ba46303b12d7006772ed4874ff482cd223cc0f148127f",
+    "upstream_dense": {
+      "postgres": {
+        "queries_checked": 250,
+        "vitest_json_sha256": "426e28028614bcf3056212fc26a78ba96897f79da536a1407d5730a5af60e4b1"
+      },
+      "pglite": {
+        "queries_checked": 250,
+        "vitest_json_sha256": "11b796541995bdd8342867fc19308496bd76a1d5a091687234a4b7776cd3f2f3"
+      }
+    },
+    "go_dense_queries_per_backend_mode": 250,
+    "go_dense_parallelism": 12,
+    "race_repeats": {
+      "TestSQLCacheCancellation": 25,
+      "TestSQLCacheRetriedAfterLastReaderLeaves": 25,
+      "TestSQLCacheBoundedAndErrorsAreRetryable": 25
+    }
+  },
+  "full_original_inventory": "../public-provider-archives/upstream.json",
+  "source_conditions": {
+    "client.db cache": "PostgreSQL spy executes on PostgreSQL. Vitest reports an early return as passed on PGlite.",
+    "client.db load": "Mapping over new Array(250) starts zero requests. Additional dense tests check 250 actual SQL queries per backend."
+  },
+  "sdk_launches": {
+    "passed": 12,
+    "source_sha256": "fa1dd6979d4db32182e9bc6fdd98408e49ce15c791316570ac0c2c560ff08f49",
+    "launch_manifests_sha256": [
+      "7a5432e61ffa45b893c2cad7007c28d2d988dc668975dccc435ca356f0b8d8fa",
+      "8a3f92ab82de33db1b123dcc0a075ef2506df7465aab9636cb9693aa9c188e4b",
+      "1e42db7581383d76b78a02e77a3cda9c1ccdd83dada0066ab6ed86dd8e51c67b",
+      "1f1054cf6db81a98829b22efb96c08efbdbc3460c6c08f52a796c763166ca344",
+      "c6af772d245c6fb511bf5e864b13d7d65bf8bc19510278385919ae4ef4c77c6b",
+      "1ed4e7d76ef60e045525496c0337db3b0e7d2d48820ff7a7b99f16418a3fb433",
+      "b02611357e6e0a346f2c4efc2edd7fb3325ecfecaef3d7b7536dd167444c3898",
+      "3495051e692d0d346f66df7512fb52f2d2527354a0dcbca0899c2030c59e28d9",
+      "f1d1b08d7cc7622522c905993f7640b9336e6152a46a9012946836de1835cd42",
+      "4865fac2bb8232f4650be4f415bd51cf3e8d021af183df94ac6d174cd0e8e711",
+      "1636f65ee1fb96fdf061d4e65638309e20343f47e94d11df4f00fff9e04d3743",
+      "89a68e676255dca4820da4414405b4bdc25b9f9a6342777d123090b9188fb0a0"
+    ]
+  },
+  "cleanup": {
+    "stage_directories_removed": 15,
+    "allocated_bytes_in_removed_directories": 1036742656,
+    "accounting": "Allocated bytes before removal; packages can share hard links with the store."
+  }
+}
