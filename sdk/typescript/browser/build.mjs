@@ -43,6 +43,7 @@ try {
         lib: { entry: path.join(core, "src/index.ts"), name: "ponder", formats: ["es"], fileName: () => "index.js" },
         outDir: path.join(sdk, "dist"),
         emptyOutDir: true,
+        license: { fileName: "THIRD-PARTY-LICENSES.md" },
         minify: false,
         reportCompressedSize: false,
         rollupOptions: { external: Object.keys(dependencies).filter(name => !["@ponder/client", "@ponder/utils"].includes(name)) },

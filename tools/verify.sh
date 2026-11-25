@@ -99,6 +99,7 @@ run_check parameter-types node tools/parameters-typecheck.mjs
 run_check sdk-bootstrap node tools/sdk-bootstrap.mjs
 run_check browser-original env CI=1 node sdk/typescript/browser/build.mjs --test "$PWD/parity/browser-original.json"
 run_check client-original sh -c 'cd sdk/typescript/client && CI=1 ./node_modules/.bin/vitest run --configLoader native --reporter=json --outputFile="$PWD/../../../parity/client-original.json"'
+run_check sdk-client-build sh -c 'cd sdk/typescript/client && ./node_modules/.bin/tsup'
 run_check react-types sh -c 'cd sdk/typescript/react && CI=1 ./node_modules/.bin/vitest run --typecheck.only --configLoader native --reporter=json --outputFile="$PWD/../../../parity/react-original-typecheck-supported.json"'
 run_check differential node tools/differential.mjs
 if [ "$normal_status" -eq 0 ]; then
