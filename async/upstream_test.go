@@ -48,7 +48,7 @@ func makeQueue[T, R any](t *testing.T, l *async.Loop, c, f int, started bool, wo
 
 func delay[T any](l *async.Loop, d time.Duration, value T, err error) *async.Future[T] {
 	r := async.NewPromise[T](l)
-	time.AfterFunc(d, func() {
+	l.AfterFunc(d, func() {
 		if err != nil {
 			r.Reject(err)
 		} else {

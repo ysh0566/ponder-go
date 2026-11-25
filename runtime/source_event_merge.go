@@ -9,6 +9,7 @@ import (
 
 	"ponder.local/ponder-go/checkpoint"
 	protocol "ponder.local/ponder-go/events"
+	"ponder.local/ponder-go/internal/ordered"
 )
 
 // SourceEventBatch is an owned batch of decoded public events. Merge replaces
@@ -131,38 +132,10 @@ func sourceEventChainID(event protocol.Object) (uint64, error) {
 // sourcePartitionEvents mirrors the source binary partition, including its
 // sorted-input contract. Do not sort input or silently filter nonmonotone data.
 func sourcePartitionEvents(events []protocol.Object, supremum string) ([]protocol.Object, []protocol.Object, error) {
-	empty := []protocol.Object{}
-	if len(events) == 0 {
-		return empty, empty, nil
-	}
-	first, err := sourceEventCheckpoint(events[0])
-	if err != nil {
-		return nil, nil, err
-	}
-	if first > supremum {
-		return empty, events, nil
-	}
-	last, err := sourceEventCheckpoint(events[len(events)-1])
-	if err != nil {
-		return nil, nil, err
-	}
-	if last <= supremum {
-		return events, empty, nil
-	}
-	low, high := 0, len(events)
-	for low < high {
-		middle := (low + high) / 2
-		cursor, err := sourceEventCheckpoint(events[middle])
-		if err != nil {
-			return nil, nil, err
-		}
-		if cursor <= supremum {
-			low = middle + 1
-		} else {
-			high = middle
-		}
-	}
-	return append([]protocol.Object{}, events[:low]...), append([]protocol.Object{}, events[low:]...), nil
+	return ordered.Partition(events, func(event protocol.Object) (bool, error) {
+		cursor, err := sourceEventCheckpoint(event)
+		return cursor <= supremum, err
+	})
 }
 
 // MergeSourceEventsWithEventOrder ports mergeAsyncGeneratorsWithEventOrder.

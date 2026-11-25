@@ -60,7 +60,7 @@ type Queue[T, R any] struct {
 	pending, requests    int
 	second               int64
 	started, dispatching bool
-	timer                *time.Timer
+	timer                *Timer
 	empty, idle          *Resolvers[struct{}]
 }
 
@@ -202,18 +202,16 @@ func (q *Queue[T, R]) drain() {
 			// Match a fixed wall-clock second. A cleared timer may have already
 			// posted its callback; it must not release a replacement timer.
 			if !math.IsNaN(q.options.Frequency.value) {
-				var timer *time.Timer
-				timer = time.AfterFunc(now.Truncate(time.Second).Add(time.Second).Sub(now), func() {
-					q.loop.post(turn, func() {
-						q.mu.Lock()
-						if q.timer != timer {
-							q.mu.Unlock()
-							return
-						}
-						q.timer = nil
+				var timer *Timer
+				timer = q.loop.AfterFunc(now.Truncate(time.Second).Add(time.Second).Sub(now), func() {
+					q.mu.Lock()
+					if q.timer != timer {
 						q.mu.Unlock()
-						q.drain()
-					})
+						return
+					}
+					q.timer = nil
+					q.mu.Unlock()
+					q.drain()
 				})
 				q.timer = timer
 			}
