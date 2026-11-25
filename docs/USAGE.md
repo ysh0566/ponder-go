@@ -537,6 +537,12 @@ PONDER_LOCAL_DATABASE_URL="$WRITER_URL" PONDER_DATABASE_MODE=existing \
 
 测试使用独立登录账号和真实 Anvil 交易，覆盖 ERC-20 回调、重启后的重组、跨链回放标记、发布切换和定向清理。使用独立业务库与同步库的 `historical.RuntimeRunner` 有自己的对象与启动流程。[受限账号验证](../parity/runs/native-deployment-roles/RESULT.md)
 
+## 独立业务库与同步库的中断恢复
+
+使用 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 的默认多链持续索引器发生中断时，保留原业务库、同步库和 `BuildID`。PostgreSQL 恢复原数据库实例后使用原命名空间，PGlite 重新打开原来的两个目录。为新运行实例设置新的 `OpenID`，调用 `Run`，并用 `Ready` 检查是否已完成重放。业务库已经提交重组回滚、而同步库尚未确认时，运行器会核对并完成这次操作。[恢复测试](../parity/runs/native-coordinated-engine-recovery/RESULT.md)
+
+尚未最终确认的区块可能再次触发回调。需要随重组撤销的业务状态应通过回调的数据库事务写入。重复投递到外部系统的处理由应用负责。
+
 ## 常见问题
 
 | 现象 | 检查方法 |

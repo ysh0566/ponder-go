@@ -20,8 +20,8 @@ import (
 )
 
 type continuousCrashSpec struct {
-	RPC, Phase, Marker string
-	Storage            store.IndependentStorageOptions
+	Backend, RPC, Phase, Marker string
+	Storage                     store.IndependentStorageOptions
 }
 
 func continuousCrashChild(t *testing.T, path string) {
@@ -48,62 +48,72 @@ func continuousCrashChild(t *testing.T, path string) {
 		if ready, err := r.Ready(ctx); err != nil || ready {
 			os.Exit(86)
 		}
-		marker, _ := json.Marshal(map[string]any{"phase": e.Phase, "operation": e.OperationID, "pid": os.Getpid(), "exit": 83, "postgres_engine_stays_running": true})
+		marker, _ := json.Marshal(map[string]any{"phase": e.Phase, "operation": e.OperationID, "pid": os.Getpid(), "exit": 83, "postgres_engine_stays_running": spec.Backend == "postgres"})
 		if err := os.WriteFile(spec.Marker, marker, 0600); err != nil {
 			os.Exit(87)
 		}
 		os.Exit(83)
 		return nil
 	}, OnProgress: func(ctx context.Context, e RuntimeLiveProgress) error {
-		if e.Type != "block" || forked {
-			return nil
-		}
-		c, err := r.Control(ctx)
-		if err != nil {
-			return err
-		}
-		both := true
-		for _, h := range c.Cursors {
-			cp, _ := checkpoint.Decode(h.Checkpoint)
-			both = both && cp.BlockNumber >= 3
-		}
-		if both {
-			forked = true
-			var yes bool
-			client := rpc.New(spec.RPC + "/1")
-			client.Retries = 0
-			client.RequestsPerSecond = 0
-			return client.Call(ctx, "ponder_test_fork", []any{}, &yes)
-		}
-		return nil
+		return forkDuringCrashTest(ctx, r, e, &forked, spec.RPC)
 	}}}
-	r, err = OpenRuntimePostgres(context.Background(), o)
-	if err != nil {
-		t.Fatal(err)
-	}
+	r = runtimeOpen(t, spec.Backend, o)
 	_, err = r.Run(context.Background())
 	t.Fatalf("child did not abruptly exit at durable %s: %v", spec.Phase, err)
 }
 
-// OS.Exit bypasses runtime/owner defers. PostgreSQL itself is never stopped or
-// killed: these are application-process crash boundaries, not engine crashes.
+// Trigger a two-chain reorg after both original branches have durable callbacks.
+func forkDuringCrashTest(ctx context.Context, r *RuntimeRunner, e RuntimeLiveProgress, forked *bool, endpoint string) error {
+	if e.Type != "block" || *forked {
+		return nil
+	}
+	c, err := r.Control(ctx)
+	if err != nil {
+		return err
+	}
+	both := len(c.Cursors) == 2
+	for _, h := range c.Cursors {
+		cp, err := checkpoint.Decode(h.Checkpoint)
+		if err != nil {
+			return err
+		}
+		both = both && cp.BlockNumber >= 3
+	}
+	if both {
+		*forked = true
+		var yes bool
+		client := rpc.New(endpoint + "/1")
+		client.Retries = 0
+		client.RequestsPerSecond = 0
+		return client.Call(ctx, "ponder_test_fork", []any{}, &yes)
+	}
+	return nil
+}
+
+// OS.Exit bypasses the Go application’s runtime and storage cleanup.
 func TestRuntimeContinuousCrash(t *testing.T) {
 	if path := os.Getenv("PONDER_M45_CONTINUOUS_CRASH_SPEC"); path != "" {
 		continuousCrashChild(t, path)
 		return
 	}
+	for _, backend := range []string{"postgres", "pglite"} {
+		testRuntimeContinuousAppExit(t, backend)
+	}
+}
+
+func testRuntimeContinuousAppExit(t *testing.T, backend string) {
 	for _, phase := range []string{"prepare", "business", "ack"} {
-		t.Run("postgres/"+phase, func(t *testing.T) {
+		t.Run(backend+"/"+phase, func(t *testing.T) {
 			continuousRoot(t)
 			s := newContinuousRPC(t, 3)
 			b := runtimeBuild(t, s.p, 4, 1, indexing.Handler(finiteIncrement))
 			for _, c := range b.Executable().Chains {
 				c["reorgWindow"] = uint64(600)
 			}
-			f := newManagedFiniteFixture(t, "postgres", b)
+			f := newManagedFiniteFixture(t, backend, b)
 			dir := newRuntimeExitDirectory(t, "runtime-app-crash-"+phase+"-")
 			marker := filepath.Join(dir, "exit-marker.json")
-			spec := continuousCrashSpec{RPC: s.p.server.URL, Phase: phase, Marker: marker, Storage: f.options.Owned.Storage}
+			spec := continuousCrashSpec{Backend: backend, RPC: s.p.server.URL, Phase: phase, Marker: marker, Storage: f.options.Owned.Storage}
 			raw, err := json.Marshal(spec)
 			if err != nil {
 				t.Fatal(err)
@@ -116,7 +126,7 @@ func TestRuntimeContinuousCrash(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+			ctx, cancel := context.WithTimeout(t.Context(), 10*time.Minute)
 			defer cancel()
 			command := exec.CommandContext(ctx, executable, "-test.run=^TestRuntimeContinuousCrash$", "-test.v")
 			command.Env = append(os.Environ(), "PONDER_M45_CONTINUOUS_CRASH_SPEC="+path)
@@ -141,7 +151,7 @@ func TestRuntimeContinuousCrash(t *testing.T) {
 			}
 			epochs := []uint64{}
 			o := RuntimeOptions{Historical: runtimeFixtureInput(f), BuildID: "continuous-crash-v1", OpenID: "crash-parent-2", Requesters: runtimeFactory(s.p, &epochs), Live: &RuntimeLiveOptions{PollingInterval: time.Millisecond}}
-			r := runtimeOpen(t, "postgres", o)
+			r := runtimeOpen(t, backend, o)
 			c, err := r.Control(context.Background())
 			if err != nil || c.Recoveries != 1 || c.Serving || len(c.ReplayTargets) == 0 {
 				t.Fatalf("actual abrupt-exit recovery=%+v err=%v", c, err)
