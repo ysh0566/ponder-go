@@ -104,3 +104,21 @@ func TestCodegenApplicationBindings(t *testing.T) {
 		t.Fatal("accepted a dynamic contract without an application")
 	}
 }
+
+func TestCodegenApplicationEventTypes(t *testing.T) {
+	dir := t.TempDir()
+	file, out := filepath.Join(dir, "app.json"), filepath.Join(dir, "bindings.go")
+	if err := os.WriteFile(file, []byte(`{"blocks":{"blocks":{"chain":"mainnet"}}}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := run(t.Context(), []string{"codegen", "--app-config", file, "--event-types", "--package", "bindings", "--out", out}, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(out)
+	if err != nil || !bytes.Contains(data, []byte("type EventBlocksBlock struct")) || !bytes.Contains(data, []byte("func (n NameBlocksBlock) On(")) {
+		t.Fatal(string(data), err)
+	}
+	if err := run(t.Context(), []string{"codegen", "--event-types"}, io.Discard); err == nil {
+		t.Fatal("missing application accepted")
+	}
+}

@@ -41,6 +41,7 @@ func (a ABI) FindFunctionSafe(name string) (Function, bool) {
 }
 
 type catalogEntry struct {
+	index         int
 	name, compact string
 	definition    string
 	parameters    []string
@@ -98,35 +99,56 @@ func generateCatalog(packageName string, data []byte, eventEntries []Event, func
 
 func catalogFamilies(eventEntries []Event, functionEntries []Function) ([]catalogEntry, []catalogEntry) {
 	events := make([]catalogEntry, 0, len(eventEntries))
-	for _, item := range eventEntries {
-		events = append(events, catalogEntry{name: item.Name, compact: overloadedEventName(item), definition: fmt.Sprintf("%#v", item), parameters: item.FactoryParameterPaths()})
+	for i, item := range eventEntries {
+		events = append(events, catalogEntry{index: i, name: item.Name, compact: overloadedEventName(item), definition: fmt.Sprintf("%#v", item), parameters: item.FactoryParameterPaths()})
 	}
 	functions := make([]catalogEntry, 0, len(functionEntries))
-	for _, item := range functionEntries {
-		functions = append(functions, catalogEntry{name: item.Name, compact: item.SafeName(true), definition: fmt.Sprintf("%#v", item)})
+	for i, item := range functionEntries {
+		functions = append(functions, catalogEntry{index: i, name: item.Name, compact: item.SafeName(true), definition: fmt.Sprintf("%#v", item)})
 	}
 	return events, functions
 }
 
-// DeclarationNames returns the compact names exposed by a concrete ABI's type union.
-func (a ABI) DeclarationNames() (events, functions []string, err error) {
-	eventEntries, functionEntries := catalogFamilies(a.eventEntries, a.functionEntries)
-	names := func(kind string, entries []catalogEntry) ([]string, error) {
-		entries, err := distinctCatalogEntries(kind, entries)
-		if err != nil {
-			return nil, err
-		}
-		var result []string
-		for _, e := range entries {
-			result = append(result, e.compact)
-		}
-		return result, nil
-	}
-	events, err = names("Event", eventEntries)
+// NamedItem associates a source-level compact name with its ABI declaration.
+type NamedItem[T Event | Function] struct {
+	Name string
+	Item T
+}
+
+// DeclarationItems returns distinct declarations in their original order.
+func (a ABI) DeclarationItems() ([]NamedItem[Event], []NamedItem[Function], error) {
+	events, functions := catalogFamilies(a.eventEntries, a.functionEntries)
+	events, err := distinctCatalogEntries("Event", events)
 	if err != nil {
 		return nil, nil, err
 	}
-	functions, err = names("Function", functionEntries)
+	functions, err = distinctCatalogEntries("Function", functions)
+	if err != nil {
+		return nil, nil, err
+	}
+	return namedItems(events, a.eventEntries), namedItems(functions, a.functionEntries), nil
+}
+
+func namedItems[T Event | Function](entries []catalogEntry, items []T) []NamedItem[T] {
+	var result []NamedItem[T]
+	for _, entry := range entries {
+		result = append(result, NamedItem[T]{entry.compact, items[entry.index]})
+	}
+	return result
+}
+
+// DeclarationNames returns the compact names exposed by a concrete ABI's type union.
+func (a ABI) DeclarationNames() (events, functions []string, err error) {
+	es, fs, err := a.DeclarationItems()
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, e := range es {
+		events = append(events, e.Name)
+	}
+	for _, f := range fs {
+		functions = append(functions, f.Name)
+	}
 	return
 }
 

@@ -135,6 +135,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		typed := flags.Bool("typed", false, "Generate typed native ORM model/key/insert/update APIs")
 		catalog := flags.String("abi", "", "Contract ABI JSON for typed event and function names")
 		application := flags.String("app-config", "", "Source configuration JSON for callback names and chains")
+		eventTypes := flags.Bool("event-types", false, "Include typed callback events with --app-config")
 		var dynamicABIs []string
 		flags.Func("dynamic-abi", "Contract with a runtime ABI (repeatable with --app-config)", func(name string) error { dynamicABIs = append(dynamicABIs, name); return nil })
 		var mergeFiles []string
@@ -166,11 +167,18 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 			if err != nil {
 				return err
 			}
-			src, err := config.GenerateApplicationBindings(*packageName, cfg, dynamicABIs...)
+			generator := config.GenerateApplicationBindings
+			if *eventTypes {
+				generator = config.GenerateApplicationEventBindings
+			}
+			src, err := generator(*packageName, cfg, dynamicABIs...)
 			if err != nil {
 				return err
 			}
 			return os.WriteFile(*output, src, 0644)
+		}
+		if *eventTypes {
+			return fmt.Errorf("--event-types requires --app-config")
 		}
 		if len(dynamicABIs) > 0 {
 			return fmt.Errorf("--dynamic-abi requires --app-config")
