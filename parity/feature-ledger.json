@@ -434,18 +434,25 @@
     },
     {
       "id": "ordering-isolated",
-      "status": "storage_verified_runtime_pending",
+      "status": "verified_native_scheduler",
       "implementation_files": [
         "schema/schema.go",
-        "store/reorg.go"
+        "store/reorg.go",
+        "runtime/indexer.go",
+        "runtime/engine.go"
       ],
       "upstream_sources": [
-        "packages/core/src/database/actions.ts"
+        "packages/core/src/database/actions.ts",
+        "packages/core/src/bin/isolatedController.ts"
       ],
       "evidence": [
-        "parity/runs/batch-11.json"
+        "parity/runs/batch-11.json",
+        "parity/runs/native-chain-scheduling/RESULT.md"
       ],
-      "remaining": "Chain-key validation and isolated rollback verified; parallel isolated scheduling and full source tests remain. Staged CommitBlock chain filtering, unchanged MAX on other-chain commit, and rollback with another chain pending verified; full partitioned parallel scheduler remains."
+      "remaining": "Native isolated chain scheduling, readiness, scoped reorg, finalized bounded completion and restart are exercised. Additional source and failure combinations need broader coverage.",
+      "native_test_files": [
+        "runtime/isolated_indexer_test.go"
+      ]
     },
     {
       "id": "postgres-crud-upsert",
@@ -1465,7 +1472,10 @@
         "parity/runs/m45-omnichain-v14-20261103/VALIDATION.md",
         "parity/runs/m45-omnichain-events-v15-20261103/VALIDATION.md"
       ],
-      "remaining": "Only selected default multichain and bounded globally finalized closing-block plus static ABI log omnichain closures. v15 selects528 v14 leaves, explicitly omits141 on the new snapshot, and adds31 native supplements;559 unique/250 race/809 executions is a selected plan. Other ordering/runtime modes, complete CLI/type/source coverage, full/full-race/engine crashes and M45 acceptance remain open. Formal mapping543/905 unchanged."
+      "remaining": "Only selected default multichain and bounded globally finalized closing-block plus static ABI log omnichain closures. v15 selects528 v14 leaves, explicitly omits141 on the new snapshot, and adds31 native supplements;559 unique/250 race/809 executions is a selected plan. Other ordering/runtime modes, complete CLI/type/source coverage, full/full-race/engine crashes and M45 acceptance remain open. Formal mapping543/905 unchanged.",
+      "native_test_files": [
+        "historical/application_test.go"
+      ]
     }
   ]
 }

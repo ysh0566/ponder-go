@@ -48,7 +48,7 @@ func run(ctx context.Context) error {
 	}
 	abi := `[{"type":"event","name":"Transfer","inputs":[{"name":"from","type":"address","indexed":true},{"name":"to","type":"address","indexed":true},{"name":"value","type":"uint256","indexed":false}]}]`
 	chain := config.Chain{Name: "local", ID: 1, RPC: []string{rpcURL}}
-	engine, e := indexer.New(config.Config{Chains: []config.Chain{chain}, Contracts: []config.Contract{{Name: "Token", Chain: "local", ABI: []byte(abi), Address: []string{address}, IncludeTransactionReceipts: true}}}, s, map[string]indexer.Handler{"Token:Transfer": func(ctx context.Context, c *indexer.Context) error {
+	worker, e := indexer.NewIndexer(config.Config{Chains: []config.Chain{chain}, Contracts: []config.Contract{{Name: "Token", Chain: "local", ABI: []byte(abi), Address: []string{address}, IncludeTransactionReceipts: true}}}, s, map[string]indexer.Handler{"Token:Transfer": func(ctx context.Context, c *indexer.Context) error {
 		args := c.Event.Args.(map[string]any)
 		value := args["value"].(*big.Int)
 		for _, leg := range []struct {
@@ -76,7 +76,6 @@ func run(ctx context.Context) error {
 	}
 	server := query.New(s)
 	server.ChainNames[1] = "local"
-	var worker indexer.ApplicationIndexer = engine
 	if os.Getenv("PONDER_COMMAND") == "serve" {
 		worker = nil
 	}

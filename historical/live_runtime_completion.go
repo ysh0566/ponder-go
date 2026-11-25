@@ -157,7 +157,20 @@ func (r *RuntimeRunner) acquireRuntimeBlock(ctx context.Context, epoch *indexing
 	return b, nil
 }
 
-func (r *RuntimeRunner) Run(ctx context.Context) (result RuntimeResult, runErr error) {
+// RunIndexing allows a managed multichain or omnichain build to use
+// runtime.LaunchApplication and its normal HTTP lifecycle.
+func (r *RuntimeRunner) RunIndexing(ctx context.Context, ready func(bool)) error {
+	ready(false)
+	result, err := r.run(ctx, ready)
+	ready(err == nil && result.Ready)
+	return err
+}
+
+func (r *RuntimeRunner) Run(ctx context.Context) (RuntimeResult, error) {
+	return r.run(ctx, func(bool) {})
+}
+
+func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result RuntimeResult, runErr error) {
 	if !r.attempted.CompareAndSwap(false, true) {
 		return result, fmt.Errorf("runtime owner already attempted; close and reopen")
 	}
@@ -418,7 +431,7 @@ func (r *RuntimeRunner) Run(ctx context.Context) (result RuntimeResult, runErr e
 			if r.options.Live != nil && runtimeHistoricalComplete(control) {
 				owned := epoch
 				epoch = nil
-				return r.runContinuous(run, owned, control, headers, result)
+				return r.runContinuous(run, owned, control, headers, result, ready)
 			}
 
 			if !activated && runtimeCanActivate(control) {
@@ -434,6 +447,7 @@ func (r *RuntimeRunner) Run(ctx context.Context) (result RuntimeResult, runErr e
 				if e != nil || !result.Ready {
 					return result, errors.Join(fmt.Errorf("runtime activation failed"), e)
 				}
+				ready(true)
 				if r.options.OnActivated != nil {
 					if e = r.options.OnActivated(context.WithValue(run, runtimeRunnerCallbackKey{}, r)); e != nil {
 						return result, e

@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"context"
 	"os/exec"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -13,8 +14,14 @@ import (
 // Start returns the HTTP URL of a fresh chain with the upstream fixture's chain ID.
 func Start(t *testing.T, options ...string) string {
 	t.Helper()
+	return StartChain(t, 1, options...)
+}
+
+// StartChain starts an independent chain with the requested ID.
+func StartChain(t *testing.T, id uint64, options ...string) string {
+	t.Helper()
 	ctx, cancel := context.WithCancel(t.Context())
-	cmd := exec.CommandContext(ctx, "anvil", append([]string{"--host", "127.0.0.1", "--port", "0", "--chain-id", "1"}, options...)...)
+	cmd := exec.CommandContext(ctx, "anvil", append([]string{"--host", "127.0.0.1", "--port", "0", "--chain-id", strconv.FormatUint(id, 10)}, options...)...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		cancel()

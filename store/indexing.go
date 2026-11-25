@@ -162,17 +162,21 @@ func (db *IndexingStore) queryTable(name, method string) (schema.Table, *tableCa
 }
 
 func (db *IndexingStore) checkAccess(table schema.Table, method string, key Row) error {
-	if db.writer.s.Ordering != schema.Isolated {
+	value, present := key["chainId"]
+	return db.writer.checkChainKey(table.Name, method, value, present)
+}
+
+func (w *Writer) checkChainKey(table, method string, value any, present bool) error {
+	if w.s.Ordering != schema.Isolated {
 		return nil
 	}
-	value, present := key["chainId"]
-	if present && fmt.Sprint(value) == fmt.Sprint(db.writer.event.Checkpoint.ChainID) {
+	if present && fmt.Sprint(value) == fmt.Sprint(w.event.Checkpoint.ChainID) {
 		return nil
 	}
 	if present {
-		return &InvalidStoreAccessError{NonRetryableUserError{fmt.Sprintf("db.%s(%s) cannot access rows on different chains when ordering is 'isolated'.", method, table.Name)}}
+		return &InvalidStoreAccessError{NonRetryableUserError{fmt.Sprintf("db.%s(%s) cannot access rows on different chains when ordering is 'isolated'.", method, table)}}
 	}
-	return &InvalidStoreAccessError{NonRetryableUserError{fmt.Sprintf("db.%s(%s) must specify 'chainId' when ordering is 'isolated'.", method, table.Name)}}
+	return &InvalidStoreAccessError{NonRetryableUserError{fmt.Sprintf("db.%s(%s) must specify 'chainId' when ordering is 'isolated'.", method, table)}}
 }
 func cacheKey(t schema.Table, key Row) (string, error) {
 	values := []any{}
