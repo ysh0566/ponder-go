@@ -1685,7 +1685,7 @@
       "evidence": [
         "parity/runs/native-transaction-actions/RESULT.md"
       ],
-      "remaining": "Nine other high-level callback actions and additional multicall options remain open."
+      "remaining": "Current callback action coverage is listed in docs/RUNTIME_SUPPORT.md."
     },
     {
       "id": "native-callback-state-reads",
@@ -1702,7 +1702,7 @@
       "evidence": [
         "parity/runs/native-state-reads/RESULT.md"
       ],
-      "remaining": "Three high-level contract actions, four ENS methods and further multicall options remain open."
+      "remaining": "Current callback action coverage is listed in docs/RUNTIME_SUPPORT.md."
     },
     {
       "id": "native-multicall-deployment-and-overrides",
@@ -1742,7 +1742,7 @@
       "evidence": [
         "parity/runs/native-ens-resolver/RESULT.md"
       ],
-      "remaining": "Address, text and avatar resolution are separate actions. Three high-level contract actions also remain open."
+      "remaining": "Current callback action coverage is listed in docs/RUNTIME_SUPPORT.md."
     },
     {
       "id": "native-contract-simulation",
@@ -1762,7 +1762,25 @@
       "evidence": [
         "parity/runs/native-contract-simulation/RESULT.md"
       ],
-      "remaining": "EIP-3668 offchain reads and three ENS record actions remain open. The Go transaction type uses node-ready JSON-RPC fields."
+      "remaining": "Automatic EIP-3668 offchain reads remain open. The Go transaction type uses node-ready JSON-RPC fields."
+    },
+    {
+      "id": "native-ens-address-and-text",
+      "status": "verified_subset",
+      "implementation_files": [
+        "indexing/client_ens.go",
+        "indexing/client_ens_records.go"
+      ],
+      "native_test_files": [
+        "indexing/client_ens_records_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing/client.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-ens-records/RESULT.md"
+      ],
+      "remaining": "Avatar records and automatic EIP-3668 offchain lookup remain open."
     }
   ]
 }

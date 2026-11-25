@@ -29,9 +29,9 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 
 | 使用场景 | 当前边界 |
 | --- | --- |
-| 在同一 Go 应用中协调多条链 | 原生 `runtime.NewIndexer` 支持独立多链和按全局顺序索引。默认协调模式仍需使用 `historical.RuntimeRunner`。各模式还需扩展来源组合和服务商故障验证。[全局排序使用方式](docs/USAGE.md#按全局顺序索引多条链) |
-| 在回调中查询链上状态 | `indexing.Client` 已提供 21 个上游高层方法中的 18 个，包括历史合约调用、gas 估算、ABI 模拟、交易及 ENS 解析器查询。还缺 ENS 钱包地址、文本和头像查询。批量读合约可使用链配置中的 Multicall3 地址，并支持指定调用账户和临时状态。[方法清单](docs/RUNTIME_SUPPORT.md#callback-rpc-methods) |
-| 管理部署和日志 | PostgreSQL 已支持视图发布和部署清理。PGlite 数据目录的独立运维命令仍待补齐。热重载已可用，CLI 尚缺统一的日志级别、JSON 日志格式和开发终端 UI。 |
+| 在同一 Go 应用中协调多条链 | 原生 `runtime.NewIndexer` 支持独立多链和按全局顺序索引。默认协调模式仍需使用 `historical.RuntimeRunner`。还需验证更多工厂日志、交易、转账和函数调用 trace 的重叠组合，以及多家 RPC 同时中断时的恢复。[全局排序使用方式](docs/USAGE.md#按全局顺序索引多条链) |
+| 在回调中查询链上状态 | `indexing.Client` 已提供 21 个上游高层方法中的 20 个，包括历史合约调用、gas 估算、ABI 模拟、交易以及 ENS 解析器、钱包地址和文本查询。还缺 ENS 头像方法，以及遇到 EIP-3668 时自动向链下网关取数并回交合约的流程。批量读合约可使用链配置中的 Multicall3 地址，并支持指定调用账户和临时状态。[方法清单](docs/RUNTIME_SUPPORT.md#callback-rpc-methods) |
+| 管理部署和日志 | PostgreSQL 已支持视图发布和部署清理。PGlite 仍缺独立进程管理数据目录、与写入进程共享目录提供查询的支持。热重载已可用，CLI 尚缺统一的日志级别、JSON 日志格式和开发终端 UI。 |
 | 生产故障验收 | 已在写事务提交前强制终止 PostgreSQL 和 PGlite 引擎，验证重启后的余额、检查点、重放和撤销。全局排序的纯日志历史任务也覆盖了 PGlite 应用异常退出。仍需验证主机掉电、协调多链运行中数据库引擎崩溃，以及生产数据库角色与权限。[故障恢复实测](parity/runs/native-engine-recovery/RESULT.md) |
 
 这些条目按使用 Go 编写索引器的目标维护。数据库范围为当前格式。[各运行模式的具体限制](docs/RUNTIME_SUPPORT.md)
@@ -40,7 +40,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 
 固定上游共有 **905 条测试记录**。其中 **883 条已移植为 Go 用例并执行，866 条通过，17 条服务商 RPC 用例失败**。另有 5 条保留的 SDK 用例通过。17 条失败用例依赖特定网关的响应或真实链的历史日志，自建节点的实测结果已逐项记录。其余为上游跳过 10 条、TODO 2 条，以及已退出 Go 支持范围的旧缓存迁移 5 条。[逐例台账](parity/test-ledger.json) · [RPC 实测结果](parity/runs/provider-policy-assertions/RESULT.md)
 
-全模块 Go 普通和竞态回归各覆盖 30 个包，各通过 4,877 个叶子用例。两种离线运行各跳过了上述 17 条在线用例，它们另行执行后仍失败。上游原版全量复验为 876 通过、17 失败、10 跳过、2 TODO。[Go 全模块回归](parity/runs/complete-module-regression/RESULT.md) · [固定上游复验](parity/runs/current-release-verification/RESULT.md)
+在已归档的全模块回归基线上，Go 普通和竞态运行各覆盖 30 个包，各通过 4,877 个叶子用例。此后新增功能的验证结果列在各功能的测试报告中。两种离线运行各跳过了上述 17 条在线用例，它们另行执行后仍失败。上游原版全量复验为 876 通过、17 失败、10 跳过、2 TODO。[Go 全模块回归](parity/runs/complete-module-regression/RESULT.md) · [固定上游复验](parity/runs/current-release-verification/RESULT.md)
 
 ## 开发与验证资料
 

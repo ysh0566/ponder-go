@@ -214,7 +214,25 @@ log.Printf("transfer returned %v and would use about %s gas", sim.Result, gas)
 
 如需调用尚未部署的合约，可提供 `CallOptions{Deployless: &indexing.DeploylessCall{Code: creationCode}}`。也可指定 `Factory`、`FactoryData` 并在交易中给出预期目标地址。两种方式都由节点临时创建合约并执行调用。[模拟、gas 和重组验证](../parity/runs/native-contract-simulation/RESULT.md)
 
-对于已经按 ENS 规则规范化的名称，可以用 `args.Context.Client.GetEnsResolver(ctx, "alice.eth")` 查询负责这个名称的解析器合约地址。默认读取事件所在区块，可通过 `indexing.ENSResolverOptions` 显式传入其他高度或 Universal Resolver 地址。成功返回零地址表示该次查询没有找到解析器。读取名称对应的钱包地址是单独的操作。[ENS 历史查询示例与测试](../parity/runs/native-ens-resolver/RESULT.md)
+对于已经按 ENS 规则规范化的名称，可以用 `args.Context.Client.GetEnsResolver(ctx, "alice.eth")` 查询负责这个名称的解析器合约地址。默认读取事件所在区块，可通过 `indexing.ENSResolverOptions` 显式传入其他高度或 Universal Resolver 地址。成功返回零地址表示该次查询没有找到解析器。[ENS 历史查询示例与测试](../parity/runs/native-ens-resolver/RESULT.md)
+
+在 Go 回调中，使用 `GetEnsAddress` 读取钱包地址，使用 `GetEnsText` 读取指定文本记录。两者默认读当前事件的区块；记录缺失时返回 `nil`。如果链上解析器报告缺失也需要中断索引，可以传入 `indexing.ENSNameOptions{Strict: true}`。
+
+```go
+wallet, err := client.GetEnsAddress(ctx, "alice.eth")
+if err != nil {
+    return err
+}
+url, err := client.GetEnsText(ctx, "alice.eth", "url")
+if err != nil {
+    return err
+}
+if wallet != nil && url != nil {
+    log.Printf("wallet %s has website %s", *wallet, *url)
+}
+```
+
+默认返回带校验和的以太坊地址。显式传入 `CoinType: big.NewInt(0)` 等 ENSIP-9 币种编号时，返回该币种的原始地址字节，以十六进制字符串表示。可用 `BlockOptions.BlockNumber` 指定高度，`GatewayURLs` 会传给 Universal Resolver。需要 EIP-3668 链下读取的名称目前会返回节点错误。[双后端与上游验证](../parity/runs/native-ens-records/RESULT.md)
 
 在生成的 Go 回调中，`GetFeeHistory` 默认以事件所在区块作为费用区间的末端。`GetProof` 在同一区块读取账户及指定存储槽的 EIP-1186 证明。费用、余额和存储值使用 `*big.Int`，证明节点保留 RPC 返回的十六进制编码。
 
