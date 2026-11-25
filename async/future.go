@@ -14,6 +14,7 @@ import (
 type Loop struct {
 	mu               sync.Mutex
 	reactions, turns []func()
+	timers           []*Timer
 	wake             chan struct{}
 	driver           chan struct{}
 }
@@ -34,9 +35,14 @@ func (l *Loop) post(kind workKind, f func()) {
 	if kind == reaction {
 		l.reactions = append(l.reactions, f)
 	} else {
+		l.enqueueTimers()
 		l.turns = append(l.turns, f)
 	}
 	l.mu.Unlock()
+	l.signal()
+}
+
+func (l *Loop) signal() {
 	select {
 	case l.wake <- struct{}{}:
 	default:
@@ -46,6 +52,7 @@ func (l *Loop) post(kind workKind, f func()) {
 func (l *Loop) take() func() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	l.enqueueTimers()
 	queue := &l.reactions
 	if len(*queue) == 0 {
 		queue = &l.turns
