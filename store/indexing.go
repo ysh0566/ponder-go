@@ -11,7 +11,6 @@ import (
 	"ponder.local/ponder-go/sqlquery"
 	"reflect"
 	"sync"
-	"time"
 )
 
 // Undefined distinguishes an omitted update value from SQL NULL (nil).
@@ -124,58 +123,6 @@ func (w *Writer) indexingLocked(options ...CacheOptions) *IndexingStore {
 	return db
 }
 
-func cloneValue(value any) any {
-	if value == nil {
-		return nil
-	}
-	if n, ok := value.(*big.Int); ok {
-		if n == nil {
-			return nil
-		}
-		return new(big.Int).Set(n)
-	}
-	if value, ok := value.(*time.Time); ok {
-		if value == nil {
-			return nil
-		}
-		copy := *value
-		return &copy
-	}
-	switch v := value.(type) {
-	case Row:
-		return cloneRow(v)
-	case map[string]any:
-		out := map[string]any{}
-		for k, v := range v {
-			out[k] = cloneValue(v)
-		}
-		return out
-	}
-	r := reflect.ValueOf(value)
-	if r.Kind() == reflect.Slice {
-		out := reflect.MakeSlice(r.Type(), r.Len(), r.Len())
-		for i := 0; i < r.Len(); i++ {
-			v := cloneValue(r.Index(i).Interface())
-			if v == nil {
-				out.Index(i).SetZero()
-			} else {
-				out.Index(i).Set(reflect.ValueOf(v))
-			}
-		}
-		return out.Interface()
-	}
-	return value
-}
-func cloneRow(row Row) Row {
-	if row == nil {
-		return nil
-	}
-	out := Row{}
-	for k, v := range row {
-		out[k] = cloneValue(v)
-	}
-	return out
-}
 func property(c schema.Column) string {
 	if c.Property != "" {
 		return c.Property
@@ -310,7 +257,10 @@ func (db *IndexingStore) get(ctx context.Context, t schema.Table, cache *tableCa
 	cache.rows[ck] = row
 	return row, nil
 }
-func (db *IndexingStore) Find(ctx context.Context, name string, key Row) (Row, error) {
+
+// FindCopy returns a detached-on-write view of a cached record. Scalar reads
+// avoid copying the row. A missing record returns nil.
+func (db *IndexingStore) FindCopy(ctx context.Context, name string, key Row) (*RowCopy, error) {
 	db.Cache.mu.Lock()
 	defer db.Cache.mu.Unlock()
 	if e := db.active(); e != nil {
@@ -324,7 +274,17 @@ func (db *IndexingStore) Find(ctx context.Context, name string, key Row) (Row, e
 		return nil, e
 	}
 	row, e := db.get(ctx, t, cache, key)
-	return cloneRow(row), e
+	if row == nil || e != nil {
+		return nil, e
+	}
+	return CopyOnWrite(row), nil
+}
+func (db *IndexingStore) Find(ctx context.Context, name string, key Row) (Row, error) {
+	v, err := db.FindCopy(ctx, name, key)
+	if err != nil || v == nil {
+		return nil, err
+	}
+	return v.Snapshot(), nil
 }
 func normalizeInsert(t schema.Table, input Row) (Row, error) {
 	row := Row{}

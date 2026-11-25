@@ -78,6 +78,16 @@ func Define[K, I, U, R any](name string, key Encoder[K], insert Encoder[I], upda
 	return Definition[K, I, U, R]{name, key, insert, update, decode}
 }
 
+// DecodeCopy materializes a cached row view using the same generated column
+// types and decoders as Find. Mutations to the result are private to the caller.
+func (d Definition[K, I, U, R]) DecodeCopy(view *store.RowCopy) (R, error) {
+	if view == nil {
+		var zero R
+		return zero, fmt.Errorf("cannot decode a missing %s row", d.name)
+	}
+	return d.decode(view.Snapshot())
+}
+
 type Table[K, I, U, R any] struct {
 	definition Definition[K, I, U, R]
 	db         *store.IndexingStore
@@ -122,11 +132,11 @@ func (t Table[K, I, U, R]) Find(ctx context.Context, key K) (*R, error) {
 	if e != nil {
 		return nil, e
 	}
-	result, e := t.db.Find(ctx, t.definition.name, row)
+	result, e := t.db.FindCopy(ctx, t.definition.name, row)
 	if e != nil || result == nil {
 		return nil, e
 	}
-	value, e := t.definition.decode(result)
+	value, e := t.definition.DecodeCopy(result)
 	return &value, e
 }
 func (t Table[K, I, U, R]) Insert(ctx context.Context, input I) (R, error) {
