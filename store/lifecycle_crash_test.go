@@ -66,7 +66,9 @@ func TestLifecycleProcessCrash(t *testing.T) {
 					return b
 				}
 				b := open()
-				d := newTestLifecycle(t, b, ns, options)
+				// Fixture creation includes durable writes and DDL. Only the crashed
+				// process and its replacement need the short takeover window.
+				d := newTestLifecycle(t, b, ns, LifecycleOptions{})
 				first := stage == "first_migration_before_commit"
 				var before lifecycleSnapshot
 				if !first {

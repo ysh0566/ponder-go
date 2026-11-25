@@ -36,10 +36,12 @@ is a native safety addition; it is not an upstream database credential or a role
 permission system. Direct backend privileges and full readonly-role setup remain
 a separate unfinished track.
 
-Lease age is refreshed at publication after migration work, so slow initial DDL
-does not return an already-expired owner. PostgreSQL provides advisory transaction
-locking and a row lock. PGlite tests share one existing instance; multiple
-concurrent PGlite processes using the same data directory are unsupported.
+Both backends stamp the initial lease after startup DDL using the database clock.
+A renewal locks the metadata row, checks the owner and expiration, and publishes
+a nondecreasing timestamp. A request that waited past expiration receives
+`ErrLeaseLost`. Writers and contenders use the same clock for lease checks.
+PostgreSQL also serializes migration with an advisory transaction lock. PGlite
+serializes transactions on its connection.
 
 ## Recovery
 
@@ -83,7 +85,6 @@ Additional native checks cover all fenced write paths, old-owner shutdown,
 rollback of failed recovery including DDL/indexes/triggers, startup cleanup,
 finalized timestamps, canceled waiting and slow DDL. Eight real application
 process exits cover first startup, partial undo, pre-commit metadata and
-post-commit reopening on PostgreSQL and disk-backed PGlite. They do not establish
-PostgreSQL-server or host power-loss behavior. The complete original oracle is
-still blocked by the pending Foundry-generated contract fixture; source mappings
-and native passes are reported separately from original oracle passes.
+post-commit reopening on PostgreSQL and disk-backed PGlite. With the pinned
+Foundry fixtures, the original database test file passed all 18 declarations
+on each backend. [Renewal and recovery test results](../parity/runs/database-recovery-timing/RESULT.md)
