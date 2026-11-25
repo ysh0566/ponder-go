@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"ponder.local/ponder-go/abi"
 	"ponder.local/ponder-go/checkpoint"
+	"ponder.local/ponder-go/config"
 	"ponder.local/ponder-go/orm"
 	"ponder.local/ponder-go/schema"
 	"ponder.local/ponder-go/store"
@@ -133,6 +134,9 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		packageName := flags.String("package", "main", "Go package")
 		typed := flags.Bool("typed", false, "Generate typed native ORM model/key/insert/update APIs")
 		catalog := flags.String("abi", "", "Contract ABI JSON for typed event and function names")
+		application := flags.String("app-config", "", "Source configuration JSON for callback names and chains")
+		var dynamicABIs []string
+		flags.Func("dynamic-abi", "Contract with a runtime ABI (repeatable with --app-config)", func(name string) error { dynamicABIs = append(dynamicABIs, name); return nil })
 		var mergeFiles []string
 		flags.Func("merge-abi", "ABI file to include in an ordered merge (repeatable)", func(file string) error { mergeFiles = append(mergeFiles, file); return nil })
 		bigint := flags.String("bigint-shape", "", "Go type expression with BigInt leaves for a typed replacer")
@@ -143,6 +147,33 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		}
 		if !schema.Identifier(*packageName) {
 			return fmt.Errorf("invalid package name")
+		}
+		if *application != "" {
+			schemaFlag := false
+			flags.Visit(func(f *flag.Flag) {
+				if f.Name == "schema" {
+					schemaFlag = true
+				}
+			})
+			if schemaFlag || len(mergeFiles) > 0 || *bigint != "" || *catalog != "" || *parameters != "" || *typed {
+				return fmt.Errorf("choose a single code generation mode")
+			}
+			data, err := os.ReadFile(*application)
+			if err != nil {
+				return err
+			}
+			cfg, err := config.ParseSourceConfiguration(data)
+			if err != nil {
+				return err
+			}
+			src, err := config.GenerateApplicationBindings(*packageName, cfg, dynamicABIs...)
+			if err != nil {
+				return err
+			}
+			return os.WriteFile(*output, src, 0644)
+		}
+		if len(dynamicABIs) > 0 {
+			return fmt.Errorf("--dynamic-abi requires --app-config")
 		}
 		if len(mergeFiles) > 0 || *bigint != "" {
 			if *catalog != "" || *parameters != "" || *typed || (len(mergeFiles) > 0 && *bigint != "") {

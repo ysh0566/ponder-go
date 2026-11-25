@@ -1,0 +1,65 @@
+package virtual_test
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strconv"
+	"strings"
+	"testing"
+
+	"ponder.local/ponder-go/config"
+	"ponder.local/ponder-go/indexing"
+	"virtual.test/app"
+)
+
+func TestRegisterGeneratedBlock(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req struct {
+			ID     any
+			Method string
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Method != "eth_getBlockByNumber" {
+			t.Errorf("unexpected build request: %s, %v", req.Method, err)
+			return
+		}
+		block := map[string]any{
+			"hash": "0x" + strings.Repeat("1", 64), "parentHash": "0x" + strings.Repeat("0", 64),
+			"number": "0xa", "timestamp": "0x64", "logsBloom": "0x" + strings.Repeat("0", 512),
+		}
+		if err := json.NewEncoder(w).Encode(map[string]any{"jsonrpc": "2.0", "id": req.ID, "result": block}); err != nil {
+			t.Error(err)
+		}
+	}))
+	defer server.Close()
+	cfg, err := config.ParseSourceConfiguration([]byte(`{"chains":{"mainnet":{"id":1,"reorgWindow":0,"rpc":` + strconv.Quote(server.URL) + `}},"blocks":{"b1":{"chain":"mainnet","interval":2,"startBlock":1}}}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	base, err := config.BuildSourceConfig(cfg, config.SourceBuildOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	event := app.NameB1Block{}
+	called := false
+	reg := event.IndexingFunction(func(_ context.Context, args *indexing.HandlerArgs) error {
+		chain, err := event.Chain(args.Context)
+		if err != nil {
+			return err
+		}
+		called = chain.Name() == "mainnet" && chain.ID() == 1
+		return nil
+	})
+	build, err := config.BuildSourceIndexing(t.Context(), cfg, base, []config.SourceIndexingFunction{reg})
+	if err != nil {
+		t.Fatal(err)
+	}
+	live := build.Executable()
+	if len(live.EventCallbacks) != 1 || len(live.EventCallbacks[0]) != 1 || live.EventCallbacks[0][0]["name"] != "b1:block" {
+		t.Fatal(live.EventCallbacks)
+	}
+	if err := live.IndexingFunctions[0]["fn"].(indexing.Handler)(t.Context(), &indexing.HandlerArgs{Context: &indexing.Context{Chain: live.Chains[0]}}); err != nil || !called {
+		t.Fatalf("registered callback: %v, %v", called, err)
+	}
+}

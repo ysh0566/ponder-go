@@ -76,3 +76,31 @@ func TestCodegenValueUtilities(t *testing.T) {
 		}
 	}
 }
+
+func TestCodegenApplicationBindings(t *testing.T) {
+	dir := t.TempDir()
+	file, out := filepath.Join(dir, "app.json"), filepath.Join(dir, "bindings.go")
+	if err := os.WriteFile(file, []byte(`{"contracts":{"token":{"abi":[{"type":"event","name":"Mint","inputs":[]}]}}}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	args := []string{"codegen", "--app-config", file, "--package", "bindings", "--out", out}
+	for _, dynamic := range []bool{false, true} {
+		call := args
+		if dynamic {
+			call = append(call, "--dynamic-abi", "token")
+		}
+		if err := run(t.Context(), call, io.Discard); err != nil {
+			t.Fatal(err)
+		}
+		data, err := os.ReadFile(out)
+		if err != nil || !bytes.Contains(data, []byte("NameTokenSetup struct")) || bytes.Contains(data, []byte("NameTokenMint struct")) == dynamic {
+			t.Fatal(string(data), err)
+		}
+	}
+	if err := run(t.Context(), append(args, "--typed"), io.Discard); err == nil {
+		t.Fatal("accepted two generators")
+	}
+	if err := run(t.Context(), []string{"codegen", "--dynamic-abi", "token"}, io.Discard); err == nil {
+		t.Fatal("accepted a dynamic contract without an application")
+	}
+}

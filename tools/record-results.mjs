@@ -107,6 +107,7 @@ const ormCompile = exists("parity/runs/orm-compile-fixtures.json") ? read("parit
 const eventCompile = exists("parity/runs/event-compile-fixtures.json") ? read("parity/runs/event-compile-fixtures.json") : null;
 const bloomCompile = exists("parity/runs/bloom-compile-fixtures.json") ? read("parity/runs/bloom-compile-fixtures.json") : null;
 const compilerFixtures = new Map([
+	["config/virtual_names_test.go", "TestSourceVirtualNames", "config/testdata/virtual-names.json", "parity/runs/virtual-names-source.json"],
 	["config/application_declaration_test.go", "TestSourceApplicationDeclarations", "config/testdata/app-declarations.json", "parity/runs/config-declarations-source.json"],
 	["values/source_test.go", "TestSourceValueUtilities", "testdata/value-utilities.json", "parity/runs/value-utilities-source.json"],
 	["indexing/handler_contracts_test.go", "TestSourceHandlerDeclarations", "testdata/indexing/handler-declarations.json", "parity/runs/handler-contracts-source.json", ["postgres","pglite"]],
