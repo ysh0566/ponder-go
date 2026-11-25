@@ -159,6 +159,23 @@ go build .
 
 脚手架的 `runtime.Handler` 通过 `c.Client.Call` 发 JSON-RPC 请求。使用生成的回调注册表时，客户端类型是 `*indexing.Client`，可调用 `GetBalance`、`ReadContract` 等方法，也可用 `Request` 传入 RPC 方法和参数。使用原始 RPC 读取历史状态时，请显式传入事件的区块号。使用 `Multicall` 批量读合约时，请在 `MulticallOptions.MulticallAddress` 指定目标链上已部署的 Multicall3 合约地址。[回调客户端方法](RUNTIME_SUPPORT.md#callback-rpc-methods)
 
+在生成的回调中，`args.Context.Client` 可直接查询交易和回执。按交易哈希查找时会查询节点当前的收录状态。按高度查找时会读取该高度的规范区块，重组后相同高度可能返回另一笔交易。确认数从收录区块到当前链头计算，待打包交易返回零。下例中的 `hash` 是交易哈希。
+
+```go
+client := args.Context.Client
+receipt, err := client.GetTransactionReceipt(ctx, hash)
+if err != nil {
+    return err
+}
+confirmations, err := client.GetTransactionConfirmations(ctx, indexing.ConfirmationOptions{Receipt: receipt})
+if err != nil {
+    return err
+}
+log.Printf("transaction %s, block %v, confirmations %s", hash, receipt["blockNumber"], confirmations)
+```
+
+`GetTransaction` 和 `GetTransactionReceipt` 保留 JSON-RPC 字段表示，区块号和 gas 等数量是十六进制字符串。`GetTransactionCount` 读取账户 nonce，`GetBlockTransactionCount` 读取区块交易笔数，两者返回 `uint64`，默认读取当前链头。要在事件所在区块读取账户 nonce，可显式传入 `indexing.TransactionBlock{BlockNumber: n}`，其中 `n` 为 `*big.Int`。用 `TransactionLookup{Block: ..., Index: ...}` 可以按区块和交易序号定位交易。缺失的交易或回执默认会重试，可通过 `RetryEmptyResponse` 关闭重试。[回调交易 API 与重组实测](../parity/runs/native-transaction-actions/RESULT.md)
+
 在仓库根目录查看为 `account` 表生成的 Go 模型。
 
 ```sh

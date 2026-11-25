@@ -135,19 +135,19 @@ func (c *Client) GetBalance(ctx context.Context, address string, options ...Bala
 	if err != nil {
 		return nil, err
 	}
-	return decodeBalance(raw)
+	return decodeRPCQuantity(raw, "balance")
 }
-func decodeBalance(raw json.RawMessage) (*big.Int, error) {
+func decodeRPCQuantity(raw json.RawMessage, label string) (*big.Int, error) {
 	var value string
 	if e := json.Unmarshal(raw, &value); e != nil {
 		return nil, e
 	}
 	if len(value) < 3 || value[:2] != "0x" {
-		return nil, fmt.Errorf("invalid balance RPC quantity %q", value)
+		return nil, fmt.Errorf("invalid %s RPC quantity %q", label, value)
 	}
 	n, ok := new(big.Int).SetString(value[2:], 16)
 	if !ok || n.Sign() < 0 {
-		return nil, fmt.Errorf("invalid balance RPC quantity %q", value)
+		return nil, fmt.Errorf("invalid %s RPC quantity %q", label, value)
 	}
 	return n, nil
 }

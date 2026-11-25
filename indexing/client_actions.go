@@ -112,7 +112,8 @@ func (c *Client) request(ctx context.Context, method string, params any) (json.R
 	if err != nil || hit {
 		return raw, err
 	}
-	if err = c.requester.Call(ctx, method, params, &raw); err != nil {
+	raw, err = c.sendRPC(ctx, method, params)
+	if err != nil {
 		return nil, err
 	}
 	c.cacheResponse(ctx, method, params, raw)
@@ -166,6 +167,16 @@ func (c *Client) GetStorageAt(ctx context.Context, address, slot string, options
 	return decodeHexResponse(raw)
 }
 
+func retryClientAction[T any](ctx context.Context, c *Client, retry *bool, read func(context.Context) (T, error)) (T, error) {
+	ctx, finish, err := c.set.managedRoots.begin(ctx)
+	if err != nil {
+		var zero T
+		return zero, err
+	}
+	defer finish()
+	return retryEmpty(ctx, retry, func() (T, error) { return read(ctx) })
+}
+
 func retryEmpty[T any](ctx context.Context, enabled *bool, action func() (T, error)) (T, error) {
 	return retryEmptyWithWait(ctx, enabled, action, func(ctx context.Context, duration time.Duration) error {
 		timer := time.NewTimer(duration)
@@ -179,13 +190,19 @@ func retryEmpty[T any](ctx context.Context, enabled *bool, action func() (T, err
 	})
 }
 
+func isEmptyActionResponse(err error) bool {
+	var zero *ContractFunctionZeroDataError
+	var receipt *rpc.TransactionReceiptNotFoundError
+	return errors.Is(err, rpc.ErrBlockNotFound) || errors.Is(err, ErrTransactionNotFound) ||
+		errors.As(err, &receipt) || errors.As(err, &zero) || strings.Contains(err.Error(), "returned no data")
+}
+
 // The wait dependency keeps the retry policy separately testable; production
 // always uses the real cancellable timer above, not a modified retry schedule.
 func retryEmptyWithWait[T any](ctx context.Context, enabled *bool, action func() (T, error), wait func(context.Context, time.Duration) error) (T, error) {
 	for attempt := 0; ; attempt++ {
 		result, err := action()
-		var zero *ContractFunctionZeroDataError
-		if err == nil || (!errors.Is(err, rpc.ErrBlockNotFound) && !errors.As(err, &zero) && !strings.Contains(err.Error(), "returned no data")) || attempt == 9 || (enabled != nil && !*enabled) {
+		if err == nil || !isEmptyActionResponse(err) || attempt == 9 || (enabled != nil && !*enabled) {
 			return result, err
 		}
 		if err := wait(ctx, 125*time.Millisecond*time.Duration(1<<attempt)); err != nil {
