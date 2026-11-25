@@ -87,20 +87,21 @@ type Context struct {
 }
 type Handler func(context.Context, *Context) error
 type Engine struct {
-	Config    config.Config
-	Store     *store.Store
-	Handlers  map[string]Handler
-	Client    *rpc.Client
-	abis      map[string]abi.ABI
-	factories map[string]factory.LogFactory
-	blooms    bloomPlan
-	filter    string
-	chain     config.Chain
-	options   Options
-	cache     *store.ProtocolCache
-	syncMu    sync.Mutex
-	endBlock  *uint64
-	staged    *stagedState
+	Config        config.Config
+	Store         *store.Store
+	Handlers      map[string]Handler
+	Client        *rpc.Client
+	abis          map[string]abi.ABI
+	factories     map[string]factory.LogFactory
+	blooms        bloomPlan
+	filter        string
+	chain         config.Chain
+	options       Options
+	cache         *store.ProtocolCache
+	syncMu        sync.Mutex
+	endBlock      *uint64
+	finalizedHash string
+	staged        *stagedState
 }
 type Options struct {
 	DisableCache bool
@@ -285,6 +286,17 @@ func (e *Engine) syncToHead(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	for _, gap := range missing {
+		var parentHash string
+		if e.staged == nil && uint64(gap[0]) > start {
+			parent, err := e.Store.SyncedBlock(ctx, e.chain.ID, uint64(gap[0])-1)
+			if err != nil {
+				return false, err
+			}
+			if parent == nil {
+				return false, fmt.Errorf("missing indexed parent of block %d", gap[0])
+			}
+			parentHash = parent.Hash
+		}
 		for n := uint64(gap[0]); n <= uint64(gap[1]); n++ {
 			if err = ctx.Err(); err != nil {
 				return false, err
@@ -292,6 +304,16 @@ func (e *Engine) syncToHead(ctx context.Context) (bool, error) {
 			b, err := e.block(ctx, Hex(n))
 			if err != nil {
 				return false, err
+			}
+			if e.staged == nil {
+				number, err := Number(b.Number)
+				if err != nil || number != n || b.Hash == "" {
+					return false, fmt.Errorf("invalid RPC header at height %d", n)
+				}
+				if parentHash != "" && parentHash != b.ParentHash {
+					return false, errIndexingFork
+				}
+				parentHash = b.Hash
 			}
 			if e.staged != nil && n > e.staged.historyEnd {
 				if err = e.startRealtime(ctx); err != nil {
@@ -309,21 +331,53 @@ func (e *Engine) syncToHead(ctx context.Context) (bool, error) {
 		}
 		return false, e.finalizeStaged(ctx, latest)
 	}
-	if e.endBlock == nil || head < *e.endBlock {
-		return false, nil
-	}
-	last, err := e.Store.SyncedBlock(ctx, e.chain.ID, head)
+	return e.finalizeIndexed(ctx, latest, head)
+}
+
+var errIndexingFork = errors.New("chain changed during indexing")
+
+func (e *Engine) finalizeIndexed(ctx context.Context, latest Block, through uint64) (bool, error) {
+	now, err := Number(latest.Timestamp)
 	if err != nil {
 		return false, err
 	}
-	if last == nil {
-		return false, fmt.Errorf("missing indexed end block %d", head)
+	window := uint64(e.chain.Window())
+	var cutoff uint64
+	if now >= window {
+		cutoff = now - window
 	}
-	now, err := Number(latest.Timestamp)
-	if err != nil || now < last.Timestamp || now-last.Timestamp < uint64(e.chain.Window()) {
+	candidate, err := e.Store.IndexedFinalityCandidate(ctx, e.chain.ID, through, cutoff)
+	if err != nil || candidate == nil {
 		return false, err
 	}
-	return true, e.Store.Finalize(ctx, checkpoint.Block(last.Timestamp, e.chain.ID, head, true))
+	done := e.endBlock != nil && candidate.Number == *e.endBlock
+	if candidate.Hash == e.finalizedHash && e.finalizedHash != "" {
+		return done, nil
+	}
+	canonical, err := e.block(ctx, Hex(candidate.Number))
+	if err != nil {
+		return false, err
+	}
+	if candidate.Hash != canonical.Hash {
+		return false, errIndexingFork
+	}
+	if latest.Number != canonical.Number {
+		canonical, err = e.block(ctx, latest.Number)
+		if err != nil {
+			return false, err
+		}
+	}
+	if canonical.Hash != latest.Hash {
+		return false, errIndexingFork
+	}
+	if err := e.Store.FinalizeIndexedBlock(ctx, *candidate); err != nil {
+		if errors.Is(err, store.ErrIndexedBlockChanged) {
+			return false, errIndexingFork
+		}
+		return false, err
+	}
+	e.finalizedHash = candidate.Hash
+	return done, nil
 }
 func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 	// Find the most recent completed block, including when the canonical tip shrinks.
@@ -632,7 +686,7 @@ func (e *Engine) RunIndexing(ctx context.Context, ready func(bool)) error {
 		delay := interval
 		if err != nil {
 			ready(false)
-			if !rpc.IsTransient(err) {
+			if !rpc.IsTransient(err) && !errors.Is(err, errIndexingFork) {
 				return err
 			}
 			delay = retry

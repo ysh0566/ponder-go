@@ -29,7 +29,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 
 | 使用场景 | 当前边界 |
 | --- | --- |
-| 长期运行单链或独立多链 | 脚手架的 `runtime.NewIndexer` 默认轮询链头。底层 RPC 客户端支持 WebSocket 订阅和重连，默认启动流程缺少用 `newHeads` 唤醒索引的接入。使用原子存储且未设置结束区块时，索引器也缺持续推进最终确认检查点、清理已确认历史的撤销日志的步骤。[两个后端的对照实测](parity/runs/native-go-ongoing-indexing/RESULT.md) |
+| 长期运行单链或独立多链 | 脚手架的 `runtime.NewIndexer` 默认轮询链头。底层 RPC 客户端支持 WebSocket 订阅和重连，默认启动流程缺少用 `newHeads` 唤醒索引的接入。持续运行现已按重组窗口推进最终确认检查点并清理撤销日志。[持续索引与重组实测](parity/runs/native-continuous-finality/RESULT.md) |
 | 在同一 Go 应用中协调多条链 | `runtime.NewIndexer` 可运行单链和独立多链。默认协调多链和全局排序要改用 `historical.RuntimeRunner`。全局排序只支持已最终确认的有限历史区间，缺持续追块、跨链重组重放、动态 factory、账户交易与转账、合约调用 trace，以及混合区块回调链和纯日志链。 |
 | 在回调中查询链上状态 | `indexing.Client` 提供七个上游高层方法。其余十四个还缺对应的 Go 方法，包括合约模拟、gas 估算及交易确认数查询。可用 `Request` 发原始 RPC；批量读合约需显式指定 Multicall3 地址。[方法清单](docs/RUNTIME_SUPPORT.md#callback-rpc-methods) |
 | 选择列类型和查询接口 | Go 模型可在两个数据库上读写 `point`、`line`。含这两类列的表目前会让 `graphql.New` 返回错误。上游提供的 `cidr`、`inet`、`interval`、`macaddr`、`macaddr8` 和 `time` 六种列类型尚不能用于原生 schema。[模型验证](parity/runs/native-go-models/RESULT.md) |
