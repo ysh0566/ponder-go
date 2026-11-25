@@ -31,7 +31,13 @@ for(const execution of proof.executions){
  }
 }
 for(const test of selected){
- if(indexingServiceTypeGaps.includes(test.id)){if(mappings.some(m=>m.source_id===test.id))throw Error('Unproved source static gap must remain unmapped');continue}
+ if(indexingServiceTypeGaps.includes(test.id)){
+  // This runtime replay has no compile controls. A separate mapping owns those
+  // declarations and must include the exact source ID and compiler-backed suite.
+  const newer=mappings.find(m=>m.source_id===test.id);
+  if(newer&&(newer.target_file!=="indexing/handler_contracts_test.go"||newer.go_test!=="TestSourceHandlerDeclarations/"+test.id))throw Error("Handler declaration requires its separate native compile and runtime checks");
+  continue;
+ }
  const mapping={source_file:test.source_file,source_name:test.full_name,source_id:test.id,source_line:test.line,assertions_sha256:crypto.createHash('sha256').update(test.assertions.map(a=>a.text).join('\n')).digest('hex'),original_assertions:test.assertions.length,target_file:'indexing/source_parity_test.go',go_package:'ponder.local/ponder-go/indexing',go_test:'TestSourceIndexingService/postgres/'+test.id,backend_companion:'TestSourceIndexingService/pglite/'+test.id,source_fixture:'testdata/indexing/source-indexing-service-live.json.gz',source_verification:'parity/runs/source-indexing-service-verification.json',assertion_policy:'Complete unchanged 23-case indexing/index.test.ts executes on both source backends; all 15 service cases and 33 assertions replay in full normal/race native runs from actual inputs and callback operations. Only 12 cases without source TS-only obligations earn credit; two mockRejectedValue property errors and deletion of required maxPriorityFeePerGas remain unmapped. Historical reads use explicit PropertyView accessors rather than ordinary map reads or transparent JS Proxy syntax. Actual IndexingStore, RPC boundary and separate M37 history composition controls required. Outer run*, readiness/cutover and last eight Viem client facade cases remain out of scope; stronger native PGlite transaction behavior is not source failure parity.'};
  const existing=mappings.find(m=>m.source_id===test.id);if(existing&&JSON.stringify(existing)!==JSON.stringify(mapping))throw Error('Conflicting existing mapping');if(!existing)mappings.push(mapping);
 }

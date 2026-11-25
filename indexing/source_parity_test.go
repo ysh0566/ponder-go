@@ -1,6 +1,7 @@
 package indexing
 
 import (
+	"bytes"
 	"compress/gzip"
 	"context"
 	"crypto/sha256"
@@ -312,34 +313,34 @@ func (c *indexingIdentityChecks) check(t *testing.T, kind string, source any, na
 	c.native[kind][ptr] = id
 }
 
-func TestSourceIndexingService(t *testing.T) {
+func readHandlerServiceFixture(t *testing.T) (indexingSourceFixture, [32]byte) {
+	t.Helper()
 	path := filepath.Join("..", "testdata", "indexing", "source-indexing-service-live.json.gz")
-	compressed, e := os.ReadFile(path)
-	if e != nil {
-		t.Fatal(e)
+	compressed, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
 	}
-	fixtureDigest := sha256.Sum256(compressed)
-	f, e := os.Open(path)
-	if e != nil {
-		t.Fatal(e)
-	}
-	defer f.Close()
-	gz, e := gzip.NewReader(f)
-	if e != nil {
-		t.Fatal(e)
+	gz, err := gzip.NewReader(bytes.NewReader(compressed))
+	if err != nil {
+		t.Fatal(err)
 	}
 	defer gz.Close()
-	data, e := io.ReadAll(gz)
-	if e != nil {
-		t.Fatal(e)
+	data, err := io.ReadAll(gz)
+	if err != nil {
+		t.Fatal(err)
 	}
 	var fixture indexingSourceFixture
-	if e = json.Unmarshal(data, &fixture); e != nil {
-		t.Fatal(e)
+	if err := json.Unmarshal(data, &fixture); err != nil {
+		t.Fatal(err)
 	}
 	if len(fixture.Targets) != 15 || len(fixture.TypeGaps) != 3 {
 		t.Fatal("source census differs")
 	}
+	return fixture, sha256.Sum256(compressed)
+}
+
+func TestSourceIndexingService(t *testing.T) {
+	fixture, fixtureDigest := readHandlerServiceFixture(t)
 	observations := []Object{}
 	for _, backend := range []string{"postgres", "pglite"} {
 		t.Run(backend, func(t *testing.T) {
@@ -361,7 +362,7 @@ func TestSourceIndexingService(t *testing.T) {
 		})
 	}
 	if output := os.Getenv("PONDER_INDEXING_SERVICE_NATIVE_OUTPUT"); output != "" {
-		encoded, e := json.MarshalIndent(Object{"source_credit": 0, "source_fixture_sha256": hex.EncodeToString(fixtureDigest[:]), "state": "Actual native dispatch with original inputs, real IndexingStore and loopback RPC; three TS-only directives remain unmapped", "cases": observations}, "", "  ")
+		encoded, e := json.MarshalIndent(Object{"source_credit": 0, "source_fixture_sha256": hex.EncodeToString(fixtureDigest[:]), "state": "Actual native dispatch with original inputs, real IndexingStore and loopback RPC; dispatch replay only; compiler controls run in TestSourceHandlerDeclarations", "cases": observations}, "", "  ")
 		if e != nil {
 			t.Fatal(e)
 		}
