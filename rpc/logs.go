@@ -7,6 +7,8 @@ import (
 	"math/big"
 	"sort"
 	"strings"
+
+	"ponder.local/ponder-go/internal/ordered"
 )
 
 type ProviderError struct {
@@ -113,12 +115,12 @@ func getLogs(ctx context.Context, requester Requester, input map[string]any) ([]
 	}
 	if array {
 		requests = nil
-		for i := 0; i < len(addresses); i += 50 {
+		for _, group := range ordered.Chunks(addresses, 50) {
 			request := map[string]any{}
 			for k, v := range input {
 				request[k] = v
 			}
-			request["address"] = append([]any{}, addresses[i:min(i+50, len(addresses))]...)
+			request["address"] = group
 			requests = append(requests, request)
 		}
 	}
