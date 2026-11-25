@@ -167,16 +167,27 @@ func callbackOf(event Object, setup bool) (Object, string, Handler, error) {
 		return nil, "", nil, fmt.Errorf("event lacks %s", key)
 	}
 	name, _ := cb["name"].(string)
-	fn, ok := cb["fn"].(Handler)
-	if !ok {
-		if f, valid := cb["fn"].(func(context.Context, *HandlerArgs) error); valid {
-			fn = Handler(f)
-		} else {
-			return cb, name, nil, fmt.Errorf("callback %q has no handler", name)
+	fn, err := CallbackHandler(cb)
+	return cb, name, fn, err
+}
+
+// CallbackHandler returns the executable function registered on a setup or
+// event callback. Dispatch and callers use the same validation and function.
+func CallbackHandler(cb Object) (Handler, error) {
+	switch fn := cb["fn"].(type) {
+	case Handler:
+		if fn != nil {
+			return fn, nil
+		}
+	case func(context.Context, *HandlerArgs) error:
+		if fn != nil {
+			return Handler(fn), nil
 		}
 	}
-	return cb, name, fn, nil
+	name, _ := cb["name"].(string)
+	return nil, fmt.Errorf("callback %q has no handler", name)
 }
+
 func (s *Service) takeSticky() error {
 	e := s.options.Errors.GetRetryableError()
 	if e != nil {

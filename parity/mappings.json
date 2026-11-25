@@ -11442,5 +11442,69 @@
     "assertion_policy": "Compare the native result with the complete original input and all runtime assertions. Compile the generated structural mapping and check the inferred hex leaf type, including the array length and nested object shape. The input of the readonly source case is represented by a Go array value.",
     "original_assertions": 2,
     "assertions_sha256": "5d6f62d9be2778f09d1b8c6b7c4862227c5d6a497bffe1e6ad62562a04c3daea"
+  },
+  {
+    "source_id": "07156f3c04010167ced9",
+    "source_file": "packages/core/src/indexing-store/cache.test.ts",
+    "source_name": "prefetch() uses profile metadata",
+    "source_line": 446,
+    "go_package": "ponder.local/ponder-go/indexing",
+    "go_test": "TestSourceHandlerDeclarations/07156f3c04010167ced9",
+    "backend_tests": [
+      "TestSourceHandlerDeclarations/07156f3c04010167ced9/postgres",
+      "TestSourceHandlerDeclarations/07156f3c04010167ced9/pglite"
+    ],
+    "target_file": "indexing/handler_contracts_test.go",
+    "original_assertions": 1,
+    "assertions_sha256": "5f54c4df8a75d524a19f85c5be2557969dfa692a48558fd83c0c288c5f9a067d",
+    "assertion_policy": "Run a positive external caller and require the Go compiler to reject the property exposed by the original suppressed diagnostic. Replay the original handler inputs and assertions on both storage backends. Decode the source Anvil mint log, modify the real decoded arguments after narrowing to a log event, then flush and prefetch from a fresh complete cache at the original callback count."
+  },
+  {
+    "source_id": "d75ae6d953a7bb8ea73c",
+    "source_file": "packages/core/src/indexing/index.test.ts",
+    "source_name": "executeSetup() error",
+    "source_line": 663,
+    "go_package": "ponder.local/ponder-go/indexing",
+    "go_test": "TestSourceHandlerDeclarations/d75ae6d953a7bb8ea73c",
+    "backend_tests": [
+      "TestSourceHandlerDeclarations/d75ae6d953a7bb8ea73c/postgres",
+      "TestSourceHandlerDeclarations/d75ae6d953a7bb8ea73c/pglite"
+    ],
+    "target_file": "indexing/handler_contracts_test.go",
+    "original_assertions": 2,
+    "assertions_sha256": "e837059f7a28fb5de873a98bbd6f31bd943e2e1b02cc6c10bc2b176c56c35393",
+    "assertion_policy": "Run a positive external caller and require the Go compiler to reject the property exposed by the original suppressed diagnostic. Replay the original handler inputs and assertions on both storage backends."
+  },
+  {
+    "source_id": "afb6150d1f928a58bf24",
+    "source_file": "packages/core/src/indexing/index.test.ts",
+    "source_name": "processEvents() error",
+    "source_line": 985,
+    "go_package": "ponder.local/ponder-go/indexing",
+    "go_test": "TestSourceHandlerDeclarations/afb6150d1f928a58bf24",
+    "backend_tests": [
+      "TestSourceHandlerDeclarations/afb6150d1f928a58bf24/postgres",
+      "TestSourceHandlerDeclarations/afb6150d1f928a58bf24/pglite"
+    ],
+    "target_file": "indexing/handler_contracts_test.go",
+    "original_assertions": 2,
+    "assertions_sha256": "3dfd39dcf0f5018c6fd6df2da21bfff3ddc4f6a1cf2919c5be4f9de9e30bdade",
+    "assertion_policy": "Run a positive external caller and require the Go compiler to reject the property exposed by the original suppressed diagnostic. Replay the original handler inputs and assertions on both storage backends."
+  },
+  {
+    "source_id": "8a08a48e2a99b23fa016",
+    "source_file": "packages/core/src/indexing/index.test.ts",
+    "source_name": "processEvents() column selection",
+    "source_line": 1150,
+    "go_package": "ponder.local/ponder-go/indexing",
+    "go_test": "TestSourceHandlerDeclarations/8a08a48e2a99b23fa016",
+    "backend_tests": [
+      "TestSourceHandlerDeclarations/8a08a48e2a99b23fa016/postgres",
+      "TestSourceHandlerDeclarations/8a08a48e2a99b23fa016/pglite"
+    ],
+    "target_file": "indexing/handler_contracts_test.go",
+    "original_assertions": 2,
+    "assertions_sha256": "939649947280e7aa460cdc87a163543e17f9dbfa36536db3d9d8bcf9737b1021",
+    "assertion_policy": "Run a positive external caller and require the Go compiler to reject the property exposed by the original suppressed diagnostic. Replay the original handler inputs and assertions on both storage backends."
   }
 ]

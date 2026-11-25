@@ -109,8 +109,9 @@ const bloomCompile = exists("parity/runs/bloom-compile-fixtures.json") ? read("p
 const compilerFixtures = new Map([
 	["config/application_declaration_test.go", "TestSourceApplicationDeclarations", "config/testdata/app-declarations.json", "parity/runs/config-declarations-source.json"],
 	["values/source_test.go", "TestSourceValueUtilities", "testdata/value-utilities.json", "parity/runs/value-utilities-source.json"],
-].map(([file, suite, fixtureFile, proofFile]) => [file, {
-	suite, fixtureFile, proofFile, fixture: read(fixtureFile), proof: exists(proofFile) ? read(proofFile) : null,
+	["indexing/handler_contracts_test.go", "TestSourceHandlerDeclarations", "testdata/indexing/handler-declarations.json", "parity/runs/handler-contracts-source.json", ["postgres","pglite"]],
+].map(([file, suite, fixtureFile, proofFile, children = []]) => [file, {
+	suite, fixtureFile, proofFile, children, fixture: read(fixtureFile), proof: exists(proofFile) ? read(proofFile) : null,
 }]));
 const configCompile = exists("parity/runs/config-live-verification.json") ? read("parity/runs/config-live-verification.json") : null;
 const parameterTypes = exists("parity/runs/parameters-typecheck.json") ? read("parity/runs/parameters-typecheck.json") : null;
@@ -515,7 +516,7 @@ for (const test of ledger.tests) {
   currentLiveOracle(test,indexingServiceVerification,indexingServiceVerificationFile,4);
   if(indexingServiceIDs.has(test.id)){
    test.runtime_validation={status:"passed",evidence:indexingServiceVerificationFile,run_dir:runDir,meaning:"All fifteen handler-service originals replayed on real native PostgreSQL/PGlite in full normal/race modes. Explicit historical property accessor syntax differs from JS Proxy syntax. Separate actual M37 history-to-store and proxy reflection probes earn zero source credit; outer runner remains out of scope. Eight client facade cases have a separate M39 proof when present."};
-   if(indexingServiceGapIDs.has(test.id)){test.runtime_status="passed";test.execution_status="executed";test.pass_status=null;test.execution_evidence=indexingServiceVerificationFile;test.race={status:"pass",evidence:raceFile};test.remaining_native_type_obligations=test.type_error_directives.length;test.type_directives_verification={status:"pending",native_verified:0,obligations:test.type_error_directives.length,meaning:"Exact TS obligations are missing mockRejectedValue on normal callback (two cases), and deletion of required transaction.maxPriorityFeePerGas (one case). Runtime execution is not static-equivalence proof."};test.parity_status="runtime_passed_type_obligations_pending";}
+   if(indexingServiceGapIDs.has(test.id) && !test.mapping){test.runtime_status="passed";test.execution_status="executed";test.pass_status=null;test.execution_evidence=indexingServiceVerificationFile;test.race={status:"pass",evidence:raceFile};test.remaining_native_type_obligations=test.type_error_directives.length;test.type_directives_verification={status:"pending",native_verified:0,obligations:test.type_error_directives.length,meaning:"Exact TS obligations are missing mockRejectedValue on normal callback (two cases), and transaction access before narrowing the event kind (one case). Runtime execution is not static-equivalence proof."};test.parity_status="runtime_passed_type_obligations_pending";}
   }
  }
  if(runDir&&indexingProfileIDs.has(test.id)&&indexingProfileVerification){
@@ -589,13 +590,14 @@ for (const test of ledger.tests) {
 		}
 		const fixtureCheck = compilerFixtures.get(test.mapping.target_file);
 		if (fixtureCheck && (test.type_error_directives.length || test.assertions.some(a => a.kind === "type"))) {
-			const {suite, fixtureFile, proofFile, fixture, proof} = fixtureCheck;
+			const {suite, fixtureFile, proofFile, fixture, proof, children} = fixtureCheck;
 			const entry = fixture.cases.find(c => c.id === test.id);
 			const diagnostics = (proof?.removed_diagnostics ?? []).filter(d =>
 				d.file === path.basename(test.source_file) && d.line >= test.line &&
 				d.line < test.line + test.test_source.split("\n").length);
 			const typed = test.assertions.filter(a => a.kind === "type").length;
 			const valid = status === "pass" && race.get(key)?.Action === "pass" &&
+				children.every(child => go.get(key+"/"+child)?.Action === "pass" && race.get(key+"/"+child)?.Action === "pass") &&
 				entry?.file === test.source_file && entry.line === test.line &&
 				test.mapping.go_test === suite + "/" + test.id &&
 				proof?.files?.[entry.file] === test.source_sha256 &&

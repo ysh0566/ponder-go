@@ -1,0 +1,199 @@
+{
+  "code_commit": "c69d0b5d85778c2985bbd87dbcd1c17b09d52e44",
+  "upstream_commit": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "original": {
+    "postgres": {
+      "packages/core/src/indexing/index.test.ts": {
+        "passed": 23,
+        "vitest_sha256": "18022920f3630175a71b7c3b76db0e04addc3d6b873812ceee3ccae1292c5991"
+      },
+      "packages/core/src/indexing-store/cache.test.ts": {
+        "passed": 8,
+        "vitest_sha256": "18022920f3630175a71b7c3b76db0e04addc3d6b873812ceee3ccae1292c5991"
+      }
+    },
+    "pglite": {
+      "packages/core/src/indexing-store/cache.test.ts": {
+        "passed": 8,
+        "vitest_sha256": "2f968d7a877718cd48195f46d1e2a977694d6d22baedbb78126cfcf9f43b0f63"
+      },
+      "packages/core/src/indexing/index.test.ts": {
+        "passed": 23,
+        "vitest_sha256": "2f968d7a877718cd48195f46d1e2a977694d6d22baedbb78126cfcf9f43b0f63"
+      }
+    }
+  },
+  "typescript": {
+    "typescript": "5.4.5",
+    "cases": 4,
+    "files": {
+      "packages/core/src/indexing/index.test.ts": "3b19265ba9cc3a5e01a7c3a1c18d2456126b670ff77dccb2443354ff14797fa8",
+      "packages/core/src/indexing-store/cache.test.ts": "da3732a385c67be485a7d7e5de8937987fa3a4087c6b8c34181d8ba555edd7a2"
+    },
+    "fixture_sha256": "64e9b43171bd33840d616c3728ef3975c9fb5586e3272d2c3b2f30a4d9f96ac0",
+    "removed_diagnostics": [
+      {
+        "file": "index.test.ts",
+        "line": 722,
+        "code": 2339,
+        "property": "mockRejectedValue"
+      },
+      {
+        "file": "index.test.ts",
+        "line": 1052,
+        "code": 2339,
+        "property": "mockRejectedValue"
+      },
+      {
+        "file": "index.test.ts",
+        "line": 1265,
+        "code": 2339,
+        "property": "transaction"
+      },
+      {
+        "file": "cache.test.ts",
+        "line": 504,
+        "code": 2339,
+        "property": "args"
+      }
+    ]
+  },
+  "native": {
+    "normal": {
+      "ponder.local/ponder-go/indexing": {
+        "passed_leaves": 349,
+        "go_test_json_sha256": "35a9aba60e8d722e0f1bff7f6cb266a04edc2960f5f5562ce33908d20942b8f0"
+      },
+      "ponder.local/ponder-go/events": {
+        "passed_leaves": 163,
+        "go_test_json_sha256": "4e07a15d1c0a172e6f02adf3a1ef2ad4cc1ddaf750ab1f5a06b728cfbaeda36d"
+      },
+      "ponder.local/ponder-go/store": {
+        "passed_leaves": 74,
+        "go_test_json_sha256": "d69d17450d593ac5d291d718659eb1db7e941fd33706502bd7ea5784213887f9"
+      }
+    },
+    "race": {
+      "ponder.local/ponder-go/indexing": {
+        "passed_leaves": 349,
+        "go_test_json_sha256": "61b57a2577741cb76349f27d0520f3a9385e3f43ff8c1d412a1f0e02c39f7993"
+      },
+      "ponder.local/ponder-go/events": {
+        "passed_leaves": 163,
+        "go_test_json_sha256": "ba7c67c5124af6a5842b574682826d6d9366604a748dfcd3fa995f0447793bc7"
+      },
+      "ponder.local/ponder-go/store": {
+        "passed_leaves": 74,
+        "go_test_json_sha256": "5d78feca01ac9b11f0896218e7d7bc631f9ca2c4eca8b4e6d3194864a31d9128"
+      }
+    }
+  },
+  "mappings": [
+    {
+      "id": "d75ae6d953a7bb8ea73c",
+      "file": "packages/core/src/indexing/index.test.ts",
+      "line": 663,
+      "title": "executeSetup() error",
+      "runtime_assertions": 2,
+      "go_test": "TestSourceHandlerDeclarations/d75ae6d953a7bb8ea73c",
+      "backend_tests": [
+        "TestSourceHandlerDeclarations/d75ae6d953a7bb8ea73c/postgres",
+        "TestSourceHandlerDeclarations/d75ae6d953a7bb8ea73c/pglite"
+      ],
+      "diagnostic_line": 722,
+      "property": "mockRejectedValue"
+    },
+    {
+      "id": "afb6150d1f928a58bf24",
+      "file": "packages/core/src/indexing/index.test.ts",
+      "line": 985,
+      "title": "processEvents() error",
+      "runtime_assertions": 2,
+      "go_test": "TestSourceHandlerDeclarations/afb6150d1f928a58bf24",
+      "backend_tests": [
+        "TestSourceHandlerDeclarations/afb6150d1f928a58bf24/postgres",
+        "TestSourceHandlerDeclarations/afb6150d1f928a58bf24/pglite"
+      ],
+      "diagnostic_line": 1052,
+      "property": "mockRejectedValue"
+    },
+    {
+      "id": "8a08a48e2a99b23fa016",
+      "file": "packages/core/src/indexing/index.test.ts",
+      "line": 1150,
+      "title": "processEvents() column selection",
+      "runtime_assertions": 2,
+      "go_test": "TestSourceHandlerDeclarations/8a08a48e2a99b23fa016",
+      "backend_tests": [
+        "TestSourceHandlerDeclarations/8a08a48e2a99b23fa016/postgres",
+        "TestSourceHandlerDeclarations/8a08a48e2a99b23fa016/pglite"
+      ],
+      "diagnostic_line": 1265,
+      "property": "transaction"
+    },
+    {
+      "id": "07156f3c04010167ced9",
+      "file": "packages/core/src/indexing-store/cache.test.ts",
+      "line": 446,
+      "title": "prefetch() uses profile metadata",
+      "runtime_assertions": 1,
+      "go_test": "TestSourceHandlerDeclarations/07156f3c04010167ced9",
+      "backend_tests": [
+        "TestSourceHandlerDeclarations/07156f3c04010167ced9/postgres",
+        "TestSourceHandlerDeclarations/07156f3c04010167ced9/pglite"
+      ],
+      "diagnostic_line": 504,
+      "property": "args"
+    }
+  ],
+  "ledger": {
+    "ported": 847,
+    "go_ports": 843,
+    "retained_sdk": 4,
+    "unimplemented": 53,
+    "out_of_scope": 5
+  },
+  "anvil": {
+    "version": "1.8.5",
+    "observed_transfer": {
+      "postgres": {
+        "event_type": "log",
+        "callback": "Erc20:Transfer(address indexed from, address indexed to, uint256 amount)",
+        "before_cache_has": true,
+        "after_cache_has": true,
+        "count": 0,
+        "source_observation_sha256": "5838a8e06b1214bd41a6501c849dc8530ae421684d3e258fb8d689ca8a71525c",
+        "vitest_sha256": "5399ccdf17f0fa7dfd7f602a63eccf6349a1c6f0e634aae7786d02a2e5caee95"
+      },
+      "pglite": {
+        "event_type": "log",
+        "callback": "Erc20:Transfer(address indexed from, address indexed to, uint256 amount)",
+        "before_cache_has": true,
+        "after_cache_has": true,
+        "count": 0,
+        "source_observation_sha256": "489974af49dca3c4ef1c67e34ceac5b9f3b0a4efdcd5c2de07ec288eabef243e",
+        "vitest_sha256": "4ad580fef08ef05cea55330bb453be06674e6dc6c72d66f2ad4d5b67098fc69a"
+      }
+    }
+  },
+  "commands": {
+    "source": "node tools/handler-contracts-source.mjs",
+    "original": "vitest run --configLoader native --maxWorkers=1 src/indexing/index.test.ts src/indexing-store/cache.test.ts",
+    "observation": "node tools/capture-cached-transfer.mjs; vitest run --configLoader native -t 'prefetch\\(\\) uses profile metadata' src/indexing-store/transfer-observation.test.ts",
+    "indexing": "go test -count=1 [-race] ./indexing ./events",
+    "store": "go test -count=1 [-race] -run '^(TestNativeProfilePrefetch|TestUpstreamCacheEviction|TestCacheConcurrentReadModifyWrite|TestSourceRowCopies|TestUpstreamORM.*|TestIndexingSession.*)$' ./store",
+    "module": [
+      "go build ./...",
+      "go vet ./..."
+    ]
+  },
+  "module": {
+    "build": "passed",
+    "vet": "passed"
+  },
+  "cleanup": {
+    "stage_directories": 3,
+    "allocated_bytes": 1037443072,
+    "accounting": "Includes hard-linked package store data."
+  }
+}

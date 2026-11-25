@@ -34,6 +34,7 @@ node tools/compile-fixtures.mjs
 node tools/abi-catalog-source.mjs
 node tools/config-declarations-source.mjs > parity/runs/config-declarations-source.json
 node tools/value-utilities-source.mjs > parity/runs/value-utilities-source.json
+node tools/handler-contracts-source.mjs > parity/runs/handler-contracts-source.json
 node tools/orm-compile-fixtures.mjs
 node tools/event-compile-fixtures.mjs
 node tools/bloom-compile-fixtures.mjs
