@@ -32,6 +32,7 @@ node tools/capture-original.mjs --mode=filters --output="parity/runs/original-ca
 node tools/capture-original.mjs --mode=blooms --output="parity/runs/original-captures/$capture_run/blooms" --fixture=testdata/bloom/captured-original-blooms.json
 node tools/compile-fixtures.mjs
 node tools/abi-catalog-source.mjs
+node tools/config-declarations-source.mjs > parity/runs/config-declarations-source.json
 node tools/orm-compile-fixtures.mjs
 node tools/event-compile-fixtures.mjs
 node tools/bloom-compile-fixtures.mjs

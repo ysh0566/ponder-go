@@ -21,21 +21,21 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 817,
-    "executed": 579,
-    "passed": 576,
+    "ported": 831,
+    "executed": 593,
+    "passed": 590,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 83,
-    "go_ports": 813,
+    "unimplemented": 69,
+    "go_ports": 827,
     "retained_sdk": 4,
-    "oracle_passed": 576,
+    "oracle_passed": 590,
     "oracle_blocked": 0,
-    "go_passed": 572,
+    "go_passed": 586,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 572,
-    "target_and_original_oracle_passed": 576,
-    "current_original_oracle_passed": 576,
+    "go_and_original_oracle_passed": 586,
+    "target_and_original_oracle_passed": 590,
+    "current_original_oracle_passed": 590,
     "historical_only_original_oracles": 0,
     "runtime_passed_type_pending": 3,
     "out_of_scope": 5
@@ -9304,13 +9304,41 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/address.test-d.ts",
+        "source_name": "factory with invalid event",
+        "source_id": "ca5aeb38077fec8ac1b4",
+        "source_line": 10,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/ca5aeb38077fec8ac1b4",
+        "assertion_policy": "Compile a positive event control and require the Go compiler to reject the original function declaration as a factory event. Check its Definition method result type.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_typescript_type_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed",
+      "type_directives_verification": {
+        "status": "passed",
+        "obligations": 1,
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      }
     },
     {
       "id": "c443f44bd0a698830cd8",
@@ -9334,13 +9362,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/address.test-d.ts",
+        "source_name": "factory with weak event",
+        "source_id": "c443f44bd0a698830cd8",
+        "source_line": 20,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/c443f44bd0a698830cd8",
+        "assertion_policy": "Compile an external factory declaration using the original event and parameter path. Compare its serialized metadata to the actual TypeScript literal type.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_typescript_type_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "aa53acd8f2d5fdbc0a92",
@@ -9364,13 +9415,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/address.test-d.ts",
+        "source_name": "factory",
+        "source_id": "aa53acd8f2d5fdbc0a92",
+        "source_line": 29,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/aa53acd8f2d5fdbc0a92",
+        "assertion_policy": "Compile an external factory declaration using the original event and parameter path. Compare its serialized metadata to the actual TypeScript literal type.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_typescript_type_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "89a2d0891034e67e100b",
@@ -9394,13 +9468,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/address.test-d.ts",
+        "source_name": "factory",
+        "source_id": "89a2d0891034e67e100b",
+        "source_line": 43,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/89a2d0891034e67e100b",
+        "assertion_policy": "Compile an external factory declaration using the original event and parameter path. Compare its serialized metadata to the actual TypeScript literal type.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_typescript_type_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "036f65a48c96f716477f",
@@ -9424,13 +9521,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/index.test.ts",
+        "source_name": "createConfig basic",
+        "source_id": "036f65a48c96f716477f",
+        "source_line": 12,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/036f65a48c96f716477f",
+        "assertion_policy": "Compile a native caller, preserve its concrete configuration identity, compare the full declaration and its native source conversion to the original input.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_runtime_test_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "e37b99283cdc529dd5a0",
@@ -9457,13 +9577,41 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/index.test.ts",
+        "source_name": "createConfig no extra properties",
+        "source_id": "e37b99283cdc529dd5a0",
+        "source_line": 39,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/e37b99283cdc529dd5a0",
+        "assertion_policy": "Compile a native caller, preserve its concrete configuration identity, compare the full declaration and its native source conversion to the original input. Verify the Go compiler rejects the extra field independently on the chain and the contract. Explicit extensions reproduce the original suppressed-error runtime values.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_runtime_test_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed",
+      "type_directives_verification": {
+        "status": "passed",
+        "obligations": 2,
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      }
     },
     {
       "id": "663ce50fbe074b46cdd1",
@@ -9487,13 +9635,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/index.test.ts",
+        "source_name": "createConfig address",
+        "source_id": "663ce50fbe074b46cdd1",
+        "source_line": 60,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/663ce50fbe074b46cdd1",
+        "assertion_policy": "Compile a native caller, preserve its concrete configuration identity, compare the full declaration and its native source conversion to the original input.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_runtime_test_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "acdfa0856342392ce948",
@@ -9517,13 +9688,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/index.test.ts",
+        "source_name": "createConfig factory",
+        "source_id": "acdfa0856342392ce948",
+        "source_line": 82,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/acdfa0856342392ce948",
+        "assertion_policy": "Compile a native caller, preserve its concrete configuration identity, compare the full declaration and its native source conversion to the original input.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_runtime_test_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "3fb93481f547cbecd6c2",
@@ -9547,13 +9741,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/index.test.ts",
+        "source_name": "createConfig with filter",
+        "source_id": "3fb93481f547cbecd6c2",
+        "source_line": 108,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/3fb93481f547cbecd6c2",
+        "assertion_policy": "Compile a native caller, preserve its concrete configuration identity, compare the full declaration and its native source conversion to the original input.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_runtime_test_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "c521139e77fd7bf49576",
@@ -9577,13 +9794,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/index.test.ts",
+        "source_name": "createConfig with multiple filters",
+        "source_id": "c521139e77fd7bf49576",
+        "source_line": 137,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/c521139e77fd7bf49576",
+        "assertion_policy": "Compile a native caller, preserve its concrete configuration identity, compare the full declaration and its native source conversion to the original input.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_runtime_test_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "7f3c153fd92b6fe93448",
@@ -9607,13 +9847,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/index.test.ts",
+        "source_name": "createConfig chain overrides",
+        "source_id": "7f3c153fd92b6fe93448",
+        "source_line": 172,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/7f3c153fd92b6fe93448",
+        "assertion_policy": "Compile a native caller, preserve its concrete configuration identity, compare the full declaration and its native source conversion to the original input.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_runtime_test_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "1e7899e0aec12b712940",
@@ -9639,13 +9902,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/index.test.ts",
+        "source_name": "createConfig weak Abi",
+        "source_id": "1e7899e0aec12b712940",
+        "source_line": 209,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/1e7899e0aec12b712940",
+        "assertion_policy": "Compile a native caller, preserve its concrete configuration identity, compare the full declaration and its native source conversion to the original input.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_runtime_test_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "1b296f08989e38ca0517",
@@ -9682,13 +9968,41 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/index.test.ts",
+        "source_name": "createConfig strict return type",
+        "source_id": "1b296f08989e38ca0517",
+        "source_line": 238,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/1b296f08989e38ca0517",
+        "assertion_policy": "Compile a native caller, preserve its concrete configuration identity, compare the full declaration and its native source conversion to the original input. Compile concrete assignments for the chain ID, RPC, ordered ABI, chain name, event name and fixed argument array.",
+        "original_assertions": 2,
+        "assertions_sha256": "0e446110f60ef9dc19d9ec6e18dc69949c153e9d4d50b05f662e462b025bc68b"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_runtime_test_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed",
+      "type_verification": {
+        "status": "passed",
+        "obligations": 2,
+        "compile_evidence": "parity/runs/application-config-declarations/results.json"
+      }
     },
     {
       "id": "552ecbba729683f13b39",
@@ -9712,13 +10026,36 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/config/index.test.ts",
+        "source_name": "createConfig accounts",
+        "source_id": "552ecbba729683f13b39",
+        "source_line": 280,
+        "target_file": "config/application_declaration_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceApplicationDeclarations/552ecbba729683f13b39",
+        "assertion_policy": "Compile a native caller, preserve its concrete configuration identity, compare the full declaration and its native source conversion to the original input.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-config-declarations/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-config-declarations/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_runtime_test_file",
+        "evidence": "parity/runs/application-config-declarations/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "a9431cec418ebc8f48c3",
