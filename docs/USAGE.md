@@ -126,7 +126,7 @@ go build .
 
 示例使用 PostgreSQL。选择 PGlite 的独立应用需在项目目录安装 `@electric-sql/pglite@0.2.13` 并提供 Node.js，Go 程序已内置适配器脚本。
 
-如果设置了 `GOBIN`，CLI 位于该目录。生成的项目包含自己的 `go.mod`、Go 事件处理函数和表定义。沿用上文的数据库、RPC 和合约地址，在项目目录执行 `ponder start --schema ponder_go_my_indexer`，其中 `ponder` 取安装后的实际路径。
+如果设置了 `GOBIN`，CLI 位于该目录。要使用自己的仓库地址，可在项目中执行 `go mod edit -module 你的模块路径`。生成的项目包含自己的 `go.mod`、Go 事件处理函数和表定义。沿用上文的数据库、RPC 和合约地址，在项目目录执行 `ponder start --schema ponder_go_my_indexer`，其中 `ponder` 取安装后的实际路径。
 
 - **从 Go 示例开始。** 在生成的项目中修改 `schema.json` 定义表和主键，在 `main.go` 配置链 ID、RPC、合约地址、ABI 和起始区块。示例从区块 0 开始，使用已有合约时可将 `config.Contract.StartBlock` 设为部署高度。[配置](SOURCE_CONFIGURATION.md) · [示例入口](../examples/erc20/main.go)
 - **编写处理函数。** 示例在 `Token:Transfer` 中解码参数，通过事件上下文的 `c.DB` 更新两行。将写入放在回调事务中，以便索引器一起提交业务数据和 checkpoint，并在重组时撤销。[存储操作](DATABASE_ACTIONS.md)

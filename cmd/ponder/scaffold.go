@@ -20,6 +20,7 @@ import (
 //go:embed all:scaffold/empty
 var scaffolds embed.FS
 
+var goProjectName = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
 var projectName = regexp.MustCompile(`^[a-z0-9-][a-z0-9._-]*$`)
 
 func createProject(ctx context.Context, template, dir string, out io.Writer) error {
@@ -38,7 +39,11 @@ func createProject(ctx context.Context, template, dir string, out io.Writer) err
 		return err
 	}
 	name := filepath.Base(target)
-	if !projectName.MatchString(name) || len(name) > 214 || name == "node_modules" || name == "favicon.ico" {
+	valid := goProjectName.MatchString(name)
+	if template == "typescript" {
+		valid = projectName.MatchString(name) && len(name) <= 214 && name != "node_modules" && name != "favicon.ico"
+	}
+	if !valid {
 		return fmt.Errorf("invalid project name %q", name)
 	}
 	if err := ctx.Err(); err != nil {

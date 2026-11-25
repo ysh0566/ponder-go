@@ -106,7 +106,7 @@ func TestInitGoProject(t *testing.T) {
 		}
 	}
 	mod, err := os.ReadFile(filepath.Join(root, "go.mod"))
-	if err != nil || !strings.HasPrefix(string(mod), "module my-indexer\n") {
+	if err != nil || !strings.HasPrefix(string(mod), "module example.com/my-indexer\n") {
 		t.Fatalf("unexpected module %s: %v", mod, err)
 	}
 }
