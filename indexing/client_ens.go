@@ -23,6 +23,7 @@ var ensReverseABI = sync.OnceValues(func() (abi.ABI, error) { return abi.Parse(e
 // forward and reverse address lookups. Names supplied to the client are ENS-normalized.
 type ENSNameOptions struct {
 	BlockOptions
+	CCIPRead                 CCIPReadOptions
 	UniversalResolverAddress string
 	CoinType                 *big.Int
 	GatewayURLs              []string
@@ -62,7 +63,7 @@ func (c *Client) GetEnsName(ctx context.Context, address string, options ...ENSN
 	}
 	retry := false
 	args := []any{address, coinType, ensGateways(opts.GatewayURLs)}
-	result, err := c.ReadContract(ctx, ContractCall{ABI: parsed, Address: resolver, FunctionName: "reverseWithGateways", Args: args}, ReadContractOptions{BlockOptions: opts.BlockOptions, RetryEmptyResponse: &retry})
+	result, err := c.ReadContract(ctx, ContractCall{ABI: parsed, Address: resolver, FunctionName: "reverseWithGateways", Args: args}, ReadContractOptions{BlockOptions: opts.BlockOptions, CCIPRead: opts.CCIPRead, RetryEmptyResponse: &retry})
 	if err != nil {
 		if !opts.Strict && isNullENSError(err, parsed) {
 			return nil, nil

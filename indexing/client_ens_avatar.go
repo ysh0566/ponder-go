@@ -125,7 +125,7 @@ func (c *Client) avatarNFTImage(ctx context.Context, nft avatarNFT, opt ENSAvata
 	}
 	// viem reads the ENS record at the requested block and the NFT metadata
 	// with an unqualified contract read (latest) on the same chain client.
-	output, err := c.Call(ctx, Object{"to": nft.address, "data": data}, CallOptions{BlockOptions: BlockOptions{Cache: "immutable"}})
+	output, err := c.Call(ctx, Object{"to": nft.address, "data": data}, CallOptions{BlockOptions: BlockOptions{Cache: "immutable"}, CCIPRead: opt.CCIPRead})
 	if err != nil {
 		return "", err
 	}

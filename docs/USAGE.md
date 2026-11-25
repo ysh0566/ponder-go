@@ -232,7 +232,7 @@ if wallet != nil && url != nil {
 }
 ```
 
-默认返回带校验和的以太坊地址。显式传入 `CoinType: big.NewInt(0)` 等 ENSIP-9 币种编号时，返回该币种的原始地址字节，以十六进制字符串表示。可用 `BlockOptions.BlockNumber` 指定高度，`GatewayURLs` 会传给 Universal Resolver。需要 EIP-3668 链下读取的名称目前会返回节点错误。[双后端与上游验证](../parity/runs/native-ens-records/RESULT.md)
+默认返回带校验和的以太坊地址。显式传入 `CoinType: big.NewInt(0)` 等 ENSIP-9 币种编号时，返回该币种的原始地址字节，以十六进制字符串表示。可用 `BlockOptions.BlockNumber` 指定高度，`GatewayURLs` 会传给 Universal Resolver。遇到 EIP-3668 时，客户端还会从合约指定的网关取数并交回合约验证。[双后端与上游验证](../parity/runs/native-ens-records/RESULT.md)
 
 用 `avatar, err := client.GetEnsAvatar(ctx, "alice.eth")` 查询头像。成功时 `*avatar` 是图片 URL 或链上数据 URI，缺少记录或图片不可用时返回 `nil`。客户端在指定的 ENS 区块读取头像记录，与固定上游一致，NFT 合约的 `tokenURI` 或 `uri` 在同一链按 `latest` 读取。链外图片及元数据由查询时的网关提供。
 
@@ -263,6 +263,20 @@ head "$model_dir/model.go"
 ```
 
 生成的模型用 `[]byte` 表示二进制，`json.RawMessage` 表示 JSON，`[2]float64` 和 `[3]float64` 表示点和线。SQL 数组使用 `[]orm.Nullable[T]`，可通过 `orm.Some(value)` 和 `orm.Null[T]()` 分别写入值和空元素。生成的 ABI 回调保留 tuple 的原始组件名，两个组件转换成相同 Go 名字时会得到不同的字段名。
+
+### 合约的 EIP-3668 链下读取
+
+`Call`、`ReadContract`、`SimulateContract` 和 ENS 查询遇到 `OffchainLookup` 时自动检查返回的 sender 是否为目标合约。客户端按合约提供的 URL 顺序尝试网关，然后使用回调选择器将响应和原始附加数据交给合约验证。初次调用使用所选区块，验证回调与固定上游一致，使用同一条链的 `latest`。Universal Resolver 的本地批量请求可以嵌套，同批中某条查询失败时，其余结果仍会交给合约。
+
+默认网关使用公网 HTTP 客户端。接入自建网关时，可通过 `CCIPReadOptions.HTTPClient` 配置受控传输。若处理函数需要记录节点返回的原始回滚，按次关闭自动解析即可。
+
+```go
+result, err := client.ReadContract(ctx, call, indexing.ReadContractOptions{
+    CCIPRead: indexing.CCIPReadOptions{Disabled: true},
+})
+```
+
+原始 `client.Request(ctx, "eth_call", params)` 直接返回节点结果。自动查询单次最多执行 8 层合约回调、8 层批量查询、64 次 HTTP 尝试和 64 个批量成员，网关响应正文累计上限为 4 MiB。调用方取消上下文会中断请求。[链下读取实测](../parity/runs/native-ccip-read/RESULT.md)
 
 ## 列类型与 GraphQL 表示
 

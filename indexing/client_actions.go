@@ -17,6 +17,7 @@ type BlockOptions = BalanceOptions
 
 type ReadContractOptions struct {
 	BlockOptions
+	CCIPRead CCIPReadOptions
 	// Nil means retry, matching the source default. False disables empty-data retries.
 	RetryEmptyResponse *bool
 }
@@ -270,7 +271,8 @@ func (c *Client) ReadContract(ctx context.Context, contract ContractCall, option
 		if err != nil {
 			return nil, err
 		}
-		raw, err := c.request(ctx, "eth_call", []any{Object{"to": contract.Address, "data": data}, tag})
+		tx := Object{"to": contract.Address, "data": data}
+		raw, err := c.readEVM(ctx, tx, []any{tx, tag}, true, opt.CCIPRead)
 		if err != nil {
 			return nil, err
 		}
