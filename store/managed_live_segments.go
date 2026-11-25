@@ -189,7 +189,7 @@ func normalizeLiveBatch(opts ManagedLiveOptions, in ManagedLiveBatch) (ManagedLi
 		}
 		if block.RangeDigest != "" || block.RangeFirst != (ManagedLiveHead{}) {
 			first, at, e := normalizeLiveHead(block.RangeFirst)
-			if !pagedLogOnlyOptions(opts) || !liveDigest(block.RangeDigest) || e != nil || first != block.RangeFirst || at.ChainID != cp.ChainID || at.BlockNumber >= cp.BlockNumber || at.BlockTimestamp > cp.BlockTimestamp {
+			if !logOnlyOptions(opts) || !liveDigest(block.RangeDigest) || e != nil || first != block.RangeFirst || at.ChainID != cp.ChainID || at.BlockNumber >= cp.BlockNumber || at.BlockTimestamp > cp.BlockTimestamp {
 				return out, ErrManagedLiveBatchConflict
 			}
 		}
@@ -361,7 +361,7 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 		extends := cp.BlockNumber == previous.BlockNumber+1 && block.Head.ParentHash == prior.Hash
 		if block.RangeDigest != "" {
 			_, first, err := normalizeLiveHead(block.RangeFirst)
-			extends = pagedLogOnlyOptions(opts) && err == nil && !liveDown(beforePosition) && first.BlockNumber == previous.BlockNumber+1 && first.BlockTimestamp >= previous.BlockTimestamp && block.RangeFirst.ParentHash == prior.Hash
+			extends = logOnlyOptions(opts) && err == nil && !liveDown(beforePosition) && first.BlockNumber == previous.BlockNumber+1 && first.BlockTimestamp >= previous.BlockTimestamp && block.RangeFirst.ParentHash == prior.Hash
 		} else if opts.runtimeInitial && liveDown(beforePosition) {
 			extends = cp.BlockNumber == previous.BlockNumber && block.Head == prior
 		}
@@ -507,5 +507,5 @@ func exactLiveRetry(batch ManagedLiveBatch, requestHash, owner string, op manage
 }
 
 // ManagedLiveOmnichainBlockLimit is the physical receipt budget, independent
-// of source SQL QuerySize. v16 preflights total configured work against it.
+// of the total chain range and the source SQL QuerySize.
 func ManagedLiveOmnichainBlockLimit(chainCount int) int { return 12000 + 6*chainCount }

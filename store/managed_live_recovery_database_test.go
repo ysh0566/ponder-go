@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -29,6 +30,32 @@ func liveRecoveryFixture(t *testing.T, dialect string) (IndependentStorageOption
 func TestManagedLiveRecoveryDatabase(t *testing.T) {
 	for _, dialect := range []string{"postgres", "pglite"} {
 		t.Run(dialect, func(t *testing.T) {
+			t.Run("unsupported_control_version_leaves_storage_unchanged", func(t *testing.T) {
+				ctx := context.Background()
+				o, opts, open := liveRecoveryFixture(t, dialect)
+				s, err := open(opts)
+				if err != nil {
+					t.Fatal(err)
+				}
+				business := s.BusinessStore()
+				managedTestClose(t, s)
+				raw := liveDomainsRawOpen(t, o, dialect, true)
+				if err = raw.Exec(ctx, "UPDATE "+business.internal("_ponder_go_live_control")+" SET payload=jsonb_set(payload,'{version}',to_jsonb('unsupported-format'::text)) WHERE key='control'"); err != nil {
+					t.Fatal(err)
+				}
+				before := liveCrashSQLSnapshot(t, raw, business)
+				if err = raw.Close(); err != nil {
+					t.Fatal(err)
+				}
+				opts.OpenID = "reject-unsupported-format"
+				if _, err = open(opts); err == nil || !strings.Contains(err.Error(), "incompatible managed live format") {
+					t.Fatalf("unexpected reopen result: %v", err)
+				}
+				raw = liveDomainsRawOpen(t, o, dialect, true)
+				if after := liveCrashSQLSnapshot(t, raw, business); after != before {
+					t.Fatalf("failed open changed storage: %s -> %s", before, after)
+				}
+			})
 			t.Run("nonempty_reopen_undoes_global_suffix_and_replays_empty_segment", func(t *testing.T) {
 				ctx := context.Background()
 				_, opts, open := liveRecoveryFixture(t, dialect)
@@ -37,6 +64,10 @@ func TestManagedLiveRecoveryDatabase(t *testing.T) {
 					t.Fatal(err)
 				}
 				m := s.ManagedLive()
+				initial, err := m.Control(ctx)
+				if err != nil || initial.Version != "managed-live-recovery-v3" || initial.Generation != 1 {
+					t.Fatalf("fresh recovery control=%+v err=%v", initial, err)
+				}
 				batch := liveSegmentsUnitBatch(m)
 				oldAcquisition := liveBatchPGRetain(t, m, batch)
 				calls := 0

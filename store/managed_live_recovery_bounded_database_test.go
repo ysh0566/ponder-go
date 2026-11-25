@@ -2,12 +2,7 @@ package store
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"os"
-	"os/exec"
-	"strings"
 	"testing"
 
 	"ponder.local/ponder-go/checkpoint"
@@ -126,65 +121,4 @@ func TestManagedLiveRecoveryBoundedFork(t *testing.T) {
 			}
 		})
 	}
-}
-
-// The fixture binary is compiled from the protected v2 input before the semantic
-// version change. It creates a new namespace and closes normally; it never opens
-// any retained project database or starts a production writer.
-func TestManagedLiveRecoveryV2NamespaceFence(t *testing.T) {
-	ctx := context.Background()
-	if specJSON := os.Getenv("PONDER_M45_RECOVERY_V2_FIXTURE_SPEC"); specJSON != "" {
-		var spec liveCrashSpec
-		if err := json.Unmarshal([]byte(specJSON), &spec); err != nil {
-			t.Fatal(err)
-		}
-		o, opts := liveTestOptions()
-		o.BusinessNamespace, o.SyncNamespace = spec.BusinessNamespace, spec.SyncNamespace
-		o.BusinessDirectory, o.SyncDirectory = spec.BusinessDirectory, spec.SyncDirectory
-		o.PostgresURL = spec.PostgresURL
-		o.Schema = model(false)
-		opts.ViewsSchema = o.BusinessNamespace + "_view"
-		opts.EndBlocks = map[uint64]uint64{1: 20, 10: 20}
-		opts.OpenID = spec.OpenID
-		s, err := OpenManagedLiveRecoveryIndependentPostgres(ctx, o, opts)
-		if err != nil {
-			t.Fatal(err)
-		}
-		c, err := s.ManagedLive().Control(ctx)
-		if err != nil || c.Version != "managed-live-recovery-v2" {
-			t.Fatalf("fixture did not use genuine v2 implementation: %+v %v", c, err)
-		}
-		managedTestClose(t, s)
-		fmt.Println("GENUINE_V2_FIXTURE_CLOSED")
-		return
-	}
-	t.Run("postgres", func(t *testing.T) {
-		o, opts, _ := liveRecoveryFixture(t, "postgres")
-		binary := os.Getenv("PONDER_M45_RECOVERY_V2_TEST_BINARY")
-		if binary == "" {
-			t.Fatal("requires frozen old-v2 fixture test binary")
-		}
-		spec, _ := json.Marshal(liveCrashSpec{o.BusinessNamespace, o.SyncNamespace, o.BusinessDirectory, o.SyncDirectory, o.PostgresURL, opts.OpenID})
-		cmd := exec.Command(binary, "-test.run=^TestManagedLiveRecoveryV2NamespaceFence$", "-test.v", "-test.timeout=90s")
-		cmd.Env = append(os.Environ(), "PONDER_M45_RECOVERY_V2_FIXTURE_SPEC="+string(spec))
-		trace, err := cmd.CombinedOutput()
-		t.Logf("frozen v2 fixture:\n%s", trace)
-		if err != nil || !strings.Contains(string(trace), "GENUINE_V2_FIXTURE_CLOSED") {
-			t.Fatalf("old-v2 fixture failed: %v", err)
-		}
-		probe := liveBatchPGProbe(t, o)
-		st, err := describeStore(probe, o.Schema, o.BusinessNamespace, o.Ordering, true)
-		if err != nil {
-			t.Fatal(err)
-		}
-		before := liveCrashSQLSnapshot(t, probe, st)
-		opts.OpenID = "reject-genuine-older-v2"
-		if s, err := OpenManagedLiveRecoveryIndependentPostgres(ctx, o, opts); !errors.Is(err, ErrManagedLivePendingActions) {
-			managedTestClose(t, s)
-			t.Fatalf("new format silently adopted older v2 namespace: %v", err)
-		}
-		if after := liveCrashSQLSnapshot(t, probe, st); before != after {
-			t.Fatal("rejected v2 namespace was modified")
-		}
-	})
 }

@@ -21,23 +21,24 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 567,
-    "executed": 550,
-    "passed": 543,
+    "ported": 562,
+    "executed": 545,
+    "passed": 538,
     "failed": 0,
     "blocked": 0,
     "unimplemented": 338,
-    "go_ports": 563,
+    "go_ports": 558,
     "retained_sdk": 4,
-    "oracle_passed": 543,
+    "oracle_passed": 538,
     "oracle_blocked": 0,
-    "go_passed": 539,
+    "go_passed": 534,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 539,
-    "target_and_original_oracle_passed": 543,
-    "current_original_oracle_passed": 543,
+    "go_and_original_oracle_passed": 534,
+    "target_and_original_oracle_passed": 538,
+    "current_original_oracle_passed": 538,
     "historical_only_original_oracles": 0,
-    "runtime_passed_type_pending": 7
+    "runtime_passed_type_pending": 7,
+    "out_of_scope": 5
   },
   "unresolved_expansion_ids": [],
   "files": [
@@ -12774,13 +12775,7 @@
         "target_file": "store/sync_migration_upstream_test.go",
         "go_package": "ponder.local/ponder-go/store",
         "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_creates_only_the_latest_sync_schema",
-        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
-        "oracle_blocker": {
-          "status": "blocked",
-          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
-          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
-          "dependency_evidence": "parity/foundry-generation-dependencies.json"
-        }
+        "assertion_policy": "Use the exact current-schema DDL in an owned namespace. Check the original tables, cache values and startup behavior on both database backends."
       },
       "execution_status": "executed",
       "pass_status": "passed",
@@ -12876,13 +12871,7 @@
         "target_file": "store/sync_migration_upstream_test.go",
         "go_package": "ponder.local/ponder-go/store",
         "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_no-ops_on_repeated_startup",
-        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
-        "oracle_blocker": {
-          "status": "blocked",
-          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
-          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
-          "dependency_evidence": "parity/foundry-generation-dependencies.json"
-        }
+        "assertion_policy": "Use the exact current-schema DDL in an owned namespace. Check the original tables, cache values and startup behavior on both database backends."
       },
       "execution_status": "executed",
       "pass_status": "passed",
@@ -12974,27 +12963,10 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "ported",
-      "mapping": {
-        "source_file": "packages/core/src/database/index.test.ts",
-        "source_name": "migrateSync() accepts the latest legacy migration",
-        "source_id": "98c0b79c36296529001b",
-        "source_line": 523,
-        "assertions_sha256": "d2089fa10ed7e44ffee84c930e93403d817ccf46a42b5ad1bac8dd0d31edd266",
-        "original_assertions": 2,
-        "target_file": "store/sync_migration_upstream_test.go",
-        "go_package": "ponder.local/ponder-go/store",
-        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_accepts_the_latest_legacy_migration",
-        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
-        "oracle_blocker": {
-          "status": "blocked",
-          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
-          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
-          "dependency_evidence": "parity/foundry-generation-dependencies.json"
-        }
-      },
-      "execution_status": "executed",
-      "pass_status": "passed",
+      "port_status": "out_of_scope",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle_current_status": "passed",
@@ -13042,8 +13014,7 @@
         "status": "pass",
         "evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-race.jsonl"
       },
-      "execution_evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-test.jsonl",
-      "parity_status": "target_and_original_oracle_passed"
+      "scope_reason": "Historical sync cache migration was retired. The Go port supports the current database format only."
     },
     {
       "id": "a7a38ea6cc600d52a23c",
@@ -13076,27 +13047,10 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "ported",
-      "mapping": {
-        "source_file": "packages/core/src/database/index.test.ts",
-        "source_name": "migrateSync() excludes trace and transfer intervals from ponder_sync",
-        "source_id": "a7a38ea6cc600d52a23c",
-        "source_line": 578,
-        "assertions_sha256": "03016b0ea70bbb02f424edb4fddb9eec31054d1391aa7c29b0fbf6155919dcfa",
-        "original_assertions": 1,
-        "target_file": "store/sync_migration_upstream_test.go",
-        "go_package": "ponder.local/ponder-go/store",
-        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_excludes_trace_and_transfer_intervals_from_ponder_sync",
-        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
-        "oracle_blocker": {
-          "status": "blocked",
-          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
-          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
-          "dependency_evidence": "parity/foundry-generation-dependencies.json"
-        }
-      },
-      "execution_status": "executed",
-      "pass_status": "passed",
+      "port_status": "out_of_scope",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle_current_status": "passed",
@@ -13144,8 +13098,7 @@
         "status": "pass",
         "evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-race.jsonl"
       },
-      "execution_evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-test.jsonl",
-      "parity_status": "target_and_original_oracle_passed"
+      "scope_reason": "Historical sync cache migration was retired. The Go port supports the current database format only."
     },
     {
       "id": "65d565b7c92dadc9b178",
@@ -13190,27 +13143,10 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "ported",
-      "mapping": {
-        "source_file": "packages/core/src/database/index.test.ts",
-        "source_name": "migrateSync() excludes factories, child addresses, and factory intervals from ponder_sync",
-        "source_id": "65d565b7c92dadc9b178",
-        "source_line": 623,
-        "assertions_sha256": "2f97d28e54c31154535993c7c1559ccdc19bf2152fbd01605aa94a2829c993e5",
-        "original_assertions": 3,
-        "target_file": "store/sync_migration_upstream_test.go",
-        "go_package": "ponder.local/ponder-go/store",
-        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_excludes_factories,_child_addresses,_and_factory_intervals_from_ponder_sync",
-        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
-        "oracle_blocker": {
-          "status": "blocked",
-          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
-          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
-          "dependency_evidence": "parity/foundry-generation-dependencies.json"
-        }
-      },
-      "execution_status": "executed",
-      "pass_status": "passed",
+      "port_status": "out_of_scope",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle_current_status": "passed",
@@ -13258,8 +13194,7 @@
         "status": "pass",
         "evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-race.jsonl"
       },
-      "execution_evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-test.jsonl",
-      "parity_status": "target_and_original_oracle_passed"
+      "scope_reason": "Historical sync cache migration was retired. The Go port supports the current database format only."
     },
     {
       "id": "e9b7f486851526c0b13b",
@@ -13297,27 +13232,10 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "ported",
-      "mapping": {
-        "source_file": "packages/core/src/database/index.test.ts",
-        "source_name": "migrateSync() rejects outdated legacy migrations",
-        "source_id": "e9b7f486851526c0b13b",
-        "source_line": 693,
-        "assertions_sha256": "57f27edd07e24cf93765f1136513ab05a4dac68e665c66632d02dfc51a3120b7",
-        "original_assertions": 2,
-        "target_file": "store/sync_migration_upstream_test.go",
-        "go_package": "ponder.local/ponder-go/store",
-        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_rejects_outdated_legacy_migrations",
-        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
-        "oracle_blocker": {
-          "status": "blocked",
-          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
-          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
-          "dependency_evidence": "parity/foundry-generation-dependencies.json"
-        }
-      },
-      "execution_status": "executed",
-      "pass_status": "passed",
+      "port_status": "out_of_scope",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle_current_status": "passed",
@@ -13365,8 +13283,7 @@
         "status": "pass",
         "evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-race.jsonl"
       },
-      "execution_evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-test.jsonl",
-      "parity_status": "target_and_original_oracle_passed"
+      "scope_reason": "Historical sync cache migration was retired. The Go port supports the current database format only."
     },
     {
       "id": "cc383fdf74c284fe3850",
@@ -13410,13 +13327,7 @@
         "target_file": "store/sync_migration_upstream_test.go",
         "go_package": "ponder.local/ponder-go/store",
         "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_handles_concurrent_migrations",
-        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
-        "oracle_blocker": {
-          "status": "blocked",
-          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
-          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
-          "dependency_evidence": "parity/foundry-generation-dependencies.json"
-        }
+        "assertion_policy": "Use the exact current-schema DDL in an owned namespace. Check the original tables, cache values and startup behavior on both database backends."
       },
       "execution_status": "executed",
       "pass_status": "passed",
@@ -13504,27 +13415,10 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "ported",
-      "mapping": {
-        "source_file": "packages/core/src/database/index.test.ts",
-        "source_name": "migrateSync() copies ponder_sync from one snapshot",
-        "source_id": "5f831a3f919a8144afa1",
-        "source_line": 777,
-        "assertions_sha256": "6dbdb98f42286e0ba8c96cb6063ec5cb4cb4fc2416f53a120001f03938258773",
-        "original_assertions": 1,
-        "target_file": "store/sync_migration_upstream_test.go",
-        "go_package": "ponder.local/ponder-go/store",
-        "go_test": "TestUpstreamSyncMigration/postgres/migrateSync()_copies_ponder_sync_from_one_snapshot",
-        "assertion_policy": "Exact unmodified source create/copy SQL and legacy fixture bytes are embedded (hashes in sync-migration-assets.json); only qualified schema identifiers are remapped into owned task shadows. Preserve all source cached-request/1n/123n/0x1234 values, migration names/timestamps, fragment IDs/ranges, JSON factory/address fixture, exact MigrationError type/message, Promise.all two-start contention and real PG lock/snapshot ordering. All 13 assertions retained. Extra ownership comments add no user tables or copied rows. Source PG-only snapshot branch has no PGlite companion credit. Go standalone SyncMigrator is the native API adaptation, with Lifecycle.MigrateSync delegation tested separately.",
-        "oracle_blocker": {
-          "status": "blocked",
-          "reason": "Unchanged full database/index.test.ts collection requires missing ./generated.js; Foundry 1.8.5 installation is still pending approval. Embedded SQL execution is not counted as an original full oracle pass.",
-          "evidence": "parity/runs/sync-migration-oracle-blocked.json",
-          "dependency_evidence": "parity/foundry-generation-dependencies.json"
-        }
-      },
-      "execution_status": "executed",
-      "pass_status": "passed",
+      "port_status": "out_of_scope",
+      "mapping": null,
+      "execution_status": "not_run",
+      "pass_status": null,
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle_current_status": "passed",
@@ -13572,8 +13466,7 @@
         "status": "pass",
         "evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-race.jsonl"
       },
-      "execution_evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-test.jsonl",
-      "parity_status": "target_and_original_oracle_passed"
+      "scope_reason": "Historical sync cache migration was retired. The Go port supports the current database format only."
     },
     {
       "id": "3813ee03d59e149c556f",

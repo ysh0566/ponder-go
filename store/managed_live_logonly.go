@@ -11,32 +11,10 @@ import (
 	"strings"
 )
 
-const managedLiveOmnichainLogOnlyVersion = "managed-live-omnichain-logonly-v16"
-
 const managedLivePagedLogOnlyVersion = "managed-live-omnichain-logonly-v17"
 
 func logOnlyVersion(version string) bool {
-	return version == managedLiveOmnichainLogOnlyVersion || version == managedLivePagedLogOnlyVersion
-}
-
-func (d *ManagedLiveDomains) UsesPagedLogOnly() bool { return pagedLogOnlyOptions(d.live().opts) }
-
-func pagedLogOnlyOptions(o ManagedLiveOptions) bool {
-	if !logOnlyOptions(o) {
-		return false
-	}
-	remaining := uint64(ManagedLiveOmnichainBlockLimit(len(o.Chains)))
-	for _, chain := range o.Chains {
-		from, to := o.runtimeStarts[chain.ID], o.EndBlocks[chain.ID]
-		if to < from {
-			return false
-		}
-		if to-from >= remaining {
-			return true
-		}
-		remaining -= to - from + 1
-	}
-	return false
+	return version == managedLivePagedLogOnlyVersion
 }
 
 func logOnlyOptions(o ManagedLiveOptions) bool { return o.runtimeLogFilters != nil }
@@ -348,11 +326,11 @@ func rejectLogOnlyJSON(raw []byte) error {
 		return false
 	}
 	if invalid(value) {
-		return fmt.Errorf("legacy receipt contains log-only v16 fields")
+		return fmt.Errorf("non-log receipt contains log-only fields")
 	}
 	return nil
 }
-func validateLegacyLogOnlyExtensions(ops []managedLiveOperation) error {
+func rejectLogOnlyOperationFields(ops []managedLiveOperation) error {
 	for _, op := range ops {
 		if e := rejectLogOnlyJSON([]byte(op.Payload)); e != nil {
 			return e

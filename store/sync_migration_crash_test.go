@@ -7,13 +7,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
 )
 
-// Real process exits supplement, rather than replace, the eight source cases.
+// Exercise fresh initialization and recovery from a lost commit acknowledgment.
 func TestSyncMigrationProcessCrash(t *testing.T) {
 	ctx := context.Background()
 	if os.Getenv("PONDER_SYNC_MIGRATION_WORKER") == "1" {
@@ -37,7 +36,7 @@ func TestSyncMigrationProcessCrash(t *testing.T) {
 		t.Fatal("sync migration worker did not terminate")
 	}
 	for _, dialect := range []string{"pglite", "postgres"} {
-		for _, stage := range []string{"during_copy", "after_commit"} {
+		for _, stage := range []string{"during_create", "after_commit"} {
 			t.Run(dialect+"/"+stage, func(t *testing.T) {
 				url := os.Getenv("PONDER_TEST_POSTGRES")
 				if dialect == "postgres" && url == "" {
@@ -60,14 +59,7 @@ func TestSyncMigrationProcessCrash(t *testing.T) {
 					return b
 				}
 				b := open()
-				m, e := NewSyncMigrator(b, scope)
-				if e != nil {
-					t.Fatal(e)
-				}
-				seedSyncCopyRows(t, m)
-				before := syncRowsSnapshot(t, m, false)
-				history := sourceSyncSQL(t, m, `SELECT * FROM ponder_sync.kysely_migration ORDER BY name`)
-				if e = b.Close(); e != nil {
+				if e := b.Close(); e != nil {
 					t.Fatal(e)
 				}
 				deadline, cancel := context.WithTimeout(ctx, 30*time.Second)
@@ -89,26 +81,26 @@ func TestSyncMigrationProcessCrash(t *testing.T) {
 				}
 				b = open()
 				defer b.Close()
-				m, e = NewSyncMigrator(b, scope)
+				m, e := NewSyncMigrator(b, scope)
 				if e != nil {
 					t.Fatal(e)
 				}
-				if !reflect.DeepEqual(before, syncRowsSnapshot(t, m, false)) {
-					t.Fatal("crash changed legacy source rows")
-				}
-				expectSourceRows(t, sourceSyncSQL(t, m, `SELECT * FROM ponder_sync.kysely_migration ORDER BY name`), history.Rows)
-				if stage == "during_copy" {
+				if stage == "during_create" {
 					r, e := b.Query(ctx, "SELECT nspname FROM pg_namespace WHERE nspname=$1", m.LatestSchema())
 					if e != nil || len(r.Rows) != 0 {
 						t.Fatalf("uncommitted partial cache survived: %#v %v", r, e)
 					}
 				} else {
-					assertSyncCopied(t, m, before)
+					if e = m.validateLatest(ctx, b); e != nil {
+						t.Fatal(e)
+					}
 				}
 				if e = m.Migrate(ctx); e != nil {
 					t.Fatal(e)
 				}
-				assertSyncCopied(t, m, before)
+				if e = m.validateLatest(ctx, b); e != nil {
+					t.Fatal(e)
+				}
 			})
 		}
 	}

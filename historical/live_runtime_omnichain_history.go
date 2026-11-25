@@ -125,8 +125,7 @@ func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *inde
 		previous := control.Cursors[g.ChainID]
 		actions := rpc.NewActions(epoch.Requester(i))
 		priorCP, _ := checkpoint.Decode(previous.Checkpoint)
-		paged := r.domains.UsesPagedLogOnly()
-		for n := range omnichainGroupHeights(next, end.BlockNumber, next == priorCP.BlockNumber, paged, events) {
+		for n := range omnichainGroupHeights(next, end.BlockNumber, next == priorCP.BlockNumber, r.logOnly, events) {
 			input := events[n]
 			if len(input) == 0 && !r.logOnly {
 				return nil, nil, fmt.Errorf("omnichain block partition lacks its closing callback")
@@ -149,7 +148,7 @@ func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *inde
 			}
 			var first store.ManagedLiveHead
 			parent := head.ParentHash
-			if paged && n > prior.BlockNumber+1 {
+			if r.logOnly && n > prior.BlockNumber+1 {
 				first, err = proofs[g.ChainID].head(prior.BlockNumber + 1)
 				if err != nil {
 					return nil, nil, err
@@ -253,7 +252,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 				b.Blocks = append(b.Blocks, entry)
 			}
 			var acquired *store.ManagedLiveAcquisition
-			if r.domains.UsesPagedLogOnly() {
+			if r.logOnly {
 				acquired, e = r.domains.RetainPagedLogOnlyBatch(ctx, b, readHeader)
 			} else {
 				acquired, e = r.domains.RetainBatch(ctx, b)
@@ -305,23 +304,8 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 		return out, err
 	}
 	epoch = nil
-	if r.domains.UsesPagedLogOnly() {
+	if r.logOnly {
 		err = r.domains.ActivatePagedLogOnlyRuntime(ctx, r.nextID("omni-activate"), control.Cursors, func(chain, number uint64) (store.ManagedLiveHead, error) { return proofs[chain].head(number) })
-	} else if r.logOnly {
-		lineage := map[uint64][]store.ManagedLiveHead{}
-		for _, chain := range r.build.Chains {
-			id := runtimeChainID(chain)
-			cursor, _ := checkpoint.Decode(control.Cursors[id].Checkpoint)
-			final, _ := checkpoint.Decode(r.finalized[id].Checkpoint)
-			for n := cursor.BlockNumber; n <= final.BlockNumber; n++ {
-				head, err := proofs[id].head(n)
-				if err != nil {
-					return out, err
-				}
-				lineage[id] = append(lineage[id], head)
-			}
-		}
-		err = r.domains.ActivateLogOnlyRuntime(ctx, r.nextID("omni-activate"), control.Cursors, lineage)
 	} else {
 		err = r.domains.ActivateRuntime(ctx, r.nextID("omni-activate"), control.Cursors)
 	}

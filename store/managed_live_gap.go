@@ -34,7 +34,7 @@ func validateGapScans(o ManagedLiveOptions, b ManagedLiveBatch, scans map[int]ma
 		}
 		id, from, to, err := gapBounds(block)
 		scan, ok := scans[i]
-		if err != nil || !pagedLogOnlyOptions(o) || !ok || scan.FiltersHash != managedHash(o.runtimeLogFilters[id]) {
+		if err != nil || !logOnlyOptions(o) || !ok || scan.FiltersHash != managedHash(o.runtimeLogFilters[id]) {
 			return ErrManagedLiveBatchConflict
 		}
 		if err := validateLogCoverage(o.runtimeLogFilters[id], scan.Coverage, from, to); err != nil {
@@ -57,7 +57,7 @@ func (d *ManagedLiveDomains) RetainPagedLogOnlyBatch(ctx context.Context, b Mana
 		return nil, err
 	}
 	m := d.live()
-	if !pagedLogOnlyOptions(m.opts) || get == nil {
+	if !logOnlyOptions(m.opts) || get == nil {
 		return nil, ErrManagedLiveBatchConflict
 	}
 	acquired, err := m.RetainBatch(ctx, b)

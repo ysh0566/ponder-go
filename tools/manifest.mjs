@@ -33,6 +33,7 @@ const write = (file, data) => {
 const mappings = fs.existsSync(path.join(root, "parity/mappings.json"))
 	? JSON.parse(fs.readFileSync(path.join(root, "parity/mappings.json")))
 	: [];
+const retired = JSON.parse(fs.readFileSync(path.join(root, "parity/out-of-scope.json"), "utf8"));
 const tests = [],
 	testFiles = [],
 	unresolved = [];
@@ -198,6 +199,15 @@ for (const file of files.filter((x) =>
 					const inherited = suites.flatMap((x) => x.modifiers);
 					const modifiers = [...inherited, ...info.modifiers];
 					const mapping = mappings.find((x) => x.source_id === id);
+					const fullName = [
+						...suites.map((x) =>
+							typeof x.name === "string" ? x.name : JSON.stringify(x.name),
+						),
+						resolvedName,
+					].join(" > ");
+					const retiredName = retired.cases[id];
+					if (retiredName && (mapping || retiredName !== fullName))
+						throw Error(`Invalid retired source declaration: ${id}`);
 					if (
 						mapping?.assertions_sha256 &&
 						mapping.assertions_sha256 !==
@@ -213,12 +223,7 @@ for (const file of files.filter((x) =>
 						end: node.end,
 						suite_path: suites,
 						title: name,
-						full_name: [
-							...suites.map((x) =>
-								typeof x.name === "string" ? x.name : JSON.stringify(x.name),
-							),
-							resolvedName,
-						].join(" > "),
+						full_name: fullName,
 						parameter_index: parameterIndex,
 						parameter,
 						parameter_expression: info.parameters ?? null,
@@ -246,7 +251,8 @@ for (const file of files.filter((x) =>
 								.getText(sf)
 								.match(/\/\/\s*@ts-(?:expect-error|ignore)[^\n]*/g) ?? [],
 						discovered: true,
-						port_status: mapping ? "ported" : "unimplemented",
+						port_status: mapping ? "ported" : retiredName ? "out_of_scope" : "unimplemented",
+						...(retiredName ? { scope_reason: retired.reason } : {}),
 						mapping: mapping ?? null,
 						execution_status: "not_run",
 						pass_status: null,
@@ -426,7 +432,10 @@ const summary = {
 	failed: 0,
 	blocked: 0,
 	unimplemented: tests.filter((x) => x.port_status === "unimplemented").length,
+	out_of_scope: tests.filter((x) => x.port_status === "out_of_scope").length,
 };
+if (summary.out_of_scope !== Object.keys(retired.cases).length)
+	throw Error("Retired source inventory does not match the upstream revision");
 write(path.join(root, "parity/test-ledger.json"), {
 	format_version: 1,
 	baseline: inventory.baseline,
