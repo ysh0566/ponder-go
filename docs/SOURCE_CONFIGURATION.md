@@ -4,6 +4,15 @@ M28 的完整模块验收通过：Go/race各1852、0失败/skip，PG198/PGlite19
 
 `config.ParseSourceConfiguration` 读取来源形状的动态 JSON，保留缺失值、null 与对象顺序。`BuildSourceConfig` 处理链默认值和校验，创建真实 `rpc.Client`，并按来源规则修改缺失/空字符串 RPC 的输入。`BuildSourceIndexing` 从实际节点取得 latest/finalized 头，合并链覆盖，构造 setup、合约日志/调用、账户交易/转账和区块回调。完整 ABI 原始元数据随回调保存，包括 internalType 和显式 false。
 
+## 数据库配置
+
+`BuildSourceConfig` 把数据库配置和索引顺序保存在返回值的 `Pre` 字段。只需解析数据库时，可调用 `config.BuildSourcePre(source, ponderDir)`。解析过程只读取配置和环境变量。
+
+- 默认使用 PGlite，目录为 `<ponderDir>/pglite`。显式选择 PGlite 时优先使用配置的目录，支持绝对路径、相对路径和 `memory://`。
+- 自动选择后端时，依次读取 `DATABASE_PRIVATE_URL` 和 `DATABASE_URL`。显式选择 PostgreSQL 时，连接串优先于这两个环境变量，也可以仅提供 `poolConfig`。
+- PostgreSQL 默认连接池上限为 30。自定义 TLS、连接超时和其他驱动参数会保留。诊断输出可调用 `pre.DatabaseConfig.PoolConfig.DatabaseName()` 获取主机、端口和数据库名。连接池配置本身含有连接凭据。
+
+
 `EventCallbacks()` 返回带公共 `SourceFilter` 联合的回调。读取区块 interval 前须收窄到 `SourceBlockFilter`。`NativeConfig(chainName)` 为现有单链调度器选择一条链；`runtime.NewFromSource` 绑定真实 `runtime.Handler`，复用构建器的客户端、筛选条件和 ABI。多链配置构建不等于多链调度已经实现。
 
 原生来源计划采用独立的 `SourceRuntimePlan.Version=1` 配置/缓存标识。旧原生 Config 在 SourcePlan=nil 时仍产生原来的 JSON。来源工厂保留 undefined 边界对应的完整标识；旧原生合约工厂默认值未改。来源工厂的 shared discovery、出生前排除和同块子日志/转账在真实 Anvil、PostgreSQL 和 PGlite 上验证。
