@@ -100,13 +100,16 @@ func (p *nativeProject) watch(ctx context.Context, dir string) error {
 		}
 	}
 	defer stopChild()
+	message := "Waiting for Go project"
 	for ctx.Err() == nil {
 		revision, err := p.projectRevision()
 		if err != nil {
+			message = "Could not read project, waiting for an edit"
 			p.log.Error("Could not read project revision", "error", err)
 		}
 		if err == nil && stopped != nil && revision == runningRevision {
 			last = revision
+			message = "Watching Go project"
 		}
 		if err == nil && revision != last {
 			last = revision
@@ -115,8 +118,13 @@ func (p *nativeProject) watch(ctx context.Context, dir string) error {
 			if next == binary {
 				next = filepath.Join(dir, "indexer-b")
 			}
+			p.dashboard.update("Building Go project")
 			if err = p.build(ctx, next); err != nil {
 				if ctx.Err() == nil {
+					message = "Build failed, waiting for an edit"
+					if stopped != nil {
+						message = "Build failed, previous indexer still running"
+					}
 					p.log.Error("Go build failed, waiting for an edit", "error", err)
 				}
 			} else {
@@ -127,6 +135,9 @@ func (p *nativeProject) watch(ctx context.Context, dir string) error {
 					continue
 				}
 				stopChild()
+				if p.dashboard != nil {
+					os.Remove(p.dashboard.file)
+				}
 				if ctx.Err() != nil {
 					os.Remove(next)
 					break
@@ -144,14 +155,20 @@ func (p *nativeProject) watch(ctx context.Context, dir string) error {
 				runningRevision = revision
 				stopped = make(chan error, 1)
 				go func(done chan<- error) { done <- child.Wait() }(stopped)
+				message = "Watching Go project"
 				p.log.Info("Watching Go project", "root", p.root, "schema", namespace)
 			}
 		}
+		p.dashboard.update(message)
 		select {
 		case <-ctx.Done():
 		case <-timer.C:
 		case err := <-stopped:
 			stopped = nil
+			message = "Indexer exited, waiting for an edit"
+			if p.dashboard != nil {
+				os.Remove(p.dashboard.file)
+			}
 			if err != nil && ctx.Err() == nil {
 				p.log.Error("Indexer exited, waiting for an edit", "error", err)
 			}

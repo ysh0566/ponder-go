@@ -39,6 +39,41 @@ type Server struct {
 	API            http.Handler
 }
 
+// BlockStatus is the latest indexed block recorded for a chain.
+type BlockStatus struct {
+	Number    uint64 `json:"number"`
+	Timestamp uint64 `json:"timestamp"`
+}
+
+type ChainStatus struct {
+	Block BlockStatus `json:"block"`
+	ID    uint64      `json:"id"`
+}
+
+// Status reads the same committed checkpoints exposed by GET /status.
+func (s *Server) Status(ctx context.Context) (map[string]ChainStatus, error) {
+	if s.Store == nil {
+		return nil, fmt.Errorf("database unavailable")
+	}
+	progress, err := s.Store.Progress(ctx)
+	if err != nil {
+		return nil, err
+	}
+	status := make(map[string]ChainStatus, len(progress))
+	for chain, cursor := range progress {
+		cp, err := checkpoint.Decode(cursor)
+		if err != nil {
+			return nil, err
+		}
+		name := s.ChainNames[cp.ChainID]
+		if name == "" {
+			name = chain
+		}
+		status[name] = ChainStatus{ID: cp.ChainID, Block: BlockStatus{Number: cp.BlockNumber, Timestamp: cp.BlockTimestamp}}
+	}
+	return status, nil
+}
+
 func New(s *store.Store) *Server {
 	return &Server{Store: s, Metrics: metrics.New(), MaxLive: 1000, ChainNames: map[uint64]string{}}
 }
@@ -197,7 +232,7 @@ func (s *Server) serveRoute(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	case "/ready":
-		ready, err := s.isReady(r.Context())
+		ready, err := s.IsReady(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -235,28 +270,15 @@ func (s *Server) serveRoute(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Database unavailable", 503)
 			return
 		}
-		p, e := s.Store.Progress(r.Context())
+		status, e := s.Status(r.Context())
 		if e != nil {
 			http.Error(w, e.Error(), 500)
 			return
 		}
-		status := map[string]any{}
-		for chain, cursor := range p {
-			cp, e := checkpoint.Decode(cursor)
-			if e != nil {
-				http.Error(w, e.Error(), 500)
-				return
-			}
-			name := s.ChainNames[cp.ChainID]
-			if name == "" {
-				name = chain
-			}
-			status[name] = map[string]any{"id": cp.ChainID, "block": map[string]any{"number": cp.BlockNumber, "timestamp": cp.BlockTimestamp}}
-		}
 		writeJSON(w, 200, status)
 		return
 	}
-	ready, readyErr := s.isReady(r.Context())
+	ready, readyErr := s.IsReady(r.Context())
 	if r.URL.Path == "/sql/live" {
 		err := readyErr
 		if err != nil {
