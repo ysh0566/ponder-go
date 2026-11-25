@@ -136,6 +136,20 @@ ponder dev --hostname 127.0.0.1 --port 42069 --schema ponder_go_demo
 
 `--hostname` 和 `--port` 也可用于 `start` 和 `serve`。端口 0 让操作系统分配空闲端口。使用 `runtime.LaunchApplication` 的 Go 应用会读取这两个选项。自行创建 HTTP 服务的应用可从 `PONDER_HOSTNAME`、`PONDER_PORT` 读取对应值。
 
+## 控制 CLI 和 Go 应用日志
+
+```bash
+ponder --log-format json start --log-level info
+ponder dev -v
+ponder serve --log-level warn --log-format=json
+```
+
+`--log-level` 支持 `trace`、`debug`、`info`、`warn`、`error`、`fatal` 和 `silent`。默认是 `info`。显式级别优先，其次是 `-vv` 或 `--trace`、`-v` 或 `--debug`，再其次是环境变量 `PONDER_LOG_LEVEL`。`--log-format` 支持 `pretty` 和 `json`，默认 `pretty`。全局选项可以放在子命令前后。
+
+CLI 和生成的 Go 应用将诊断写到标准错误，`--log-format json` 每行输出一条记录，包含毫秒 Unix 时间戳 `time`、数值级别 `level` 和消息 `msg`。例如 `debug` 为 20，`info` 为 30，`error` 为 50。`db list`、checkpoint 编解码等命令继续把结果写到标准输出，脚本可以分别重定向两个流。
+
+`dev`、`start` 和 `serve` 把有效设置通过 `PONDER_LOG_LEVEL` 和 `PONDER_LOG_FORMAT` 传给子进程。自定义 Go 入口可用 `logging.New(os.Stderr, logging.Environment())` 创建同配置的日志器，用 `runtime.Options{Logger: logger}` 接收索引期间的诊断。应用自己直接写入标准输出或标准错误的文本仍由应用控制。[生成项目与测试](../parity/runs/native-cli-logging/RESULT.md)
+
 ## 用于自己的项目
 
 在自己的工作目录中安装 CLI、创建索引器并构建。首次使用需要能访问 Go 模块代理或 GitHub。

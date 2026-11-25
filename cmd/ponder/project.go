@@ -12,17 +12,20 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ysh0566/ponder-go/logging"
 	"github.com/ysh0566/ponder-go/schema"
 )
 
 type nativeProject struct {
 	root, pkg, mode, namespace string
 	env                        []string
-	out                        io.Writer
+	out, diagnostics           io.Writer
+	log                        *logging.Logger
 }
 
-func launchProject(ctx context.Context, mode string, args []string, out io.Writer) error {
+func launchProject(ctx context.Context, mode string, args []string, out, diagnostics io.Writer, log *logging.Logger) error {
 	flags := flag.NewFlagSet(mode, flag.ContinueOnError)
+	flags.SetOutput(log.Diagnostics())
 	root := flags.String("root", ".", "Go project root")
 	pkg := flags.String("app", ".", "Go package to build")
 	index := flags.String("schema", os.Getenv("DATABASE_SCHEMA"), "Indexing schema")
@@ -48,7 +51,7 @@ func launchProject(ctx context.Context, mode string, args []string, out io.Write
 	if err != nil {
 		return err
 	}
-	project := nativeProject{root: dir, pkg: *pkg, mode: mode, namespace: *index, out: out, env: append(os.Environ(), "PONDER_COMMAND="+mode)}
+	project := nativeProject{root: dir, pkg: *pkg, mode: mode, namespace: *index, out: out, diagnostics: diagnostics, log: log, env: append(os.Environ(), "PONDER_COMMAND="+mode, "PONDER_LOG_LEVEL="+log.Settings().Level, "PONDER_LOG_FORMAT="+log.Settings().Format)}
 	flags.Visit(func(f *flag.Flag) {
 		switch f.Name {
 		case "schema":
@@ -78,14 +81,16 @@ func launchProject(ctx context.Context, mode string, args []string, out io.Write
 		return err
 	}
 	command := project.command(ctx, binary, *index)
+	log.Debug(map[string]any{"msg": "Starting indexer process", "command": mode, "schema": *index})
 	return waitProject(ctx, command.Run(), command)
 }
 
 func (p *nativeProject) build(ctx context.Context, binary string) error {
+	p.log.Debug(map[string]any{"msg": "Building Go project", "package": p.pkg})
 	build := exec.CommandContext(ctx, "go", "build", "-o", binary, p.pkg)
 	build.Dir = p.root
 	build.Stdout = p.out
-	build.Stderr = os.Stderr
+	build.Stderr = p.log.Diagnostics()
 	return build.Run()
 }
 
@@ -103,7 +108,7 @@ func (p *nativeProject) command(ctx context.Context, binary, namespace string) *
 	}
 	command.Stdin = os.Stdin
 	command.Stdout = p.out
-	command.Stderr = os.Stderr
+	command.Stderr = p.diagnostics
 	return command
 }
 

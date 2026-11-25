@@ -9,6 +9,7 @@ import (
 	"github.com/ysh0566/ponder-go/abi"
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
 	"github.com/ysh0566/ponder-go/orm"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/values"
@@ -26,13 +27,16 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	if e := run(ctx, os.Args[1:], os.Stdout); e != nil {
-		fmt.Fprintln(os.Stderr, e)
 		os.Exit(1)
 	}
 }
 func run(ctx context.Context, args []string, out io.Writer) error {
+	return runCLI(ctx, args, out, os.Stderr)
+}
+
+func runCommand(ctx context.Context, args []string, out, diagnostics io.Writer, log *logging.Logger) error {
 	if len(args) == 0 || args[0] == "--help" || args[0] == "-h" {
-		fmt.Fprintln(out, "ponder-go "+version+" (local port in progress)\n\nCommands: init, dev, start, serve, codegen, db list, db create-views, db prune, checkpoint encode/decode\nUse dev, start, or serve with --root, --schema, --hostname, and --port.")
+		fmt.Fprintln(out, "ponder-go "+version+" (local port in progress)\n\nCommands: init, dev, start, serve, codegen, db list, db create-views, db prune, checkpoint encode/decode\nUse dev, start, or serve with --root, --schema, --hostname, and --port.\nGlobal logging options: --log-level LEVEL, --log-format pretty|json, -v/--debug, -vv/--trace.")
 		return nil
 	}
 	switch args[0] {
@@ -41,6 +45,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		return nil
 	case "init":
 		flags := flag.NewFlagSet("init", flag.ContinueOnError)
+		flags.SetOutput(log.Diagnostics())
 		template := flags.String("template", "go", "Project template (go or typescript)")
 		if err := flags.Parse(args[1:]); err != nil {
 			return err
@@ -78,9 +83,10 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		}
 		return fmt.Errorf("unknown checkpoint action")
 	case "start", "serve", "dev":
-		return launchProject(ctx, args[0], args[1:], out)
+		return launchProject(ctx, args[0], args[1:], out, diagnostics, log)
 	case "codegen":
 		flags := flag.NewFlagSet("codegen", flag.ContinueOnError)
+		flags.SetOutput(log.Diagnostics())
 		input := flags.String("schema", "ponder.schema.json", "Native Go schema JSON")
 		output := flags.String("out", "ponder_generated.go", "Output Go model file")
 		packageName := flags.String("package", "main", "Go package")
@@ -270,7 +276,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		fmt.Fprintln(out, *output)
 		return nil
 	case "db":
-		return manageDatabase(ctx, args[1:], out)
+		return manageDatabase(ctx, args[1:], out, log.Diagnostics())
 	default:
 		return fmt.Errorf("unknown command %q", args[0])
 	}

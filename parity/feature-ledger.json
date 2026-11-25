@@ -1822,6 +1822,31 @@
         "parity/runs/native-ccip-read/RESULT.md"
       ],
       "remaining": "The external gateway response depends on current HTTP availability and the verification callback runs at latest, following pinned viem. The Go client bounds nested requests and total response bytes."
+    },
+    {
+      "id": "native-cli-global-logging",
+      "status": "verified_subset",
+      "implementation_files": [
+        "logging/logger.go",
+        "cmd/ponder/logging.go",
+        "cmd/ponder/dev.go",
+        "cmd/ponder/project.go",
+        "examples/erc20/main.go"
+      ],
+      "native_test_files": [
+        "cmd/ponder/logging_test.go",
+        "cmd/ponder/serve_queries_test.go",
+        "logging/logger_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/bin/ponder.ts",
+        "packages/core/src/internal/options.ts",
+        "packages/core/src/internal/logger.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-cli-logging/RESULT.md"
+      ],
+      "remaining": "Development terminal UI is separate. App-owned log writers can opt into inherited settings."
     }
   ]
 }
