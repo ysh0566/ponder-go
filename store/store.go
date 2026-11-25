@@ -125,31 +125,45 @@ func newStore(ctx context.Context, backend Backend, model schema.Schema, namespa
 
 func (s *Store) initializeInternal(ctx context.Context, tx Transaction) error {
 	namespace := s.Namespace
-	found, e := tx.Query(ctx, "SELECT nspname FROM pg_namespace WHERE nspname=$1", namespace)
+	encoded, _ := json.Marshal(s.Schema)
+	hash := sha256.Sum256(encoded)
+	fingerprint := fmt.Sprintf("%s:%x:%s:staged=%t", storageVersion, hash, s.Ordering, s.staged)
+	// Both namespaces and their identifying rows are committed together on first open.
+	found, e := tx.Query(ctx, `SELECT n.nspname, c.relkind = 'r' AND c.relpersistence = 'p' AS has_meta
+		FROM pg_namespace n LEFT JOIN pg_class c ON c.relnamespace = n.oid AND c.relname = '_ponder_go_meta'
+		WHERE n.nspname IN ($1,$2)`, namespace, s.SyncNamespace)
 	if e != nil {
 		return e
 	}
-	if len(found.Rows) > 0 {
-		meta, e := tx.Query(ctx, "SELECT to_regclass($1)::text AS name", schema.Quote(namespace)+"._ponder_go_meta")
-		if e != nil || len(meta.Rows) == 0 || meta.Rows[0]["name"] == nil {
-			return fmt.Errorf("refusing to adopt an existing unowned schema %s", namespace)
+	fresh := len(found.Rows) == 0
+	if !fresh {
+		for _, row := range found.Rows {
+			if row["has_meta"] != true {
+				return &MigrationError{Message: fmt.Sprintf("refusing to adopt an existing unowned schema %s", row["nspname"])}
+			}
+		}
+		if len(found.Rows) != 2 {
+			return &MigrationError{Message: "incomplete storage namespace pair; rebuild into a new shadow schema"}
+		}
+		markers, err := tx.Query(ctx, "SELECT (SELECT value FROM "+s.internal("_ponder_go_meta")+" WHERE key='fingerprint') AS fingerprint, "+
+			"(SELECT value FROM "+s.syncTable("_ponder_go_meta")+" WHERE key='owner') AS owner")
+		if err != nil {
+			return err
+		}
+		if len(markers.Rows) != 1 || markers.Rows[0]["fingerprint"] != fingerprint {
+			return &MigrationError{Message: "schema, ordering, or storage format changed; rebuild into a new shadow schema"}
+		}
+		if markers.Rows[0]["owner"] != namespace {
+			return &MigrationError{Message: "sync schema owner is missing or differs; rebuild into a new shadow schema"}
 		}
 	}
-	syncFound, e := tx.Query(ctx, "SELECT nspname FROM pg_namespace WHERE nspname=$1", s.SyncNamespace)
-	if e != nil {
-		return e
-	}
-	if len(syncFound.Rows) > 0 {
-		meta, e := tx.Query(ctx, "SELECT to_regclass($1)::text AS name", schema.Quote(s.SyncNamespace)+"._ponder_go_meta")
-		if e != nil || len(meta.Rows) == 0 || meta.Rows[0]["name"] == nil {
-			return fmt.Errorf("refusing to adopt an existing unowned sync schema %s", s.SyncNamespace)
+	if fresh {
+		if e = tx.Exec(ctx, "CREATE SCHEMA "+schema.Quote(namespace)); e != nil {
+			return e
 		}
-	}
-	if e = tx.Exec(ctx, "CREATE SCHEMA IF NOT EXISTS "+schema.Quote(namespace)); e != nil {
-		return e
-	}
-	if e = tx.Exec(ctx, "CREATE SCHEMA IF NOT EXISTS "+schema.Quote(s.SyncNamespace)); e != nil {
-		return e
+		if e = tx.Exec(ctx, "CREATE SCHEMA "+schema.Quote(s.SyncNamespace)); e != nil {
+			return e
+		}
 	}
 	statements := []string{
 		"CREATE TABLE IF NOT EXISTS " + s.syncTable("_ponder_go_meta") + " (key text PRIMARY KEY,value text NOT NULL)",
@@ -170,23 +184,13 @@ func (s *Store) initializeInternal(ctx context.Context, tx Transaction) error {
 			return e
 		}
 	}
-	encoded, _ := json.Marshal(s.Schema)
-	hash := sha256.Sum256(encoded)
-	fingerprint := fmt.Sprintf("%s:%x:%s:staged=%t", storageVersion, hash, s.Ordering, s.staged)
-	if e = tx.Exec(ctx, "INSERT INTO "+s.syncTable("_ponder_go_meta")+" VALUES ('owner',$1) ON CONFLICT(key) DO NOTHING", namespace); e != nil {
+	if !fresh {
+		return nil
+	}
+	if e = tx.Exec(ctx, "INSERT INTO "+s.syncTable("_ponder_go_meta")+" VALUES ('owner',$1)", namespace); e != nil {
 		return e
 	}
-	old, e := tx.Query(ctx, "SELECT value FROM "+s.internal("_ponder_go_meta")+" WHERE key='fingerprint'")
-	if e != nil {
-		return e
-	}
-	if len(old.Rows) > 0 && old.Rows[0]["value"] != fingerprint {
-		return fmt.Errorf("schema, ordering, or storage format changed; rebuild into a new shadow schema")
-	}
-	if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_meta")+" VALUES ('fingerprint',$1) ON CONFLICT (key) DO NOTHING", fingerprint); e != nil {
-		return e
-	}
-	return nil
+	return tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_meta")+" VALUES ('fingerprint',$1)", fingerprint)
 }
 
 func (s *Store) createUserObjects(ctx context.Context, tx Transaction, indexes bool) error {
