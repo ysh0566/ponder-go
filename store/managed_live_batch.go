@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 func liveUint(row map[string]any, key string) (uint64, error) {

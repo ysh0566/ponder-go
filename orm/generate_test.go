@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 func TestGenerateModels(t *testing.T) {

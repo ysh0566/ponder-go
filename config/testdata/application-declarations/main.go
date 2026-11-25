@@ -10,8 +10,8 @@ import (
 	"appfixture.test/events"
 	"appfixture.test/market"
 	"appfixture.test/weak"
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/config"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/config"
 )
 
 // Named singleton values express the literal types the TypeScript caller infers.

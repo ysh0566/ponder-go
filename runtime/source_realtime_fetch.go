@@ -8,10 +8,10 @@ import (
 	"strings"
 	"sync"
 
-	"ponder.local/ponder-go/bloom"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/finality"
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/bloom"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/finality"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 func (s *SourceRealtimeSync) getBlockByHash(ctx context.Context, hash string, full bool) (filter.Object, error) {

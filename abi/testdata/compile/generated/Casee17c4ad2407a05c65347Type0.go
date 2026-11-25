@@ -3,7 +3,7 @@ package generated
 
 import (
 	"encoding/json"
-	"ponder.local/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/abi"
 )
 
 type Casee17c4ad2407a05c65347Type0Result = struct {

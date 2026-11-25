@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"ponder.local/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/abi"
 	"testing"
 )
 

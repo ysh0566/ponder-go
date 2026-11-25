@@ -14,8 +14,8 @@ import (
 	"sync"
 	"testing"
 
-	ponderabi "ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/filter"
+	ponderabi "github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 var sourceProfileIDs = []string{"2f670307cc3e54bf3901", "465e8823325559c8cfa1", "e7d2206043a345533ec0", "fcafee958f55fe65dc77", "fb137834371e07d16724", "732ac50bf3a96196de3e", "4c57d8f36ec9b90f69ac", "d8952ac4024fd02802a7", "0173bc5e83b0843a8d4e", "ddf6318af43ddc28cd80"}

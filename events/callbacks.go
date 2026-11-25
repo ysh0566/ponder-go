@@ -1,6 +1,6 @@
 package events
 
-import "ponder.local/ponder-go/abi"
+import "github.com/ysh0566/ponder-go/abi"
 
 // EventCallback is the closed contract/account/block callback union. Contract
 // ABI metadata is available after narrowing to ContractCallback, matching the

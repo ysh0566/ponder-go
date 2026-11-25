@@ -3,9 +3,9 @@ package historical
 import (
 	"context"
 	"fmt"
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/rpc"
-	source "ponder.local/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/rpc"
+	source "github.com/ysh0566/ponder-go/runtime"
 )
 
 // This finite closure deliberately excludes the upstream historical-to-realtime

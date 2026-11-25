@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 const SizeBytes = 256

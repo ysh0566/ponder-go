@@ -10,11 +10,11 @@ import (
 	"sync"
 	"time"
 
-	gql "github.com/graphql-go/graphql"
-	"github.com/graphql-go/graphql/language/ast"
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
+	gql "github.com/ysh0566/ponder-go/third_party/graphqlgo"
+	"github.com/ysh0566/ponder-go/third_party/graphqlgo/language/ast"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 type Options struct {

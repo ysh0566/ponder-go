@@ -6,7 +6,7 @@ import (
 	"testing/synctest"
 	"time"
 
-	"ponder.local/ponder-go/async"
+	"github.com/ysh0566/ponder-go/async"
 )
 
 // Both timers expire while the loop has no driver. Awaiting the later timer

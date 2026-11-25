@@ -10,9 +10,9 @@ import (
 	"strconv"
 
 	"encoding/json"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/rpc"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 type historicalLiveSet []any

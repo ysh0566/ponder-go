@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"ponder.local/ponder-go/config"
-	bindings "ponder.local/ponder-go/config/testdata/sourcebindings"
+	"github.com/ysh0566/ponder-go/config"
+	bindings "github.com/ysh0566/ponder-go/config/testdata/sourcebindings"
 	"strings"
 )
 

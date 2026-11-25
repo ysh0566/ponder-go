@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 var sourceLiveRelations = map[string]string{"intervals": "intervals", "factories": "factories", "factoryAddresses": "factory_addresses", "blocks": "blocks", "logs": "logs", "transactions": "transactions", "transactionReceipts": "transaction_receipts", "traces": "traces", "rpcRequestResults": "rpc_request_results"}

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 type adapterErrorState struct{ err error }

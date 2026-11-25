@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // IndependentStorageOptions names two constructor-owned storage domains. Names

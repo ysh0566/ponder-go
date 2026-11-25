@@ -19,9 +19,9 @@ import (
 	"testing"
 	"time"
 
-	ponderabi "ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/rpc"
-	"ponder.local/ponder-go/schema"
+	ponderabi "github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 var sourceActionIDs = []string{"9614c3868c45f1ab5064", "f62a1b73602a98909575", "8244ed823366e5a1da54", "ee3742b77c929d94a8ed", "4dfbaabe2e3b99f00b8d", "175d1d5d0afe91cc20a1", "de123b064923c7ffd321", "4204e282e98522f9eefa"}

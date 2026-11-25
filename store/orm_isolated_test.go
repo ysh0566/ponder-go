@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 	"strings"
 	"testing"
 	"time"

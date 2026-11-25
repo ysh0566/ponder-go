@@ -27,7 +27,7 @@ const generatedFile=path.join(root,"config/testdata/sourcebindings/bindings.go")
 const report={state:"Compile-only controls; actual original live native positive execution required before source credit",definition:manifest,generated:hash(generatedFile),generator:{build:buildCLI,execute:generation},directives:[],inputs:[configCompileInputsFile,"tools/config-compile-inputs.mjs","config/source_bindings.go","config/typed_source.go","cmd/source-codegen/main.go","tools/config-literal-compile-fixtures.mjs"].map(f=>hash(path.join(root,f)))};
 for(const row of rows){
  const {kind,id,source,input}=row;
- const common=`package main\nimport("context";"fmt";"io";"os";"strings";"ponder.local/ponder-go/config";bindings "ponder.local/ponder-go/config/testdata/sourcebindings")\nfunc main(){raw,err:=io.ReadAll(os.Stdin);if err!=nil{panic(err)};base,err:=config.ParseSourceConfiguration(raw);if err!=nil{panic(err)};input:=base.Value()["contracts"].(map[string]any)["a"].(map[string]any);_=strings.Contains\n`;
+ const common=`package main\nimport("context";"fmt";"io";"os";"strings";"github.com/ysh0566/ponder-go/config";bindings "github.com/ysh0566/ponder-go/config/testdata/sourcebindings")\nfunc main(){raw,err:=io.ReadAll(os.Stdin);if err!=nil{panic(err)};base,err:=config.ParseSourceConfiguration(raw);if err!=nil{panic(err)};input:=base.Value()["contracts"].(map[string]any)["a"].(map[string]any);_=strings.Contains\n`;
  function text(negative){
   const chain=kind==="chain"&&negative?"Mainnetz":"Mainnet",event=kind==="event"&&negative?"Event2":"Event0";
   const extras=kind==="chain"?`Address:config.SourceSome[any](input["address"]),`:`Filter:&bindings.Filter{Event:bindings.Events.${event},Args:input["filter"].(map[string]any)["args"]},`;

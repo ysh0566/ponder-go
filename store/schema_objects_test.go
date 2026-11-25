@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 	"reflect"
 	"testing"
 	"time"

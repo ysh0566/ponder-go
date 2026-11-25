@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"ponder.local/ponder-go/internal/ordered"
+	"github.com/ysh0566/ponder-go/internal/ordered"
 )
 
 type ProviderError struct {

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 func TestSourceIntervalMapIdentity(t *testing.T) {
@@ -65,7 +65,7 @@ func TestSourceIntervalMapIdentity(t *testing.T) {
 
 func TestSourceIntervalMapTypes(t *testing.T) {
 	const prefix = `package caller
-import ("ponder.local/ponder-go/store"; "ponder.local/ponder-go/filter")
+import ("github.com/ysh0566/ponder-go/store"; "github.com/ysh0566/ponder-go/filter")
 func build(f, factory filter.Object, values []store.SourceFragmentIntervals) {
 	child := store.FilterCacheEntry(f, values)
 	parent := store.FactoryCacheEntry(factory, values)

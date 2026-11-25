@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 // BlockOptions shares Ponder's event-relative and immutable block selection.

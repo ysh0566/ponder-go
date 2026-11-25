@@ -4,7 +4,7 @@ package sourcebindings
 import (
 	"encoding/json"
 	"fmt"
-	"ponder.local/ponder-go/config"
+	"github.com/ysh0566/ponder-go/config"
 )
 
 type Chain struct{ index int }

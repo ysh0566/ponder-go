@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"ponder.local/ponder-go/internal/jsvalue"
+	"github.com/ysh0566/ponder-go/internal/jsvalue"
 )
 
 type Object = map[string]any

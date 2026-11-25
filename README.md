@@ -13,7 +13,7 @@ go build -o bin/ponder ./cmd/ponder
 ./bin/ponder --version
 ```
 
-CLI 版本为 `0.18.2-go.0`。运行原生 Go 应用从 `examples/erc20` 开始。`ponder init` 用于生成固定上游版本的 TypeScript 空项目。[示例源代码](examples/erc20/main.go) · [从零启动并查询示例](docs/USAGE.md)
+CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go 索引器，进入项目执行 `go mod tidy` 后即可构建。也可直接运行仓库内的 `examples/erc20`。[示例源代码](examples/erc20/main.go) · [从零启动并查询示例](docs/USAGE.md)
 
 ## 功能状态
 

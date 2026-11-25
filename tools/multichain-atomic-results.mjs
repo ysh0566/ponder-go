@@ -59,7 +59,7 @@ for(const backend of ['postgres','pglite']){
  source.push({backend,result:hash(dir+'/result.json'),original:hash(dir+'/original.json'),capture:hash(dir+'/calls.json'),context_archive:r.context_archive});
 }
 const nativeFiles=atomicMultichainNativeFiles;
-const expected=nativeFiles.flatMap(file=>[...fs.readFileSync(root+'/'+file,'utf8').matchAll(/^func (Test\w+)\(/gm)].map(m=>({package:'ponder.local/ponder-go/'+file.split('/')[0],name:m[1]})));
+const expected=nativeFiles.flatMap(file=>[...fs.readFileSync(root+'/'+file,'utf8').matchAll(/^func (Test\w+)\(/gm)].map(m=>({package:'github.com/ysh0566/ponder-go/'+file.split('/')[0],name:m[1]})));
 check(expected.length>0,'M42 integration test inventory required');
 const executions=[];
 for(const mode of ['normal','race']){
@@ -70,7 +70,7 @@ for(const mode of ['normal','race']){
  check(events.every(e=>Number.isFinite(Date.parse(e.Time))&&Date.parse(e.Time)>=start-1000&&Date.parse(e.Time)<=end+1000)&&!events.some(e=>e.Test&&['skip','fail'].includes(e.Action)),'Native failure/skip or timestamp mismatch');
  for(const p of manifest.packages)for(const name of p.listed_functions)check(passed(name,p.package),'Listed native test missing/duplicate');
  for(const t of expected)check(passed(t.name,t.package),'Current M42 test missing: '+t.name);
- for(const backend of ['postgres','pglite'])for(const [pkg,name] of atomicMultichainDualBackendTests)check(passed(name+'/'+backend,'ponder.local/ponder-go/'+pkg),'Actual backend M42 integration missing: '+name+'/'+backend);
+ for(const backend of ['postgres','pglite'])for(const [pkg,name] of atomicMultichainDualBackendTests)check(passed(name+'/'+backend,'github.com/ysh0566/ponder-go/'+pkg),'Actual backend M42 integration missing: '+name+'/'+backend);
  executions.push({mode,source_credit:0,log:hash(log),manifest:hash(directory+'/native/'+base+'-execution.json'),tests:expected});
 }
 const report={complete:true,success:true,scope:'atomic_multichain_setup_and_historical_group_primitives',run_dir:relative,source_credit:0,environment_adapted:true,pristine_file:false,full_verification:hash(directory+'/result.json'),prepared_native_inputs:full.prepared_native_inputs,context_archive:full.context_archive,previous_independent_proof:hash(previous),postgres_fixture:fixture,native_controls:nativeControls,source,executions,inputs:[...atomicMultichainHarness,...prepared.files.filter(f=>/^(indexing|store)\//.test(f.file)).map(f=>f.file)].map(hash),limitations:{runner:'Bounded setup/group primitives only. No outer historical runner, readiness, views/triggers handoff, realtime or cutover.',pglite:'Native independent owned persistent directories and real SQL atomicity intentionally differ from source same-instance callback-only transactions.',recovery:'No atomic cross-domain sync rewind. Business suffix rollback and safe-prefix constraints remain; owned reverts invalidate retained row caches.',coverage:'Supplemental source and native evidence adds zero original source cases, assertions or type credit.'}};

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgconn"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // The current cache schema uses the pinned upstream DDL.

@@ -4,7 +4,7 @@ package generated
 import (
 	"encoding/json"
 	"math/big"
-	"ponder.local/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/abi"
 )
 
 type Case935e7e9609005b9a0d60Type0Result = struct {

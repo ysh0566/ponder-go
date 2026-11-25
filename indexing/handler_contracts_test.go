@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/events"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/events"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 type transferObservation struct {
@@ -134,7 +134,7 @@ func TestSourceHandlerDeclarations(t *testing.T) {
 	write("go.mod", "module handler.test\n\ngo 1.25.0\n")
 	write("go.work", fmt.Sprintf("go 1.25.0\nuse (\n.\n%q\n)\n", root))
 	const prefix = `package main
-import ("context";"errors";"ponder.local/ponder-go/events";"ponder.local/ponder-go/indexing")
+import ("context";"errors";"github.com/ysh0566/ponder-go/events";"github.com/ysh0566/ponder-go/indexing")
 var _ events.Payload
 var _ indexing.Handler
 var _ = errors.New

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"ponder.local/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/abi"
 )
 
 func TestCodegenABICatalog(t *testing.T) {

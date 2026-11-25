@@ -9,11 +9,11 @@ import (
 	"math/big"
 	"os"
 	"os/signal"
-	"ponder.local/ponder-go/config"
-	"ponder.local/ponder-go/query"
-	indexer "ponder.local/ponder-go/runtime"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/query"
+	indexer "github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 	"syscall"
 )
 

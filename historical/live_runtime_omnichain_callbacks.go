@@ -2,10 +2,10 @@ package historical
 
 import (
 	"fmt"
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/indexing"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // A closing block callback authenticates a complete block boundary even when

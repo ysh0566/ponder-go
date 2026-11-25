@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // A same-channel SQL sentinel is a causal fence, not a timeout-based assertion

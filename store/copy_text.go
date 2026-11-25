@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 	"reflect"
 	"strings"
 	"time"

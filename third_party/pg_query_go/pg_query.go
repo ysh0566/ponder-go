@@ -6,7 +6,7 @@ package pg_query
 import (
 	"google.golang.org/protobuf/proto"
 
-	"github.com/pganalyze/pg_query_go/v5/parser"
+	"github.com/ysh0566/ponder-go/third_party/pg_query_go/parser"
 )
 
 func Scan(input string) (result *ScanResult, err error) {

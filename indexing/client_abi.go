@@ -11,7 +11,7 @@ import (
 
 	ethabi "github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	ponderabi "ponder.local/ponder-go/abi"
+	ponderabi "github.com/ysh0566/ponder-go/abi"
 )
 
 // ContractCall describes a read-only ABI function call. FunctionName accepts a

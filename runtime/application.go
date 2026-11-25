@@ -6,7 +6,7 @@ import (
 	"net"
 	"time"
 
-	"ponder.local/ponder-go/query"
+	"github.com/ysh0566/ponder-go/query"
 )
 
 // Application serves queries and optionally indexes new blocks. Wait returns

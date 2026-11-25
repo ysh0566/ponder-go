@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // ProfileEvent is the data read by the upstream event profiler. FieldOrder

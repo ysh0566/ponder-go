@@ -1,5 +1,5 @@
 package main
-import("context";"encoding/json";"fmt";"io";"os";"ponder.local/ponder-go/config")
+import("context";"encoding/json";"fmt";"io";"os";"github.com/ysh0566/ponder-go/config")
 func main(){
  raw,err:=io.ReadAll(os.Stdin);if err!=nil{panic(err)}
  base,err:=config.ParseSourceConfiguration(raw);if err!=nil{panic(err)}

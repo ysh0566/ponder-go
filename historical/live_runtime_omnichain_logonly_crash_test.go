@@ -15,9 +15,9 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/indexing"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 type omniLogOnlyCrashSpec struct {

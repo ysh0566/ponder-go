@@ -6,8 +6,8 @@ import (
 	"math"
 	"reflect"
 
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 func sourceCachedEntries(cached []store.SourceIntervalEntry, key filter.Object) ([]store.SourceFragmentIntervals, error) {

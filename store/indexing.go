@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"ponder.local/ponder-go/metrics"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/sqlquery"
+	"github.com/ysh0566/ponder-go/metrics"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/sqlquery"
 	"reflect"
 	"sync"
 )

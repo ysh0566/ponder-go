@@ -23,7 +23,7 @@ export function inventory(root) {
       const scope=managedFiniteDualBackendTests.includes(name)?'postgres_and_persistent_pglite':managedFinitePostgresTests.includes(name)?'postgres_only':managedFinitePGliteTests.includes(name)?'persistent_pglite_only':
         (file==='historical/managed_plan_test.go'||file==='indexing/client_managed_test.go'||file==='indexing/client_managed_fallback_test.go'||['TestManagedFiniteOptionsAndSchemaSnapshot','TestManagedCanceledCloseErrorClassification','TestManagedFiniteActivationBusyPreservesCancellation','TestManagedFiniteActivationHeldStoreRespectsDeadline'].includes(name))?'pure':null;
       check(scope,'Explicit backend classification required for '+name);
-      return {file,package:'ponder.local/ponder-go/'+file.split('/')[0],name,scope};
+      return {file,package:'github.com/ysh0566/ponder-go/'+file.split('/')[0],name,scope};
     });
   });
 }

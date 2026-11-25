@@ -7,8 +7,8 @@ import (
 	"math/big"
 	"testing"
 
-	"ponder.local/ponder-go/orm/testdata/strict"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/orm/testdata/strict"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 func TestTypedEagerSQL(t *testing.T) {

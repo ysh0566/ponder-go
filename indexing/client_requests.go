@@ -8,8 +8,8 @@ import (
 	"math/big"
 	"strings"
 
-	ponderabi "ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/rpc"
+	ponderabi "github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 // Request runs a raw JSON-RPC request through the indexing client's cache policy.

@@ -70,15 +70,15 @@ const typedModes=[];
 for(const mode of ["go-test","go-race"]){
  const log=mode==="go-test"?normal:race;
  const lines=fs.readFileSync(path.resolve(root,log),"utf8").trim().split("\n").map(JSON.parse);
- const location=lines.filter(x=>x.Package==="ponder.local/ponder-go/config"&&x.Test==="TestUpstreamConfigRuntime"&&x.Output?.includes("Live original/native evidence: "));
- if(location.length!==1||!lines.some(x=>x.Package==="ponder.local/ponder-go/config"&&x.Test==="TestUpstreamConfigRuntime"&&x.Action==="pass"))throw Error("Missing actual successful complete native config execution: "+mode);
+ const location=lines.filter(x=>x.Package==="github.com/ysh0566/ponder-go/config"&&x.Test==="TestUpstreamConfigRuntime"&&x.Output?.includes("Live original/native evidence: "));
+ if(location.length!==1||!lines.some(x=>x.Package==="github.com/ysh0566/ponder-go/config"&&x.Test==="TestUpstreamConfigRuntime"&&x.Action==="pass"))throw Error("Missing actual successful complete native config execution: "+mode);
  const directory=location[0].Output.split("Live original/native evidence: ")[1].trim();
  if(!directory.startsWith(path.join(root,"parity/runs/config-types-m29/live-")))throw Error("Unexpected native evidence directory");
  const file=path.join(directory,"native.json"),native=read(file),capture=read(path.join(directory,"calls.json")),original=read(path.join(directory,"original.json")),compile=read(path.join(directory,"block-filter-compile.json"));
  if(adapted){
   if(!Number.isFinite(native.elapsed_ms)||native.elapsed_ms<0||!Number.isFinite(Date.parse(native.started_utc)))throw Error('Config live execution timing missing');
-  validateLiveRun({...native,finished_utc:new Date(Date.parse(native.started_utc)+native.elapsed_ms).toISOString()},mode==='go-test'?'normal':'race','ponder.local/ponder-go/config','TestUpstreamConfigRuntime');
-  if(lines.some(x=>x.Package==='ponder.local/ponder-go/config'&&x.Test?.startsWith('TestUpstreamConfigRuntime')&&['fail','skip'].includes(x.Action)))throw Error('Incomplete config native execution');
+  validateLiveRun({...native,finished_utc:new Date(Date.parse(native.started_utc)+native.elapsed_ms).toISOString()},mode==='go-test'?'normal':'race','github.com/ysh0566/ponder-go/config','TestUpstreamConfigRuntime');
+  if(lines.some(x=>x.Package==='github.com/ysh0566/ponder-go/config'&&x.Test?.startsWith('TestUpstreamConfigRuntime')&&['fail','skip'].includes(x.Action)))throw Error('Incomplete config native execution');
  }
  if(native.cases.length!==39||capture.cases.length!==39||native.calls.length!==69||native.calls.some(c=>c.differences?.length))throw Error("Incomplete source calls or native differences: "+mode);
  if(!original.success||original.numPassedTests!==39||original.numPendingTests!==1||original.numFailedTests!==0)throw Error("Incomplete unchanged source assertions");

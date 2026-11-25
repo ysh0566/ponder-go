@@ -12,10 +12,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"ponder.local/ponder-go/config"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/indexing"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // ManagedOptions opts into a NEW managed finite namespace. BuildID is the

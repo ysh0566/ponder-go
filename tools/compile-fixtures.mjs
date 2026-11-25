@@ -97,7 +97,7 @@ try {
     const badText=`package generated\nfunc check${a.name}() { out, _ := Decode${a.name}(""); var _ ${bad.wrong} = ${bad.expression} }\n`;
     const passfile=positive+"/"+a.name+".go",failfile=negative+"/"+a.name+".go",generatedfile=generated+"/"+a.name+".go";
     fs.writeFileSync(path.join(root,passfile),good);fs.writeFileSync(path.join(root,failfile),badText);
-    const args=["tool","compile","-p","ponder.local/ponder-go/abi/compilefixture","-importcfg",cfg,"-o",path.join(scratch,a.name+".a"),generatedfile];
+    const args=["tool","compile","-p","github.com/ysh0566/ponder-go/abi/compilefixture","-importcfg",cfg,"-o",path.join(scratch,a.name+".a"),generatedfile];
     const pass=command([...args,passfile]),fail=command([...args,failfile]);
     const passed=pass.status===0 && fail.status!==0 && (fail.stdout+fail.stderr).includes(bad.diagnostic) && (fail.stdout+fail.stderr).includes(failfile);
     report.obligations.push({source_id:a.id,source_line:a.expected_type.line,source_sha256:a.source_sha256,original_type:a.expected_type.text,adaptation:widening?"Explicit fixed-array to slice widening matching TypeScript readonly tuple assignability":"Direct assignment of ABI-generated return type to independently translated source type",status:passed?"passed":"failed",positive:{file:passfile,sha256:hash(good),exit_code:pass.status,diagnostics:pass.stdout+pass.stderr},negative_control:{file:failfile,sha256:hash(badText),exit_code:fail.status,expected_diagnostic:bad.diagnostic,diagnostics:fail.stdout+fail.stderr},generated:{file:generatedfile,sha256:hash(fs.readFileSync(path.join(root,generatedfile)))}});
@@ -110,11 +110,11 @@ try {
   const topics=event.assertions[0].input.topics;
   if(topics.length!==4||topics[2]!==null||topics[3]!==null||original.type_error_directives.length!==1)throw Error("Namehash type-error input changed");
   const passfile=positive+"/EventNamehash.go",failfile=negative+"/EventNamehash.go";
-  const prefix='package fixture\nimport "ponder.local/ponder-go/abi"\nfunc check() { _, _ = abi.DecodeEventLog(abi.Event{}, []string{';
+  const prefix='package fixture\nimport "github.com/ysh0566/ponder-go/abi"\nfunc check() { _, _ = abi.DecodeEventLog(abi.Event{}, []string{';
   const passcode=prefix+topics.slice(0,2).map(JSON.stringify).join(",")+'},"0x") }\n';
   const failcode=prefix+topics.map(x=>x===null?"nil":JSON.stringify(x)).join(",")+'},"0x") }\n';
   fs.writeFileSync(path.join(root,passfile),passcode);fs.writeFileSync(path.join(root,failfile),failcode);
-  const args=["tool","compile","-p","ponder.local/ponder-go/abi/eventfixture","-importcfg",cfg,"-o",path.join(scratch,"event.a")];
+  const args=["tool","compile","-p","github.com/ysh0566/ponder-go/abi/eventfixture","-importcfg",cfg,"-o",path.join(scratch,"event.a")];
   const pass=command([...args,passfile]),fail=command([...args,failfile]);
   const valid=pass.status===0&&fail.status!==0&&(fail.stdout+fail.stderr).includes("cannot use nil as string value");
   report.directives.push({source_id:original.id,source_sha256:original.source_sha256,original_directive:original.type_error_directives[0],status:valid?"passed":"failed",adaptation:"TS null topic entries become Go nil string entries and must fail compilation; the runtime JSON fixture separately exercises missing-topic errors.",positive:{file:passfile,sha256:hash(passcode),exit_code:pass.status,diagnostics:pass.stdout+pass.stderr},negative:{file:failfile,sha256:hash(failcode),exit_code:fail.status,diagnostics:fail.stdout+fail.stderr}});

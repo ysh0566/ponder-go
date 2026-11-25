@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // InitialChainCheckpoint contains sync-progress checkpoints, NOT the block

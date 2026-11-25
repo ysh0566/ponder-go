@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 func fixture(v any) any {

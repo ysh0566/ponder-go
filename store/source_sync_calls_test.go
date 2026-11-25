@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 func sourceLiveInvoke(ctx context.Context, s *SourceSyncStore, operation string, args filter.Object) (any, error) {

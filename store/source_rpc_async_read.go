@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 type sourceRPCReadQueue struct {

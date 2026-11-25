@@ -1,5 +1,5 @@
 package main
-import("encoding/json";"ponder.local/ponder-go/abi";"ponder.local/ponder-go/events")
+import("encoding/json";"github.com/ysh0566/ponder-go/abi";"github.com/ysh0566/ponder-go/events")
 func main(){
  var original abi.Function
  if err:=json.Unmarshal([]byte("{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}"),&original);err!=nil{panic(err)}

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"ponder.local/ponder-go/checkpoint"
-	protocol "ponder.local/ponder-go/events"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	protocol "github.com/ysh0566/ponder-go/events"
 )
 
 func projectionDefaults(input, defaults protocol.Object) protocol.Object {

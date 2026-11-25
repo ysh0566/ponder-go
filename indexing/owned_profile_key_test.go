@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"testing"
 
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // Numeric-string primary keys are legal user inputs. A learned block.number

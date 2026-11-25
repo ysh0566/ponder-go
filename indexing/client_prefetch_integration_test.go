@@ -7,8 +7,8 @@ import (
 	"math/big"
 	"net/http"
 	"net/http/httptest"
-	ponderabi "ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/rpc"
+	ponderabi "github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/rpc"
 	"testing"
 )
 

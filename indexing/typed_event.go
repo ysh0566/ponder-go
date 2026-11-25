@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 // HandleEvent adapts the source-specific event projection to ordinary service dispatch.

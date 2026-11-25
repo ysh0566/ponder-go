@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	pgquery "github.com/pganalyze/pg_query_go/v5"
+	pgquery "github.com/ysh0566/ponder-go/third_party/pg_query_go"
 	"sync"
 )
 

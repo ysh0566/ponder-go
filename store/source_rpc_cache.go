@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 // SourceRPCRawResult retains the actual source runtime request. The source tests

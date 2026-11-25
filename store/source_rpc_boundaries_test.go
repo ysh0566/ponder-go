@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/rpc"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 func TestSourceRPCBoundaries(t *testing.T) {

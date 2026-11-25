@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 func runtimeCacheError(err error) <-chan error {

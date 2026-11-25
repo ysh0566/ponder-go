@@ -9,10 +9,10 @@ import (
  "sync"
  "testing"
  "time"
- "ponder.local/ponder-go/checkpoint"
- "ponder.local/ponder-go/indexing"
- "ponder.local/ponder-go/schema"
- "ponder.local/ponder-go/store"
+ "github.com/ysh0566/ponder-go/checkpoint"
+ "github.com/ysh0566/ponder-go/indexing"
+ "github.com/ysh0566/ponder-go/schema"
+ "github.com/ysh0566/ponder-go/store"
 )
 
 func TestRuntimeCompletionOrderingSharedReplay(t *testing.T){for _,backend:=range []string{"postgres","pglite"}{t.Run(backend,func(t *testing.T){

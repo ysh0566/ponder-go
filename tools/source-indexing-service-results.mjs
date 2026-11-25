@@ -107,12 +107,12 @@ for(const mode of ['normal','race']){
  const events=fs.readFileSync(log,'utf8').trim().split('\n').map(JSON.parse);
  check(events.every(e=>Number.isFinite(Date.parse(e.Time))&&Date.parse(e.Time)>=start-1000&&Date.parse(e.Time)<=end+1000),'Native log outside mode execution');
  check(!events.some(e=>e.Test&&['skip','fail'].includes(e.Action)),'Native aggregate contains skip/failure');
- const passed=(test,pkg='ponder.local/ponder-go/indexing')=>events.filter(e=>e.Package===pkg&&e.Test===test&&e.Action==='pass').length===1;
+ const passed=(test,pkg='github.com/ysh0566/ponder-go/indexing')=>events.filter(e=>e.Package===pkg&&e.Test===test&&e.Action==='pass').length===1;
  for(const pkg of manifest.packages)for(const test of pkg.listed_functions)check(passed(test,pkg.package),'Listed native function missing or duplicated');
  if(isM39){for(const test of indexingActionsSupplementalTests)check(passed(test),'Required M39 supplemental missing: '+test);for(const backend of ['postgres','pglite'])for(const name of indexingActionsAdmissionScenarios)check(passed('TestClientRealCacheAdmissionLifecycle/'+backend+'/'+name),'Required real admission lifecycle missing');}
  for(const test of supplementalTests)check(passed(test),'Required supplemental missing: '+test);
  for(const name of ['delayed-cache-insert-success','delayed-cache-insert-failure'])check(passed('TestSourceIndexingServiceCache/'+name),'Source cache replay missing: '+name);
- check(passed('TestSourceHistoricalIndexingServiceComposition','ponder.local/ponder-go/runtime'),'Actual M37 stream to real handler/store composition missing');
+ check(passed('TestSourceHistoricalIndexingServiceComposition','github.com/ysh0566/ponder-go/runtime'),'Actual M37 stream to real handler/store composition missing');
  const artifactFile=directory+'/native/indexing-service-'+mode+'.json',artifact=read(artifactFile);
  const stage=full.commands.find(c=>c.name===(mode==='normal'?'go-normal':'go-race'));
  check(stage.native_indexing_output===artifactFile&&artifact.source_credit===0&&artifact.cases?.length===30,'Mandatory mode-specific actual native artifact missing');
@@ -128,7 +128,7 @@ for(const mode of ['normal','race']){
   const cases=selected.map(c=>({source_id:c.id,go_test:'TestSourceIndexingService/'+backend+'/'+c.id,runtime_passed:true,native_type_obligations:c.type_error_directives.length,native_type_status:c.type_error_directives.length?'pending_exact_static_counterpart':'not_applicable',formal_credit:!indexingServiceTypeGaps.includes(c.id)}));
   for(const c of cases)check(passed(c.go_test),'Original native case missing: '+c.go_test);
   for(const test of ['TestDatabaseAdaptersRealBackends','TestServiceSupplementalTwoChainIdentityAndSetup','TestServiceSupplementalStickyErrorTiming','TestServiceSupplementalConvergenceAndInvalidation','TestServiceSupplementalCancellationAndReentrancy'])check(passed(test+'/'+backend),'Required actual backend supplemental missing: '+test+'/'+backend);
-  check(passed('TestSourceHistoricalIndexingServiceComposition/'+backend,'ponder.local/ponder-go/runtime'),'Actual backend M37 composition missing');
+  check(passed('TestSourceHistoricalIndexingServiceComposition/'+backend,'github.com/ysh0566/ponder-go/runtime'),'Actual backend M37 composition missing');
   const {source,result}=sourceRecords[backend];
   executions.push({mode,backend,complete:true,cases,artifact:hash(artifactFile),native_test_prefix:'TestSourceIndexingService/'+backend,log:hash(log),native:hash(log),capture:hash(source+'/calls.json.gz'),original:hash(source+'/original.json'),result:hash(source+'/result.json'),source_context:result.inputs,context_archive:result.context_archive});
  }

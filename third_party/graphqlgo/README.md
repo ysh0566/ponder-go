@@ -1,0 +1,1 @@
+The Go sources in this directory come from `github.com/nytimes/graphql-go-graphql` at `v0.8.4-nyt`. The Ponder server uses this parser to retain explicit null inputs. Imports within the library point to its directory in this module. The upstream license is included in [LICENSE](LICENSE).

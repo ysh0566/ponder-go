@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 // ContractABI retains raw ABI metadata when a contract has a runtime declaration.

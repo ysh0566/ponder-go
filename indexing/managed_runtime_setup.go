@@ -3,7 +3,7 @@ package indexing
 import (
 	"context"
 	"errors"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // Bootstrap binds the actual setup service to one all-chain native transaction.

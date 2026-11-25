@@ -11,8 +11,8 @@ import (
 	"strings"
 	"sync"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 //go:embed ens_reverse.json

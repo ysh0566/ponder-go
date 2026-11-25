@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // Every sort uses the primary key as a tiebreaker, including composite keys.

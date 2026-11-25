@@ -3,7 +3,7 @@ package indexing
 import (
 	"fmt"
 
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // profileEvent is shared by dispatch and outside-transaction row prefetch. Count

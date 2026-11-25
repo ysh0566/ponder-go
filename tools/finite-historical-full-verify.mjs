@@ -70,7 +70,7 @@ assert len(pairs)==prepared['fingerprint']['files'] and hashlib.sha256(json.dump
 for ref in prepared['files']: add(ref,'prepared-native-file')
 # Enumerate the actual unfiltered root-module inputs, not an allowlisted guess.
 # This is discovery only; it executes no Go tests, programs, or generated binaries.
-expected_packages=sorted('ponder.local/ponder-go/'+name for name in ['abi','bloom','checkpoint','cmd/abi-codegen','cmd/parity-probe','cmd/ponder','cmd/source-codegen','config','events','examples/erc20','factory','filter','finality','historical','indexing','internal/jsvalue','interval','orm','query','rpc','runtime','schema','sqlquery','store'])
+expected_packages=sorted('github.com/ysh0566/ponder-go/'+name for name in ['abi','bloom','checkpoint','cmd/abi-codegen','cmd/parity-probe','cmd/ponder','cmd/source-codegen','config','events','examples/erc20','factory','filter','finality','historical','indexing','internal/jsvalue','interval','orm','query','rpc','runtime','schema','sqlquery','store'])
 command=['go','list','-json','./...']
 go_result=subprocess.run(command,cwd=root,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=300)
 go_raw=out/'prepared-go-discovery.json'
@@ -89,7 +89,7 @@ sources={}
 for package in packages:
  directory=pathlib.Path(package['Dir']); module=package['Module']
  assert directory.is_absolute() and directory.resolve()==directory and directory.is_relative_to(root), ('Package directory outside canonical module',package['ImportPath'])
- assert module['Main'] is True and pathlib.Path(module['Dir']).resolve()==root and module['Path']=='ponder.local/ponder-go', ('Unexpected external module in root package census',package['ImportPath'])
+ assert module['Main'] is True and pathlib.Path(module['Dir']).resolve()==root and module['Path']=='github.com/ysh0566/ponder-go', ('Unexpected external module in root package census',package['ImportPath'])
  for kind in ['GoFiles','CgoFiles','TestGoFiles','XTestGoFiles']:
   for name in package.get(kind,[]):
    assert isinstance(name,str) and not pathlib.Path(name).is_absolute(), ('Unexpected external/generated Go input path',name)

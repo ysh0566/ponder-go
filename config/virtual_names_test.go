@@ -11,8 +11,8 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/config"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/config"
 )
 
 type virtualChain struct {
@@ -68,7 +68,7 @@ func TestSourceVirtualNames(t *testing.T) {
 	put("go.work", fmt.Sprintf("go 1.25.0\nuse (\n.\n%q\n)\n", root))
 	writeVirtualPackage(t, dir, "app", fixture.Application)
 	var caller strings.Builder
-	caller.WriteString("package virtual_test\nimport (\"testing\"; \"context\"; \"ponder.local/ponder-go/indexing\"; \"virtual.test/app\"\n")
+	caller.WriteString("package virtual_test\nimport (\"testing\"; \"context\"; \"github.com/ysh0566/ponder-go/indexing\"; \"virtual.test/app\"\n")
 	for i, c := range fixture.Cases {
 		if c.Configuration != nil {
 			pkg := fmt.Sprintf("names%d", i)

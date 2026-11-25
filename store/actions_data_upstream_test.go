@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // These replace the earlier atomic-Apply source mappings; they do not add a

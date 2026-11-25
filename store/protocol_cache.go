@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // ProtocolCache uses the exact versioned source tables, independently of the

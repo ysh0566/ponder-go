@@ -209,7 +209,7 @@ if(runtimeHistoricalVerification){
   if(execution.cases?.length!==11)throw Error("Runtime historical requires exactly eleven native cases");
   for(const record of execution.cases){
    const source=selected.find(test=>test.id===record.source_id),prefix="TestSourceRuntimeHistoricalOriginal/"+execution.backend;
-   if(!source||!runtimeHistoricalIDs.has(source.id)||seen.has(source.id)||execution.native_test_prefix!==prefix||record.go_test!==prefix+"/"+source.title.replaceAll(/\s/g,"_")||record.native_type_obligations!==0||results.get(`ponder.local/ponder-go/runtime:${record.go_test}`)?.Action!=="pass")throw Error("Runtime historical native case missing or changed");
+   if(!source||!runtimeHistoricalIDs.has(source.id)||seen.has(source.id)||execution.native_test_prefix!==prefix||record.go_test!==prefix+"/"+source.title.replaceAll(/\s/g,"_")||record.native_type_obligations!==0||results.get(`github.com/ysh0566/ponder-go/runtime:${record.go_test}`)?.Action!=="pass")throw Error("Runtime historical native case missing or changed");
    seen.add(source.id);
   }
  }
@@ -227,11 +227,11 @@ if(runtimeMultichainVerification){
   if(!["normal/postgres","normal/pglite","race/postgres","race/pglite"].includes(combination)||combinations.has(combination)||[execution.log,execution.native,execution.capture,execution.original,execution.result,execution.supplemental_probe,execution.supplemental_result,execution.supplemental_original,execution.supplemental_context,...execution.supplemental_source_context,...execution.source_context].some(ref=>!proofValid(ref,v,execution)))throw Error("Runtime multichain execution/context differs");
   combinations.add(combination);
   const results=execution.mode==="normal"?go:race,seen=new Set();
-  if(!Array.isArray(execution.supplemental_cases)||JSON.stringify(execution.supplemental_cases.map(c=>c.name))!==JSON.stringify(multichainProbeNames)||new Set(execution.supplemental_cases.map(c=>c.name)).size!==execution.supplemental_cases.length||execution.supplemental_cases.some(c=>c.source_credit!==0||c.go_test!=="TestSourceRuntimeMultichainProbes/"+execution.backend+"/"+c.name.replaceAll(/\s/g,"_")||results.get(`ponder.local/ponder-go/runtime:${c.go_test}`)?.Action!=="pass"))throw Error("Runtime multichain supplemental native coverage missing");
+  if(!Array.isArray(execution.supplemental_cases)||JSON.stringify(execution.supplemental_cases.map(c=>c.name))!==JSON.stringify(multichainProbeNames)||new Set(execution.supplemental_cases.map(c=>c.name)).size!==execution.supplemental_cases.length||execution.supplemental_cases.some(c=>c.source_credit!==0||c.go_test!=="TestSourceRuntimeMultichainProbes/"+execution.backend+"/"+c.name.replaceAll(/\s/g,"_")||results.get(`github.com/ysh0566/ponder-go/runtime:${c.go_test}`)?.Action!=="pass"))throw Error("Runtime multichain supplemental native coverage missing");
   if(execution.cases?.length!==3)throw Error("Runtime multichain requires exactly three native cases");
   for(const record of execution.cases){
    const source=selected.find(test=>test.id===record.source_id),prefix="TestSourceRuntimeMultichainOriginal/"+execution.backend;
-   if(!source||!runtimeMultichainIDs.has(source.id)||seen.has(source.id)||execution.native_test_prefix!==prefix||record.go_test!==prefix+"/"+source.title.replaceAll(/\s/g,"_")||record.native_type_obligations!==0||results.get(`ponder.local/ponder-go/runtime:${record.go_test}`)?.Action!=="pass")throw Error("Runtime multichain native case missing or changed");
+   if(!source||!runtimeMultichainIDs.has(source.id)||seen.has(source.id)||execution.native_test_prefix!==prefix||record.go_test!==prefix+"/"+source.title.replaceAll(/\s/g,"_")||record.native_type_obligations!==0||results.get(`github.com/ysh0566/ponder-go/runtime:${record.go_test}`)?.Action!=="pass")throw Error("Runtime multichain native case missing or changed");
    seen.add(source.id);
   }
  }
@@ -247,10 +247,10 @@ if(indexingProfileVerification){
  if(ledger.tests.some(t=>t.mapping&&t.source_file==="packages/core/src/indexing/client.test.ts"&&!indexingProfileIDs.has(t.id)))throw Error("Other twelve client originals remain unmapped in M40");
  for(const e of v.executions){const key=e.mode+"/"+e.backend,results=e.mode==="normal"?go:race;
   if(!["normal/postgres","normal/pglite","race/postgres","race/pglite"].includes(key)||seen.has(key)||e.cases.length!==12||[e.log,e.native,e.artifact,e.probe_artifact,e.capture,e.original,e.result,e.context_archive,...e.source_context,...Object.values(e.probe).filter(x=>x?.file),...e.probe.source_context].some(r=>!proofValid(r,v,e)))throw Error("All native profile mode/backend results required");seen.add(key);
-  for(const name of indexingProfileSupplementalTests)if(results.get(`ponder.local/ponder-go/indexing:${name}`)?.Action!=="pass")throw Error("Current profile supplemental missing");
-  for(const name of indexingProfileStoreTests)if(results.get(`ponder.local/ponder-go/store:${name}`)?.Action!=="pass")throw Error("Current read queue test missing");
-  for(const name of indexingProfileStoreScenarios)if(results.get(`ponder.local/ponder-go/store:TestSourceRPCAsyncReadBackends/${e.backend}/${name}`)?.Action!=="pass")throw Error("Current read queue backend lifecycle missing");
-  for(const t of selected){const cs=e.cases.filter(c=>c.source_id===t.id),c=cs[0],prefix=t.source_file.endsWith("/profile.test.ts")?"TestSourceIndexingProfile":"TestSourceIndexingPrefetch",name=prefix+"/"+e.backend+"/"+t.id;if(cs.length!==1||c.go_test!==name||!c.runtime_passed||!c.formal_credit||c.native_type_obligations!==0||t.type_error_directives.length!==0||results.get(`ponder.local/ponder-go/indexing:${name}`)?.Action!=="pass")throw Error("Exact profile/prefetch original result required");}
+  for(const name of indexingProfileSupplementalTests)if(results.get(`github.com/ysh0566/ponder-go/indexing:${name}`)?.Action!=="pass")throw Error("Current profile supplemental missing");
+  for(const name of indexingProfileStoreTests)if(results.get(`github.com/ysh0566/ponder-go/store:${name}`)?.Action!=="pass")throw Error("Current read queue test missing");
+  for(const name of indexingProfileStoreScenarios)if(results.get(`github.com/ysh0566/ponder-go/store:TestSourceRPCAsyncReadBackends/${e.backend}/${name}`)?.Action!=="pass")throw Error("Current read queue backend lifecycle missing");
+  for(const t of selected){const cs=e.cases.filter(c=>c.source_id===t.id),c=cs[0],prefix=t.source_file.endsWith("/profile.test.ts")?"TestSourceIndexingProfile":"TestSourceIndexingPrefetch",name=prefix+"/"+e.backend+"/"+t.id;if(cs.length!==1||c.go_test!==name||!c.runtime_passed||!c.formal_credit||c.native_type_obligations!==0||t.type_error_directives.length!==0||results.get(`github.com/ysh0566/ponder-go/indexing:${name}`)?.Action!=="pass")throw Error("Exact profile/prefetch original result required");}
  }
 }
 
@@ -262,8 +262,8 @@ if(indexingActionsVerification){
  const selected=ledger.tests.filter(t=>indexingActionsIDs.has(t.id)),seen=new Set();
  for(const e of v.executions){const key=e.mode+"/"+e.backend,results=e.mode==="normal"?go:race;
   if(!["normal/postgres","normal/pglite","race/postgres","race/pglite"].includes(key)||seen.has(key)||e.cases.length!==8||[e.log,e.native,e.artifact,e.probe_artifact,e.capture,e.original,e.result,e.context_archive,...e.source_context,...Object.values(e.probe).filter(x=>x?.file),...e.probe.source_context].some(r=>!proofValid(r,v,e)))throw Error("All native actions mode/backend results required");seen.add(key);
-  for(const t of selected){const cs=e.cases.filter(c=>c.source_id===t.id),c=cs[0],name="TestSourceIndexingActions/"+e.backend+"/"+t.id;if(cs.length!==1||c.go_test!==name||!c.runtime_passed||!c.formal_credit||c.native_type_obligations!==0||t.type_error_directives.length!==0||results.get(`ponder.local/ponder-go/indexing:${name}`)?.Action!=="pass")throw Error("Exact action original result required");}
-  if(results.get(`ponder.local/ponder-go/indexing:TestSourceIndexingActionsProbes/${e.backend}`)?.Action!=="pass")throw Error("Real action cache/error vectors missing");
+  for(const t of selected){const cs=e.cases.filter(c=>c.source_id===t.id),c=cs[0],name="TestSourceIndexingActions/"+e.backend+"/"+t.id;if(cs.length!==1||c.go_test!==name||!c.runtime_passed||!c.formal_credit||c.native_type_obligations!==0||t.type_error_directives.length!==0||results.get(`github.com/ysh0566/ponder-go/indexing:${name}`)?.Action!=="pass")throw Error("Exact action original result required");}
+  if(results.get(`github.com/ysh0566/ponder-go/indexing:TestSourceIndexingActionsProbes/${e.backend}`)?.Action!=="pass")throw Error("Real action cache/error vectors missing");
  }
 }
 
@@ -281,9 +281,9 @@ if(indexingServiceVerification){
   const combination=e.mode+"/"+e.backend,results=e.mode==="normal"?go:race;
   if(!["normal/postgres","normal/pglite","race/postgres","race/pglite"].includes(combination)||combinations.has(combination)||[e.log,e.native,e.artifact,e.capture,e.original,e.result,...e.source_context].some(ref=>!proofValid(ref,v,e))||e.cases.length!==15)throw Error("All native indexing mode/backend results required");
   combinations.add(combination);
-  const seen=new Set();for(const c of e.cases){const source=selected.find(t=>t.id===c.source_id),gap=indexingServiceGapIDs.has(c.source_id),name="TestSourceIndexingService/"+e.backend+"/"+c.source_id;if(!source||seen.has(c.source_id)||c.go_test!==name||!c.runtime_passed||c.formal_credit!==!gap||c.native_type_obligations!==source.type_error_directives.length||c.native_type_status!==(gap?"pending_exact_static_counterpart":"not_applicable")||results.get(`ponder.local/ponder-go/indexing:${name}`)?.Action!=="pass")throw Error("Indexing native runtime/static result differs");seen.add(c.source_id);}
-  for(const name of v.supplemental_tests)if(results.get(`ponder.local/ponder-go/indexing:${name}`)?.Action!=="pass")throw Error("Indexing supplemental missing");
-  if(results.get(`ponder.local/ponder-go/runtime:TestSourceHistoricalIndexingServiceComposition/${e.backend}`)?.Action!=="pass")throw Error("Actual M37 event to indexing/store composition missing");
+  const seen=new Set();for(const c of e.cases){const source=selected.find(t=>t.id===c.source_id),gap=indexingServiceGapIDs.has(c.source_id),name="TestSourceIndexingService/"+e.backend+"/"+c.source_id;if(!source||seen.has(c.source_id)||c.go_test!==name||!c.runtime_passed||c.formal_credit!==!gap||c.native_type_obligations!==source.type_error_directives.length||c.native_type_status!==(gap?"pending_exact_static_counterpart":"not_applicable")||results.get(`github.com/ysh0566/ponder-go/indexing:${name}`)?.Action!=="pass")throw Error("Indexing native runtime/static result differs");seen.add(c.source_id);}
+  for(const name of v.supplemental_tests)if(results.get(`github.com/ysh0566/ponder-go/indexing:${name}`)?.Action!=="pass")throw Error("Indexing supplemental missing");
+  if(results.get(`github.com/ysh0566/ponder-go/runtime:TestSourceHistoricalIndexingServiceComposition/${e.backend}`)?.Action!=="pass")throw Error("Actual M37 event to indexing/store composition missing");
  }
  for(const t of selected)if(indexingServiceGapIDs.has(t.id)&&t.mapping)throw Error("TS-only indexing directive must remain unmapped");
 }
@@ -303,7 +303,7 @@ if (runtimeIndexVerification) {
   if(execution.cases?.length!==15)throw Error("Runtime index requires all fifteen actual native source-case results");
   for(const record of execution.cases){
    const source=selected.find(test=>test.id===record.source_id),prefix=execution.native_test_prefix;
-   if(!source||seen.has(source.id)||prefix!=="TestSourceRuntimeIndexFullFile/"+execution.backend||record.go_test!==prefix+"/"+source.title.replaceAll(" ","_")||results.get(`${record.go_package??"ponder.local/ponder-go/runtime"}:${record.go_test}`)?.Action!=="pass")throw Error("Runtime index native case is missing or not passed: "+record.source_id);
+   if(!source||seen.has(source.id)||prefix!=="TestSourceRuntimeIndexFullFile/"+execution.backend||record.go_test!==prefix+"/"+source.title.replaceAll(" ","_")||results.get(`${record.go_package??"github.com/ysh0566/ponder-go/runtime"}:${record.go_test}`)?.Action!=="pass")throw Error("Runtime index native case is missing or not passed: "+record.source_id);
    seen.add(source.id);
   }
  }
@@ -608,7 +608,7 @@ for (const test of ledger.tests) {
 		if (test.mapping.required_compile_source_id) {
 			const obligations = compile?.obligations.filter(x => x.source_id === test.id && x.source_sha256 === test.source_sha256) ?? [];
 			const expected = test.assertions.filter(x => x.kind === "type").length;
-			const typedKey = `ponder.local/ponder-go/abi/testdata/compile/generated:TestGeneratedTypedParameters/${test.id}`;
+			const typedKey = `github.com/ysh0566/ponder-go/abi/testdata/compile/generated:TestGeneratedTypedParameters/${test.id}`;
 			const valid = obligations.length === expected && expected > 0 && obligations.every(x => x.status === "passed" && [x.positive,x.negative_control,x.generated].every(f => exists(f.file) && fileHash(f.file) === f.sha256)) && typedGo.get(typedKey)?.Action === "pass";
 			test.type_verification = {status:valid?"passed":"blocked", obligations:expected, compile_evidence:"parity/runs/compile-fixtures.json", typed_runtime_evidence:typedGoFile};
 			test.runtime_status = status;
@@ -759,15 +759,15 @@ const summary = {
 	rpc_action_differential: exists("testdata/rpc/actions-differential.json") ? (() => {
 		const fixture = read("testdata/rpc/actions-differential.json");
 		if (fixture.sources.some(x => fileHash("../ponder-upstream/" + x.file) !== x.sha256)) throw Error("RPC differential source changed");
-		const select = xs => xs.filter(x => x.Package === "ponder.local/ponder-go/rpc" && x.Test.startsWith("TestRPCActionDifferential/"));
+		const select = xs => xs.filter(x => x.Package === "github.com/ysh0566/ponder-go/rpc" && x.Test.startsWith("TestRPCActionDifferential/"));
 		return {counting: fixture.counting, vectors: fixture.cases.length, source_expected_errors: fixture.cases.filter(x => x.error).length, go: count(select(native)), race: count(select(nativeRace)), evidence: "testdata/rpc/actions-differential.json"};
 	})() : null,
 
- event_build_differential: exists("testdata/runtime/event-build-differential.json") ? (()=>{const fixture=read("testdata/runtime/event-build-differential.json"),select=xs=>xs.filter(x=>x.Package==="ponder.local/ponder-go/events"&&x.Test.startsWith("TestEventBuildDifferential/"));return {counting:fixture.counting,vectors:fixture.vectors.length,source_expected_errors:fixture.vectors.filter(v=>v.error).length,go:count(select(native)),race:count(select(nativeRace)),evidence:"testdata/runtime/event-build-differential.json"};})():null,
+ event_build_differential: exists("testdata/runtime/event-build-differential.json") ? (()=>{const fixture=read("testdata/runtime/event-build-differential.json"),select=xs=>xs.filter(x=>x.Package==="github.com/ysh0566/ponder-go/events"&&x.Test.startsWith("TestEventBuildDifferential/"));return {counting:fixture.counting,vectors:fixture.vectors.length,source_expected_errors:fixture.vectors.filter(v=>v.error).length,go:count(select(native)),race:count(select(nativeRace)),evidence:"testdata/runtime/event-build-differential.json"};})():null,
  selected_source_oracle: exists("parity/runs/selected-runtime-oracle.json")?{evidence:"parity/runs/selected-runtime-oracle.json",...(runDir?{verification_period:"historical",current_status:"historical_only"}:{}),mode:"unchanged_selected_declarations_with_actual_source_dependencies",total:read("parity/runs/selected-runtime-oracle.json").numTotalTests,passed:read("parity/runs/selected-runtime-oracle.json").numPassedTests,success:read("parity/runs/selected-runtime-oracle.json").success}:null,
  selected_existing_oracle: exists("parity/runs/selected-mapped-oracle.json")?{evidence:"parity/runs/selected-mapped-oracle.json",...(runDir?{verification_period:"historical",current_status:"historical_only"}:{}),mode:"unchanged_already_mapped_filter_genesis_split_declarations",total:read("parity/runs/selected-mapped-oracle.json").numTotalTests,passed:read("parity/runs/selected-mapped-oracle.json").numPassedTests,success:read("parity/runs/selected-mapped-oracle.json").success}:null,
 	filter_fragment_differential: exists("testdata/runtime/filter-differential.json") ? (() => {
-		const fixture=read("testdata/runtime/filter-differential.json"),selected=native.filter(x=>x.Package==="ponder.local/ponder-go/filter"&&x.Test.startsWith("TestFilterDifferential/")),selectedRace=nativeRace.filter(x=>x.Package==="ponder.local/ponder-go/filter"&&x.Test.startsWith("TestFilterDifferential/"));
+		const fixture=read("testdata/runtime/filter-differential.json"),selected=native.filter(x=>x.Package==="github.com/ysh0566/ponder-go/filter"&&x.Test.startsWith("TestFilterDifferential/")),selectedRace=nativeRace.filter(x=>x.Package==="github.com/ysh0566/ponder-go/filter"&&x.Test.startsWith("TestFilterDifferential/"));
 		return {counting:fixture.counting,vectors:fixture.vectors.length,source_expected_exceptions:fixture.vectors.filter(x=>x.error).length,go:count(selected),race:count(selectedRace),evidence:"testdata/runtime/filter-differential.json"};
 	})() : null,
 	original_oracle: {mapped_passed:ledger.summary.oracle_passed,mapped_blocked:ledger.summary.oracle_blocked,...(runDir?{current_mapped_passed:ledger.summary.current_original_oracle_passed,historical_only_mapped:ledger.summary.historical_only_original_oracles}:{}),meaning:"Original execution and native execution are separate evidence. Historical-only references are not current-run source passes; only explicit differential vectors are labelled differential verification."},
@@ -779,7 +779,7 @@ const summary = {
 	event_type_fixtures: eventCompile?.summary ?? null,
  bloom_type_fixtures: bloomCompile?.summary ?? null,
  config_builder: configCompile?.summary ?? null,
- bloom_differential: exists("testdata/bloom/differential.json") ? (()=>{const fixture=read("testdata/bloom/differential.json");if(fixture.sources.some(x=>fileHash("../ponder-upstream/"+x.file)!==x.sha256))throw Error("Bloom source changed");const select=xs=>xs.filter(x=>x.Package==="ponder.local/ponder-go/bloom"&&x.Test.startsWith("TestBloomDifferential/"));return{counting:fixture.counting,vectors:fixture.cases.length,source_expected_errors:fixture.cases.filter(x=>x.error).length,go:count(select(native)),race:count(select(nativeRace)),evidence:"testdata/bloom/differential.json"};})():null,
+ bloom_differential: exists("testdata/bloom/differential.json") ? (()=>{const fixture=read("testdata/bloom/differential.json");if(fixture.sources.some(x=>fileHash("../ponder-upstream/"+x.file)!==x.sha256))throw Error("Bloom source changed");const select=xs=>xs.filter(x=>x.Package==="github.com/ysh0566/ponder-go/bloom"&&x.Test.startsWith("TestBloomDifferential/"));return{counting:fixture.counting,vectors:fixture.cases.length,source_expected_errors:fixture.cases.filter(x=>x.error).length,go:count(select(native)),race:count(select(nativeRace)),evidence:"testdata/bloom/differential.json"};})():null,
 	type_scope: {
 		dedicated_source_records: ledger.summary.type_records,
 		dedicated_retained_sdk_passed: ledger.tests.filter(x=>x.kind==="type"&&x.mapping?.target_kind==="retained_sdk"&&x.pass_status==="passed").length,

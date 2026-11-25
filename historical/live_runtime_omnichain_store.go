@@ -2,8 +2,8 @@ package historical
 
 import (
 	"context"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // Each operation re-enters the owned sync lane. A transaction-bound source

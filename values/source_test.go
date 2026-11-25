@@ -13,10 +13,10 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/config"
-	"ponder.local/ponder-go/metrics"
-	"ponder.local/ponder-go/values"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/metrics"
+	"github.com/ysh0566/ponder-go/values"
 )
 
 type utilityCase struct {

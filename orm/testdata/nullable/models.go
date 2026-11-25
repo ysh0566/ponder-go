@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"ponder.local/ponder-go/orm"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/orm"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 type AccountRow struct {

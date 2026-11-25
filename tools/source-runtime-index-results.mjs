@@ -30,7 +30,7 @@ for(const mode of ['normal','race']){
  const name=mode==='normal'?'go-test':'go-race',log=directory+'/native/'+name+'.jsonl',manifest=read(directory+'/native/'+name+'-execution.json');
  check(manifest.complete&&manifest.success&&manifest.scope==='all_module_packages'&&equal(manifest.source_fingerprint,fingerprint)&&equal(manifest.finished_source_fingerprint,fingerprint),'Complete current module execution required');
  check(Date.parse(prepared.recorded_utc)<=Date.parse(manifest.started_utc),'Prepared inventory must precede native execution');
- const events=fs.readFileSync(log,'utf8').trim().split('\n').map(JSON.parse),passed=test=>events.filter(e=>e.Package==='ponder.local/ponder-go/runtime'&&e.Test===test&&e.Action==='pass').length===1;
+ const events=fs.readFileSync(log,'utf8').trim().split('\n').map(JSON.parse),passed=test=>events.filter(e=>e.Package==='github.com/ysh0566/ponder-go/runtime'&&e.Test===test&&e.Action==='pass').length===1;
  verifyCacheTypeTests((pkg,test)=>events.filter(e=>e.Package===pkg&&e.Test===test&&e.Action==='pass').length===1);
  check(!events.some(e=>e.Test&&['fail','skip'].includes(e.Action)),'Aggregate must have no native failures/skips');
  for(const pkg of manifest.packages)for(const test of pkg.listed_functions)check(events.filter(e=>e.Package===pkg.package&&e.Test===test&&e.Action==='pass').length===1,'Missing/duplicate listed function');

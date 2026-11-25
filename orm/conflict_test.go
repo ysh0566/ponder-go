@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"ponder.local/ponder-go/orm"
-	"ponder.local/ponder-go/orm/testdata/dbwrites"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/orm"
+	"github.com/ysh0566/ponder-go/orm/testdata/dbwrites"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 func TestTypedInsertConflicts(t *testing.T) {

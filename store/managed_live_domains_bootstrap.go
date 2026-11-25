@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 type liveDomainBinding struct{ Identity, Operation, Hash, CacheCatalog string }

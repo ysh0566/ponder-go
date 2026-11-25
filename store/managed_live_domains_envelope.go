@@ -2,7 +2,7 @@ package store
 
 import (
 	"context"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // The immutable envelope covers every namespace/ownership record consulted by

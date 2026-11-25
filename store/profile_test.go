@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 func TestProfileNativeBranches(t *testing.T) {

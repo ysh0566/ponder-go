@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"slices"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/factory"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/factory"
 )
 
 // ApplicationDeclaration retains the caller's concrete chain, contract, account

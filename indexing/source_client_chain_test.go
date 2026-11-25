@@ -10,9 +10,9 @@ import (
 	"regexp"
 	"testing"
 
-	ponderabi "ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/internal/testanvil"
-	"ponder.local/ponder-go/rpc"
+	ponderabi "github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/internal/testanvil"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 const sourceClientAlice = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"

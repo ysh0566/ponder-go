@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/factory"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/factory"
+	"github.com/ysh0566/ponder-go/schema"
 	"regexp"
 )
 

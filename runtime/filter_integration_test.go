@@ -15,9 +15,9 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/config"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // Native end-to-end boundary evidence, not an original Foundry test mapping.

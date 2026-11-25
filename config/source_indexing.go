@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 type SourceIndexingBuild struct {

@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/rpc"
 	"reflect"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // Admission executes synchronously; completion alone runs on a worker. Unlike

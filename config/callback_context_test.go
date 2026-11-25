@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/config"
-	"ponder.local/ponder-go/orm"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/orm"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 func TestSourceCallbackContext(t *testing.T) {

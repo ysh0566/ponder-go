@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // DatabaseError preserves the underlying backend error while giving the source

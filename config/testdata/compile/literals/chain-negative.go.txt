@@ -1,5 +1,5 @@
 package main
-import("context";"fmt";"io";"os";"strings";"ponder.local/ponder-go/config";bindings "ponder.local/ponder-go/config/testdata/sourcebindings")
+import("context";"fmt";"io";"os";"strings";"github.com/ysh0566/ponder-go/config";bindings "github.com/ysh0566/ponder-go/config/testdata/sourcebindings")
 func main(){raw,err:=io.ReadAll(os.Stdin);if err!=nil{panic(err)};base,err:=config.ParseSourceConfiguration(raw);if err!=nil{panic(err)};input:=base.Value()["contracts"].(map[string]any)["a"].(map[string]any);_=strings.Contains
 typed,err:=bindings.Create(base,"a",bindings.Contract[config.SourceUndefinedBound,config.SourceUndefinedBound]{Chain:bindings.Chains.Mainnetz,Address:config.SourceSome[any](input["address"]),});if err!=nil{panic(err)}
 built,err:=config.BuildTypedSourceConfig(typed,config.SourceBuildOptions{});if err!=nil{panic(err)}

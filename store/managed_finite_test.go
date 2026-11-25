@@ -17,8 +17,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgconn"
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 func TestManagedFiniteOptionsAndSchemaSnapshot(t *testing.T) {

@@ -15,8 +15,8 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/internal/testanvil"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/internal/testanvil"
 )
 
 type sourceFetch func(*http.Request) (*http.Response, error)

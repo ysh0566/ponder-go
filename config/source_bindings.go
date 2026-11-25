@@ -9,7 +9,7 @@ import (
 	"strings"
 	"unicode"
 
-	"ponder.local/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/abi"
 )
 
 // GenerateSourceContractBindings derives closed chain/event references from
@@ -79,7 +79,7 @@ func GenerateSourceContractBindings(packageName string, chains []string, rawABI 
 		return nil, err
 	}
 	var out strings.Builder
-	fmt.Fprintf(&out, "// Code generated from actual app chains/ABI; DO NOT EDIT.\npackage %s\nimport(\"encoding/json\";\"fmt\";\"ponder.local/ponder-go/config\")\n", packageName)
+	fmt.Fprintf(&out, "// Code generated from actual app chains/ABI; DO NOT EDIT.\npackage %s\nimport(\"encoding/json\";\"fmt\";\"github.com/ysh0566/ponder-go/config\")\n", packageName)
 	out.WriteString("type Chain struct{index int}\ntype Event struct{index int}\nvar Chains=struct{")
 	for _, name := range chainFields {
 		fmt.Fprintf(&out, "%s Chain;", name)

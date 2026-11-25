@@ -1,7 +1,7 @@
 package historical
 
 import (
-	"ponder.local/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/indexing"
 )
 
 func runtimeRPCCacheEnabled(chain indexing.Object) bool {

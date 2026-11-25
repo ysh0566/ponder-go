@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // Actions implements the source's granular durable write/commit/recovery path.

@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 func TestProfileRecoveredTextKey(t *testing.T) {

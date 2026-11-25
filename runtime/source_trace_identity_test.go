@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/rpc"
 	"testing"
 )
 

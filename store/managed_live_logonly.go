@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/filter"
 	"reflect"
 	"strings"
 )

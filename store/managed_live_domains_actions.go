@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 // domainProof authenticates both outcomes against the fully replayed business

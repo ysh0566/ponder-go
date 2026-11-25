@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"fmt"
-	"ponder.local/ponder-go/internal/jsvalue"
+	"github.com/ysh0566/ponder-go/internal/jsvalue"
 )
 
 // FlattenSourceCallTraces mutates source provider frames in place. The existing

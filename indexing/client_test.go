@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 type balanceRequester struct {

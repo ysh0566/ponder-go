@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 // Supplemental native PostgreSQL controls. The fixture verifies a fresh,

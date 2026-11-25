@@ -12,9 +12,9 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/config"
-	"ponder.local/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/indexing"
 )
 
 type eventFieldFixture struct{ Name, Type string }
@@ -62,7 +62,7 @@ func TestSourceVirtualEvents(t *testing.T) {
 	}
 	put("caller_test.go", common)
 	var caller strings.Builder
-	caller.WriteString("package virtual_test\nimport(\"testing\";\"strings\";\"math/big\";\"ponder.local/ponder-go/abi\";\"ponder.local/ponder-go/indexing\";\"typed.test/app\")\n")
+	caller.WriteString("package virtual_test\nimport(\"testing\";\"strings\";\"math/big\";\"github.com/ysh0566/ponder-go/abi\";\"github.com/ysh0566/ponder-go/indexing\";\"typed.test/app\")\n")
 	var cases []eventFixture
 	for _, raw := range fixtures.Cases {
 		var c eventFixture
@@ -100,7 +100,7 @@ func TestSourceVirtualEvents(t *testing.T) {
 			t.Fatal(err)
 		}
 		put("invalid/caller.go", []byte(`package invalid
-import("context";"typed.test/app";"ponder.local/ponder-go/indexing")
+import("context";"typed.test/app";"github.com/ysh0566/ponder-go/indexing")
 var _ = app.EventC1Event0{}.TransactionReceipt
 var _ = app.EventB1Block{}.Transaction
 var _ = app.NameC1Event0{}.On(func(context.Context,app.EventB1Block,*indexing.Context)error{return nil})

@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/factory"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/factory"
 )
 
 // Native factory configuration boundaries; no original source-test credit.

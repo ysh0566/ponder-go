@@ -6,7 +6,7 @@ import (
 	"math"
 	"sync"
 
-	"ponder.local/ponder-go/async"
+	"github.com/ysh0566/ponder-go/async"
 )
 
 // LoadBalancedRequester sends each request to the next child in round-robin order.

@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 
-	"ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 // SourceAddress is the closed address union. Factory parents use its narrower

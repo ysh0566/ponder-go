@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 // Pure model/admission tests only. No SQL engine or runtime is started.
