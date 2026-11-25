@@ -101,9 +101,7 @@ func TestLifecycleProcessCrash(t *testing.T) {
 				}
 				b = open()
 				defer b.Close()
-				reopene // Fixture creation includes durable writes and DDL. Only the crashed
-				// process and its replacement need the short takeover window.
-				d := newTestLifecycle(t, b, ns, LifecycleOptions{})
+				reopened := newTestLifecycle(t, b, ns, options)
 				if first {
 					r, e := b.Query(ctx, "SELECT nspname FROM pg_namespace WHERE nspname=$1 OR nspname=$2", ns, ns+"_sync")
 					if e != nil || len(r.Rows) != 0 {
