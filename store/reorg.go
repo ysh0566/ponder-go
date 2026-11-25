@@ -257,6 +257,15 @@ func (s *Store) Finalize(ctx context.Context, target checkpoint.Checkpoint) erro
 }
 
 func (s *Store) QueryReadOnly(ctx context.Context, sql string, args ...any) (Result, error) {
+	return s.QueryReadOnlyInNamespace(ctx, s.Namespace, sql, args...)
+}
+
+// QueryReadOnlyInNamespace runs the statement with a transaction-local search
+// path. The caller selects a published schema without changing the writer.
+func (s *Store) QueryReadOnlyInNamespace(ctx context.Context, namespace, sql string, args ...any) (Result, error) {
+	if !schema.Identifier(namespace) || len(namespace) > 63 {
+		return Result{}, fmt.Errorf("invalid SQL namespace %q", namespace)
+	}
 	tx, e := s.Backend.Begin(ctx)
 	if e != nil {
 		return Result{}, e
@@ -265,7 +274,7 @@ func (s *Store) QueryReadOnly(ctx context.Context, sql string, args ...any) (Res
 	if e = tx.Exec(ctx, "SET TRANSACTION READ ONLY"); e != nil {
 		return Result{}, e
 	}
-	if e = tx.Exec(ctx, "SET LOCAL search_path TO "+schema.Quote(s.Namespace)+",pg_catalog"); e != nil {
+	if e = tx.Exec(ctx, "SET LOCAL search_path TO "+schema.Quote(namespace)+",pg_catalog"); e != nil {
 		return Result{}, e
 	}
 	if e = tx.Exec(ctx, "SET LOCAL statement_timeout='5s'"); e != nil {
