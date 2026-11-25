@@ -10,9 +10,14 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 )
 
-// NewIndexer constructs the worker passed to LaunchApplication. Isolated chains
-// acquire blocks independently and commit to chain-keyed rows in one store.
+// NewIndexer constructs the single-chain, isolated, or globally ordered worker
+// passed to LaunchApplication.
 func NewIndexer(cfg config.Config, db *store.Store, handlers map[string]Handler) (ApplicationIndexer, error) {
+	return NewIndexerWithOptions(cfg, db, handlers, Options{})
+}
+
+// NewIndexerWithOptions applies the RPC cache and logging options to each participating chain.
+func NewIndexerWithOptions(cfg config.Config, db *store.Store, handlers map[string]Handler, options Options) (ApplicationIndexer, error) {
 	if db == nil {
 		return nil, fmt.Errorf("indexer requires a store")
 	}
@@ -20,14 +25,14 @@ func NewIndexer(cfg config.Config, db *store.Store, handlers map[string]Handler)
 		return nil, err
 	}
 	if len(cfg.Chains) == 1 {
-		engine, err := newChainWorker(cfg, db, handlers)
+		engine, err := newChainWorker(cfg, db, handlers, options)
 		if err != nil {
 			return nil, err
 		}
 		return engine, nil
 	}
-	if cfg.Ordering != schema.Isolated || db.Ordering != schema.Isolated {
-		return nil, fmt.Errorf("multiple native chain workers require isolated ordering; for a coordinated build use historical.RuntimeRunner")
+	if cfg.Ordering != db.Ordering || (cfg.Ordering != schema.Isolated && cfg.Ordering != schema.Omnichain) {
+		return nil, fmt.Errorf("multiple native chain workers require matching isolated or omnichain ordering; for default multichain use historical.RuntimeRunner")
 	}
 	if cfg.SourcePlan != nil {
 		return nil, fmt.Errorf("a compiled source plan belongs to one chain")
@@ -54,7 +59,7 @@ func NewIndexer(cfg config.Config, db *store.Store, handlers map[string]Handler)
 		if len(c.Blocks)+len(c.Accounts)+len(c.Contracts) == 0 {
 			continue
 		}
-		engine, err := newChainWorker(*c, db, handlers)
+		engine, err := newChainWorker(*c, db, handlers, options)
 		if err != nil {
 			return nil, err
 		}
@@ -63,11 +68,14 @@ func NewIndexer(cfg config.Config, db *store.Store, handlers map[string]Handler)
 	if len(workers) == 0 {
 		return nil, fmt.Errorf("no indexing sources configured")
 	}
+	if cfg.Ordering == schema.Omnichain {
+		return &orderedIndexer{workers: workers}, nil
+	}
 	return workers, nil
 }
 
-func newChainWorker(cfg config.Config, db *store.Store, handlers map[string]Handler) (*Engine, error) {
-	engine, err := New(cfg, db, handlers)
+func newChainWorker(cfg config.Config, db *store.Store, handlers map[string]Handler, options Options) (*Engine, error) {
+	engine, err := NewWithOptions(cfg, db, handlers, options)
 	if err != nil {
 		return nil, err
 	}

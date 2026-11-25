@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/schema"
+	"strconv"
 	"strings"
 )
 
@@ -68,7 +69,13 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 	if e = s.eventContext(ctx, tx, encoded, target.ChainID, true); e != nil {
 		return e
 	}
-	final, e := tx.Query(ctx, "SELECT safe_checkpoint FROM "+s.internal("_ponder_go_finalized")+" WHERE chain_id=$1", target.ChainID)
+	finalQuery := "SELECT safe_checkpoint FROM " + s.internal("_ponder_go_finalized") + " WHERE chain_id=$1"
+	finalArgs := []any{target.ChainID}
+	if !s.staged && s.Ordering == schema.Omnichain {
+		finalQuery = "SELECT safe_checkpoint FROM " + s.internal("_ponder_go_finalized") + " ORDER BY safe_checkpoint DESC LIMIT 1"
+		finalArgs = nil
+	}
+	final, e := tx.Query(ctx, finalQuery, finalArgs...)
 	if e != nil {
 		return e
 	}
@@ -108,6 +115,26 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 		return e
 	}
 	if !s.staged {
+		// A global rollback invalidates the completion record of every affected
+		// chain, even when only one chain changed forks.
+		if rewind && s.Ordering != schema.Isolated {
+			affected, err := tx.Query(ctx, "SELECT MIN(checkpoint) AS first FROM "+s.internal("_ponder_go_events")+" WHERE "+eventPredicate+" GROUP BY chain_id", eventArgs...)
+			if err != nil {
+				return err
+			}
+			for _, row := range affected.Rows {
+				first, err := checkpoint.Decode(fmt.Sprint(row["first"]))
+				if err != nil {
+					return err
+				}
+				if first.ChainID == target.ChainID {
+					continue
+				}
+				if err = s.rewindSyncThrough(ctx, tx, first.ChainID, strconv.FormatInt(int64(first.BlockNumber)-1, 10)); err != nil {
+					return err
+				}
+			}
+		}
 		if e = tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_events")+" WHERE "+eventPredicate, eventArgs...); e != nil {
 			return e
 		}
