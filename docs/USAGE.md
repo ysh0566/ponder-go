@@ -189,6 +189,31 @@ log.Printf("transaction %s, block %v, confirmations %s", hash, receipt["blockNum
 
 `GetTransaction` 和 `GetTransactionReceipt` 保留 JSON-RPC 字段表示，区块号和 gas 等数量是十六进制字符串。`GetTransactionCount` 读取账户 nonce，`GetBlockTransactionCount` 读取区块交易笔数，两者返回 `uint64`，默认读取当前链头。要在事件所在区块读取账户 nonce，可显式传入 `indexing.TransactionBlock{BlockNumber: n}`，其中 `n` 为 `*big.Int`。用 `TransactionLookup{Block: ..., Index: ...}` 可以按区块和交易序号定位交易。缺失的交易或回执默认会重试，可通过 `RetryEmptyResponse` 关闭重试。[回调交易 API 与重组实测](../parity/runs/native-transaction-actions/RESULT.md)
 
+在 Go 回调里，`Call` 读取 EVM 返回的十六进制数据，没有返回数据时得到 `nil`。`EstimateGas` 返回 `*big.Int`。这两个方法接受与 JSON-RPC 相同的交易字段，数量使用十六进制字符串。默认在事件区块执行，可用 `CallOptions.BlockOptions` 指定其他高度。节点需要能够读取对应区块的状态。
+
+```go
+client := args.Context.Client
+call := indexing.ContractCall{
+    ABI: tokenABI, Address: tokenAddress, FunctionName: "transfer",
+    Args: []any{recipient, amount},
+}
+sim, err := client.SimulateContract(ctx, call, indexing.SimulateContractOptions{
+    Transaction: indexing.Object{"from": sender},
+})
+if err != nil {
+    return err
+}
+gas, err := client.EstimateGas(ctx, sim.Request)
+if err != nil {
+    return err
+}
+log.Printf("transfer returned %v and would use about %s gas", sim.Result, gas)
+```
+
+`sim.Result` 是按 ABI 解码的结果，`sim.Request` 包含已经编码的交易。模拟过程中临时执行的转账和存储写入会随调用结束而丢弃。模拟时可以指定 `StateOverride`、RPC 格式的 `BlockOverrides` 或附加到 ABI 调用数据的 `DataSuffix`。复用交易做估算时，如果需要相同的区块和账户状态，请再次传入对应的 `CallOptions`。EIP-7702 授权列表使用 RPC 字段格式。只提供授权而省略目标地址时，客户端从首条签名推导收权账户，并按授权列表调整 gas 估算。
+
+如需调用尚未部署的合约，可提供 `CallOptions{Deployless: &indexing.DeploylessCall{Code: creationCode}}`。也可指定 `Factory`、`FactoryData` 并在交易中给出预期目标地址。两种方式都由节点临时创建合约并执行调用。[模拟、gas 和重组验证](../parity/runs/native-contract-simulation/RESULT.md)
+
 对于已经按 ENS 规则规范化的名称，可以用 `args.Context.Client.GetEnsResolver(ctx, "alice.eth")` 查询负责这个名称的解析器合约地址。默认读取事件所在区块，可通过 `indexing.ENSResolverOptions` 显式传入其他高度或 Universal Resolver 地址。成功返回零地址表示该次查询没有找到解析器。读取名称对应的钱包地址是单独的操作。[ENS 历史查询示例与测试](../parity/runs/native-ens-resolver/RESULT.md)
 
 在生成的 Go 回调中，`GetFeeHistory` 默认以事件所在区块作为费用区间的末端。`GetProof` 在同一区块读取账户及指定存储槽的 EIP-1186 证明。费用、余额和存储值使用 `*big.Int`，证明节点保留 RPC 返回的十六进制编码。

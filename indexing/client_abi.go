@@ -14,7 +14,7 @@ import (
 	ponderabi "github.com/ysh0566/ponder-go/abi"
 )
 
-// ContractCall describes a read-only ABI function call. FunctionName accepts a
+// ContractCall describes an ABI function call. FunctionName accepts a
 // name or selector; canonical signatures are also accepted as a Go convenience.
 type ContractCall struct {
 	ABI ponderabi.ABI
