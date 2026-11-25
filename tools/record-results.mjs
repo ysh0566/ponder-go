@@ -1,5 +1,5 @@
 import { hasQueryStorageDirectives, verifiedQueryStorageDirectives } from "./query-storage-evidence.mjs";
-import {cacheTypeTests, verifyCacheTypeTests} from "./runtime-index-cache-types.mjs";
+import {cacheTypePackage, cacheTypeTests, verifyCacheTypeTests, verifiedCacheTypeLines} from "./runtime-index-cache-types.mjs";
 import {finiteHistoricalProofReferencesValid} from './finite-historical-evidence.mjs';
 import {atomicMultichainProofReferencesValid} from './multichain-atomic-evidence.mjs';
 import {independentProofReferencesValid} from './independent-storage-evidence.mjs';
@@ -25,6 +25,7 @@ const runArgument = process.argv.find(value => value.startsWith("--run-dir="))?.
 const runDirectory = runArgument === undefined ? null : path.resolve(root, runArgument);
 const runDir = runDirectory ? path.relative(root, runDirectory) : null;
 if (runDirectory && (!runDir.startsWith("parity/runs/") || runDir.includes(".."))) throw Error("Explicit run directory must be inside parity/runs");
+const captureRun = runDir ? undefined : process.env.PONDER_CAPTURE_RUN;
 const runFile = name => path.join(runDir, name);
 const requireFile = file => { if (!exists(file)) throw Error("Missing current-run evidence; no historical fallback: " + file); return file; };
 const fullRunFile = runDir ? requireFile(runFile("result.json")) : null;
@@ -129,18 +130,27 @@ const parameterTypes = exists("parity/runs/parameters-typecheck.json") ? read("p
 const syncVerification = exists("parity/runs/source-sync-verification.json") ? read("parity/runs/source-sync-verification.json") : null;
 const historicalVerification = exists("parity/runs/source-historical-verification.json") ? read("parity/runs/source-historical-verification.json") : null;
 const realtimeVerification = exists("parity/runs/source-realtime-verification.json") ? read("parity/runs/source-realtime-verification.json") : null;
+// These optional runtime and indexing reports can belong to a separate archived run.
+function optionalVerification(file) {
+	if (!exists(file)) return null;
+	const proof = read(file);
+	return captureRun && proof.environment_adapted ? null : proof;
+}
+const intervalTypesFile = "parity/runs/source-runtime-index-types.json";
+const intervalTypes = captureRun && exists(intervalTypesFile) ? read(intervalTypesFile) : null;
+const intervalTypeLines = verifiedCacheTypeLines(intervalTypes, ledger.baseline.revision, diskValid, read);
 const runtimeIndexVerificationFile = "parity/runs/source-runtime-index-verification.json";
-const runtimeIndexVerification = exists(runtimeIndexVerificationFile) ? read(runtimeIndexVerificationFile) : null;
+const runtimeIndexVerification = optionalVerification(runtimeIndexVerificationFile);
 const runtimeHistoricalVerificationFile = "parity/runs/source-runtime-historical-verification.json";
-const runtimeHistoricalVerification = exists(runtimeHistoricalVerificationFile) ? read(runtimeHistoricalVerificationFile) : null;
+const runtimeHistoricalVerification = optionalVerification(runtimeHistoricalVerificationFile);
 const runtimeMultichainVerificationFile = "parity/runs/source-runtime-multichain-verification.json";
-const runtimeMultichainVerification = exists(runtimeMultichainVerificationFile) ? read(runtimeMultichainVerificationFile) : null;
+const runtimeMultichainVerification = optionalVerification(runtimeMultichainVerificationFile);
 const indexingProfileVerificationFile="parity/runs/source-indexing-profile-verification.json";
-const indexingProfileVerification=exists(indexingProfileVerificationFile)?read(indexingProfileVerificationFile):null;
+const indexingProfileVerification = optionalVerification(indexingProfileVerificationFile);
 const indexingActionsVerificationFile="parity/runs/source-indexing-actions-verification.json";
-const indexingActionsVerification=exists(indexingActionsVerificationFile)?read(indexingActionsVerificationFile):null;
+const indexingActionsVerification = optionalVerification(indexingActionsVerificationFile);
 const indexingServiceVerificationFile="parity/runs/source-indexing-service-verification.json";
-const indexingServiceVerification=exists(indexingServiceVerificationFile)?read(indexingServiceVerificationFile):null;
+const indexingServiceVerification = optionalVerification(indexingServiceVerificationFile);
 if(!runDir&&[syncVerification,historicalVerification,realtimeVerification,configCompile,runtimeIndexVerification,runtimeHistoricalVerification,runtimeMultichainVerification,indexingServiceVerification,indexingActionsVerification,indexingProfileVerification].some(proof=>proof?.environment_adapted))throw Error("Adapted canonical verification requires an explicit --run-dir; historical native logs cannot substitute");
 function proofArchive(verification, execution) {
 	return runDir ? loadArchive(execution?.context_archive ?? verification.context_archive ?? fullRun.context_archive) : null;
@@ -317,7 +327,6 @@ if(executions.every(Boolean)) {
 }
 const configOriginal=!runDir&&exists("parity/runs/config-oracle.json")?read("parity/runs/config-oracle.json"):null;
 if(configOriginal&&(!configOriginal.complete||!configOriginal.success||![configOriginal.raw_oracle,...configOriginal.source_context].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256)))throw Error("Pristine config oracle context changed");
-const captureRun = runDir ? undefined : process.env.PONDER_CAPTURE_RUN;
 for (const fixtureFile of ["testdata/runtime/captured-original-events.json", "testdata/runtime/captured-original-filters.json", "testdata/bloom/captured-original-blooms.json"]) {
 	if (!exists(fixtureFile) && captureRun === undefined) continue;
 	const fixture = read(fixtureFile), proof = fixture.capture_proof;
@@ -364,12 +373,20 @@ const remainingOriginalReports = runDir ? ["postgres", "pglite"].map(backend => 
 	if(commands.length!==1||commands[0].exit_code!==0||!commands[0].finished_utc||!report.success)throw Error("Current remaining mapped originals did not finish: "+backend);
 	return {path:file,report,backend,currentOriginal:true};
 }) : [];
-const fullOriginalPaths = runDir ? [] : ["parity/runs/full-original-postgres-oracle.json", "parity/runs/full-original-pglite-oracle.json"];
+const originalDirectory = captureRun ? path.join("parity/runs/original-captures", captureRun) : "parity/runs";
+const fullOriginalPaths = runDir ? [] : ["postgres", "pglite"].map(backend =>
+	path.join(originalDirectory, `full-original-${backend}-oracle.json`));
 if (fullOriginalPaths.some(exists) && !fullOriginalPaths.every(exists)) throw Error("Full original acceptance requires separate PG and PGlite evidence");
-const fullOriginalReports = fullOriginalPaths.filter(exists).map(path => {
-	const report = read(path), acceptance = report.ponder_acceptance;
-	if (!acceptance?.complete || acceptance.baseline.revision !== ledger.baseline.revision || !acceptance.source_context.every(f => exists(f.file) && fileHash(f.file) === f.sha256) || !acceptance.raw_reports.every(f => exists(f.file) && fileHash(f.file) === f.sha256)) throw Error("Original acceptance context changed or is incomplete: " + path);
-	return { path, report, fullOriginal: true, backend: acceptance.backend };
+const fullOriginalReports = fullOriginalPaths.filter(exists).map(file => {
+	const report = read(file), acceptance = report.ponder_acceptance;
+	const prefix = path.resolve(root, originalDirectory) + path.sep;
+	if (!acceptance?.complete || path.basename(file) !== `full-original-${acceptance.backend}-oracle.json` || acceptance.baseline?.revision !== ledger.baseline.revision ||
+		!acceptance.source_context?.length || !acceptance.source_context.every(diskValid) ||
+		!acceptance.raw_reports?.length || !acceptance.raw_reports.every(ref =>
+			diskValid(ref) && (!captureRun || path.resolve(root, ref.file).startsWith(prefix)))) {
+		throw Error("Original acceptance context changed or is incomplete: " + file);
+	}
+	return { path: file, report, fullOriginal: true, backend: acceptance.backend };
 });
 const oracleReports = [
  ...(sqlVerification&&!runDir?[{path:sqlVerification.pristine.raw_oracle.file,report:read(sqlVerification.pristine.raw_oracle.file),completeOriginal:true}]:[]),
@@ -621,6 +638,21 @@ for (const test of ledger.tests) {
 			if (typed) test.type_verification = {...verification, obligations: typed};
 			if (entry?.accesses?.length) test.registry_verification = {...verification, property_accesses: entry.accesses.length};
 			if (!valid) { status = "skip"; test.blockers.push("Missing source compiler check or native compiler run."); }
+		} else if (captureRun && test.source_file === "packages/core/src/runtime/index.test.ts" && test.type_error_directives.length) {
+			const expected = test.test_source.split("\n").flatMap((line, i) => line.includes("@ts-expect-error") ? [test.line + i] : []);
+			const sites = intervalTypeLines?.get(test.id);
+			const passed = (pkg, name) => [go, race].every(mode => mode.get(pkg + ":" + name)?.Action === "pass");
+			const valid = executions.every(run => run?.complete && run.success) && intervalTypes?.source_sha256 === test.source_sha256 &&
+				expected.length === test.type_error_directives.length && sites?.length === expected.length &&
+				expected.every((line, i) => sites[i] === line) && test.mapping.native_type_package === cacheTypePackage &&
+				JSON.stringify(test.mapping.native_type_tests) === JSON.stringify(cacheTypeTests) &&
+				cacheTypeTests.every(name => passed(cacheTypePackage, name)) &&
+				passed(test.mapping.go_package, test.mapping.go_test) && passed(test.mapping.go_package, test.mapping.backend_companion);
+			test.type_directives_verification = {status: valid ? "passed" : "blocked", obligations: expected.length, evidence: [intervalTypesFile, goFile, raceFile]};
+			if (!valid) {
+				status = "skip";
+				test.blockers.push("Interval cache inference requires current TypeScript diagnostics and native controls in both Go modes.");
+			}
 		} else if (hasQueryStorageDirectives(test)) {
 			const valid = verifiedQueryStorageDirectives(test, {proof: queryStorage, toolHash: fileHash("tools/query-storage-types.mjs"),
 				revision: ledger.baseline.revision, executions, normal: go, race});
