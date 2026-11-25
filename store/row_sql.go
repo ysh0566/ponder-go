@@ -63,6 +63,18 @@ func decodeUndoRow(table schema.Table, data string) (Row, error) {
 	return row, nil
 }
 
+// Raw writers also accept Go coordinate arrays. Bind those through the same
+// typed parameters as generated models on both database drivers.
+func (s *Store) directParameter(column schema.Column, value any, args *[]any) (string, error) {
+	switch strings.TrimSuffix(column.Type, "[]") {
+	case "point", "line":
+		return s.columnParameter(column, value, args)
+	default:
+		*args = append(*args, value)
+		return fmt.Sprintf("$%d", len(*args)), nil
+	}
+}
+
 // Bind each column separately. PostgreSQL accepts U+0000 in json, but all
 // json[b]_populate_record helpers decode the entire row and reject that value.
 // Text-format parameters keep integer precision and work with both drivers.
@@ -83,6 +95,13 @@ func (s *Store) columnParameter(column schema.Column, value any, args *[]any) (s
 		}
 		if !found {
 			return "", e
+		}
+	}
+	if literal, ok := value.(string); ok {
+		switch strings.TrimSuffix(column.Type, "[]") {
+		case "point", "line":
+			*args = append(*args, literal)
+			return fmt.Sprintf("($%d::text)::%s", len(*args), typ), nil
 		}
 	}
 	if value != nil && strings.HasSuffix(column.Type, "[]") {

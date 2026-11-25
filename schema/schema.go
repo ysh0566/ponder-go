@@ -125,16 +125,28 @@ func (t Table) Keys() []string {
 	return nil
 }
 func SQLType(t string) (string, error) {
-	types := map[string]string{"text": "text", "varchar": "varchar", "char": "char", "hex": "text", "address": "text", "bigint": "numeric(78,0)", "int8": "bigint", "integer": "integer", "smallint": "smallint", "boolean": "boolean", "json": "json", "jsonb": "jsonb", "bytes": "bytea", "timestamp": "timestamp", "date": "date", "numeric": "numeric", "real": "real", "doublePrecision": "double precision", "uuid": "uuid", "point": "point", "line": "line"}
-	base := strings.TrimSuffix(t, "[]")
-	s, ok := types[base]
-	if !ok {
+	base, array := strings.CutSuffix(t, "[]")
+	sql := base
+	switch base {
+	case "text", "varchar", "char", "integer", "smallint", "boolean", "json", "jsonb", "timestamp", "date", "numeric", "real", "uuid", "point", "line",
+		"cidr", "inet", "interval", "macaddr", "macaddr8", "time":
+	case "hex", "address":
+		sql = "text"
+	case "bigint":
+		sql = "numeric(78,0)"
+	case "int8":
+		sql = "bigint"
+	case "bytes":
+		sql = "bytea"
+	case "doublePrecision":
+		sql = "double precision"
+	default:
 		return "", fmt.Errorf("unsupported column type %q", t)
 	}
-	if strings.HasSuffix(t, "[]") {
-		s += "[]"
+	if array {
+		sql += "[]"
 	}
-	return s, nil
+	return sql, nil
 }
 func (s Schema) Validate(order Ordering) error {
 	if order != Multichain && order != Omnichain && order != Isolated {

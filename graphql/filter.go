@@ -83,7 +83,28 @@ func (q *queryParams) bind(v any) string {
 	return fmt.Sprintf("$%d", len(q.args))
 }
 
+// PostgreSQL geometric types lack ordinary B-tree comparison operators.
+// GraphQL exposes their canonical text, including inside arrays and cursors.
+func comparisonExpression(col schema.Column, expression string) string {
+	switch col.Type {
+	case "point", "line":
+		return "(" + expression + ")::text"
+	case "point[]", "line[]":
+		return "(" + expression + ")::text[]"
+	default:
+		return expression
+	}
+}
+
 func (q *queryParams) value(col schema.Column, v any) (string, error) {
+	value, err := q.typedValue(col, v)
+	if err != nil {
+		return "", err
+	}
+	return comparisonExpression(col, value), nil
+}
+
+func (q *queryParams) typedValue(col schema.Column, v any) (string, error) {
 	typ, err := q.model.SQLType(col.Type, "")
 	if err != nil {
 		return "", err
@@ -107,7 +128,7 @@ func (q *queryParams) value(col schema.Column, v any) (string, error) {
 		col.Type = inner
 		values := make([]string, len(items))
 		for i, x := range items {
-			values[i], err = q.value(col, x)
+			values[i], err = q.typedValue(col, x)
 			if err != nil {
 				return "", err
 			}
@@ -174,7 +195,7 @@ var comparisons = map[string]string{"": "=", "_not": "<>", "_gt": ">", "_lt": "<
 
 func (q *queryParams) condition(op condition, v any) (string, error) {
 	col := op.column
-	name := schema.Quote(col.Name)
+	name := comparisonExpression(col, schema.Quote(col.Name))
 	key := op.suffix
 	if v == nil && (key == "" || key == "_not") {
 		if key == "_not" {
@@ -253,5 +274,5 @@ func (q *queryParams) condition(op condition, v any) (string, error) {
 	if strings.HasPrefix(key, "_not_") {
 		operator = "NOT " + operator
 	}
-	return name + " " + operator + " " + q.bind(pattern) + "::text", nil
+	return name + "::text " + operator + " " + q.bind(pattern) + "::text", nil
 }

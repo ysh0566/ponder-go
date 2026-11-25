@@ -180,7 +180,7 @@ func columnType(c schema.Column, enums map[string]*gql.Enum) (gql.Type, error) {
 		return e, nil
 	}
 	switch c.Type {
-	case "text", "hex", "address", "varchar", "char", "uuid", "timestamp", "date":
+	case "text", "hex", "address", "varchar", "char", "uuid", "timestamp", "date", "cidr", "inet", "interval", "macaddr", "macaddr8", "time", "point", "line":
 		return gql.String, nil
 	case "bigint":
 		return bigIntScalar, nil

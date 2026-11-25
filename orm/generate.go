@@ -44,7 +44,7 @@ func typedColumn(column schema.Column, enums []schema.Enum) (typ, decoder, encod
 		fallthrough
 	case "integer", "smallint":
 		return "int64", "orm.DecodeInt64", "%s", nil
-	case "text", "varchar", "char", "hex", "address", "numeric", "uuid", "date":
+	case "text", "varchar", "char", "hex", "address", "numeric", "uuid", "date", "cidr", "inet", "interval", "macaddr", "macaddr8", "time":
 		return "string", "orm.DecodeString", "%s", nil
 	case "boolean":
 		return "bool", "orm.DecodeBool", "%s", nil

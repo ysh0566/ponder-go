@@ -507,13 +507,16 @@ func (w *Writer) Write(ctx context.Context, name string, row Row, mode WriteMode
 		if len(columns) > 0 {
 			sets := []string{}
 			args := []any{}
-			for i, c := range columns {
-				sets = append(sets, fmt.Sprintf("%s=$%d", schema.Quote(c), i+1))
-				args = append(args, row[c])
+			for _, c := range columns {
+				parameter, err := w.s.directParameter(allowed[c], row[c], &args)
+				if err != nil {
+					return err
+				}
+				sets = append(sets, schema.Quote(c)+"="+parameter)
 			}
-			where, keys, e := keyWhere(t, row, len(args)+1)
-			if e != nil {
-				return e
+			where, keys, err := keyWhere(t, row, len(args)+1)
+			if err != nil {
+				return err
 			}
 			args = append(args, keys...)
 			e = w.tx.Exec(ctx, "UPDATE "+w.s.table(name)+" SET "+strings.Join(sets, ",")+" WHERE "+where, args...)
@@ -543,10 +546,13 @@ func (w *Writer) Write(ctx context.Context, name string, row Row, mode WriteMode
 		for _, k := range t.Keys() {
 			pk[k] = true
 		}
-		for i, c := range columns {
+		for _, c := range columns {
+			parameter, err := w.s.directParameter(allowed[c], values[c], &args)
+			if err != nil {
+				return err
+			}
 			names = append(names, schema.Quote(c))
-			params = append(params, fmt.Sprintf("$%d", i+1))
-			args = append(args, values[c])
+			params = append(params, parameter)
 			if !pk[c] {
 				updates = append(updates, schema.Quote(c)+"=excluded."+schema.Quote(c))
 			}

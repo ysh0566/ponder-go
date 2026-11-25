@@ -104,7 +104,7 @@ func (q *queryParams) cursorCondition(order []schema.Column, cursor string, desc
 		if !ok {
 			return "", fmt.Errorf("cursor lacks sort column %q", property(col))
 		}
-		names[i] = schema.Quote(col.Name)
+		names[i] = comparisonExpression(col, schema.Quote(col.Name))
 		values[i], err = q.value(col, v)
 		if err != nil {
 			return "", err

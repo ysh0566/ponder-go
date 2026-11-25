@@ -85,7 +85,7 @@ func (s *Server) readKeys(ctx context.Context, table schema.Table, columns []sch
 	for i, c := range columns {
 		alias := fmt.Sprintf("k%d", i)
 		aliases = append(aliases, alias)
-		predicates[i] = "t." + schema.Quote(c.Name) + "=k." + alias
+		predicates[i] = comparisonExpression(c, "t."+schema.Quote(c.Name)) + "=k." + alias
 	}
 	tuples := make([]string, len(entries))
 	for i, entry := range entries {
