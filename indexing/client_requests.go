@@ -14,6 +14,10 @@ import (
 
 // Request runs a raw JSON-RPC request through the indexing client's cache policy.
 func (c *Client) Request(ctx context.Context, method string, params []any) (json.RawMessage, error) {
+	return c.rpcRequest(ctx, method, params, true)
+}
+
+func (c *Client) rpcRequest(ctx context.Context, method string, params []any, cache bool) (json.RawMessage, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -27,6 +31,9 @@ func (c *Client) Request(ctx context.Context, method string, params []any) (json
 	c.set.mu.RUnlock()
 	if closed {
 		return nil, fmt.Errorf("indexing client is closed")
+	}
+	if !cache {
+		return c.sendRPC(ctx, method, params)
 	}
 	if method == "eth_call" && len(params) > 0 {
 		var call struct{ To, Data string }
@@ -60,10 +67,14 @@ func (c *Client) Request(ctx context.Context, method string, params []any) (json
 		"debug_traceBlockByHash", "debug_traceTransaction", "debug_traceCall":
 		return c.request(ctx, method, params)
 	default:
-		var raw json.RawMessage
-		err := c.requester.Call(ctx, method, params, &raw)
-		return raw, err
+		return c.sendRPC(ctx, method, params)
 	}
+}
+
+func (c *Client) sendRPC(ctx context.Context, method string, params any) (json.RawMessage, error) {
+	var raw json.RawMessage
+	err := c.requester.Call(ctx, method, params, &raw)
+	return raw, err
 }
 
 var aggregateFunction = aggregate3ABI.FunctionEntries()[0]
@@ -134,23 +145,22 @@ func (c *Client) GetBlock(ctx context.Context, opt GetBlockOptions) (Object, err
 		}
 		method, selector = "eth_getBlockByNumber", "0x"+opt.BlockNumber.Text(16)
 	}
-	ctx, finish, err := c.set.managedRoots.begin(ctx)
+	return retryClientAction(ctx, c, opt.RetryEmptyResponse, func(ctx context.Context) (Object, error) {
+		return c.rpcObject(ctx, method, []any{selector, opt.IncludeTransactions}, true, rpc.ErrBlockNotFound)
+	})
+}
+
+func (c *Client) rpcObject(ctx context.Context, method string, params []any, cache bool, missing error) (Object, error) {
+	raw, err := c.rpcRequest(ctx, method, params, cache)
 	if err != nil {
 		return nil, err
 	}
-	defer finish()
-	return retryEmpty(ctx, opt.RetryEmptyResponse, func() (Object, error) {
-		raw, err := c.Request(ctx, method, []any{selector, opt.IncludeTransactions})
-		if err != nil {
-			return nil, err
-		}
-		var block Object
-		if err = json.Unmarshal(raw, &block); err != nil {
-			return nil, err
-		}
-		if block == nil {
-			return nil, rpc.ErrBlockNotFound
-		}
-		return block, nil
-	})
+	var obj Object
+	if err = json.Unmarshal(raw, &obj); err != nil {
+		return nil, err
+	}
+	if obj == nil {
+		return nil, missing
+	}
+	return obj, nil
 }

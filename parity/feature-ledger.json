@@ -1666,6 +1666,26 @@
         "parity/runs/native-ready-view-publication/RESULT.md"
       ],
       "remaining": "Automatic publication is verified with current PostgreSQL deployments. PGlite directory administration remains separate."
+    },
+    {
+      "id": "native-callback-transaction-actions",
+      "status": "verified_subset",
+      "implementation_files": [
+        "indexing/client_transactions.go",
+        "indexing/client_requests.go",
+        "indexing/client_actions.go",
+        "indexing/client.go"
+      ],
+      "native_test_files": [
+        "indexing/client_transactions_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing/client.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-transaction-actions/RESULT.md"
+      ],
+      "remaining": "Nine other high-level callback actions and additional multicall options remain open."
     }
   ]
 }

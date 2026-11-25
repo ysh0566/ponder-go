@@ -22,12 +22,12 @@ Of the 883 upstream cases ported to Go, 866 passed and 17 provider RPC cases fai
 
 ## Callback RPC methods
 
-The Go starter passes an `*rpc.Client` to `runtime.Handler`. Generated callback registries expose an `*indexing.Client` with event-aware reads. The pinned Ponder callback API lists 21 named actions. Seven have high-level methods on `indexing.Client`. [Go callback context](../indexing/types.go) · [Upstream action list](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/indexing/client.ts#L122-L152)
+The Go starter passes an `*rpc.Client` to `runtime.Handler`. Generated callback registries expose an `*indexing.Client` with event-aware reads. The pinned Ponder callback API lists 21 named actions. Twelve have high-level methods on `indexing.Client`. [Go callback context](../indexing/types.go) · [Upstream action list](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/indexing/client.ts#L122-L152)
 
 | Area | Available on `indexing.Client` | Missing high-level methods |
 | --- | --- | --- |
 | State and contract reads | `GetBalance`, `GetCode`, `GetStorageAt`, `ReadContract`, `Multicall` | `Call`, `EstimateGas`, `GetFeeHistory`, `GetProof`, `SimulateContract` |
-| Blocks and transactions | `GetBlock` | `GetTransactionCount`, `GetBlockTransactionCount`, `GetTransaction`, `GetTransactionReceipt`, `GetTransactionConfirmations` |
+| Blocks and transactions | `GetBlock`, `GetTransactionCount`, `GetBlockTransactionCount`, `GetTransaction`, `GetTransactionReceipt`, `GetTransactionConfirmations` | All six named methods are present. Transaction, receipt and block objects retain their JSON-RPC field representation. [Transaction tests](../parity/runs/native-transaction-actions/RESULT.md) |
 | ENS | `GetEnsName` | `GetEnsAddress`, `GetEnsAvatar`, `GetEnsResolver`, `GetEnsText` |
 
 `Request` accepts raw JSON-RPC methods and parameters. Callers supply the block argument for historical reads and implement any higher-level action logic they need. The lower-level `rpc.Client` has its own receipt helper. The current `indexing.Client.Multicall` requires an explicit Multicall3 deployment address and lacks account and state override options. [Raw request handling](../indexing/client_requests.go) · [RPC receipt helpers](../rpc/actions.go) · [Multicall options](../indexing/client_multicall.go)
