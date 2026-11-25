@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	gql "github.com/graphql-go/graphql"
 	"github.com/graphql-go/graphql/language/ast"
@@ -72,6 +73,7 @@ func New(database *store.Store, opts Options) (*Server, error) {
 		}
 		enums[e.Name] = gql.NewEnum(gql.EnumConfig{Name: name, Values: values})
 	}
+	pageInfo := newPageInfo()
 	for _, table := range database.Schema.Tables {
 		name := table.ExportName
 		if name == "" {
@@ -81,7 +83,7 @@ func New(database *store.Store, opts Options) (*Server, error) {
 			return nil, fmt.Errorf("invalid GraphQL table name %q", name)
 		}
 		key := strings.ToLower(name[:1]) + name[1:]
-		if fields[key] != nil {
+		if fields[key] != nil || fields[key+"s"] != nil {
 			return nil, fmt.Errorf("duplicate GraphQL field %q", key)
 		}
 		field, err := s.entity(table, name, enums)
@@ -89,6 +91,11 @@ func New(database *store.Store, opts Options) (*Server, error) {
 			return nil, err
 		}
 		fields[key] = field
+		page, err := s.tablePage(table, field.Type, pageInfo, enums)
+		if err != nil {
+			return nil, err
+		}
+		fields[key+"s"] = page
 	}
 	buildSchemaMu.Lock()
 	defer buildSchemaMu.Unlock()
@@ -244,16 +251,20 @@ func (s *Server) entity(table schema.Table, name string, enums map[string]*gql.E
 		if err := decoder.Decode(&record); err != nil {
 			return nil, err
 		}
-		out := make(map[string]any, len(columns))
-		for key, column := range columns {
-			value, err := columnValue(column, record[key])
-			if err != nil {
-				return nil, err
-			}
-			out[property(column)] = value
-		}
-		return out, nil
+		return projectRow(table.Columns, record)
 	}}, nil
+}
+
+func projectRow(columns []schema.Column, record map[string]any) (map[string]any, error) {
+	out := make(map[string]any, len(columns))
+	for _, col := range columns {
+		v, err := columnValue(col, record[col.Name])
+		if err != nil {
+			return nil, err
+		}
+		out[property(col)] = v
+	}
+	return out, nil
 }
 
 func canonicalHex(s string) (string, error) {
@@ -302,6 +313,15 @@ func columnValue(c schema.Column, v any) (any, error) {
 		return values, nil
 	case "hex", "address":
 		return canonicalHex(fmt.Sprint(v))
+	case "date":
+		if c.Mode == "date" {
+			day, err := time.Parse(time.DateOnly, fmt.Sprint(v))
+			if err != nil {
+				return nil, err
+			}
+			return strconv.FormatInt(day.UnixMilli(), 10), nil
+		}
+		return v, nil
 	case "bigint", "numeric":
 		return fmt.Sprint(v), nil
 	case "int8":

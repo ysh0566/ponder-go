@@ -36,3 +36,6 @@ require (
 )
 
 replace github.com/pganalyze/pg_query_go/v5 => ./third_party/pg_query_go
+
+// The tagged parser preserves explicit null values in nested filter inputs.
+replace github.com/graphql-go/graphql => github.com/nytimes/graphql-go-graphql v0.8.4-nyt

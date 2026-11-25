@@ -14,7 +14,7 @@ full Ponder 0.18.2 compatibility. The fixed upstream is
 | ABI / events | Selected logs, account callbacks and dynamic contract CALL ABI decoding, including overloaded and dynamic tuple/array results. | Full compile-time function handler bindings and all callback overlap/selector combinations. |
 | RPC / sync | Source-shaped actions, cache data, historical/realtime helpers and the selected actual RuntimeRunner pipelines. | Complete provider behavior, all archive/prefix failures and complete original runtime oracle coverage. |
 | Recovery | Selected native durable receipts, exact retries, safe progress and application process exits. | Database server/engine/power-loss failures; M45 PGlite abrupt process-exit acceptance. |
-| GraphQL HTTP and entities | Mountable read-only handler, primary and composite keys, scalar and enum fields, checkpoints and operation limits on PostgreSQL and PGlite. | Lists, pagination, filters, views and relationship queries. |
+| GraphQL HTTP and entities | Mountable read-only handler, primary and composite keys, scalar and enum fields, checkpoints and operation limits on PostgreSQL and PGlite. Table collections support typed filters, sorting, counts, offsets and bidirectional cursors. | Views and relationship queries. |
 | CLI / development modes | Existing implemented commands and configuration compilation. | Complete CLI start/dev/db lifecycle and end-to-end acceptance. |
 
 The source ledger records individual mappings, execution status, pending type obligations and the five retired database migration cases. [Source inventory](../parity/test-ledger.json)
