@@ -84,6 +84,9 @@ func describeStore(backend Backend, model schema.Schema, namespace string, order
 		}
 		namespace = fmt.Sprintf("ponder_go_%s_v3_%x", prefix, hash[:6])
 	}
+	if err := schema.ValidateNamespaces(namespace, ""); err != nil {
+		return nil, err
+	}
 	if !schema.Identifier(namespace) || len(namespace) > 45 || !strings.HasPrefix(namespace, "ponder_go_") {
 		return nil, fmt.Errorf("task schemas must start with ponder_go_ and contain at most 45 identifier characters")
 	}

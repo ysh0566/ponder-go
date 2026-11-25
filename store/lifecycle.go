@@ -76,6 +76,9 @@ type Lifecycle struct {
 }
 
 func NewLifecycle(backend Backend, model schema.Schema, namespace string, ordering schema.Ordering, options LifecycleOptions) (*Lifecycle, error) {
+	if err := schema.ValidateNamespaces(namespace, options.ViewsSchema); err != nil {
+		return nil, err
+	}
 	if options.HeartbeatInterval == 0 {
 		options.HeartbeatInterval = 10 * time.Second
 	}

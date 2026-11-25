@@ -104,8 +104,9 @@ func (e *Engine) decodePending(input []pending) ([]pending, error) {
 	}
 	result := make([]pending, 0, len(input))
 	for _, event := range input {
+		event.event.ID = checkpoint.MustEncode(event.cursor)
 		if event.callback != nil {
-			body, ok := public[event.event.Name+":"+checkpoint.MustEncode(event.cursor)]
+			body, ok := public[event.event.Name+":"+event.event.ID]
 			if !ok {
 				continue
 			}

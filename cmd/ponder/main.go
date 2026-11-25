@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"go/format"
@@ -19,6 +20,7 @@ import (
 	"ponder.local/ponder-go/store"
 	"strings"
 	"syscall"
+	"time"
 )
 
 const version = "0.18.2-go.0"
@@ -72,11 +74,16 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 		root := flags.String("root", ".", "Native Go project root")
 		app := flags.String("app", ".", "Go app package to build")
+		indexName := flags.String("schema", os.Getenv("DATABASE_SCHEMA"), "Indexing database schema")
+		viewsName := flags.String("views-schema", os.Getenv("DATABASE_VIEWS_SCHEMA"), "Published views schema")
 		if e := flags.Parse(args[1:]); e != nil {
 			return e
 		}
 		if flags.NArg() > 0 {
 			return fmt.Errorf("unexpected arguments")
+		}
+		if e := schema.ValidateNamespaces(*indexName, *viewsName); e != nil {
+			return e
 		}
 		directory, e := filepath.Abs(*root)
 		if e != nil {
@@ -95,12 +102,29 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 			return e
 		}
 		command := exec.CommandContext(ctx, binary)
+		command.Cancel = func() error { return command.Process.Signal(os.Interrupt) }
+		command.WaitDelay = 5 * time.Second
 		command.Dir = directory
 		command.Env = append(os.Environ(), "PONDER_COMMAND="+args[0])
+		flags.Visit(func(f *flag.Flag) {
+			switch f.Name {
+			case "schema":
+				command.Env = append(command.Env, "DATABASE_SCHEMA="+*indexName)
+			case "views-schema":
+				command.Env = append(command.Env, "DATABASE_VIEWS_SCHEMA="+*viewsName)
+			}
+		})
+		if *indexName != "" {
+			command.Env = append(command.Env, "PONDER_SHADOW_SCHEMA="+*indexName)
+		}
 		command.Stdin = os.Stdin
 		command.Stdout = out
 		command.Stderr = os.Stderr
-		return command.Run()
+		err := command.Run()
+		if errors.Is(err, context.Canceled) && command.ProcessState != nil && command.ProcessState.Success() {
+			return nil
+		}
+		return err
 	case "codegen":
 		flags := flag.NewFlagSet("codegen", flag.ContinueOnError)
 		input := flags.String("schema", "ponder.schema.json", "Native Go schema JSON")

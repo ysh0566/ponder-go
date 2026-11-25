@@ -83,6 +83,9 @@ type ManagedFinite struct {
 }
 
 func normalizeManagedOptions(o IndependentStorageOptions, m ManagedFiniteOptions) (ManagedFiniteOptions, error) {
+	if err := schema.ValidateNamespaces(o.BusinessNamespace, m.ViewsSchema); err != nil {
+		return ManagedFiniteOptions{}, err
+	}
 	if err := independentNames(o); err != nil {
 		return m, err
 	}

@@ -78,6 +78,10 @@ type HTTPServer struct {
 }
 
 func (s *HTTPServer) Addr() net.Addr { return s.addr }
+
+// Done closes when the HTTP server stops serving.
+func (s *HTTPServer) Done() <-chan struct{} { return s.done }
+
 func (s *HTTPServer) Wait() error {
 	<-s.done
 	return s.err
