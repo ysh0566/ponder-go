@@ -1,0 +1,218 @@
+{
+  "code_commit": "6046f9619177a3803ce67281496e92e0bee8c6bd",
+  "upstream_commit": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "sources": {
+    "packages/core/src/utils/copy.ts": "865dcae727dfd4df227ed7424f3debfc4ba69190ddcbd8a076069dabef49ac46",
+    "packages/core/src/utils/copy.test.ts": "f6a9e472688216d6357bbda40a9510fd9ca7f0947cf340b23a4d571ceaaa1ece"
+  },
+  "original": {
+    "postgres": {
+      "passed": 11,
+      "vitest_json_sha256": "c34dee8d636bcdfb1566deaef388b48c036f13034d01528d24f3ce0878fcba9d"
+    },
+    "pglite": {
+      "passed": 11,
+      "vitest_json_sha256": "21fda4a52a18270d6311109efdac6ade907755606d0ab314ad197d5121a04112"
+    }
+  },
+  "source_type_verification": {
+    "version": "5.4.5",
+    "clean": [],
+    "removed": [
+      {
+        "file": "src/utils/copy.test.ts",
+        "line": 25,
+        "code": 2339,
+        "message": "Property 'c' does not exist on type '{ a: number; b: number; }'."
+      },
+      {
+        "file": "src/utils/copy.test.ts",
+        "line": 28,
+        "code": 2339,
+        "message": "Property 'c' does not exist on type '{ a: number; b: number; }'."
+      },
+      {
+        "file": "src/utils/copy.test.ts",
+        "line": 31,
+        "code": 2339,
+        "message": "Property 'c' does not exist on type '{ a: number; b: number; }'."
+      },
+      {
+        "file": "src/utils/copy.test.ts",
+        "line": 212,
+        "code": 2345,
+        "message": "Argument of type 'number[]' is not assignable to parameter of type '{ [key: string]: unknown; }'.   Index signature for type 'string' is missing in type 'number[]'."
+      }
+    ],
+    "lines": [
+      25,
+      28,
+      31,
+      212
+    ]
+  },
+  "native_type_controls": {
+    "method": "Positive program compiled, then three accesses to C on the generated AbRow and an array passed to store.CopyOnWrite were individually diagnosed in the mapped tests.",
+    "generated_api": "orm.GenerateModels and Definition.DecodeCopy"
+  },
+  "go": {
+    "normal": {
+      "ponder.local/ponder-go/indexing": {
+        "passed_leaves": 341,
+        "go_test_json_sha256": "d58544fdafe994431be5c2eb38fea1ae99d4428250de77c88f022d36621d1c01"
+      },
+      "ponder.local/ponder-go/orm": {
+        "passed_leaves": 8,
+        "go_test_json_sha256": "d58544fdafe994431be5c2eb38fea1ae99d4428250de77c88f022d36621d1c01"
+      },
+      "ponder.local/ponder-go/store": {
+        "passed_leaves": 83,
+        "go_test_json_sha256": "7c8b58502ee658bc1e1b4535dcbf6b6c00510fe8d7183f63c05faea103c29732"
+      }
+    },
+    "race": {
+      "ponder.local/ponder-go/indexing": {
+        "passed_leaves": 341,
+        "go_test_json_sha256": "d5676e76ed9ce278ebf7037f4c1200096bec32ec0f7d252084e1ef7e28f08c78"
+      },
+      "ponder.local/ponder-go/orm": {
+        "passed_leaves": 8,
+        "go_test_json_sha256": "d5676e76ed9ce278ebf7037f4c1200096bec32ec0f7d252084e1ef7e28f08c78"
+      },
+      "ponder.local/ponder-go/store": {
+        "passed_leaves": 83,
+        "go_test_json_sha256": "6bd7298801cb0d03ef8858c36b1b321fb608d9d98daf8133b4d3267d7a6c1fd2"
+      }
+    }
+  },
+  "maps": [
+    {
+      "source_id": "3e010422dbaf8306b9d0",
+      "name": "copyOnWrite",
+      "go_test": "TestSourceRowCopies/copyOnWrite",
+      "assertions": 10,
+      "assertions_sha256": "79ee948ebb385fc4e9287c726806d6a1f9dc60c075cf64f7e765ec59d5fe2822",
+      "source_error_directives": [
+        "// @ts-expect-error",
+        "// @ts-expect-error",
+        "// @ts-expect-error"
+      ]
+    },
+    {
+      "source_id": "6e1a7103b96b14506679",
+      "name": "copyOnWrite nested",
+      "go_test": "TestSourceRowCopies/copyOnWrite_nested",
+      "assertions": 6,
+      "assertions_sha256": "6f73f0b71a2eb84cb1ae5a8c729b882a9db39d36af42dcdda1ad540ee9c046f7",
+      "source_error_directives": []
+    },
+    {
+      "source_id": "7b4d05a6090461155d09",
+      "name": "copyOnWrite nested array",
+      "go_test": "TestSourceRowCopies/copyOnWrite_nested_array",
+      "assertions": 2,
+      "assertions_sha256": "53f6b72bf1e82974ed594d73341c07f1d442fb3fca04596642034258b7141d76",
+      "source_error_directives": []
+    },
+    {
+      "source_id": "f49e2b080a81203b0fb2",
+      "name": "copy",
+      "go_test": "TestSourceRowCopies/copy",
+      "assertions": 8,
+      "assertions_sha256": "e97a5c4636a7367493e78cb23bef6ad0fa3656e60347053d07aa67c07f053a58",
+      "source_error_directives": []
+    },
+    {
+      "source_id": "3fbc6576aa0f4b08c9d8",
+      "name": "copy shallow",
+      "go_test": "TestSourceRowCopies/copy_shallow",
+      "assertions": 2,
+      "assertions_sha256": "a9134a1675a3fc2359bc6f1fe77e52c7a398999be29d304dd2e94180e012daa6",
+      "source_error_directives": []
+    },
+    {
+      "source_id": "0c52c3d94dd689c167ae",
+      "name": "copy bytes",
+      "go_test": "TestSourceRowCopies/copy_bytes",
+      "assertions": 4,
+      "assertions_sha256": "be8c93b6ea2bbb7bc169b627afef9b37c87ee3e7790ea1adce3fdd5727db6919",
+      "source_error_directives": []
+    },
+    {
+      "source_id": "4469f9ef4b5772cdfcae",
+      "name": "copy timestamp",
+      "go_test": "TestSourceRowCopies/copy_timestamp",
+      "assertions": 1,
+      "assertions_sha256": "3fd6a4f31556851b7121fb1e146c3d9f84925e2560211d60ef5ed5d5490b45be",
+      "source_error_directives": []
+    },
+    {
+      "source_id": "302fa919cd99b96e1056",
+      "name": "copy keeps writes made through copyOnWrite",
+      "go_test": "TestSourceRowCopies/copy_keeps_writes_made_through_copyOnWrite",
+      "assertions": 5,
+      "assertions_sha256": "ed6b405b2011864b0ca3952d2157e94086e74bbe62f99a6f6d574f660d898099",
+      "source_error_directives": []
+    },
+    {
+      "source_id": "bb50482b4ea3710edb11",
+      "name": "copy does not alias the copyOnWrite target",
+      "go_test": "TestSourceRowCopies/copy_does_not_alias_the_copyOnWrite_target",
+      "assertions": 3,
+      "assertions_sha256": "b48f3ecfde425c74c61442d28a1e5209054e20f6ff52b0baeadcc773372e3d86",
+      "source_error_directives": []
+    },
+    {
+      "source_id": "ab6053358cede28f3c0d",
+      "name": "copyOnWrite behaves like a plain object",
+      "go_test": "TestSourceRowCopies/copyOnWrite_behaves_like_a_plain_object",
+      "assertions": 7,
+      "assertions_sha256": "4a4cd31bdf93d35f4d5267a7cab7ae50b19c1c3f0ae48513a25eb471721defd4",
+      "source_error_directives": []
+    },
+    {
+      "source_id": "94c698edaaa1a1e2f16b",
+      "name": "copyOnWrite rejects arrays at the type level",
+      "go_test": "TestSourceRowCopies/copyOnWrite_rejects_arrays_at_the_type_level",
+      "assertions": 0,
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_error_directives": [
+        "// @ts-expect-error arrays are not supported, see `copyOnWrite()`"
+      ]
+    }
+  ],
+  "ledger": {
+    "ported": 769,
+    "go_ports": 765,
+    "retained_sdk": 4,
+    "unimplemented": 131,
+    "out_of_scope": 5
+  },
+  "independent_inventory_fields": [
+    "id",
+    "source_file",
+    "source_sha256",
+    "source_state",
+    "full_name",
+    "assertions",
+    "inputs",
+    "port_status",
+    "mapping",
+    "scope_reason"
+  ],
+  "module": {
+    "build": "passed",
+    "vet": "passed"
+  },
+  "commands": {
+    "original": "vitest run --configLoader native --maxWorkers=1 src/utils/copy.test.ts",
+    "store": "go test -count=1 [-race] -run ^(TestSourceRowCopies|TestCachedRowCopyOwnership|TestRowCopyTypedValues|TestIndexingSession.*|TestUpstreamORM.*|TestORM.*)$ ./store",
+    "clients": "go test -count=1 [-race] ./orm ./indexing"
+  },
+  "full_original_inventory": "../public-provider-archives/upstream.json",
+  "cleanup": {
+    "stage_directories_removed": 3,
+    "allocated_bytes_in_removed_directories": 1036800000,
+    "accounting": "Allocated bytes before removal; packages can share hard links with the store."
+  }
+}
