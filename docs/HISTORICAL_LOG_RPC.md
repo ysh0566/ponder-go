@@ -187,6 +187,24 @@ python3 tools/historical_log_rpc.py capture-error --request-interval 5 \
   --first 71583814 --last 71588815 "$REPORTS/tron-error.json"
 ```
 
+## Apply live Coreth and TAC range limits to archived history
+
+Start the local Avalanche and TAC nodes described above. The archive listener sends each original `eth_getLogs` filter to the development node before serving historical results from the indexed mainnet chain. A rejection carries the node’s original JSON-RPC code and message. TAC also reports when a requested block predates its local genesis. The listener recognizes that specific missing-height response and reads the verified mainnet index. Connection failures and other node errors surface to the caller.
+
+| Network | Range policy node chain ID | Historical archive chain ID | Logs in the original successful query |
+| --- | --- | --- | --- |
+| Avalanche | 43112 | 43114 | 3,135 |
+| TAC | 2391337 | 239 | 185 |
+
+Both original files pass with these listeners. The wider queries also produce the same errors when sent directly to the development nodes. Use a fresh output directory for each invocation.
+
+```sh
+python3 tools/upstream_utils_suite.py --upstream ../ponder-upstream \
+  --gateway-binaries /path/to/proxyd /path/to/anvil \
+  --range-policy-nodes http://127.0.0.1:9650/ext/bc/C/rpc http://127.0.0.1:8545 \
+  --local-only --output "$REPORTS/utils-live-range-policies"
+```
+
 ## Run the native provider cases offline
 
 The Go RPC package runs 22 original historical data assertions plus the Moonriver and Tron error and retry assertions against the same ten loopback listeners. A clean checkout includes the fixtures. The launcher requires Python 3.11+ and uses the standard library. The Alchemy WETH case raises the client's per-response limit to 128 MiB to retrieve all 140,192 logs in the original single request.
@@ -225,4 +243,11 @@ python3 tools/upstream_suite_report.py --upstream "$PONDER_UPSTREAM" \
   --pglite "$REPORTS/core-pglite.json" --postgres "$REPORTS/core-postgres.json" \
   --output "$REPORTS/summary.json" "$REPORTS/core-types.json" "$REPORTS/client.json" \
   "$REPORTS/react.json" "$REPORTS/create-ponder.json" "$REPORTS/utils"/utils-*.json
+```
+
+
+`TestUpstreamProviderRangeErrors` sends the exact Base, Swell, Avalanche and TAC filters through the Go HTTP client. By default it replays the observed error envelopes in `testdata/rpc/provider-errors.json`. For live execution, set `PONDER_TEST_RANGE_ERROR_URLS` to a JSON file mapping `base`, `swell`, `avalanche` and `ankr-tac` to the corresponding local gateway or node listeners.
+
+```sh
+go test -count=1 -run '^TestUpstreamProviderRangeErrors$' ./rpc
 ```

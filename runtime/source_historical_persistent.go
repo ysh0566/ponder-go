@@ -116,6 +116,8 @@ func (s *SourceHistoricalSync) syncLogsDynamic(ctx context.Context, input filter
 			if errors.Is(err, rpc.ErrHTTPResponseTooLarge) {
 				size++
 			}
+			// A valid provider hint can also select a single block.
+			size = max(1, size)
 			s.logsMu.Lock()
 			s.estimatedRange = size
 			s.confirmedRange = nil

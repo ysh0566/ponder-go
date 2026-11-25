@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -29,6 +30,15 @@ type Error struct {
 }
 
 func (e *Error) Error() string { return fmt.Sprintf("RPC error %d: %s", e.Code, e.Message) }
+
+// HTTPStatusError retains bounded provider error details from a non-2xx response.
+// Details contains the JSON error field, or a JSON string for a plain-text body.
+type HTTPStatusError struct {
+	StatusCode int             `json:"status"`
+	Details    json.RawMessage `json:"details,omitempty"`
+}
+
+func (e *HTTPStatusError) Error() string { return fmt.Sprintf("RPC HTTP status %d", e.StatusCode) }
 
 type Cache interface {
 	CacheGet(context.Context, string) (json.RawMessage, bool, error)
@@ -195,7 +205,7 @@ func (c *Client) callWithAdmission(ctx context.Context, cached bool, method stri
 		}
 		request := map[string]any{"jsonrpc": "2.0", "id": id, "method": method, "params": params}
 		data, _ := json.Marshal(request)
-		raw, e := base.request(ctx, url, data)
+		raw, e := base.request(ctx, url, data, id)
 		if e == nil {
 			var response struct {
 				ID     uint64          `json:"id"`
@@ -240,7 +250,7 @@ func (c *Client) callWithAdmission(ctx context.Context, cached bool, method stri
 	}
 	return last
 }
-func (c *Client) request(ctx context.Context, url string, data []byte) ([]byte, error) {
+func (c *Client) request(ctx context.Context, url string, data []byte, id uint64) ([]byte, error) {
 	if strings.HasPrefix(url, "ws://") || strings.HasPrefix(url, "wss://") {
 		ws, _, e := websocket.DefaultDialer.DialContext(ctx, url, nil)
 		if e != nil {
@@ -269,13 +279,46 @@ func (c *Client) request(ctx context.Context, url string, data []byte) ([]byte, 
 		return nil, e
 	}
 	defer response.Body.Close()
-	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return nil, fmt.Errorf("RPC HTTP status %d", response.StatusCode)
-	}
 	limit := c.MaxHTTPResponseBytes
 	if limit <= 0 {
 		limit = defaultHTTPResponseBytes
 	}
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		status := &HTTPStatusError{StatusCode: response.StatusCode}
+		// Error metadata stays small even when a caller permits large log results.
+		raw, err := readHTTPBody(response, min(limit, 64<<10))
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		if err == nil {
+			status.Details = httpErrorDetails(raw, response.Header.Get("Content-Type"), id)
+		}
+		return nil, status
+	}
+	return readHTTPBody(response, limit)
+}
+
+func httpErrorDetails(raw []byte, contentType string, id uint64) json.RawMessage {
+	var envelope struct {
+		ID     json.RawMessage `json:"id"`
+		Result json.RawMessage `json:"result"`
+		Error  json.RawMessage `json:"error"`
+	}
+	if json.Unmarshal(raw, &envelope) == nil {
+		// Gateways can reject a request before assigning a JSON-RPC id.
+		if len(envelope.Result) != 0 || (len(envelope.ID) != 0 && string(envelope.ID) != "null" && string(envelope.ID) != strconv.FormatUint(id, 10)) {
+			return nil
+		}
+		return envelope.Error
+	}
+	if len(raw) != 0 && strings.EqualFold(strings.TrimSpace(strings.SplitN(contentType, ";", 2)[0]), "text/plain") {
+		detail, _ := json.Marshal(string(raw))
+		return detail
+	}
+	return nil
+}
+
+func readHTTPBody(response *http.Response, limit int64) ([]byte, error) {
 	oversize := func() error { return fmt.Errorf("%w: limit %d bytes", ErrHTTPResponseTooLarge, limit) }
 	if response.ContentLength > limit {
 		return nil, oversize()

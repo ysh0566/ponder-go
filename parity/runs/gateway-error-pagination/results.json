@@ -1,0 +1,204 @@
+{
+  "code_revision": "151197b021fb6cebf03c51d1f67fbef742163fcf",
+  "original_inventory": "upstream.json",
+  "mappings": [
+    {
+      "source_id": "aeb608fa166c9529d13e",
+      "name": "ankr request range",
+      "file": "packages/utils/src/_test/ankr-tac.test.ts",
+      "assertions_sha256": "2f4ab6085b0af882d8047408142a4871f98da7323b3e5ccc81f345f72b1f0c62",
+      "upstream": "passed",
+      "native_live": "passed",
+      "native_test": "TestUpstreamProviderRangeErrors/ankr-tac/ankr_request_range"
+    },
+    {
+      "source_id": "06d9730ed69956eaf89b",
+      "name": "avalanche block range",
+      "file": "packages/utils/src/_test/avalanche.test.ts",
+      "assertions_sha256": "53a9f8714ea616183677dc6f185d95b2ba4c391aff2223755cad0ffed6c20801",
+      "upstream": "passed",
+      "native_live": "passed",
+      "native_test": "TestUpstreamProviderRangeErrors/avalanche/avalanche_block_range"
+    },
+    {
+      "source_id": "406b16820b5ebb1a90fe",
+      "name": "base block range",
+      "file": "packages/utils/src/_test/base.test.ts",
+      "assertions_sha256": "aee434d90c7243e1da27794fc3eafd804c32b8f370d914eb9e7a3dadf99f752f",
+      "upstream": "passed",
+      "native_live": "passed",
+      "native_test": "TestUpstreamProviderRangeErrors/base/base_block_range"
+    },
+    {
+      "source_id": "f6fcaf43d5a1a8b4119c",
+      "name": "swell block range",
+      "file": "packages/utils/src/_test/swell.test.ts",
+      "assertions_sha256": "e46f2889aaeec4469a71f66f25f7040107e0eb03bab1b8095bd103fb6be9cc6c",
+      "upstream": "passed",
+      "native_live": "passed",
+      "native_test": "TestUpstreamProviderRangeErrors/swell/swell_block_range"
+    }
+  ],
+  "scope_audit": {
+    "original_declarations": 905,
+    "fields_compared": [
+      "id",
+      "source_file",
+      "source_sha256",
+      "source_state",
+      "full_name",
+      "assertions",
+      "inputs",
+      "port_status",
+      "mapping",
+      "scope_reason"
+    ],
+    "mapped": 566,
+    "unimplemented": 334,
+    "out_of_scope": 5,
+    "pruned_temporary_checkout_bytes": 115490816
+  },
+  "native_focused": {
+    "combined-normal": {
+      "passed_leaf_cases": 27,
+      "packages": [
+        "ponder.local/ponder-go/rpc",
+        "ponder.local/ponder-go/runtime"
+      ],
+      "sha256": "5f263c005c42b6cf7967d6482e9f52a910da487da41d473caf60f5aeb04f2737"
+    },
+    "combined-race": {
+      "passed_leaf_cases": 27,
+      "packages": [
+        "ponder.local/ponder-go/rpc",
+        "ponder.local/ponder-go/runtime"
+      ],
+      "sha256": "624c2eccccbba1d68fc092660ad0c78ca1fac1962a547038cc29c8f523052dde"
+    },
+    "rpc-normal": {
+      "passed_leaf_cases": 198,
+      "packages": [
+        "ponder.local/ponder-go/rpc"
+      ],
+      "sha256": "586efec275582f5223b28bf55457f9a7e93fabb38bdc071ed1b910145088ae51"
+    },
+    "rpc-race": {
+      "passed_leaf_cases": 198,
+      "packages": [
+        "ponder.local/ponder-go/rpc"
+      ],
+      "sha256": "1b7cfd8575a810d5b9667b845a2b26c896735560a38e9e354829535f507d4bf1"
+    }
+  },
+  "live_native_log_sha256": "9d504030b7019ca0f772c0c7954000853aff218e6dd2ffc0f7db0573bb74d21e",
+  "live_node_controls": {
+    "avalanche": {
+      "policy_chain": "0xa868",
+      "archive_chain": "0xa86a",
+      "original_error": {
+        "code": -32000,
+        "message": "requested too many blocks from 53164500 to 53166548, maximum is set to 2048"
+      },
+      "accepted_query": {
+        "fromBlock": "0x32b39d4",
+        "toBlock": "0x32b41d3",
+        "address": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7"
+      },
+      "accepted_log_count": 3135,
+      "shifted_rejection_matches_direct_node": true
+    },
+    "ankr-tac": {
+      "policy_chain": "0x247d29",
+      "archive_chain": "0xef",
+      "original_error": {
+        "code": -32000,
+        "message": "maximum [from, to] blocks distance: 10000"
+      },
+      "accepted_query": {
+        "address": "0xB63B9f0eb4A6E6f191529D71d4D88cc8900Df2C9",
+        "fromBlock": "0x2f64b4",
+        "toBlock": "0x2f8bc4"
+      },
+      "accepted_log_count": 185,
+      "shifted_rejection_matches_direct_node": true
+    }
+  },
+  "verified_node_binaries": {
+    "proxyd": {
+      "repo": "ethereum-optimism/infra",
+      "release": "proxyd/v4.37.0",
+      "url": "https://github.com/ethereum-optimism/infra/releases/download/proxyd/v4.37.0/proxyd-4.37.0-linux-amd64.tar.gz",
+      "assetBytes": 25432979,
+      "assetSha256": "22af999d339e6f7735a0216560394f24c1e0fe7d8c4e03f5226558e49280e790",
+      "binarySha256": "dc918d467e6b6e32edadfe85f792be7eb5f92f1dbc5e8987990e5deee57e7fc6"
+    },
+    "avalanchego": {
+      "repo": "ava-labs/avalanchego",
+      "release": "v1.13.3",
+      "url": "https://github.com/ava-labs/avalanchego/releases/download/v1.13.3/avalanchego-linux-amd64-v1.13.3.tar.gz",
+      "assetBytes": 41127233,
+      "assetSha256": "760ea5efb538d50db92f65dddfe884e83f839e90ec1661dd29982ca3acb6036c",
+      "binarySha256": "92b203be2d3ef56dce2de2f525a031d2303953d2ba97de94480ef92827855ecd"
+    },
+    "tac": {
+      "release": "v1.6.4",
+      "url": "https://github.com/TacBuild/tacchain/releases/download/v1.6.4/tacchaind-linux-amd64.tar.gz",
+      "sha256": "c1f98847bd45bf298c7a3de4cf6a436309b3f5e7e071538f8fea709b17ee1870",
+      "binarySha256": "05604897dac60b49a0f1924c4de0dc9c4720e3110b8fd5f68f844b9543f7f502"
+    }
+  },
+  "wire_fixtures_sha256": "25a42b62d6e69b31eed858dd8837c45414e1ba8b0738a30d5e465bb38778dcb4",
+  "python_tests": 37,
+  "clean_module_build_and_vet": true,
+  "complete_rpc_runtime_package_jobs": {
+    "go-test": {
+      "passed_leaf_cases": 861,
+      "packages": [
+        "ponder.local/ponder-go/rpc",
+        "ponder.local/ponder-go/runtime"
+      ],
+      "finished_utc": "2026-11-25T01:43:29.495Z",
+      "batches": 112,
+      "execution_sha256": "ae0b3b08324777605fe0e9a58c1c40310e2aaa26852a4419e0996f27daf8fe0f",
+      "jsonl_sha256": "6e6369d411680343533e8898e13963f67b6219cb16baed44b53486cdf36a69a1",
+      "input_fingerprint": "a2d745db442053ff41483dd7763a253f61bbe9f3eb0a1ed983a7064eefaa11bc"
+    },
+    "go-race": {
+      "passed_leaf_cases": 861,
+      "packages": [
+        "ponder.local/ponder-go/rpc",
+        "ponder.local/ponder-go/runtime"
+      ],
+      "finished_utc": "2026-11-25T01:51:19.761Z",
+      "batches": 112,
+      "execution_sha256": "1201a91babd0462d4b828af8bdd1b92c427934cc9bc3a019626a5c974991507d",
+      "jsonl_sha256": "5475e5b5d55d651397ff8c3dbb8b4e62061eabbd717a9eba85f911dec719e32b",
+      "input_fingerprint": "a2d745db442053ff41483dd7763a253f61bbe9f3eb0a1ed983a7064eefaa11bc"
+    }
+  },
+  "pending_package_jobs": [],
+  "historical_type_preparation": {
+    "directives": 12,
+    "validated_production_inputs": 722,
+    "fixture_sha256": "9e9446085feea6d63e38e07c9071c236671f5100871d83d7ee4b40536787c5cc"
+  },
+  "released_range_node_bytes": 287703040,
+  "node_controls": {
+    "main": {
+      "passed": 462,
+      "sha256": "90e292c4c67b54615042edf64f7083e82ed2a8c0132b680b8a2b34be7923f44a"
+    },
+    "live": {
+      "passed": 20,
+      "sha256": "f3d04a30fe0fe120fa592716bcef94e657014c3964e1144bbeb5ce4578707003"
+    },
+    "proxy": {
+      "passed": 10,
+      "sha256": "6d08258e69eff72cf428587f9a5e4fc0c1afb8991d8c11f9ad87566e3af389e8"
+    },
+    "cache": {
+      "passed": 8,
+      "sha256": "4712768ed4f30e4c0ac3d7f8a7aa5e8e3591015c2d2dc09a1e3e5672ba343854"
+    }
+  }
+}

@@ -323,7 +323,27 @@ def capture_filter(record):
     return filter_bounds(record.get("params"))
 
 
-def server(indexes, port, error_captures=(), log_captures=(), bytes_per_second=None):
+def range_policy_error(url, chain, params):
+    first, last, _ = filter_bounds(params)
+    reply = rpc_response(url, "eth_getLogs", params)
+    if "result" in reply:
+        if not isinstance(reply["result"], list):
+            raise ValueError("range policy node returned invalid logs")
+        return None
+    error = check_rpc_error(reply["error"])
+    if chain == 239 and error["code"] == -32000:
+        # A TAC validator admits the range before looking up local history.
+        # Only a missing, below-genesis height can fall through to the archive.
+        miss = re.fullmatch(
+            r"failed to fetch block result from CometBFT: failed to fetch block result from CometBFT "
+            r"(\d+): height \1 is not available, lowest height is (\d+)", error["message"]
+        )
+        if miss and first <= int(miss[1]) <= last and int(miss[1]) < int(miss[2]):
+            return None
+    return error
+
+
+def server(indexes, port, error_captures=(), log_captures=(), bytes_per_second=None, range_policy_url=None):
     if bytes_per_second is not None and bytes_per_second <= 0:
         raise ValueError("bytes per second must be positive")
     chains = {index.chain for index in indexes}
@@ -344,6 +364,13 @@ def server(indexes, port, error_captures=(), log_captures=(), bytes_per_second=N
     if len(chains) != 1:
         raise ValueError("one chain per listener is required")
     chain = chains.pop()
+    if range_policy_url is not None:
+        endpoint = urlsplit(range_policy_url)
+        if endpoint.scheme not in ("http", "https") or endpoint.hostname not in ("localhost", "127.0.0.1", "::1"):
+            raise ValueError("range policy node must run on loopback")
+        local_chain = {43114: 43112, 239: 2391337}.get(chain)
+        if local_chain is None or quantity(rpc(range_policy_url, "eth_chainId", [])) != local_chain:
+            raise ValueError("range policy node does not match the archive network")
     for i, index in enumerate(indexes):
         for other in indexes[:i]:
             if (index.first <= other.last and other.first <= index.last and
@@ -380,7 +407,10 @@ def server(indexes, port, error_captures=(), log_captures=(), bytes_per_second=N
                         result["result"] = hex(chain)
                     elif req["method"] == "eth_getLogs":
                         params = req.get("params")
-                        if observed and (key := filter_bounds(params)) in observed:
+                        policy_error = range_policy_error(range_policy_url, chain, params) if range_policy_url else None
+                        if policy_error is not None:
+                            result["error"] = policy_error
+                        elif observed and (key := filter_bounds(params)) in observed:
                             result.update(observed[key])
                         else:
                             result["result"] = get_logs(indexes, params)
@@ -434,6 +464,7 @@ def main():
     logs.add_argument("output", type=Path)
     host = commands.add_parser("serve")
     host.add_argument("--port", type=int, default=0)
+    host.add_argument("--range-policy-url", help="apply a local Coreth or TAC node’s range policy before reading archived logs")
     host.add_argument("--bytes-per-second", type=int, help="limit the transfer rate of all response bodies")
     host.add_argument("--error-capture", action="append", type=Path, default=[])
     host.add_argument("--log-capture", action="append", type=Path, default=[])
@@ -462,7 +493,7 @@ def run_command(args):
     else:
         captures = [json.loads(path.read_bytes()) for path in args.error_capture]
         responses = [json.loads(gzip.decompress(path.read_bytes())) for path in args.log_capture]
-        with server([Index(path) for path in args.directories], args.port, captures, responses, args.bytes_per_second) as http:
+        with server([Index(path) for path in args.directories], args.port, captures, responses, args.bytes_per_second, args.range_policy_url) as http:
             print(f"http://127.0.0.1:{http.server_port}", flush=True)
             http.serve_forever()
 
