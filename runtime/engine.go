@@ -174,7 +174,12 @@ func NewWithOptions(c config.Config, s *store.Store, handlers map[string]Handler
 			engine.factories[name] = factory
 		}
 	}
-	encoded, _ := json.Marshal(c)
+	// A notification endpoint changes when the worker wakes, not its indexed ranges.
+	identity := c
+	chain := engine.chain
+	chain.WS = ""
+	identity.Chains = []config.Chain{chain}
+	encoded, _ := json.Marshal(identity)
 	hash := sha256.Sum256(encoded)
 	engine.filter = fmt.Sprintf("runtime:%x", hash)
 	engine.Client = rpc.New(engine.chain.RPC...)
@@ -673,6 +678,9 @@ func (e *Engine) Run(ctx context.Context) error { return e.RunIndexing(ctx, func
 
 // RunIndexing resumes from committed progress after transient RPC outages.
 func (e *Engine) RunIndexing(ctx context.Context, ready func(bool)) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	heads := headNotifications(ctx, e.chain.WS)
 	interval := time.Duration(e.chain.PollingIntervalMS) * time.Millisecond
 	if interval <= 0 {
 		interval = time.Second
@@ -684,7 +692,9 @@ func (e *Engine) RunIndexing(ctx context.Context, ready func(bool)) error {
 			return ctx.Err()
 		}
 		delay := interval
+		notify := heads
 		if err != nil {
+			notify = nil
 			ready(false)
 			if !rpc.IsTransient(err) && !errors.Is(err, errIndexingFork) {
 				return err
@@ -703,6 +713,8 @@ func (e *Engine) RunIndexing(ctx context.Context, ready func(bool)) error {
 		case <-ctx.Done():
 			timer.Stop()
 			return ctx.Err()
+		case <-notify:
+			timer.Stop()
 		case <-timer.C:
 		}
 	}

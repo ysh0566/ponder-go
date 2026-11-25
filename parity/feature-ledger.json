@@ -1529,6 +1529,29 @@
         "parity/runs/native-continuous-finality/RESULT.md"
       ],
       "remaining": "Coordinated multichain workers use their own finalization paths."
+    },
+    {
+      "id": "native-head-notifications",
+      "status": "verified_subset",
+      "implementation_files": [
+        "config/config.go",
+        "config/source_native.go",
+        "runtime/engine.go",
+        "runtime/head_notifications.go"
+      ],
+      "native_test_files": [
+        "runtime/head_notifications_test.go",
+        "runtime/source_configuration_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/config/index.ts",
+        "packages/core/src/rpc/index.ts",
+        "packages/core/src/runtime/realtime.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-head-notifications/RESULT.md"
+      ],
+      "remaining": "Managed coordinated runners use their own realtime acquisition paths."
     }
   ]
 }

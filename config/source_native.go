@@ -178,7 +178,8 @@ func (build *SourceIndexingBuild) NativeConfig(name string) (Config, error) {
 	window, _ := sourceNumber(rawChain.get("reorgWindow"))
 	polling, _ := sourceNumber(rawChain.get("pollingInterval"))
 	w := int(window)
-	chain := Chain{Name: name, ID: id, RPC: urls, ReorgWindow: &w, PollingIntervalMS: int(polling)}
+	ws, _ := rawChain.get("ws").(string)
+	chain := Chain{Name: name, ID: id, RPC: urls, WS: ws, ReorgWindow: &w, PollingIntervalMS: int(polling)}
 	if metadata, ok := rawChain.get("viemChain").(*sourceObject); ok {
 		if hint, ok := sourceNumber(metadata.get("blockTime")); ok {
 			chain.BlockTimeMS = &hint
