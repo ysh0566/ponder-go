@@ -1,4 +1,5 @@
 // Run with the pinned sibling upstream's dependencies installed and Anvil on PATH.
+import { verifyAvatars } from "./avatar-oracle.mjs";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
@@ -165,6 +166,15 @@ try {
 	console.log(
 		"viem 2.35.0 resolved all 12 records on Anvil, plus strict failure, two historical heights and a reorg",
 	);
+	await verifyAvatars({
+		c,
+		rpc,
+		viem: require("viem"),
+		resolver,
+		from,
+		fixture,
+		filename,
+	});
 } finally {
 	anvil.kill();
 	await exit;
