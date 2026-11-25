@@ -11,12 +11,13 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 )
 
-func manageDatabase(ctx context.Context, args []string, out io.Writer) error {
+func manageDatabase(ctx context.Context, args []string, out, diagnostics io.Writer) error {
 	if len(args) == 0 {
 		return fmt.Errorf("db list, prune or create-views required")
 	}
 	op := args[0]
 	flags := flag.NewFlagSet("db "+op, flag.ContinueOnError)
+	flags.SetOutput(diagnostics)
 	url := flags.String("database-url", "", "PostgreSQL database URL")
 	var ns, views string
 	switch op {

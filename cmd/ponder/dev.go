@@ -103,20 +103,21 @@ func (p *nativeProject) watch(ctx context.Context, dir string) error {
 	for ctx.Err() == nil {
 		revision, err := p.projectRevision()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			p.log.Error("Could not read project revision", "error", err)
 		}
 		if err == nil && stopped != nil && revision == runningRevision {
 			last = revision
 		}
 		if err == nil && revision != last {
 			last = revision
+			p.log.Trace("Go project revision changed", "revision", revision)
 			next := filepath.Join(dir, "indexer-a")
 			if next == binary {
 				next = filepath.Join(dir, "indexer-b")
 			}
 			if err = p.build(ctx, next); err != nil {
 				if ctx.Err() == nil {
-					fmt.Fprintln(os.Stderr, "Go build failed, waiting for an edit:", err)
+					p.log.Error("Go build failed, waiting for an edit", "error", err)
 				}
 			} else {
 				after, err := p.projectRevision()
@@ -143,7 +144,7 @@ func (p *nativeProject) watch(ctx context.Context, dir string) error {
 				runningRevision = revision
 				stopped = make(chan error, 1)
 				go func(done chan<- error) { done <- child.Wait() }(stopped)
-				fmt.Fprintf(os.Stderr, "Watching %s, dev schema %s\n", p.root, namespace)
+				p.log.Info("Watching Go project", "root", p.root, "schema", namespace)
 			}
 		}
 		select {
@@ -152,7 +153,7 @@ func (p *nativeProject) watch(ctx context.Context, dir string) error {
 		case err := <-stopped:
 			stopped = nil
 			if err != nil && ctx.Err() == nil {
-				fmt.Fprintln(os.Stderr, "Indexer exited, waiting for an edit:", err)
+				p.log.Error("Indexer exited, waiting for an edit", "error", err)
 			}
 		}
 	}

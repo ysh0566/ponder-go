@@ -3,7 +3,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 
-const prefixes = ["abi/", "async/", "bloom/", "bridge/", "checkpoint/", "cmd/", "config/", "events/", "examples/", "factory/", "filter/", "finality/", "graphql/", "historical/", "indexing/", "internal/", "interval/", "metrics/", "orm/", "query/", "rpc/", "runtime/", "schema/", "sdk/", "sqlquery/", "store/", "testdata/", "third_party/", "values/"];
+const prefixes = ["abi/", "async/", "bloom/", "bridge/", "checkpoint/", "cmd/", "config/", "events/", "examples/", "factory/", "filter/", "finality/", "graphql/", "historical/", "indexing/", "internal/", "interval/", "logging/", "metrics/", "orm/", "query/", "rpc/", "runtime/", "schema/", "sdk/", "sqlquery/", "store/", "testdata/", "third_party/", "values/"];
 const individualInputs = new Set([
 	"go.mod", "go.sum", "parity/sync-migration-assets.json",
 	"tools/provider_archive_nodes.py", "tools/historical_log_rpc.py", "tools/historical-rpc-fetch.mjs",

@@ -97,9 +97,10 @@ func TestGeneratedGoServe(t *testing.T) {
 	serviceCtx, stop := context.WithCancel(ctx)
 	done := make(chan struct{})
 	var childErr error
+	var diagnostics strings.Builder
 	go func() {
 		defer close(done)
-		childErr = run(serviceCtx, []string{"serve", "--root", root, "--hostname", "127.0.0.1", "--port", fmt.Sprint(port), "--schema", ns}, io.Discard)
+		childErr = runCLI(serviceCtx, []string{"--log-format=json", "serve", "-v", "--root", root, "--hostname", "127.0.0.1", "--port", fmt.Sprint(port), "--schema", ns}, io.Discard, &diagnostics)
 	}()
 	defer func() { stop(); <-done }()
 	health := &http.Client{Timeout: time.Second}
@@ -176,6 +177,22 @@ func TestGeneratedGoServe(t *testing.T) {
 		t.Fatal(err)
 	}
 	next(0)
+	response.Body.Close()
+	stop()
+	<-done
+	entries := parseLogRecords(t, diagnostics.String())
+	var startup, build bool
+	for _, r := range entries {
+		if r["schema"] == ns && r["address"] != "" && r["level"] == float64(30) {
+			startup = true
+		}
+		if r["msg"] == "Building Go project" && r["level"] == float64(20) {
+			build = true
+		}
+	}
+	if !startup || !build {
+		t.Fatalf("missing structured startup/build records: %v", entries)
+	}
 }
 
 func TestGeneratedGoStartViews(t *testing.T) {

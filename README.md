@@ -24,14 +24,14 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 | 回调查链 | 类型化 Go 回调提供上游列出的 21 个高层方法，包括历史合约调用、gas 估算、ABI 模拟、交易及 ENS 地址、文本和头像查询。EIP-3668 支持网关取数、合约验证和 ENS 批量查询。原生脚手架的普通回调还可直接发送 JSON-RPC 请求。[方法清单](docs/RUNTIME_SUPPORT.md#callback-rpc-methods) · [链下读取](docs/USAGE.md#合约的-eip-3668-链下读取) |
 | 数据库 | PostgreSQL 和 PGlite 均有验证。业务写入、撤销日志和 checkpoint 在事务中提交。各存储组件只支持自己的当前格式；旧库需使用新命名空间重新索引。[存储格式](parity/runs/current-database-formats/RESULT.md) |
 | 查询 | 支持只读 SQL、SSE 订阅、状态与指标接口。Go 项目可用 `serve` 独立查询正在写入的 PostgreSQL 部署，只需数据库连接和部署命名空间。应用可另行挂载 GraphQL 处理器，支持实体、过滤、分页、关联及视图。网络地址、时间、间隔和几何列均可用于查询。[列类型与表示](docs/USAGE.md#列类型与-graphql-表示) · [HTTP 查询示例](docs/USAGE.md#查询索引结果) · [GraphQL](graphql) |
-| CLI 与应用 | `dev` 可热重载，`start` 和 `serve` 可启动索引或查询服务，均支持 `--hostname` 和 `--port`。生成的 PostgreSQL 项目通过 `start --views-schema` 在追上链头后切换查询视图。另有代码生成和 checkpoint 编解码。PostgreSQL 部署可用 `db list` 列出命名空间、`db create-views` 发布查询视图、`db prune` 清理已停用的部署。[数据库命令](docs/USAGE.md#发布查询视图与清理部署) · [CLI 使用](docs/USAGE.md#用于自己的项目) |
+| CLI 与应用 | `dev` 可热重载，`start` 和 `serve` 可启动索引或查询服务，均支持 `--hostname` 和 `--port`。全局 `--log-level` 和 `--log-format json` 同时控制 CLI 和生成的 Go 应用的诊断日志。生成的 PostgreSQL 项目通过 `start --views-schema` 在追上链头后切换查询视图。另有代码生成和 checkpoint 编解码。PostgreSQL 部署可用 `db list` 列出命名空间、`db create-views` 发布查询视图、`db prune` 清理已停用的部署。[数据库命令](docs/USAGE.md#发布查询视图与清理部署) · [日志选项](docs/USAGE.md#控制-cli-和-go-应用日志) · [CLI 使用](docs/USAGE.md#用于自己的项目) |
 
 ## 原生 Go 索引器还缺什么
 
 | 使用场景 | 当前边界 |
 | --- | --- |
 | 在同一 Go 应用中协调多条链 | 原生 `runtime.NewIndexer` 支持独立多链和按全局顺序索引。默认协调模式仍需使用 `historical.RuntimeRunner`。还需验证更多工厂日志、交易、转账和函数调用 trace 的重叠组合，以及多家 RPC 同时中断时的恢复。[全局排序使用方式](docs/USAGE.md#按全局顺序索引多条链) |
-| 管理部署和日志 | PostgreSQL 已支持视图发布和部署清理。PGlite 仍缺独立进程管理数据目录、与写入进程共享目录提供查询的支持。热重载已可用，CLI 尚缺统一的日志级别、JSON 日志格式和开发终端 UI。 |
+| 管理部署和日志 | PostgreSQL 已支持视图发布和部署清理。PGlite 仍缺独立进程管理数据目录、与写入进程共享目录提供查询的支持。热重载和全局日志选项已可用，开发终端 UI 仍待实现。 |
 | 生产故障验收 | 已在写事务提交前强制终止 PostgreSQL 和 PGlite 引擎，验证重启后的余额、检查点、重放和撤销。全局排序的纯日志历史任务也覆盖了 PGlite 应用异常退出。仍需验证主机掉电、协调多链运行中数据库引擎崩溃，以及生产数据库角色与权限。[故障恢复实测](parity/runs/native-engine-recovery/RESULT.md) |
 
 这些条目按使用 Go 编写索引器的目标维护。数据库范围为当前格式。[各运行模式的具体限制](docs/RUNTIME_SUPPORT.md)
