@@ -46,6 +46,14 @@ func TestDevProgressLayout(t *testing.T) {
 	if d.lines(80, 24)[2] != "Waiting for first checkpoint" {
 		t.Fatal("empty progress")
 	}
+	eta := 11.1
+	d.report.Chains = map[string]devstatus.ChainMetrics{"a": {RequestsPerSecond: 2.25, Backfill: &devstatus.Backfill{Total: 3, Completed: 2, ETASeconds: &eta}}}
+	d.report.Events = map[string]devstatus.EventMetrics{"Token:\x1b": {Count: 8, AverageMillis: 0.125}}
+	text := strings.Join(d.lines(100, 24), "\n")
+	if !strings.Contains(text, "a  RPC 2.2 req/s  backfill 66.7%  ETA 12s") || !strings.Contains(text, `Token:\x1b  calls 8  avg 0.125 ms`) {
+		t.Fatal(text)
+	}
+
 }
 
 func TestGeneratedDevTerminal(t *testing.T) {

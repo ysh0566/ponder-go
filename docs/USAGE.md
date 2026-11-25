@@ -136,6 +136,17 @@ ponder dev --hostname 127.0.0.1 --port 42069 --schema ponder_go_demo
 
 当标准输出和标准错误连接到同一个交互终端时，`ponder dev` 在日志下方显示编译和重载状态。通过 `runtime.LaunchApplication` 启动的应用还会显示实际 HTTP 地址、是否追上链头，以及每条已有 checkpoint 的链最近提交的区块。即使指定 `--port 0`，也可以使用显示的地址查询。重组期间区块号可能回退。自定义 HTTP 入口只显示进程和构建状态。
 
+使用 `runtime.NewIndexer` 时，每条链和每个 Go 回调都有一行统计信息。下例中的 `Transfer` 回调已成功执行 28 次。
+
+```text
+local  block 119  RPC 7.5 req/s  backfill 60%  ETA 10s
+Token:Transfer  calls 28  avg 0.650 ms
+```
+
+- **RPC 速率**按最近最多 100 次终端采样之间的实际请求数计算，包含重试和回调中的查链请求。命中 RPC 缓存时不会发送请求。
+- **回填进度**是当前扫描范围内已完成的区块数除以总区块数。范围从最早来源的起始块到最近获取的链头，如有结束块则取较低者。区块号来自已提交的 checkpoint，百分比只计已完成所有回调的区块。重启后计入已完成区间，重组后重新计算。运行器至少采到两段各五秒以上的实际处理进度后，才显示剩余时间估算。
+- **回调次数和平均耗时**按回调名汇总。计数来自本次进程成功返回的调用。重组后重新执行的回调会再次计数，热重载后重新开始统计。
+
 需要普通日志时使用 `ponder dev --disable-ui`。管道或文件重定向、`--log-format json`、`--log-level silent` 和 `TERM=dumb` 都会自动关闭进度显示。[终端与双后端测试](../parity/runs/native-dev-progress/RESULT.md)
 
 `--hostname` 和 `--port` 也可用于 `start` 和 `serve`。端口 0 让操作系统分配空闲端口。使用 `runtime.LaunchApplication` 的 Go 应用会读取这两个选项。自行创建 HTTP 服务的应用可从 `PONDER_HOSTNAME`、`PONDER_PORT` 读取对应值。

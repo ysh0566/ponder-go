@@ -49,8 +49,8 @@ func TestRetryAndCache(t *testing.T) {
 			t.Fatalf("%q %v", out, e)
 		}
 	}
-	if calls.Load() != 2 {
-		t.Fatal(calls.Load())
+	if calls.Load() != 2 || c.TransportRequests() != 2 || c.WithCache(c.Cache).TransportRequests() != 2 {
+		t.Fatalf("wire calls %d transport count %d", calls.Load(), c.TransportRequests())
 	}
 }
 func TestInvalidParamsIsNotRetried(t *testing.T) {

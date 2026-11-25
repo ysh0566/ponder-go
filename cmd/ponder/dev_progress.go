@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"math"
 	"os"
 	"slices"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ysh0566/ponder-go/internal/devstatus"
+	"github.com/ysh0566/ponder-go/metrics"
 	"golang.org/x/term"
 )
 
@@ -65,17 +68,49 @@ func (d *devDashboard) lines(columns, rows int) []string {
 			status = "Ready"
 		}
 		lines = append(lines, status+" | http://"+report.Address)
-		switch {
-		case report.Blocks == nil:
+		if report.Blocks == nil {
 			lines = append(lines, "Checkpoints unavailable")
-		case len(report.Blocks) == 0:
+		} else if len(report.Blocks) == 0 {
 			lines = append(lines, "Waiting for first checkpoint")
-		default:
-			for _, name := range slices.Sorted(maps.Keys(report.Blocks)) {
-				// Keep terminal controls and wide characters out of cursor arithmetic.
-				quoted := strconv.QuoteToASCII(name)
-				lines = append(lines, fmt.Sprintf("%s  block %d", quoted[1:len(quoted)-1], report.Blocks[name]))
+		}
+		names := make(map[string]bool, len(report.Chains)+len(report.Blocks))
+		for name := range report.Chains {
+			names[name] = true
+		}
+		for name := range report.Blocks {
+			names[name] = true
+		}
+		for _, name := range slices.Sorted(maps.Keys(names)) {
+			line := ""
+			if n, ok := report.Blocks[name]; ok {
+				line += fmt.Sprintf("  block %d", n)
 			}
+			if stats, ok := report.Chains[name]; ok {
+				line += fmt.Sprintf("  RPC %.1f req/s", stats.RequestsPerSecond)
+				if p := stats.Backfill; p != nil && p.Total > 0 {
+					percent := 100.0
+					if p.Completed < p.Total {
+						percent = math.Min(99.9, math.Round(1000*float64(p.Completed)/float64(p.Total))/10)
+					}
+					line += fmt.Sprintf("  backfill %g%%", percent)
+					if p.ETASeconds != nil {
+						line += "  ETA " + displayETA(*p.ETASeconds)
+					}
+				}
+			}
+			lines = append(lines, metricLine(name, line, columns))
+		}
+		for _, name := range slices.Sorted(maps.Keys(report.Events)) {
+			e := report.Events[name]
+			line := fmt.Sprintf("  calls %d", e.Count)
+			if e.Count > 0 {
+				if e.AverageMillis > 0 && e.AverageMillis < 0.001 {
+					line += "  avg <0.001 ms"
+				} else {
+					line += fmt.Sprintf("  avg %.3f ms", e.AverageMillis)
+				}
+			}
+			lines = append(lines, metricLine(name, line, columns))
 		}
 	}
 	if len(lines) > rows-1 {
@@ -89,6 +124,20 @@ func (d *devDashboard) lines(columns, rows int) []string {
 		lines[i] = line[:min(len(line), columns-1)]
 	}
 	return lines
+}
+
+// Escaped ASCII keeps user-supplied labels within the cursor's column count.
+func metricLine(name, values string, columns int) string {
+	quoted := strconv.QuoteToASCII(name)
+	limit := max(8, min(36, columns-1-len(values)))
+	return metrics.Truncate(quoted[1:len(quoted)-1], limit) + values
+}
+
+func displayETA(seconds float64) string {
+	if seconds >= 86400 {
+		return fmt.Sprintf("%.0fd", math.Ceil(seconds/86400))
+	}
+	return (time.Duration(math.Ceil(seconds)) * time.Second).String()
 }
 
 func (d *devDashboard) draw() {

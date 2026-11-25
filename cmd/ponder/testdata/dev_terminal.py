@@ -66,12 +66,21 @@ with launch() as read:
     assert b'Ponder dev | Building' in output and b'\x1b[J' in output
     assert b'child-progress-log' in output
     base = "http://" + match[1].decode()
-    mine = urllib.request.Request(os.environ["PONDER_LOCAL_RPC_URL"],
-          data=b'{"jsonrpc":"2.0","id":1,"method":"evm_mine","params":[]}',
-          headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(mine, timeout=5) as result:
-        assert "result" in json.load(result)
-    read(rb"local  block 1")
+    def rpc(method, params):
+        req = urllib.request.Request(os.environ["PONDER_LOCAL_RPC_URL"],
+              data=json.dumps({"jsonrpc":"2.0","id":1,"method":method,"params":params}).encode(),
+              headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=5) as result:
+            return json.load(result)["result"]
+
+    token = os.environ["PONDER_LOCAL_CONTRACT"]
+    topic = "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+    # The local contract emits Transfer(address(1), address(2), 1).
+    rpc("anvil_setCode", [token, "0x6001600052600260017f" + topic + "60206000a300"])
+    rpc("eth_sendTransaction", [{"from":rpc("eth_accounts",[])[0],"to":token,"gas":"0x10000"}])
+    rpc("evm_mine", [])
+    _, metric = read(rb"local  block 1  RPC ([0-9.]+) req/s  backfill 100%\s+Token:Transfer  calls 1  avg ([0-9.]+) ms")
+    assert float(metric[1]) > 0 and float(metric[2]) > 0, metric.groups()
     source.write_text("broken")
     read(rb"Ponder dev \| Build failed, previous indexer still running")
     with urllib.request.urlopen(base + "/status", timeout=5) as result:

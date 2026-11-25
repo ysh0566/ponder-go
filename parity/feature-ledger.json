@@ -1933,6 +1933,34 @@
         "parity/runs/native-default-multichain/RESULT.md"
       ],
       "remaining": "Failover within multi-provider pools during a cross-chain fork, wider overlapping callbacks and separate database-domain engine failures still need acceptance."
+    },
+    {
+      "id": "native-dev-metrics",
+      "status": "verified_subset",
+      "implementation_files": [
+        "cmd/ponder/dev_progress.go",
+        "internal/devstatus/status.go",
+        "rpc/client.go",
+        "runtime/application.go",
+        "runtime/dev_metrics.go",
+        "runtime/engine.go",
+        "runtime/ordered_indexer.go",
+        "runtime/staged.go"
+      ],
+      "native_test_files": [
+        "cmd/ponder/dev_progress_test.go",
+        "rpc/client_test.go",
+        "runtime/dev_metrics_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/internal/metrics.ts",
+        "packages/core/src/internal/metrics.test.ts",
+        "packages/core/src/ui/app.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-dev-metrics/RESULT.md"
+      ],
+      "remaining": "Measurements cover the native Go indexer and its interactive watcher. Custom indexers can still report readiness and database checkpoints through LaunchApplication."
     }
   ]
 }
