@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/ysh0566/ponder-go/schema"
@@ -48,6 +49,24 @@ func (s *Store) createAliasViews(ctx context.Context, tx Transaction) error {
 		}
 	}
 	// Expose source-shaped metadata without the native fencing token.
+	if s.leaseTimeout == 0 {
+		if e = s.aliasView(ctx, tx, "_ponder_meta", "SELECT key,to_jsonb(value) AS value FROM "+s.internal("_ponder_go_meta")+" WHERE key='fingerprint'"); e != nil {
+			return e
+		}
+		if e = s.aliasView(ctx, tx, "_ponder_checkpoint", "SELECT COALESCE(c.chain_name,p.chain_id::text) AS chain_name,p.chain_id::bigint AS chain_id,f.safe_checkpoint,p.checkpoint AS latest_checkpoint,f.checkpoint AS finalized_checkpoint FROM "+s.internal("_ponder_go_progress")+" p LEFT JOIN "+s.internal("_ponder_go_chains")+" c USING(chain_id) LEFT JOIN "+s.internal("_ponder_go_finalized")+" f USING(chain_id)"); e != nil {
+			return e
+		}
+		fn := s.aliasTable("live_query_notify")
+		if e = tx.Exec(ctx, "CREATE OR REPLACE FUNCTION "+fn+"() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN PERFORM pg_notify(TG_ARGV[0],json_build_array(TG_TABLE_NAME)::text); RETURN NULL; END $$"); e != nil {
+			return e
+		}
+		for _, table := range s.Schema.Tables {
+			if e = tx.Exec(ctx, "CREATE OR REPLACE TRIGGER "+schema.Quote(s.viewsSchema+"_live_query_notify")+" AFTER INSERT OR UPDATE OR DELETE ON "+s.table(table.Name)+" FOR EACH STATEMENT EXECUTE FUNCTION "+fn+"('"+s.viewsSchema+"_live_query')"); e != nil {
+				return e
+			}
+		}
+		return nil
+	}
 	if e = s.aliasView(ctx, tx, "_ponder_meta", "SELECT key,value FROM "+s.internal("_ponder_go_app")); e != nil {
 		return e
 	}
@@ -65,10 +84,27 @@ func (s *Store) createAliasViews(ctx context.Context, tx Transaction) error {
 	return nil
 }
 func (s *Store) aliasView(ctx context.Context, tx Transaction, name, query string) error {
-	if e := tx.Exec(ctx, "DROP VIEW IF EXISTS "+s.aliasTable(name)); e != nil {
-		return e
+	view := s.aliasTable(name)
+	if err := tx.Exec(ctx, "SAVEPOINT replace_alias_view"); err != nil {
+		return err
 	}
-	return tx.Exec(ctx, "CREATE VIEW "+s.aliasTable(name)+" AS "+query)
+	err := tx.Exec(ctx, "CREATE OR REPLACE VIEW "+view+" AS "+query)
+	var state interface{ SQLState() string }
+	if errors.As(err, &state) && state.SQLState() == "42P16" {
+		// PostgreSQL can preserve dependents across compatible replacements. A
+		// change to the row type needs a new view and must respect dependencies.
+		if err = tx.Exec(ctx, "ROLLBACK TO SAVEPOINT replace_alias_view"); err != nil {
+			return err
+		}
+		if err = tx.Exec(ctx, "DROP VIEW "+view+" RESTRICT"); err != nil {
+			return err
+		}
+		err = tx.Exec(ctx, "CREATE VIEW "+view+" AS "+query)
+	}
+	if err != nil {
+		return err
+	}
+	return tx.Exec(ctx, "RELEASE SAVEPOINT replace_alias_view")
 }
 
 // Initial safe metadata can seal historical records captured by the native

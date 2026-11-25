@@ -18,6 +18,7 @@ import (
 
 type Store struct {
 	staged                   bool
+	deploymentSession        *deploymentSession
 	leaseToken               string
 	leaseTimeout             int64
 	managedFinite            *ManagedFinite
@@ -118,6 +119,15 @@ func newStore(ctx context.Context, backend Backend, model schema.Schema, namespa
 	}
 	if e = s.createUserObjects(ctx, tx, true); e != nil {
 		return nil, e
+	}
+	if e = s.recordDeployment(ctx, tx); e != nil {
+		return nil, e
+	}
+	// The namespace transaction lock serializes registration with publication and prune.
+	if pg, ok := backend.(*pgBackend); ok {
+		if s.deploymentSession, e = pg.pinDeployment(ctx, s.Namespace); e != nil {
+			return nil, e
+		}
 	}
 	if e = tx.Commit(ctx); e != nil {
 		return nil, e
@@ -258,6 +268,19 @@ func (s *Store) model(name string) (schema.Table, error) {
 	return schema.Table{}, fmt.Errorf("unknown table %q", name)
 }
 func (s *Store) lock(ctx context.Context, tx Transaction) error {
+	if pin := s.deploymentSession; pin != nil {
+		// A pooled connection may survive the loss of the dedicated session. Fence
+		// this handle before it can write into a pruned and re-created namespace.
+		r, err := tx.Query(ctx, `WITH locked AS MATERIALIZED (SELECT pg_advisory_xact_lock(hashtextextended($1,0)))
+   SELECT EXISTS(SELECT FROM pg_stat_get_activity($2) WHERE backend_start=$3) AS active FROM locked`, s.Namespace, pin.pid, pin.started)
+		if err != nil {
+			return err
+		}
+		if len(r.Rows) != 1 || r.Rows[0]["active"] != true {
+			return errDeploymentDisconnected
+		}
+		return nil
+	}
 	if s.Backend.Dialect() == "postgres" {
 		return tx.Exec(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1,0))", s.Namespace)
 	}

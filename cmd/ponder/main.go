@@ -11,7 +11,6 @@ import (
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/orm"
 	"github.com/ysh0566/ponder-go/schema"
-	"github.com/ysh0566/ponder-go/store"
 	"github.com/ysh0566/ponder-go/values"
 	"go/format"
 	"io"
@@ -33,7 +32,7 @@ func main() {
 }
 func run(ctx context.Context, args []string, out io.Writer) error {
 	if len(args) == 0 || args[0] == "--help" || args[0] == "-h" {
-		fmt.Fprintln(out, "ponder-go "+version+" (local port in progress)\n\nCommands: init, dev, start, serve, codegen, db list, checkpoint encode/decode\nUse dev, start, or serve with --root, --schema, --hostname, and --port.")
+		fmt.Fprintln(out, "ponder-go "+version+" (local port in progress)\n\nCommands: init, dev, start, serve, codegen, db list, db create-views, db prune, checkpoint encode/decode\nUse dev, start, or serve with --root, --schema, --hostname, and --port.")
 		return nil
 	}
 	switch args[0] {
@@ -271,27 +270,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		fmt.Fprintln(out, *output)
 		return nil
 	case "db":
-		if len(args) < 2 || args[1] != "list" {
-			return fmt.Errorf("db prune/create-views are not implemented; see parity/feature-ledger.json")
-		}
-		flags := flag.NewFlagSet("db list", flag.ContinueOnError)
-		url := flags.String("database-url", "", "Explicit task database URL (no environment fallback)")
-		if e := flags.Parse(args[2:]); e != nil {
-			return e
-		}
-		if *url == "" {
-			return fmt.Errorf("--database-url is required")
-		}
-		backend, e := store.OpenPostgres(ctx, *url)
-		if e != nil {
-			return e
-		}
-		defer backend.Close()
-		r, e := backend.Query(ctx, "SELECT n.nspname AS schema FROM pg_namespace n JOIN pg_class c ON c.relnamespace=n.oid WHERE c.relname='_ponder_go_meta' AND n.nspname LIKE 'ponder_go_%' ORDER BY n.nspname")
-		if e != nil {
-			return e
-		}
-		return json.NewEncoder(out).Encode(r)
+		return manageDatabase(ctx, args[1:], out)
 	default:
 		return fmt.Errorf("unknown command %q", args[0])
 	}

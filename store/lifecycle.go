@@ -193,6 +193,9 @@ func (d *Lifecycle) tryMigrate(ctx context.Context, request Migration) ([]Recove
 	if e = tx.Exec(ctx, "CREATE TABLE IF NOT EXISTS "+d.s.internal("_ponder_go_app")+" (key text PRIMARY KEY CHECK(key='app'),value jsonb NOT NULL,lease_token text NOT NULL)"); e != nil {
 		return nil, 0, e
 	}
+	if e = d.s.recordDeployment(ctx, tx); e != nil {
+		return nil, 0, e
+	}
 	rows, e := tx.Query(ctx, "SELECT value::text AS value FROM "+d.s.internal("_ponder_go_app")+" WHERE key='app' FOR UPDATE")
 	if e != nil {
 		return nil, 0, e

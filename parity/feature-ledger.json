@@ -786,27 +786,35 @@
     },
     {
       "id": "cli-db-prune",
-      "status": "unimplemented",
+      "status": "verified_subset",
       "implementation_files": [
-        "cmd/ponder/main.go"
+        "cmd/ponder/database.go",
+        "store/deployment.go",
+        "store/prune.go"
       ],
       "upstream_sources": [
         "packages/core/src/bin/commands/prune.ts"
       ],
-      "evidence": [],
-      "remaining": "CLI currently returns an explicit unimplemented error. Native implementation and exact cases remain."
+      "evidence": [
+        "parity/runs/native-database-commands/RESULT.md"
+      ],
+      "remaining": "Current registered PostgreSQL deployments. Standalone administration of PGlite directories and independent domain layouts remains open."
     },
     {
       "id": "cli-db-create-views",
-      "status": "unimplemented",
+      "status": "verified_subset",
       "implementation_files": [
-        "cmd/ponder/main.go"
+        "cmd/ponder/database.go",
+        "store/deployment.go",
+        "store/views_aliases.go"
       ],
       "upstream_sources": [
         "packages/core/src/bin/commands/createViews.ts"
       ],
-      "evidence": [],
-      "remaining": "CLI currently returns an explicit unimplemented error. Native implementation and exact cases remain."
+      "evidence": [
+        "parity/runs/native-database-commands/RESULT.md"
+      ],
+      "remaining": "Current registered PostgreSQL deployments. Standalone administration of PGlite directories and independent domain layouts remains open."
     },
     {
       "id": "scaffolding-templates",
