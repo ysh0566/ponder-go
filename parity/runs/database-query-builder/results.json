@@ -1,0 +1,159 @@
+{
+  "code_revision": "22a56f4c0be0262efad46970876485b1dfe7876d",
+  "pinned_upstream": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "scope": {
+    "ported": 667,
+    "unimplemented": 233,
+    "out_of_scope": 5,
+    "go_ports": 663,
+    "retained_sdk": 4
+  },
+  "native": {
+    "normal": {
+      "schema": {
+        "passed_leaves": 29,
+        "top_level": 3,
+        "go_test_json_sha256": "f74c981e7ed6d2ffd9830c1573f777192acdd717900bbdd6a2a32f597ba69e52"
+      },
+      "store": {
+        "passed_leaves": 79,
+        "top_level": 18,
+        "go_test_json_sha256": "87f8c5f066ee0a2a4c6bdeead9c399fed5251964fd1f6bffab58961f5be488ce"
+      }
+    },
+    "race": {
+      "schema": {
+        "passed_leaves": 29,
+        "top_level": 3,
+        "go_test_json_sha256": "8a428a3bb0f5b2579c12bb4f7b62ed2d12b44b61ca6dd87645eab909d2e2729d"
+      },
+      "store": {
+        "passed_leaves": 79,
+        "top_level": 18,
+        "go_test_json_sha256": "7e0cc16767f5fd78c57cef62d17026ec3855c6987a6189a0c6a96abc623aa575"
+      }
+    }
+  },
+  "original": {
+    "postgres": {
+      "vitest_passed": 10,
+      "executed_query_builder_bodies": 6,
+      "primary_key_cases": 4,
+      "vitest_json_sha256": "1a804cbcd8fda42e29d546cbdf2eeab3dd48d3f132f5bc341708830229b240e9"
+    },
+    "pglite": {
+      "vitest_passed": 10,
+      "executed_query_builder_bodies": 0,
+      "primary_key_cases": 4,
+      "vitest_json_sha256": "4da706faf1c70ea80b1ae5a23c3a09535305562454febc162c66e5651659d777"
+    }
+  },
+  "source_file_sha256": {
+    "packages/core/src/database/queryBuilder.test.ts": "79987f5e2af604662cffd65551b0c849d4e17faacdfeaa4592f5d46868283741",
+    "packages/core/src/drizzle/index.test.ts": "ffc548cdc0b8428f2b722bad944df95dea86ea6ad898c8e8bac04e30d81aad1d"
+  },
+  "additional_controls": {
+    "passed": 2,
+    "source_sha256": "b8a30d655c350db93bc1334ced2934703d595169f2e8e2af810d456cc72cb951",
+    "vitest_json_sha256": "d3189032df9bb5f031ff16347910e2a3d171ac71087a73facbfa17d74f2ce5e8"
+  },
+  "maps": [
+    {
+      "source_id": "41d9fd6464ab131ac476",
+      "file": "packages/core/src/database/queryBuilder.test.ts",
+      "case": "QB query",
+      "native_test": "TestSourceQueryBuilder/QB_query",
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_id": "81bf5620fa4456575c51",
+      "file": "packages/core/src/database/queryBuilder.test.ts",
+      "case": "QB transaction",
+      "native_test": "TestSourceQueryBuilder/QB_transaction",
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_id": "f49fef58915572272ea4",
+      "file": "packages/core/src/database/queryBuilder.test.ts",
+      "case": "QB wrap retries error",
+      "native_test": "TestSourceQueryBuilder/QB_wrap_retries_error",
+      "assertions_sha256": "de56bbeb62dc9e8778dc5471e5f71c8a7a45ab28b26f0b53b1d1b9a7d03f9cae"
+    },
+    {
+      "source_id": "cdb94a18f595a836f98b",
+      "file": "packages/core/src/database/queryBuilder.test.ts",
+      "case": "QB transaction retries error",
+      "native_test": "TestSourceQueryBuilder/QB_transaction_retries_error",
+      "assertions_sha256": "ab1770376019c1694c7e0425cc17d94b576f8a5201b0aab8b34ce43cc9d5285e"
+    },
+    {
+      "source_id": "a8f4a33fcebd67b1e32a",
+      "file": "packages/core/src/database/queryBuilder.test.ts",
+      "case": "QB parses error",
+      "native_test": "TestSourceQueryBuilder/QB_parses_error",
+      "assertions_sha256": "3914246eb8b0facbcee7f533944a24e1078f845c8585836348f325827896aec0"
+    },
+    {
+      "source_id": "bf98d79955c8fcac6935",
+      "file": "packages/core/src/database/queryBuilder.test.ts",
+      "case": "QB client",
+      "native_test": "TestSourceQueryBuilder/QB_client",
+      "assertions_sha256": "a80f0d662680f5e386aa5114a5d588d90aa32e216711685cc898ffab146ac8d9"
+    },
+    {
+      "source_id": "fd47652ff5f8f17e82b9",
+      "file": "packages/core/src/drizzle/index.test.ts",
+      "case": "getPrimaryKeyColumns()",
+      "native_test": "TestSourcePrimaryKeyColumns/getPrimaryKeyColumns()",
+      "assertions_sha256": "9558750efc6b89176f0afd6326b37e987dcce5a19d024f1dd150c828fae35b53"
+    },
+    {
+      "source_id": "a8597fa484a60f8d6d90",
+      "file": "packages/core/src/drizzle/index.test.ts",
+      "case": "getPrimaryKeyColumns() sql",
+      "native_test": "TestSourcePrimaryKeyColumns/getPrimaryKeyColumns()_sql",
+      "assertions_sha256": "0e21137371ca1c8b09019601fdad3f0054d22db99a116f164bd1fc0bc4d37ff3"
+    },
+    {
+      "source_id": "3c17d68893ed63882aa6",
+      "file": "packages/core/src/drizzle/index.test.ts",
+      "case": "getPrimaryKeyColumns() snake case",
+      "native_test": "TestSourcePrimaryKeyColumns/getPrimaryKeyColumns()_snake_case",
+      "assertions_sha256": "3fa2d74eb94a657290dc1b8d0563fe0cbeb81b3cc7535d2165c829a2ea9d12d9"
+    },
+    {
+      "source_id": "de06fcb63be79b3fc72c",
+      "file": "packages/core/src/drizzle/index.test.ts",
+      "case": "getPrimaryKeyColumns() composite",
+      "native_test": "TestSourcePrimaryKeyColumns/getPrimaryKeyColumns()_composite",
+      "assertions_sha256": "19318240fb54398cf1689d41f8e8b1709fc946e6075daa2e8e6e6465aeb2e16e"
+    }
+  ],
+  "independent_inventory_fields": [
+    "id",
+    "source_file",
+    "source_sha256",
+    "source_state",
+    "full_name",
+    "assertions",
+    "inputs",
+    "port_status",
+    "mapping",
+    "scope_reason"
+  ],
+  "module": {
+    "build": "passed",
+    "vet": "passed"
+  },
+  "commands": {
+    "store": "go test -count=1 [-race] -run \"^(TestSourceQueryBuilder.*|Test(Upstream)?ORM.*|TestUpstreamInsertThen)$\" ./store",
+    "schema": "go test -count=1 [-race] ./schema",
+    "upstream": "packages/core: vitest run --configLoader native --maxWorkers=1 src/database/queryBuilder.test.ts src/drizzle/index.test.ts"
+  },
+  "full_original_inventory": "../public-provider-archives/upstream.json",
+  "cleanup": {
+    "stage_directories_removed": 3,
+    "allocated_bytes_in_removed_directories": 1036001280,
+    "accounting": "du -s -B1 before removal. Package files may share hard links with the package store."
+  }
+}
