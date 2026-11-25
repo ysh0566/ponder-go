@@ -2070,6 +2070,28 @@
         "parity/runs/native-compiled-indexer/RESULT.md"
       ],
       "remaining": "The constructor binds native runtime.Handler callbacks. The independent storage runtime has a separate lifecycle and callback interface."
+    },
+    {
+      "id": "native-coordinated-engine-recovery",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime_continuous.go",
+        "store/managed_live_domains.go",
+        "store/managed_live_recovery.go"
+      ],
+      "native_test_files": [
+        "historical/coordinated_engine_test.go",
+        "historical/live_runtime_crash_test.go",
+        "historical/managed_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/index.test.ts",
+        "packages/core/src/database/actions.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-coordinated-engine-recovery/RESULT.md"
+      ],
+      "remaining": "The target is the default continuous RuntimeRunner with separate business and sync stores. Host power loss, other modes and independent deployment roles require separate verification."
     }
   ]
 }
