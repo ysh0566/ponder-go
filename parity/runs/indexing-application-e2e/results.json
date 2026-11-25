@@ -1,0 +1,171 @@
+{
+  "code_commit": "675f7339dbd271b250006aeb8fec49b6b456389d",
+  "upstream_commit": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "ledger": {
+    "ported": 773,
+    "go_ports": 769,
+    "retained_sdk": 4,
+    "unimplemented": 127,
+    "out_of_scope": 5
+  },
+  "original": {
+    "postgres": {
+      "passed": 4,
+      "vitest_json_sha256": "2ddaf79069937a66de9178f188c05e5b9f35cbefb47a1c653b50162841c7266d"
+    },
+    "pglite": {
+      "passed": 4,
+      "vitest_json_sha256": "707f42d61bb4262db458379a4e3df7d1bf932393bbf0bdb727fe43c4d29e0a47"
+    }
+  },
+  "native": {
+    "normal": {
+      "ponder.local/ponder-go/runtime": {
+        "passed_leaves": 22,
+        "go_test_json_sha256": "7376bc6631998c349f745162b543f65932e171a0564a9a3b39cf421cc3a7a63f"
+      },
+      "ponder.local/ponder-go/schema": {
+        "passed_leaves": 29,
+        "go_test_json_sha256": "8ac832c9ad8c13bf519e6acfa50da76b532f7718dbea2ee170fae2337d788a1c"
+      },
+      "ponder.local/ponder-go/query": {
+        "passed_leaves": 62,
+        "go_test_json_sha256": "8ac832c9ad8c13bf519e6acfa50da76b532f7718dbea2ee170fae2337d788a1c"
+      },
+      "ponder.local/ponder-go/cmd/ponder": {
+        "passed_leaves": 4,
+        "go_test_json_sha256": "8ac832c9ad8c13bf519e6acfa50da76b532f7718dbea2ee170fae2337d788a1c"
+      },
+      "ponder.local/ponder-go/store": {
+        "passed_leaves": 19,
+        "go_test_json_sha256": "0cd186a3c8fa3b79ed288fdde8dace6253eaf0295cba85f770aec5b1d4035a9a"
+      }
+    },
+    "race": {
+      "ponder.local/ponder-go/runtime": {
+        "passed_leaves": 22,
+        "go_test_json_sha256": "14c6c05ab858c072e7c4b7b98712d5c0655e60308f6026ca5ad8329833fc807c"
+      },
+      "ponder.local/ponder-go/schema": {
+        "passed_leaves": 29,
+        "go_test_json_sha256": "2f2e808d14f4604dc508f83219472e0eaec63b33d5d63798216998925e1d3498"
+      },
+      "ponder.local/ponder-go/query": {
+        "passed_leaves": 62,
+        "go_test_json_sha256": "2f2e808d14f4604dc508f83219472e0eaec63b33d5d63798216998925e1d3498"
+      },
+      "ponder.local/ponder-go/cmd/ponder": {
+        "passed_leaves": 4,
+        "go_test_json_sha256": "2f2e808d14f4604dc508f83219472e0eaec63b33d5d63798216998925e1d3498"
+      },
+      "ponder.local/ponder-go/store": {
+        "passed_leaves": 19,
+        "go_test_json_sha256": "dc05087336d5986d42b8eb141486a8eff3f875e6f84c2a9b4155c7fb7e099750"
+      }
+    }
+  },
+  "maps": [
+    {
+      "source_id": "111d185321cdca9e63cd",
+      "source_file": "packages/core/src/_test/e2e/erc20/erc20.test.ts",
+      "source_sha256": "cfe7e393e3ceabbe5a39c7ae03c3b705dbb5d0f46d7e5625b66ff1bdb8bc27d0",
+      "name": "erc20",
+      "go_package": "ponder.local/ponder-go/runtime",
+      "go_tests": [
+        "TestSourceApplications/erc20/pglite",
+        "TestSourceApplications/erc20/postgres"
+      ],
+      "assertions": 2,
+      "assertions_sha256": "2e2e48355993f5b94b6e89f6fd756525e935b2e45c8f187def7777add73a4f89"
+    },
+    {
+      "source_id": "164c61fb3400c6e25bb9",
+      "source_file": "packages/core/src/_test/e2e/factory/factory.test.ts",
+      "source_sha256": "53f9201f41daf149fff17bc26e285e3d54708ca65e9504aceba7a6097888e0ad",
+      "name": "factory",
+      "go_package": "ponder.local/ponder-go/runtime",
+      "go_tests": [
+        "TestSourceApplications/factory/pglite",
+        "TestSourceApplications/factory/postgres"
+      ],
+      "assertions": 4,
+      "assertions_sha256": "af9202bdf17696fd1baa0ecf5999c5ceb51478ea82b280b7d2d1649110b1323c"
+    },
+    {
+      "source_id": "5e035b980c1f0b33831f",
+      "source_file": "packages/core/src/build/index.test.ts",
+      "source_sha256": "53f0a6d386bbf48e72493cb3ebf0874e32522d44776d20e52aaec85adf6494ac",
+      "name": "namespaceCompile() rejects a sync schema as the schema",
+      "go_package": "ponder.local/ponder-go/cmd/ponder",
+      "go_tests": [
+        "TestSourceNamespaces/schema"
+      ],
+      "assertions": 1,
+      "assertions_sha256": "6484f4797a5b096acec778ab560d5adfc0e85680279df06da91cae4de7ae7059"
+    },
+    {
+      "source_id": "f24b8e9b099e557023f3",
+      "source_file": "packages/core/src/build/index.test.ts",
+      "source_sha256": "53f0a6d386bbf48e72493cb3ebf0874e32522d44776d20e52aaec85adf6494ac",
+      "name": "namespaceCompile() rejects a sync schema as the views schema",
+      "go_package": "ponder.local/ponder-go/cmd/ponder",
+      "go_tests": [
+        "TestSourceNamespaces/views_schema"
+      ],
+      "assertions": 1,
+      "assertions_sha256": "e214220dc1c71d914926520af9eecea13d7eba9b091af2522d7fdfed26402dc1"
+    }
+  ],
+  "contracts": {
+    "ERC20": {
+      "solidity_source_sha256": "0c29e00942f0b75369e952dedfbfc9870da397b440a277ae574ba4a0e4602989",
+      "deployment_bytecode_sha256": "5c1ad59517cea90d1fd6146bd724814091a2aa969ad6af313c6f5f84a9d1b83b"
+    },
+    "Factory": {
+      "solidity_source_sha256": "9bdf3fe5ee34e6ea08fec57a3a02456fb2048e0f06343f452a4783b6b1bb7aaa",
+      "deployment_bytecode_sha256": "fbcc5393c1f4812d4aa778347f1a5ad9b7ca3f6681f7f886902026fe4268e1ca"
+    },
+    "Pair": {
+      "solidity_source_sha256": "e878d8432efbe158999f0e8c6fa35824c8ca017130a52778d29143b59f382614",
+      "deployment_bytecode_sha256": "f433103b7c5098c77702c5a8e1bb8c353e4410a7dbb8664b6c989e7e3451ad63"
+    }
+  },
+  "pinned_sdk_and_schemas": {
+    "packages/client/src/index.ts": "fa1dd6979d4db32182e9bc6fdd98408e49ce15c791316570ac0c2c560ff08f49",
+    "packages/core/src/_test/e2e/erc20/ponder.schema.ts": "8d5503ba0788ab5912b52782384d26ce9b24073234e674b7eb177474900103e4",
+    "packages/core/src/_test/e2e/factory/ponder.schema.ts": "2fd3d25dfcfe1812d63986ebff849ddde689833a94fa8a471c7e4e59ea501e23"
+  },
+  "independently_compared_inventory_fields": [
+    "id",
+    "source_file",
+    "source_sha256",
+    "source_state",
+    "full_name",
+    "assertions",
+    "inputs",
+    "port_status",
+    "mapping",
+    "scope_reason"
+  ],
+  "commands": {
+    "upstream": "vitest run --configLoader native --maxWorkers=1 src/_test/e2e/erc20/erc20.test.ts src/_test/e2e/factory/factory.test.ts src/build/index.test.ts",
+    "runtime": "go test -count=1 [-race] -run '^(TestSourceApplications|TestApplication.*|TestAnvil.*Vertical|TestStagedAnvilVertical|TestFactoryRuntime|TestFilterFactoryBirthAndReorg|TestContractLogAndTraceBatch)$' ./runtime",
+    "http_cli_schema": "go test -count=1 [-race] ./query ./cmd/ponder ./schema",
+    "store": "go test -count=1 [-race] -run '^(TestViewsSchemaBoundaries|TestStoreFormatMarkers|TestManagedFiniteOptionsAndSchemaSnapshot|TestStorageVersionRejectsOldJournal)$' ./store"
+  },
+  "module": {
+    "build": "passed",
+    "vet": "passed"
+  },
+  "full_original_inventory": "../public-provider-archives/upstream.json",
+  "cli_shutdown": {
+    "before_test_sha256": "429feb692d42d3f8174d2937812190109ccec69b9cd1d88c920eba9f29e29f49",
+    "before": "Child killed before its termination handler wrote the close marker.",
+    "after": "Child receives interrupt and writes the close marker before CLI returns."
+  },
+  "cleanup": {
+    "temporary_directories": 4,
+    "allocated_bytes_before_removal": 1154998272,
+    "accounting": "Some package files share underlying storage through hard links."
+  }
+}
