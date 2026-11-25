@@ -141,6 +141,14 @@ func (s *Store) removeDeployment(ctx context.Context, tx Transaction) error {
 		return err
 	}
 	functions := []string{s.internal("_ponder_go_capture") + "()", s.internal("_ponder_go_guard") + "()"}
+	notify := s.internal("_ponder_go_query_notify") + "()"
+	marker, err := tx.Query(ctx, "SELECT obj_description(to_regprocedure($1),'pg_proc') AS owner", notify)
+	if err != nil {
+		return err
+	}
+	if marker.Rows[0]["owner"] == queryNotifyOwner {
+		functions = append(functions, notify)
+	}
 	if s.staged {
 		functions = append(functions, s.internal("live_query")+"()", s.internal("live_query_notify")+"()")
 	}

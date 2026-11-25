@@ -101,18 +101,28 @@ curl -fsSG "$base/sql/db" \
 
 ## 重开索引或只提供查询
 
-在终端 B 按 Ctrl+C 停止 `start`，等待命令退出。保留数据库、链、合约地址和三个环境变量，再用相同的 `--schema` 执行以下命令。
+保留运行中的 `start`，在另一个终端配置同一个 `PONDER_LOCAL_DATABASE_URL`。使用相同的业务命名空间，选择另一个 HTTP 端口。查询进程只需要数据库连接，RPC 和合约地址由写入进程使用。
 
 ```sh
 ./bin/ponder db list --database-url "$PONDER_LOCAL_DATABASE_URL"
-./bin/ponder serve --root ./examples/erc20 --schema ponder_go_erc20_demo
+./bin/ponder serve --root ./examples/erc20 --schema ponder_go_erc20_demo --port 42070
 ```
 
-`db list` 会列出示例的业务和同步命名空间。`serve` 会重新打开同一数据库，只提供查询。用终端 C 的 SQL 再次查询应得到相同的两行。要恢复跟链，停止 `serve` 并重新运行前面的 `start` 命令。如果换了链、要从头索引或现有库格式已过期，请选择新的 `ponder_go_…` 命名空间。[数据库格式与重开约定](../parity/runs/current-database-formats/RESULT.md)
+在 `http://127.0.0.1:42070` 使用上文的 SQL 和 SSE 接口。`serve` 会核对 `schema.json`、排序模式和当前数据库格式。首次部署请先用 `start` 初始化数据库。使用较早版本启动的同格式索引器时，重启写入进程一次即可安装通知触发器。后续提交和重组回滚都会唤醒独立查询进程。写入进程停止后仍可查询最后一次提交的结果。
 
-这份 Go 示例在 `serve` 模式也会检查 RPC 地址和合约地址，请保留教程里的两个环境变量。独立启动的示例能通过 SQL 读取另一个进程已经提交的数据。要接收该进程的实时推送，写入方需配置数据库通知，查询方需用 `query.NewAtNamespace` 订阅对应命名空间。PostgreSQL 监听暂时不可用时，查询服务每 250 毫秒重试，暂停复用依赖表通知的缓存结果。恢复监听后，原 SSE 连接会重新读取当前结果并在数据有变化时推送。断线期间的多次提交通常合并为一次最新结果推送。[断线恢复实测](../parity/runs/native-query-reconnect/RESULT.md)
+查询进程可以使用独立的 PostgreSQL 登录角色。下面的示例假设 `indexer_reader` 已有目标数据库的连接权限。由数据库所有者在写入部署初始化后执行，再把读角色的连接地址设为查询进程的 `PONDER_LOCAL_DATABASE_URL`。新增业务表或视图后要给读角色授予相应的 `SELECT` 权限。
 
-完成后，在终端 B 停止查询服务，在终端 A 停止 Anvil。若要丢弃本次教程数据，运行 `docker stop ponder-erc20-guide`，并删除终端 B 中 `$demo_dir` 指向的临时目录。
+```sql
+GRANT USAGE ON SCHEMA ponder_go_erc20_demo, ponder_go_erc20_demo_sync TO indexer_reader;
+GRANT SELECT ON ponder_go_erc20_demo.account,
+                ponder_go_erc20_demo._ponder_go_meta,
+                ponder_go_erc20_demo._ponder_go_progress,
+                ponder_go_erc20_demo_sync._ponder_go_meta TO indexer_reader;
+```
+
+自行编写入口时，写入端调用 `Store.EnableQueryNotifications`，查询端使用 `store.OpenExisting` 和 `query.NewAtNamespace`。PostgreSQL 的监听连接暂时不可用时，每 250 毫秒重试。恢复后，原 SSE 流重新读取当前结果。断线期间的多次提交可能合并为一次推送。[生成项目与读角色实测](../parity/runs/native-standalone-serve/RESULT.md) · [断线恢复实测](../parity/runs/native-query-reconnect/RESULT.md)
+
+完成后，分别停止查询服务、终端 B 的索引器和终端 A 的 Anvil。若要丢弃本次教程数据，运行 `docker stop ponder-erc20-guide`，并删除终端 B 中 `$demo_dir` 指向的临时目录。
 
 ## 开发时自动重载
 

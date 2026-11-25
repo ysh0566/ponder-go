@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ysh0566/ponder-go/schema"
 )
@@ -111,4 +112,60 @@ func (a *Actions) DropLiveQueryTriggers(ctx context.Context, tables []string) er
 		}
 		return nil
 	})
+}
+
+const queryNotifyOwner = "ponder-go:atomic-query-notifications:v1"
+
+// EnableQueryNotifications installs commit notifications for applications serving
+// queries from the atomic store in a separate process. Reopening is idempotent.
+func (s *Store) EnableQueryNotifications(ctx context.Context) error {
+	if s.staged || s.leaseTimeout != 0 {
+		return fmt.Errorf("use staged live-query actions on managed stores")
+	}
+	tx, err := s.Backend.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+	if err = s.lock(ctx, tx); err != nil {
+		return err
+	}
+	function := s.internal("_ponder_go_query_notify")
+	info, err := tx.Query(ctx, "SELECT to_regprocedure($1)::text AS name, obj_description(to_regprocedure($1),'pg_proc') AS owner", function+"()")
+	if err != nil {
+		return err
+	}
+	if info.Rows[0]["name"] != nil {
+		if info.Rows[0]["owner"] != queryNotifyOwner {
+			return fmt.Errorf("unowned query notification function in %s", s.Namespace)
+		}
+		return tx.Commit(ctx)
+	}
+	if err = s.installQueryNotifications(ctx, tx, s.Namespace, function); err != nil {
+		return err
+	}
+	if err = tx.Exec(ctx, "COMMENT ON FUNCTION "+function+"() IS '"+queryNotifyOwner+"'"); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func (s *Store) installQueryNotifications(ctx context.Context, tx Transaction, namespace, function string) error {
+	create := "CREATE OR REPLACE "
+	if namespace == s.Namespace {
+		create = "CREATE "
+	}
+	if err := tx.Exec(ctx, create+"FUNCTION "+function+"() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN PERFORM pg_notify(TG_ARGV[0],json_build_array(TG_TABLE_NAME)::text); RETURN NULL; END $$"); err != nil {
+		return err
+	}
+	relations := []string{"_ponder_go_progress", "_ponder_go_finalized"}
+	for _, table := range s.Schema.Tables {
+		relations = append(relations, table.Name)
+	}
+	for _, name := range relations {
+		if err := tx.Exec(ctx, create+"TRIGGER "+schema.Quote(namespace+"_live_query_notify")+" AFTER INSERT OR UPDATE OR DELETE ON "+s.table(name)+" FOR EACH STATEMENT EXECUTE FUNCTION "+function+"('"+namespace+"_live_query')"); err != nil {
+			return err
+		}
+	}
+	return nil
 }
