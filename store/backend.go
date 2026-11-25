@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/ysh0566/ponder-go/bridge"
 	"io"
@@ -38,11 +39,14 @@ type Backend interface {
 	Dialect() string
 }
 type pgBackend struct {
-	db        *sql.DB
-	url       string
-	notifyMu  sync.Mutex
-	listeners map[*pgNotifications]struct{}
-	closed    bool
+	db            *sql.DB
+	url           string
+	notifyMu      sync.Mutex
+	listeners     map[*pgNotifications]struct{}
+	closed        bool
+	pinConnection *pgx.Conn
+	pinSession    *deploymentSession
+	pinned        map[string]bool
 }
 type pgTx struct{ tx *sql.Tx }
 
@@ -62,6 +66,8 @@ func (p *pgBackend) Dialect() string { return "postgres" }
 func (p *pgBackend) Close() error {
 	p.notifyMu.Lock()
 	p.closed = true
+	conn := p.pinConnection
+	p.pinConnection = nil
 	listeners := make([]*pgNotifications, 0, len(p.listeners))
 	for listener := range p.listeners {
 		listeners = append(listeners, listener)
@@ -69,6 +75,9 @@ func (p *pgBackend) Close() error {
 	p.notifyMu.Unlock()
 	for _, listener := range listeners {
 		listener.Close()
+	}
+	if conn != nil {
+		_ = conn.Close(context.Background())
 	}
 	return p.db.Close()
 }

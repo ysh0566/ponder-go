@@ -244,5 +244,17 @@ func (s *Store) CachePut(ctx context.Context, key string, value json.RawMessage)
 		}
 		return tx.Commit(ctx)
 	}
+	if pin := s.deploymentSession; pin != nil {
+		// Cache writes may run inside a callback that already holds the namespace
+		// lock. Check the session in the INSERT itself on the cache connection.
+		rows, err := s.Backend.Query(ctx, "INSERT INTO "+s.syncTable("rpc_cache")+" SELECT $1,$2::jsonb WHERE EXISTS(SELECT FROM pg_stat_get_activity($3) WHERE backend_start=$4) ON CONFLICT(key) DO UPDATE SET value=excluded.value RETURNING key", key, string(value), pin.pid, pin.started)
+		if err != nil {
+			return err
+		}
+		if len(rows.Rows) == 0 {
+			return errDeploymentDisconnected
+		}
+		return nil
+	}
 	return s.Backend.Exec(ctx, "INSERT INTO "+s.syncTable("rpc_cache")+" VALUES ($1,$2::jsonb) ON CONFLICT(key) DO UPDATE SET value=excluded.value", key, string(value))
 }
