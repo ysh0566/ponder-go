@@ -4,9 +4,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ysh0566/ponder-go/abi"
 	"os"
 	"path/filepath"
-	"ponder.local/ponder-go/abi"
 )
 
 func main() {

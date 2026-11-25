@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"ponder.local/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/abi"
 )
 
 type bindingSource struct {
@@ -314,7 +314,7 @@ func formatApplicationBindings(pkg, body string) ([]byte, error) {
 	})
 	var out strings.Builder
 	out.WriteString(header)
-	for _, pkg := range []struct{ name, path string }{{"context", "context"}, {"fmt", "fmt"}, {"big", "math/big"}, {"abi", "ponder.local/ponder-go/abi"}, {"config", "ponder.local/ponder-go/config"}, {"indexing", "ponder.local/ponder-go/indexing"}} {
+	for _, pkg := range []struct{ name, path string }{{"context", "context"}, {"fmt", "fmt"}, {"big", "math/big"}, {"abi", "github.com/ysh0566/ponder-go/abi"}, {"config", "github.com/ysh0566/ponder-go/config"}, {"indexing", "github.com/ysh0566/ponder-go/indexing"}} {
 		if used[pkg.name] {
 			fmt.Fprintf(&out, "import %q\n", pkg.path)
 		}

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/metrics"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/metrics"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // One registry is shared by the event service, buffered ORM, and HTTP collector.

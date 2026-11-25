@@ -2,7 +2,7 @@ package store
 
 import (
 	"encoding/json"
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 	"strconv"
 )
 

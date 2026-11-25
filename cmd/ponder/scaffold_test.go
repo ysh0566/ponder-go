@@ -17,7 +17,7 @@ import (
 
 func TestCreateEmptyProject(t *testing.T) {
 	root := filepath.Join(t.TempDir(), "empty")
-	if err := run(context.Background(), []string{"init", root}, io.Discard); err != nil {
+	if err := run(context.Background(), []string{"init", "--template", "typescript", root}, io.Discard); err != nil {
 		t.Fatal(err)
 	}
 	var want map[string]string
@@ -64,7 +64,7 @@ func TestCreateProjectConcurrent(t *testing.T) {
 		joined.Add(1)
 		go func() {
 			defer joined.Done()
-			done <- run(context.Background(), []string{"init", dir}, io.Discard)
+			done <- run(context.Background(), []string{"init", "--template", "typescript", dir}, io.Discard)
 		}()
 	}
 	joined.Wait()
@@ -87,5 +87,26 @@ func TestCreateProjectConcurrent(t *testing.T) {
 	}
 	if err := json.Unmarshal(data, &pkg); err != nil || pkg.Name != "my-project" {
 		t.Fatalf("manifest name: %q (%v)", pkg.Name, err)
+	}
+}
+
+func TestInitGoProject(t *testing.T) {
+	root := filepath.Join(t.TempDir(), "my-indexer")
+	if err := run(t.Context(), []string{"init", root}, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"schema.json", "main.go"} {
+		got, err := os.ReadFile(filepath.Join(root, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		want, err := os.ReadFile(filepath.Join("..", "..", "examples", "erc20", name))
+		if err != nil || string(got) != string(want) {
+			t.Fatalf("generated %s differs from executable example", name)
+		}
+	}
+	mod, err := os.ReadFile(filepath.Join(root, "go.mod"))
+	if err != nil || !strings.HasPrefix(string(mod), "module example.com/my-indexer\n") {
+		t.Fatalf("unexpected module %s: %v", mod, err)
 	}
 }

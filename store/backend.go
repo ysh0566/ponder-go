@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/ysh0566/ponder-go/bridge"
 	"io"
 	"os"
 	"os/exec"
@@ -166,7 +167,7 @@ func openPGlite(ctx context.Context, directory string, inheritedLocks []*os.File
 	if directory == "" {
 		directory = "memory://"
 	}
-	cmd := exec.CommandContext(ctx, "node", script, directory)
+	cmd := exec.CommandContext(ctx, "node", "--input-type=module", "--eval", bridge.PGlite, "--", script, directory)
 	cmd.ExtraFiles = inheritedLocks
 	cmd.Stderr = os.Stderr
 	in, e := cmd.StdinPipe()

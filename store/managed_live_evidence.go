@@ -3,7 +3,7 @@ package store
 import (
 	"fmt"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 type managedLiveCursorState struct {

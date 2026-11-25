@@ -13,7 +13,7 @@ for(const test of selected){
  for(const[index,fragment]of fragments.entries()){
   const bad=fragment[2],mode=fragment[1]?'insert':'get',block=test.title==='pruneRpcRequestResult'?Number(BigInt(bad)):1,storageResult=test.title==='pruneRpcRequestResult'?bad:'0x1';
   const source=`package main
-import("context";"encoding/json";"fmt";"net/url";"os";"strings";"ponder.local/ponder-go/rpc";"ponder.local/ponder-go/schema";"ponder.local/ponder-go/store")
+import("context";"encoding/json";"fmt";"net/url";"os";"strings";"github.com/ysh0566/ponder-go/rpc";"github.com/ysh0566/ponder-go/schema";"github.com/ysh0566/ponder-go/store")
 func main(){
  var input struct{Backend,DatabaseURL,RPCURL,Namespace string};if err:=json.NewDecoder(os.Stdin).Decode(&input);err!=nil{panic(err)}
  if !strings.HasPrefix(input.Namespace,"ponder_go_src_type_"){panic("task namespace required")}

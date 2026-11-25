@@ -3,8 +3,8 @@ package runtime
 import (
 	"context"
 	"fmt"
-	selection "ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/store"
+	selection "github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/store"
 	"strings"
 )
 

@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 func restoreSourceRPCValue(v any) any {

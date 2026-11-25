@@ -6,7 +6,7 @@ import (
 	"iter"
 	"math"
 
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // SourceIntervalStep is one completed next() operation. Done distinguishes

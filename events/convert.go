@@ -1,6 +1,6 @@
 package events
 
-import "ponder.local/ponder-go/filter"
+import "github.com/ysh0566/ponder-go/filter"
 
 func SyncBlockToInternal(block Object) (Object, error) {
 	o := copyFields(block, "extraData", "hash", "logsBloom", "mixHash", "nonce", "parentHash", "receiptsRoot", "sha3Uncles", "stateRoot", "transactionsRoot")

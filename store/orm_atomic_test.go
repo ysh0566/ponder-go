@@ -3,9 +3,9 @@ package store
 import (
 	"context"
 	"fmt"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/schema"
 	"math/big"
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/schema"
 	"testing"
 	"time"
 )

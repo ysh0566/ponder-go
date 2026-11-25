@@ -8,10 +8,10 @@ import (
 	"errors"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
-	protocol "ponder.local/ponder-go/events"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	protocol "github.com/ysh0566/ponder-go/events"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 type persistenceBoundaryStore struct{ calls int }

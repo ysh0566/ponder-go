@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 type sparseCrashSpec struct {

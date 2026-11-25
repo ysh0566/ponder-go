@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 // RuntimeStore exposes this lifecycle's fenced store to the native scheduler.

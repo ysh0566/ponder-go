@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 // AsyncSourceRPCRequestCache is an opt-in, standalone source-cache adapter.

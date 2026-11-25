@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"testing"
 
-	"ponder.local/ponder-go/config"
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 // A raw block's supplied JSON integer must survive account projection exactly,

@@ -10,7 +10,7 @@ import (
 	"math"
 	"strings"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 const managedLiveBatchVersion = "managed-live-batch-v1"

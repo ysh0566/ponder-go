@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // SourcePreBuild is the resolved database configuration and indexing order available

@@ -15,7 +15,7 @@ for(const c of cases){
  const original=ledger.tests.find(t=>t.id===c.id);if(!original||original.source_sha256!==c.source_sha256)throw Error("Stale original case");
  const input=c.calls.find(x=>x.operation==="getLogFilterBloom")?.args[0];if(!input?.topic0?.$undefined)throw Error("Expected original invalid undefined input");
  const address=Array.isArray(input.address)?`[]string{${input.address.map(JSON.stringify).join(",")}}`:input.address?.$undefined?"filter.Undefined":JSON.stringify(input.address);
- const common=`package main\nimport("ponder.local/ponder-go/filter";"ponder.local/ponder-go/bloom")\nfunc main(){\n f:=filter.LogFilter{ChainID:1,SourceID:"native-bloom-types",Address:${address},Topic0:filter.HexTopic("0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc")}\n`;
+ const common=`package main\nimport("github.com/ysh0566/ponder-go/filter";"github.com/ysh0566/ponder-go/bloom")\nfunc main(){\n f:=filter.LogFilter{ChainID:1,SourceID:"native-bloom-types",Address:${address},Topic0:filter.HexTopic("0x02c69be41d0b7e40352fc85be1cd65eb03d40ef8427a0ca4596b1ead9a00e9fc")}\n`;
  const positive=common+` compiled,err:=bloom.GetLogFilterBloom(f)\n if err!=nil{panic(err)}\n if len(compiled.Topics[0])!=1||f.Object()["topic0"]!=string(f.Topic0){panic("typed runtime projection")}\n}\n`;
  const negative=common+` f.Topic0=filter.Undefined\n _,_=bloom.GetLogFilterBloom(f)\n}\n`;
  const positiveFile=`bloom/testdata/compile/${c.id}-positive.go`,negativeFile=`bloom/testdata/compile/${c.id}-negative.go.txt`;

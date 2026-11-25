@@ -4,9 +4,9 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"ponder.local/ponder-go/bloom"
-	selection "ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/finality"
+	"github.com/ysh0566/ponder-go/bloom"
+	selection "github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/finality"
 )
 
 type bloomPlan struct {

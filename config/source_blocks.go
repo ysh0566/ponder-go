@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/finality"
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/finality"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 func sourceHeader(ctx context.Context, client *rpc.Client, number string) (*sourceObject, error) {

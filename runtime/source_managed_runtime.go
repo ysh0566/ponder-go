@@ -3,9 +3,9 @@ package runtime
 import (
 	"context"
 	"fmt"
-	protocol "ponder.local/ponder-go/events"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/store"
+	protocol "github.com/ysh0566/ponder-go/events"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // DecodeSourceRealtimeEvent applies the same source normalization and real ABI

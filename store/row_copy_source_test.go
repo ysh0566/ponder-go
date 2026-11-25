@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/orm"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/orm"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 func equalCopy(t *testing.T, actual, want any) {
@@ -171,7 +171,7 @@ func checkCopyTypes(t *testing.T, array bool) {
 		t.Fatal(err)
 	}
 	source := `package rowfixture
-import "ponder.local/ponder-go/store"
+import "github.com/ysh0566/ponder-go/store"
 func check(){
     obj:=store.Row{"a":1,"b":2}
     v:=store.CopyOnWrite(obj)

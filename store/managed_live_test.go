@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 func liveTestOptions() (IndependentStorageOptions, ManagedLiveOptions) {

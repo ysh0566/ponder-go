@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/orm"
-	"ponder.local/ponder-go/orm/testdata/nullable"
-	"ponder.local/ponder-go/orm/testdata/strict"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/orm"
+	"github.com/ysh0566/ponder-go/orm/testdata/nullable"
+	"github.com/ysh0566/ponder-go/orm/testdata/strict"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 func backend(t *testing.T, kind string) store.Backend {

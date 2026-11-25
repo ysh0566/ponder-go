@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/orm"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/orm"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // Compile a caller together with the actual generated model. Positive controls
@@ -22,7 +22,7 @@ func compileDBCaller(t *testing.T, model []byte, body string, diagnostics ...str
 	modelFile := filepath.Join(dir, "model.go")
 	callerFile := filepath.Join(dir, "caller.go")
 	source := `package dbwrites
-import ("context"; "ponder.local/ponder-go/orm"; "ponder.local/ponder-go/store")
+import ("context"; "github.com/ysh0566/ponder-go/orm"; "github.com/ysh0566/ponder-go/store")
 func result[T any](value T, err error) T { return value }
 func check(ctx context.Context, db *store.IndexingStore) {
  table := Table.Bind(db)

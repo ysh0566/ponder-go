@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 // SourceSyncStore is the explicit source-shaped SyncStore path on the exact

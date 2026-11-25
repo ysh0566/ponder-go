@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 // Public checkpoints can describe a retained pre-reorg projection. Recovery

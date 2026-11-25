@@ -1,6 +1,6 @@
 package store
 
-import "ponder.local/ponder-go/schema"
+import "github.com/ysh0566/ponder-go/schema"
 
 // Only the RuntimeRunner constructor enables this separate on-disk format.
 // Legacy finite, recovery and live-domain APIs continue to require multichain.

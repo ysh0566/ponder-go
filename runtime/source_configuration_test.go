@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/config"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // Additional real EVM/backend proof: the source builder's actual clients,

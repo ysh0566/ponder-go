@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // Undo preserves database JSON numbers and escapes as raw JSON. User-facing

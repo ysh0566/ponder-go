@@ -2,7 +2,7 @@ package store
 
 import (
 	"context"
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 func (s *SourceSyncStore) InsertRPCRequestResults(ctx context.Context, chain uint64, requests []SourceRPCResult) error {

@@ -7,7 +7,7 @@ import (
 	"math"
 	"sort"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 const managedLiveRecoveryVersion = "managed-live-recovery-v3"

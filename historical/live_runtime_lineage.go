@@ -9,8 +9,8 @@ import (
 	"os"
 	"strings"
 
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // Each chain is authenticated from the finalized anchor down to the durable

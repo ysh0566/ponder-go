@@ -87,7 +87,7 @@ function checkGraphQLSelectors(sites) {
   const header = `package main
 import (
     "context"
-    gql "ponder.local/ponder-go/graphql"
+    gql "github.com/ysh0566/ponder-go/graphql"
 )
 func main() {}
 func check(server *gql.Server) {

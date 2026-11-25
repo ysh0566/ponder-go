@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/metrics"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/metrics"
 )
 
 // Handler is synchronous with respect to service dispatch. Retained event

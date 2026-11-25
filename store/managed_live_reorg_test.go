@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 // These are pure projection, archive and admission tests. No SQL engine is

@@ -2,14 +2,14 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 import readline from "node:readline";
-const require = createRequire(
-	path.resolve(
-		process.env.PONDER_UPSTREAM ??
-			path.join(import.meta.dirname, "../../ponder-upstream"),
-		"packages/core/package.json",
-	),
-);
-const { PGlite } = require("@electric-sql/pglite");
+const app = createRequire(path.resolve("package.json"));
+const upstreamRoot = process.env.PONDER_UPSTREAM ??
+ path.resolve(path.dirname(process.argv[1]), "../../ponder-upstream");
+const upstream = createRequire(path.resolve(upstreamRoot, "packages/core/package.json"));
+const adapter = process.env.PONDER_UPSTREAM
+ ? upstream.resolve("@electric-sql/pglite")
+ : app.resolve("@electric-sql/pglite", { paths: [process.cwd(), path.resolve(upstreamRoot, "packages/core")] });
+const { PGlite } = app(adapter);
 const db = new PGlite(process.argv[2] ?? "memory://");
 await db.waitReady;
 const output = (x) =>

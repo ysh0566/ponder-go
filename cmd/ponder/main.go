@@ -7,19 +7,19 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/orm"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
+	"github.com/ysh0566/ponder-go/values"
 	"go/format"
 	"io"
 	"os"
 	"os/exec"
 	"os/signal"
 	"path/filepath"
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/config"
-	"ponder.local/ponder-go/orm"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
-	"ponder.local/ponder-go/values"
 	"strings"
 	"syscall"
 	"time"
@@ -45,10 +45,15 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		fmt.Fprintln(out, version)
 		return nil
 	case "init":
-		if len(args) != 2 {
-			return fmt.Errorf("usage: ponder init <new-project-directory>")
+		flags := flag.NewFlagSet("init", flag.ContinueOnError)
+		template := flags.String("template", "go", "Project template (go or typescript)")
+		if err := flags.Parse(args[1:]); err != nil {
+			return err
 		}
-		return createEmptyProject(ctx, args[1], out)
+		if flags.NArg() != 1 {
+			return fmt.Errorf("usage: ponder init [--template go|typescript] <new-project-directory>")
+		}
+		return createProject(ctx, *template, flags.Arg(0), out)
 	case "checkpoint":
 		if len(args) < 2 {
 			return fmt.Errorf("checkpoint encode|decode required")

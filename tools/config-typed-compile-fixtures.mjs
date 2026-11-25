@@ -22,7 +22,7 @@ for(const[kind,id]of Object.entries(ids)){
  if(kind==="bounds"&&(contract.startBlock!=="16370000"||contract.endBlock!=="16370100"))throw Error("Original string bounds changed");
  const selection=kind==="network"?'config.SourceOnChains(config.SourceChainOverride{Name:"mainnet"},config.SourceChainOverride{Name:"optimism"})':'config.SourceOnChains(config.SourceChainOverride{Name:"mainnet"})';
  const abi=JSON.stringify(JSON.stringify(contract.abi));
- const common=`package main\nimport("context";"encoding/json";"fmt";"io";"os";"ponder.local/ponder-go/config")\nfunc main(){\n raw,err:=io.ReadAll(os.Stdin);if err!=nil{panic(err)}\n base,err:=config.ParseSourceConfiguration(raw);if err!=nil{panic(err)}\n _=context.Background;_=json.Valid\n`;
+ const common=`package main\nimport("context";"encoding/json";"fmt";"io";"os";"github.com/ysh0566/ponder-go/config")\nfunc main(){\n raw,err:=io.ReadAll(os.Stdin);if err!=nil{panic(err)}\n base,err:=config.ParseSourceConfiguration(raw);if err!=nil{panic(err)}\n _=context.Background;_=json.Valid\n`;
  const fields=field=>`${field} config.SourceChainSelection;ABI json.RawMessage;Address config.SourceOption[any];StartBlock config.SourceUndefinedBound;EndBlock config.SourceUndefinedBound;Filter config.SourceOption[any];IncludeTransactionReceipts config.SourceOption[bool];IncludeCallTraces config.SourceOption[bool]`;
  const networkInput=field=>`input:=struct{${fields(field)}}{${field}:${selection},ABI:json.RawMessage(${abi})}\n`;
  const boundsInput=(start,end)=>`input:=config.SourceTypedContract[${start},${end}]{Chain:${selection},ABI:json.RawMessage(${abi}),StartBlock:${start==="string"?'"16370000"':"int64(16370000)"},EndBlock:${end==="string"?'"16370100"':"int64(16370100)"}}\n`;

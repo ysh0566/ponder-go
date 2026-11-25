@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
-	ponderabi "ponder.local/ponder-go/abi"
+	ponderabi "github.com/ysh0566/ponder-go/abi"
 )
 
 func actionTestABI(t *testing.T, text string) ponderabi.ABI {

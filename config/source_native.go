@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"math"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/factory"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/factory"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 // SourceFilter is the closed filter union returned by the source builder.

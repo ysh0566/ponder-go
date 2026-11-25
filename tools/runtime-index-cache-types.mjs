@@ -1,6 +1,6 @@
 // These compiler controls exercise the single key relationship shared by the
 // six upstream Map expressions. The runtime cases separately replay their data.
-export const cacheTypePackage = "ponder.local/ponder-go/store";
+export const cacheTypePackage = "github.com/ysh0566/ponder-go/store";
 export const cacheTypeTests = [
   "TestSourceIntervalMapTypes/union",
   "TestSourceIntervalMapTypes/inferred",

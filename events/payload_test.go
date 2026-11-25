@@ -1,7 +1,7 @@
 package events_test
 
 import (
-	"ponder.local/ponder-go/events"
+	"github.com/ysh0566/ponder-go/events"
 	"testing"
 )
 

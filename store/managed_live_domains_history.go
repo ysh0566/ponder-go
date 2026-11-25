@@ -1,6 +1,6 @@
 package store
 
-import "ponder.local/ponder-go/checkpoint"
+import "github.com/ysh0566/ponder-go/checkpoint"
 
 // Proofs are a projection of the authenticated receipt prefix. The physical
 // retained set can legitimately lose old proofs during a later reorg, so it is

@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/config"
-	protocol "ponder.local/ponder-go/events"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/config"
+	protocol "github.com/ysh0566/ponder-go/events"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // NewFromSource binds actual native handlers and the compiled source filters

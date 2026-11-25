@@ -3,7 +3,7 @@ package store
 import (
 	"context"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // Matches the retained TS client's database notification channel convention.

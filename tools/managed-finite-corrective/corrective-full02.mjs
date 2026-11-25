@@ -7,8 +7,8 @@ import {spawnSync} from 'node:child_process';
 import {pathToFileURL,fileURLToPath} from 'node:url';
 export const must=(v,m)=>{if(!v)throw Error(m);};
 const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
-export const packages=['abi','bloom','checkpoint','cmd/abi-codegen','cmd/parity-probe','cmd/ponder','cmd/source-codegen','config','events','examples/erc20','factory','filter','finality','historical','indexing','internal/jsvalue','interval','orm','query','rpc','runtime','schema','sqlquery','store'].map(p=>'ponder.local/ponder-go/'+p).sort();
-export const emptyPackages=['cmd/abi-codegen','cmd/parity-probe','cmd/ponder','cmd/source-codegen','examples/erc20','internal/jsvalue'].map(p=>'ponder.local/ponder-go/'+p).sort();
+export const packages=['abi','bloom','checkpoint','cmd/abi-codegen','cmd/parity-probe','cmd/ponder','cmd/source-codegen','config','events','examples/erc20','factory','filter','finality','historical','indexing','internal/jsvalue','interval','orm','query','rpc','runtime','schema','sqlquery','store'].map(p=>'github.com/ysh0566/ponder-go/'+p).sort();
+export const emptyPackages=['cmd/abi-codegen','cmd/parity-probe','cmd/ponder','cmd/source-codegen','examples/erc20','internal/jsvalue'].map(p=>'github.com/ysh0566/ponder-go/'+p).sort();
 export function validateDiscovery(discovered) {
  must(equal(discovered.map(p=>p.ImportPath).sort(),packages),'Raw independent package discovery differs');
  for(const p of discovered.filter(p=>emptyPackages.includes(p.ImportPath)))must((p.TestGoFiles??[]).length===0&&(p.XTestGoFiles??[]).length===0,'Skipped package has independent discovered test files');

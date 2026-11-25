@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // These are extra native codec/undo regressions, not transplanted source cases.

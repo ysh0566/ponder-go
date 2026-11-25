@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 type migrationFaultBackend struct {

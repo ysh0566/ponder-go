@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/bloom"
-	"ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/bloom"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 type realtimeControlProvider struct {

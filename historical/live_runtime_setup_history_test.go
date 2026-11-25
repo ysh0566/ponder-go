@@ -3,10 +3,10 @@ package historical
 import (
 	"context"
 	"fmt"
+	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 	"math/big"
-	"ponder.local/ponder-go/indexing"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
 	"strings"
 	"sync"
 	"testing"

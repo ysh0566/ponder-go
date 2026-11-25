@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"sync"
 
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 // ExecutableSourceIndexingBuild is the single live projection of a source build.

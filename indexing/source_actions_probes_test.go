@@ -20,11 +20,11 @@ import (
 	"sync"
 	"testing"
 
-	ponderabi "ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/rpc"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
+	ponderabi "github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // These supplemental probes execute action inputs against fresh real database

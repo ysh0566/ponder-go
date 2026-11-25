@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 var historicalLiveRelations = map[string]string{"intervals": "intervals", "factories": "factories", "factoryAddresses": "factory_addresses", "blocks": "blocks", "logs": "logs", "transactions": "transactions", "transactionReceipts": "transaction_receipts", "traces": "traces", "rpcRequestResults": "rpc_request_results"}

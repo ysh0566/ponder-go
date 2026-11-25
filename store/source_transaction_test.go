@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 func TestSourceSyncTransaction(t *testing.T) {

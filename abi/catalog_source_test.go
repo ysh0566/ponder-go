@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/abi"
 )
 
 type catalogCase struct {
@@ -80,7 +80,7 @@ func (w *catalogWorkspace) caller(t *testing.T, binding, other, declarations, bo
 	t.Helper()
 	var code strings.Builder
 	code.WriteString("package main\nimport (\"encoding/json\";\"reflect\";")
-	for _, p := range []struct{ alias, path string }{{"binding", "catalog.test/" + binding}, {"other", "catalog.test/" + other}, {"abi", "ponder.local/ponder-go/abi"}} {
+	for _, p := range []struct{ alias, path string }{{"binding", "catalog.test/" + binding}, {"other", "catalog.test/" + other}, {"abi", "github.com/ysh0566/ponder-go/abi"}} {
 		if strings.Contains(declarations+body, p.alias+".") {
 			fmt.Fprintf(&code, "%s %q;", p.alias, p.path)
 		}

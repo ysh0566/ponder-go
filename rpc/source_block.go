@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"ponder.local/ponder-go/internal/jsvalue"
+	"github.com/ysh0566/ponder-go/internal/jsvalue"
 )
 
 func sourceRPCProperty(object map[string]any, key string) any {

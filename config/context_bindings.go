@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"ponder.local/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/abi"
 )
 
 func writeContractABI(out *strings.Builder, field string, source *sourceObject) (string, error) {

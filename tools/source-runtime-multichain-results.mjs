@@ -91,11 +91,11 @@ for(const mode of ['normal','race']){
  check(Number.isFinite(started)&&Number.isFinite(finished)&&Date.parse(full.started_utc)<=started&&started<=finished&&finished<=Date.parse(full.finished_utc),'Native execution outside current aggregate');
  const events=fs.readFileSync(log,'utf8').trim().split('\n').map(JSON.parse);
  check(events.every(e=>Number.isFinite(Date.parse(e.Time))&&Date.parse(e.Time)>=started-1000&&Date.parse(e.Time)<=finished+1000),'Native log outside manifest execution');
- const passed=(test,pkg='ponder.local/ponder-go/runtime')=>events.filter(e=>e.Package===pkg&&e.Test===test&&e.Action==='pass').length===1;
+ const passed=(test,pkg='github.com/ysh0566/ponder-go/runtime')=>events.filter(e=>e.Package===pkg&&e.Test===test&&e.Action==='pass').length===1;
  check(!events.some(e=>e.Test&&['fail','skip'].includes(e.Action)),'Aggregate must have no native failures/skips');
  for(const pkg of manifest.packages)for(const test of pkg.listed_functions)check(passed(test,pkg.package),'Missing/duplicate listed function');
  for(const test of ['TestSourceRuntimeMultichainOriginal','TestSourceRuntimeMultichainEvidenceCompleteness','TestSourceRuntimeMultichainProviderErrorAdmission','TestSourceHistoryCompletionMerge','TestSourceHistoryAsyncTermination','TestSourceHistoryFinalizedModeBoundaries','TestSourceHistoryCursorAndRefreshThreshold','TestSourceHistoryRefreshAdmission','TestSourceHistoryRefreshFirstError','TestSourceHistoricalInitialAdmission','TestSourceHistoricalAcquisitionFirstError','TestSourceLocalStoreCapability','TestSourceOmnichainCheckpointControls','TestSourceHistoricalRefetchControls','TestSourceRuntimeMultichainProbes'])check(passed(test),'Runtime prerequisite missing: '+test);
- check(passed('TestSourceSyncTransaction','ponder.local/ponder-go/store'),'Transaction prerequisite missing');
+ check(passed('TestSourceSyncTransaction','github.com/ysh0566/ponder-go/store'),'Transaction prerequisite missing');
  for(const backend of ['postgres','pglite']){
   const {result,source,probeDir,probeCapture}=sourceRecords[backend],cases=[];
   for(const item of probeCapture.cases)check(passed('TestSourceRuntimeMultichainProbes/'+backend+'/'+item.name.replaceAll(/\s/g,'_')),'Current native supplemental probe missing: '+item.name);

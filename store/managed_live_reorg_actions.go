@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 func liveDurableBaselines(ops []managedLiveOperation) (map[uint64]ManagedLiveHead, error) {

@@ -58,12 +58,12 @@ for(const mode of ['normal','race']){
  const base=mode==='normal'?'go-test':'go-race',log=directory+'/native/'+base+'.jsonl',manifest=read(directory+'/native/'+base+'-execution.json');
  check(manifest.complete&&manifest.success&&manifest.scope==='all_module_packages'&&manifest.race===(mode==='race')&&manifest.driver_sha256===hash('tools/go-tests.mjs').sha256&&equal(manifest.source_fingerprint,fingerprint)&&equal(manifest.finished_source_fingerprint,fingerprint),'Complete current native mode required');
  const start=Date.parse(manifest.started_utc),end=Date.parse(manifest.finished_utc);check(Date.parse(prepared.recorded_utc)<=start&&start<=end&&end<=Date.parse(full.finished_utc),'Native outside prepared aggregate');
- const events=fs.readFileSync(log,'utf8').trim().split('\n').map(JSON.parse),passed=(name,pkg='ponder.local/ponder-go/indexing')=>events.filter(e=>e.Package===pkg&&e.Test===name&&e.Action==='pass').length===1;
+ const events=fs.readFileSync(log,'utf8').trim().split('\n').map(JSON.parse),passed=(name,pkg='github.com/ysh0566/ponder-go/indexing')=>events.filter(e=>e.Package===pkg&&e.Test===name&&e.Action==='pass').length===1;
  check(events.every(e=>Number.isFinite(Date.parse(e.Time))&&Date.parse(e.Time)>=start-1000&&Date.parse(e.Time)<=end+1000)&&!events.some(e=>e.Test&&['skip','fail'].includes(e.Action)),'Native failure/skip or timestamp mismatch');
  for(const p of manifest.packages)for(const name of p.listed_functions)check(passed(name,p.package),'Listed native test missing/duplicate');
  for(const name of indexingProfileSupplementalTests)check(passed(name),'Current supplemental missing: '+name);
- for(const name of indexingProfileStoreTests)check(passed(name,'ponder.local/ponder-go/store'),'Current read-queue production test missing: '+name);
- for(const backend of ['postgres','pglite'])for(const name of indexingProfileStoreScenarios)check(passed('TestSourceRPCAsyncReadBackends/'+backend+'/'+name,'ponder.local/ponder-go/store'),'Actual backend read-queue lifecycle missing');
+ for(const name of indexingProfileStoreTests)check(passed(name,'github.com/ysh0566/ponder-go/store'),'Current read-queue production test missing: '+name);
+ for(const backend of ['postgres','pglite'])for(const name of indexingProfileStoreScenarios)check(passed('TestSourceRPCAsyncReadBackends/'+backend+'/'+name,'github.com/ysh0566/ponder-go/store'),'Actual backend read-queue lifecycle missing');
  const artifactFile=directory+'/native/indexing-profile-'+mode+'.json',artifact=read(artifactFile),stage=full.commands.find(c=>c.name==='go-'+mode);
  check(stage.native_indexing_profile_output===artifactFile&&artifact.source_credit===0&&artifact.source_fixture_sha256===hash(fixtureFile).sha256&&artifact.cases.length===24,'Mandatory observed original artifact required');
  const probeArtifactFile=directory+'/native/indexing-profile-probes-'+mode+'.json',probeArtifact=read(probeArtifactFile);

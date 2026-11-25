@@ -3,9 +3,9 @@ package runtime
 import (
 	"strings"
 
-	"ponder.local/ponder-go/config"
-	"ponder.local/ponder-go/factory"
-	selection "ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/factory"
+	selection "github.com/ysh0566/ponder-go/filter"
 )
 
 func nativeFactory(f factory.LogFactory) selection.Object {

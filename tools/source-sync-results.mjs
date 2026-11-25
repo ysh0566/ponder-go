@@ -90,7 +90,7 @@ if(!focused){
 }
 for(const [mode,log] of [["normal",normal],["race",race]]){
  const lines=fs.readFileSync(path.resolve(root,log),"utf8").trim().split("\n").map(JSON.parse);
- const packageName="ponder.local/ponder-go/store", test="TestUpstreamSourceSyncStore";
+ const packageName="github.com/ysh0566/ponder-go/store", test="TestUpstreamSourceSyncStore";
  const passed=name=>lines.some(x=>x.Package===packageName&&x.Test===name&&x.Action==="pass");
  requireCondition(passed(test)&&!lines.some(x=>x.Package===packageName&&x.Test?.startsWith(test)&&["fail","skip"].includes(x.Action)),"Missing successful complete source native run: "+mode);
  if(!focused)requireCondition(passed("TestSourceRPCVectors")&&passed("TestSourceFilterBlockRangeVectors")&&passed("TestSourceRPCBoundaries"),"Supplementary native source vector/boundary execution missing");

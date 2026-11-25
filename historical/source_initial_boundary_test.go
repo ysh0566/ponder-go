@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/store"
 	"os"
-	"ponder.local/ponder-go/config"
-	"ponder.local/ponder-go/indexing"
-	"ponder.local/ponder-go/store"
 	"strings"
 	"testing"
 )

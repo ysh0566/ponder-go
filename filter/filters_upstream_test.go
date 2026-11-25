@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"ponder.local/ponder-go/internal/testanvil"
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/internal/testanvil"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 func sourceAnvilFixture(t *testing.T) *rpc.Client {

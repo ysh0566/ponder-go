@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 // Supplemental control: a supported speculative error is not a failed durable

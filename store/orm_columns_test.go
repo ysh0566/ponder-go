@@ -2,8 +2,8 @@ package store
 
 import (
 	"context"
+	"github.com/ysh0566/ponder-go/schema"
 	"math/big"
-	"ponder.local/ponder-go/schema"
 	"testing"
 	"time"
 )

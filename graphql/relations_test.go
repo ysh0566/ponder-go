@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // Count actual data SELECTs, including queries issued by deferred fields.

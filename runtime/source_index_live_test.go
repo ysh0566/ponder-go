@@ -11,11 +11,11 @@ import (
 	"testing"
 	"time"
 
-	protocol "ponder.local/ponder-go/events"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/rpc"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
+	protocol "github.com/ysh0566/ponder-go/events"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 type sourceIndexProviderRecord struct{ Request, Response any }

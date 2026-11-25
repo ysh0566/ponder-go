@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/config"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/config"
 )
 
 type applicationCase struct {
@@ -89,7 +89,7 @@ func TestSourceApplicationDeclarations(t *testing.T) {
 		t.Fatalf("build caller: %v\n%s", err, out)
 	}
 	const imports = `package controls
-import ("ponder.local/ponder-go/config"; "appfixture.test/events"; "appfixture.test/weak"; "appfixture.test/market")
+import ("github.com/ysh0566/ponder-go/config"; "appfixture.test/events"; "appfixture.test/weak"; "appfixture.test/market")
 var _ = weak.FunctionItemFunc{}
 var _ = market.EventItemCreateMarket{}
 var event = events.EventItemEvent0{}
@@ -124,7 +124,7 @@ var event = events.EventItemEvent0{}
 				}
 			case "factory with invalid event":
 				checkCompile(t, "var _,_ = config.FactoryByParameter(event,event.Parameters().Arg,config.FactoryOptions{Address:\"0x\"})")
-				checkCompile(t, "var _,_ = config.FactoryByParameter[weak.FunctionItemFunc](weak.FunctionItemFunc{},event.Parameters().Arg,config.FactoryOptions{Address:\"0x\"})", "wrong type for method Definition", `have Definition() "ponder.local/ponder-go/abi".Function`, `want Definition() "ponder.local/ponder-go/abi".Event`)
+				checkCompile(t, "var _,_ = config.FactoryByParameter[weak.FunctionItemFunc](weak.FunctionItemFunc{},event.Parameters().Arg,config.FactoryOptions{Address:\"0x\"})", "wrong type for method Definition", `have Definition() "github.com/ysh0566/ponder-go/abi".Function`, `want Definition() "github.com/ysh0566/ponder-go/abi".Event`)
 				return
 			case "factory":
 				name = fmt.Sprintf("factory at line %d", c.Line)

@@ -3,8 +3,8 @@ package store
 import (
 	"context"
 	"fmt"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/sqlquery"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/sqlquery"
 	"strings"
 )
 

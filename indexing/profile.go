@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"strings"
 
-	ponderabi "ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/filter"
+	ponderabi "github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 // ProfileValue is the RPC profiler's constant or event-property path. This is

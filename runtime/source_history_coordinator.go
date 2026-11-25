@@ -9,12 +9,12 @@ import (
 	"sync"
 	"time"
 
-	"ponder.local/ponder-go/checkpoint"
-	protocol "ponder.local/ponder-go/events"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/finality"
-	"ponder.local/ponder-go/rpc"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	protocol "github.com/ysh0566/ponder-go/events"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/finality"
+	"github.com/ysh0566/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // SourceHistoricalChain binds the actual source chain object to its local sync

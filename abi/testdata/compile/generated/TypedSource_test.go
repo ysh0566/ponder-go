@@ -8,7 +8,7 @@ import (
   "reflect"
   "strings"
   "testing"
-  "ponder.local/ponder-go/abi"
+  "github.com/ysh0566/ponder-go/abi"
 )
 
 func normalized(v reflect.Value) any {

@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // Supplementary isolated original helper vectors; no original test mappings.

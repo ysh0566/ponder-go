@@ -114,11 +114,25 @@ curl -fsSG "$base/sql/db" \
 
 ## 用于自己的项目
 
-- **从 Go 示例开始。** 在仓库内复制 `examples/erc20`，修改 `schema.json` 定义表和主键，在 `main.go` 配置链 ID、RPC、合约地址、ABI 和起始区块。示例从区块 0 开始，使用已有合约时可将 `config.Contract.StartBlock` 设为部署高度。[配置](SOURCE_CONFIGURATION.md) · [示例入口](../examples/erc20/main.go)
+在自己的工作目录中安装 CLI、创建索引器并构建。首次使用需要能访问 Go 模块代理或 GitHub。
+
+```sh
+go install github.com/ysh0566/ponder-go/cmd/ponder@main
+"$(go env GOPATH)/bin/ponder" init my-indexer
+cd my-indexer
+go mod tidy
+go build .
+```
+
+示例使用 PostgreSQL。选择 PGlite 的独立应用需在项目目录安装 `@electric-sql/pglite@0.2.13` 并提供 Node.js，Go 程序已内置适配器脚本。
+
+如果设置了 `GOBIN`，CLI 位于该目录。要使用自己的仓库地址，可在项目中执行 `go mod edit -module 你的模块路径`。生成的项目包含自己的 `go.mod`、Go 事件处理函数和表定义。沿用上文的数据库、RPC 和合约地址，在项目目录执行 `ponder start --schema ponder_go_my_indexer`，其中 `ponder` 取安装后的实际路径。
+
+- **从 Go 示例开始。** 在生成的项目中修改 `schema.json` 定义表和主键，在 `main.go` 配置链 ID、RPC、合约地址、ABI 和起始区块。示例从区块 0 开始，使用已有合约时可将 `config.Contract.StartBlock` 设为部署高度。[配置](SOURCE_CONFIGURATION.md) · [示例入口](../examples/erc20/main.go)
 - **编写处理函数。** 示例在 `Token:Transfer` 中解码参数，通过事件上下文的 `c.DB` 更新两行。将写入放在回调事务中，以便索引器一起提交业务数据和 checkpoint，并在重组时撤销。[存储操作](DATABASE_ACTIONS.md)
 - **生成模型。** 使用 `codegen --schema … --typed` 生成类型化模型。对自己的应用，将 `--out` 指向目标 Go 包目录，并用 `--package` 指定包名。`codegen --abi` 可生成事件和函数类型，`--app-config` 可生成回调名称与链类型。[类型化配置](TYPED_SOURCE_CONFIGURATION.md)
 - **提供查询。** 示例用 `query.New` 创建 SQL 服务；`runtime.StartApplication` 接受索引引擎，在查询模式下传入 `nil`。需要 GraphQL 时可用 `graphql.New` 创建处理器，通过 `http.ServeMux` 挂到 `/graphql` 并把 mux 赋给 `query.Server.API`。示例默认提供上表中的接口。[示例入口](../examples/erc20/main.go) · [GraphQL 实现](../graphql)
-- **选择模板。** `./bin/ponder init my-app` 会在新目录生成 TypeScript 模板，依赖另行安装。`start` 和 `serve` 构建的是 Go 包。当前 CLI 命令可通过 `./bin/ponder --help` 查看。[模块支持矩阵](RUNTIME_SUPPORT.md)
+- **选择模板。** `ponder init --template typescript my-app` 可在新目录生成 TypeScript 空模板，依赖另行安装。`start` 和 `serve` 构建的是 Go 包。当前 CLI 命令可通过 `./bin/ponder --help` 查看。[模块支持矩阵](RUNTIME_SUPPORT.md)
 
 在仓库根目录查看为 `account` 表生成的 Go 模型。
 

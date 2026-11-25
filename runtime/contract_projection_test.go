@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/config"
-	protocol "ponder.local/ponder-go/events"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/config"
+	protocol "github.com/ysh0566/ponder-go/events"
 )
 
 func TestContractLogProjection(t *testing.T) {

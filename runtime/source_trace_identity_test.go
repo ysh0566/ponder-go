@@ -3,9 +3,9 @@ package runtime
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/rpc"
 	"os"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/rpc"
 	"testing"
 )
 

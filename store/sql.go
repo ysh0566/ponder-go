@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"ponder.local/ponder-go/sqlquery"
+	"github.com/ysh0566/ponder-go/sqlquery"
 	"strings"
 )
 

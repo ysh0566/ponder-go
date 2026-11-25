@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"slices"
 
-	gql "github.com/graphql-go/graphql"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
+	gql "github.com/ysh0566/ponder-go/third_party/graphqlgo"
 )
 
 // Relation describes an entity field independently of database constraints.

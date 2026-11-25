@@ -3,9 +3,9 @@ package store
 import (
 	"context"
 	"fmt"
+	"github.com/ysh0566/ponder-go/schema"
 	"math/big"
 	"os"
-	"ponder.local/ponder-go/schema"
 	"reflect"
 	"testing"
 	"time"

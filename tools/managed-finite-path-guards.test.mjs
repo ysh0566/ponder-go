@@ -9,7 +9,7 @@ test('managed path scope rejects predecessors, traversal and sibling prefix',()=
  for(const value of ['parity/runs/finite-historical-m43/full','parity/runs/managed-finite-m44evil/full','parity/runs/managed-finite-m44/../old/full','/tmp/out','parity\\runs\\managed-finite-m44\\full']) assert.throws(()=>scopedPath(root,value,'parity/runs/managed-finite-m44'));
  assert.equal(scopedPath(root,'parity/runs/managed-finite-m44/new-run','parity/runs/managed-finite-m44'),root+'/parity/runs/managed-finite-m44/new-run');
 });
-const pkg='ponder.local/ponder-go/store',name='TestManagedFixture',spec=[{package:pkg,name,scope:'postgres_and_persistent_pglite'}];
+const pkg='github.com/ysh0566/ponder-go/store',name='TestManagedFixture',spec=[{package:pkg,name,scope:'postgres_and_persistent_pglite'}];
 const events=[name,name+'/postgres',name+'/pglite'].flatMap(Test=>[{Package:pkg,Test,Action:'run'},{Package:pkg,Test,Action:'pass'}]);
 test('managed evidence requires both real declared backend leaves',()=>{
  assert.equal(validateManagedEvents(events,spec)[0].leaves.length,2);

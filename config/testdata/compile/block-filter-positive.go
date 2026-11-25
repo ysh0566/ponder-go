@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"ponder.local/ponder-go/config"
+	"github.com/ysh0566/ponder-go/config"
 )
 
 func main() {

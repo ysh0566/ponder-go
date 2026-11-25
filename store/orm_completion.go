@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // InsertThen and InsertManyThen are native, synchronous success continuations.

@@ -3,8 +3,8 @@ package historical
 import (
 	"context"
 	"fmt"
-	"ponder.local/ponder-go/indexing"
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/rpc"
 	"testing"
 	"time"
 )

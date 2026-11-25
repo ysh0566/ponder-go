@@ -1,15 +1,16 @@
-module ponder.local/ponder-go
+module github.com/ysh0566/ponder-go
 
 go 1.25.0
 
 require (
 	github.com/ethereum/go-ethereum v1.16.3
 	github.com/felixge/httpsnoop v1.0.4
-	github.com/graphql-go/graphql v0.8.1
+	github.com/google/go-cmp v0.5.9
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/prometheus/client_golang v1.15.0
 	github.com/prometheus/client_model v0.3.0
 	github.com/prometheus/common v0.42.0
+	google.golang.org/protobuf v1.34.2
 )
 
 require (
@@ -18,7 +19,6 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
 )
 
 require (
@@ -28,14 +28,8 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
-	github.com/pganalyze/pg_query_go/v5 v5.1.0
 	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/sync v0.13.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.24.0
 )
-
-replace github.com/pganalyze/pg_query_go/v5 => ./third_party/pg_query_go
-
-// The tagged parser preserves explicit null values in nested filter inputs.
-replace github.com/graphql-go/graphql => github.com/nytimes/graphql-go-graphql v0.8.4-nyt

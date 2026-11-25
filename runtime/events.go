@@ -1,7 +1,7 @@
 package runtime
 
 import (
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 // OrderedEvent is a native event plus its scheduler chain/cursor metadata.

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/async"
+	"github.com/ysh0566/ponder-go/async"
 )
 
 func TestQueueBoundaries(t *testing.T) {

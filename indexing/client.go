@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"sync"
 
-	"ponder.local/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 // BalanceOptions is the getBalance subset of ponderActions. Immutable requests

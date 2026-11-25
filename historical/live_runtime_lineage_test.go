@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 func lineageTestHead(chain, number uint64) store.ManagedLiveHead {

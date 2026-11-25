@@ -7,7 +7,7 @@ import (
 
 	"sync"
 
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // QueryChanges tracks committed changes in one database namespace.

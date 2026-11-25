@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/abi"
-	"ponder.local/ponder-go/config"
-	bindings "ponder.local/ponder-go/config/testdata/sourcebindings"
-	"ponder.local/ponder-go/schema"
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/config"
+	bindings "github.com/ysh0566/ponder-go/config/testdata/sourcebindings"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // The generated, closed chain/event references feed actual native handlers,

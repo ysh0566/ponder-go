@@ -3,9 +3,9 @@ package store
 import (
 	"context"
 	"fmt"
-	"ponder.local/ponder-go/checkpoint"
-	"ponder.local/ponder-go/filter"
-	"ponder.local/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 const managedLiveRuntimeVersion = "managed-live-runtime-v5"

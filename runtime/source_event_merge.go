@@ -7,9 +7,9 @@ import (
 	"iter"
 	"math"
 
-	"ponder.local/ponder-go/checkpoint"
-	protocol "ponder.local/ponder-go/events"
-	"ponder.local/ponder-go/internal/ordered"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	protocol "github.com/ysh0566/ponder-go/events"
+	"github.com/ysh0566/ponder-go/internal/ordered"
 )
 
 // SourceEventBatch is an owned batch of decoded public events. Merge replaces

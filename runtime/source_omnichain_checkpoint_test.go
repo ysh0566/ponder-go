@@ -3,7 +3,7 @@ package runtime
 import (
 	"testing"
 
-	"ponder.local/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 // Supplemental cursor controls do not add original-source case credit.

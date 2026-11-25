@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 func TestManagedLiveRecoveryBoundedFork(t *testing.T) {

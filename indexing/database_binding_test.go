@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 // Pure capability tests deliberately do not simulate database semantics. Real

@@ -8,7 +8,7 @@ import (
 	"sync"
 	"weak"
 
-	"ponder.local/ponder-go/store"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 type queryEntry struct {

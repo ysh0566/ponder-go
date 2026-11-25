@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"ponder.local/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 // Supplemental pure model/admission tests only. No SQL engine is started and

@@ -11,12 +11,12 @@ import (
 	"regexp"
 	"strings"
 
-	gql "github.com/graphql-go/graphql"
-	"github.com/graphql-go/graphql/gqlerrors"
-	"github.com/graphql-go/graphql/language/ast"
-	"github.com/graphql-go/graphql/language/lexer"
-	"github.com/graphql-go/graphql/language/parser"
-	"github.com/graphql-go/graphql/language/source"
+	gql "github.com/ysh0566/ponder-go/third_party/graphqlgo"
+	"github.com/ysh0566/ponder-go/third_party/graphqlgo/gqlerrors"
+	"github.com/ysh0566/ponder-go/third_party/graphqlgo/language/ast"
+	"github.com/ysh0566/ponder-go/third_party/graphqlgo/language/lexer"
+	"github.com/ysh0566/ponder-go/third_party/graphqlgo/language/parser"
+	"github.com/ysh0566/ponder-go/third_party/graphqlgo/language/source"
 )
 
 //go:embed playground.html
