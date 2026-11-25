@@ -86,9 +86,9 @@ collector. The automatic runtime must group its phases appropriately; it has not
 yet been migrated to staged actions. Do not infer complete reorg notification
 scheduling from the granular primitives.
 
-All eleven source actions.test.ts records now have native mappings, including the
-160-table large-payload notification case with all three original assertions.
-Their original full oracle still requires the pending Foundry fixture. Complete
-staged runtime/migration wiring, views-schema notification channels, permission
-roles and external database notifications feeding SQL/SSE remain unfinished.
-See the source test ledger and continuation document for exact scope.
+All eleven source actions.test.ts records have native mappings, including the
+160-table large-payload notification case. Published view channels and the
+SQL/SSE listener have since been exercised on both database backends.
+The independent query service still needs automatic resubscription after a
+PostgreSQL LISTEN connection is interrupted. Current role and runtime limits
+are recorded in the module matrix. [SQL/SSE tests](../parity/runs/sql-client-queries/RESULT.md) · [Listener interruption](../parity/runs/native-query-deployment-audit/RESULT.md) · [Runtime support](RUNTIME_SUPPORT.md)
