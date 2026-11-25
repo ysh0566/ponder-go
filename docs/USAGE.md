@@ -157,6 +157,16 @@ head "$model_dir/model.go"
 
 生成的模型用 `[]byte` 表示二进制，`json.RawMessage` 表示 JSON，`[2]float64` 和 `[3]float64` 表示点和线。SQL 数组使用 `[]orm.Nullable[T]`，可通过 `orm.Some(value)` 和 `orm.Null[T]()` 分别写入值和空元素。生成的 ABI 回调保留 tuple 的原始组件名，两个组件转换成相同 Go 名字时会得到不同的字段名。
 
+## 列类型与 GraphQL 表示
+
+在 `schema.json` 的 `columns` 中可以声明 `{"name":"subnet","type":"cidr"}`。同样可用 `inet`、`interval`、`macaddr`、`macaddr8` 和 `time`，数组类型在名称后加 `[]`。生成的 Go 模型以字符串保存这六类标量。数据库校验输入并返回规范形式，例如写入 `2001:0db8:0:0::1` 后可读到 `2001:db8::1`。
+
+`point` 和 `line` 在 Go 模型中分别接受两个坐标和三个直线系数。GraphQL 以 PostgreSQL 文本表示这些值，例如点 `"(1,2)"` 和直线 `"{1,0,-1}"`。通过 `orderBy` 对几何列排序和翻页时，按规范文本的字典序排列。下面的查询适用于含有 `origin point` 和 `axis line` 两列的 `drawing` 表。[双后端读写与查询用例](../graphql/native_column_types_test.go)
+
+```graphql
+{ drawings(where: {origin: "(1,2)"}, orderBy: "origin") { items { id origin axis } } }
+```
+
 ## 用 WebSocket 通知追块
 
 在 `config.Chain` 中设置 `WS`，单链和独立多链运行器会在收到 `newHeads` 通知时立即查询 RPC，然后从持久化进度补齐所有新区块。
