@@ -1,0 +1,121 @@
+{
+  "files": {
+    "packages/core/src/types/virtual.test-d.ts": "2166b5442742cc2576c972a183d7f3577b48a9bda1f05603b4833e1e1b39da71"
+  },
+  "schema": {
+    "tables": [
+      {
+        "name": "account",
+        "columns": [
+          {
+            "name": "address",
+            "type": "hex",
+            "primary": true
+          },
+          {
+            "name": "balance",
+            "type": "bigint",
+            "notNull": true
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "e4e55f3f0670f82ff2a6",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 209,
+      "title": "Context db",
+      "strict": [
+        "assertType<a>({} as any as Db<typeof schema>)",
+        "assertType<Db<typeof schema>>({} as any as a)"
+      ],
+      "accesses": [],
+      "members": {}
+    },
+    {
+      "id": "a7019d7981948f8df0f0",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 253,
+      "title": "Context client",
+      "strict": [
+        "assertType<keyof a>({} as any as expectedFunctions)"
+      ],
+      "accesses": [],
+      "members": {
+        "expectedFunctions": "| \"request\"\n    | \"readContract\"\n    | \"multicall\"\n    | \"getStorageAt\"\n    | \"getCode\"\n    | \"getBalance\"\n    | \"getEnsName\""
+      }
+    },
+    {
+      "id": "b1d67da8241fc3a5cf9b",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 273,
+      "title": "Context contracts",
+      "strict": [
+        "assertType<a[\"abi\"]>({} as any as expectedAbi)",
+        "assertType<expectedAbi>({} as any as a[\"abi\"])",
+        "assertType<a[\"startBlock\"]>({} as any as expectedStartBlock)",
+        "assertType<expectedStartBlock>({} as any as a[\"startBlock\"])",
+        "assertType<a[\"endBlock\"]>({} as any as expectedEndBlock)",
+        "assertType<expectedEndBlock>({} as any as a[\"endBlock\"])",
+        "assertType<a[\"address\"]>({} as any as expectedAddress)",
+        "assertType<expectedAddress>({} as any as a[\"address\"])"
+      ],
+      "accesses": [],
+      "members": {
+        "expectedAbi": "[Event1, Event1Overloaded, Func1, Func1Overloaded]",
+        "expectedStartBlock": "1 | undefined",
+        "expectedEndBlock": "undefined",
+        "expectedAddress": "\"0x69\""
+      }
+    },
+    {
+      "id": "06c3c5e61c275b0cbb4e",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 455,
+      "title": "Registry",
+      "strict": [],
+      "accesses": [
+        "event.id",
+        "event.args",
+        "event.log",
+        "event.block",
+        "event.transaction",
+        "context.chain",
+        "context.db",
+        "context.client",
+        "context.contracts.c1",
+        "context.contracts.c2"
+      ],
+      "members": {}
+    }
+  ],
+  "ens": {
+    "address": "0x1212121212121212121212121212121212121212",
+    "resolver": {
+      "address": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee",
+      "blockCreated": 23085558
+    },
+    "block": 23085559,
+    "request": {
+      "method": "eth_call",
+      "params": [
+        {
+          "data": "0xb7d6ca640000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000003c00000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000141212121212121212121212121212121212121212000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000014782d62617463682d676174657761793a74727565000000000000000000000000",
+          "to": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee"
+        },
+        "0x16041f7"
+      ]
+    },
+    "found": {
+      "result": "sample.eth",
+      "response": "0x000000000000000000000000000000000000000000000000000000000000006000000000000000000000000012121212121212121212121212121212121212120000000000000000000000001212121212121212121212121212121212121212000000000000000000000000000000000000000000000000000000000000000a73616d706c652e65746800000000000000000000000000000000000000000000"
+    },
+    "empty": {
+      "result": null,
+      "response": "0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000121212121212121212121212121212121212121200000000000000000000000012121212121212121212121212121212121212120000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "missing_data": "0x77209fe800000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000"
+  }
+}

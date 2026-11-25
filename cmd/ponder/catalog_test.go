@@ -122,3 +122,32 @@ func TestCodegenApplicationEventTypes(t *testing.T) {
 		t.Fatal("missing application accepted")
 	}
 }
+
+func TestCodegenCallbackRegistry(t *testing.T) {
+	dir := t.TempDir()
+	cfg, model, out := filepath.Join(dir, "config.json"), filepath.Join(dir, "schema.json"), filepath.Join(dir, "out.go")
+	for path, data := range map[string]string{cfg: `{"chains":{"one":{"id":1}},"blocks":{"head":{"chain":"one"}}}`, model: `{"tables":[{"name":"account","columns":[{"name":"id","type":"text","primary":true}]}]}`} {
+		if err := os.WriteFile(path, []byte(data), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, c := range []struct {
+		args   []string
+		symbol string
+	}{{[]string{"--registry", "--app-config", cfg}, "func OnHeadBlock["}, {[]string{"--callback-db", "--schema", model}, "func BindCallbackDatabase("}} {
+		args := append([]string{"codegen", "--out", out}, c.args...)
+		if err := run(t.Context(), args, io.Discard); err != nil {
+			t.Fatal(err)
+		}
+		output, err := os.ReadFile(out)
+		if err != nil || !bytes.Contains(output, []byte(c.symbol)) {
+			t.Fatal(string(output), err)
+		}
+	}
+	if err := run(t.Context(), []string{"codegen", "--registry"}, io.Discard); err == nil {
+		t.Fatal("accepted registry without app")
+	}
+	if err := run(t.Context(), []string{"codegen", "--callback-db", "--app-config", cfg}, io.Discard); err == nil {
+		t.Fatal("accepted model with application input")
+	}
+}

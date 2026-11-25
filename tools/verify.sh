@@ -34,6 +34,7 @@ node tools/compile-fixtures.mjs
 node tools/abi-catalog-source.mjs
 node tools/config-declarations-source.mjs > parity/runs/config-declarations-source.json
 node tools/value-utilities-source.mjs > parity/runs/value-utilities-source.json
+node tools/callback-context-source.mjs > parity/runs/callback-context-source.json
 node tools/virtual-events-source.mjs > parity/runs/virtual-events-source.json
 node tools/virtual-names-source.mjs > parity/runs/virtual-names-source.json
 node tools/handler-contracts-source.mjs > parity/runs/handler-contracts-source.json

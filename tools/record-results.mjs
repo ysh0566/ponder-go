@@ -107,6 +107,7 @@ const ormCompile = exists("parity/runs/orm-compile-fixtures.json") ? read("parit
 const eventCompile = exists("parity/runs/event-compile-fixtures.json") ? read("parity/runs/event-compile-fixtures.json") : null;
 const bloomCompile = exists("parity/runs/bloom-compile-fixtures.json") ? read("parity/runs/bloom-compile-fixtures.json") : null;
 const compilerFixtures = new Map([
+	["config/callback_context_test.go", "TestSourceCallbackContext", "config/testdata/callback-context.json", "parity/runs/callback-context-source.json"],
 	["config/virtual_events_test.go", "TestSourceVirtualEvents", "config/testdata/virtual-events.json", "parity/runs/virtual-events-source.json"],
 	["config/virtual_names_test.go", "TestSourceVirtualNames", "config/testdata/virtual-names.json", "parity/runs/virtual-names-source.json"],
 	["config/application_declaration_test.go", "TestSourceApplicationDeclarations", "config/testdata/app-declarations.json", "parity/runs/config-declarations-source.json"],
@@ -591,24 +592,28 @@ for (const test of ledger.tests) {
 			if (!valid) {status="skip";test.blockers.push("Native runtime alone is insufficient: inline type compilation/typed output evidence is incomplete.");}
 		}
 		const fixtureCheck = compilerFixtures.get(test.mapping.target_file);
-		if (fixtureCheck && (test.type_error_directives.length || test.assertions.some(a => a.kind === "type"))) {
+		if (fixtureCheck && (test.kind === "type" || test.type_error_directives.length || test.assertions.some(a => a.kind === "type"))) {
 			const {suite, fixtureFile, proofFile, fixture, proof, children} = fixtureCheck;
 			const entry = fixture.cases.find(c => c.id === test.id);
 			const diagnostics = (proof?.removed_diagnostics ?? []).filter(d =>
 				d.file === path.basename(test.source_file) && d.line >= test.line &&
 				d.line < test.line + test.test_source.split("\n").length);
 			const typed = test.assertions.filter(a => a.kind === "type").length;
+			const backendKeys = (test.mapping.backend_tests ?? []).map(name => test.mapping.go_package + ":" + name);
 			const valid = status === "pass" && race.get(key)?.Action === "pass" &&
+				backendKeys.every(k => go.get(k)?.Action === "pass" && race.get(k)?.Action === "pass") &&
 				children.every(child => go.get(key+"/"+child)?.Action === "pass" && race.get(key+"/"+child)?.Action === "pass") &&
 				entry?.file === test.source_file && entry.line === test.line &&
 				test.mapping.go_test === suite + "/" + test.id &&
 				proof?.files?.[entry.file] === test.source_sha256 &&
 				proof.fixture_sha256 === fileHash(fixtureFile) &&
 				diagnostics.length === test.type_error_directives.length &&
-				(!entry.strict || typed === entry.strict.length);
+				(!entry.strict || typed === entry.strict.length) &&
+				(!entry.accesses?.length || (entry.accesses.every(access => test.test_source.includes(access)) && proof.registry_accesses === entry.accesses.length));
 			const verification = {status: valid ? "passed" : "blocked", evidence: [proofFile,goFile,raceFile]};
 			if (test.type_error_directives.length) test.type_directives_verification = {...verification, obligations: diagnostics.length};
 			if (typed) test.type_verification = {...verification, obligations: typed};
+			if (entry?.accesses?.length) test.registry_verification = {...verification, property_accesses: entry.accesses.length};
 			if (!valid) { status = "skip"; test.blockers.push("Missing source compiler check or native compiler run."); }
 		} else if (test.type_error_directives.length && !(runtimeIndexVerification && test.source_file==="packages/core/src/runtime/index.test.ts" && test.type_directives_verification?.status==="passed")) {
 			const directives=[...(compile?.directives??[]),...(ormCompile?.directives??[]),...(eventCompile?.directives??[]),...(bloomCompile?.directives??[]),...(configCompile?.directives??[]),...(syncVerification?.directives??[]),...(historicalVerification?.directives??[])].filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256);

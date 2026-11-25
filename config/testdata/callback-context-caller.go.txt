@@ -1,0 +1,359 @@
+package caller_test
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"math/big"
+	"os"
+	"reflect"
+	"strings"
+	"testing"
+	"time"
+
+	"ctx.test/app"
+	"ctx.test/model"
+	"ponder.local/ponder-go/abi"
+	"ponder.local/ponder-go/checkpoint"
+	"ponder.local/ponder-go/config"
+	"ponder.local/ponder-go/indexing"
+	"ponder.local/ponder-go/orm"
+	"ponder.local/ponder-go/rpc"
+	"ponder.local/ponder-go/schema"
+	"ponder.local/ponder-go/store"
+)
+
+type baseContext = app.CallbackContext[app.ChainMainnet, model.CallbackDatabase]
+type expectedDB = struct {
+	Account orm.Table[model.AccountKey, model.AccountInsert, model.AccountUpdate, model.AccountRow]
+}
+
+var _ expectedDB = model.CallbackDatabase{}
+var _ model.CallbackDatabase = expectedDB{}
+
+type expectedABI = struct {
+	Item0 app.ContractItem0_C2
+	Item1 app.ContractItem1_C2
+	Item2 app.ContractItem2_C2
+	Item3 app.ContractItem3_C2
+}
+
+var _ expectedABI = app.ContractABIC2{}
+var _ app.ContractABIC2 = expectedABI{}
+
+type contractExpected = struct {
+	ABI        app.ContractABIC2
+	Address    app.AddressOfC2
+	StartBlock *app.StartBlockOfC2
+	EndBlock   config.SourceUndefinedBound
+}
+
+var _ contractExpected = app.ContractRecordC2{}
+var _ app.ContractRecordC2 = contractExpected{}
+var _ abi.Event = app.ContractItem0_C2{}.Definition()
+var _ abi.Event = app.ContractItem1_C2{}.Definition()
+var _ abi.Function = app.ContractItem2_C2{}.Definition()
+var _ abi.Function = app.ContractItem3_C2{}.Definition()
+
+type readonlyClient interface {
+	Request(context.Context, string, []any) (json.RawMessage, error)
+	ReadContract(context.Context, indexing.ContractCall, ...indexing.ReadContractOptions) (any, error)
+	Multicall(context.Context, []indexing.ContractCall, indexing.MulticallOptions) ([]any, error)
+	GetStorageAt(context.Context, string, string, ...indexing.BlockOptions) (string, error)
+	GetCode(context.Context, string, ...indexing.BlockOptions) (*string, error)
+	GetBalance(context.Context, string, ...indexing.BalanceOptions) (*big.Int, error)
+	GetEnsName(context.Context, string, ...indexing.ENSNameOptions) (*string, error)
+}
+
+var _ readonlyClient = (*indexing.Client)(nil)
+
+func fixtures(t *testing.T) (indexing.Object, schema.Schema) {
+	t.Helper()
+	var application struct {
+		Application struct{ Contracts map[string]indexing.Object }
+	}
+	data, err := os.ReadFile("testdata/virtual-names.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(data, &application); err != nil {
+		t.Fatal(err)
+	}
+	var f struct{ Schema schema.Schema }
+	data, err = os.ReadFile("testdata/callback-context.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(data, &f); err != nil {
+		t.Fatal(err)
+	}
+	contracts := indexing.Object{}
+	for name, meta := range application.Application.Contracts {
+		// This original is type-only and deliberately uses short addresses.
+		record := indexing.Object{"abi": meta["abi"], "address": meta["address"], "startBlock": meta["startBlock"], "endBlock": meta["endBlock"]}
+		if overrides, ok := meta["chain"].(map[string]any); ok {
+			for k, v := range overrides["mainnet"].(map[string]any) {
+				if k == "startBlock" || k == "endBlock" {
+					record[k] = v
+				}
+			}
+		}
+		contracts[name] = record
+	}
+	return contracts, f.Schema
+}
+func view() indexing.EventView {
+	return indexing.EventView{"id": "1", "args": map[string]any{"arg": "0x01", "arg1": "0x02"}, "log": map[string]any{"logIndex": 1}, "block": map[string]any{"number": uint64(1)}, "transaction": map[string]any{"from": "0x11"}}
+}
+func dispatch(t *testing.T, ctx context.Context, raw *indexing.Context, fn func(context.Context, app.EventC1Event0, baseContext) error) error {
+	t.Helper()
+	reg := app.OnC1Event0(model.BindCallbackDatabase, fn)
+	if reg.Name != "c1:Event0" {
+		t.Fatal(reg.Name)
+	}
+	return reg.Fn.(indexing.Handler)(ctx, &indexing.HandlerArgs{Event: view(), Context: raw})
+}
+
+func TestDB(t *testing.T) {
+	ctx := t.Context()
+	contracts, s := fixtures(t)
+	var b store.Backend
+	var err error
+	if os.Getenv("CALLBACK_DB") == "postgres" {
+		b, err = store.OpenPostgres(ctx, os.Getenv("PONDER_TEST_POSTGRES"))
+	} else {
+		b, err = store.OpenPGlite(ctx, "memory://")
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer b.Close()
+	db, err := store.New(ctx, b, s, fmt.Sprintf("ponder_go_cb_%x", time.Now().UnixNano()), schema.Multichain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ev := store.Event{ID: "insert", Checkpoint: checkpoint.Checkpoint{ChainID: 1, BlockNumber: 1}}
+	address := "0x" + strings.Repeat("12", 20)
+	var retained model.CallbackDatabase
+	err = db.Apply(ctx, ev, func(w *store.Writer) error {
+		raw := &indexing.Context{Chain: indexing.Object{"name": "mainnet", "id": 1}, Contracts: contracts, DB: indexing.NewDatabase(w.Indexing(), new(indexing.ErrorState))}
+		return dispatch(t, ctx, raw, func(ctx context.Context, _ app.EventC1Event0, c baseContext) error {
+			var exact model.CallbackDatabase = c.DB
+			c.DB = exact
+			retained = c.DB
+			row, err := c.DB.Account.Insert(ctx, model.NewAccountInsert(address, *big.NewInt(17)))
+			if err != nil || row.Balance.Int64() != 17 {
+				return fmt.Errorf("insert: %v, %v", row, err)
+			}
+			found, err := c.DB.Account.Find(ctx, model.NewAccountKey(address))
+			if err != nil || found == nil || found.Balance.Int64() != 17 {
+				return fmt.Errorf("find: %v, %v", found, err)
+			}
+			row, err = c.DB.Account.SQL().Insert(ctx, model.NewAccountInsert("0x"+strings.Repeat("23", 20), *big.NewInt(18)))
+			if err != nil || row.Balance.Int64() != 18 {
+				return fmt.Errorf("SQL insert: %v, %v", row, err)
+			}
+			return nil
+		})
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = retained.Account.Find(ctx, model.NewAccountKey(address)); err == nil {
+		t.Fatal("closed writer reused")
+	}
+}
+func TestContracts(t *testing.T) {
+	contracts, _ := fixtures(t)
+	raw := &indexing.Context{Chain: indexing.Object{"name": "mainnet", "id": 1}, Contracts: contracts}
+	read := func(check func(app.ContractRecordC2) error) error {
+		reg := app.OnC2Event1(model.BindCallbackDatabase, func(_ context.Context, _ app.EventC2Event1, c app.CallbackContext[app.ChoiceOfChains1, model.CallbackDatabase]) error {
+			record, err := c.Contracts.C2()
+			if err != nil {
+				return err
+			}
+			return check(record)
+		})
+		body := view()
+		body["args"] = nil
+		return reg.Fn.(indexing.Handler)(t.Context(), &indexing.HandlerArgs{Event: body, Context: raw})
+	}
+	err := read(func(r app.ContractRecordC2) error {
+		if r.Address.Value() != "0x69" || r.StartBlock == nil || r.StartBlock.Value() != 1 || r.EndBlock != (config.SourceUndefinedBound{}) {
+			return fmt.Errorf("wrong contract bounds")
+		}
+		encoded, err := json.Marshal(r.ABI)
+		if err != nil {
+			return err
+		}
+		var items any
+		if err = json.Unmarshal(encoded, &items); err != nil {
+			return err
+		}
+		if !reflect.DeepEqual(items, contracts["c2"].(indexing.Object)["abi"]) {
+			return fmt.Errorf("ABI tuple differs")
+		}
+		for i, decl := range []any{r.ABI.Item0, r.ABI.Item1, r.ABI.Item2, r.ABI.Item3} {
+			b, _ := json.Marshal(decl)
+			var item any
+			if err = json.Unmarshal(b, &item); err != nil || !reflect.DeepEqual(item, items.([]any)[i]) {
+				return fmt.Errorf("ABI item %d differs", i)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw.Chain = indexing.Object{"name": "optimism", "id": 10}
+	delete(contracts["c2"].(indexing.Object), "startBlock")
+	if err = read(func(r app.ContractRecordC2) error {
+		if r.StartBlock != nil {
+			return fmt.Errorf("start bound should be absent")
+		}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	contracts["c2"].(indexing.Object)["address"] = "0xbb"
+	if err = read(func(app.ContractRecordC2) error { return nil }); err == nil {
+		t.Fatal("different address accepted")
+	}
+	contracts["c2"].(indexing.Object)["address"] = "0x69"
+	contracts["c2"].(indexing.Object)["abi"] = []any{}
+	if err = read(func(app.ContractRecordC2) error { return nil }); err == nil {
+		t.Fatal("different ABI accepted")
+	}
+}
+func TestRegistry(t *testing.T) {
+	contracts, _ := fixtures(t)
+	raw := &indexing.Context{Chain: indexing.Object{"name": "mainnet", "id": 1}, Contracts: contracts, Client: new(indexing.Client)}
+	called := false
+	err := dispatch(t, t.Context(), raw, func(_ context.Context, e app.EventC1Event0, c baseContext) error {
+		called = true
+		n, err := e.Block.Number()
+		if err != nil {
+			return err
+		}
+		from, err := e.Transaction.From()
+		if err != nil {
+			return err
+		}
+		i, err := e.Log.LogIndex()
+		if err != nil {
+			return err
+		}
+		if e.ID != "1" || e.Args.Arg != "0x01" || e.Args.Arg1 != "0x02" || i != 1 || n.Int64() != 1 || from != "0x11" {
+			return fmt.Errorf("registry event differs")
+		}
+		if c.Chain.ID() != 1 || c.Client != raw.Client {
+			return fmt.Errorf("registry chain/client differs")
+		}
+		var _ model.CallbackDatabase = c.DB
+		first, err := c.Contracts.C1()
+		if err != nil {
+			return err
+		}
+		second, err := c.Contracts.C2()
+		if err != nil {
+			return err
+		}
+		if first.Address.Value() != "0x" || second.Address.Value() != "0x69" {
+			return fmt.Errorf("registry contracts differ")
+		}
+		return nil
+	})
+	if err != nil || !called {
+		t.Fatal(called, err)
+	}
+}
+
+// wireRequester validates the full eth_call emitted by the native client against viem.
+type wireRequester struct {
+	t        *testing.T
+	params   any
+	response json.RawMessage
+	err      error
+	calls    int
+}
+
+func (w *wireRequester) Call(_ context.Context, method string, params, out any) error {
+	w.calls++
+	data, err := json.Marshal(params)
+	if err != nil {
+		return err
+	}
+	var actual any
+	if err = json.Unmarshal(data, &actual); err != nil {
+		return err
+	}
+	if method != "eth_call" || !reflect.DeepEqual(actual, w.params) {
+		w.t.Fatalf("unexpected %s %s", method, data)
+	}
+	if w.err != nil {
+		return w.err
+	}
+	return json.Unmarshal(w.response, out)
+}
+
+func TestClient(t *testing.T) {
+	var f struct {
+		ENS struct {
+			Address      string
+			Resolver     indexing.Object
+			Block        uint64
+			Request      struct{ Params any }
+			Found, Empty struct{ Response string }
+			Missing      string `json:"missing_data"`
+		}
+	}
+	data, err := os.ReadFile("testdata/callback-context.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(data, &f); err != nil {
+		t.Fatal(err)
+	}
+	ens := f.ENS
+	wire := &wireRequester{t: t, params: ens.Request.Params}
+	chain := indexing.Object{"id": 1, "name": "mainnet", "viemChain": indexing.Object{"contracts": indexing.Object{"ensUniversalResolver": ens.Resolver}}}
+	clients, err := indexing.NewClientSet([]indexing.Object{chain}, []rpc.Requester{wire})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer clients.Close(context.Background())
+	client, err := clients.GetClient(chain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	clients.SetEvent(indexing.Object{"type": "setup", "block": ens.Block})
+	raw := &indexing.Context{Chain: chain, Client: client}
+	reg := app.OnC2Event1(model.BindCallbackDatabase, func(ctx context.Context, _ app.EventC2Event1, c app.CallbackContext[app.ChoiceOfChains1, model.CallbackDatabase]) error {
+		var api readonlyClient = c.Client
+		wire.response, _ = json.Marshal(ens.Found.Response)
+		result, err := api.GetEnsName(ctx, ens.Address)
+		if err != nil || result == nil || *result != "sample.eth" {
+			return fmt.Errorf("name: %v %v", result, err)
+		}
+		wire.response, _ = json.Marshal(ens.Empty.Response)
+		result, err = api.GetEnsName(ctx, ens.Address)
+		if err != nil || result != nil {
+			return fmt.Errorf("empty name: %v %v", result, err)
+		}
+		errData, _ := json.Marshal(ens.Missing)
+		wire.err = &rpc.Error{Code: 3, Message: "execution reverted", Data: errData}
+		result, err = api.GetEnsName(ctx, ens.Address)
+		if err != nil || result != nil {
+			return fmt.Errorf("resolver miss: %v %v", result, err)
+		}
+		if _, err = api.GetEnsName(ctx, ens.Address, indexing.ENSNameOptions{Strict: true}); err == nil {
+			return fmt.Errorf("strict resolver swallowed revert")
+		}
+		return nil
+	})
+	body := view()
+	body["args"] = nil
+	if err = reg.Fn.(indexing.Handler)(t.Context(), &indexing.HandlerArgs{Event: body, Context: raw}); err != nil || wire.calls != 4 {
+		t.Fatal(err, wire.calls)
+	}
+}
