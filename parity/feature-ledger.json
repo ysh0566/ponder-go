@@ -1743,6 +1743,26 @@
         "parity/runs/native-ens-resolver/RESULT.md"
       ],
       "remaining": "Address, text and avatar resolution are separate actions. Three high-level contract actions also remain open."
+    },
+    {
+      "id": "native-contract-simulation",
+      "status": "verified_subset",
+      "implementation_files": [
+        "indexing/client_simulation.go",
+        "indexing/client_authorization.go",
+        "indexing/client_deployless.go",
+        "indexing/deployless_bytecode.go"
+      ],
+      "native_test_files": [
+        "indexing/client_simulation_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing/client.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-contract-simulation/RESULT.md"
+      ],
+      "remaining": "EIP-3668 offchain reads and three ENS record actions remain open. The Go transaction type uses node-ready JSON-RPC fields."
     }
   ]
 }
