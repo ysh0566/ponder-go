@@ -1,0 +1,558 @@
+{
+  "files": {
+    "packages/core/src/types/virtual.test-d.ts": "2166b5442742cc2576c972a183d7f3577b48a9bda1f05603b4833e1e1b39da71"
+  },
+  "application": {
+    "chains": {
+      "mainnet": {
+        "id": 1,
+        "rpc": "https://rpc.com"
+      },
+      "optimism": {
+        "id": 10,
+        "rpc": "https://rpc.com"
+      }
+    },
+    "contracts": {
+      "c1": {
+        "abi": [
+          {
+            "name": "Event0",
+            "type": "event",
+            "inputs": [
+              {
+                "type": "bytes32",
+                "name": "arg",
+                "indexed": true
+              },
+              {
+                "type": "bytes32",
+                "name": "arg1",
+                "indexed": true
+              }
+            ]
+          },
+          {
+            "name": "func0",
+            "type": "function",
+            "stateMutability": "nonpayable",
+            "inputs": [
+              {
+                "type": "address"
+              }
+            ],
+            "outputs": [
+              {
+                "type": "uint256"
+              }
+            ]
+          }
+        ],
+        "chain": "mainnet",
+        "address": "0x",
+        "startBlock": 0,
+        "includeTransactionReceipts": false,
+        "includeCallTraces": true
+      },
+      "c2": {
+        "abi": [
+          {
+            "name": "Event1",
+            "type": "event",
+            "inputs": []
+          },
+          {
+            "name": "Event1",
+            "type": "event",
+            "inputs": [
+              {
+                "type": "bytes32"
+              }
+            ]
+          },
+          {
+            "name": "func1",
+            "type": "function",
+            "stateMutability": "nonpayable",
+            "inputs": [],
+            "outputs": []
+          },
+          {
+            "name": "func1",
+            "type": "function",
+            "stateMutability": "nonpayable",
+            "inputs": [
+              {
+                "type": "bytes32"
+              }
+            ],
+            "outputs": []
+          }
+        ],
+        "address": "0x69",
+        "chain": {
+          "mainnet": {
+            "startBlock": 1,
+            "includeTransactionReceipts": true,
+            "includeCallTraces": true
+          },
+          "optimism": {}
+        }
+      }
+    },
+    "accounts": {
+      "a1": {
+        "address": "0x",
+        "chain": "mainnet"
+      }
+    },
+    "blocks": {
+      "b1": {
+        "interval": 2,
+        "startBlock": 1,
+        "chain": "mainnet"
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "2d05c283b2c07e78125d",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 97,
+      "title": "FormatEventNames",
+      "strict": [
+        "assertType<a>({} as any as eventNames)",
+        "assertType<eventNames>({} as any as a)"
+      ],
+      "names": [
+        "contract:Event0",
+        "contract:Event1()",
+        "contract:Event1(bytes32)",
+        "contract:setup"
+      ],
+      "abi_shape": "abi",
+      "configuration": {
+        "contracts": {
+          "contract": {
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  },
+                  {
+                    "type": "bytes32",
+                    "name": "arg1",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32"
+                  }
+                ]
+              },
+              {
+                "name": "func0",
+                "type": "function",
+                "stateMutability": "nonpayable",
+                "inputs": [
+                  {
+                    "type": "address"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "type": "uint256"
+                  }
+                ]
+              },
+              {
+                "name": "func1",
+                "type": "function",
+                "stateMutability": "nonpayable",
+                "inputs": [],
+                "outputs": []
+              },
+              {
+                "name": "func1",
+                "type": "function",
+                "stateMutability": "nonpayable",
+                "inputs": [
+                  {
+                    "type": "bytes32"
+                  }
+                ],
+                "outputs": []
+              }
+            ],
+            "chain": ""
+          }
+        },
+        "accounts": {},
+        "blocks": {}
+      },
+      "dynamic_abis": []
+    },
+    {
+      "id": "d9132a0948e1a38768c2",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 117,
+      "title": "FormatEventNames with semi-weak abi",
+      "strict": [
+        "assertType<a>({} as any as eventNames)",
+        "assertType<eventNames>({} as any as a)"
+      ],
+      "names": [
+        "contract:Event0",
+        "contract:Event1()",
+        "contract:Event1(bytes32)",
+        "contract:setup"
+      ],
+      "abi_shape": "abi[number][]",
+      "configuration": {
+        "contracts": {
+          "contract": {
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  },
+                  {
+                    "type": "bytes32",
+                    "name": "arg1",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32"
+                  }
+                ]
+              },
+              {
+                "name": "func0",
+                "type": "function",
+                "stateMutability": "nonpayable",
+                "inputs": [
+                  {
+                    "type": "address"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "type": "uint256"
+                  }
+                ]
+              },
+              {
+                "name": "func1",
+                "type": "function",
+                "stateMutability": "nonpayable",
+                "inputs": [],
+                "outputs": []
+              },
+              {
+                "name": "func1",
+                "type": "function",
+                "stateMutability": "nonpayable",
+                "inputs": [
+                  {
+                    "type": "bytes32"
+                  }
+                ],
+                "outputs": []
+              }
+            ],
+            "chain": ""
+          }
+        },
+        "accounts": {},
+        "blocks": {}
+      },
+      "dynamic_abis": []
+    },
+    {
+      "id": "5ceabc6b6d27ce09898c",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 137,
+      "title": "FormatEventNames with weak abi",
+      "strict": [
+        "assertType<a>({} as any as \"contract:setup\")",
+        "assertType<\"contract:setup\">({} as any as a)"
+      ],
+      "names": [
+        "contract:setup"
+      ],
+      "abi_shape": "Abi",
+      "configuration": {
+        "contracts": {
+          "contract": {
+            "abi": [],
+            "chain": ""
+          }
+        },
+        "accounts": {},
+        "blocks": {}
+      },
+      "dynamic_abis": [
+        "contract"
+      ]
+    },
+    {
+      "id": "2b61ece8a7d79fc60772",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 151,
+      "title": "FormatEventNames with functions",
+      "strict": [
+        "assertType<a>({} as any as eventNames)",
+        "assertType<eventNames>({} as any as a)"
+      ],
+      "names": [
+        "contract.func0()",
+        "contract.func1()",
+        "contract.func1(bytes32)",
+        "contract:Event0",
+        "contract:Event1()",
+        "contract:Event1(bytes32)",
+        "contract:setup"
+      ],
+      "abi_shape": "abi",
+      "configuration": {
+        "contracts": {
+          "contract": {
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  },
+                  {
+                    "type": "bytes32",
+                    "name": "arg1",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32"
+                  }
+                ]
+              },
+              {
+                "name": "func0",
+                "type": "function",
+                "stateMutability": "nonpayable",
+                "inputs": [
+                  {
+                    "type": "address"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "type": "uint256"
+                  }
+                ]
+              },
+              {
+                "name": "func1",
+                "type": "function",
+                "stateMutability": "nonpayable",
+                "inputs": [],
+                "outputs": []
+              },
+              {
+                "name": "func1",
+                "type": "function",
+                "stateMutability": "nonpayable",
+                "inputs": [
+                  {
+                    "type": "bytes32"
+                  }
+                ],
+                "outputs": []
+              }
+            ],
+            "chain": "",
+            "includeCallTraces": true
+          }
+        },
+        "accounts": {},
+        "blocks": {}
+      },
+      "dynamic_abis": []
+    },
+    {
+      "id": "ac5372cb310274dc00ec",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 174,
+      "title": "FormatEventName with accounts",
+      "strict": [
+        "assertType<a>(\n    {} as any as\n      | \"account:transfer:from\"\n      | \"account:transfer:to\"\n      | \"account:transaction:from\"\n      | \"account:transaction:to\",\n  )",
+        "assertType<\n    | \"account:transfer:from\"\n    | \"account:transfer:to\"\n    | \"account:transaction:from\"\n    | \"account:transaction:to\"\n  >({} as any as a)"
+      ],
+      "names": [
+        "account:transaction:from",
+        "account:transaction:to",
+        "account:transfer:from",
+        "account:transfer:to"
+      ],
+      "configuration": {
+        "contracts": {},
+        "accounts": {
+          "account": {
+            "address": "0x",
+            "chain": "mainnet"
+          }
+        },
+        "blocks": {}
+      },
+      "dynamic_abis": []
+    },
+    {
+      "id": "9dc98e50a8b2d4f0b450",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 197,
+      "title": "FormatEventName with blocks",
+      "strict": [
+        "assertType<a>({} as any as \"block:block\")",
+        "assertType<\"block:block\">({} as any as a)"
+      ],
+      "names": [
+        "block:block"
+      ],
+      "configuration": {
+        "contracts": {},
+        "accounts": {},
+        "blocks": {
+          "block": {
+            "interval": 2,
+            "startBlock": 1,
+            "chain": "mainnet"
+          }
+        }
+      },
+      "dynamic_abis": []
+    },
+    {
+      "id": "f3f5509b494466c548f8",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 217,
+      "title": "Context single chain",
+      "strict": [
+        "assertType<a>({} as any as expectedChain)",
+        "assertType<expectedChain>({} as any as a)"
+      ],
+      "event": "c1:Event0",
+      "chains": [
+        {
+          "name": "mainnet",
+          "id": 1
+        }
+      ]
+    },
+    {
+      "id": "a69ad2303383606c6980",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 227,
+      "title": "Context multi chain",
+      "strict": [
+        "assertType<a>({} as any as expectedChain)",
+        "assertType<expectedChain>({} as any as a)"
+      ],
+      "event": "c2:Event1()",
+      "chains": [
+        {
+          "name": "mainnet",
+          "id": 1
+        },
+        {
+          "name": "optimism",
+          "id": 10
+        }
+      ]
+    },
+    {
+      "id": "8b915774dc56ab23a27a",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 243,
+      "title": "Context block chain",
+      "strict": [
+        "assertType<a>({} as any as expectedChain)",
+        "assertType<expectedChain>({} as any as a)"
+      ],
+      "event": "b1:block",
+      "chains": [
+        {
+          "name": "mainnet",
+          "id": 1
+        }
+      ]
+    },
+    {
+      "id": "129e3f9520e24698a70e",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 299,
+      "title": "Context chain without event",
+      "strict": [
+        "assertType<a>({} as any as expectedChain)",
+        "assertType<expectedChain>({} as any as a)"
+      ],
+      "event": null,
+      "chains": [
+        {
+          "name": "mainnet",
+          "id": 1
+        },
+        {
+          "name": "mainnet",
+          "id": 1
+        },
+        {
+          "name": "optimism",
+          "id": 10
+        }
+      ]
+    }
+  ]
+}

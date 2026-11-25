@@ -2,6 +2,7 @@ package indexing
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sync"
 	"time"
@@ -23,6 +24,23 @@ type Context struct {
 	Client    *Client
 	DB        *Database
 }
+
+// ChainIdentity reads the name and EVM chain ID of the currently dispatched callback.
+func (c *Context) ChainIdentity() (string, uint64, error) {
+	if c == nil {
+		return "", 0, fmt.Errorf("missing indexing context")
+	}
+	name, ok := c.Chain["name"].(string)
+	if !ok || name == "" {
+		return "", 0, fmt.Errorf("missing chain name")
+	}
+	id, err := clientInteger(c.Chain["id"])
+	if err != nil || !id.IsUint64() {
+		return "", 0, fmt.Errorf("invalid chain ID for %q", name)
+	}
+	return name, id.Uint64(), nil
+}
+
 type Build struct {
 	FilterSession     *filter.Session
 	Chains            []Object
