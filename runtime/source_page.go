@@ -96,14 +96,7 @@ func (e *Engine) ReadSourcePage(ctx context.Context, source *store.SourceSyncSto
 		if callback["filter"].(map[string]any)["hasTransactionReceipt"] != true {
 			event.Receipt = nil
 		}
-		id := fmt.Sprintf("account:%d:%s:%s:%s", e.chain.ID, hash, name, raw.Checkpoint)
-		if raw.Log != nil {
-			sourceID, _ := callback["filter"].(map[string]any)["sourceId"].(string)
-			id = fmt.Sprintf("log:%d:%s:%s:%s", e.chain.ID, hash, sourceID, event.Log.LogIndex)
-		} else if callback["filter"].(map[string]any)["type"] == "block" {
-			id = fmt.Sprintf("block:%d:%s:%s", e.chain.ID, hash, strings.TrimSuffix(name, ":block"))
-		}
-		pendingEvents = append(pendingEvents, pending{cursor: cursor, id: id, event: event, callback: callback})
+		pendingEvents = append(pendingEvents, pending{cursor: cursor, event: event, callback: callback})
 	}
 	decoded, err := e.decodePending(pendingEvents)
 	if err != nil {
@@ -181,7 +174,7 @@ func (e *Engine) DispatchSourceEvents(ctx context.Context, events []OrderedEvent
 				return fmt.Errorf("source callback index invalid")
 			}
 			sourceID, _ := e.Config.SourcePlan.Callbacks[index].Filter.Value()["sourceId"].(string)
-			id = fmt.Sprintf("log:%d:%s:%s:%s", e.chain.ID, event.Block.Hash, sourceID, event.Log.LogIndex)
+			id = e.logReceiptID(event.Block.Hash, sourceID, event.Name, *event.Log)
 		} else if event.Normalized.Trace == nil && event.Transaction == nil {
 			id = fmt.Sprintf("block:%d:%s:%s", e.chain.ID, event.Block.Hash, strings.TrimSuffix(event.Name, ":block"))
 		}

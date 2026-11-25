@@ -1961,6 +1961,30 @@
         "parity/runs/native-dev-metrics/RESULT.md"
       ],
       "remaining": "Measurements cover the native Go indexer and its interactive watcher. Custom indexers can still report readiness and database checkpoints through LaunchApplication."
+    },
+    {
+      "id": "native-callback-overlap",
+      "status": "verified_subset",
+      "implementation_files": [
+        "abi/abi.go",
+        "abi/catalog.go",
+        "abi/event_names.go",
+        "runtime/engine.go",
+        "runtime/source.go",
+        "runtime/source_page.go"
+      ],
+      "native_test_files": [
+        "runtime/callback_overlap_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts",
+        "packages/core/src/runtime/events.test.ts",
+        "packages/core/src/runtime/filter.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-callback-overlap/RESULT.md"
+      ],
+      "remaining": "The native overlap regression covers a single chain. Multi-provider failover during a cross-chain reorg and separate database engine recovery are open."
     }
   ]
 }

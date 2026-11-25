@@ -8,13 +8,7 @@ func (a ABI) EventEntries() []Event { return append([]Event{}, a.eventEntries...
 // EventSafeName follows the source overload boundary: anonymous events do not
 // contribute to the duplicate-name set. Indexed modifiers belong before names.
 func (a ABI) EventSafeName(item Event) string {
-	count := 0
-	for _, event := range a.eventEntries {
-		if !event.Anonymous && event.Name == item.Name {
-			count++
-		}
-	}
-	if count < 2 {
+	if a.eventNameCounts[item.Name] < 2 {
 		return item.Name
 	}
 	return overloadedEventName(item)

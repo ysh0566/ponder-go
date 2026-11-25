@@ -4,18 +4,21 @@ package abi
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	ethabi "github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/crypto"
-	"strings"
 )
 
 type ABI struct {
 	ethabi.ABI
-	originalEvents     map[string]Event
-	originalFunctions  map[string]Function
-	functionNameCounts map[string]int
-	functionEntries    []Function
-	eventEntries       []Event
+	eventIndex          map[string]int
+	eventSelectorCounts map[string]int
+	eventNameCounts     map[string]int
+	originalFunctions   map[string]Function
+	functionNameCounts  map[string]int
+	functionEntries     []Function
+	eventEntries        []Event
 }
 
 func signatureType(p Parameter) string {
@@ -55,7 +58,9 @@ func Parse(data string) (ABI, error) {
 	if e = json.Unmarshal([]byte(data), &entries); e != nil {
 		return ABI{}, e
 	}
-	events := map[string]Event{}
+	eventIndex := map[string]int{}
+	selectorCounts := map[string]int{}
+	eventNameCounts := map[string]int{}
 	functions := map[string]Function{}
 	functionCounts := map[string]int{}
 	functionEntries := []Function{}
@@ -78,17 +83,30 @@ func Parse(data string) (ABI, error) {
 		if event.Type != "event" {
 			continue
 		}
-		eventEntries = append(eventEntries, event)
-		for name, metadata := range a.Events {
-			if metadata.Sig == signature(event) {
-				events[name] = event
-			}
+		name := ethabi.ResolveNameConflict(event.Name, func(name string) bool {
+			_, exists := eventIndex[name]
+			return exists
+		})
+		eventIndex[name] = len(eventEntries)
+		selectorCounts[a.Events[name].ID.Hex()]++
+		if !event.Anonymous {
+			eventNameCounts[event.Name]++
 		}
+		eventEntries = append(eventEntries, event)
 	}
-	return ABI{ABI: a, originalEvents: events, originalFunctions: functions, functionNameCounts: functionCounts, functionEntries: functionEntries, eventEntries: eventEntries}, nil
+	return ABI{
+		ABI:                 a,
+		eventIndex:          eventIndex,
+		eventSelectorCounts: selectorCounts,
+		eventNameCounts:     eventNameCounts,
+		originalFunctions:   functions,
+		functionNameCounts:  functionCounts,
+		functionEntries:     functionEntries,
+		eventEntries:        eventEntries,
+	}, nil
 }
 func (a ABI) DecodeEvent(name string, topics []string, data string) (any, error) {
-	event, ok := a.originalEvents[name]
+	event, ok := a.EventItem(name)
 	if !ok {
 		return nil, fmt.Errorf("unknown ABI event %q", name)
 	}
@@ -98,6 +116,24 @@ func (a ABI) DecodeEvent(name string, topics []string, data string) (any, error)
 // EventItem returns the original ABI metadata for an event's parsed name,
 // including the distinct names assigned to overloaded events.
 func (a ABI) EventItem(name string) (Event, bool) {
-	item, ok := a.originalEvents[name]
-	return item, ok
+	i, ok := a.eventIndex[name]
+	if !ok {
+		return Event{}, false
+	}
+	return a.eventEntries[i], true
+}
+
+// ParsedEvents returns go-ethereum's event names together with the declaration
+// that produced each one, in ABI order. A shared topic need not share a layout.
+func (a ABI) ParsedEvents() []NamedItem[Event] {
+	items := make([]NamedItem[Event], len(a.eventEntries))
+	for name, i := range a.eventIndex {
+		items[i] = NamedItem[Event]{Name: name, Item: a.eventEntries[i]}
+	}
+	return items
+}
+
+// SharedEventSelector reports whether multiple ABI declarations have this topic.
+func (a ABI) SharedEventSelector(topic string) bool {
+	return a.eventSelectorCounts[strings.ToLower(topic)] > 1
 }

@@ -293,6 +293,21 @@ head "$model_dir/model.go"
 
 生成的模型用 `[]byte` 表示二进制，`json.RawMessage` 表示 JSON，`[2]float64` 和 `[3]float64` 表示点和线。SQL 数组使用 `[]orm.Nullable[T]`，可通过 `orm.Some(value)` 和 `orm.Null[T]()` 分别写入值和空元素。生成的 ABI 回调保留 tuple 的原始组件名，两个组件转换成相同 Go 名字时会得到不同的字段名。
 
+### 同一条链上记录匹配多个回调
+
+假设合约配置名为 `C`，ABI 同时声明下面两种 `Marked` 事件。它们的第一个 topic 相同，但一个把 `left` 存在 topic 中，另一个把 `right` 存在 topic 中。使用完整事件名注册 Go 处理函数，索引器会用各自的 ABI 声明解码。
+
+```go
+handlers := map[string]runtime.Handler{
+    "C:Marked(uint256 indexed left, uint256 right)": handleLeftIndexed,
+    "C:Marked(uint256 left, uint256 indexed right)": handleRightIndexed,
+}
+```
+
+例如，日志的索引值为 7、数据值为 11 时，第一个回调会收到 `left=7, right=11`，第二个会收到 `left=11, right=7`。其中一个回调失败后重启，已经提交的回调会被跳过。若两个回调向同一张表各写一行，可用 `c.Event.Name` 和 `c.Event.ID` 作为联合主键，因为同一条链上记录的事件 ID 相同。函数选择器碰撞时，每个已注册的合约 CALL 回调也按自己的 ABI 解码；需在合约配置中启用 `IncludeCallTraces`。
+
+如果此前运行的部署包含这种共享 topic 的事件声明，请使用新命名空间从合约起始块重新索引，以补齐旧索引遗漏的回调。[测试与重放示例](../parity/runs/native-callback-overlap/RESULT.md)
+
 ### 合约的 EIP-3668 链下读取
 
 `Call`、`ReadContract`、`SimulateContract` 和 ENS 查询遇到 `OffchainLookup` 时自动检查返回的 sender 是否为目标合约。客户端按合约提供的 URL 顺序尝试网关，然后使用回调选择器将响应和原始附加数据交给合约验证。初次调用使用所选区块，验证回调与固定上游一致，使用同一条链的 `latest`。Universal Resolver 的本地批量请求可以嵌套，同批中某条查询失败时，其余结果仍会交给合约。

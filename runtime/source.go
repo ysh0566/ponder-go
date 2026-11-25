@@ -75,16 +75,32 @@ func (e *Engine) logCallbacks(source config.Contract) ([]nativeLogCallback, erro
 		return out, nil
 	}
 	a := e.abis[source.Name]
-	for name, event := range a.Events {
-		item, ok := a.EventItem(name)
-		if !ok {
-			return nil, fmt.Errorf("missing original ABI event %s:%s", source.Name, name)
+	seen := map[string]bool{}
+	for _, entry := range a.ParsedEvents() {
+		item := entry.Item
+		eventName := source.Name + ":" + a.EventSafeName(item)
+		if e.Handlers[eventName] == nil {
+			eventName = source.Name + ":" + entry.Name
 		}
-		eventName := source.Name + ":" + name
-		out = append(out, nativeLogCallback{name: eventName, item: item, filter: nativeContractFilter(source, event.ID.Hex()), callback: protocol.ContractCallback[abi.Event]{CallbackBase: protocol.CallbackBase{Name: eventName, Chain: protocol.Object{"id": e.chain.ID, "name": e.chain.Name}, Filter: protocol.Object{"type": "log"}}, ABIItem: item}.CallbackObject()})
+		if seen[eventName] {
+			continue
+		}
+		seen[eventName] = true
+		topic := a.Events[entry.Name].ID.Hex()
+		out = append(out, nativeLogCallback{name: eventName, item: item, filter: nativeContractFilter(source, topic), callback: protocol.ContractCallback[abi.Event]{CallbackBase: protocol.CallbackBase{Name: eventName, Chain: protocol.Object{"id": e.chain.ID, "name": e.chain.Name}, Filter: protocol.Object{"type": "log"}}, ABIItem: item}.CallbackObject()})
 	}
 	return out, nil
 }
+
+// A source and log index identify an ordinary receipt. If multiple ABI
+// declarations share the topic, each matched callback needs its own receipt.
+func (e *Engine) logReceiptID(hash, source, name string, log Log) string {
+	if len(log.Topics) > 0 && e.abis[source].SharedEventSelector(log.Topics[0]) {
+		return fmt.Sprintf("log-callback:%d:%s:%s:%s", e.chain.ID, hash, name, log.LogIndex)
+	}
+	return fmt.Sprintf("log:%d:%s:%s:%s", e.chain.ID, hash, source, log.LogIndex)
+}
+
 func (e *Engine) planSourceLogs(callbacks []nativeLogCallback, address any, hash string) (filter.Object, bool) {
 	if e.Config.SourcePlan == nil {
 		return plannedBlockLogs(address, hash)
