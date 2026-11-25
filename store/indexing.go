@@ -217,14 +217,8 @@ func (db *IndexingStore) checkAccess(table schema.Table, method string, key Row)
 }
 func cacheKey(t schema.Table, key Row) (string, error) {
 	values := []any{}
-	for _, physical := range t.Keys() {
-		name := physical
-		for _, c := range t.Columns {
-			if c.Name == physical {
-				name = property(c)
-				break
-			}
-		}
+	for _, pk := range t.PrimaryKeyColumns() {
+		name := pk.JS
 		v, ok := key[name]
 		if !ok || v == nil || isUndefined(v) {
 			return "", fmt.Errorf("missing primary key %s", name)
@@ -420,13 +414,9 @@ func (db *IndexingStore) update(ctx context.Context, t schema.Table, cache *tabl
 			return nil, e
 		}
 	}
-	for _, physical := range t.Keys() {
-		for _, c := range t.Columns {
-			if c.Name == physical {
-				if value, present := set[property(c)]; present && !reflect.DeepEqual(value, row[property(c)]) {
-					return nil, &NonRetryableUserError{fmt.Sprintf("Primary key column '%s' cannot be updated", property(c))}
-				}
-			}
+	for _, pk := range t.PrimaryKeyColumns() {
+		if value, present := set[pk.JS]; present && !reflect.DeepEqual(value, row[pk.JS]) {
+			return nil, &NonRetryableUserError{fmt.Sprintf("Primary key column '%s' cannot be updated", pk.JS)}
 		}
 	}
 	set, e = NormalizeUpdateSet(t, set)
