@@ -1,0 +1,89 @@
+package runtime
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"path/filepath"
+	"testing"
+	"time"
+
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/internal/testanvil"
+	"github.com/ysh0566/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+func TestAuditContinuousFinality(t *testing.T) {
+	ctx := t.Context()
+	endpoint := testanvil.StartChain(t, 391, "--no-mining")
+	for range 3 {
+		var out any
+		if err := rpc.New(endpoint).Call(ctx, "evm_mine", []any{}, &out); err != nil {
+			t.Fatal(err)
+		}
+	}
+	window := 0
+	end := uint64(3)
+	for _, dialect := range []string{"postgres", "pglite"} {
+		for _, bounded := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/bounded_%t", dialect, bounded), func(t *testing.T) {
+				b := stagedBackend(t, ctx, dialect, filepath.Join(t.TempDir(), "data"))
+				defer b.Close()
+				ns := fmt.Sprintf("ponder_go_finaudit_%x", time.Now().UnixNano())
+				model := schema.Schema{Tables: []schema.Table{{Name: "seen", Columns: []schema.Column{{Name: "id", Type: "text", Primary: true}}}}}
+				db, err := store.New(ctx, b, model, ns, schema.Multichain)
+				if err != nil {
+					t.Fatal(err)
+				}
+				s := config.BlockSource{Name: "Head", Chain: "A", StartBlock: 1, Interval: 1}
+				if bounded {
+					s.EndBlock = &end
+				}
+				cfg := config.Config{Chains: []config.Chain{{Name: "A", ID: 391, RPC: []string{endpoint}, ReorgWindow: &window}}, Blocks: []config.BlockSource{s}}
+				w, err := NewIndexer(cfg, db, map[string]Handler{"Head:block": func(ctx context.Context, c *Context) error {
+					return c.DB.Write(ctx, "seen", store.Row{"id": c.Event.Block.Number}, store.Insert)
+				}})
+				if err != nil {
+					t.Fatal(err)
+				}
+				run, cancel := context.WithTimeout(ctx, 30*time.Second)
+				defer cancel()
+				err = w.RunIndexing(run, func(ready bool) {
+					if ready && !bounded {
+						cancel()
+					}
+				})
+				if bounded && err != nil || !bounded && !errors.Is(err, context.Canceled) {
+					t.Fatal(err)
+				}
+				rows, err := db.Read(ctx, "seen")
+				if err != nil || len(rows.Rows) != 3 {
+					t.Fatal(rows, err)
+				}
+				progress, err := db.Progress(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				cp, err := checkpoint.Decode(progress["391"])
+				if err != nil || cp.BlockNumber != end {
+					t.Fatal(cp, err)
+				}
+				count, err := b.Query(ctx, "SELECT count(*)::text AS n FROM "+schema.Quote(ns)+"._ponder_go_journal")
+				if err != nil {
+					t.Fatal(err)
+				}
+				fin, err := b.Query(ctx, "SELECT checkpoint,safe_checkpoint FROM "+schema.Quote(ns)+"._ponder_go_finalized")
+				if err != nil {
+					t.Fatal(err)
+				}
+				t.Logf("indexed=%d rows=%d journal=%v final=%v", cp.BlockNumber, len(rows.Rows), count.Rows, fin.Rows)
+				if bounded && (fmt.Sprint(count.Rows[0]["n"]) != "0" || len(fin.Rows) != 1 || fin.Rows[0]["checkpoint"] != progress["391"]) {
+					t.Fatal("bounded finality")
+				}
+			})
+		}
+	}
+}
