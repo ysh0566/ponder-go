@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
+
+	"ponder.local/ponder-go/rpc"
 )
 
 // SourceRPCRequestCache explicitly selects the source MD5/doNothing contract.
@@ -60,27 +62,71 @@ func (c *SourceRPCRequestCache) request(key string) (map[string]any, error) {
 	return map[string]any{"method": method, "params": params}, nil
 }
 func (c *SourceRPCRequestCache) CacheGet(ctx context.Context, key string) (json.RawMessage, bool, error) {
+	values, err := c.CacheGetMany(ctx, []string{key})
+	if err != nil {
+		return nil, false, err
+	}
+	return values[0], values[0] != nil, nil
+}
+
+func (c *SourceRPCRequestCache) CacheGetMany(ctx context.Context, keys []string) ([]json.RawMessage, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if e := c.active(); e != nil {
-		return nil, false, e
+	if err := c.active(); err != nil {
+		return nil, err
 	}
-	request, e := c.request(key)
-	if e != nil {
-		return nil, false, e
+	requests := make([]any, len(keys))
+	for i, key := range keys {
+		request, err := c.request(key)
+		if err != nil {
+			return nil, err
+		}
+		requests[i] = request
+	}
+	if len(keys) == 0 {
+		return []json.RawMessage{}, nil
 	}
 	var results []*string
+	var err error
 	if c.writer != nil {
-		results, e = c.cache.getSourceRPC(ctx, c.writer.tx, c.chain, []any{request})
+		results, err = c.cache.getSourceRPC(ctx, c.writer.tx, c.chain, requests)
 	} else if c.source != nil {
-		results, e = c.source.GetRPCRawRequestResults(ctx, c.chain, []any{request})
+		results, err = c.source.GetRPCRawRequestResults(ctx, c.chain, requests)
 	} else {
-		results, e = c.cache.GetSourceRPCRawRequestResults(ctx, c.chain, []any{request})
+		results, err = c.cache.GetSourceRPCRawRequestResults(ctx, c.chain, requests)
 	}
-	if e != nil || len(results) == 0 || results[0] == nil {
-		return nil, false, e
+	if err != nil {
+		return nil, err
 	}
-	return json.RawMessage(*results[0]), true, nil
+	if len(results) != len(keys) {
+		return nil, fmt.Errorf("expected %d cache results, got %d", len(keys), len(results))
+	}
+	values := make([]json.RawMessage, len(keys))
+	for i, result := range results {
+		if result != nil {
+			values[i] = json.RawMessage(*result)
+		}
+	}
+	return values, nil
+}
+
+func (c *SourceRPCRequestCache) writeRows(entries []rpc.CacheEntry) ([]SourceRPCRawResult, error) {
+	rows := make([]SourceRPCRawResult, len(entries))
+	for i, entry := range entries {
+		request, err := c.request(entry.Key)
+		if err != nil {
+			return nil, err
+		}
+		if !json.Valid(entry.Value) {
+			return nil, fmt.Errorf("RPC result must be JSON")
+		}
+		block, err := sourceRequestBlock(request)
+		if err != nil {
+			return nil, err
+		}
+		rows[i] = SourceRPCRawResult{Request: request, BlockNumber: block, Result: string(entry.Value)}
+	}
+	return rows, nil
 }
 func (c *SourceRPCRequestCache) CachePut(ctx context.Context, key string, value json.RawMessage) error {
 	c.mu.Lock()
@@ -88,18 +134,10 @@ func (c *SourceRPCRequestCache) CachePut(ctx context.Context, key string, value 
 	if e := c.active(); e != nil {
 		return e
 	}
-	request, e := c.request(key)
+	rows, e := c.writeRows([]rpc.CacheEntry{{Key: key, Value: value}})
 	if e != nil {
 		return e
 	}
-	if !json.Valid(value) {
-		return fmt.Errorf("RPC result must be JSON")
-	}
-	block, e := sourceRequestBlock(request)
-	if e != nil {
-		return e
-	}
-	rows := []SourceRPCRawResult{{request, block, string(value)}}
 	if c.writer != nil {
 		return c.cache.insertSourceRPC(ctx, c.writer.tx, c.chain, rows)
 	}

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"ponder.local/ponder-go/rpc"
 )
 
 // BlockOptions shares Ponder's event-relative and immutable block selection.
@@ -183,7 +185,7 @@ func retryEmptyWithWait[T any](ctx context.Context, enabled *bool, action func()
 	for attempt := 0; ; attempt++ {
 		result, err := action()
 		var zero *ContractFunctionZeroDataError
-		if err == nil || (!errors.As(err, &zero) && !strings.Contains(err.Error(), "returned no data")) || attempt == 9 || (enabled != nil && !*enabled) {
+		if err == nil || (!errors.Is(err, rpc.ErrBlockNotFound) && !errors.As(err, &zero) && !strings.Contains(err.Error(), "returned no data")) || attempt == 9 || (enabled != nil && !*enabled) {
 			return result, err
 		}
 		if err := wait(ctx, 125*time.Millisecond*time.Duration(1<<attempt)); err != nil {

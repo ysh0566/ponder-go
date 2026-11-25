@@ -42,10 +42,11 @@ func (e *ContractCallRevertedError) Error() string {
 }
 
 type multicallItem struct {
-	contract      ContractCall
-	selected      ponderabi.Function
-	data          string
-	encodingError error
+	contract       ContractCall
+	selected       ponderabi.Function
+	data           string
+	encodingError  error
+	requireSuccess bool
 }
 type multicallWireResult struct {
 	success bool
@@ -88,7 +89,7 @@ func (c *Client) Multicall(ctx context.Context, contracts []ContractCall, option
 		if err != nil {
 			data = "0x"
 		}
-		item := multicallItem{contract, selected, data, err}
+		item := multicallItem{contract: contract, selected: selected, data: data, encodingError: err}
 		items[i] = item
 		length := (len(data) - 2) / 2
 		if batchSize > 0 && size+length > batchSize && len(chunk) > 0 {
@@ -172,30 +173,44 @@ func (c *Client) beginMulticallChunk(ctx context.Context, items []multicallItem,
 	fail := func(err error) func() ([]multicallWireResult, error) {
 		return func() ([]multicallWireResult, error) { return nil, err }
 	}
-	type childWrite struct {
-		params     []any
-		raw        json.RawMessage
-		prefetched bool
-	}
-	writes := []childWrite{}
-	flush := func() {
-		for _, write := range writes {
-			if write.prefetched {
-				// Source's serialized-future sentinel comparison, not the ordinary
-				// raw-result exclusion. Admission follows successful whole chunk.
-				if c.cacheEnabled && c.cache != nil && string(write.raw) != "0x" {
-					if key, err := c.cacheKey("eth_call", write.params); err == nil {
-						c.set.putAsync(ctx, c.cache, key, write.raw)
-					}
-				}
-			} else {
-				c.cacheResponse(ctx, "eth_call", write.params, write.raw)
+	writes := []rpc.CacheEntry{}
+	queueWrite := func(params []any, value json.RawMessage, prefetched bool) {
+		if !c.cacheEnabled || c.cache == nil {
+			return
+		}
+		if prefetched {
+			// The source compares the serialized future against the raw sentinel.
+			if string(value) == "0x" {
+				return
 			}
+		} else if !cacheableResponse(value) {
+			return
+		}
+		key, err := c.cacheKey("eth_call", params)
+		if err == nil {
+			writes = append(writes, rpc.CacheEntry{Key: key, Value: value})
 		}
 	}
+	flush := func() {
+		if len(writes) == 0 {
+			return
+		}
+		if batch, ok := c.cache.(rpc.AsyncCacheBatchWriter); ok {
+			c.set.admitWrite(ctx, func(child context.Context) func() error {
+				return awaitCacheWrite(batch.BeginCachePutMany(child, writes))
+			})
+			return
+		}
+		for _, entry := range writes {
+			c.set.putAsync(ctx, c.cache, entry.Key, entry.Value)
+		}
+	}
+	batch, batched := c.cache.(rpc.CacheBatchReader)
+	batched = batched && c.cacheEnabled
+	keys := []string{}
 	results := make([]multicallWireResult, len(items))
 	misses := []int{}
-	calls := []any{}
+
 	params := make([][]any, len(items))
 	var advance func(int, *prefetchValue) func() ([]multicallWireResult, error)
 	advance = func(start int, retained *prefetchValue) func() ([]multicallWireResult, error) {
@@ -233,9 +248,9 @@ func (c *Client) beginMulticallChunk(ctx context.Context, items []multicallItem,
 			}
 			raw, hit, err := c.prefetchedValueResult(ctx, key, prefetched, true)
 			if err == nil && hit && prefetched != nil && prefetched.future {
-				writes = append(writes, childWrite{params[i], raw, true})
+				queueWrite(params[i], raw, true)
 			}
-			if err == nil && !hit {
+			if err == nil && !hit && !batched {
 				raw, hit, err = c.cached(ctx, "eth_call", params[i])
 			}
 			if err != nil {
@@ -250,10 +265,37 @@ func (c *Client) beginMulticallChunk(ctx context.Context, items []multicallItem,
 				continue
 			}
 			misses = append(misses, i)
-			calls = append(calls, Object{"target": item.contract.Address, "allowFailure": true, "callData": item.data})
+			keys = append(keys, key)
+		}
+		if batched && len(keys) > 0 {
+			values, err := batch.CacheGetMany(ctx, keys)
+			if err != nil {
+				return fail(err)
+			}
+			if len(values) != len(keys) {
+				return fail(fmt.Errorf("multicall cache result count mismatch"))
+			}
+			remote := misses[:0]
+			for j, i := range misses {
+				if values[j] == nil {
+					remote = append(remote, i)
+					continue
+				}
+				value, err := decodeHexResponse(values[j])
+				if err != nil {
+					return fail(err)
+				}
+				results[i] = multicallWireResult{true, value}
+			}
+			misses = remote
 		}
 		if len(misses) == 0 {
 			return func() ([]multicallWireResult, error) { flush(); return results, nil }
+		}
+		calls := make([]any, 0, len(misses))
+		for _, i := range misses {
+			item := items[i]
+			calls = append(calls, Object{"target": item.contract.Address, "allowFailure": !item.requireSuccess, "callData": item.data})
 		}
 		data, selected, err := encodeContractCall(ContractCall{ABI: aggregate3ABI, Address: address, FunctionName: "aggregate3", Args: []any{calls}})
 		if err != nil {
@@ -301,7 +343,7 @@ func (c *Client) beginMulticallChunk(ctx context.Context, items []multicallItem,
 				results[index] = multicallWireResult{success, value}
 				if success {
 					encoded, _ := json.Marshal(value)
-					writes = append(writes, childWrite{params[index], encoded, false})
+					queueWrite(params[index], encoded, false)
 				}
 			}
 			flush()

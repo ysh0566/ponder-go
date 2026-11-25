@@ -18,8 +18,8 @@ type BalanceOptions struct {
 }
 
 // ClientSet owns stable per-chain client identities and the currently dispatched
-// source event. Its public actions are a bounded subset; it does not implement
-// the full raw transport or outer indexing runner.
+// source event. Its public actions are a bounded subset; it borrows the chain transports
+// and persistent caches from their owners.
 type ClientSet struct {
 	managedRoots      *managedClientRoots
 	mu                sync.RWMutex
@@ -192,6 +192,29 @@ func clientInteger(v any) (*big.Int, error) {
 // Transaction-bound legacy adapters must be drained by their owner before return.
 // Cache implementations must honor cancellation for Close to complete.
 func (s *ClientSet) putAsync(ctx context.Context, cache rpc.Cache, key string, raw json.RawMessage) {
+	value := append(json.RawMessage(nil), raw...)
+	s.admitWrite(ctx, func(child context.Context) func() error {
+		if async, ok := cache.(rpc.AsyncCache); ok {
+			return awaitCacheWrite(async.BeginCachePut(child, key, value))
+		}
+		return func() error { return cache.CachePut(child, key, value) }
+	})
+}
+
+func awaitCacheWrite(done <-chan error) func() error {
+	return func() error {
+		if done == nil {
+			return fmt.Errorf("cache writer returned nil completion")
+		}
+		err, ok := <-done
+		if !ok {
+			return fmt.Errorf("cache writer closed without completion")
+		}
+		return err
+	}
+}
+
+func (s *ClientSet) admitWrite(ctx context.Context, admit func(context.Context) func() error) {
 	s.mu.Lock()
 	if s.closed {
 		s.mu.Unlock()
@@ -204,13 +227,8 @@ func (s *ClientSet) putAsync(ctx context.Context, cache rpc.Cache, key string, r
 	id := s.nextWrite
 	child, cancel := context.WithCancel(ctx)
 	s.pending[id] = cancel
-	value := append(json.RawMessage(nil), raw...)
 	s.mu.Unlock()
-	var completion <-chan error
-	asynchronous, admitted := cache.(rpc.AsyncCache)
-	if admitted {
-		completion = asynchronous.BeginCachePut(child, key, value)
-	}
+	completion := admit(child)
 	go func() {
 		defer func() {
 			cancel()
@@ -221,21 +239,7 @@ func (s *ClientSet) putAsync(ctx context.Context, cache rpc.Cache, key string, r
 			}
 			s.mu.Unlock()
 		}()
-		if admitted {
-			// A malformed custom implementation returning nil is not retried through
-			// CachePut: admission may already have happened and must never be doubled.
-			if completion != nil {
-				err, ok := <-completion
-				if !ok {
-					err = fmt.Errorf("cache writer closed without completion")
-				}
-				s.managedRoots.recordFailure(err)
-			} else {
-				s.managedRoots.recordFailure(fmt.Errorf("cache writer returned nil completion"))
-			}
-		} else {
-			s.managedRoots.recordFailure(cache.CachePut(child, key, value))
-		}
+		s.managedRoots.recordFailure(completion())
 	}()
 }
 
