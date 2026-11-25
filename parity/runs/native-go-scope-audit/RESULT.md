@@ -12,4 +12,4 @@ This audit compares Go product revision `c5c6bc968c287e930246ca4325cd3122f5f9624
 
 Go 1.25.11 passed `go test -count=1 -run '^TestRuntimeOmnichain(StaticLogsCapabilities|PreflightBoundary)$' ./historical` and the same command with `-race`. Each run passed 25 leaf cases. These tests check which configurations the runner accepts before it opens storage. Prior database runs cover the actual handling of supported sources on both backends. [Runtime matrix](../../../docs/RUNTIME_SUPPORT.md) · [Isolated multichain results](../native-chain-scheduling/RESULT.md)
 
-The verification-tool suite passed 503 Node tests after restoring the archived inputs, including four original RPC, SQL and event fixture captures used by the test harness. The module-wide Go regression cited in the README was recorded separately.
+The verification-tool suite passed 503 Node tests after restoring the archived inputs, including the four original SQL, event, filter and bloom captures used by the test harness. The module-wide Go regression cited in the README was recorded separately.
