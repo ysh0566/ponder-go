@@ -714,6 +714,36 @@ func TestSourceSyncProgressRPC(t *testing.T) {
 			t.Fatalf("HTTP admission identity: start=%v current=%v end=%v calls=%d", p.Start["responseIdentity"], p.Current["responseIdentity"], p.End["responseIdentity"], calls.Load())
 		}
 	})
+	t.Run("source transport shares a single retry budget for 429 and null", func(t *testing.T) {
+		var attempts atomic.Int32
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var req struct{ ID uint64 }
+			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				t.Error(err)
+				return
+			}
+			if attempts.Add(1) == 1 {
+				w.WriteHeader(429)
+				return
+			}
+			fmt.Fprintf(w, `{"jsonrpc":"2.0","id":%d,"result":null}`, req.ID)
+		}))
+		defer server.Close()
+		client, err := rpc.NewSourceClient(1, server.URL)
+		if err != nil {
+			t.Fatal(err)
+		}
+		client.Retries = 1
+		adapter := NewSourceSyncProgressRPC(client.WithCache(nil))
+		adapter.wait = func(context.Context, time.Duration) error {
+			return errors.New("outer adapter retried a source transport request")
+		}
+		block, err := adapter.GetBlockByNumber(t.Context(), "0x3", false, SourceSyncProgressRequestOptions{RetryNullBlockRequest: true})
+		var missing *SourceSyncProgressBlockNotFoundError
+		if block != nil || !errors.As(err, &missing) || missing.Number != "0x3" || attempts.Load() != 2 {
+			t.Fatalf("block %v, error %v, attempts %d", block, err, attempts.Load())
+		}
+	})
 	t.Run("real_http_requester_null_retry_and_header_standardization", func(t *testing.T) {
 		var calls atomic.Int64
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -63,16 +63,22 @@ type sourceEndpoint struct {
 	sampleDuration          time.Duration
 }
 
+// Advance the cooldown on both admission and completion. An in-flight request
+// can finish after reactivation even if nobody has tried to acquire a slot.
+func (e *sourceEndpoint) reactivate(now time.Time) {
+	if !e.until.IsZero() && !now.Before(e.until) {
+		e.until = time.Time{}
+		e.warming = true
+	}
+}
+
 func (e *sourceEndpoint) available(second int64, now time.Time) bool {
 	for len(e.seconds) > 0 && e.seconds[0].at <= second-10 {
 		e.seconds = e.seconds[1:]
 	}
+	e.reactivate(now)
 	if !e.until.IsZero() {
-		if now.Before(e.until) {
-			return false
-		}
-		e.until = time.Time{}
-		e.warming = true
+		return false
 	}
 	if e.warming && e.active > 3 {
 		return false
@@ -122,6 +128,7 @@ func (p *sourceEndpointPool) finish(e *sourceEndpoint, duration time.Duration, e
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	e.active--
+	e.reactivate(time.Now())
 	if ignoreSample {
 		return
 	}
