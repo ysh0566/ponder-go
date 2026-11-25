@@ -36,7 +36,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 
 func runCommand(ctx context.Context, args []string, out, diagnostics io.Writer, log *logging.Logger) error {
 	if len(args) == 0 || args[0] == "--help" || args[0] == "-h" {
-		fmt.Fprintln(out, "ponder-go "+version+" (local port in progress)\n\nCommands: init, dev, start, serve, codegen, db list, db create-views, db prune, checkpoint encode/decode\nUse dev, start, or serve with --root, --schema, --hostname, and --port.\nGlobal logging options: --log-level LEVEL, --log-format pretty|json, -v/--debug, -vv/--trace.")
+		fmt.Fprintln(out, "ponder-go "+version+" (local port in progress)\n\nCommands: init, dev, start, serve, codegen, db list, db create-views, db prune, checkpoint encode/decode\nUse dev, start, or serve with --root, --schema, --hostname, and --port. Use dev --disable-ui for plain logs.\nGlobal logging options: --log-level LEVEL, --log-format pretty|json, -v/--debug, -vv/--trace.")
 		return nil
 	}
 	switch args[0] {

@@ -14,7 +14,8 @@ type Readiness interface {
 	Ready(context.Context) (bool, error)
 }
 
-func (s *Server) isReady(ctx context.Context) (bool, error) {
+// IsReady returns the readiness served by GET /ready, including an application-supplied check.
+func (s *Server) IsReady(ctx context.Context) (bool, error) {
 	if s.Readiness != nil {
 		return s.Readiness.Ready(ctx)
 	}

@@ -28,13 +28,15 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 
 ## 原生 Go 索引器还缺什么
 
-| 使用场景 | 当前边界 |
-| --- | --- |
-| 在同一 Go 应用中协调多条链 | 原生 `runtime.NewIndexer` 支持独立多链和按全局顺序索引。默认协调模式仍需使用 `historical.RuntimeRunner`。还需验证更多工厂日志、交易、转账和函数调用 trace 的重叠组合，以及多家 RPC 同时中断时的恢复。[全局排序使用方式](docs/USAGE.md#按全局顺序索引多条链) |
-| 管理部署和日志 | PostgreSQL 已支持视图发布和部署清理。PGlite 仍缺独立进程管理数据目录、与写入进程共享目录提供查询的支持。热重载和全局日志选项已可用，开发终端 UI 仍待实现。 |
-| 生产故障验收 | 已在写事务提交前强制终止 PostgreSQL 和 PGlite 引擎，验证重启后的余额、检查点、重放和撤销。全局排序的纯日志历史任务也覆盖了 PGlite 应用异常退出。仍需验证主机掉电、协调多链运行中数据库引擎崩溃，以及生产数据库角色与权限。[故障恢复实测](parity/runs/native-engine-recovery/RESULT.md) |
+| 使用场景 | 当前能用什么 | 还缺什么 |
+| --- | --- | --- |
+| 在同一个 Go 入口协调多链 | `runtime.NewIndexer` 支持单链、独立多链（Isolated）和全局排序（Omnichain）。默认协调多链可用 `historical.RuntimeRunner`。 | 脚手架入口还不能直接启动默认协调多链。独立运行器按配置限制组合，例如有限区间模式要求启用 RPC 缓存，且不接受 setup 回调。[入口实现](runtime/indexer.go) · [运行器配置检查](historical/live_runtime.go) |
+| 在本地启动和管理 PGlite | 自写 Go 入口可在同一进程中索引和查询 PGlite。生成的项目使用 PostgreSQL。 | 生成项目还缺 PGlite 的默认本地启动路径，`db list/prune/create-views` 也缺少指定离线 PGlite 目录的入口。独立 `serve` 的上游支持范围为 PostgreSQL。[Go 脚手架](examples/erc20/main.go) · [数据库命令](cmd/ponder/database.go) · [上游 serve 边界](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/bin/commands/serve.ts#L102-L109) |
+| 在开发终端查看进度 | `ponder dev` 显示编译状态、实际 HTTP 地址、应用就绪状态和各链已提交区块，支持热重载及 `--disable-ui`。 | 终端中还没有每链 RPC 请求速率、回调执行次数和平均耗时、历史回填百分比与预计剩余时间。[使用方式](docs/USAGE.md#开发时自动重载) |
+| 验收复杂事件和 RPC 故障 | 双后端已有混合工厂日志、交易、转账和合约 CALL 回调的重组、断点恢复用例。 | 同一事件同时命中多个回调、ABI 函数选择器碰撞和多个 RPC 同时中断后的跨链恢复，仍需扩大验证。[已测组合](parity/runs/native-ordered-indexing/RESULT.md) |
+| 验收生产部署 | 已验证读角色查询、单库写事务中强杀数据库引擎，以及部分协调任务的应用进程异常退出。 | 业务库与同步库分开的协调多链运行中强杀数据库引擎、主机掉电、其他 PGlite 运行模式的异常退出，以及写入和部署管理角色的最小权限仍待验收。[恢复测试](parity/runs/native-engine-recovery/RESULT.md) · [读角色测试](parity/runs/native-standalone-serve/RESULT.md) |
 
-这些条目按使用 Go 编写索引器的目标维护。数据库范围为当前格式。[各运行模式的具体限制](docs/RUNTIME_SUPPORT.md)
+范围为用 Go 编写索引器、使用当前数据库格式。不同运行器支持的事件来源和启动选项见[运行模式矩阵](docs/RUNTIME_SUPPORT.md)。
 
 ## 当前验证与计数
 

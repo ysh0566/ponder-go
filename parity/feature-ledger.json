@@ -1846,7 +1846,34 @@
       "evidence": [
         "parity/runs/native-cli-logging/RESULT.md"
       ],
-      "remaining": "Development terminal UI is separate. App-owned log writers can opt into inherited settings."
+      "remaining": "App-owned log writers can opt into inherited settings. See native-dev-progress for the terminal display."
+    },
+    {
+      "id": "native-dev-progress",
+      "status": "verified_subset",
+      "implementation_files": [
+        "cmd/ponder/dev_progress.go",
+        "cmd/ponder/dev.go",
+        "cmd/ponder/project.go",
+        "internal/devstatus/status.go",
+        "runtime/application.go",
+        "query/http.go",
+        "query/routes.go"
+      ],
+      "native_test_files": [
+        "cmd/ponder/dev_progress_test.go",
+        "runtime/dev_progress_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/bin/ponder.ts",
+        "packages/core/src/ui/app.ts",
+        "packages/core/src/ui/index.ts",
+        "packages/core/src/ui/patch.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-dev-progress/RESULT.md"
+      ],
+      "remaining": "Per-chain request rates, callback counts and durations, backfill percentages and ETA are not displayed."
     }
   ]
 }

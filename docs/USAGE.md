@@ -134,6 +134,10 @@ ponder dev --hostname 127.0.0.1 --port 42069 --schema ponder_go_demo
 
 保存修改且编译成功后，CLI 会停止上一个进程并启动新的索引器。编译失败时，之前成功启动的进程继续运行，下一次编辑会重新构建。开发 schema 的名字由前缀和项目内容的摘要生成，修改处理函数或表定义会选择新的命名空间并重新索引。按 Ctrl+C 退出。
 
+当标准输出和标准错误连接到同一个交互终端时，`ponder dev` 在日志下方显示编译和重载状态。通过 `runtime.LaunchApplication` 启动的应用还会显示实际 HTTP 地址、是否追上链头，以及每条已有 checkpoint 的链最近提交的区块。即使指定 `--port 0`，也可以使用显示的地址查询。重组期间区块号可能回退。自定义 HTTP 入口只显示进程和构建状态。
+
+需要普通日志时使用 `ponder dev --disable-ui`。管道或文件重定向、`--log-format json`、`--log-level silent` 和 `TERM=dumb` 都会自动关闭进度显示。[终端与双后端测试](../parity/runs/native-dev-progress/RESULT.md)
+
 `--hostname` 和 `--port` 也可用于 `start` 和 `serve`。端口 0 让操作系统分配空闲端口。使用 `runtime.LaunchApplication` 的 Go 应用会读取这两个选项。自行创建 HTTP 服务的应用可从 `PONDER_HOSTNAME`、`PONDER_PORT` 读取对应值。
 
 ## 控制 CLI 和 Go 应用日志
@@ -162,7 +166,7 @@ go mod tidy
 go build .
 ```
 
-示例使用 PostgreSQL。选择 PGlite 的独立应用需在项目目录安装 `@electric-sql/pglite@0.2.13` 并提供 Node.js，Go 程序已内置适配器脚本。
+示例使用 PostgreSQL。选择 PGlite 的独立应用需在项目目录安装 `@electric-sql/pglite@0.2.13` 并提供 Node.js，Go 程序已内置适配器脚本。可在自己的 Go 入口调用 `store.OpenPGlite(ctx, directory)` 后同时启动索引和查询。独立 `ponder serve` 使用 PostgreSQL。[上游 0.18.2 的独立查询限制](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/bin/commands/serve.ts#L102-L109)
 
 如果设置了 `GOBIN`，CLI 位于该目录。要使用自己的仓库地址，可在项目中执行 `go mod edit -module 你的模块路径`。生成的项目包含自己的 `go.mod`、Go 事件处理函数和表定义。沿用上文的数据库、RPC 和合约地址，在项目目录执行 `ponder start --schema ponder_go_my_indexer`，其中 `ponder` 取安装后的实际路径。
 
@@ -397,6 +401,6 @@ ponder db prune --database-url "$PONDER_LOCAL_DATABASE_URL" --schema ponder_go_b
 
 | 现象 | 检查方法 |
 | --- | --- |
-| 启动时要求设置 `PONDER_LOCAL_…` | 在启动 CLI 的同一个终端导出数据库 URL、RPC URL 和合约地址。示例的 `serve` 入口也会读取这三个变量。 |
+| 启动时要求设置 `PONDER_LOCAL_…` | 在启动 CLI 的同一个终端导出数据库 URL。索引模式还需要 RPC URL 和合约地址，独立 `serve` 使用数据库 URL 和已创建的部署命名空间。 |
 | SQL 返回空数组 | 对照 `deploy.json` 里的 `deployedTo`、当前 Anvil 地址和 `/status`。确认索引已读到部署区块，且请求的是启动日志中的 HTTP 地址。 |
 | 打开已有命名空间失败 | 检查是否复用了不同 schema 定义、旧存储格式或由其他应用创建的命名空间。保留原库，在新的命名空间重新索引。 |

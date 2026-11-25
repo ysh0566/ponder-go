@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ysh0566/ponder-go/internal/devstatus"
 	"github.com/ysh0566/ponder-go/query"
 )
 
@@ -90,8 +91,13 @@ func LaunchApplication(ctx context.Context, indexer ApplicationIndexer, routes *
 		indexing = make(chan error, 1)
 		go func(out chan<- error) { out <- indexer.RunIndexing(run, setReady) }(indexing)
 	}
+	var reporters sync.WaitGroup
+	if path := os.Getenv(devstatus.FileEnv); path != "" && os.Getenv("PONDER_COMMAND") == "dev" {
+		reporters.Go(func() { reportDevProgress(run, routes, listener.Addr().String(), path) })
+	}
 	go func() {
 		defer close(app.done)
+		defer reporters.Wait()
 		select {
 		case <-run.Done():
 		case <-listener.Done():
@@ -130,5 +136,32 @@ func (a *Application) Shutdown(ctx context.Context) error {
 		return ctx.Err()
 	case <-a.done:
 		return a.err
+	}
+}
+
+// reportDevProgress runs only while an interactive watcher is attached.
+func reportDevProgress(ctx context.Context, routes *query.Server, address, path string) {
+	timer := time.NewTicker(time.Second)
+	defer timer.Stop()
+	for ctx.Err() == nil {
+		ready, readyErr := routes.IsReady(ctx)
+		report := devstatus.Snapshot{Address: address, Ready: ready, ReadinessUnavailable: readyErr != nil}
+		if chains, err := routes.Status(ctx); err == nil {
+			report.Blocks = make(map[string]uint64, len(chains))
+			for name, chain := range chains {
+				report.Blocks[name] = chain.Block.Number
+			}
+		}
+		if ctx.Err() != nil {
+			return
+		}
+		if err := report.Write(path); err != nil {
+			return
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-timer.C:
+		}
 	}
 }

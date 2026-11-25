@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ysh0566/ponder-go/internal/devstatus"
 	"github.com/ysh0566/ponder-go/logging"
 	"github.com/ysh0566/ponder-go/schema"
 )
@@ -21,6 +22,7 @@ type nativeProject struct {
 	env                        []string
 	out, diagnostics           io.Writer
 	log                        *logging.Logger
+	dashboard                  *devDashboard
 }
 
 func launchProject(ctx context.Context, mode string, args []string, out, diagnostics io.Writer, log *logging.Logger) error {
@@ -32,6 +34,10 @@ func launchProject(ctx context.Context, mode string, args []string, out, diagnos
 	views := flags.String("views-schema", os.Getenv("DATABASE_VIEWS_SCHEMA"), "Published views schema")
 	host := flags.String("hostname", os.Getenv("PONDER_HOSTNAME"), "HTTP listener hostname")
 	port := flags.String("port", os.Getenv("PONDER_PORT"), "HTTP listener port (0 selects an available port)")
+	var disableUI bool
+	if mode == "dev" {
+		flags.BoolVar(&disableUI, "disable-ui", false, "Disable the terminal progress display")
+	}
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
@@ -74,6 +80,18 @@ func launchProject(ctx context.Context, mode string, args []string, out, diagnos
 	}
 	defer os.RemoveAll(buildDir)
 	if mode == "dev" {
+		if cfg := log.Settings(); !disableUI && cfg.Format == "pretty" && cfg.Level != "silent" {
+			if ui := newDevDashboard(out, diagnostics, filepath.Join(buildDir, "progress.json")); ui != nil {
+				project.dashboard = ui
+				defer ui.close()
+				project.out = devOutput{ui, out}
+				project.diagnostics = devOutput{ui, diagnostics}
+				project.log, err = logging.New(project.diagnostics, cfg)
+				if err != nil {
+					return err
+				}
+			}
+		}
 		return project.watch(ctx, buildDir)
 	}
 	binary := filepath.Join(buildDir, "indexer")
@@ -104,7 +122,11 @@ func (p *nativeProject) command(ctx context.Context, binary, namespace string) *
 		command.Env = append(command.Env, "PONDER_SHADOW_SCHEMA="+namespace)
 	}
 	if p.mode == "dev" {
-		command.Env = append(command.Env, "DATABASE_SCHEMA="+namespace)
+		path := ""
+		if p.dashboard != nil {
+			path = p.dashboard.file
+		}
+		command.Env = append(command.Env, "DATABASE_SCHEMA="+namespace, devstatus.FileEnv+"="+path)
 	}
 	command.Stdin = os.Stdin
 	command.Stdout = p.out
