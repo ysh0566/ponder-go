@@ -1,19 +1,13 @@
 package store
 
 import (
-	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"fmt"
-	"net/url"
-	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/internal/testpostgres"
 	"github.com/ysh0566/ponder-go/schema"
 )
 
@@ -122,54 +116,8 @@ func TestDatabaseEngineRecovery(t *testing.T) {
 
 func disposablePostgresEngine(t *testing.T) (func() (Backend, error), func(Backend), func()) {
 	t.Helper()
-	image := os.Getenv("PONDER_TEST_POSTGRES_ENGINE_IMAGE")
-	if image == "" {
-		t.Skip("set PONDER_TEST_POSTGRES_ENGINE_IMAGE to a local disposable postgres image")
-	}
-	password := make([]byte, 24)
-	if _, err := rand.Read(password); err != nil {
-		t.Fatal(err)
-	}
-	docker := func(args ...string) string {
-		t.Helper()
-		ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
-		defer cancel()
-		cmd := exec.CommandContext(ctx, "docker", args...)
-		cmd.Env = append(os.Environ(), "POSTGRES_PASSWORD="+hex.EncodeToString(password))
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			t.Fatalf("docker %s: %v %s", args[0], err, out)
-		}
-		return strings.TrimSpace(string(out))
-	}
-	id := docker("run", "--detach", "--pull=never", "--publish", "127.0.0.1::5432", "--env", "POSTGRES_PASSWORD", "--label", "ponder-go-test=engine-recovery", image)
-	if _, err := hex.DecodeString(id); len(id) != 64 || err != nil {
-		t.Fatalf("invalid new container ID %q", id)
-	}
-	t.Cleanup(func() {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		defer cancel()
-		if out, err := exec.CommandContext(ctx, "docker", "rm", "--force", "--volumes", id).CombinedOutput(); err != nil {
-			t.Errorf("remove test container: %v %s", err, out)
-		}
-	})
-	endpoint := &url.URL{Scheme: "postgres", User: url.UserPassword("postgres", hex.EncodeToString(password)), Path: "/postgres", RawQuery: "sslmode=disable"}
-	open := func() (Backend, error) {
-		endpoint.Host = docker("port", id, "5432/tcp")
-		ctx, cancel := context.WithTimeout(t.Context(), 45*time.Second)
-		defer cancel()
-		for {
-			db, err := OpenPostgres(ctx, endpoint.String())
-			if err == nil {
-				return db, nil
-			}
-			select {
-			case <-ctx.Done():
-				return nil, fmt.Errorf("disposable PostgreSQL startup: %w", ctx.Err())
-			case <-time.After(100 * time.Millisecond):
-			}
-		}
-	}
+	server := testpostgres.Start(t)
+	open := func() (Backend, error) { return OpenPostgres(t.Context(), server.URL()) }
 	var previous string
 	stop := func(db Backend) {
 		result, err := db.Query(t.Context(), "SELECT pg_postmaster_start_time()::text AS started")
@@ -177,13 +125,10 @@ func disposablePostgresEngine(t *testing.T) (func() (Backend, error), func(Backe
 			t.Fatalf("first postmaster: %v %v", result, err)
 		}
 		previous = fmt.Sprint(result.Rows[0]["started"])
-		docker("kill", "--signal", "KILL", id)
-		if code := docker("inspect", "--format", "{{.State.ExitCode}}", id); code != "137" {
-			t.Fatalf("engine exit: %s", code)
-		}
+		server.Kill(t)
 	}
 	restart := func() {
-		docker("start", id)
+		server.Restart(t)
 		db, err := open()
 		if err != nil {
 			t.Fatal(err)

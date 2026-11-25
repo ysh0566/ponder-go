@@ -1985,6 +1985,29 @@
         "parity/runs/native-callback-overlap/RESULT.md"
       ],
       "remaining": "The native overlap regression covers a single chain. Multi-provider failover during a cross-chain reorg and separate database engine recovery are open."
+    },
+    {
+      "id": "native-deployment-roles",
+      "status": "verified_subset",
+      "implementation_files": [
+        "examples/erc20/main.go",
+        "store/deployment.go",
+        "store/prune.go",
+        "docs/examples/postgres-writer.sql"
+      ],
+      "native_test_files": [
+        "cmd/ponder/deployment_roles_test.go",
+        "store/engine_recovery_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/bin/commands/createViews.ts",
+        "packages/core/src/bin/commands/prune.ts",
+        "packages/core/src/database/actions.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-deployment-roles/RESULT.md"
+      ],
+      "remaining": "The grants apply to the native atomic PostgreSQL store and the example business table. Independent business and sync database lifecycles, host loss and cross-chain provider pool failover are separate scenarios."
     }
   ]
 }

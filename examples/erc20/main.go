@@ -76,7 +76,15 @@ func run(ctx context.Context, logger *logging.Logger) error {
 		defer server.Close()
 		return serve(ctx, nil, server, logger)
 	}
-	s, e := store.New(ctx, backend, model, namespace, schema.Multichain)
+	open := store.New
+	switch os.Getenv("PONDER_DATABASE_MODE") {
+	case "", "create":
+	case "existing":
+		open = store.OpenExisting
+	default:
+		return fmt.Errorf("PONDER_DATABASE_MODE must be create or existing")
+	}
+	s, e := open(ctx, backend, model, namespace, schema.Multichain)
 	if e != nil {
 		return e
 	}
