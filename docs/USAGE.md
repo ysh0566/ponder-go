@@ -234,6 +234,10 @@ if wallet != nil && url != nil {
 
 默认返回带校验和的以太坊地址。显式传入 `CoinType: big.NewInt(0)` 等 ENSIP-9 币种编号时，返回该币种的原始地址字节，以十六进制字符串表示。可用 `BlockOptions.BlockNumber` 指定高度，`GatewayURLs` 会传给 Universal Resolver。需要 EIP-3668 链下读取的名称目前会返回节点错误。[双后端与上游验证](../parity/runs/native-ens-records/RESULT.md)
 
+用 `avatar, err := client.GetEnsAvatar(ctx, "alice.eth")` 查询头像。成功时 `*avatar` 是图片 URL 或链上数据 URI，缺少记录或图片不可用时返回 `nil`。客户端在指定的 ENS 区块读取头像记录，与固定上游一致，NFT 合约的 `tokenURI` 或 `uri` 在同一链按 `latest` 读取。链外图片及元数据由查询时的网关提供。
+
+`indexing.ENSAvatarOptions` 可设置 `IPFSGateway` 和 `ArweaveGateway`。默认 HTTP 客户端连接公网，超时 15 秒，远程 NFT 元数据上限为 4 MiB。使用自建内网网关时，可通过 `HTTPClient` 传入限制到该网关的传输配置。图片 URL 需通过 HTTP HEAD 检查。[头像示例与测试](../parity/runs/native-ens-avatar/RESULT.md)
+
 在生成的 Go 回调中，`GetFeeHistory` 默认以事件所在区块作为费用区间的末端。`GetProof` 在同一区块读取账户及指定存储槽的 EIP-1186 证明。费用、余额和存储值使用 `*big.Int`，证明节点保留 RPC 返回的十六进制编码。
 
 ```go

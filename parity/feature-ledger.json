@@ -1780,7 +1780,25 @@
       "evidence": [
         "parity/runs/native-ens-records/RESULT.md"
       ],
-      "remaining": "Avatar records and automatic EIP-3668 offchain lookup remain open."
+      "remaining": "Automatic EIP-3668 offchain lookup remains open."
+    },
+    {
+      "id": "native-ens-avatar",
+      "status": "verified_subset",
+      "implementation_files": [
+        "indexing/client_ens_avatar.go",
+        "indexing/gateway_http.go"
+      ],
+      "native_test_files": [
+        "indexing/client_ens_avatar_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing/client.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-ens-avatar/RESULT.md"
+      ],
+      "remaining": "Automatic EIP-3668 lookup is separate. Hosted media is fetched when read. The default media client allows public destinations."
     }
   ]
 }

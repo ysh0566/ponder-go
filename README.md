@@ -30,7 +30,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 | 使用场景 | 当前边界 |
 | --- | --- |
 | 在同一 Go 应用中协调多条链 | 原生 `runtime.NewIndexer` 支持独立多链和按全局顺序索引。默认协调模式仍需使用 `historical.RuntimeRunner`。还需验证更多工厂日志、交易、转账和函数调用 trace 的重叠组合，以及多家 RPC 同时中断时的恢复。[全局排序使用方式](docs/USAGE.md#按全局顺序索引多条链) |
-| 在回调中查询链上状态 | `indexing.Client` 已提供 21 个上游高层方法中的 20 个，包括历史合约调用、gas 估算、ABI 模拟、交易以及 ENS 解析器、钱包地址和文本查询。还缺 ENS 头像方法，以及遇到 EIP-3668 时自动向链下网关取数并回交合约的流程。批量读合约可使用链配置中的 Multicall3 地址，并支持指定调用账户和临时状态。[方法清单](docs/RUNTIME_SUPPORT.md#callback-rpc-methods) |
+| 在回调中查询链上状态 | `indexing.Client` 已提供 上游列出的全部 21 个高层方法，包括历史合约调用、gas 估算、ABI 模拟、交易及 ENS 地址、文本和头像查询。ENS 头像支持直接图片、IPFS、IPNS、Arweave 以及 ERC-721、ERC-1155 元数据。遇到 EIP-3668 时自动向链下网关取数并回交合约的流程仍待补齐。批量读合约可使用链配置中的 Multicall3 地址，并支持指定调用账户和临时状态。[方法清单](docs/RUNTIME_SUPPORT.md#callback-rpc-methods) |
 | 管理部署和日志 | PostgreSQL 已支持视图发布和部署清理。PGlite 仍缺独立进程管理数据目录、与写入进程共享目录提供查询的支持。热重载已可用，CLI 尚缺统一的日志级别、JSON 日志格式和开发终端 UI。 |
 | 生产故障验收 | 已在写事务提交前强制终止 PostgreSQL 和 PGlite 引擎，验证重启后的余额、检查点、重放和撤销。全局排序的纯日志历史任务也覆盖了 PGlite 应用异常退出。仍需验证主机掉电、协调多链运行中数据库引擎崩溃，以及生产数据库角色与权限。[故障恢复实测](parity/runs/native-engine-recovery/RESULT.md) |
 
