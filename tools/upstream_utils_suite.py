@@ -21,7 +21,7 @@ ROUTES = [
     ("coinbase", "RPC_URL_COINBASE_8453", "base"),
     ("ankr-tac", "RPC_URL_ANKR_239", "tac"),
     ("altitude", "RPC_URL_ALTITUDE_999", "hyper"),
-    ("1rpc", "https://1rpc.io/eth", "ethereum"),
+    ("1rpc", "https://1rpc.io/eth", "1rpc"),
     ("llamarpc", "https://eth.llamarpc.com", "ethereum"),
     ("merkle", "https://eth.merkle.io", "ethereum"),
     ("publicnode", "https://ethereum-rpc.publicnode.com", "ethereum"),
@@ -33,6 +33,14 @@ ROUTES = [
     ("blast", "https://rpc.blast.io", "blast"),
     ("tron", "https://api.trongrid.io/jsonrpc", "tron"),
     ("zkevm", "https://zkevm-rpc.com", "zkevm"),
+    ("arbitrum", "https://arb1.arbitrum.io/rpc", "arbitrum"),
+    ("aurora", "https://mainnet.aurora.dev", "aurora"),
+    ("cloudflare", "https://cloudflare-eth.com", "cloudflare"),
+    ("harmony", "https://api.harmony.one", "harmony"),
+    ("optimism", "https://mainnet.optimism.io", "optimism"),
+    ("somnia", "https://dream-rpc.somnia.network", "somnia"),
+    ("thirdweb", "https://1.rpc.thirdweb.com", "thirdweb"),
+    ("zksync", "https://mainnet.era.zksync.io", "zksync"),
 ]
 
 

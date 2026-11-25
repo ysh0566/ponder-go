@@ -14,7 +14,8 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tools/rpcnode-fixtures"
 ARCHIVE = ROOT / "testdata/rpc/provider-indexes.tar.gz"
-CHAINS = ("ethereum", "base", "tac", "hyper", "avax", "moon", "celo", "blast", "zkevm", "tron")
+PUBLIC_ERRORS = ("1rpc", "arbitrum", "aurora", "cloudflare", "harmony", "somnia", "thirdweb", "zksync")
+CHAINS = ("ethereum", "base", "tac", "hyper", "avax", "moon", "celo", "blast", "zkevm", "tron", "optimism", *PUBLIC_ERRORS)
 
 
 def extract_bundle(path, expected, destination):
@@ -46,9 +47,15 @@ def stop_server(process):
 
 
 def start_server(name, indexes, output, stack, bytes_per_second=None, range_policy_url=None):
-    args = [str(indexes / ("index-" + name))]
-    if name == "ethereum":
-        args.append(str(indexes / "index-weth"))
+    # Provider-specific errors stay on that provider's listener.
+    directories = {"ethereum": ("ethereum", "weth"), "optimism": ("optimism", "optimism-weth"),
+                   "1rpc": ("ethereum",), "cloudflare": ("ethereum",)}.get(name, (name,))
+    args = [str(indexes / ("index-" + directory)) for directory in directories]
+    if name in PUBLIC_ERRORS:
+        args += ["--error-capture", str(indexes / "public-errors" / (name + ".json"))]
+    if name == "1rpc":
+        for variant in ("1rpc-narrow", "1rpc-filtered"):
+            args += ["--error-capture", str(indexes / "public-errors" / (variant + ".json"))]
     if name in ("moon", "tron"):
         capture = "moonriver-error.json" if name == "moon" else "tron-error.json"
         args += ["--error-capture", str(FIXTURES / capture)]
@@ -77,6 +84,8 @@ def archive_nodes(archive, output, gateways=None, range_policy_nodes=None):
                        "b49f105099568c1b88527d5e80bdeae3fe11c3adbf1a360f5f269c2f208f0d4c", indexes)
         extract_bundle(FIXTURES / "tron-and-base-indexes.tar.gz",
                        "e6763e4f812e41c91d031a7c5c7a4c952345e1ca93a116ef239fea8741e4b70a", indexes)
+        extract_bundle(FIXTURES / "public-provider-indexes.tar.gz",
+                       "026f05727b8ffc09af0a80266a733d59eae6729931c8fa7cad76c07f62d43ca9", indexes)
         celo = FIXTURES / "celo-10000000-10001000.json.gz"
         if hashlib.sha256(celo.read_bytes()).hexdigest() != "13017272c4960fb1da5e08b7bdb2fa0d5d528a59d87af3245dd275200d6df06c":
             raise ValueError("Celo capture differs from the reviewed fixture")

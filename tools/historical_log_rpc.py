@@ -8,6 +8,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 from pathlib import Path
 import re
+import subprocess
 import tempfile
 import time
 from urllib.error import HTTPError, URLError
@@ -15,6 +16,7 @@ from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 
+NODE_FETCH = ContextVar("historical_rpc_node_fetch", default=False)
 REQUEST_INTERVAL = ContextVar("historical_rpc_request_interval", default=0)
 
 
@@ -34,6 +36,31 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def fetch_rpc(request):
+    if not NODE_FETCH.get():
+        with urlopen(request, timeout=45) as response:
+            return json.load(response)
+
+    payload = json.dumps({"url": request.full_url, "body": request.data.decode()}).encode()
+    try:
+        response = subprocess.run(["node", str(Path(__file__).with_name("historical-rpc-fetch.mjs"))],
+                                  input=payload, capture_output=True, timeout=50, check=True)
+    except subprocess.TimeoutExpired as error:
+        raise TimeoutError("RPC fetch timed out") from error
+    except subprocess.CalledProcessError as error:
+        if error.returncode == 124:
+            raise TimeoutError("RPC fetch timed out") from error
+        if error.returncode == 75:
+            raise ConnectionResetError("RPC fetch connection closed") from error
+        raise OSError(f"Node RPC fetch failed for {urlsplit(request.full_url).hostname}") from error
+    metadata, _, body = response.stdout.partition(b"\n")
+    status = json.loads(metadata)
+    if not 200 <= status["status"] < 300:
+        headers = {"Retry-After": status["retryAfter"]} if status["retryAfter"] else {}
+        raise HTTPError(request.full_url, status["status"], "RPC request failed", headers, None)
+    return json.loads(body)
+
+
 def rpc_response(url, method, params):
     payload = json.dumps(dict(jsonrpc="2.0", id=1, method=method, params=params)).encode()
     request = Request(url, data=payload, headers={"Content-Type": "application/json"})
@@ -41,8 +68,7 @@ def rpc_response(url, method, params):
         if interval := REQUEST_INTERVAL.get():
             time.sleep(interval)
         try:
-            with urlopen(request, timeout=45) as response:
-                result = json.load(response)
+            result = fetch_rpc(request)
             break
         except HTTPError as error:
             delay = error.headers.get("Retry-After", str(2 ** (attempt + 1)))
@@ -67,14 +93,20 @@ def rpc(url, method, params):
     return result["result"]
 
 
-def validate_logs(rows, first, last, address):
+def validate_logs(rows, first, last, address, chain=None):
     if not isinstance(rows, list):
         raise ValueError("expected an array of mined logs")
     previous = (-1, -1)
-    previous_hash = None
+    previous_hash = previous_transaction = None
     for row in rows:
         height = quantity(row["blockNumber"])
-        pos = height, quantity(row["logIndex"])
+        log_index = quantity(row["logIndex"])
+        tx_index = quantity(row["transactionIndex"])
+        tx_hash = fixed_hex(row["transactionHash"], 32)
+        # Aurora receipts number logs within each transaction.
+        pos = (height, tx_index, log_index) if chain == 1313161554 else (height, log_index)
+        if chain == 1313161554 and previous[:2] == pos[:2] and previous_transaction != tx_hash:
+            raise ValueError("different transactions at the same block position")
         block_hash = fixed_hex(row["blockHash"], 32)
         if not first <= height <= last or pos <= previous or row.get("removed", False) is not False:
             raise ValueError("log out of range, duplicated, unordered or removed")
@@ -83,15 +115,13 @@ def validate_logs(rows, first, last, address):
         match = fixed_hex(row["address"], 20)
         if address is not None and match != address:
             raise ValueError("unexpected address in captured logs")
-        fixed_hex(row["transactionHash"], 32)
-        quantity(row["transactionIndex"])
         if not isinstance(row["topics"], list) or len(row["topics"]) > 4:
             raise ValueError("invalid topics")
         for topic in row["topics"]:
             fixed_hex(topic, 32)
         if not re.fullmatch(r"0x(?:[0-9a-fA-F]{2})*", row["data"]):
             raise ValueError("invalid log data")
-        previous, previous_hash = pos, block_hash
+        previous, previous_hash, previous_transaction = pos, block_hash, tx_hash
 
 
 def page_file(directory, first, last):
@@ -162,7 +192,7 @@ def collect(url, chain, first, last, width, address, output):
             if address:
                 query["address"] = request_address
             rows = rpc(url, "eth_getLogs", [query])
-            validate_logs(rows, low, high, address)
+            validate_logs(rows, low, high, address, chain)
             if rows:
                 first_log = first_log or rows[0]
                 last_log = rows[-1]
@@ -195,7 +225,7 @@ class Index:
             low, high = page["first"], page["last"]
             if type(low) is not int or type(high) is not int or low != cursor or not low <= high <= self.last:
                 raise ValueError("gap or overlap in archive pages")
-            validate_logs(self.read(page), low, high, self.address)
+            validate_logs(self.read(page), low, high, self.address, self.chain)
             cursor = high + 1
         if cursor != self.last + 1:
             raise ValueError("archive does not cover its declared range")
@@ -262,11 +292,18 @@ def capture_request(url, chain, first, last, address, output):
     return source.hostname, query
 
 
-def capture_error(url, chain, first, last, address, output):
+def capture_error(url, chain, first, last, address, output, header_url=None):
     host, query = capture_request(url, chain, first, last, address, output)
 
+    if header_url is not None:
+        source = urlsplit(header_url)
+        if source.scheme not in ("https", "http") or not source.hostname:
+            raise ValueError("expected an HTTP header RPC endpoint")
+        if quantity(rpc(header_url, "eth_chainId", [])) != chain:
+            raise ValueError("wrong header RPC chain")
+
     def anchors():
-        header = block_header(url, last)
+        header = block_header(header_url or url, last)
         return fixed_hex(header["hash"], 32), fixed_hex(header["parentHash"], 32)
 
     anchor, parent = anchors()
@@ -277,6 +314,8 @@ def capture_error(url, chain, first, last, address, output):
         raise ValueError("error or historical block changed during capture")
     record = dict(version=1, chain=chain, source=host, anchor=anchor, parentHash=parent,
                   method="eth_getLogs", params=params, error=error)
+    if header_url is not None:
+        record["headerSource"] = source.hostname
     publish_capture(output, (json.dumps(record, indent=2) + "\n").encode())
 
 
@@ -298,13 +337,13 @@ def capture_logs(url, chain, first, last, width, address, output):
     host, query = capture_request(url, chain, first, last, address, output)
     address = query.get("address")
     rows = rpc(url, "eth_getLogs", [query])
-    validate_logs(rows, first, last, address)
+    validate_logs(rows, first, last, address, chain)
     offset = 0
     for low in range(first, last + 1, width):
         high = min(last, low + width - 1)
         subquery = {**query, "fromBlock": hex(low), "toBlock": hex(high)}
         page = rpc(url, "eth_getLogs", [subquery])
-        validate_logs(page, low, high, address)
+        validate_logs(page, low, high, address, chain)
         if log_digest(page) != log_digest(rows[offset:offset + len(page)]):
             raise ValueError("paged response differs from the full log response")
         offset += len(page)
@@ -352,7 +391,7 @@ def server(indexes, port, error_captures=(), log_captures=(), bytes_per_second=N
         key = capture_filter(record)
         chains.add(record["chain"])
         rows = record.get("result")
-        validate_logs(rows, *key)
+        validate_logs(rows, *key, chain=record["chain"])
         if (type(record.get("pageWidth")) is not int or record["pageWidth"] < 1 or "error" in record
                 or log_digest(rows) != record.get("resultSha256")):
             raise ValueError("invalid observed log response")
@@ -452,6 +491,7 @@ def main():
     capture.add_argument("directory", type=Path)
     error = commands.add_parser("capture-error")
     error.add_argument("--rpc-url", required=True)
+    error.add_argument("--header-rpc-url", help="same-chain archive for headers when the error source lacks historical blocks")
     for name in ("chain", "first", "last"):
         error.add_argument("--" + name, type=int, required=True)
     error.add_argument("--address")
@@ -470,17 +510,20 @@ def main():
     host.add_argument("--log-capture", action="append", type=Path, default=[])
     host.add_argument("directories", type=Path, nargs="*")
     for collecting in (capture, error, logs):
+        collecting.add_argument("--node-fetch", action="store_true", help="use the upstream Node Fetch HTTP client")
         collecting.add_argument("--request-interval", type=int, default=0,
                                 help="pause this many seconds before each remote read, including retries")
     args = parser.parse_args()
     interval = getattr(args, "request_interval", 0)
     if interval < 0:
         parser.error("--request-interval must be nonnegative")
+    fetch_token = NODE_FETCH.set(getattr(args, "node_fetch", False))
     token = REQUEST_INTERVAL.set(interval)
     try:
         run_command(args)
     finally:
         REQUEST_INTERVAL.reset(token)
+        NODE_FETCH.reset(fetch_token)
 
 
 def run_command(args):
@@ -489,7 +532,7 @@ def run_command(args):
     elif args.command == "capture-logs":
         capture_logs(args.rpc_url, args.chain, args.first, args.last, args.page_width, args.address, args.output)
     elif args.command == "capture-error":
-        capture_error(args.rpc_url, args.chain, args.first, args.last, args.address, args.output)
+        capture_error(args.rpc_url, args.chain, args.first, args.last, args.address, args.output, args.header_rpc_url)
     else:
         captures = [json.loads(path.read_bytes()) for path in args.error_capture]
         responses = [json.loads(gzip.decompress(path.read_bytes())) for path in args.log_capture]

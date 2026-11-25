@@ -62,6 +62,7 @@ func TestUpstreamProviderArchives(t *testing.T) {
 		first, width                    uint64
 		logs                            int
 	}{
+		// The pinned source checks canonical UNI history. The current provider limit is covered below.
 		{"1rpc", "1rpc success", "ethereum", uni, 18_000_000, 1_000, 9},
 		{"alchemy", "alchemy success response size", "ethereum", weth, 18_000_000, 2_000, 140_192},
 		{"alchemy", "alchemy success block range", "ethereum", uni, 18_000_000, 1_000_000, 3_773},
@@ -84,6 +85,13 @@ func TestUpstreamProviderArchives(t *testing.T) {
 		{"quicknode", "quicknode success", "ethereum", uni, 18_000_000, 10_000, 49},
 		{"tron", "tron success", "tron", "0x543208eB34ecad8f91a4D83e597d3c39D67ca47B", 71_583_814, 5_000, 4},
 		{"zkevm", "zkevm success", "zkevm", "", 950_000, 1_000, 2_979},
+		{"arbitrum", "arbitrum success", "arbitrum", "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1", 1_000_000, 1_000, 714},
+		{"aurora", "aurora success", "aurora", "", 57_600_000, 2_000, definedOnly},
+		{"harmony", "harmony success", "harmony", "", 70_000_000, 1_024, 703},
+		{"optimism", "optimism success", "optimism", "0x871f2F2ff935FD1eD867842FF2a7bfD051A5E527", 100_000_000, 1_000, 0},
+		{"somnia", "somnia success", "somnia", "", 53_580_000, 1_000, 5_616},
+		{"thirdweb", "thirdweb success", "thirdweb", uni, 18_000_000, 1_000, 9},
+		{"zksync", "zksync success", "zksync", "0xfc00dac251711508d4dd7b0c310e913575988838", 18_406_545, 10_000, 726},
 	}
 	for _, tc := range cases {
 		t.Run(tc.provider+"/"+tc.title, func(t *testing.T) {
@@ -108,6 +116,44 @@ func TestUpstreamProviderArchives(t *testing.T) {
 			}
 			if tc.logs != definedOnly && len(logs) != tc.logs {
 				t.Fatalf("got %d logs, want %d", len(logs), tc.logs)
+			}
+		})
+	}
+	for _, tc := range []struct {
+		network, title, address, message string
+		code                             int
+		first, delta, suggestedDelta     uint64
+		suggested                        bool
+	}{
+		{"arbitrum", "arbitrum response size", "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1", "logs matched by query exceeds limit of 10000", -32000, 1_000_000, 20_000, 10_000, false},
+		{"aurora", "aurora block range", "", "up to a 2000 block range", -32005, 57_600_000, 2_001, 2_000, true},
+		{"cloudflare", "cloudflare block range", "", "Max range: 800", -32047, 18_000_000, 800, 799, true},
+		{"harmony", "harmony block range", "", "query must be smaller than size 1024", -32000, 70_000_000, 1_025, 1_024, true},
+		{"somnia", "somnia block range", "", "block range exceeds 1000", -1, 53_580_000, 1_001, 1_000, true},
+		{"thirdweb", "thirdweb response size", weth, "Maximum allowed number of requested blocks is 1000", -32005, 18_000_000, 1_001, 1_000, true},
+		{"zksync", "zksync block range", "0xfc00dac251711508d4dd7b0c310e913575988838", "Try with this block range ", -32602, 18_406_545, 50_000, 45_106, true},
+		{"1rpc", "current 50 block limit", uni, "eth_getLogs is limited to 0 - 50 blocks range", -32602, 18_000_000, 51, 50, true},
+	} {
+		t.Run(tc.network+"/"+tc.title, func(t *testing.T) {
+			client := New(urls[tc.network])
+			client.Retries = 0
+			hex := func(n uint64) string { return fmt.Sprintf("0x%x", n) }
+			end := tc.first + tc.delta
+			query := map[string]any{"fromBlock": hex(tc.first), "toBlock": hex(end)}
+			if tc.address != "" {
+				query["address"] = tc.address
+			}
+			var logs []json.RawMessage
+			callErr := client.Call(t.Context(), "eth_getLogs", []any{query}, &logs)
+			var providerErr *Error
+			if !errors.As(callErr, &providerErr) || providerErr.Code != tc.code || !strings.Contains(providerErr.Message, tc.message) {
+				t.Fatalf("unexpected provider error: %v", callErr)
+			}
+			firstEnd := tc.first + tc.suggestedDelta
+			want := LogsRetryPlan{true, tc.suggested, []LogRange{{hex(tc.first), hex(firstEnd)}, {hex(firstEnd + 1), hex(end)}}}
+			got, err := GetLogsRetryHelper(query, callErr)
+			if err != nil || !reflect.DeepEqual(got, want) {
+				t.Fatalf("retry plan: got %+v, want %+v, error %v", got, want, err)
 			}
 		})
 	}

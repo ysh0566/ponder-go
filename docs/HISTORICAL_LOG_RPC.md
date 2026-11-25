@@ -162,7 +162,7 @@ python3 tools/upstream_utils_suite.py --upstream "$PONDER_UPSTREAM" \
   --output "$REPORTS/utils"
 ```
 
-The default runner starts ten loopback listeners for 20 complete test files. Eight original environment variables point to these listeners. The HTTP adapter maps 12 original URL literals. The remaining runtime files use their original transports. A separate Vitest invocation runs the type declarations. The three pairs of JSON and exit-code files retain failures from all partitions. Public endpoint results can change between runs.
+The default runner starts 19 loopback listeners for 28 complete test files. Eight original environment variables point to these listeners. The HTTP adapter maps 20 original URL literals. The remaining runtime files use their original transports. A separate Vitest invocation runs the type declarations. The three pairs of JSON and exit-code files retain failures from all partitions. Public endpoint results can change between runs.
 
 ## Run Base and Swell behind a real gateway
 
@@ -207,11 +207,36 @@ python3 tools/upstream_utils_suite.py --upstream ../ponder-upstream \
 
 ## Run the native provider cases offline
 
-The Go RPC package runs 22 original historical data assertions plus the Moonriver and Tron error and retry assertions against the same ten loopback listeners. A clean checkout includes the fixtures. The launcher requires Python 3.11+ and uses the standard library. The Alchemy WETH case raises the client's per-response limit to 128 MiB to retrieve all 140,192 logs in the original single request.
+The Go RPC package runs 29 original historical data cases and nine original error and retry cases against the loopback archives. A further regression checks the current 1RPC limit. A clean checkout includes the fixtures. The launcher requires Python 3.11+ and uses the standard library. The Alchemy WETH case raises the client's per-response limit to 128 MiB to retrieve all 140,192 logs in the original single request.
 
 ```sh
 go test -count=1 -run '^TestUpstreamProviderArchives$' ./rpc
 go test -race -count=1 -run '^TestUpstreamProviderArchives$' ./rpc
+```
+
+## Public network captures
+
+The supplemental archive includes mainnet block and receipt checks for Arbitrum One, Aurora, Harmony, OP Mainnet, Thirdweb’s Ethereum endpoint and zkSync Era. The Somnia test uses the Shannon testnet, chain ID 50312. Each error capture records two identical provider replies and the historical block anchor. Cloudflare and 1RPC returned errors for some old block headers. Their captures identify the separate Ethereum archive used to verify those heights in `headerSource`.
+
+| Network | First block | Last block of successful query | Result |
+| --- | ---: | ---: | ---: |
+| Arbitrum One | 1,000,000 | 1,001,000 | 714 logs |
+| Aurora | 57,600,000 | 57,602,000 | 13,861 logs |
+| Harmony | 70,000,000 | 70,001,024 | 703 logs |
+| OP Mainnet | 100,000,000 | 100,001,000 | 0 logs |
+| Somnia Shannon | 53,580,000 | 53,581,000 | 5,616 logs |
+| Thirdweb Ethereum | 18,000,000 | 18,001,000 | 9 logs |
+| zkSync Era | 18,406,545 | 18,416,545 | 726 logs |
+
+Aurora can return the same log index in different transactions in one block. The collector verifies Aurora log order by block number, transaction index and log index. The archived page retains all rows in their original order. OP Mainnet returned 3,478 WETH logs for the wider request whose original test expects an error. The current 1RPC service reports a block-number difference of 50 where the pinned test expects 1,000.
+
+For a source that uses Node Fetch, pass `--node-fetch` to the collection command with Node 24 on PATH. Configure `NODE_USE_ENV_PROXY` as needed for the environment. These commands reproduce an Aurora index and a Cloudflare range error.
+
+```sh
+python3 tools/historical_log_rpc.py collect --node-fetch --rpc-url https://mainnet.aurora.dev \
+  --chain 1313161554 --first 57600000 --last 57602000 --page-width 2001 "$REPORTS/index-aurora"
+python3 tools/historical_log_rpc.py capture-error --node-fetch --rpc-url https://cloudflare-eth.com \
+  --header-rpc-url https://1.rpc.thirdweb.com --chain 1 --first 18000000 --last 18000800 "$REPORTS/cloudflare.json"
 ```
 
 ## Check the complete upstream inventory
