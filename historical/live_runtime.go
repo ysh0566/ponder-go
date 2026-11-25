@@ -24,13 +24,12 @@ import (
 	"sync/atomic"
 )
 
-// RuntimeOptions selects the owned RuntimeRunner lifecycle. Default multichain
-// supports its validated bounded/continuous source subsets. Omnichain uses a
-// separate finalized, cached, interval1 block-callback format with source logical
-// positions; unsupported combinations fail before storage DDL. BuildID identifies
-// handler code; OpenID is unique per open. See docs/RUNTIME_SUPPORT.md.
 type runtimeRunnerCallbackKey struct{}
 
+// RuntimeOptions selects the owned RuntimeRunner lifecycle. A nil Live runs a
+// fixed range. Default multichain supports setup and per-chain RPC caching in
+// either mode. Omnichain uses finalized cached ranges and source checkpoints.
+// BuildID identifies handler code. OpenID is unique to a single opening.
 type RuntimeOptions struct {
 	// SourceCheckpoints opts into source initial positions for multichain.
 	// The finalized omnichain format enables these positions automatically.
@@ -143,8 +142,11 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	close(r.runDone)
 	for i, c := range b.Chains {
 		cache, ok := c["cacheRpcRequests"].(bool)
-		if !ok || (!cache && o.Live == nil) {
-			return nil, fmt.Errorf("runtime-v5 bounded closure requires cacheRpcRequests=true")
+		if !ok {
+			return nil, fmt.Errorf("runtime requires boolean cacheRpcRequests for each chain")
+		}
+		if !cache && b.Ordering == "omnichain" {
+			return nil, fmt.Errorf("omnichain finalized runtime requires cacheRpcRequests=true")
 		}
 		id, e := uintQuantity(c["id"])
 		if e != nil {
@@ -153,8 +155,8 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		if _, duplicate := r.starts[id]; duplicate {
 			return nil, fmt.Errorf("duplicate runtime chain")
 		}
-		if len(b.SetupCallbacks[i]) != 0 && o.Live == nil {
-			return nil, fmt.Errorf("setup callbacks are not yet supported by runtime-v5")
+		if len(b.SetupCallbacks[i]) != 0 && b.Ordering == "omnichain" {
+			return nil, fmt.Errorf("omnichain finalized runtime does not support setup callbacks")
 		}
 		r.setup = r.setup || len(b.SetupCallbacks[i]) != 0
 		if len(b.EventCallbacks[i]) == 0 {
@@ -277,7 +279,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 			return nil, e
 		}
 		if o.Live == nil && r.ends[id] > n {
-			return nil, fmt.Errorf("bounded runtime end exceeds acquired latest; continuous polling is not implemented")
+			return nil, fmt.Errorf("bounded runtime end exceeds acquired latest block")
 		}
 		latestFinal := runtimeFinalityHeader(latest)
 		acquired := map[*finality.Block]indexing.Object{latestFinal: latest}

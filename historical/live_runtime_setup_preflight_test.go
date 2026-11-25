@@ -10,7 +10,7 @@ import (
 )
 
 func TestRuntimeSetupPreflight(t *testing.T) {
-	for _, mode := range []string{"name_slice", "foreign_chain", "invalid_block", "setup_only", "legacy_bounded"} {
+	for _, mode := range []string{"name_slice", "foreign_chain", "invalid_block", "setup_only", "invalid_bounded_block"} {
 		t.Run(mode, func(t *testing.T) {
 			p := newFiniteRPC(t, 3)
 			b := finiteBuild(t, p, 3, true, indexing.Handler(finiteIncrement), indexing.Handler(func(context.Context, *indexing.HandlerArgs) error { return nil }))
@@ -35,8 +35,9 @@ func TestRuntimeSetupPreflight(t *testing.T) {
 				x.SetupCallbacks[0][0]["block"] = -1
 			case "setup_only":
 				x.EventCallbacks[0] = nil
-			case "legacy_bounded":
+			case "invalid_bounded_block":
 				o.Live = nil
+				x.SetupCallbacks[0][0]["block"] = -1
 			}
 			var err error
 			var pan any

@@ -71,10 +71,6 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 	opts.recovery = true
 	opts.coordinated = true
 	opts.liveRuntime = true
-	opts.liveContinuous = in.Continuous
-	if in.Setup && !in.Continuous {
-		return nil, fmt.Errorf("setup runtime requires continuous-v8 lifecycle")
-	}
 	opts.runtimeSetup = in.Setup
 	if in.SourceCheckpoints && !in.Continuous && !opts.runtimeOmnichain {
 		return nil, fmt.Errorf("source checkpoints require the v9 live lifecycle")
@@ -99,12 +95,12 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 			disabled = disabled || !enabled
 		}
 		if disabled {
-			if !in.Continuous {
-				return nil, fmt.Errorf("uncached runtime requires continuous-v7 lifecycle")
-			}
 			opts.runtimeCachePolicy = copied
 		}
 	}
+	// Setup and uncached deployments share their authenticated reorg and
+	// recovery rules across finite and continuously polled executions.
+	opts.liveContinuous = in.Continuous || opts.runtimeSetup || opts.runtimeCachePolicy != nil
 	if len(in.StartBlocks) != len(opts.Chains) {
 		return nil, fmt.Errorf("runtime requires exact start blocks")
 	}
