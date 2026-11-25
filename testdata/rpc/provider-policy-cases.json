@@ -1,0 +1,544 @@
+{
+  "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "rpcErrorCodes": [
+    -32700,
+    -32600,
+    -32601,
+    -32602,
+    -32603,
+    -32000,
+    -32001,
+    -32002,
+    -32003,
+    -32004,
+    -32005,
+    -32006,
+    4001,
+    4100,
+    4200,
+    4900,
+    4901,
+    4902,
+    5700,
+    5710,
+    5720,
+    5730,
+    5740,
+    5750,
+    5760,
+    5000
+  ],
+  "cases": [
+    {
+      "id": "348a8e37b07b6dc18282",
+      "name": "1rpc block range",
+      "provider": "1rpc",
+      "url": "https://1rpc.io/eth",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "fromBlock": "0x112a880",
+            "toBlock": "0x112ac69"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "InvalidInputRpcError",
+        "message": "eth_getLogs is limited to a 1000 blocks range",
+        "plan": {
+          "shouldRetry": true,
+          "isSuggestedRange": true,
+          "ranges": [
+            {
+              "fromBlock": "0x112a880",
+              "toBlock": "0x112ac68"
+            },
+            {
+              "fromBlock": "0x112ac69",
+              "toBlock": "0x112ac69"
+            }
+          ]
+        }
+      },
+      "assertionCount": 3
+    },
+    {
+      "id": "6e0331aa610922520c57",
+      "name": "alchemy block range",
+      "provider": "alchemy",
+      "env": "RPC_URL_ALCHEMY_1",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "fromBlock": "0x112a880",
+            "toBlock": "0x112b051"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "RpcError",
+        "message": "this block range should work",
+        "shouldRetry": true,
+        "rangeCount": 30,
+        "firstRange": {
+          "fromBlock": "0x112a880",
+          "toBlock": "0x112a8c2"
+        }
+      },
+      "assertionCount": 5
+    },
+    {
+      "id": "d650131ba080274e5537",
+      "name": "hyperliquid block range",
+      "provider": "altitude",
+      "env": "RPC_URL_ALTITUDE_999",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "address": "0xfD739d4e423301CE9385c1fb8850539D657C296D",
+            "fromBlock": "0x8fba88",
+            "toBlock": "0x902fb8"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "HttpRequestError",
+        "message": "allowed block range threshold exceeded",
+        "shouldRetry": true,
+        "rangeCount": 2
+      },
+      "assertionCount": 4
+    },
+    {
+      "id": "f7bd5146724fd30daebf",
+      "name": "hyperliquid response size",
+      "provider": "altitude",
+      "env": "RPC_URL_ALTITUDE_999",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "fromBlock": "0x8fba88",
+            "toBlock": "0x902fb7"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "HttpRequestError",
+        "message": "query exceeds max results 20000",
+        "shouldRetry": true,
+        "rangeCount": 2
+      },
+      "assertionCount": 4
+    },
+    {
+      "id": "ec36e43b4edbccdd66bd",
+      "name": "ankr response size",
+      "provider": "ankr",
+      "env": "RPC_URL_ANKR_1",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "fromBlock": "0x112a880",
+            "toBlock": "0x112b439"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "RpcError",
+        "message": "query exceeds max results",
+        "shouldRetry": true,
+        "rangeCount": 2,
+        "firstRange": {
+          "fromBlock": "0x112a880",
+          "toBlock": "0x112ae5c"
+        }
+      },
+      "assertionCount": 5
+    },
+    {
+      "id": "4986ab39680c8e7a4ac7",
+      "name": "blast block range",
+      "provider": "blast",
+      "url": "https://rpc.blast.io",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "address": "0xb9dfCd4CF589bB8090569cb52FaC1b88Dbe4981F",
+            "fromBlock": "0xf4240",
+            "toBlock": "0xf6951"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "HttpRequestError",
+        "message": "eth_getLogs is limited to a 10,000 range",
+        "plan": {
+          "shouldRetry": true,
+          "isSuggestedRange": true,
+          "ranges": [
+            {
+              "fromBlock": "0xf4240",
+              "toBlock": "0xf6950"
+            },
+            {
+              "fromBlock": "0xf6951",
+              "toBlock": "0xf6951"
+            }
+          ]
+        }
+      },
+      "assertionCount": 3
+    },
+    {
+      "id": "42c60199315b737e0f1c",
+      "name": "blockpi block range",
+      "provider": "blockpi",
+      "url": "https://ethereum.blockpi.network/v1/rpc/public",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "address": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+            "fromBlock": "0x112a880",
+            "toBlock": "0x112ac81"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "InvalidParamsRpcError",
+        "message": "eth_getLogs is limited to 1024 block range",
+        "plan": {
+          "shouldRetry": true,
+          "isSuggestedRange": true,
+          "ranges": [
+            {
+              "fromBlock": "0x112a880",
+              "toBlock": "0x112ac80"
+            },
+            {
+              "fromBlock": "0x112ac81",
+              "toBlock": "0x112ac81"
+            }
+          ]
+        }
+      },
+      "assertionCount": 3
+    },
+    {
+      "id": "4a1e21d4dcfea25650ed",
+      "name": "chainstack block range",
+      "provider": "chainstack",
+      "env": "RPC_URL_CHAINSTACK_1",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "address": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+            "fromBlock": "0x112a880",
+            "toBlock": "0x112a8ef"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "InvalidParamsRpcError",
+        "message": "Block range limit exceeded.",
+        "plan": {
+          "shouldRetry": true,
+          "isSuggestedRange": true,
+          "ranges": [
+            {
+              "fromBlock": "0x112a880",
+              "toBlock": "0x112a8e4"
+            },
+            {
+              "fromBlock": "0x112a8e5",
+              "toBlock": "0x112a8ef"
+            }
+          ]
+        }
+      },
+      "assertionCount": 3
+    },
+    {
+      "id": "a5c165fcfffd635850d0",
+      "name": "coinbase block range",
+      "provider": "coinbase",
+      "env": "RPC_URL_COINBASE_8453",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "address": "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+            "fromBlock": "0x989680",
+            "toBlock": "0x989a68"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "LimitExceededRpcError",
+        "message": "please limit the query to at most 1000 blocks",
+        "plan": {
+          "shouldRetry": true,
+          "isSuggestedRange": true,
+          "ranges": [
+            {
+              "fromBlock": "0x989680",
+              "toBlock": "0x989a67"
+            },
+            {
+              "fromBlock": "0x989a68",
+              "toBlock": "0x989a68"
+            }
+          ]
+        }
+      },
+      "assertionCount": 3
+    },
+    {
+      "id": "70a6963becb25618fa7c",
+      "name": "infura block range",
+      "provider": "infura",
+      "env": "RPC_URL_INFURA_1",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "fromBlock": "0x112a880",
+            "toBlock": "0x112ac68"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "LimitExceededRpcError",
+        "message": "Try with this block range ",
+        "shouldRetry": true,
+        "rangeCount": 8,
+        "firstRange": {
+          "fromBlock": "0x112a880",
+          "toBlock": "0x112a908"
+        }
+      },
+      "assertionCount": 5
+    },
+    {
+      "id": "97acfa90ed9347c67690",
+      "name": "llamarpc response size",
+      "provider": "llamarpc",
+      "url": "https://eth.llamarpc.com",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "fromBlock": "0x112a880",
+            "toBlock": "0x112ac68"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "InvalidParamsRpcError",
+        "message": "query exceeds max results 20000",
+        "shouldRetry": true,
+        "rangeCount": 2,
+        "firstRange": {
+          "fromBlock": "0x112a880",
+          "toBlock": "0x112aa74"
+        }
+      },
+      "assertionCount": 5
+    },
+    {
+      "id": "f9064819749ec8f29669",
+      "name": "merkle block range 10k",
+      "provider": "merkle",
+      "url": "https://eth.merkle.io",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "fromBlock": "0x112a880",
+            "toBlock": "0x112cf91"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "RpcError",
+        "message": "eth_getLogs range is too large, max is 10k blocks",
+        "shouldRetry": true,
+        "plan": {
+          "isSuggestedRange": true,
+          "shouldRetry": true,
+          "ranges": [
+            {
+              "fromBlock": "0x112a880",
+              "toBlock": "0x112cf90"
+            },
+            {
+              "fromBlock": "0x112cf91",
+              "toBlock": "0x112cf91"
+            }
+          ]
+        }
+      },
+      "assertionCount": 4
+    },
+    {
+      "id": "3d3fd5270ec61a56ac1b",
+      "name": "merkle block range 1k",
+      "provider": "merkle",
+      "url": "https://eth.merkle.io",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "fromBlock": "0x112a880",
+            "toBlock": "0x112ac69"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "RpcError",
+        "message": "eth_getLogs range is too large, max is 1k blocks",
+        "shouldRetry": true,
+        "plan": {
+          "isSuggestedRange": true,
+          "shouldRetry": true,
+          "ranges": [
+            {
+              "fromBlock": "0x112a880",
+              "toBlock": "0x112ac68"
+            },
+            {
+              "fromBlock": "0x112ac69",
+              "toBlock": "0x112ac69"
+            }
+          ]
+        }
+      },
+      "assertionCount": 4
+    },
+    {
+      "id": "b5713ed2730e0f1645ab",
+      "name": "optimism block range",
+      "provider": "optimism",
+      "url": "https://mainnet.optimism.io",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "address": "0x4200000000000000000000000000000000000006",
+            "fromBlock": "0x5f5e100",
+            "toBlock": "0x5f60810"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "RpcRequestError",
+        "message": "Block range is too large",
+        "shouldRetry": true,
+        "rangeCount": 2,
+        "firstRange": {
+          "fromBlock": "0x5f5e100",
+          "toBlock": "0x5f5f488"
+        }
+      },
+      "assertionCount": 5
+    },
+    {
+      "id": "4fe5b0a1e635d75c7425",
+      "name": "publicnode block range",
+      "provider": "publicnode",
+      "url": "https://ethereum-rpc.publicnode.com",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "fromBlock": "0x112a880",
+            "toBlock": "0x1136bd1"
+          }
+        ]
+      },
+      "expect": {
+        "message": "exceed maximum block range: 50000",
+        "plan": {
+          "isSuggestedRange": true,
+          "shouldRetry": true,
+          "ranges": [
+            {
+              "fromBlock": "0x112a880",
+              "toBlock": "0x1136bd0"
+            },
+            {
+              "fromBlock": "0x1136bd1",
+              "toBlock": "0x1136bd1"
+            }
+          ]
+        }
+      },
+      "assertionCount": 2
+    },
+    {
+      "id": "c88fe611a7ecaf0ee90d",
+      "name": "quicknode block range",
+      "provider": "quicknode",
+      "env": "RPC_URL_QUICKNODE_1",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "fromBlock": "0x112a880",
+            "toBlock": "0x112cf91"
+          }
+        ]
+      },
+      "expect": {
+        "errorClass": "HttpRequestError",
+        "message": "eth_getLogs is limited to a 10,000 range",
+        "plan": {
+          "shouldRetry": true,
+          "isSuggestedRange": true,
+          "ranges": [
+            {
+              "fromBlock": "0x112a880",
+              "toBlock": "0x112cf90"
+            },
+            {
+              "fromBlock": "0x112cf91",
+              "toBlock": "0x112cf91"
+            }
+          ]
+        }
+      },
+      "assertionCount": 3
+    },
+    {
+      "id": "51499e4858745db713da",
+      "name": "swell success",
+      "provider": "swell",
+      "url": "https://swell-mainnet.alt.technology",
+      "request": {
+        "method": "eth_getLogs",
+        "params": [
+          {
+            "fromBlock": "0x5b9550",
+            "toBlock": "0x5b9938"
+          }
+        ]
+      },
+      "expect": {
+        "logs": 58
+      },
+      "assertionCount": 1
+    }
+  ]
+}
