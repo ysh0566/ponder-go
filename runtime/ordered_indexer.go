@@ -231,15 +231,13 @@ func processAvailable(ctx context.Context, chains []orderedChain, watermark stri
 		if c.engine.endBlock != nil {
 			through = min(through, *c.engine.endBlock)
 		}
-		if start <= through {
-			c.start = start
-			c.gaps, err = c.engine.Store.Missing(ctx, c.engine.chain.ID, c.engine.filter, interval.Interval{int64(start), int64(through)})
-			if err != nil {
-				return err
-			}
-			if err = c.advance(ctx); err != nil {
-				return err
-			}
+		c.start = start
+		c.gaps, err = c.engine.missingBlocks(ctx, start, through)
+		if err != nil {
+			return err
+		}
+		if err = c.advance(ctx); err != nil {
+			return err
 		}
 	}
 	for {

@@ -245,15 +245,15 @@ func (e *Engine) syncToHead(ctx context.Context) (bool, error) {
 	if e.endBlock != nil {
 		head = min(head, *e.endBlock)
 	}
+	missing, err := e.missingBlocks(ctx, start, head)
+	if err != nil {
+		return false, err
+	}
 	if start > head {
 		if e.staged != nil {
 			return false, e.startRealtime(ctx)
 		}
 		return false, nil
-	}
-	missing, err := e.Store.Missing(ctx, e.chain.ID, e.filter, interval.Interval{int64(start), int64(head)})
-	if err != nil {
-		return false, err
 	}
 	for _, gap := range missing {
 		var parentHash string
@@ -350,6 +350,9 @@ func (e *Engine) finalizeIndexed(ctx context.Context, latest Block, through uint
 	return done, nil
 }
 func (e *Engine) acquireHead(ctx context.Context) (Block, error) {
+	if m := devMonitorFrom(ctx); m != nil {
+		m.register(e)
+	}
 	if e.staged == nil && !e.options.DisableCache {
 		cache, err := e.Store.EnableProtocolCache(ctx)
 		if err != nil {
@@ -367,6 +370,23 @@ func (e *Engine) acquireHead(ctx context.Context) (Block, error) {
 		return Block{}, fmt.Errorf("RPC chain ID mismatch: expected %d got %s", e.chain.ID, chainID)
 	}
 	return e.block(ctx, "latest")
+}
+
+func (e *Engine) missingBlocks(ctx context.Context, start, head uint64) ([]interval.Interval, error) {
+	var missing []interval.Interval
+	var total uint64
+	if start <= head {
+		var err error
+		missing, err = e.Store.Missing(ctx, e.chain.ID, e.filter, interval.Interval{int64(start), int64(head)})
+		if err != nil {
+			return nil, err
+		}
+		total = head - start + 1
+	}
+	if m := devMonitorFrom(ctx); m != nil {
+		m.setRange(e.chain.ID, total, total-uint64(interval.Sum(missing)))
+	}
+	return missing, nil
 }
 
 func (e *Engine) firstSourceBlock() (uint64, error) {
@@ -465,9 +485,16 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 			}
 			target := checkpoint.Block(timestamp, e.chain.ID, n, true)
 			if e.staged != nil {
-				return e.staged.db.Actions().RevertRuntime(ctx, target)
+				err = e.staged.db.Actions().RevertRuntime(ctx, target)
+			} else {
+				err = e.Store.RevertAndRewind(ctx, target)
 			}
-			return e.Store.RevertAndRewind(ctx, target)
+			if err == nil {
+				if m := devMonitorFrom(ctx); m != nil {
+					m.rewind(e.chain.ID, e.Store.Ordering != schema.Isolated)
+				}
+			}
+			return err
 		}
 		if n == 0 {
 			return fmt.Errorf("no common persisted ancestor; shadow rebuild required")
@@ -674,7 +701,7 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 				if handler == nil {
 					continue
 				}
-				if err := handler(ctx, &Context{Event: event.event, DB: w, Client: client, Chain: e.chain}); err != nil {
+				if err := invokeHandler(ctx, handler, &Context{Event: event.event, DB: w, Client: client, Chain: e.chain}); err != nil {
 					return fmt.Errorf("%s: %w", event.event.Name, err)
 				}
 			}
@@ -683,7 +710,7 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 		if err != nil {
 			return err
 		}
-		return e.Store.CompleteBlock(ctx, store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}, e.filter)
+		return e.completeBlock(ctx, store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload})
 	}
 	for _, event := range events {
 		handler := e.Handlers[event.event.Name]
@@ -691,7 +718,7 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 			continue
 		}
 		if err = e.Store.Apply(ctx, store.Event{ID: event.id, Checkpoint: event.cursor, Name: event.event.Name}, func(w *store.Writer) error {
-			return handler(ctx, &Context{Event: event.event, DB: w, Client: e.eventClient(w), Chain: e.chain})
+			return invokeHandler(ctx, handler, &Context{Event: event.event, DB: w, Client: e.eventClient(w), Chain: e.chain})
 		}); err != nil {
 			return fmt.Errorf("%s: %w", event.event.Name, err)
 		}
@@ -701,8 +728,18 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 	if err = e.Store.RecordBlockCompletion(ctx, block); err != nil {
 		return err
 	}
-	return e.Store.CompleteBlock(ctx, block, e.filter)
+	return e.completeBlock(ctx, block)
 }
+func (e *Engine) completeBlock(ctx context.Context, block store.SyncBlock) error {
+	if err := e.Store.CompleteBlock(ctx, block, e.filter); err != nil {
+		return err
+	}
+	if m := devMonitorFrom(ctx); m != nil {
+		m.completeBlock(e.chain.ID)
+	}
+	return nil
+}
+
 func (e *Engine) Run(ctx context.Context) error { return e.RunIndexing(ctx, func(bool) {}) }
 
 // RunIndexing resumes from committed progress after transient RPC outages.

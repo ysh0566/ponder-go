@@ -139,7 +139,7 @@ func (e *Engine) initializeStaged(ctx context.Context, head Block) error {
 					continue
 				}
 				event := Event{Name: name, SetupBlock: contract.StartBlock, Block: Block{Number: Hex(contract.StartBlock)}}
-				if err := handler(ctx, &Context{Event: event, DB: w, Client: e.Client, Chain: e.chain}); err != nil {
+				if err := invokeHandler(ctx, handler, &Context{Event: event, DB: w, Client: e.Client, Chain: e.chain}); err != nil {
 					return fmt.Errorf("%s: %w", name, err)
 				}
 			}

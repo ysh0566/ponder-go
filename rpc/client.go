@@ -78,6 +78,7 @@ type Client struct {
 	Cache             Cache
 	ChainID           uint64
 	next              atomic.Uint64
+	requests          atomic.Uint64
 	mu                sync.Mutex
 	nextTime          time.Time
 	sourcePool        *sourceEndpointPool
@@ -96,6 +97,15 @@ type Client struct {
 	// FixedLogBlockRange keeps numeric range rejections in the source transport's
 	// retry policy when the chain has an explicit ethGetLogsBlockRange.
 	FixedLogBlockRange bool
+}
+
+// TransportRequests counts outbound RPC attempts, including retries. Cache-scoped
+// clients share the transport count and cache hits never reach the transport.
+func (c *Client) TransportRequests() uint64 {
+	for c.transport != nil {
+		c = c.transport
+	}
+	return c.requests.Load()
 }
 
 // ConfigureConcurrency sets the shared transport limit before its first call.
@@ -313,6 +323,7 @@ func (c *Client) attemptResult(ctx context.Context, attempt rpcAttempt, method s
 
 func (c *Client) request(ctx context.Context, url string, data []byte, id uint64) ([]byte, error) {
 	if strings.HasPrefix(url, "ws://") || strings.HasPrefix(url, "wss://") {
+		c.requests.Add(1)
 		ws, response, e := websocket.DefaultDialer.DialContext(ctx, url, nil)
 		if e != nil {
 			if response != nil {
@@ -339,6 +350,7 @@ func (c *Client) request(ctx context.Context, url string, data []byte, id uint64
 	if client == nil {
 		client = http.DefaultClient
 	}
+	c.requests.Add(1)
 	response, e := client.Do(req)
 	if e != nil {
 		return nil, e

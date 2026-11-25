@@ -24,14 +24,13 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 | 回调查链 | 类型化 Go 回调提供上游列出的 21 个高层方法，包括历史合约调用、gas 估算、ABI 模拟、交易及 ENS 地址、文本和头像查询。EIP-3668 支持网关取数、合约验证和 ENS 批量查询。原生脚手架的普通回调还可直接发送 JSON-RPC 请求。[方法清单](docs/RUNTIME_SUPPORT.md#callback-rpc-methods) · [链下读取](docs/USAGE.md#合约的-eip-3668-链下读取) |
 | 数据库 | 生成项目默认将 PGlite 数据存到 `.ponder/pglite`，设置数据库 URL 后使用 PostgreSQL。业务写入、撤销日志和 checkpoint 在事务中提交。各存储组件只支持自己的当前格式；旧库需使用新命名空间重新索引。[本地 PGlite 使用与管理](docs/USAGE.md#使用本地-pglite) · [存储格式](parity/runs/current-database-formats/RESULT.md) |
 | 查询 | 支持只读 SQL、SSE 订阅、状态与指标接口。Go 项目可用 `serve` 独立查询正在写入的 PostgreSQL 部署，只需数据库连接和部署命名空间。应用可另行挂载 GraphQL 处理器，支持实体、过滤、分页、关联及视图。网络地址、时间、间隔和几何列均可用于查询。[列类型与表示](docs/USAGE.md#列类型与-graphql-表示) · [HTTP 查询示例](docs/USAGE.md#查询索引结果) · [GraphQL](graphql) |
-| CLI 与应用 | `dev` 可热重载，`start` 和 `serve` 可启动索引或查询服务，均支持 `--hostname` 和 `--port`。全局 `--log-level` 和 `--log-format json` 同时控制 CLI 和生成的 Go 应用的诊断日志。生成的项目通过 `start --views-schema` 在追上链头后切换查询视图。另有代码生成和 checkpoint 编解码。PostgreSQL 和已停机的本地 PGlite 部署可用 `db list` 列出命名空间、`db create-views` 发布查询视图、`db prune` 清理已停用的部署。[数据库命令](docs/USAGE.md#发布查询视图与清理部署) · [日志选项](docs/USAGE.md#控制-cli-和-go-应用日志) · [CLI 使用](docs/USAGE.md#用于自己的项目) |
+| CLI 与应用 | `dev` 支持热重载，交互终端显示每链 RPC 速率、回填进度和 ETA，以及各回调的执行次数和平均耗时。`start` 和 `serve` 可启动索引或查询服务，均支持 `--hostname` 和 `--port`。全局 `--log-level` 和 `--log-format json` 同时控制 CLI 和生成的 Go 应用的诊断日志。生成的项目通过 `start --views-schema` 在追上链头后切换查询视图。另有代码生成和 checkpoint 编解码。PostgreSQL 和已停机的本地 PGlite 部署可用 `db list` 列出命名空间、`db create-views` 发布查询视图、`db prune` 清理已停用的部署。[数据库命令](docs/USAGE.md#发布查询视图与清理部署) · [日志选项](docs/USAGE.md#控制-cli-和-go-应用日志) · [CLI 使用](docs/USAGE.md#用于自己的项目) |
 
 ## 原生 Go 索引器还缺什么
 
 | 使用场景 | 当前能用什么 | 还缺什么 |
 | --- | --- | --- |
 | 在同一个 Go 入口协调多链 | `runtime.NewIndexer` 支持默认、Isolated 和 Omnichain 三种排序。默认模式已验证无写入回调的跨链重放、空块重组、两条链的 RPC 同时中断后分批恢复和冷启动。 | 使用独立业务库和同步库的 `historical.RuntimeRunner` 仍有单独的配置限制，例如有限区间模式要求启用 RPC 缓存，且不接受 setup 回调。[选用默认模式](docs/USAGE.md#使用默认多链排序) · [双后端验证](parity/runs/native-default-multichain/RESULT.md) |
-| 在开发终端查看进度 | `ponder dev` 显示编译状态、实际 HTTP 地址、应用就绪状态和各链已提交区块，支持热重载及 `--disable-ui`。 | 终端中还没有每链 RPC 请求速率、回调执行次数和平均耗时、历史回填百分比与预计剩余时间。[使用方式](docs/USAGE.md#开发时自动重载) |
 | 验收复杂事件和 RPC 故障 | 双后端已有混合工厂日志、交易、转账和合约 CALL 回调的重组、断点恢复用例。 | 同一事件同时命中多个回调、ABI 函数选择器碰撞，以及同一链多个提供商之间的切换叠加跨链重组，仍需扩大验证。[已测组合](parity/runs/native-ordered-indexing/RESULT.md) |
 | 验收生产部署 | 已验证读角色查询、单库写事务中强杀数据库引擎，以及部分协调任务的应用进程异常退出。 | 业务库与同步库分开的协调多链运行中强杀数据库引擎、主机掉电、其他 PGlite 运行模式的异常退出，以及写入和部署管理角色的最小权限仍待验收。[恢复测试](parity/runs/native-engine-recovery/RESULT.md) · [读角色测试](parity/runs/native-standalone-serve/RESULT.md) |
 

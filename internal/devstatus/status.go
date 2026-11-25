@@ -16,6 +16,23 @@ type Snapshot struct {
 	ReadinessUnavailable bool
 	// Nil means progress could not be read. An empty map means no checkpoint yet.
 	Blocks map[string]uint64
+	Chains map[string]ChainMetrics `json:",omitempty"`
+	Events map[string]EventMetrics `json:",omitempty"`
+}
+
+type ChainMetrics struct {
+	RequestsPerSecond float64
+	Backfill          *Backfill `json:",omitempty"`
+}
+
+type Backfill struct {
+	Completed, Total uint64
+	ETASeconds       *float64 `json:",omitempty"`
+}
+
+type EventMetrics struct {
+	Count         uint64
+	AverageMillis float64
 }
 
 func (s Snapshot) Write(path string) error {

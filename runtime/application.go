@@ -84,6 +84,12 @@ func LaunchApplication(ctx context.Context, indexer ApplicationIndexer, routes *
 			once.Do(func() { close(app.ready) })
 		}
 	}
+	path := os.Getenv(devstatus.FileEnv)
+	var monitor *devMonitor
+	if path != "" && os.Getenv("PONDER_COMMAND") == "dev" {
+		monitor = newDevMonitor()
+		run = context.WithValue(run, devMonitorKey{}, monitor)
+	}
 	var indexing chan error
 	if indexer == nil {
 		setReady(true)
@@ -92,8 +98,8 @@ func LaunchApplication(ctx context.Context, indexer ApplicationIndexer, routes *
 		go func(out chan<- error) { out <- indexer.RunIndexing(run, setReady) }(indexing)
 	}
 	var reporters sync.WaitGroup
-	if path := os.Getenv(devstatus.FileEnv); path != "" && os.Getenv("PONDER_COMMAND") == "dev" {
-		reporters.Go(func() { reportDevProgress(run, routes, listener.Addr().String(), path) })
+	if monitor != nil {
+		reporters.Go(func() { reportDevProgress(run, routes, listener.Addr().String(), path, monitor) })
 	}
 	go func() {
 		defer close(app.done)
@@ -140,15 +146,19 @@ func (a *Application) Shutdown(ctx context.Context) error {
 }
 
 // reportDevProgress runs only while an interactive watcher is attached.
-func reportDevProgress(ctx context.Context, routes *query.Server, address, path string) {
+func reportDevProgress(ctx context.Context, routes *query.Server, address, path string, monitor *devMonitor) {
 	timer := time.NewTicker(time.Second)
 	defer timer.Stop()
 	for ctx.Err() == nil {
 		ready, readyErr := routes.IsReady(ctx)
 		report := devstatus.Snapshot{Address: address, Ready: ready, ReadinessUnavailable: readyErr != nil}
+		names := monitor.sample(time.Now(), routes.ChainNames, &report)
 		if chains, err := routes.Status(ctx); err == nil {
 			report.Blocks = make(map[string]uint64, len(chains))
 			for name, chain := range chains {
+				if n := names[chain.ID]; n != "" {
+					name = n
+				}
 				report.Blocks[name] = chain.Block.Number
 			}
 		}
