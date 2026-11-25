@@ -192,6 +192,8 @@ ponder db create-views --database-url "$PONDER_LOCAL_DATABASE_URL" --schema pond
 
 查询方可以从 `indexer_api` 读取业务表、已声明的视图以及 `_ponder_checkpoint`。等新部署追上进度，再运行同一条命令把 `--schema` 改为 `ponder_go_green`，即可在一个事务中切换所有查询视图。外部查询依赖旧列类型时，数据库会拒绝不兼容的切换，原视图和数据继续可用。发布目标应使用新的专用 schema，或此前由该命令或生命周期管理器创建的视图 schema。
 
+`start --views-schema` 会把视图 schema 名称通过 `DATABASE_VIEWS_SCHEMA` 传给 Go 子进程。当前脚手架完成历史同步后仍需手动运行 `db create-views` 才会切换查询方看到的数据。
+
 停掉旧索引器、关闭其数据库连接，然后清理旧部署。该操作会删除登记的业务数据、撤销日志、checkpoint 和配对的同步数据。
 
 ```sh
