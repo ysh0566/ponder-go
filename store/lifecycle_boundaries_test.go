@@ -16,8 +16,9 @@ import (
 
 type migrationFaultBackend struct {
 	Backend
-	stage     string
-	terminate func()
+	stage         string
+	terminate     func()
+	ddlFinishedAt int64
 }
 type migrationFaultTx struct {
 	Transaction
@@ -51,6 +52,13 @@ func (tx *migrationFaultTx) Exec(ctx context.Context, sql string, args ...any) e
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-timer.C:
+		}
+		clock, err := tx.Transaction.Query(ctx, "SELECT floor(extract(epoch FROM clock_timestamp())*1000)::bigint AS now_ms")
+		if err != nil {
+			return err
+		}
+		if _, err := fmt.Sscan(fmt.Sprint(clock.Rows[0]["now_ms"]), &tx.fault.ddlFinishedAt); err != nil {
+			return err
 		}
 	}
 	if tx.fault.stage == "during_undo" && strings.HasPrefix(sql, "DELETE FROM ") && strings.Contains(sql, `."account" WHERE`) {
@@ -180,9 +188,17 @@ func TestLifecycleBoundaries(t *testing.T) {
 					d := newTestLifecycle(t, b, ns, opts)
 					switch name {
 					case "slow startup publishes a fresh lease":
-						slow := newTestLifecycle(t, &migrationFaultBackend{Backend: b, stage: "slow_ddl"}, ns, LifecycleOptions{HeartbeatInterval: 25 * time.Millisecond, HeartbeatTimeout: 100 * time.Millisecond})
+						fault := &migrationFaultBackend{Backend: b, stage: "slow_ddl"}
+						slow := newTestLifecycle(t, fault, ns, LifecycleOptions{HeartbeatInterval: time.Hour})
 						if _, e := slow.Migrate(ctx, Migration{BuildID: "abc"}); e != nil {
 							t.Fatal(e)
+						}
+						metadata, err := slow.Metadata(ctx)
+						if err != nil || len(metadata) != 1 {
+							t.Fatalf("published metadata: %v %v", metadata, err)
+						}
+						if fault.ddlFinishedAt == 0 || metadata[0].Value.HeartbeatAt < fault.ddlFinishedAt {
+							t.Fatalf("initial heartbeat %d precedes completed DDL at %d", metadata[0].Value.HeartbeatAt, fault.ddlFinishedAt)
 						}
 						if e := slow.Actions().CreateTriggers(ctx); e != nil {
 							t.Fatalf("startup returned expired lease: %v", e)
