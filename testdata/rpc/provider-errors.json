@@ -1,0 +1,91 @@
+{
+  "base": {
+    "request": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "eth_getLogs",
+      "params": [
+        {
+          "address": "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+          "fromBlock": "0x989680",
+          "toBlock": "0x98e4a0"
+        }
+      ]
+    },
+    "status": 503,
+    "response": {
+      "jsonrpc": "2.0",
+      "error": {
+        "code": -32011,
+        "message": "no backend is currently healthy to serve traffic"
+      },
+      "id": 1
+    }
+  },
+  "swell": {
+    "request": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "eth_getLogs",
+      "params": [
+        {
+          "fromBlock": "0x5b9550",
+          "toBlock": "0x5b9939"
+        }
+      ]
+    },
+    "status": 400,
+    "response": {
+      "jsonrpc": "2.0",
+      "error": {
+        "code": -32602,
+        "message": "block range greater than 1000 max"
+      },
+      "id": 1
+    }
+  },
+  "avalanche": {
+    "request": {
+      "jsonrpc": "2.0",
+      "id": 3,
+      "method": "eth_getLogs",
+      "params": [
+        {
+          "fromBlock": "0x32b39d4",
+          "toBlock": "0x32b41d4",
+          "address": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7"
+        }
+      ]
+    },
+    "response": {
+      "jsonrpc": "2.0",
+      "id": 3,
+      "error": {
+        "code": -32000,
+        "message": "requested too many blocks from 53164500 to 53166548, maximum is set to 2048"
+      }
+    }
+  },
+  "ankr-tac": {
+    "request": {
+      "jsonrpc": "2.0",
+      "id": 4,
+      "method": "eth_getLogs",
+      "params": [
+        {
+          "address": "0xB63B9f0eb4A6E6f191529D71d4D88cc8900Df2C9",
+          "fromBlock": "0x2f64b4",
+          "toBlock": "0x2f8bc5"
+        }
+      ]
+    },
+    "response": {
+      "jsonrpc": "2.0",
+      "id": 4,
+      "error": {
+        "code": -32000,
+        "message": "maximum [from, to] blocks distance: 10000"
+      }
+    }
+  }
+}

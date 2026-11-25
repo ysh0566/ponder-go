@@ -275,3 +275,53 @@ func TestHistoricalHTTPResponseSize(t *testing.T) {
 		t.Fatalf("ranges: got %v, want %v", ranges, want)
 	}
 }
+
+func TestHistoricalHTTPGatewayPagination(t *testing.T) {
+	var mu sync.Mutex
+	var calls []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		var query struct {
+			ID     uint64
+			Params []struct{ FromBlock, ToBlock string }
+		}
+		if err := json.NewDecoder(req.Body).Decode(&query); err != nil || len(query.Params) != 1 {
+			http.Error(w, "invalid query", http.StatusBadRequest)
+			return
+		}
+		span := query.Params[0]
+		mu.Lock()
+		calls = append(calls, span.FromBlock+"-"+span.ToBlock)
+		mu.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		if span.FromBlock != span.ToBlock || span.FromBlock == "0x3" {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_ = json.NewEncoder(w).Encode(map[string]any{"id": query.ID, "error": map[string]any{"code": -32011, "message": "no backend is currently healthy to serve traffic"}})
+			return
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"id": query.ID, "result": []any{}})
+	}))
+	defer server.Close()
+	client := rpc.New(server.URL)
+	client.Retries = 0
+	client.RequestsPerSecond = 0
+	syncer, err := NewSourceHistoricalSync(1, client, nil, NewSourceHistoricalChildren(nil), SourceHistoricalOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows, err := syncer.syncLogsDynamic(t.Context(), filter.Object{"fromBlock": "0x1", "toBlock": "0x2"})
+	if err != nil || len(rows) != 0 {
+		t.Fatalf("recovered query: logs=%v err=%v", rows, err)
+	}
+	_, err = syncer.syncLogsDynamic(t.Context(), filter.Object{"fromBlock": "0x3", "toBlock": "0x3"})
+	var status *rpc.HTTPStatusError
+	if !errors.As(err, &status) || status.StatusCode != http.StatusServiceUnavailable {
+		t.Fatalf("single block error: %v", err)
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	sort.Strings(calls)
+	want := []string{"0x1-0x1", "0x1-0x2", "0x2-0x2", "0x3-0x3"}
+	if !reflect.DeepEqual(calls, want) {
+		t.Fatalf("ranges: got %v want %v", calls, want)
+	}
+}

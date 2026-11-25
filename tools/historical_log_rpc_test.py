@@ -41,6 +41,33 @@ class HistoricalLogTest(unittest.TestCase):
             archive.collect("http://localhost", 1, 1, 3, 1, address, self.output)
         return archive.Index(self.output)
 
+    def test_live_node_range_policy(self):
+        params = [{"fromBlock": "0xa", "toBlock": "0xc"}]
+        pruned = "failed to fetch block result from CometBFT: failed to fetch block result from CometBFT 10: height 10 is not available, lowest height is 13"
+        denied = {"code": -32000, "message": "node rejected the request"}
+        for chain, reply, expected in [
+            (43114, {"result": []}, None),
+            (239, {"error": {"code": -32000, "message": pruned}}, None),
+            (43114, {"error": denied}, denied),
+            (239, {"error": denied}, denied),
+            (43114, {"error": {"code": -32000, "message": pruned}}, {"code": -32000, "message": pruned}),
+            (239, {"error": {"code": -32000, "message": pruned.replace("lowest height is 13", "lowest height is 9")}},
+                  {"code": -32000, "message": pruned.replace("lowest height is 13", "lowest height is 9")}),
+        ]:
+            with self.subTest(chain=chain, reply=reply), patch.object(archive, "rpc_response", return_value=reply) as node:
+                self.assertEqual(archive.range_policy_error("http://localhost", chain, params), expected)
+                node.assert_called_once_with("http://localhost", "eth_getLogs", params)
+        with patch.object(archive, "rpc_response", return_value={"result": None}), self.assertRaises(ValueError):
+            archive.range_policy_error("http://localhost", 239, params)
+
+    def test_range_policy_rejects_wrong_node_identity(self):
+        index = self.collect()
+        index.chain = 43114
+        with patch.object(archive, "rpc", return_value="0x1"), self.assertRaisesRegex(ValueError, "archive network"):
+            archive.server([index], 0, range_policy_url="http://127.0.0.1:9650")
+        with self.assertRaisesRegex(ValueError, "loopback"):
+            archive.server([index], 0, range_policy_url="https://example.org")
+
     def test_complete_range_and_filtering_over_http(self):
         index = self.collect()
         http = archive.server([index], 0)

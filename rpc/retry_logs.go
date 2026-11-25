@@ -79,6 +79,15 @@ func GetLogsRetryHelper(query map[string]any, failure any) (LogsRetryPlan, error
 	var buffer bytes.Buffer
 	encoder := json.NewEncoder(&buffer)
 	encoder.SetEscapeHTML(false)
+	cause, _ := failure.(error)
+	var status *HTTPStatusError
+	var rpcError *Error
+	switch {
+	case errors.As(cause, &status) && len(status.Details) != 0:
+		failure = status.Details
+	case errors.As(cause, &rpcError):
+		failure = rpcError
+	}
 	if err = encoder.Encode(failure); err != nil {
 		return LogsRetryPlan{}, err
 	}
@@ -150,7 +159,7 @@ func GetLogsRetryHelper(query map[string]any, failure any) (LogsRetryPlan, error
 		}
 	}
 	fallback := logsRetryFallback.MatchString(serialized)
-	if err, ok := failure.(error); ok && from.Cmp(to) < 0 && errors.Is(err, ErrHTTPResponseTooLarge) {
+	if from.Cmp(to) < 0 && errors.Is(cause, ErrHTTPResponseTooLarge) {
 		fallback = true
 	}
 	for _, text := range logsRetrySubstrings {
