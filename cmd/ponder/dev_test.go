@@ -61,6 +61,11 @@ func main(){
 	if _, err := os.Stat(filepath.Join(root, "closed-first")); !os.IsNotExist(err) {
 		t.Fatal("a broken edit stopped the live child", err)
 	}
+	write("main.go", program("first"))
+	time.Sleep(700 * time.Millisecond)
+	if _, err := os.Stat(filepath.Join(root, "closed-first")); !os.IsNotExist(err) {
+		t.Fatal("restoring the running source stopped its child", err)
+	}
 	write("main.go", program("second"))
 	second := strings.Fields(await(2)[1])
 	if _, err := os.Stat(filepath.Join(root, "closed-first")); err != nil {

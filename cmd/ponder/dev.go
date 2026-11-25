@@ -82,7 +82,7 @@ func (p *nativeProject) watch(ctx context.Context, dir string) error {
 	}
 	timer := time.NewTicker(300 * time.Millisecond)
 	defer timer.Stop()
-	var last, binary string
+	var last, runningRevision, binary string
 	var stopped chan error
 	var stop context.CancelFunc
 	stopChild := func() {
@@ -105,9 +105,15 @@ func (p *nativeProject) watch(ctx context.Context, dir string) error {
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
+		if err == nil && stopped != nil && revision == runningRevision {
+			last = revision
+		}
 		if err == nil && revision != last {
 			last = revision
-			next := filepath.Join(dir, "indexer-"+revision)
+			next := filepath.Join(dir, "indexer-a")
+			if next == binary {
+				next = filepath.Join(dir, "indexer-b")
+			}
 			if err = p.build(ctx, next); err != nil {
 				if ctx.Err() == nil {
 					fmt.Fprintln(os.Stderr, "Go build failed, waiting for an edit:", err)
@@ -134,6 +140,7 @@ func (p *nativeProject) watch(ctx context.Context, dir string) error {
 				}
 				stop = cancel
 				binary = next
+				runningRevision = revision
 				stopped = make(chan error, 1)
 				go func(done chan<- error) { done <- child.Wait() }(stopped)
 				fmt.Fprintf(os.Stderr, "Watching %s, dev schema %s\n", p.root, namespace)
