@@ -649,7 +649,7 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 				if err != nil {
 					return err
 				}
-				events = append(events, pending{cursor: cursor, id: fmt.Sprintf("log:%d:%s:%s:%s", e.chain.ID, b.Hash, contract.Name, log.LogIndex), event: Event{Name: eventName, Block: b, Log: &copyLog, Transaction: transaction, Receipt: receipt, Normalized: raw}, callback: callback.callback})
+				events = append(events, pending{cursor: cursor, id: e.logReceiptID(b.Hash, contract.Name, eventName, log), event: Event{Name: eventName, Block: b, Log: &copyLog, Transaction: transaction, Receipt: receipt, Normalized: raw}, callback: callback.callback})
 			}
 		}
 	}

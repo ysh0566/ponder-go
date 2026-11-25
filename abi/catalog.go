@@ -109,7 +109,7 @@ func catalogFamilies(eventEntries []Event, functionEntries []Function) ([]catalo
 	return events, functions
 }
 
-// NamedItem associates a source-level compact name with its ABI declaration.
+// NamedItem associates a name with its ABI declaration.
 type NamedItem[T Event | Function] struct {
 	Name string
 	Item T
