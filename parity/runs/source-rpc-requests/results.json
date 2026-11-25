@@ -1,0 +1,174 @@
+{
+  "code_revision": "3b954b47e9fe8065936631be5f4daab64eea5e5d",
+  "pinned_upstream": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "maps": [
+    {
+      "source_id": "f6d67972bceaf07faf09",
+      "file": "packages/core/src/rpc/http.test.ts",
+      "case": "slow body returns TimeoutError",
+      "native_test": "TestSourceRPCHTTP/slow_body_returns_TimeoutError",
+      "assertions_sha256": "88dd6483769dd52209c0af324d65798aa2c1b7e39b36db6db993483980a1019b"
+    },
+    {
+      "source_id": "0e71f796db2eb1f13166",
+      "file": "packages/core/src/rpc/index.test.ts",
+      "case": "createRpc()",
+      "native_test": "TestSourceRPCRequests/createRpc()",
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_id": "f9e0a2207505ee989bc2",
+      "file": "packages/core/src/rpc/index.test.ts",
+      "case": "createRpc() handles rate limiting",
+      "native_test": "TestSourceRPCRequests/createRpc()_handles_rate_limiting",
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_id": "02723965b4b2802bfe6b",
+      "file": "packages/core/src/rpc/index.test.ts",
+      "case": "createRpc() retry BlockNotFoundError",
+      "native_test": "TestSourceRPCRequests/createRpc()_retry_BlockNotFoundError",
+      "assertions_sha256": "a206645cf2e2d95e581502bbbd275b08442a0292a8e739ce02a89153d737cd1e"
+    },
+    {
+      "source_id": "39f061c81f0b96913be0",
+      "file": "packages/core/src/rpc/index.test.ts",
+      "case": "https://github.com/ponder-sh/ponder/pull/2143",
+      "native_test": "TestSourceRPCRequests/https://github.com/ponder-sh/ponder/pull/2143",
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_id": "219124b6a2b12ff300eb",
+      "file": "packages/core/src/rpc/index.test.ts",
+      "case": "sanitizeLogTopics removes trailing null values",
+      "native_test": "TestSourceRPCRequests/sanitizeLogTopics_removes_trailing_null_values",
+      "assertions_sha256": "87cbdbb1e30a415d4fae9c0510d9254c8b62c6716c50ef7b68a3de587b4f2ccf"
+    },
+    {
+      "source_id": "9454ea25a23771a1cf93",
+      "file": "packages/core/src/rpc/index.test.ts",
+      "case": "sanitizeLogTopics preserves null wildcards before a topic",
+      "native_test": "TestSourceRPCRequests/sanitizeLogTopics_preserves_null_wildcards_before_a_topic",
+      "assertions_sha256": "bbd313b384e0156cfdbd1411fb49a954b6d41f26214aa1d45259103f758049a2"
+    },
+    {
+      "source_id": "57210adf9f603f5bf979",
+      "file": "packages/core/src/rpc/index.test.ts",
+      "case": "sanitizeLogTopics does not mutate the input",
+      "native_test": "TestSourceRPCRequests/sanitizeLogTopics_does_not_mutate_the_input",
+      "assertions_sha256": "01d5b67743e54a580fe749fa6015b64df6d666095dddf521735a1aed7ca3aefa"
+    },
+    {
+      "source_id": "6d521532995cbe5e2cc6",
+      "file": "packages/core/src/rpc/index.test.ts",
+      "case": "sanitizeLogTopics preserves omitted and empty topics",
+      "native_test": "TestSourceRPCRequests/sanitizeLogTopics_preserves_omitted_and_empty_topics",
+      "assertions_sha256": "6cb66ed863335225e637d489ecea644df8efeb415ff3687436b0a325c3a24e9e"
+    }
+  ],
+  "scope": {
+    "ported": 602,
+    "unimplemented": 298,
+    "out_of_scope": 5,
+    "go_ports": 598,
+    "retained_sdk": 4
+  },
+  "inventory_fields_checked_for_all_905": [
+    "id",
+    "source_file",
+    "source_sha256",
+    "source_state",
+    "full_name",
+    "assertions",
+    "inputs",
+    "port_status",
+    "mapping",
+    "scope_reason"
+  ],
+  "native": {
+    "normal": {
+      "filter": {
+        "top_level": 8,
+        "passed_leaves": 935,
+        "test_json_sha256": "36de5c321cd2c400591abc4bd1a2ac5cf9d32f79bf3187cff65aad43543a167a"
+      },
+      "rpc": {
+        "top_level": 28,
+        "passed_leaves": 229,
+        "test_json_sha256": "36de5c321cd2c400591abc4bd1a2ac5cf9d32f79bf3187cff65aad43543a167a"
+      },
+      "runtime": {
+        "top_level": 4,
+        "passed_leaves": 14,
+        "test_json_sha256": "b7e4597085c850a4f88c7c8ad2b56bf099184513daaf5f54729e81a3fbe3caa9"
+      },
+      "config": {
+        "top_level": 10,
+        "passed_leaves": 77,
+        "test_json_sha256": "1849b14bfdbc273d39e940649786bd2184e720ce3561591084eed8e3847b5d45",
+        "embedded_upstream": {
+          "passed": 39,
+          "source_skip": 1,
+          "original_json_sha256": "959b9aa661ad378607dc765daca5fa6b2fe42031dc819f47ed710022daa7b3ac"
+        }
+      }
+    },
+    "race": {
+      "filter": {
+        "top_level": 8,
+        "passed_leaves": 935,
+        "test_json_sha256": "21a6a2f89dcf71b16bd37defb9503173cdf5db2994df863e5993be8aff0af890"
+      },
+      "rpc": {
+        "top_level": 28,
+        "passed_leaves": 229,
+        "test_json_sha256": "21a6a2f89dcf71b16bd37defb9503173cdf5db2994df863e5993be8aff0af890"
+      },
+      "runtime": {
+        "top_level": 4,
+        "passed_leaves": 14,
+        "test_json_sha256": "2e9409371592297d69497920c84c3a643112c0de1aed60ec69eb44070c50e488"
+      },
+      "config": {
+        "top_level": 10,
+        "passed_leaves": 77,
+        "test_json_sha256": "5d3a92505f48c0662b6601ced41ff3fc48f5c1c4b7e5f12c10390122629272d2",
+        "embedded_upstream": {
+          "passed": 39,
+          "source_skip": 1,
+          "original_json_sha256": "8c911840c997de1f0015d0b6e7485d6b647c1dbff2be03e3f0e4f9cf17a0c562"
+        }
+      }
+    }
+  },
+  "direct_original": {
+    "passed": 9,
+    "source_files": {
+      "packages/core/src/rpc/index.test.ts": "b80125e995a7bf2ecc44e8702e21bfc81581d3ce0820e7f8a33e35323480a2ef",
+      "packages/core/src/rpc/http.test.ts": "6afbfd24c7a38e118681ae4b4b005c05ef6a304f981581eec46189175b2bfddd"
+    },
+    "vitest_sha256": "8e22f9090620a34e229211a89fcd96b5d29ec7aff68abfd0fd75516d1812bf9e"
+  },
+  "commands": {
+    "rpc_filter": "go test -count=1 [-race] ./rpc ./filter",
+    "config": "go test -count=1 [-race] ./config",
+    "runtime": "go test -count=1 [-race] -run \"^(TestStagedAutomaticFinality|TestSourceHistoricalMemory(Bound|Live)|TestSourceSyncProgressRPC)$\" ./runtime",
+    "original": "packages/core: vitest run --configLoader native --maxWorkers=1 src/rpc/index.test.ts src/rpc/http.test.ts"
+  },
+  "module": {
+    "build": "passed",
+    "vet": "passed"
+  },
+  "full_original_inventory": "../public-provider-archives/upstream.json",
+  "mixed_error_regression": {
+    "before": "96e2287df9dfb1adc89a9e6ed757d05d02e4771a",
+    "after": "3b954b47e9fe8065936631be5f4daab64eea5e5d",
+    "before_failed_after_passed": "TestSourceSyncProgressRPC/source_transport_shares_a_single_retry_budget_for_429_and_null",
+    "before_test_json_sha256": "6f3458c59d65128a4c3ff62c153216bf72bfb71d82e5e8b154191e15b17dd336"
+  },
+  "cleanup": {
+    "stage_directories_removed": 8,
+    "allocated_bytes_in_removed_directories": 2227613696,
+    "accounting": "du -s -B1 before removal. Shared hard links may also exist in the package store."
+  }
+}
