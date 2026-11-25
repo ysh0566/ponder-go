@@ -216,7 +216,7 @@ func TestSourceABIUtilityTypes(t *testing.T) {
 				case expected == "never":
 					// A declaration outside this ABI has no formattable value.
 					body = fmt.Sprintf("_=binding.Format%s(other.%s{})", kind, catalogItemTypes[c.Argument])
-					diagnostics = []string{"Format" + kind, catalogItemTypes[c.Argument], "does not satisfy"}
+					diagnostics = []string{kind + "Name" + abi.GoFieldName(c.Argument), "does not satisfy", "." + kind + "Names"}
 				case c.Layout == "weak":
 					base := strings.TrimSuffix(expected, "()")
 					body = fmt.Sprintf("item:=other.%s{};got:=item.UnqualifiedName()\n", catalogItemTypes[c.Argument])
@@ -259,7 +259,8 @@ func TestSourceABIUtilityTypes(t *testing.T) {
 				}
 				input := fmt.Sprintf("items:=%s\noriginalABI(items,%q)\n", literal, raw)
 				if len(diagnostics) > 0 {
-					w.caller(t, binding, other, "", input)
+					control := fmt.Sprintf("_=binding.Format%s(%s{})", kind, itemType(c.Items[0]))
+					w.caller(t, binding, other, "", input+control)
 				}
 				body = input + body
 			}
