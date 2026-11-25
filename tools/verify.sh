@@ -64,6 +64,9 @@ node tools/source-merge-fixtures.mjs
 node tools/source-required-fixtures.mjs
 node tools/source-historical-types.mjs
 node tools/source-historical-pristine.mjs
+if [ ! -f parity/runs/history-m33/observer-identity-proof-01.json ]; then
+	node tools/source-historical-observer-probe.mjs
+fi
 node tools/source-historical-types/compile.mjs
 node tools/source-trace-fixtures.mjs
 node tools/source-realtime-controls.mjs
@@ -72,6 +75,7 @@ node tools/source-realtime-pristine.mjs
 node tools/provider-policy-cases.mjs
 node tools/record-native-inputs.mjs
 node tools/query-storage-types.mjs > parity/runs/query-storage-types.json
+node tools/source-runtime-index-types.mjs
 # Preparations above supply shared inputs. After they succeed, execute every
 # independent check and keep its exit code beside this invocation's captures.
 verification_status="parity/runs/original-captures/$capture_run/verification.tsv"
