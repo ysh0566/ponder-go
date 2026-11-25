@@ -88,9 +88,22 @@ func (d Definition[K, I, U, R]) DecodeCopy(view *store.RowCopy) (R, error) {
 	return d.decode(view.Snapshot())
 }
 
+// Executor is the set of journaled operations used by generated models. A
+// callback-bound executor keeps transaction admission and error classification.
+type Executor interface {
+	FindCopy(context.Context, string, store.Row) (*store.RowCopy, error)
+	InsertOne(context.Context, string, store.Row, store.Conflict) (store.Row, error)
+	InsertMany(context.Context, string, []store.Row, store.Conflict) ([]store.Row, error)
+	Update(context.Context, string, store.Row, store.Row) (store.Row, error)
+	UpdateFunc(context.Context, string, store.Row, store.RowUpdater) (store.Row, error)
+	Delete(context.Context, string, store.Row) (bool, error)
+	Select(context.Context, string, store.Row) ([]store.Row, error)
+	SQLInsert(context.Context, string, store.Row) (store.Row, error)
+}
+
 type Table[K, I, U, R any] struct {
 	definition Definition[K, I, U, R]
-	db         *store.IndexingStore
+	db         Executor
 }
 
 // SQL exposes eager, typed database operations. Insert uses the exact same
@@ -124,6 +137,11 @@ func (s SQLTable[K, I, U, R]) Find(ctx context.Context, key K) (*R, error) {
 }
 
 func (d Definition[K, I, U, R]) Bind(db *store.IndexingStore) Table[K, I, U, R] {
+	return d.BindExecutor(db)
+}
+
+// BindExecutor binds generated operations to the current callback database.
+func (d Definition[K, I, U, R]) BindExecutor(db Executor) Table[K, I, U, R] {
 	return Table[K, I, U, R]{d, db}
 }
 func (d Definition[K, I, U, R]) Name() string { return d.name }

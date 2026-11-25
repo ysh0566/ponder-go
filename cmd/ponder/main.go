@@ -133,8 +133,10 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		output := flags.String("out", "ponder_generated.go", "Output Go model file")
 		packageName := flags.String("package", "main", "Go package")
 		typed := flags.Bool("typed", false, "Generate typed native ORM model/key/insert/update APIs")
+		callbackDB := flags.Bool("callback-db", false, "Generate transaction-bound tables for a typed callback context")
 		catalog := flags.String("abi", "", "Contract ABI JSON for typed event and function names")
 		application := flags.String("app-config", "", "Source configuration JSON for callback names and chains")
+		registry := flags.Bool("registry", false, "Generate handlers with typed chain, contracts and database context")
 		eventTypes := flags.Bool("event-types", false, "Include typed callback events with --app-config")
 		var dynamicABIs []string
 		flags.Func("dynamic-abi", "Contract with a runtime ABI (repeatable with --app-config)", func(name string) error { dynamicABIs = append(dynamicABIs, name); return nil })
@@ -148,6 +150,12 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		}
 		if !schema.Identifier(*packageName) {
 			return fmt.Errorf("invalid package name")
+		}
+		if *callbackDB {
+			if *application != "" || *catalog != "" || *bigint != "" || *parameters != "" || len(mergeFiles) > 0 || *eventTypes || *registry || len(dynamicABIs) > 0 {
+				return fmt.Errorf("--callback-db requires schema generation")
+			}
+			*typed = true
 		}
 		if *application != "" {
 			schemaFlag := false
@@ -171,11 +179,17 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 			if *eventTypes {
 				generator = config.GenerateApplicationEventBindings
 			}
+			if *registry {
+				generator = config.GenerateApplicationRegistry
+			}
 			src, err := generator(*packageName, cfg, dynamicABIs...)
 			if err != nil {
 				return err
 			}
 			return os.WriteFile(*output, src, 0644)
+		}
+		if *registry {
+			return fmt.Errorf("--registry requires --app-config")
 		}
 		if *eventTypes {
 			return fmt.Errorf("--event-types requires --app-config")
@@ -248,7 +262,11 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 			return e
 		}
 		if *typed {
-			source, e := orm.GenerateModels(*packageName, model)
+			generate := orm.GenerateModels
+			if *callbackDB {
+				generate = orm.GenerateCallbackDatabase
+			}
+			source, e := generate(*packageName, model)
 			if e != nil {
 				return e
 			}

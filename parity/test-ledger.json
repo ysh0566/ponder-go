@@ -21,21 +21,21 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 865,
-    "executed": 624,
-    "passed": 624,
+    "ported": 869,
+    "executed": 628,
+    "passed": 628,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 35,
-    "go_ports": 861,
+    "unimplemented": 31,
+    "go_ports": 865,
     "retained_sdk": 4,
-    "oracle_passed": 624,
+    "oracle_passed": 628,
     "oracle_blocked": 0,
-    "go_passed": 620,
+    "go_passed": 624,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 620,
-    "target_and_original_oracle_passed": 624,
-    "current_original_oracle_passed": 624,
+    "go_and_original_oracle_passed": 624,
+    "target_and_original_oracle_passed": 628,
+    "current_original_oracle_passed": 628,
     "historical_only_original_oracles": 0,
     "runtime_passed_type_pending": 0,
     "out_of_scope": 5
@@ -61627,13 +61627,45 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/types/virtual.test-d.ts",
+        "source_name": "Context db",
+        "source_id": "e4e55f3f0670f82ff2a6",
+        "source_line": 209,
+        "target_file": "config/callback_context_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceCallbackContext/e4e55f3f0670f82ff2a6",
+        "assertion_policy": "Compile both schema-specific database assignments and execute generated table operations within a callback on PostgreSQL and PGlite.",
+        "original_assertions": 2,
+        "assertions_sha256": "0ead93e23152e022dfa5154bdf393bcc8576fe9140fdde8c035c6e519f12c67a",
+        "backend_tests": [
+          "TestSourceCallbackContext/e4e55f3f0670f82ff2a6/postgres",
+          "TestSourceCallbackContext/e4e55f3f0670f82ff2a6/pglite"
+        ]
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-callback-context/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-callback-context/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_typescript_type_file",
+        "evidence": "parity/runs/application-callback-context/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed",
+      "type_verification": {
+        "status": "passed",
+        "obligations": 2,
+        "compile_evidence": "parity/runs/application-callback-context/results.json"
+      }
     },
     {
       "id": "f3f5509b494466c548f8",
@@ -61870,13 +61902,41 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/types/virtual.test-d.ts",
+        "source_name": "Context client",
+        "source_id": "a7019d7981948f8df0f0",
+        "source_line": 253,
+        "target_file": "config/callback_context_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceCallbackContext/a7019d7981948f8df0f0",
+        "assertion_policy": "Require every method in the original client-key assertion and compare native ENS call bytes, block and return behavior with pinned viem.",
+        "original_assertions": 1,
+        "assertions_sha256": "8e1a2b4043166d6435152417887285c4f2a13ecc5ce5493e4f91ad78e5a16417"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-callback-context/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-callback-context/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_typescript_type_file",
+        "evidence": "parity/runs/application-callback-context/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed",
+      "type_verification": {
+        "status": "passed",
+        "obligations": 1,
+        "compile_evidence": "parity/runs/application-callback-context/results.json"
+      }
     },
     {
       "id": "b1d67da8241fc3a5cf9b",
@@ -61941,13 +62001,41 @@
       ],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/types/virtual.test-d.ts",
+        "source_name": "Context contracts",
+        "source_id": "b1d67da8241fc3a5cf9b",
+        "source_line": 273,
+        "target_file": "config/callback_context_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceCallbackContext/b1d67da8241fc3a5cf9b",
+        "assertion_policy": "Compile both ABI tuple and property types, compare all four runtime ABI items, and validate the optional start, absent end and constant address.",
+        "original_assertions": 8,
+        "assertions_sha256": "768b436bc32b1524cd479ab489e19f9580e5137b54f906dd06cc0d2ce33ba7d4"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "execution_evidence": "parity/runs/application-callback-context/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-callback-context/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_typescript_type_file",
+        "evidence": "parity/runs/application-callback-context/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed",
+      "type_verification": {
+        "status": "passed",
+        "obligations": 8,
+        "compile_evidence": "parity/runs/application-callback-context/results.json"
+      }
     },
     {
       "id": "129e3f9520e24698a70e",
@@ -62594,13 +62682,41 @@
       "assertions": [],
       "type_error_directives": [],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
-      "execution_status": "not_run",
-      "pass_status": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/types/virtual.test-d.ts",
+        "source_name": "Registry",
+        "source_id": "06c3c5e61c275b0cbb4e",
+        "source_line": 455,
+        "target_file": "config/callback_context_test.go",
+        "go_package": "ponder.local/ponder-go/config",
+        "go_test": "TestSourceCallbackContext/06c3c5e61c275b0cbb4e",
+        "assertion_policy": "Compile and invoke the source-specific registry callback, checking all ten property accesses against generated types and values.",
+        "original_assertions": 0,
+        "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution_status": "executed",
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
-      "oracle_current_status": "not_run"
+      "oracle_current_status": "passed",
+      "registry_verification": {
+        "status": "passed",
+        "property_accesses": 10,
+        "evidence": "parity/runs/application-callback-context/results.json"
+      },
+      "execution_evidence": "parity/runs/application-callback-context/results.json",
+      "race": {
+        "status": "pass",
+        "evidence": "parity/runs/application-callback-context/results.json"
+      },
+      "oracle": {
+        "status": "passed",
+        "mode": "complete_unmodified_typescript_type_file",
+        "evidence": "parity/runs/application-callback-context/results.json",
+        "full_original": true
+      },
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "6dfea1e218dbb7214d77",

@@ -112,6 +112,29 @@ func (db *Database) Find(ctx context.Context, name string, key store.Row) (store
 	v, e := underlying.Find(ctx, name, key)
 	return v, db.capture(e)
 }
+
+// FindCopy keeps generated table reads within the active callback transaction.
+func (db *Database) FindCopy(ctx context.Context, name string, key store.Row) (*store.RowCopy, error) {
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return nil, db.capture(err)
+	}
+	defer release()
+	v, err := underlying.FindCopy(ctx, name, key)
+	return v, db.capture(err)
+}
+
+// SQLInsert performs the model's eager insert through the same transaction binding.
+func (db *Database) SQLInsert(ctx context.Context, name string, row store.Row) (store.Row, error) {
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return nil, db.capture(err)
+	}
+	defer release()
+	v, err := underlying.SQLInsert(ctx, name, row)
+	return v, db.capture(err)
+}
+
 func (db *Database) InsertOne(ctx context.Context, name string, input store.Row, conflict store.Conflict) (store.Row, error) {
 	underlying, release, err := db.acquire(ctx)
 	if err != nil {
