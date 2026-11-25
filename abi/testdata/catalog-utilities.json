@@ -1,0 +1,520 @@
+{
+  "source_sha256": "ee80e9c111ee164c7734a20081c481cd1047f8ec04fef64fa9eefff394feb7e5",
+  "declarations": {
+    "Event0": {
+      "name": "Event0",
+      "type": "event",
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "arg",
+          "indexed": true
+        }
+      ]
+    },
+    "Event1": {
+      "name": "Event1",
+      "type": "event",
+      "inputs": []
+    },
+    "Event1Overloaded": {
+      "name": "Event1",
+      "type": "event",
+      "inputs": [
+        {
+          "type": "bytes32",
+          "indexed": true
+        }
+      ]
+    },
+    "Func0": {
+      "name": "func0",
+      "type": "function",
+      "stateMutability": "nonpayable",
+      "inputs": [
+        {
+          "type": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256"
+        }
+      ]
+    },
+    "Func1": {
+      "name": "func1",
+      "type": "function",
+      "stateMutability": "nonpayable",
+      "inputs": [],
+      "outputs": []
+    },
+    "Func1Overloaded": {
+      "name": "func1",
+      "type": "function",
+      "stateMutability": "nonpayable",
+      "inputs": [
+        {
+          "type": "bytes32"
+        }
+      ],
+      "outputs": []
+    }
+  },
+  "cases": [
+    {
+      "name": "ExtractAbiEvents",
+      "operation": "ExtractAbiEvents",
+      "layout": "tuple",
+      "items": [
+        "Event0",
+        "Event1",
+        "Event1Overloaded",
+        "Func0"
+      ],
+      "argument": "",
+      "expected": [
+        "Event0",
+        "Event1",
+        "Event1Overloaded"
+      ]
+    },
+    {
+      "name": "ExtractAbiEvents semi-weak abi",
+      "operation": "ExtractAbiEvents",
+      "layout": "array",
+      "items": [
+        "Event0",
+        "Event1",
+        "Event1Overloaded",
+        "Func0"
+      ],
+      "argument": "",
+      "expected": [
+        "Event0",
+        "Event1",
+        "Event1Overloaded"
+      ]
+    },
+    {
+      "name": "ExtractAbiEvents no events",
+      "operation": "ExtractAbiEvents",
+      "layout": "tuple",
+      "items": [
+        "Func0"
+      ],
+      "argument": "",
+      "expected": [
+        "AbiEvent"
+      ]
+    },
+    {
+      "name": "ExtractAbiFunctions",
+      "operation": "ExtractAbiFunctions",
+      "layout": "tuple",
+      "items": [
+        "Func0",
+        "Func1",
+        "Func1Overloaded",
+        "Event0"
+      ],
+      "argument": "",
+      "expected": [
+        "Func0",
+        "Func1",
+        "Func1Overloaded"
+      ]
+    },
+    {
+      "name": "ExtractAbiFunctions semi-weak abi",
+      "operation": "ExtractAbiFunctions",
+      "layout": "array",
+      "items": [
+        "Func0",
+        "Func1",
+        "Func1Overloaded",
+        "Event0"
+      ],
+      "argument": "",
+      "expected": [
+        "Func0",
+        "Func1",
+        "Func1Overloaded"
+      ]
+    },
+    {
+      "name": "ExtractAbiFunctions no events",
+      "operation": "ExtractAbiFunctions",
+      "layout": "tuple",
+      "items": [
+        "Event0"
+      ],
+      "argument": "",
+      "expected": [
+        "AbiFunction"
+      ]
+    },
+    {
+      "name": "ParseAbiEvent no overloaded events ",
+      "operation": "ParseAbiEvent",
+      "layout": "tuple",
+      "items": [
+        "Event0",
+        "Event1"
+      ],
+      "argument": "Event0",
+      "expected": [
+        "Event0"
+      ]
+    },
+    {
+      "name": "ParseAbiEvent overloaded events",
+      "operation": "ParseAbiEvent",
+      "layout": "tuple",
+      "items": [
+        "Event1",
+        "Event1Overloaded"
+      ],
+      "argument": "Event1(bytes32 indexed)",
+      "expected": [
+        "Event1Overloaded"
+      ]
+    },
+    {
+      "name": "ParseAbiEvent with semi-weak abi",
+      "operation": "ParseAbiEvent",
+      "layout": "array",
+      "items": [
+        "Event0",
+        "Event1"
+      ],
+      "argument": "Event0",
+      "expected": [
+        "Event0"
+      ]
+    },
+    {
+      "name": "ParseAbiEvent with weak abi",
+      "operation": "ParseAbiEvent",
+      "layout": "weak",
+      "items": [],
+      "argument": "Event0",
+      "expected": [
+        "AbiEvent"
+      ]
+    },
+    {
+      "name": "ParseAbiEvent no matching events",
+      "operation": "ParseAbiEvent",
+      "layout": "tuple",
+      "items": [
+        "Event0",
+        "Event1"
+      ],
+      "argument": "Event2",
+      "expected": [
+        "AbiEvent"
+      ]
+    },
+    {
+      "name": "ParseAbiFunction no overloaded events ",
+      "operation": "ParseAbiFunction",
+      "layout": "tuple",
+      "items": [
+        "Func0",
+        "Func1"
+      ],
+      "argument": "func0()",
+      "expected": [
+        "Func0"
+      ]
+    },
+    {
+      "name": "ParseAbiFunction overloaded events",
+      "operation": "ParseAbiFunction",
+      "layout": "tuple",
+      "items": [
+        "Func1",
+        "Func1Overloaded"
+      ],
+      "argument": "func1()",
+      "expected": [
+        "Func1"
+      ]
+    },
+    {
+      "name": "ParseAbiFunction with semi-weak abi",
+      "operation": "ParseAbiFunction",
+      "layout": "array",
+      "items": [
+        "Func0",
+        "Func1"
+      ],
+      "argument": "func0()",
+      "expected": [
+        "Func0"
+      ]
+    },
+    {
+      "name": "ParseAbiFunction with weak abi",
+      "operation": "ParseAbiFunction",
+      "layout": "weak",
+      "items": [],
+      "argument": "func0()",
+      "expected": [
+        "AbiFunction"
+      ]
+    },
+    {
+      "name": "ParseAbiFunction no matching events",
+      "operation": "ParseAbiFunction",
+      "layout": "tuple",
+      "items": [
+        "Func0",
+        "Func1"
+      ],
+      "argument": "func2()",
+      "expected": [
+        "AbiFunction"
+      ]
+    },
+    {
+      "name": "FormatAbiEvent no overloaded events",
+      "operation": "FormatAbiEvent",
+      "layout": "tuple",
+      "items": [
+        "Event0",
+        "Event1"
+      ],
+      "argument": "Event0",
+      "expected": [
+        "Event0"
+      ]
+    },
+    {
+      "name": "FormatAbiEvent overloaded events",
+      "operation": "FormatAbiEvent",
+      "layout": "tuple",
+      "items": [
+        "Event1",
+        "Event1Overloaded"
+      ],
+      "argument": "Event1Overloaded",
+      "expected": [
+        "Event1(bytes32 indexed)"
+      ]
+    },
+    {
+      "name": "FormatAbiEvent with semi-weak abi",
+      "operation": "FormatAbiEvent",
+      "layout": "array",
+      "items": [
+        "Event0",
+        "Event1"
+      ],
+      "argument": "Event0",
+      "expected": [
+        "Event0"
+      ]
+    },
+    {
+      "name": "FormatAbiEvent with weak abi",
+      "operation": "FormatAbiEvent",
+      "layout": "weak",
+      "items": [],
+      "argument": "Event0",
+      "expected": [
+        "Event0"
+      ]
+    },
+    {
+      "name": "FormatAbiEvent with no matching events",
+      "operation": "FormatAbiEvent",
+      "layout": "tuple",
+      "items": [
+        "Event1",
+        "Event1Overloaded"
+      ],
+      "argument": "Event0",
+      "expected": [
+        "never"
+      ]
+    },
+    {
+      "name": "FormatAbiFunction no overloaded events",
+      "operation": "FormatAbiFunction",
+      "layout": "tuple",
+      "items": [
+        "Func0",
+        "Func1"
+      ],
+      "argument": "Func0",
+      "expected": [
+        "func0()"
+      ]
+    },
+    {
+      "name": "FormatAbiFunction overloaded events",
+      "operation": "FormatAbiFunction",
+      "layout": "tuple",
+      "items": [
+        "Func1",
+        "Func1Overloaded"
+      ],
+      "argument": "Func1Overloaded",
+      "expected": [
+        "func1(bytes32)"
+      ]
+    },
+    {
+      "name": "FormatAbiFunction with semi-weak abi",
+      "operation": "FormatAbiFunction",
+      "layout": "array",
+      "items": [
+        "Func0",
+        "Func1"
+      ],
+      "argument": "Func0",
+      "expected": [
+        "func0()"
+      ]
+    },
+    {
+      "name": "FormatAbiFunction with weak abi",
+      "operation": "FormatAbiFunction",
+      "layout": "weak",
+      "items": [],
+      "argument": "Func0",
+      "expected": [
+        "func0()"
+      ]
+    },
+    {
+      "name": "FormatAbiFunction with no matching events",
+      "operation": "FormatAbiFunction",
+      "layout": "tuple",
+      "items": [
+        "Func1",
+        "Func1Overloaded"
+      ],
+      "argument": "Func0",
+      "expected": [
+        "never"
+      ]
+    },
+    {
+      "name": "SafeEventNames no overloaded events",
+      "operation": "SafeEventNames",
+      "layout": "tuple",
+      "items": [
+        "Event0",
+        "Event1",
+        "Func0"
+      ],
+      "argument": "",
+      "expected": [
+        "Event0",
+        "Event1"
+      ]
+    },
+    {
+      "name": "SafeEventNames overloaded events",
+      "operation": "SafeEventNames",
+      "layout": "tuple",
+      "items": [
+        "Event0",
+        "Event1",
+        "Event1Overloaded",
+        "Func0"
+      ],
+      "argument": "",
+      "expected": [
+        "Event0",
+        "Event1()",
+        "Event1(bytes32 indexed)"
+      ]
+    },
+    {
+      "name": "SafeEventNames semi-weak abi",
+      "operation": "SafeEventNames",
+      "layout": "array",
+      "items": [
+        "Event0",
+        "Event1",
+        "Func0"
+      ],
+      "argument": "",
+      "expected": [
+        "Event0",
+        "Event1"
+      ]
+    },
+    {
+      "name": "SafeEventNames weak abi",
+      "operation": "SafeEventNames",
+      "layout": "weak",
+      "items": [],
+      "argument": "",
+      "expected": [
+        "string"
+      ]
+    },
+    {
+      "name": "SafeFunctionNames no overloaded events",
+      "operation": "SafeFunctionNames",
+      "layout": "tuple",
+      "items": [
+        "Func0",
+        "Func1",
+        "Event0"
+      ],
+      "argument": "",
+      "expected": [
+        "func0()",
+        "func1()"
+      ]
+    },
+    {
+      "name": "SafeFunctionNames overloaded events",
+      "operation": "SafeFunctionNames",
+      "layout": "tuple",
+      "items": [
+        "Func0",
+        "Func1",
+        "Func1Overloaded",
+        "Event0"
+      ],
+      "argument": "",
+      "expected": [
+        "func0()",
+        "func1()",
+        "func1(bytes32)"
+      ]
+    },
+    {
+      "name": "SafeFunctionNames semi-weak abi",
+      "operation": "SafeFunctionNames",
+      "layout": "array",
+      "items": [
+        "Func0",
+        "Func1",
+        "Event0"
+      ],
+      "argument": "",
+      "expected": [
+        "func0()",
+        "func1()"
+      ]
+    },
+    {
+      "name": "SafeFunctionNames weak abi",
+      "operation": "SafeFunctionNames",
+      "layout": "weak",
+      "items": [],
+      "argument": "",
+      "expected": [
+        "`${string}()`"
+      ]
+    }
+  ]
+}

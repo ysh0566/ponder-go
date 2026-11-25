@@ -29,14 +29,10 @@ func (e *Engine) accountEvents(ctx context.Context, b Block, number uint64) ([]p
 			}
 			a := e.abis[source.Name]
 			functions := a.FunctionEntries()
-			counts := map[string]int{}
-			for _, item := range functions {
-				counts[item.Name]++
-			}
 			registered := map[string]bool{}
 			for _, item := range functions {
 				selector := abi.FunctionSelector(item)
-				name := source.Name + "." + item.SafeName(counts[item.Name] > 1)
+				name := source.Name + "." + a.FunctionSafeName(item)
 				if e.Handlers[name] == nil || registered[name] {
 					continue
 				}

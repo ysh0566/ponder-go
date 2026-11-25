@@ -109,6 +109,8 @@ bin/ponder codegen --schema examples/erc20/schema.json --out examples/erc20/pond
 
 ## ABI 原生类型适配
 
+`ponder codegen --abi contract.json --package bindings --out bindings.go` 生成事件、函数和名称的 Go 类型。以 `Transfer` 事件为例，`bindings.FormatEvent(bindings.EventItemTransfer{}).String()` 返回回调名称，`bindings.ParseEvent(bindings.EventNameTransfer{}).Definition()` 返回其 ABI 定义。生成的条目可以组成 `[]bindings.Declaration` 并直接序列化为 ABI JSON。运行时加载的 ABI 可通过 `FindEventSafe` 和 `FindFunctionSafe` 查找名称。
+
 `ponder codegen --abi-parameters params.json --decoder Transfer --package main --out transfer_generated.go` 从 ABI 参数生成有返回类型的解码器；位置 tuple 为 `Value0` 等字段，命名 tuple 保留 `abi` 字段标签，固定数组保留长度，较大整数为 `*big.Int`。Go 没有 TypeScript readonly tuple 或 Hex 模板字符串类型；这些差异在 `parity/runs/compile-fixtures.json` 注明。53 条编译 fixture 的预期类型独立来自原断言，未从 Go 签名反向生成。
 
 动态地址的参数/offset 构建、发现持久化、失败重试、磁盘重开和重组回收已有双后端验证，见 [docs/FACTORY.md](docs/FACTORY.md)。M25单链contract trace已接入统一Decoder；M26 factory account已通过完整验收，边界见 [FACTORY_ACCOUNTS.md](docs/FACTORY_ACCOUNTS.md)。完整原版factory E2E、source配置/planner与多链runtime仍未完成。
