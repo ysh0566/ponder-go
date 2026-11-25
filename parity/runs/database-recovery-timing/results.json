@@ -1,0 +1,133 @@
+{
+  "code_commit": "213e8b7c29a39a2765554b0d04d921513f03c444",
+  "upstream_commit": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "original": {
+    "file": "packages/core/src/database/index.test.ts",
+    "source_sha256": "b5af6eb04948dd799c20f2d22baf3f52983b76df409c7f6b899a483a51b47e4e",
+    "runs": {
+      "pglite": {
+        "passed": 18,
+        "vitest_sha256": "e326fc2c07663bbfe4922e306cbadaab1e113950d33682c6266f6fec9a3c1454"
+      },
+      "postgres": {
+        "passed": 18,
+        "vitest_sha256": "c721753e7536adc27803cb91f0e8abb9ec653df8922959c6413ec30cf027a80f"
+      }
+    }
+  },
+  "baseline": {
+    "commit": "444e6897da6207f1fe49bb9224c16198ca98f8a9",
+    "failed_leaves": [
+      "TestLifecycleQueuedHeartbeat/pglite/lease_expires",
+      "TestLifecycleQueuedHeartbeat/pglite/newer_renewal",
+      "TestLifecycleQueuedHeartbeat/postgres/lease_expires",
+      "TestLifecycleQueuedHeartbeat/postgres/newer_renewal"
+    ],
+    "jsonl_sha256": "cf48a9936280e795af913de5e24db3207aeb4ace59365836462e4a25105f2bfb",
+    "prior_crash_reproduction": {
+      "commit": "35abf3b23db1d892247b5f396716ffa8eddabac4",
+      "outcomes": [
+        "pass",
+        "fail",
+        "pass"
+      ],
+      "jsonl_sha256": "f1e20709e719ae3b08ba1c1c6385c2bdb449de58117addbf7df0dc199c949fdb"
+    }
+  },
+  "fixed": {
+    "passed_leaves_per_mode": 67,
+    "leaf_tests": [
+      "TestLifecycleBoundaries/pglite/canceled_waiter_preserves_active_owner",
+      "TestLifecycleBoundaries/pglite/failed_first_migration_leaves_no_schemas",
+      "TestLifecycleBoundaries/pglite/failed_recovery_restores_data_and_schema",
+      "TestLifecycleBoundaries/pglite/finalized_block_regression_and_missing_chain",
+      "TestLifecycleBoundaries/pglite/lease_takeover_fences_all_writers",
+      "TestLifecycleBoundaries/pglite/slow_startup_publishes_a_fresh_lease",
+      "TestLifecycleBoundaries/postgres/canceled_waiter_preserves_active_owner",
+      "TestLifecycleBoundaries/postgres/failed_first_migration_leaves_no_schemas",
+      "TestLifecycleBoundaries/postgres/failed_recovery_restores_data_and_schema",
+      "TestLifecycleBoundaries/postgres/finalized_block_regression_and_missing_chain",
+      "TestLifecycleBoundaries/postgres/lease_takeover_fences_all_writers",
+      "TestLifecycleBoundaries/postgres/slow_startup_publishes_a_fresh_lease",
+      "TestLifecycleProcessCrash/pglite/first_migration_before_commit",
+      "TestLifecycleProcessCrash/pglite/recovery_after_commit",
+      "TestLifecycleProcessCrash/pglite/recovery_before_commit",
+      "TestLifecycleProcessCrash/pglite/recovery_during_undo",
+      "TestLifecycleProcessCrash/postgres/first_migration_before_commit",
+      "TestLifecycleProcessCrash/postgres/recovery_after_commit",
+      "TestLifecycleProcessCrash/postgres/recovery_before_commit",
+      "TestLifecycleProcessCrash/postgres/recovery_during_undo",
+      "TestLifecycleQueuedHeartbeat/pglite/lease_expires",
+      "TestLifecycleQueuedHeartbeat/pglite/newer_renewal",
+      "TestLifecycleQueuedHeartbeat/postgres/lease_expires",
+      "TestLifecycleQueuedHeartbeat/postgres/newer_renewal",
+      "TestManagedLiveRecoveryFormatIsolation/pglite/recovery_first_false",
+      "TestManagedLiveRecoveryFormatIsolation/pglite/recovery_first_true",
+      "TestManagedLiveRecoveryFormatIsolation/postgres/recovery_first_false",
+      "TestManagedLiveRecoveryFormatIsolation/postgres/recovery_first_true",
+      "TestStoreFormatMarkers/pglite/business_schema_missing",
+      "TestStoreFormatMarkers/pglite/fingerprint_missing",
+      "TestStoreFormatMarkers/pglite/lifecycle_application_metadata_missing",
+      "TestStoreFormatMarkers/pglite/sync_owner_changed",
+      "TestStoreFormatMarkers/pglite/sync_owner_missing",
+      "TestStoreFormatMarkers/pglite/sync_schema_missing",
+      "TestStoreFormatMarkers/postgres/business_schema_missing",
+      "TestStoreFormatMarkers/postgres/fingerprint_missing",
+      "TestStoreFormatMarkers/postgres/lifecycle_application_metadata_missing",
+      "TestStoreFormatMarkers/postgres/sync_owner_changed",
+      "TestStoreFormatMarkers/postgres/sync_owner_missing",
+      "TestStoreFormatMarkers/postgres/sync_schema_missing",
+      "TestUpstreamDatabaseActions/pglite/createIndexes()",
+      "TestUpstreamDatabaseActions/pglite/finalize()",
+      "TestUpstreamDatabaseActions/pglite/revert()",
+      "TestUpstreamDatabaseActions/pglite/revert()_with_composite_primary_key",
+      "TestUpstreamDatabaseActions/postgres/createIndexes()",
+      "TestUpstreamDatabaseActions/postgres/finalize()",
+      "TestUpstreamDatabaseActions/postgres/revert()",
+      "TestUpstreamDatabaseActions/postgres/revert()_with_composite_primary_key",
+      "TestUpstreamDatabaseLifecycle/pglite/heartbeat_updates_the_heartbeat_at_value",
+      "TestUpstreamDatabaseLifecycle/pglite/migrate()_succeeds_with_crash_recovery",
+      "TestUpstreamDatabaseLifecycle/pglite/migrate()_succeeds_with_crash_recovery_after_waiting_for_lock",
+      "TestUpstreamDatabaseLifecycle/pglite/migrate()_succeeds_with_empty_schema",
+      "TestUpstreamDatabaseLifecycle/pglite/migrate()_throws_with_schema_used",
+      "TestUpstreamDatabaseLifecycle/pglite/migrate()_with_crash_recovery_drops_indexes_and_triggers",
+      "TestUpstreamDatabaseLifecycle/pglite/migrate()_with_empty_schema_creates_tables,_views,_and_enums",
+      "TestUpstreamDatabaseLifecycle/postgres/heartbeat_updates_the_heartbeat_at_value",
+      "TestUpstreamDatabaseLifecycle/postgres/migrate()_succeeds_with_crash_recovery",
+      "TestUpstreamDatabaseLifecycle/postgres/migrate()_succeeds_with_crash_recovery_after_waiting_for_lock",
+      "TestUpstreamDatabaseLifecycle/postgres/migrate()_succeeds_with_empty_schema",
+      "TestUpstreamDatabaseLifecycle/postgres/migrate()_throws_with_schema_used",
+      "TestUpstreamDatabaseLifecycle/postgres/migrate()_throws_with_schema_used_after_waiting_for_lock",
+      "TestUpstreamDatabaseLifecycle/postgres/migrate()_with_crash_recovery_drops_indexes_and_triggers",
+      "TestUpstreamDatabaseLifecycle/postgres/migrate()_with_empty_schema_creates_tables,_views,_and_enums",
+      "TestUpstreamRemainingLifecycle/pglite/camelCase",
+      "TestUpstreamRemainingLifecycle/pglite/migrate()_with_crash_recovery_reverts_rows",
+      "TestUpstreamRemainingLifecycle/postgres/camelCase",
+      "TestUpstreamRemainingLifecycle/postgres/migrate()_with_crash_recovery_reverts_rows"
+    ],
+    "go_test_sha256": {
+      "normal": "3b3d0c1b75984da95fb0ecb19796fcc8e95614404c36407cb9285cc19a700548",
+      "race": "1691de166bf97a7e89c6bf00f6c7135737d4dd4b38ae682d38f7c956c44aff66"
+    },
+    "repeated_race_leaf": "TestLifecycleProcessCrash/pglite/recovery_after_commit",
+    "repeat_count": 5,
+    "repeat_sha256": "650beae486d9f268a794d111c87c4f8029324b0b1983b63e551517d08455db37",
+    "build_exit": 0,
+    "vet_exit": 0
+  },
+  "source_inventory": {
+    "ported": 869,
+    "go_ports": 865,
+    "retained_sdk": 4,
+    "unimplemented": 31,
+    "out_of_scope": 5
+  },
+  "commands": [
+    "go test -count=1 -json -run ^(TestLifecycle.*|TestUpstreamRemainingLifecycle|TestUpstreamDatabaseLifecycle|TestStoreFormatMarkers|TestManagedLiveRecoveryFormatIsolation|TestUpstreamDatabaseActions)$ ./store",
+    "go test -count=1 -race -json -run ^(TestLifecycle.*|TestUpstreamRemainingLifecycle|TestUpstreamDatabaseLifecycle|TestStoreFormatMarkers|TestManagedLiveRecoveryFormatIsolation|TestUpstreamDatabaseActions)$ ./store",
+    "go test -count=5 -race -json -run '^TestLifecycleProcessCrash$/^pglite$/^recovery_after_commit$' ./store",
+    "go build ./...",
+    "go vet ./...",
+    "vitest run --configLoader native --maxWorkers=1 --reporter=json src/database/index.test.ts"
+  ]
+}
