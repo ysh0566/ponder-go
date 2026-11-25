@@ -2,13 +2,18 @@
 
 `NewSyncMigrator(backend, scope).Migrate(ctx)` creates the current RPC cache
 in `<scope>_rpc_1`. `Lifecycle.MigrateSync` uses the lifecycle namespace as
-its scope. Before committing creation or reopening a cache, the migrator verifies the nine tables
-against the pinned DDL. The catalog check covers ordered columns, types and
-modifiers, nullability, generated identities, defaults, collation and keys.
-A mismatched table raises a migration error naming the table. Standalone cache
-reads and writes run the same check. Ordinary secondary indexes can be added
-without changing the data format. Scope names start with
-`ponder_go_` and are at most 45 characters.
+its scope. The migrator checks the nine tables against the pinned DDL before
+committing a new cache. On reopen it verifies the namespace ownership comment
+and checks the same layout. A mismatched table raises a migration error naming
+that table. Standalone cache reads and writes also verify ownership and layout.
+Scope names start with `ponder_go_` and are at most 45 characters.
+
+The catalog comparison covers column order, builtin types and modifiers,
+nullability, defaults, identity generation, collation and keys. Ordinary
+secondary indexes can be added without changing the format. The reference
+contains one entry per table. Column entries use the PostgreSQL type name and
+type modifier. Key entries record the constraint type, deferral and validation
+flags, and ordered columns. [Expected catalog](../store/syncsql/layout.json)
 
 Startup requires a fresh scope or an existing current cache. If only an old
 `<scope>_legacy` namespace exists, choose a fresh scope and let indexing
