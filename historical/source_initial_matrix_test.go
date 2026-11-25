@@ -59,12 +59,14 @@ func sourceMatrixBuild(t *testing.T, p *finiteRPC, start, end, window uint64, se
 	return b
 }
 
+type sourceInitialCase struct {
+	name, oracle, setup        string
+	start, end, latest, window uint64
+	empty                      bool
+}
+
 func TestRuntimeSourceInitialMatrix(t *testing.T) {
-	cases := []struct {
-		name, oracle, setup        string
-		start, end, latest, window uint64
-		empty                      bool
-	}{
+	testSourceInitialCases(t, &RuntimeLiveOptions{PollingInterval: time.Millisecond}, []sourceInitialCase{
 		{"genesis", "start0_end0_final0", "both", 0, 0, 0, 0, false},
 		{"future_start", "start3_final1", "both", 3, 5, 5, 4, false},
 		{"equal_start_final", "start3_final3", "one", 3, 5, 5, 2, false},
@@ -72,7 +74,22 @@ func TestRuntimeSourceInitialMatrix(t *testing.T) {
 		{"no_setup", "start1_final2", "none", 1, 3, 3, 1, false},
 		{"empty_events", "start1_final2", "both", 1, 3, 3, 1, true},
 		{"mixed_bounds", "start1_final2", "mixed", 1, 5, 3, 1, false},
-	}
+	})
+}
+
+func TestBoundedSourceCheckpoints(t *testing.T) {
+	testSourceInitialCases(t, nil, []sourceInitialCase{
+		{"genesis", "start0_end0_final0", "both", 0, 0, 0, 0, false},
+		// The initial cursor has the same genesis and finalized head as the
+		// captured start0 fixture. The extended finite range includes blocks 1 and 2.
+		{"genesis_range", "start0_end0_final0", "both", 0, 2, 2, 180, false},
+		{"no_setup", "start1_final2", "none", 1, 3, 3, 1, false},
+		{"mixed_bounds", "start1_final2", "mixed", 1, 5, 3, 1, false},
+	})
+}
+
+func testSourceInitialCases(t *testing.T, live *RuntimeLiveOptions, cases []sourceInitialCase) {
+	t.Helper()
 	for _, backend := range []string{"postgres", "pglite"} {
 		for _, tc := range cases {
 			t.Run(backend+"/"+tc.name, func(t *testing.T) {
@@ -81,12 +98,17 @@ func TestRuntimeSourceInitialMatrix(t *testing.T) {
 				if tc.setup == "mixed" {
 					s.latest[2] = 5
 				}
-				calls := map[uint64]int{}
+				calls := map[uint64][]uint64{}
 				setups := map[uint64]int{}
 				observed := 0
 				var observeMu sync.Mutex
 				h := indexing.Handler(func(ctx context.Context, a *indexing.HandlerArgs) error {
-					calls[finiteChain(a)]++
+					n, err := continuousNumber(a)
+					if err != nil {
+						return err
+					}
+					id := finiteChain(a)
+					calls[id] = append(calls[id], n)
 					return finiteIncrement(ctx, a)
 				})
 				setup := indexing.Handler(func(ctx context.Context, a *indexing.HandlerArgs) error {
@@ -115,7 +137,7 @@ func TestRuntimeSourceInitialMatrix(t *testing.T) {
 					observed++
 					return nil
 				}
-				o := RuntimeOptions{SourceCheckpoints: true, Historical: runtimeFixtureInput(f), BuildID: "source-matrix-" + tc.name, OpenID: "source-matrix-first", Requesters: runtimeFactory(s.p, &epochs), Live: &RuntimeLiveOptions{PollingInterval: time.Millisecond}}
+				o := RuntimeOptions{SourceCheckpoints: true, Historical: runtimeFixtureInput(f), BuildID: "source-matrix-" + tc.name, OpenID: "source-matrix-first", Requesters: runtimeFactory(s.p, &epochs), Live: live}
 				if tc.setup != "none" {
 					o.OnSetupCommitted = check
 				} else {
@@ -149,8 +171,17 @@ func TestRuntimeSourceInitialMatrix(t *testing.T) {
 					expected = 3
 				}
 				for _, id := range []uint64{1, 2} {
-					if calls[id] != expected {
-						t.Fatalf("executed chain%d count=%d want=%d", id, calls[id], expected)
+					if len(calls[id]) != expected {
+						t.Fatalf("executed chain%d heights=%v want %d blocks", id, calls[id], expected)
+					}
+					start := tc.start
+					if tc.setup == "mixed" && id == 2 {
+						start = 3
+					}
+					for offset, height := range calls[id] {
+						if height != start+uint64(offset) {
+							t.Fatalf("chain%d heights=%v want consecutive blocks from %d", id, calls[id], start)
+						}
 					}
 				}
 				if tc.setup == "none" && len(setups) != 0 || tc.setup == "one" && (setups[1] != 1 || setups[2] != 0) || (tc.setup == "both" || tc.setup == "mixed") && (setups[1] != 1 || setups[2] != 1) {

@@ -9,7 +9,7 @@ import (
 )
 
 func TestRuntimePreflightRejectsUnsupported(t *testing.T) {
-	for _, kind := range []string{"experimental_isolated", "omnichain", "setup", "start_zero", "invalid_cache_policy", "future_end", "uncached_future_end"} {
+	for _, kind := range []string{"experimental_isolated", "omnichain", "setup", "start_zero", "invalid_cache_policy", "future_end", "uncached_future_end", "source_future_end"} {
 		t.Run(kind, func(t *testing.T) {
 			p := newFiniteRPC(t, 3)
 			b := runtimeBuild(t, p, 3, 1, indexing.Handler(func(context.Context, *indexing.HandlerArgs) error { return nil }))
@@ -31,7 +31,7 @@ func TestRuntimePreflightRejectsUnsupported(t *testing.T) {
 			case "invalid_cache_policy":
 				x.Chains[0]["cacheRpcRequests"] = "false"
 				reason = "boolean cacheRpcRequests"
-			case "future_end", "uncached_future_end":
+			case "future_end", "uncached_future_end", "source_future_end":
 				if kind == "uncached_future_end" {
 					x.Chains[0]["cacheRpcRequests"] = false
 				}
@@ -39,7 +39,7 @@ func TestRuntimePreflightRejectsUnsupported(t *testing.T) {
 				reason = "exceeds acquired latest"
 			}
 			epochs := []uint64{}
-			_, err := OpenRuntimePostgres(context.Background(), RuntimeOptions{Historical: Options{Build: b, Owned: indexing.OwnedOptions{Storage: store.IndependentStorageOptions{PostgresURL: "this must never reach the database", BusinessNamespace: "invalid_before_ddl", SyncNamespace: "invalid_before_ddl_sync"}}}, BuildID: "preflight-v1", OpenID: "preflight", Requesters: runtimeFactory(p, &epochs)})
+			_, err := OpenRuntimePostgres(context.Background(), RuntimeOptions{SourceCheckpoints: kind == "source_future_end", Historical: Options{Build: b, Owned: indexing.OwnedOptions{Storage: store.IndependentStorageOptions{PostgresURL: "this must never reach the database", BusinessNamespace: "invalid_before_ddl", SyncNamespace: "invalid_before_ddl_sync"}}}, BuildID: "preflight-v1", OpenID: "preflight", Requesters: runtimeFactory(p, &epochs)})
 			if err == nil || !strings.Contains(err.Error(), reason) {
 				t.Fatalf("unsupported %s reached storage or silently defaulted: %v", kind, err)
 			}

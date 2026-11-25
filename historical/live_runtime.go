@@ -31,7 +31,8 @@ type runtimeRunnerCallbackKey struct{}
 // either mode. Omnichain uses finalized cached ranges and source checkpoints.
 // BuildID identifies handler code. OpenID is unique to a single opening.
 type RuntimeOptions struct {
-	// SourceCheckpoints opts into source initial positions for multichain.
+	// SourceCheckpoints enables source initial positions for bounded or continuous
+	// multichain runs, including a first event at block zero.
 	// The finalized omnichain format enables these positions automatically.
 	SourceCheckpoints bool
 	FactorySources    bool
