@@ -32,7 +32,7 @@ func TestTypedGenerationGuards(t *testing.T) {
 		params []Parameter
 	}{
 		{"UnknownType", []Parameter{{Type: "invalid"}}},
-		{"Collision", []Parameter{{Type: "tuple", Components: []Parameter{{Name: "a_b", Type: "bool"}, {Name: "aB", Type: "bool"}}}}},
+		{"DuplicateName", []Parameter{{Type: "tuple", Components: []Parameter{{Name: "a_b", Type: "bool"}, {Name: "a_b", Type: "bool"}}}}},
 		{"HugeArray", []Parameter{{Type: "uint8[4294967295]"}}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -47,5 +47,26 @@ func TestTypedGenerationGuards(t *testing.T) {
 	}
 	if !target.Value0 {
 		t.Fatal("shape error mutated destination")
+	}
+}
+
+func TestCallbackTupleCollision(t *testing.T) {
+	components := []Parameter{{Name: "a_b", Type: "bool"}, {Name: "aB", Type: "bool"}}
+	result, err := CallbackResultType([]Parameter{{Type: "tuple[]", Components: components}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"AB_615f62", "AB_6142"} {
+		if !strings.Contains(result, name) {
+			t.Fatalf("missing independent component %q in %s", name, result)
+		}
+	}
+	type resultRow struct {
+		First  bool `abi:"a_b"`
+		Second bool `abi:"aB"`
+	}
+	rows, err := ProjectDecoded[[]resultRow]([]any{map[string]any{"a_b": false, "aB": true}})
+	if err != nil || len(rows) != 1 || rows[0].First || !rows[0].Second {
+		t.Fatal(rows, err)
 	}
 }

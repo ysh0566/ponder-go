@@ -142,6 +142,8 @@ model_dir=$(mktemp -d)
 head "$model_dir/model.go"
 ```
 
+生成的模型用 `[]byte` 表示二进制，`json.RawMessage` 表示 JSON，`[2]float64` 和 `[3]float64` 表示点和线。SQL 数组使用 `[]orm.Nullable[T]`，可通过 `orm.Some(value)` 和 `orm.Null[T]()` 分别写入值和空元素。生成的 ABI 回调保留 tuple 的原始组件名，两个组件转换成相同 Go 名字时会得到不同的字段名。
+
 ## 常见问题
 
 | 现象 | 检查方法 |

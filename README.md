@@ -2,7 +2,7 @@
 
 Ponder-Go 把 Ethereum 链上事件交给 Go 处理函数，将索引结果写入数据库，并通过 HTTP 提供查询。它移植自 Ponder 0.18.2，固定上游提交为 `17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`。[上游源码](https://github.com/ponder-sh/ponder/tree/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334)
 
-**原生 Go 索引器已可使用，完整的上游功能移植尚未完成。** 第一次使用可以从本地 ERC-20 示例开始。它会从 Anvil 读取一条 `Transfer` 日志，在 PostgreSQL 中记录两个地址的余额变动，并让你通过 SQL 核对结果。[本地使用指南](docs/USAGE.md)
+**可以用 Go 编写、运行和查询单链索引器。** 第一次使用可以从本地 ERC-20 示例开始。它会从 Anvil 读取一条 `Transfer` 日志，在 PostgreSQL 中记录两个地址的余额变动，并让你通过 SQL 核对结果。[本地使用指南](docs/USAGE.md)
 
 ## 快速开始
 
@@ -23,7 +23,18 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 | 多链 | 默认多链运行器已验证部分有限区间和持续索引组合。Omnichain 已验证限定的历史区间与来源组合。Isolated 模式的多链运行调度仍待实现。[多链边界](docs/RUNTIME_SUPPORT.md) |
 | 数据库 | PostgreSQL 和 PGlite 均有验证。业务写入、撤销日志和 checkpoint 在事务中提交。各存储组件只支持自己的当前格式；旧库需使用新命名空间重新索引。[存储格式](parity/runs/current-database-formats/RESULT.md) |
 | 查询 | 支持只读 SQL、SSE 订阅、状态与指标接口。应用可另行挂载 GraphQL 处理器，支持实体、过滤、分页、关联及视图。[HTTP 查询示例](docs/USAGE.md#查询索引结果) · [GraphQL](graphql) |
-| CLI 与应用 | `start` 和 `serve` 可构建并运行原生 Go 项目。另有 `codegen`、`db list` 和 checkpoint 编解码。`dev` 热重载、`db prune`、`db create-views` 和完整 TypeScript 应用兼容仍待实现。[CLI 使用](docs/USAGE.md#用于自己的项目) |
+| CLI 与应用 | `start` 和 `serve` 可构建并运行原生 Go 项目。另有 `codegen`、`db list` 和 checkpoint 编解码。`dev` 热重载、`db prune`、`db create-views` 仍待实现。[CLI 使用](docs/USAGE.md#用于自己的项目) |
+
+## 原生 Go 索引器还缺什么
+
+| 使用场景 | 当前边界 |
+| --- | --- |
+| 同一应用索引多条链 | 示例使用的 `runtime.New` 只接受一条链。独立的 `historical.RuntimeRunner` 支持部分默认多链任务。按链隔离调度（`experimental_isolated`）尚未实现。 |
+| 多条链按全局顺序处理事件 | `omnichain` 支持各链都已最终确认的有限历史区间。仍缺持续追块、跨链重组重放、factory 动态地址、账户交易与转账、合约调用 trace，以及混合区块回调与纯日志链。 |
+| 反复修改、运行与管理部署 | CLI 缺 `dev` 热重载和变更后自动重建测试用 schema、`db prune` 清理废弃部署、`db create-views` 发布查询视图。当前 `start`、`serve` 的监听地址和端口由 Go 应用设置。 |
+| 故障恢复与验收 | 需要覆盖 RPC 长时间离线后的追块、WebSocket 重订阅，以及 PostgreSQL 服务或 PGlite 进程异常终止后的恢复。主机掉电仍缺实测。17 条服务商 RPC 断言的结果见下文。 |
+
+这些条目按使用 Go 编写索引器的目标维护。数据库范围为当前格式。[各运行模式的具体限制](docs/RUNTIME_SUPPORT.md)
 
 ## 当前验证与计数
 
