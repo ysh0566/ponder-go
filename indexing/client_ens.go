@@ -19,6 +19,8 @@ import (
 var ensABIData string
 var ensReverseABI = sync.OnceValues(func() (abi.ABI, error) { return abi.Parse(ensABIData) })
 
+// ENSNameOptions configures Universal Resolver lookups. CoinType applies to
+// forward and reverse address lookups. Names supplied to the client are ENS-normalized.
 type ENSNameOptions struct {
 	BlockOptions
 	UniversalResolverAddress string
@@ -54,16 +56,12 @@ func (c *Client) GetEnsName(ctx context.Context, address string, options ...ENSN
 	if coinType.Sign() < 0 || coinType.BitLen() > 256 {
 		return nil, fmt.Errorf("invalid ENS coin type")
 	}
-	gateways := opts.GatewayURLs
-	if gateways == nil {
-		gateways = []string{"x-batch-gateway:true"}
-	}
 	parsed, err := ensReverseABI()
 	if err != nil {
 		return nil, err
 	}
 	retry := false
-	args := []any{address, coinType, gateways}
+	args := []any{address, coinType, ensGateways(opts.GatewayURLs)}
 	result, err := c.ReadContract(ctx, ContractCall{ABI: parsed, Address: resolver, FunctionName: "reverseWithGateways", Args: args}, ReadContractOptions{BlockOptions: opts.BlockOptions, RetryEmptyResponse: &retry})
 	if err != nil {
 		if !opts.Strict && isNullENSError(err, parsed) {
@@ -83,6 +81,13 @@ func (c *Client) GetEnsName(ctx context.Context, address string, options ...ENSN
 		return nil, nil
 	}
 	return &name, nil
+}
+
+func ensGateways(urls []string) []string {
+	if urls == nil {
+		return []string{"x-batch-gateway:true"}
+	}
+	return urls
 }
 
 func isNullENSError(err error, parsed abi.ABI) bool {
