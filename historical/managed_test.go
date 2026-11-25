@@ -60,7 +60,8 @@ func newRuntimeExitDirectory(t *testing.T, pattern string) string {
 
 func managedHistoricalDirectory(t *testing.T, root string) string {
 	t.Helper()
-	if strings.HasPrefix(t.Name(), "TestManagedFiniteCloseRetainsOwnership/") {
+	if strings.HasPrefix(t.Name(), "TestManagedFiniteCloseRetainsOwnership/") ||
+		strings.HasPrefix(t.Name(), "TestRuntimeOmnichainLogOnlyApplicationExit/pglite/") {
 		directory, err := os.MkdirTemp(root, "historical-managed-dedicated-")
 		if err != nil {
 			t.Fatal(err)

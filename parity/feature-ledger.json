@@ -1486,6 +1486,28 @@
       "native_test_files": [
         "historical/application_test.go"
       ]
+    },
+    {
+      "id": "native-engine-recovery",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/store.go",
+        "store/reorg.go",
+        "historical/live_runtime.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/index.ts",
+        "packages/core/src/runtime/omnichain.ts"
+      ],
+      "native_test_files": [
+        "store/engine_recovery_test.go",
+        "historical/live_runtime_omnichain_logonly_crash_test.go",
+        "historical/managed_test.go"
+      ],
+      "evidence": [
+        "parity/runs/native-engine-recovery/RESULT.md"
+      ],
+      "remaining": "Physical power loss and engine termination inside coordinated multi-domain runtime operations remain unverified."
     }
   ]
 }
