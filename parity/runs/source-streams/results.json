@@ -1,0 +1,173 @@
+{
+  "code_commit": "349d962162c60eaf74d14280032cba2e179510b1",
+  "upstream_commit": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "sources": {
+    "packages/core/src/utils/chunk.test.ts": "0741a70a4196064be1ebaa21e3608e36b3a2e55297468e35e4b59a9e1891a1ea",
+    "packages/core/src/utils/generators.test.ts": "c61e12ce576d18a4c1f0ca81a6ffd4933a5235724d5857e8f270f227bf8d3dff",
+    "packages/core/src/utils/partition.test.ts": "02a019ba2074e060946074948bc07c73292133651b09a1036f8b278d8ec3d388",
+    "packages/core/src/utils/zipper.test.ts": "80cc10bcfdc94869d6cedac5b6c13b9675a625093ac072d4ab9e6e33b3389892"
+  },
+  "original": {
+    "passed": 9,
+    "vitest_json_sha256": "42303e7a4eb35ce60e33d213c3e1c20aa83c7416d1434d0bf45c291a63a10050"
+  },
+  "go": {
+    "normal": {
+      "ponder.local/ponder-go/async": {
+        "passed_leaves": 69,
+        "go_test_json_sha256": "2d1540c326ed8a3fb69af98dd7d51ab487f2f4cb0ecf415796be8c20a4bb38d5"
+      },
+      "ponder.local/ponder-go/rpc": {
+        "passed_leaves": 234,
+        "go_test_json_sha256": "2d1540c326ed8a3fb69af98dd7d51ab487f2f4cb0ecf415796be8c20a4bb38d5"
+      },
+      "ponder.local/ponder-go/internal/ordered": {
+        "passed_leaves": 5,
+        "go_test_json_sha256": "2d1540c326ed8a3fb69af98dd7d51ab487f2f4cb0ecf415796be8c20a4bb38d5"
+      },
+      "ponder.local/ponder-go/runtime": {
+        "passed_leaves": 38,
+        "go_test_json_sha256": "67cfa17adadccf3b718b0293ebd6b67a894cac289273ccd6628c715a95745476"
+      }
+    },
+    "race": {
+      "ponder.local/ponder-go/async": {
+        "passed_leaves": 69,
+        "go_test_json_sha256": "01643f4a334c8e4751b13629701d0b1f50acdd9a889732f0ae751e1f82f59f85"
+      },
+      "ponder.local/ponder-go/rpc": {
+        "passed_leaves": 234,
+        "go_test_json_sha256": "01643f4a334c8e4751b13629701d0b1f50acdd9a889732f0ae751e1f82f59f85"
+      },
+      "ponder.local/ponder-go/internal/ordered": {
+        "passed_leaves": 5,
+        "go_test_json_sha256": "01643f4a334c8e4751b13629701d0b1f50acdd9a889732f0ae751e1f82f59f85"
+      },
+      "ponder.local/ponder-go/runtime": {
+        "passed_leaves": 38,
+        "go_test_json_sha256": "a188cdf8eac1d4b7233a07f01e1f89aeca296279aae712170874c9e20c27b9f1"
+      }
+    }
+  },
+  "race_repetitions": {
+    "TestSourceGenerators/mergeAsyncGenerators()": 25,
+    "TestSourceGenerators/mergeAsyncGenerators()_yields_all_results": 25,
+    "TestSourceGenerators/bufferAsyncGenerator()_prefetches_results": 25,
+    "TestSourceGenerators/bufferAsyncGenerator()_yields_all_results": 25,
+    "TestGeneratorBoundaries/closing_a_stalled_merge_cancels_its_in-flight_inputs": 25,
+    "TestGeneratorBoundaries/buffer_drains_prior_values_then_rejects_once": 25,
+    "TestGeneratorBoundaries/ready_inputs_alternate_and_each_has_one_pending_read": 25
+  },
+  "maps": [
+    {
+      "source_id": "991782bbd4164b8b9e6a",
+      "file": "packages/core/src/utils/chunk.test.ts",
+      "case": "chunk",
+      "native_test": "TestSourceOrderedSlices/chunk",
+      "assertions_sha256": "2d2aca0166bd0c20705ebe678fe664d09aaa5bd5087e5289983baac5c077471a"
+    },
+    {
+      "source_id": "8b5e7cb09f85625cac23",
+      "file": "packages/core/src/utils/generators.test.ts",
+      "case": "mergeAsyncGenerators()",
+      "native_test": "TestSourceGenerators/mergeAsyncGenerators()",
+      "assertions_sha256": "f8acfb93b780828f5249a2189e387889598516d43246d09b8462b61a826da0a0"
+    },
+    {
+      "source_id": "aa2430dc40250c10fb95",
+      "file": "packages/core/src/utils/generators.test.ts",
+      "case": "mergeAsyncGenerators() yields all results",
+      "native_test": "TestSourceGenerators/mergeAsyncGenerators()_yields_all_results",
+      "assertions_sha256": "f8acfb93b780828f5249a2189e387889598516d43246d09b8462b61a826da0a0"
+    },
+    {
+      "source_id": "3a402c45c073c7885810",
+      "file": "packages/core/src/utils/generators.test.ts",
+      "case": "bufferAsyncGenerator() prefetches results",
+      "native_test": "TestSourceGenerators/bufferAsyncGenerator()_prefetches_results",
+      "assertions_sha256": "f45ae6fcfeab3b483901710ab07ee878d35775f30e84850f63807e51784e47ee"
+    },
+    {
+      "source_id": "ba430226091c5c6e35dd",
+      "file": "packages/core/src/utils/generators.test.ts",
+      "case": "bufferAsyncGenerator() yields all results",
+      "native_test": "TestSourceGenerators/bufferAsyncGenerator()_yields_all_results",
+      "assertions_sha256": "667df6849a490a76c252284e64e71f6c8719a51e11c096cf1dd11558b3ff2f41"
+    },
+    {
+      "source_id": "b139cd0e9b5adc931a2c",
+      "file": "packages/core/src/utils/generators.test.ts",
+      "case": "createCallbackGenerator()",
+      "native_test": "TestSourceGenerators/createCallbackGenerator()",
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_id": "3d12861bec7a78cf50df",
+      "file": "packages/core/src/utils/partition.test.ts",
+      "case": "partition",
+      "native_test": "TestSourceOrderedSlices/partition",
+      "assertions_sha256": "34cd5acca1519f4d7347e872acc09424f90ad6382814ab5acbf16c9a55a48509"
+    },
+    {
+      "source_id": "f0e0849809522b5d226b",
+      "file": "packages/core/src/utils/zipper.test.ts",
+      "case": "zipper",
+      "native_test": "TestSourceOrderedSlices/zipper",
+      "assertions_sha256": "7aba9e2078d1459a57df4c55cecaf51c65c53e8798073662fb15036baf517a4d"
+    },
+    {
+      "source_id": "881c9ca4ea29d0dba5b2",
+      "file": "packages/core/src/utils/zipper.test.ts",
+      "case": "zipperMany",
+      "native_test": "TestSourceOrderedSlices/zipperMany",
+      "assertions_sha256": "f2bb40ca99b3e571ccf3ef57b2417c3b7788c2d7653fd2786fc43fe1f254283c"
+    }
+  ],
+  "ledger": {
+    "ported": 676,
+    "go_ports": 672,
+    "retained_sdk": 4,
+    "unimplemented": 224,
+    "out_of_scope": 5
+  },
+  "independent_inventory_fields": [
+    "id",
+    "source_file",
+    "source_sha256",
+    "source_state",
+    "full_name",
+    "assertions",
+    "inputs",
+    "port_status",
+    "mapping",
+    "scope_reason"
+  ],
+  "module": {
+    "build": "passed",
+    "vet": "passed"
+  },
+  "commands": {
+    "original": "packages/core: vitest run --configLoader native --maxWorkers=1 src/utils/generators.test.ts src/utils/zipper.test.ts src/utils/chunk.test.ts src/utils/partition.test.ts",
+    "go": "go test -count=1 [-race] ./async ./internal/ordered ./rpc",
+    "runtime": "go test -count=1 [-race] -run \"^(TestSourceEventOrder.*|TestSourceHistory.*|TestSourceHistoricalMergeVectors)$\" ./runtime",
+    "repeat": "go test -race -count=25 -run \"^(TestSourceGenerators|TestGeneratorBoundaries)$/^(merge|buffer|closing|ready)\" ./async"
+  },
+  "full_original_inventory": "../public-provider-archives/upstream.json",
+  "timer_regression": {
+    "first_affected_run": "TestSourceQueues/utils/frequency",
+    "reproduction_commit": "c708dc0e",
+    "reproduction_test": "TestFrequencyWhenLoopResumesAfterBothDeadlines",
+    "before": "2 tasks remained after the later 1010ms timer",
+    "reproduction_go_test_sha256": "afdaf221b3e1f703b048e8e3d6f90bb3444aaf66528039959f4550599601bf41",
+    "after": {
+      "TestFrequencyWhenLoopResumesAfterBothDeadlines": 25,
+      "TestLoopTimersOrderAndStop": 25
+    },
+    "repeat_go_test_sha256": "276a6304db2db85f3a6cf633fd15413d491a1ae921462f0c8e6ddbcf151ae84f"
+  },
+  "cleanup": {
+    "stage_directories_removed": 3,
+    "allocated_bytes_in_removed_directories": 1036075008,
+    "accounting": "Allocated bytes under stage directories before deletion. The package store can share hard links."
+  }
+}
