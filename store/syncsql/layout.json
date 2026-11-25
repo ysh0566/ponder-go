@@ -1,0 +1,137 @@
+{
+  "blocks": {
+    "columns": [
+      ["chain_id", "int8", -1, true, ""],
+      ["number", "int8", -1, true, ""],
+      ["timestamp", "int8", -1, true, ""],
+      ["hash", "varchar", 70, true, ""],
+      ["parent_hash", "varchar", 70, true, ""],
+      ["logs_bloom", "varchar", 518, true, ""],
+      ["miner", "varchar", 46, true, ""],
+      ["gas_used", "numeric", 5111812, true, ""],
+      ["gas_limit", "numeric", 5111812, true, ""],
+      ["base_fee_per_gas", "numeric", 5111812, false, ""],
+      ["nonce", "varchar", 22, false, ""],
+      ["mix_hash", "varchar", 70, false, ""],
+      ["state_root", "varchar", 70, true, ""],
+      ["receipts_root", "varchar", 70, true, ""],
+      ["transactions_root", "varchar", 70, true, ""],
+      ["sha3_uncles", "varchar", 70, false, ""],
+      ["size", "numeric", 5111812, true, ""],
+      ["difficulty", "numeric", 5111812, true, ""],
+      ["total_difficulty", "numeric", 5111812, false, ""],
+      ["extra_data", "text", -1, true, ""]
+    ],
+    "constraints": [["p", false, false, true, ["chain_id", "number"]]]
+  },
+  "factories": {
+    "columns": [
+      ["id", "int4", -1, true, "a"],
+      ["fragment_id", "text", -1, true, ""]
+    ],
+    "constraints": [["p", false, false, true, ["id"]], ["u", false, false, true, ["fragment_id"]]]
+  },
+  "factory_addresses": {
+    "columns": [
+      ["factory_id", "int4", -1, true, ""],
+      ["chain_id", "int8", -1, true, ""],
+      ["block_number", "int8", -1, true, ""],
+      ["address", "text", -1, true, ""]
+    ],
+    "constraints": [["p", false, false, true, ["factory_id", "address"]]]
+  },
+  "intervals": {
+    "columns": [
+      ["fragment_id", "text", -1, true, ""],
+      ["chain_id", "int8", -1, true, ""],
+      ["blocks", "nummultirange", -1, true, ""]
+    ],
+    "constraints": [["p", false, false, true, ["fragment_id"]]]
+  },
+  "logs": {
+    "columns": [
+      ["chain_id", "int8", -1, true, ""],
+      ["block_number", "int8", -1, true, ""],
+      ["log_index", "int4", -1, true, ""],
+      ["transaction_index", "int4", -1, true, ""],
+      ["block_hash", "varchar", 70, true, ""],
+      ["transaction_hash", "varchar", 70, true, ""],
+      ["address", "varchar", 46, true, ""],
+      ["topic0", "varchar", 70, false, ""],
+      ["topic1", "varchar", 70, false, ""],
+      ["topic2", "varchar", 70, false, ""],
+      ["topic3", "varchar", 70, false, ""],
+      ["data", "text", -1, true, ""]
+    ],
+    "constraints": [["p", false, false, true, ["chain_id", "block_number", "log_index"]]]
+  },
+  "rpc_request_results": {
+    "columns": [
+      ["request_hash", "text", -1, true, ""],
+      ["chain_id", "int8", -1, true, ""],
+      ["block_number", "int8", -1, false, ""],
+      ["result", "text", -1, true, ""]
+    ],
+    "constraints": [["p", false, false, true, ["chain_id", "request_hash"]]]
+  },
+  "traces": {
+    "columns": [
+      ["chain_id", "int8", -1, true, ""],
+      ["block_number", "int8", -1, true, ""],
+      ["transaction_index", "int4", -1, true, ""],
+      ["trace_address", "_int4", -1, true, ""],
+      ["from", "varchar", 46, true, ""],
+      ["to", "varchar", 46, false, ""],
+      ["input", "text", -1, true, ""],
+      ["output", "text", -1, false, ""],
+      ["value", "numeric", 5111812, false, ""],
+      ["type", "text", -1, true, ""],
+      ["gas", "numeric", 5111812, true, ""],
+      ["gas_used", "numeric", 5111812, true, ""]
+    ],
+    "constraints": [["p", false, false, true, ["chain_id", "block_number", "transaction_index", "trace_address"]]]
+  },
+  "transaction_receipts": {
+    "columns": [
+      ["chain_id", "int8", -1, true, ""],
+      ["block_number", "int8", -1, true, ""],
+      ["transaction_index", "int4", -1, true, ""],
+      ["transaction_hash", "varchar", 70, true, ""],
+      ["block_hash", "varchar", 70, true, ""],
+      ["from", "varchar", 46, true, ""],
+      ["to", "varchar", 46, false, ""],
+      ["contract_address", "varchar", 46, false, ""],
+      ["logs_bloom", "varchar", 518, true, ""],
+      ["gas_used", "numeric", 5111812, true, ""],
+      ["cumulative_gas_used", "numeric", 5111812, true, ""],
+      ["effective_gas_price", "numeric", 5111812, true, ""],
+      ["status", "text", -1, true, ""],
+      ["type", "text", -1, true, ""]
+    ],
+    "constraints": [["p", false, false, true, ["chain_id", "block_number", "transaction_index"]]]
+  },
+  "transactions": {
+    "columns": [
+      ["chain_id", "int8", -1, true, ""],
+      ["block_number", "int8", -1, true, ""],
+      ["transaction_index", "int4", -1, true, ""],
+      ["hash", "varchar", 70, true, ""],
+      ["block_hash", "varchar", 70, true, ""],
+      ["from", "varchar", 46, true, ""],
+      ["to", "varchar", 46, false, ""],
+      ["input", "text", -1, true, ""],
+      ["value", "numeric", 5111812, true, ""],
+      ["nonce", "int4", -1, true, ""],
+      ["r", "varchar", 70, false, ""],
+      ["s", "varchar", 70, false, ""],
+      ["v", "numeric", 5111812, false, ""],
+      ["type", "text", -1, true, ""],
+      ["gas", "numeric", 5111812, true, ""],
+      ["gas_price", "numeric", 5111812, false, ""],
+      ["max_fee_per_gas", "numeric", 5111812, false, ""],
+      ["max_priority_fee_per_gas", "numeric", 5111812, false, ""],
+      ["access_list", "text", -1, false, ""]
+    ],
+    "constraints": [["p", false, false, true, ["chain_id", "block_number", "transaction_index"]]]
+  }
+}

@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -17,6 +16,15 @@ import (
 //
 //go:embed syncsql/create.sql
 var syncCreateSQL string
+
+// The reference describes the table and key layouts produced by syncCreateSQL.
+// A column tuple contains its name, builtin type, type modifier, NOT NULL and identity mode.
+//
+//go:embed syncsql/layout.json
+var syncLayout string
+
+//go:embed syncsql/layout.sql
+var syncLayoutSQL string
 
 // SyncMigrator initializes the current RPC cache in an explicitly owned scope.
 type SyncMigrator struct {
@@ -51,19 +59,27 @@ func (m *SyncMigrator) owned(ctx context.Context, q Querier, name, owner string)
 	return true, nil
 }
 func (m *SyncMigrator) validateLatest(ctx context.Context, q Querier) error {
-	r, e := q.Query(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema=$1 AND table_type='BASE TABLE' ORDER BY table_name", m.LatestSchema())
-	if e != nil {
-		return e
+	r, err := q.Query(ctx, syncLayoutSQL, m.LatestSchema(), syncLayout)
+	if err != nil {
+		return err
 	}
-	names := []string{}
-	for _, row := range r.Rows {
-		names = append(names, fmt.Sprint(row["table_name"]))
-	}
-	if !reflect.DeepEqual(names, []string{"blocks", "factories", "factory_addresses", "intervals", "logs", "rpc_request_results", "traces", "transaction_receipts", "transactions"}) {
-		return &MigrationError{Message: "owned versioned sync schema is incomplete; use a new shadow"}
+	if len(r.Rows) != 0 {
+		return &MigrationError{Message: fmt.Sprintf("unsupported sync cache layout for table %q; choose a fresh scope", r.Rows[0]["name"])}
 	}
 	return nil
 }
+
+func (m *SyncMigrator) requireCurrent(ctx context.Context, q Querier) error {
+	exists, err := m.owned(ctx, q, m.LatestSchema(), m.latestOwner())
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("sync cache has not been migrated")
+	}
+	return m.validateLatest(ctx, q)
+}
+
 func (m *SyncMigrator) lock(ctx context.Context, tx Transaction) error {
 	if m.backend.Dialect() == "postgres" {
 		return tx.Exec(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1,0))", m.scope+":sync-migration")
@@ -130,6 +146,9 @@ func (m *SyncMigrator) migrateOnce(ctx context.Context) error {
 			}
 		}
 	}
+	if e = m.validateLatest(ctx, tx); e != nil {
+		return e
+	}
 	if e = tx.Exec(ctx, "COMMENT ON SCHEMA "+schema.Quote(m.LatestSchema())+" IS '"+m.latestOwner()+"'"); e != nil {
 		return e
 	}
@@ -152,12 +171,8 @@ func (m *SyncMigrator) InsertRPCResult(ctx context.Context, result CachedRPCResu
 	if e = m.lock(ctx, tx); e != nil {
 		return e
 	}
-	exists, e := m.owned(ctx, tx, m.LatestSchema(), m.latestOwner())
-	if e != nil {
+	if e = m.requireCurrent(ctx, tx); e != nil {
 		return e
-	}
-	if !exists {
-		return fmt.Errorf("sync cache must be migrated before writing")
 	}
 	var block any
 	if result.BlockNumber != nil {
@@ -169,14 +184,18 @@ func (m *SyncMigrator) InsertRPCResult(ctx context.Context, result CachedRPCResu
 	return tx.Commit(ctx)
 }
 func (m *SyncMigrator) RPCResults(ctx context.Context) ([]CachedRPCResult, error) {
-	exists, e := m.owned(ctx, m.backend, m.LatestSchema(), m.latestOwner())
+	tx, e := m.backend.Begin(ctx)
 	if e != nil {
 		return nil, e
 	}
-	if !exists {
-		return nil, fmt.Errorf("sync cache has not been migrated")
+	defer tx.Rollback(context.Background())
+	if e = tx.Exec(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY"); e != nil {
+		return nil, e
 	}
-	r, e := m.backend.Query(ctx, "SELECT chain_id::text AS chain_id,request_hash,block_number::text AS block_number,result FROM "+schema.Quote(m.LatestSchema())+".rpc_request_results ORDER BY chain_id,request_hash")
+	if e = m.requireCurrent(ctx, tx); e != nil {
+		return nil, e
+	}
+	r, e := tx.Query(ctx, "SELECT chain_id::text AS chain_id,request_hash,block_number::text AS block_number,result FROM "+schema.Quote(m.LatestSchema())+".rpc_request_results ORDER BY chain_id,request_hash")
 	if e != nil {
 		return nil, e
 	}
@@ -195,6 +214,9 @@ func (m *SyncMigrator) RPCResults(ctx context.Context) ([]CachedRPCResult, error
 			block = &n
 		}
 		rows = append(rows, CachedRPCResult{ChainID: chain, RequestHash: fmt.Sprint(row["request_hash"]), BlockNumber: block, Result: fmt.Sprint(row["result"])})
+	}
+	if e = tx.Commit(ctx); e != nil {
+		return nil, e
 	}
 	return rows, nil
 }
