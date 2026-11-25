@@ -140,18 +140,22 @@ func (t Table[K, I, U, R]) Find(ctx context.Context, key K) (*R, error) {
 	return &value, e
 }
 func (t Table[K, I, U, R]) Insert(ctx context.Context, input I) (R, error) {
+	return t.insertOne(ctx, input, store.Conflict{})
+}
+
+func (t Table[K, I, U, R]) insertOne(ctx context.Context, input I, conflict store.Conflict) (R, error) {
 	var zero R
 	row, e := t.definition.insert(input)
 	if e != nil {
 		return zero, e
 	}
-	result, e := t.db.InsertOne(ctx, t.definition.name, row, store.Conflict{})
+	result, e := t.db.InsertOne(ctx, t.definition.name, row, conflict)
 	if e != nil {
 		return zero, e
 	}
 	return t.definition.decode(result)
 }
-func (t Table[K, I, U, R]) InsertMany(ctx context.Context, inputs []I) ([]R, error) {
+func (t Table[K, I, U, R]) insertMany(ctx context.Context, inputs []I, conflict store.Conflict) ([]store.Row, error) {
 	rows := make([]store.Row, len(inputs))
 	for i, input := range inputs {
 		row, e := t.definition.insert(input)
@@ -160,7 +164,11 @@ func (t Table[K, I, U, R]) InsertMany(ctx context.Context, inputs []I) ([]R, err
 		}
 		rows[i] = row
 	}
-	result, e := t.db.InsertMany(ctx, t.definition.name, rows, store.Conflict{})
+	return t.db.InsertMany(ctx, t.definition.name, rows, conflict)
+}
+
+func (t Table[K, I, U, R]) InsertMany(ctx context.Context, inputs []I) ([]R, error) {
+	result, e := t.insertMany(ctx, inputs, store.Conflict{})
 	if e != nil {
 		return nil, e
 	}
@@ -185,6 +193,37 @@ func (t Table[K, I, U, R]) InsertOrIgnore(ctx context.Context, input I) (*R, err
 	value, e := t.definition.decode(result)
 	return &value, e
 }
+
+// InsertManyOrIgnore returns a result for each input in order. A nil entry
+// indicates a conflict, including a duplicate earlier in the same batch.
+func (t Table[K, I, U, R]) InsertManyOrIgnore(ctx context.Context, inputs []I) ([]*R, error) {
+	rows, err := t.insertMany(ctx, inputs, store.Conflict{Action: store.ConflictNothing})
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*R, len(rows))
+	for i, row := range rows {
+		if row == nil {
+			continue
+		}
+		value, err := t.definition.decode(row)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = &value
+	}
+	return result, nil
+}
+
+// UpsertFunc calls update with the existing typed row when a key conflicts.
+func (t Table[K, I, U, R]) UpsertFunc(ctx context.Context, input I, update func(R) (U, error)) (R, error) {
+	if update == nil {
+		var zero R
+		return zero, fmt.Errorf("upsert requires an update function")
+	}
+	return t.insertOne(ctx, input, store.Conflict{Action: store.ConflictUpdate, Update: t.definition.rowUpdater(update)})
+}
+
 func (t Table[K, I, U, R]) Upsert(ctx context.Context, input I, set U) (R, error) {
 	var zero R
 	row, e := t.definition.insert(input)
@@ -223,22 +262,29 @@ func (t Table[K, I, U, R]) UpdateFunc(ctx context.Context, key K, update func(R)
 	if e != nil {
 		return zero, e
 	}
-	result, e := t.db.UpdateFunc(ctx, t.definition.name, row, func(row store.Row) (store.Row, error) {
-		value, e := t.definition.decode(row)
-		if e != nil {
-			return nil, e
-		}
-		patch, e := update(value)
-		if e != nil {
-			return nil, e
-		}
-		return t.definition.update(patch)
-	})
+	result, e := t.db.UpdateFunc(ctx, t.definition.name, row, t.definition.rowUpdater(update))
 	if e != nil {
 		return zero, e
 	}
 	return t.definition.decode(result)
 }
+func (d Definition[K, I, U, R]) rowUpdater(update func(R) (U, error)) store.RowUpdater {
+	return func(row store.Row) (store.Row, error) {
+		if update == nil {
+			return nil, fmt.Errorf("update requires a function")
+		}
+		value, err := d.decode(row)
+		if err != nil {
+			return nil, err
+		}
+		patch, err := update(value)
+		if err != nil {
+			return nil, err
+		}
+		return d.update(patch)
+	}
+}
+
 func (t Table[K, I, U, R]) Delete(ctx context.Context, key K) (bool, error) {
 	row, e := t.definition.key(key)
 	if e != nil {
