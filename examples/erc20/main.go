@@ -76,10 +76,11 @@ func run(ctx context.Context) error {
 	}
 	server := query.New(s)
 	server.ChainNames[1] = "local"
+	var worker indexer.ApplicationIndexer = engine
 	if os.Getenv("PONDER_COMMAND") == "serve" {
-		engine = nil
+		worker = nil
 	}
-	app, err := indexer.StartApplication(ctx, engine, server, "127.0.0.1", 42069)
+	app, err := indexer.LaunchApplication(ctx, worker, server, "127.0.0.1", 42069)
 	if err != nil {
 		return err
 	}

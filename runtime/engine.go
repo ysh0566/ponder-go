@@ -196,7 +196,7 @@ func (e *Engine) block(ctx context.Context, number any) (Block, error) {
 		return Block{}, err
 	}
 	if b == nil {
-		return Block{}, fmt.Errorf("block %v is unavailable", number)
+		return Block{}, fmt.Errorf("block %v is unavailable: %w", number, rpc.ErrBlockNotFound)
 	}
 	return *b, nil
 }
@@ -582,28 +582,38 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 	}
 	return e.Store.CompleteBlock(ctx, store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}, e.filter)
 }
-func (e *Engine) Run(ctx context.Context) error {
-	if err := e.Sync(ctx); err != nil {
-		return err
-	}
-	return e.poll(ctx)
-}
+func (e *Engine) Run(ctx context.Context) error { return e.RunIndexing(ctx, func(bool) {}) }
 
-func (e *Engine) poll(ctx context.Context) error {
-	delay := time.Duration(e.chain.PollingIntervalMS) * time.Millisecond
-	if delay <= 0 {
-		delay = time.Second
+// RunIndexing resumes from committed progress after transient RPC outages.
+func (e *Engine) RunIndexing(ctx context.Context, ready func(bool)) error {
+	interval := time.Duration(e.chain.PollingIntervalMS) * time.Millisecond
+	if interval <= 0 {
+		interval = time.Second
 	}
-	ticker := time.NewTicker(delay)
-	defer ticker.Stop()
+	retry := min(interval, time.Second)
 	for {
-		select {
-		case <-ctx.Done():
+		err := e.Sync(ctx)
+		if ctx.Err() != nil {
 			return ctx.Err()
-		case <-ticker.C:
-			if err := e.Sync(ctx); err != nil {
+		}
+		delay := interval
+		if err != nil {
+			ready(false)
+			if !rpc.IsTransient(err) {
 				return err
 			}
+			delay = retry
+			retry = min(retry*2, 30*time.Second)
+		} else {
+			ready(true)
+			retry = min(interval, time.Second)
+		}
+		timer := time.NewTimer(delay)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return ctx.Err()
+		case <-timer.C:
 		}
 	}
 }
@@ -619,7 +629,7 @@ func (e *Engine) FinalizedBlock(ctx context.Context, latest Block) (Block, error
 			return nil, err
 		}
 		if b == nil {
-			return nil, fmt.Errorf("block %d is unavailable", r.Number)
+			return nil, fmt.Errorf("block %d is unavailable: %w", r.Number, rpc.ErrBlockNotFound)
 		}
 		return b, nil
 	}, light, nil)

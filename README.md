@@ -32,7 +32,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 | 同一应用索引多条链 | 示例使用的 `runtime.New` 只接受一条链。独立的 `historical.RuntimeRunner` 支持部分默认多链任务。按链隔离调度（`experimental_isolated`）尚未实现。 |
 | 多条链按全局顺序处理事件 | `omnichain` 支持各链都已最终确认的有限历史区间。仍缺持续追块、跨链重组重放、factory 动态地址、账户交易与转账、合约调用 trace，以及混合区块回调与纯日志链。 |
 | 反复修改、运行与管理部署 | CLI 缺 `dev` 热重载和变更后自动重建测试用 schema、`db prune` 清理废弃部署、`db create-views` 发布查询视图。当前 `start`、`serve` 的监听地址和端口由 Go 应用设置。 |
-| 故障恢复与验收 | 需要覆盖 RPC 长时间离线后的追块、WebSocket 重订阅，以及 PostgreSQL 服务或 PGlite 进程异常终止后的恢复。主机掉电仍缺实测。17 条服务商 RPC 断言的结果见下文。 |
+| 故障恢复与验收 | 单链索引器已验证临时 RPC 中断后的追块及 WebSocket 重订阅。还需验证 PostgreSQL 服务或 PGlite 进程异常终止后的恢复。主机掉电仍缺实测。17 条服务商 RPC 断言的结果见下文。 |
 
 这些条目按使用 Go 编写索引器的目标维护。数据库范围为当前格式。[各运行模式的具体限制](docs/RUNTIME_SUPPORT.md)
 
