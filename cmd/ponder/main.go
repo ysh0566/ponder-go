@@ -37,13 +37,18 @@ func main() {
 }
 func run(ctx context.Context, args []string, out io.Writer) error {
 	if len(args) == 0 || args[0] == "--help" || args[0] == "-h" {
-		fmt.Fprintln(out, "ponder-go "+version+" (local port in progress)\n\nImplemented: start, serve, codegen, db list, checkpoint encode/decode\nStart/serve build a native Go app; TS source compatibility remains separate.\nPending: dev reload, db prune, db create-views, complete upstream CLI flag parity.")
+		fmt.Fprintln(out, "ponder-go "+version+" (local port in progress)\n\nImplemented: init, start, serve, codegen, db list, checkpoint encode/decode\nStart/serve build a native Go app; TS source compatibility remains separate.\nPending: dev reload, db prune, db create-views, complete upstream CLI flag parity.")
 		return nil
 	}
 	switch args[0] {
 	case "--version", "-V":
 		fmt.Fprintln(out, version)
 		return nil
+	case "init":
+		if len(args) != 2 {
+			return fmt.Errorf("usage: ponder init <new-project-directory>")
+		}
+		return createEmptyProject(ctx, args[1], out)
 	case "checkpoint":
 		if len(args) < 2 {
 			return fmt.Errorf("checkpoint encode|decode required")

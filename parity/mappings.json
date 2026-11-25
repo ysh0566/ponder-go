@@ -11774,5 +11774,29 @@
     "assertion_policy": "Compile and invoke the source-specific registry callback, checking all ten property accesses against generated types and values.",
     "original_assertions": 0,
     "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source_file": "packages/core/src/index.test.ts",
+    "source_name": "should bundle the entry file for the browser without throwing",
+    "source_id": "09e8a7728be26d77dd71",
+    "source_line": 17,
+    "original_assertions": 1,
+    "assertions_sha256": "ec9d987685356178e7b24fd346d9524c582b1caf384a2dbaea56e06ac80d93c9",
+    "target_kind": "retained_sdk",
+    "owner": "@ponder-go/browser",
+    "target_file": "parity/source-tests/packages/core/src/index.test.ts",
+    "assertion_policy": "Run the unchanged Vite browser build against the retained core entry, utilities and client. Package the actual ES output and compare all public exports with the original build."
+  },
+  {
+    "source_file": "packages/create-ponder/src/_test/cli.test.ts",
+    "source_name": "create empty",
+    "source_id": "63a1613715bd53427481",
+    "source_line": 16,
+    "original_assertions": 1,
+    "assertions_sha256": "956177bee68fc635937d68b7c0354a174a6040e3f981e7ad49ed29b927881ea0",
+    "target_file": "cmd/ponder/scaffold_test.go",
+    "go_package": "ponder.local/ponder-go/cmd/ponder",
+    "go_test": "TestCreateEmptyProject",
+    "assertion_policy": "Run the Go CLI without install or Git. Compare all eleven generated files, including dotfiles, to the output from the pinned source CLI. The embedded database comment names PGlite."
   }
 ]
