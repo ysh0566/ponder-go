@@ -98,10 +98,27 @@ var sourceCatalogOnce sync.Once
 var sourceCatalog map[string]*sourceObject
 var sourceCatalogError error
 
+// ChainExport is an entry in the pinned viem/chains namespace. Names sharing
+// a chain ID remain distinct here; indexing resolves its descriptor by ID.
+type ChainExport struct {
+	Name string `json:"name"`
+	ID   int64  `json:"id"`
+}
+
+var sourceExports []ChainExport
+
+func ChainExports() ([]ChainExport, error) {
+	if _, err := loadSourceCatalog(); err != nil {
+		return nil, err
+	}
+	return append([]ChainExport(nil), sourceExports...), nil
+}
+
 func loadSourceCatalog() (map[string]*sourceObject, error) {
 	sourceCatalogOnce.Do(func() {
 		var catalog struct {
 			Baseline string
+			Exports  []ChainExport
 			Chains   []struct {
 				ID         json.Number
 				Descriptor json.RawMessage
@@ -115,6 +132,7 @@ func loadSourceCatalog() (map[string]*sourceObject, error) {
 			sourceCatalogError = fmt.Errorf("unexpected source chain catalog revision")
 			return
 		}
+		sourceExports = catalog.Exports
 		sourceCatalog = map[string]*sourceObject{}
 		for _, entry := range catalog.Chains {
 			value, err := sourceDecodeWire(entry.Descriptor)

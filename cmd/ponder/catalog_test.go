@@ -43,3 +43,36 @@ func TestCodegenABICatalog(t *testing.T) {
 		t.Fatal("invalid input overwrote generated code", err)
 	}
 }
+
+func TestCodegenValueUtilities(t *testing.T) {
+	dir := t.TempDir()
+	one, two, out := filepath.Join(dir, "one.json"), filepath.Join(dir, "two.json"), filepath.Join(dir, "generated.go")
+	for file, content := range map[string]string{one: `[{"type":"constructor","inputs":[]}]`, two: `[{"type":"function","name":"a","inputs":[],"outputs":[]}]`} {
+		if err := os.WriteFile(file, []byte(content), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, c := range []struct {
+		args []string
+		want string
+	}{
+		{[]string{"--merge-abi", one, "--merge-abi", two}, "Item0 FunctionItemA"},
+		{[]string{"--bigint-shape", "[2]BigInt"}, "[2]BigInt"},
+	} {
+		args := append([]string{"codegen", "--out", out}, c.args...)
+		if err := run(t.Context(), args, io.Discard); err != nil {
+			t.Fatal(err)
+		}
+		data, err := os.ReadFile(out)
+		if err != nil || !bytes.Contains(data, []byte(c.want)) {
+			t.Fatalf("missing %s in output: %v", c.want, err)
+		}
+		if err := run(t.Context(), append(args, "--typed"), io.Discard); err == nil {
+			t.Fatal("accepted conflicting modes")
+		}
+		after, err := os.ReadFile(out)
+		if err != nil || !bytes.Equal(after, data) {
+			t.Fatal("failed call changed the output", err)
+		}
+	}
+}
