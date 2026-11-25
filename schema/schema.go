@@ -90,8 +90,9 @@ type Sequence struct {
 	Name string `json:"name"`
 }
 type Enum struct {
-	Name   string   `json:"name"`
-	Values []string `json:"values"`
+	ExportName string   `json:"exportName,omitempty"`
+	Name       string   `json:"name"`
+	Values     []string `json:"values"`
 }
 type ViewField struct {
 	Name       string  `json:"name"`

@@ -1,0 +1,343 @@
+// Package graphql exposes the indexing database as a read-only GraphQL service.
+package graphql
+
+import (
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"math/big"
+	"strconv"
+	"strings"
+	"sync"
+
+	gql "github.com/graphql-go/graphql"
+	"github.com/graphql-go/graphql/language/ast"
+	"ponder.local/ponder-go/checkpoint"
+	"ponder.local/ponder-go/schema"
+	"ponder.local/ponder-go/store"
+)
+
+type Options struct {
+	Namespace           string
+	MaxOperationTokens  int
+	MaxOperationDepth   int
+	MaxOperationAliases int
+}
+
+type Server struct {
+	database  *store.Store
+	namespace string
+	schema    gql.Schema
+	options   Options
+}
+
+// graphql-go lazily initializes shared introspection types during schema construction.
+var buildSchemaMu sync.Mutex
+
+// New builds a handler that can be mounted at any path. Namespace defaults to the store's writer schema.
+func New(database *store.Store, opts Options) (*Server, error) {
+	if database == nil {
+		return nil, fmt.Errorf("GraphQL requires a database")
+	}
+	if opts.Namespace == "" {
+		opts.Namespace = database.Namespace
+	}
+	if !schema.Identifier(opts.Namespace) || len(opts.Namespace) > 63 {
+		return nil, fmt.Errorf("invalid GraphQL namespace %q", opts.Namespace)
+	}
+	if opts.MaxOperationTokens < 0 || opts.MaxOperationDepth < 0 || opts.MaxOperationAliases < 0 {
+		return nil, fmt.Errorf("negative GraphQL operation limit")
+	}
+	if opts.MaxOperationTokens == 0 {
+		opts.MaxOperationTokens = 1000
+	}
+	if opts.MaxOperationDepth == 0 {
+		opts.MaxOperationDepth = 100
+	}
+	if opts.MaxOperationAliases == 0 {
+		opts.MaxOperationAliases = 30
+	}
+	s := &Server{database: database, namespace: opts.Namespace, options: opts}
+	meta := gql.NewObject(gql.ObjectConfig{Name: "Meta", Fields: gql.Fields{"status": &gql.Field{Type: jsonScalar}}})
+	fields := gql.Fields{"_meta": &gql.Field{Type: meta, Resolve: s.metadata}}
+	enums := map[string]*gql.Enum{}
+	for _, e := range database.Schema.Enums {
+		values := gql.EnumValueConfigMap{}
+		for _, value := range e.Values {
+			values[value] = &gql.EnumValueConfig{Value: value}
+		}
+		name := e.ExportName
+		if name == "" {
+			name = e.Name
+		}
+		enums[e.Name] = gql.NewEnum(gql.EnumConfig{Name: name, Values: values})
+	}
+	for _, table := range database.Schema.Tables {
+		name := table.ExportName
+		if name == "" {
+			name = table.Name
+		}
+		if !schema.Identifier(name) {
+			return nil, fmt.Errorf("invalid GraphQL table name %q", name)
+		}
+		key := strings.ToLower(name[:1]) + name[1:]
+		if fields[key] != nil {
+			return nil, fmt.Errorf("duplicate GraphQL field %q", key)
+		}
+		field, err := s.entity(table, name, enums)
+		if err != nil {
+			return nil, err
+		}
+		fields[key] = field
+	}
+	buildSchemaMu.Lock()
+	defer buildSchemaMu.Unlock()
+	var err error
+	s.schema, err = gql.NewSchema(gql.SchemaConfig{Query: gql.NewObject(gql.ObjectConfig{Name: "Query", Fields: fields})})
+	if err != nil {
+		return nil, err
+	}
+	// Both enum lookup maps must be initialized before concurrent requests use them.
+	for _, typ := range s.schema.TypeMap() {
+		if enum, ok := typ.(*gql.Enum); ok && len(enum.Values()) > 0 {
+			first := enum.Values()[0]
+			enum.ParseValue(first.Name)
+			enum.Serialize(first.Value)
+		}
+	}
+	return s, nil
+}
+
+func decimalScalar(name string, parse func(string) any) *gql.Scalar {
+	return gql.NewScalar(gql.ScalarConfig{Name: name, Serialize: func(v any) any { return fmt.Sprint(v) }, ParseValue: func(v any) any { return parse(fmt.Sprint(v)) }, ParseLiteral: func(v ast.Value) any {
+		if text, ok := v.(*ast.StringValue); ok {
+			return parse(text.Value)
+		}
+		return nil
+	}})
+}
+
+var bigIntScalar = decimalScalar("BigInt", func(s string) any {
+	v, ok := new(big.Int).SetString(s, 10)
+	if !ok {
+		return nil
+	}
+	return v.String()
+})
+var numericScalar = decimalScalar("Numeric", func(s string) any { return s })
+var jsonScalar = gql.NewScalar(gql.ScalarConfig{Name: "JSON", Serialize: func(v any) any { return v }})
+
+func columnType(c schema.Column, enums map[string]*gql.Enum) (gql.Type, error) {
+	if base, ok := strings.CutSuffix(c.Type, "[]"); ok {
+		c.Type = base
+		core, err := columnType(c, enums)
+		if err != nil {
+			return nil, err
+		}
+		return gql.NewList(gql.NewNonNull(core)), nil
+	}
+	if e := enums[c.Type]; e != nil {
+		return e, nil
+	}
+	switch c.Type {
+	case "text", "hex", "address", "varchar", "char", "uuid", "timestamp", "date":
+		return gql.String, nil
+	case "bigint":
+		return bigIntScalar, nil
+	case "int8":
+		if c.Mode == "number" {
+			return gql.Int, nil
+		}
+		return bigIntScalar, nil
+	case "numeric":
+		return numericScalar, nil
+	case "integer":
+		return gql.Int, nil
+	case "doublePrecision", "real", "smallint":
+		return gql.Float, nil
+	case "boolean":
+		return gql.Boolean, nil
+	case "json", "jsonb":
+		return jsonScalar, nil
+	case "bytes":
+		return gql.NewList(gql.NewNonNull(gql.Int)), nil
+	default:
+		return nil, fmt.Errorf("unsupported GraphQL column type %q", c.Type)
+	}
+}
+
+func property(c schema.Column) string {
+	if c.Property != "" {
+		return c.Property
+	}
+	return c.Name
+}
+
+func (s *Server) entity(table schema.Table, name string, enums map[string]*gql.Enum) (*gql.Field, error) {
+	fields := gql.Fields{}
+	columns := map[string]schema.Column{}
+	for _, col := range table.Columns {
+		field := property(col)
+		core, err := columnType(col, enums)
+		if err != nil {
+			return nil, err
+		}
+		if fields[field] != nil {
+			return nil, fmt.Errorf("duplicate GraphQL field %s.%s", name, field)
+		}
+		if col.NotNull || col.Primary {
+			core = gql.NewNonNull(core)
+		}
+		fields[field] = &gql.Field{Type: core}
+		columns[col.Name] = col
+	}
+	entity := gql.NewObject(gql.ObjectConfig{Name: name, Fields: fields})
+	args := gql.FieldConfigArgument{}
+	keys := table.PrimaryKeyColumns()
+	if len(keys) == 0 {
+		return nil, fmt.Errorf("table %s requires a primary key", name)
+	}
+	for _, key := range keys {
+		col, ok := columns[key.SQL]
+		if !ok {
+			return nil, fmt.Errorf("missing primary key column %q", key.SQL)
+		}
+		core, err := columnType(col, enums)
+		if err != nil {
+			return nil, err
+		}
+		// Drizzle exposes table-level key descriptors as strings for enum columns.
+		// A key declared directly on the enum column keeps its enum type.
+		if len(table.PrimaryKey) > 0 && enums[col.Type] != nil {
+			core = gql.String
+		}
+		args[key.JS] = &gql.ArgumentConfig{Type: gql.NewNonNull(core)}
+	}
+	return &gql.Field{Type: entity, Args: args, Resolve: func(p gql.ResolveParams) (any, error) {
+		predicates := make([]string, len(keys))
+		values := make([]any, len(keys))
+		for i, key := range keys {
+			value, ok := p.Args[key.JS]
+			if !ok {
+				return nil, fmt.Errorf("missing primary key %s", key.JS)
+			}
+			col := columns[key.SQL]
+			if col.Type == "hex" || col.Type == "address" {
+				text, err := canonicalHex(fmt.Sprint(value))
+				if err != nil {
+					return nil, err
+				}
+				value = text
+			}
+			predicates[i] = schema.Quote(key.SQL) + fmt.Sprintf("=$%d", i+1)
+			values[i] = value
+		}
+		// Read JSON as text so database drivers cannot round a large numeric value.
+		query := "SELECT row_to_json(t)::text AS payload FROM " + schema.Quote(table.Name) + " t WHERE " + strings.Join(predicates, " AND ") + " LIMIT 1"
+		rows, err := s.database.QueryReadOnlyInNamespace(p.Context, s.namespace, query, values...)
+		if err != nil || len(rows.Rows) == 0 {
+			return nil, err
+		}
+		var record map[string]any
+		decoder := json.NewDecoder(strings.NewReader(fmt.Sprint(rows.Rows[0]["payload"])))
+		decoder.UseNumber()
+		if err := decoder.Decode(&record); err != nil {
+			return nil, err
+		}
+		out := make(map[string]any, len(columns))
+		for key, column := range columns {
+			value, err := columnValue(column, record[key])
+			if err != nil {
+				return nil, err
+			}
+			out[property(column)] = value
+		}
+		return out, nil
+	}}, nil
+}
+
+func canonicalHex(s string) (string, error) {
+	value, ok := strings.CutPrefix(strings.ToLower(s), "0x")
+	if !ok {
+		return "", fmt.Errorf("invalid hex value")
+	}
+	if len(value)%2 != 0 {
+		value = "0" + value
+	}
+	if _, err := hex.DecodeString(value); err != nil {
+		return "", err
+	}
+	return "0x" + value, nil
+}
+
+func columnValue(c schema.Column, v any) (any, error) {
+	if v == nil {
+		return nil, nil
+	}
+	if typ, ok := strings.CutSuffix(c.Type, "[]"); ok {
+		items, ok := v.([]any)
+		if !ok {
+			return nil, fmt.Errorf("invalid array value for %s", c.Name)
+		}
+		c.Type = typ
+		for i, item := range items {
+			value, err := columnValue(c, item)
+			if err != nil {
+				return nil, err
+			}
+			items[i] = value
+		}
+		return items, nil
+	}
+	switch c.Type {
+	case "bytes":
+		raw, err := hex.DecodeString(strings.TrimPrefix(fmt.Sprint(v), `\x`))
+		if err != nil {
+			return nil, err
+		}
+		values := make([]int, len(raw))
+		for i, b := range raw {
+			values[i] = int(b)
+		}
+		return values, nil
+	case "hex", "address":
+		return canonicalHex(fmt.Sprint(v))
+	case "bigint", "numeric":
+		return fmt.Sprint(v), nil
+	case "int8":
+		if c.Mode != "number" {
+			return fmt.Sprint(v), nil
+		}
+		fallthrough
+	case "integer", "smallint":
+		return strconv.ParseInt(fmt.Sprint(v), 10, 64)
+	case "doublePrecision", "real":
+		return strconv.ParseFloat(fmt.Sprint(v), 64)
+	default:
+		return v, nil
+	}
+}
+
+func (s *Server) metadata(p gql.ResolveParams) (any, error) {
+	q := "SELECT chain_name, chain_id, latest_checkpoint FROM _ponder_checkpoint ORDER BY chain_id"
+	if s.namespace == s.database.Namespace {
+		q = "SELECT c.chain_name,c.chain_id,p.checkpoint AS latest_checkpoint FROM _ponder_go_chains c JOIN _ponder_go_progress p USING (chain_id) ORDER BY c.chain_id"
+	}
+	r, err := s.database.QueryReadOnlyInNamespace(p.Context, s.namespace, q)
+	if err != nil {
+		return nil, err
+	}
+	status := map[string]any{}
+	for _, row := range r.Rows {
+		cp, err := checkpoint.Decode(fmt.Sprint(row["latest_checkpoint"]))
+		if err != nil {
+			return nil, err
+		}
+		chain, err := strconv.ParseUint(fmt.Sprint(row["chain_id"]), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		status[fmt.Sprint(row["chain_name"])] = map[string]any{"id": chain, "block": map[string]any{"number": cp.BlockNumber, "timestamp": cp.BlockTimestamp}}
+	}
+	return map[string]any{"status": status}, nil
+}

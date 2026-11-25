@@ -5,6 +5,7 @@ go 1.25.0
 require (
 	github.com/ethereum/go-ethereum v1.16.3
 	github.com/felixge/httpsnoop v1.0.4
+	github.com/graphql-go/graphql v0.8.1
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/prometheus/client_golang v1.15.0
 	github.com/prometheus/client_model v0.3.0
