@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { isNativeInput } from "./go-source-fingerprint.mjs";
 
 function workspace(t, files) {
   const parent = fs.mkdtempSync(path.join(os.tmpdir(), "ponder-verification-"));
@@ -20,6 +21,18 @@ function workspace(t, files) {
   const env = {...process.env, PATH:bin + path.delimiter + process.env.PATH};
   return {root, bin, env, executable};
 }
+
+test("verification inventories every top-level Go package", () => {
+  const project = new URL("../", import.meta.url);
+  for (const dir of fs.readdirSync(project, {withFileTypes: true})) {
+    if (!dir.isDirectory()) continue;
+    const files = fs.readdirSync(new URL(dir.name + "/", project));
+    for (const name of files.filter(file => file.endsWith(".go"))) {
+      const input = dir.name + "/" + name;
+      assert(isNativeInput(input), input);
+    }
+  }
+});
 
 test("native reports distinguish failed discovery, unfinished, unstarted and skipped tests", t => {
   const {root, bin, env, executable} = workspace(t, ["go-tests.mjs", "go-source-fingerprint.mjs"]);
@@ -86,6 +99,7 @@ test("full verification executes independent checks after a failed native run or
   for (const base of ["../ponder-upstream/packages/core","sdk/typescript/react","sdk/typescript/client"]) {
     executable(path.join(root,base,"node_modules/.bin/vitest"),stub);
   }
+  executable(path.join(root,"sdk/typescript/client/node_modules/.bin/tsup"),stub);
   for (const failure of ["native","sdk","proof","none"]) {
     const trace = path.join(root, "trace-" + failure);
     const captures = path.join(root, "parity/runs/original-captures");
@@ -104,6 +118,9 @@ test("full verification executes independent checks after a failed native run or
     const rows = fs.readFileSync(path.join(captures, current, "verification.tsv"), "utf8").trim().split("\n");
     assert.equal(rows.shift(), "stage\tstatus");
     const status = Object.fromEntries(rows.map(row => row.split("\t")));
+    assert(calls.some(([tool]) => tool === "tsup"));
+    assert.equal(status["sdk-client-build"], "0");
+    assert.equal(status["browser-original"], "0");
     assert.equal(status["native-normal"], failure === "native" ? "1" : "0");
     assert.equal(status["native-race"], "0");
     assert.equal(status["react-types"], failure === "sdk" ? "2" : "0");
