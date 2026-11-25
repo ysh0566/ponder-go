@@ -74,6 +74,8 @@ func TestApplicationShutdownJoinsHandler(t *testing.T) {
 }
 
 func TestApplicationServeOnly(t *testing.T) {
+	t.Setenv("PONDER_HOSTNAME", "127.0.0.1")
+	t.Setenv("PONDER_PORT", "0")
 	ctx, cancel := context.WithCancel(t.Context())
 	b := stagedBackend(t, ctx, "pglite", "memory://")
 	defer b.Close()
@@ -83,7 +85,7 @@ func TestApplicationServeOnly(t *testing.T) {
 		t.Fatal(err)
 	}
 	routes := query.New(db)
-	app, err := StartApplication(ctx, nil, routes, "127.0.0.1", 0)
+	app, err := StartApplication(ctx, nil, routes, "invalid host name", -1)
 	if err != nil {
 		cancel()
 		t.Fatal(err)

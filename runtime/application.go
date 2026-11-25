@@ -3,7 +3,10 @@ package runtime
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
+	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -53,6 +56,16 @@ func StartApplication(ctx context.Context, engine *Engine, routes *query.Server,
 func LaunchApplication(ctx context.Context, indexer ApplicationIndexer, routes *query.Server, host string, port int) (*Application, error) {
 	if routes == nil || routes.Store == nil {
 		return nil, errors.New("application requires a query server with a store")
+	}
+	if override, ok := os.LookupEnv("PONDER_HOSTNAME"); ok {
+		host = override
+	}
+	if raw := os.Getenv("PONDER_PORT"); raw != "" {
+		n, err := strconv.Atoi(raw)
+		if err != nil || n < 0 || n > 65535 {
+			return nil, fmt.Errorf("invalid PONDER_PORT %q", raw)
+		}
+		port = n
 	}
 	run, cancel := context.WithCancel(ctx)
 	routes.Ready.Store(false)
