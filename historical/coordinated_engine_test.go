@@ -5,61 +5,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 	"reflect"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/internal/testpglite"
 	"github.com/ysh0566/ponder-go/internal/testpostgres"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
-
-// Record only the PGlite engine started by this test for its selected directory.
-// The live Go runner owns and waits on that child throughout fault injection.
-func trackPGliteEngine(t *testing.T, directory string) func() error {
-	t.Helper()
-	temp := t.TempDir()
-	registration := filepath.Join(temp, "child.json")
-	preload := filepath.Join(temp, "register.cjs")
-	const source = `if (process.argv.at(-1) === process.env.PONDER_TEST_ENGINE_DIRECTORY) {
-  require("node:fs").writeFileSync(process.env.PONDER_TEST_ENGINE_REGISTRATION,
-    JSON.stringify({ pid: process.pid, parent: process.ppid, directory: process.argv.at(-1) }), {flag: "wx"});
-}`
-	if err := os.WriteFile(preload, []byte(source), 0600); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("PONDER_TEST_ENGINE_DIRECTORY", directory)
-	t.Setenv("PONDER_TEST_ENGINE_REGISTRATION", registration)
-	t.Setenv("NODE_OPTIONS", strings.TrimSpace(os.Getenv("NODE_OPTIONS")+" --require="+strconv.Quote(preload)))
-	return func() error {
-		data, err := os.ReadFile(registration)
-		if err != nil {
-			return err
-		}
-		var child struct {
-			PID, Parent int
-			Directory   string
-		}
-		if err = json.Unmarshal(data, &child); err != nil {
-			return err
-		}
-		if child.Parent != os.Getpid() || child.PID <= 1 || child.Directory != directory {
-			return fmt.Errorf("unexpected PGlite child registration: %s", data)
-		}
-		p, err := os.FindProcess(child.PID)
-		if err != nil {
-			return err
-		}
-		defer p.Release()
-		return p.Kill()
-	}
-}
 
 func TestCoordinatedEngineInterruption(t *testing.T) {
 	for _, engine := range []string{"postgres", "pglite/business", "pglite/sync"} {
@@ -107,7 +64,7 @@ func testCoordinatedEngineInterruption(t *testing.T, engine, phase string) {
 		if engine == "pglite/sync" {
 			directory = opts.Historical.Owned.Storage.SyncDirectory
 		}
-		kill = trackPGliteEngine(t, directory)
+		kill = testpglite.Track(t, directory)
 	}
 	forked := false
 	operation := ""
@@ -135,8 +92,6 @@ func testCoordinatedEngineInterruption(t *testing.T, engine, phase string) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = r.Close(context.Background()) })
-	// The registration belongs to this owner. Subsequent engines open normally.
-	t.Setenv("PONDER_TEST_ENGINE_DIRECTORY", "")
 	result, err := r.Run(ctx)
 	if killErr != nil || operation == "" || err == nil || ctx.Err() != nil || result.Ready || result.Completed {
 		t.Fatalf("interrupt %s at %s: op=%q kill=%v result=%+v run=%v ctx=%v", engine, phase, operation, killErr, result, err, ctx.Err())

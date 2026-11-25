@@ -415,6 +415,10 @@ if err != nil {
 
 将 `worker` 交给 `runtime.LaunchApplication`，或直接调用 `RunIndexing`。排序来自来源配置，每条参与链保留自己的 RPC 和缓存策略。只有注册了回调的来源决定索引范围。仅注册 `合约名:setup` 的合约在其起始区块执行一次。某条链还有持续事件来源时，该链会继续追块。[运行模式](RUNTIME_SUPPORT.md) · [双后端验收](../parity/runs/native-compiled-indexer/RESULT.md)
 
+### 原生多链索引器在数据库中断后恢复
+
+数据库在处理链重组时退出后，重新启动原 PostgreSQL 实例，或重新打开原 PGlite 数据目录。用相同的命名空间、模型、配置和处理函数重新创建 `store.Store` 和 `runtime.NewIndexer`。数据库会丢弃未提交的回调事务。索引器会重新处理受影响的区块，并按当前链上的区块哈希更新进度。普通多链和 Omnichain 均覆盖一条链被替换、另一条链保持不变时的恢复。[双后端恢复测试](../parity/runs/native-multichain-engine-recovery/RESULT.md)
+
 ### 独立存储的有限区间索引
 
 Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 管理独立的业务数据与同步数据时，可以在默认多链排序下将 `RuntimeOptions.Live` 留空，并给每个事件来源设置 `endBlock`。打开时各链都必须已经到达配置的结束高度。要包含创世区块，请为来源设置 `startBlock: 0` 并将 `RuntimeOptions.SourceCheckpoints` 设为 `true`。此时初始 checkpoint 标记区块的起点，回调会收到区块 0。只需索引创世区块时可设置 `endBlock: 0`。新建部署时选择 checkpoint 模式，重开原存储时沿用相同设置。不启用该选项时，有限区间从区块 1 或更高处开始。调用 `Run` 后，索引器处理到各链的结束高度并返回 `Completed`。独立运行器的工厂发现仍需持续模式。[来源 checkpoint 验证](../parity/runs/native-bounded-source-checkpoints/RESULT.md)
