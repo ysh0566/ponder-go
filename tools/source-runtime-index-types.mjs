@@ -46,10 +46,9 @@ function goObligationTreatment() {
     source_language_obligations: 6,
     translated_go_negative_compile_tests: 0,
     source_credit: 0,
-    current_go_representation: "store.SourceIntervalEntry.Key is filter.Object (map[string]any); both filter and factory objects are represented, with reference-identity lookup. This is not a closed static Filter | Factory contract.",
+    current_go_representation: "store.SourceCacheEntry accepts filter and factory entries. NewSourceIntervalMap infers a homogeneous entry type or accepts an explicit heterogeneous type. Entries exposes the original map objects.",
     semantic_obligation: "The same cache accepts both the exact filter object and its factory object, retaining object identity, fragment values, interval values, and insertion/replacement semantics. Verify these through the source-mapped runtime cases, separately from this compiler audit.",
-    typed_boundary_proposal: "If a closed Go boundary is required, use a package-sealed CacheKey interface implemented by pointer-backed FilterKey and FactoryKey adapters, retaining each original object's identity. Keep the positive heterogeneous cache construction; do not introduce unrelated invalid Go values as substitutes for these six inference diagnostics.",
-    go_static_contract_status: "not established by this audit",
+    go_static_contract_status: "Verified separately by TestSourceIntervalMapTypes and TestSourceIntervalMapIdentity in the native run.",
     runtime_parity_status: "not established by this audit",
     inspected_files: ["filter/values.go", "store/source_intervals.go", "runtime/source_required_intervals.go", "runtime/source_sync_cache.go"]
       .map((relative) => path.join(root, relative)).filter(fs.existsSync).map(hash),

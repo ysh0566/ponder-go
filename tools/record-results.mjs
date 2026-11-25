@@ -1,3 +1,4 @@
+import {cacheTypeTests, verifyCacheTypeTests} from "./runtime-index-cache-types.mjs";
 import {finiteHistoricalProofReferencesValid} from './finite-historical-evidence.mjs';
 import {atomicMultichainProofReferencesValid} from './multichain-atomic-evidence.mjs';
 import {independentProofReferencesValid} from './independent-storage-evidence.mjs';
@@ -280,9 +281,12 @@ if (runtimeIndexVerification) {
  }
  const types=read(v.source_types.file);
  if(!types.complete||!types.success||types.source_credit!==0||!types.original_source_unchanged||types.pristine_diagnostics!==0||types.stripped_diagnostics!==6||types.explicit_key_union_diagnostics!==0||types.obligations.length!==6||types.source_sha256!==selected[0]?.source_sha256||types.go_obligation_treatment?.translated_go_negative_compile_tests!==0)throw Error("Runtime index source-language inference audit is incomplete");
+ if(v.summary.native_type_obligations_verified!==6||JSON.stringify(v.native_type_tests)!==JSON.stringify(cacheTypeTests))throw Error("Complete native interval cache type evidence required");
+ for(const results of [go,race])verifyCacheTypeTests((pkg,test)=>results.get(pkg+":"+test)?.Action==="pass");
  if(types.executions?.length!==3||types.executions.some(execution=>execution.exit_code!==0||!diskValid(execution.report)||!execution.result?.success||!execution.result.source_context.every(ref=>proofValid(ref,v))))throw Error("Runtime index compiler execution context changed");
  for(const test of selected.filter(test=>test.type_error_directives.length)){
-  if(test.mapping)throw Error("Runtime index inference-only cases must remain unmapped while native type treatment is pending");
+  if(test.mapping&&JSON.stringify(test.mapping.native_type_tests)!==JSON.stringify(cacheTypeTests))throw Error("Runtime index cache type mapping differs");
+  if(!v.executions.every(e=>e.cases.some(c=>c.source_id===test.id&&c.native_type_status==="passed"&&c.native_type_obligations===test.type_error_directives.length)))throw Error("Runtime index native type evidence differs");
   if(types.obligations.filter(obligation=>obligation.source_id===test.id).length!==test.type_error_directives.length)throw Error("Runtime index directive mapping differs");
  }
 }
@@ -520,11 +524,9 @@ for (const test of ledger.tests) {
   currentLiveOracle(test,runtimeIndexVerification,runtimeIndexVerificationFile,4);
   test.runtime_validation={status:"passed",evidence:runtimeIndexVerificationFile,run_dir:runDir,meaning:"All original runtime/index inputs and assertions replayed against native Go in both complete module modes and both backends; adapted source capture and native execution remain separately identified."};
   if(test.type_error_directives.length){
-   test.runtime_status="passed";test.execution_status="executed";test.pass_status=null;
-   test.execution_evidence=runtimeIndexVerificationFile;test.race={status:"pass",evidence:raceFile};
-   test.remaining_native_type_obligations=test.type_error_directives.length;
-   test.type_directives_verification={status:"pending",source_language_status:"verified",source_language_evidence:runtimeIndexVerification.source_types.file,native_verified:0,obligations:test.type_error_directives.length,meaning:"Heterogeneous TypeScript Map inference, not rejection of Factory keys. Dynamic Go keys preserve positive runtime behavior, but equivalent native type treatment remains pending."};
-   test.parity_status="runtime_passed_type_obligations_pending";
+   test.runtime_status="passed";
+   test.remaining_native_type_obligations=0;
+   test.type_directives_verification={status:"passed",source_language_evidence:runtimeIndexVerification.source_types.file,native_verified:test.type_error_directives.length,obligations:test.type_error_directives.length,evidence:runtimeIndexVerificationFile};
   }
  }
 	if (test.source_file.endsWith("/decodeAbiParameters.test.ts") && parameterTypes?.source_sha256 === test.source_sha256)
@@ -579,7 +581,7 @@ for (const test of ledger.tests) {
 			test.runtime_status = status;
 			if (!valid) {status="skip";test.blockers.push("Native runtime alone is insufficient: inline type compilation/typed output evidence is incomplete.");}
 		}
-		if (test.type_error_directives.length) {
+		if (test.type_error_directives.length && !(runtimeIndexVerification && test.source_file==="packages/core/src/runtime/index.test.ts" && test.type_directives_verification?.status==="passed")) {
 			const directives=[...(compile?.directives??[]),...(ormCompile?.directives??[]),...(eventCompile?.directives??[]),...(bloomCompile?.directives??[]),...(configCompile?.directives??[]),...(syncVerification?.directives??[]),...(historicalVerification?.directives??[])].filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256);
 			const generatedValid=!ormCompile?.directives.some(x=>x.source_id===test.id)||((ormCompile.inputs?.length??0)>=3&&[...ormCompile.generated,...ormCompile.inputs].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
 			const eventValid=!eventCompile?.directives.some(x=>x.source_id===test.id)||((eventCompile.inputs?.length??0)>=3&&eventCompile.inputs.every(f=>exists(f.file)&&fileHash(f.file)===f.sha256)&&directives.every(x=>x.build_positive?.exit_code===0&&x.execute_positive?.exit_code===0&&Number.isInteger(x.build_negative?.exit_code)&&x.build_negative.exit_code>0&&/callbacks\[0\]\.ABIItem undefined/.test(x.build_negative?.stderr??"")));
@@ -717,7 +719,7 @@ const summary = {
  source_indexing_service_verification:indexingServiceVerification?{...indexingServiceVerification.summary,evidence:indexingServiceVerificationFile,environment_adapted:true,pristine_file:false}:null,
  source_runtime_multichain_verification:runtimeMultichainVerification?{...runtimeMultichainVerification.summary,evidence:runtimeMultichainVerificationFile,environment_adapted:true,pristine_file:false}:null,
  source_runtime_historical_verification:runtimeHistoricalVerification?{...runtimeHistoricalVerification.summary,evidence:runtimeHistoricalVerificationFile,environment_adapted:true,pristine_file:false}:null,
- source_runtime_index_verification:runtimeIndexVerification?{...runtimeIndexVerification.summary,evidence:runtimeIndexVerificationFile,environment_adapted:runtimeIndexVerification.environment_adapted,pristine_file:runtimeIndexVerification.pristine_file,native_type_obligations_passed:0}:null,
+ source_runtime_index_verification:runtimeIndexVerification?{...runtimeIndexVerification.summary,evidence:runtimeIndexVerificationFile,environment_adapted:runtimeIndexVerification.environment_adapted,pristine_file:runtimeIndexVerification.pristine_file,native_type_obligations_passed:runtimeIndexVerification.summary.native_type_obligations_verified}:null,
  sql_source_verification:sqlVerification?{...sqlVerification.summary,evidence:"parity/runs/sql-source-verification.json"}:null,
 	typed_abi_runtime: {file:typedGoFile,leaf_cases:leaves(typedGo).length,...count(leaves(typedGo)),counting:"Supplementary typed decoder execution; not additional source test records."},
 	typed_abi_race: {file:typedRaceFile,leaf_cases:leaves(typedRace).length,...count(leaves(typedRace))},
