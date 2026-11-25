@@ -19,6 +19,9 @@ type MigrationError struct{ Message string }
 
 func (e *MigrationError) Error() string { return e.Message }
 
+const databaseMillis = "floor(extract(epoch FROM clock_timestamp()) * 1000)::bigint"
+const activeLease = "key='app' AND lease_token=$1 AND value->>'is_locked'='1' AND (value->>'heartbeat_at')::bigint > " + databaseMillis + " - $2::bigint"
+
 var ErrLeaseLost = errors.New("database writer lease has expired or changed owner")
 
 type LifecycleOptions struct {
@@ -61,9 +64,7 @@ type AppMetadataRow struct {
 
 // Lifecycle owns startup, a fenced writer lease, recovery and shutdown for a
 // new native staged namespace. It never adopts an upstream or unmanaged schema.
-// Call Close before closing the caller-owned Backend. Dev rebuild/legacy sync
-// migration use owned shadows. The automatic single-chain staged scheduler is
-// in runtime.NewStaged; dev rebuild and multichain scheduling remain unfinished.
+// Call Close before closing the caller-owned Backend.
 type Lifecycle struct {
 	s               *Store
 	opts            LifecycleOptions
@@ -134,27 +135,23 @@ func (d *Lifecycle) Migrate(ctx context.Context, request Migration) ([]RecoveryC
 		}
 		seen[chain.ID] = true
 	}
-	result, expiry, e := d.tryMigrate(ctx, request)
+	result, waitMillis, e := d.tryMigrate(ctx, request)
 	if e != nil {
 		return nil, e
 	}
-	if expiry != 0 {
-		duration := time.Until(time.UnixMilli(expiry))
-		if duration < 0 {
-			duration = 0
-		}
-		timer := time.NewTimer(duration)
+	if waitMillis > 0 {
+		timer := time.NewTimer(time.Duration(waitMillis) * time.Millisecond)
 		select {
 		case <-ctx.Done():
 			timer.Stop()
 			return nil, ctx.Err()
 		case <-timer.C:
 		}
-		result, expiry, e = d.tryMigrate(ctx, request)
+		result, waitMillis, e = d.tryMigrate(ctx, request)
 		if e != nil {
 			return nil, e
 		}
-		if expiry != 0 {
+		if waitMillis > 0 {
 			return nil, &MigrationError{Message: fmt.Sprintf("Failed to acquire lock on schema %q. A different Ponder app is actively using this schema.", d.s.Namespace)}
 		}
 	}
@@ -200,7 +197,7 @@ func (d *Lifecycle) tryMigrate(ctx context.Context, request Migration) ([]Recove
 	if e != nil {
 		return nil, 0, e
 	}
-	metadata := AppMetadata{Version: "6", BuildID: request.BuildID, TableNames: []string{}, ViewNames: []string{}, IsLocked: 1, HeartbeatAt: time.Now().UnixMilli(), ViewsSchema: d.s.viewsSchema}
+	metadata := AppMetadata{Version: "6", BuildID: request.BuildID, TableNames: []string{}, ViewNames: []string{}, IsLocked: 1, ViewsSchema: d.s.viewsSchema}
 	for _, table := range d.s.Schema.Tables {
 		metadata.TableNames = append(metadata.TableNames, table.Name)
 	}
@@ -238,9 +235,19 @@ func (d *Lifecycle) tryMigrate(ctx context.Context, request Migration) ([]Recove
 		if old.ViewsSchema != d.s.viewsSchema {
 			return nil, 0, &MigrationError{Message: "views schema configuration changed; use a new shadow schema"}
 		}
-		expiry := old.HeartbeatAt + d.opts.HeartbeatTimeout.Milliseconds()
-		if old.IsLocked != 0 && expiry > time.Now().UnixMilli() {
-			return nil, expiry, nil
+		if old.IsLocked != 0 {
+			// Read the database clock after acquiring the metadata row lock.
+			clock, err := tx.Query(ctx, "SELECT $1::bigint + $2::bigint - "+databaseMillis+" AS remaining", old.HeartbeatAt, d.s.leaseTimeout)
+			if err != nil {
+				return nil, 0, err
+			}
+			var remaining int64
+			if _, err = fmt.Sscan(fmt.Sprint(clock.Rows[0]["remaining"]), &remaining); err != nil {
+				return nil, 0, err
+			}
+			if remaining > 0 {
+				return nil, remaining, nil
+			}
 		}
 		states, e := checkpointStates(ctx, tx, d.s)
 		if e != nil {
@@ -291,12 +298,11 @@ func (d *Lifecycle) tryMigrate(ctx context.Context, request Migration) ([]Recove
 	}
 	// Recovery or initial DDL can outlast a lease window. Start the heartbeat
 	// age at publication, rather than returning an already-expired owner.
-	metadata.HeartbeatAt = time.Now().UnixMilli()
 	encoded, e := json.Marshal(metadata)
 	if e != nil {
 		return nil, 0, e
 	}
-	if e = tx.Exec(ctx, "INSERT INTO "+d.s.internal("_ponder_go_app")+" VALUES ('app',$1::jsonb,$2) ON CONFLICT(key) DO UPDATE SET value=excluded.value,lease_token=excluded.lease_token", string(encoded), d.s.leaseToken); e != nil {
+	if e = tx.Exec(ctx, "INSERT INTO "+d.s.internal("_ponder_go_app")+" VALUES ('app',jsonb_set($1::jsonb,'{heartbeat_at}',to_jsonb("+databaseMillis+")),$2) ON CONFLICT(key) DO UPDATE SET value=excluded.value,lease_token=excluded.lease_token", string(encoded), d.s.leaseToken); e != nil {
 		return nil, 0, e
 	}
 	if e = tx.Commit(ctx); e != nil {
@@ -363,18 +369,11 @@ func (s *Store) requireLease(ctx context.Context, tx Transaction) error {
 	if s.leaseToken == "" {
 		return nil
 	}
-	r, e := tx.Query(ctx, "SELECT lease_token,value->>'is_locked' AS locked,value->>'heartbeat_at' AS heartbeat FROM "+s.internal("_ponder_go_app")+" WHERE key='app'")
+	r, e := tx.Query(ctx, "SELECT key FROM "+s.internal("_ponder_go_app")+" WHERE "+activeLease, s.leaseToken, s.leaseTimeout)
 	if e != nil {
 		return e
 	}
-	if len(r.Rows) != 1 || r.Rows[0]["lease_token"] != s.leaseToken || fmt.Sprint(r.Rows[0]["locked"]) != "1" {
-		return ErrLeaseLost
-	}
-	var heartbeat int64
-	if _, e = fmt.Sscan(fmt.Sprint(r.Rows[0]["heartbeat"]), &heartbeat); e != nil {
-		return e
-	}
-	if heartbeat+s.leaseTimeout <= time.Now().UnixMilli() {
+	if len(r.Rows) != 1 {
 		return ErrLeaseLost
 	}
 	return nil
@@ -401,15 +400,25 @@ func (d *Lifecycle) heartbeat(ctx context.Context, done chan struct{}) {
 	}
 }
 func (d *Lifecycle) Heartbeat(ctx context.Context) error {
-	now := time.Now().UnixMilli()
-	r, e := d.s.Backend.Query(ctx, "UPDATE "+d.s.internal("_ponder_go_app")+" SET value=jsonb_set(value,'{heartbeat_at}',to_jsonb($1::bigint)) WHERE key='app' AND lease_token=$2 AND value->>'is_locked'='1' AND (value->>'heartbeat_at')::bigint>$3 RETURNING key", now, d.s.leaseToken, now-d.opts.HeartbeatTimeout.Milliseconds())
-	if e != nil {
-		return e
+	tx, err := d.s.Backend.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+	app := d.s.internal("_ponder_go_app")
+	// A connection or the metadata row may be busy for the entire lease
+	// window. Check expiry and publish only after both are available.
+	if _, err = tx.Query(ctx, "SELECT key FROM "+app+" WHERE key='app' AND lease_token=$1 FOR UPDATE", d.s.leaseToken); err != nil {
+		return err
+	}
+	r, err := tx.Query(ctx, "UPDATE "+app+" SET value=jsonb_set(value,'{heartbeat_at}',to_jsonb(GREATEST((value->>'heartbeat_at')::bigint, "+databaseMillis+"))) WHERE "+activeLease+" RETURNING key", d.s.leaseToken, d.s.leaseTimeout)
+	if err != nil {
+		return err
 	}
 	if len(r.Rows) != 1 {
 		return ErrLeaseLost
 	}
-	return nil
+	return tx.Commit(ctx)
 }
 func (d *Lifecycle) HeartbeatError() error {
 	d.errMu.Lock()
