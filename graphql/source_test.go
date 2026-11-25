@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	gql "github.com/graphql-go/graphql"
+
 	"ponder.local/ponder-go/schema"
 	"ponder.local/ponder-go/store"
 )
@@ -29,6 +31,8 @@ type sourceCase struct {
 	}
 	Requests []struct {
 		Method, Path, Query string
+		FilterFields        map[string]string
+		Errors              []string
 		Data                any
 		Status              int
 		Response            struct {
@@ -89,7 +93,16 @@ func sourceServer(t *testing.T, db store.Backend, c sourceCase, opts Options) *S
 }
 
 func TestSourceGraphQL(t *testing.T) {
-	b, err := os.ReadFile("../testdata/graphql/entities-http.json")
+	runSourceGraphQL(t, "entities-http.json")
+}
+
+func TestSourceGraphQLTablePages(t *testing.T) {
+	runSourceGraphQL(t, "table-pages.json")
+}
+
+func runSourceGraphQL(t *testing.T, fixture string) {
+	t.Helper()
+	b, err := os.ReadFile("../testdata/graphql/" + fixture)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,10 +132,28 @@ func TestSourceGraphQL(t *testing.T) {
 					}
 					s := sourceServer(t, db, c, opts)
 					for _, req := range c.Requests {
+						if req.FilterFields != nil {
+							typ, ok := s.schema.Type("tableFilter").(*gql.InputObject)
+							if !ok {
+								t.Fatal("missing tableFilter")
+							}
+							actual := map[string]string{}
+							for key, field := range typ.Fields() {
+								actual[key] = field.Type.String()
+							}
+							if !reflect.DeepEqual(actual, req.FilterFields) {
+								t.Fatalf("filter fields = %v, want %v", actual, req.FilterFields)
+							}
+							continue
+						}
 						if req.Method == "" {
 							result := s.Execute(t.Context(), Request{Query: req.Query})
-							if result.HasErrors() {
-								t.Fatal(result.Errors)
+							var errors []string
+							for _, e := range result.Errors {
+								errors = append(errors, e.Message)
+							}
+							if !reflect.DeepEqual(errors, req.Errors) {
+								t.Fatalf("query %s: errors %v, want %v", req.Query, errors, req.Errors)
 							}
 							compareJSON(t, result.Data, req.Data)
 							continue
