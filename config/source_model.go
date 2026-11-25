@@ -20,10 +20,16 @@ import (
 type SourceConfiguration struct{ value *sourceObject }
 
 // SourceBuildOptions controls native clients created by the source builder.
-type SourceBuildOptions struct{ RPCMaxConcurrency int }
+type SourceBuildOptions struct {
+	RPCMaxConcurrency int
+	PonderDir         string
+}
 
 // SourceConfigBuild retains actual native clients and canonical chain metadata.
-type SourceConfigBuild struct{ value *sourceConfigBuild }
+type SourceConfigBuild struct {
+	value *sourceConfigBuild
+	Pre   *SourcePreBuild
+}
 
 type SourceIndexingFunction struct {
 	Name string `json:"name"`
@@ -128,8 +134,9 @@ func loadSourceCatalog() (map[string]*sourceObject, error) {
 }
 
 func BuildSourceConfig(config *SourceConfiguration, options SourceBuildOptions) (*SourceConfigBuild, error) {
-	if config == nil || config.value == nil {
-		return nil, fmt.Errorf("source configuration is required")
+	pre, err := BuildSourcePre(config, options.PonderDir)
+	if err != nil {
+		return nil, err
 	}
 	catalog, err := loadSourceCatalog()
 	if err != nil {
@@ -140,7 +147,7 @@ func BuildSourceConfig(config *SourceConfiguration, options SourceBuildOptions) 
 	if err != nil {
 		return nil, err
 	}
-	return &SourceConfigBuild{value: result}, nil
+	return &SourceConfigBuild{value: result, Pre: pre}, nil
 }
 
 func (build *SourceConfigBuild) RPCClients() []*rpc.Client {
