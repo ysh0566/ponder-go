@@ -3,6 +3,7 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -15,9 +16,7 @@ import (
 
 // SourceSyncProgressRequestOptions makes the source's per-request context an
 // explicit part of the block-action boundary, rather than a discarded flag.
-type SourceSyncProgressRequestOptions struct {
-	RetryNullBlockRequest bool
-}
+type SourceSyncProgressRequestOptions = rpc.RequestOptions
 
 // SourceSyncProgressBlockResult is the one completion of a registered block
 // request. The map is retained by reference; Err is never wrapped.
@@ -38,8 +37,8 @@ type SourceSyncProgressRequester interface {
 // SourceSyncProgressRPC adapts an explicitly asynchronous production requester.
 // A synchronous rpc.Requester cannot provide ordered admission while requests
 // overlap, so there is deliberately no implicit synchronous fallback.
-// Transport errors retain the requester's own retry policy; null blocks also
-// receive the pinned source's nine retries and 125 ms exponential wait.
+// The source transport applies one budget to HTTP errors and null blocks.
+// Other requesters retain transport ownership and get the adapter's null retries.
 type SourceSyncProgressRPC struct {
 	requester rpc.AsyncRequester
 	wait      func(context.Context, time.Duration) error
@@ -85,7 +84,16 @@ func (r *SourceSyncProgressRPC) BeginBlockByNumber(ctx context.Context, number s
 	var block filter.Object
 	// This call is intentionally in the caller's synchronous Begin segment.
 	// The raw requester has bound this request before another Begin can occur.
-	pending := r.requester.BeginCall(ctx, "eth_getBlockByNumber", params, &block)
+	var pending <-chan error
+	var transportRetries bool
+	if source, ok := r.requester.(interface {
+		BeginSourceCall(context.Context, string, any, any, rpc.RequestOptions) (<-chan error, bool)
+	}); ok {
+		pending, transportRetries = source.BeginSourceCall(ctx, "eth_getBlockByNumber", params, &block, options)
+	}
+	if !transportRetries {
+		pending = r.requester.BeginCall(ctx, "eth_getBlockByNumber", params, &block)
+	}
 	go func() {
 		for attempt := 0; ; attempt++ {
 			if pending == nil {
@@ -101,6 +109,9 @@ func (r *SourceSyncProgressRPC) BeginBlockByNumber(ctx context.Context, number s
 					finish(nil, fmt.Errorf("source sync progress async RPC future closed without result"))
 					return
 				}
+				if transportRetries && errors.Is(err, rpc.ErrBlockNotFound) {
+					err = &SourceSyncProgressBlockNotFoundError{Number: number}
+				}
 				if err != nil {
 					finish(nil, err)
 					return
@@ -111,7 +122,7 @@ func (r *SourceSyncProgressRPC) BeginBlockByNumber(ctx context.Context, number s
 				finish(standardized, err)
 				return
 			}
-			if !options.RetryNullBlockRequest || attempt == 9 {
+			if transportRetries || !options.RetryNullBlockRequest || attempt == 9 {
 				finish(nil, &SourceSyncProgressBlockNotFoundError{Number: number})
 				return
 			}

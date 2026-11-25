@@ -20,13 +20,13 @@ type asyncCallTask struct {
 	ctx         context.Context
 	method      string
 	params, out any
+	options     RequestOptions
 	result      chan error
 	state       atomic.Uint32
 	stopCancel  func() bool
 }
 type callAdmission struct {
-	id      uint64
-	url     string
+	first   rpcAttempt
 	release func()
 }
 
@@ -37,6 +37,24 @@ type callAdmission struct {
 // Legacy synchronous Call retains its existing behavior; both paths share the
 // same transport capacity, rate limiter and request-ID sequence.
 func (c *Client) BeginCall(ctx context.Context, method string, params, out any) <-chan error {
+	return c.beginCall(ctx, method, params, out, RequestOptions{})
+}
+
+// BeginSourceCall uses the source transport's single retry budget for both
+// transient errors and opted-in null blocks. A plain client returns false
+// without starting a call so its adapter can retain its own retry policy.
+func (c *Client) BeginSourceCall(ctx context.Context, method string, params, out any, options RequestOptions) (<-chan error, bool) {
+	base := c
+	for base.transport != nil {
+		base = base.transport
+	}
+	if base.sourcePool == nil {
+		return nil, false
+	}
+	return c.beginCall(ctx, method, params, out, options), true
+}
+
+func (c *Client) beginCall(ctx context.Context, method string, params, out any, options RequestOptions) <-chan error {
 	result := make(chan error, 1)
 	base := c
 	for base.transport != nil {
@@ -47,7 +65,7 @@ func (c *Client) BeginCall(ctx context.Context, method string, params, out any) 
 		close(result)
 		return result
 	}
-	task := &asyncCallTask{client: c, ctx: ctx, method: method, params: params, out: out, result: result}
+	task := &asyncCallTask{client: c, ctx: ctx, method: method, params: params, out: out, options: options, result: result}
 	base.asyncStarted.Store(true)
 	task.stopCancel = context.AfterFunc(ctx, func() {
 		if task.state.CompareAndSwap(0, 2) {
@@ -89,15 +107,15 @@ func (c *Client) dispatchAsyncCalls() {
 			complete(err)
 			continue
 		}
-		if err = c.wait(task.ctx); err != nil {
+		first, err := c.reserveAttempt(task.ctx)
+		if err != nil {
 			release()
 			complete(err)
 			continue
 		}
-		id := c.next.Add(1)
-		admission := &callAdmission{id: id, url: c.URLs[(id-1)%uint64(len(c.URLs))], release: release}
+		admission := &callAdmission{first: first, release: release}
 		go func(task *asyncCallTask, admission *callAdmission) {
-			err := task.client.callWithAdmission(task.ctx, false, task.method, task.params, task.out, admission)
+			err := task.client.callWithAdmission(task.ctx, false, task.method, task.params, task.out, task.options, admission)
 			task.state.Store(2)
 			task.stopCancel()
 			task.result <- err

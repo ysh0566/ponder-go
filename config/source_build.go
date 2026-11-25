@@ -169,10 +169,11 @@ func (builder *sourceBuilder) buildConfig(config *sourceObject, maxConcurrency i
 				return nil, fmt.Errorf("Unsupported RPC URL protocol: %s:", parsed.Scheme)
 			}
 		}
-		client := rpc.New(urls...)
-		if err := client.ConfigureConcurrency(maxConcurrency / len(result.Chains)); err != nil {
+		client, err := rpc.NewSourceClient(maxConcurrency/len(result.Chains), urls...)
+		if err != nil {
 			return nil, err
 		}
+		client.FixedLogBlockRange = !filter.IsUndefined(chain.get("ethGetLogsBlockRange"))
 		if id, ok := sourceNumber(chain.get("id")); ok && id >= 0 && math.Trunc(id) == id && id <= 9007199254740991 {
 			client.ChainID = uint64(id)
 		}

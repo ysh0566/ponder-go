@@ -65,6 +65,7 @@ type Client struct {
 	next              atomic.Uint64
 	mu                sync.Mutex
 	nextTime          time.Time
+	sourcePool        *sourceEndpointPool
 	transport         *Client
 	actions           *Actions
 	concurrencyMu     sync.Mutex
@@ -77,6 +78,9 @@ type Client struct {
 	// MaxHTTPResponseBytes limits the decoded size of each HTTP response. A
 	// nonpositive value uses 32 MiB. Set it on the transport before use.
 	MaxHTTPResponseBytes int64
+	// FixedLogBlockRange keeps numeric range rejections in the source transport's
+	// retry policy when the chain has an explicit ethGetLogsBlockRange.
+	FixedLogBlockRange bool
 }
 
 // ConfigureConcurrency sets the shared transport limit before its first call.
@@ -150,18 +154,25 @@ func maxTime(a, b time.Time) time.Time {
 	return b
 }
 func (c *Client) Call(ctx context.Context, method string, params any, out any) error {
-	return c.call(ctx, false, method, params, out)
+	return c.CallWithOptions(ctx, method, params, out, RequestOptions{})
+}
+
+type RequestOptions struct {
+	// RetryNullBlockRequest treats a null response to a block lookup as a
+	// retryable error within the same budget as transport errors.
+	RetryNullBlockRequest bool
+}
+
+func (c *Client) CallWithOptions(ctx context.Context, method string, params, out any, options RequestOptions) error {
+	return c.callWithAdmission(ctx, false, method, params, out, options, nil)
 }
 
 // CallCached must only be used for immutable, hash-addressed or finalized requests.
 func (c *Client) CallCached(ctx context.Context, method string, params any, out any) error {
-	return c.call(ctx, true, method, params, out)
-}
-func (c *Client) call(ctx context.Context, cached bool, method string, params any, out any) error {
-	return c.callWithAdmission(ctx, cached, method, params, out, nil)
+	return c.callWithAdmission(ctx, true, method, params, out, RequestOptions{}, nil)
 }
 
-func (c *Client) callWithAdmission(ctx context.Context, cached bool, method string, params any, out any, admitted *callAdmission) error {
+func (c *Client) callWithAdmission(ctx context.Context, cached bool, method string, params, out any, options RequestOptions, admitted *callAdmission) error {
 	if admitted != nil {
 		defer admitted.release()
 	}
@@ -190,66 +201,101 @@ func (c *Client) callWithAdmission(ctx context.Context, cached bool, method stri
 		defer release()
 	}
 	var last error
-	for attempt := 0; attempt <= base.Retries; attempt++ {
-		var id uint64
-		var url string
+	retries := max(0, base.Retries)
+	for attempt := 0; attempt <= retries; attempt++ {
+		var current rpcAttempt
 		if attempt == 0 && admitted != nil {
-			id = admitted.id
-			url = admitted.url
+			current = admitted.first
 		} else {
-			if e := base.wait(ctx); e != nil {
+			var err error
+			current, err = base.reserveAttempt(ctx)
+			if err != nil {
+				return err
+			}
+		}
+		start := time.Now()
+		result, e := base.attemptResult(ctx, current, method, params, options)
+		if current.endpoint != nil {
+			rangeRejected := e != nil && method == "eth_getLogs" && !base.FixedLogBlockRange && sourceLogRangeRejection(params, e)
+			base.sourcePool.finish(current.endpoint, time.Since(start), e, rangeRejected || ctx.Err() != nil)
+			if rangeRejected || sourcePermanentError(e) {
 				return e
 			}
-			id = base.next.Add(1)
-			url = base.URLs[(id-1)%uint64(len(base.URLs))]
 		}
-		request := map[string]any{"jsonrpc": "2.0", "id": id, "method": method, "params": params}
-		data, _ := json.Marshal(request)
-		raw, e := base.request(ctx, url, data, id)
 		if e == nil {
-			var response struct {
-				ID     uint64          `json:"id"`
-				Result json.RawMessage `json:"result"`
-				Error  *Error          `json:"error"`
-			}
-			e = json.Unmarshal(raw, &response)
-			if e == nil {
-				if response.ID != id {
-					e = fmt.Errorf("RPC response id mismatch")
-				} else if response.Error != nil {
-					e = response.Error
-				} else if len(response.Result) == 0 {
-					e = fmt.Errorf("RPC response missing result")
-				} else {
-					if cached && c.Cache != nil && string(response.Result) != "null" {
-						if e = c.Cache.CachePut(ctx, string(key), response.Result); e != nil {
-							return e
-						}
-					}
-					return json.Unmarshal(response.Result, out)
+			if cached && c.Cache != nil && string(result) != "null" {
+				if e = c.Cache.CachePut(ctx, string(key), result); e != nil {
+					return e
 				}
 			}
+			return json.Unmarshal(result, out)
 		}
 		last = e
 		if len(base.URLs) == 1 && errors.Is(e, ErrHTTPResponseTooLarge) {
 			return e
 		}
 		var rpcError *Error
-		if errors.As(e, &rpcError) && (rpcError.Code == -32601 || rpcError.Code == -32602) {
+		if base.sourcePool == nil && errors.As(e, &rpcError) && (rpcError.Code == -32601 || rpcError.Code == -32602) {
 			return e
 		}
-		if attempt < base.Retries {
-			timer := time.NewTimer(time.Duration(1<<min(attempt, 6)) * 25 * time.Millisecond)
-			select {
-			case <-ctx.Done():
-				timer.Stop()
-				return ctx.Err()
-			case <-timer.C:
+		if attempt < retries {
+			delay := 25 * time.Millisecond * time.Duration(1<<min(attempt, 6))
+			if base.sourcePool != nil {
+				delay = 125 * time.Millisecond * time.Duration(1<<min(attempt, 8))
+			}
+			if err := waitForRetry(ctx, delay); err != nil {
+				return err
 			}
 		}
 	}
 	return last
 }
+func waitForRetry(ctx context.Context, delay time.Duration) error {
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
+}
+
+// ErrBlockNotFound is returned when an opted-in block lookup exhausts its retries on a null result.
+var ErrBlockNotFound = errors.New("RPC block not found")
+
+func (c *Client) attemptResult(ctx context.Context, attempt rpcAttempt, method string, params any, options RequestOptions) (json.RawMessage, error) {
+	request := map[string]any{"jsonrpc": "2.0", "id": attempt.id, "method": method, "params": params}
+	data, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+	raw, err := c.request(ctx, attempt.url, data, attempt.id)
+	if err != nil {
+		return nil, err
+	}
+	var response struct {
+		ID     uint64          `json:"id"`
+		Result json.RawMessage `json:"result"`
+		Error  *Error          `json:"error"`
+	}
+	if err := json.Unmarshal(raw, &response); err != nil {
+		return nil, err
+	}
+	switch {
+	case response.ID != attempt.id:
+		return nil, fmt.Errorf("RPC response id mismatch")
+	case response.Error != nil:
+		return nil, response.Error
+	case len(response.Result) == 0:
+		return nil, fmt.Errorf("RPC response missing result")
+	case options.RetryNullBlockRequest && string(response.Result) == "null" && (method == "eth_getBlockByNumber" || method == "eth_getBlockByHash"):
+		return nil, ErrBlockNotFound
+	default:
+		return response.Result, nil
+	}
+}
+
 func (c *Client) request(ctx context.Context, url string, data []byte, id uint64) ([]byte, error) {
 	if strings.HasPrefix(url, "ws://") || strings.HasPrefix(url, "wss://") {
 		ws, _, e := websocket.DefaultDialer.DialContext(ctx, url, nil)

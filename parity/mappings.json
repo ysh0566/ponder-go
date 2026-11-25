@@ -8402,5 +8402,113 @@
     "source_id": "7e0ed71ba6cf4225743a",
     "source_line": 55,
     "assertions_sha256": "e0af7bb2c6fcf654c5413d20503cee5b71041117072bf80ba877d043bf6d172f"
+  },
+  {
+    "source_file": "packages/core/src/rpc/http.test.ts",
+    "source_name": "slow body returns TimeoutError",
+    "target_file": "rpc/source_requests_test.go",
+    "go_package": "ponder.local/ponder-go/rpc",
+    "go_test": "TestSourceRPCHTTP/slow_body_returns_TimeoutError",
+    "assertion_policy": "Stream chunks every 100 ms for 500 ms, issue the original JSON-RPC body with a 300 ms deadline, and require a native HTTP timeout.",
+    "original_assertions": 1,
+    "source_id": "f6d67972bceaf07faf09",
+    "source_line": 11,
+    "assertions_sha256": "88dd6483769dd52209c0af324d65798aa2c1b7e39b36db6db993483980a1019b"
+  },
+  {
+    "source_file": "packages/core/src/rpc/index.test.ts",
+    "source_name": "createRpc()",
+    "target_file": "rpc/source_requests_test.go",
+    "go_package": "ponder.local/ponder-go/rpc",
+    "go_test": "TestSourceRPCRequests/createRpc()",
+    "assertion_policy": "Run the original request against a fresh local Anvil snapshot and reproduce the pinned fetch response and clock sequence when used.",
+    "original_assertions": 0,
+    "source_id": "0e71f796db2eb1f13166",
+    "source_line": 10,
+    "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source_file": "packages/core/src/rpc/index.test.ts",
+    "source_name": "createRpc() handles rate limiting",
+    "target_file": "rpc/source_requests_test.go",
+    "go_package": "ponder.local/ponder-go/rpc",
+    "go_test": "TestSourceRPCRequests/createRpc()_handles_rate_limiting",
+    "assertion_policy": "Run the original request against a fresh local Anvil snapshot and reproduce the pinned fetch response and clock sequence when used.",
+    "original_assertions": 0,
+    "source_id": "f9e0a2207505ee989bc2",
+    "source_line": 20,
+    "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source_file": "packages/core/src/rpc/index.test.ts",
+    "source_name": "createRpc() retry BlockNotFoundError",
+    "target_file": "rpc/source_requests_test.go",
+    "go_package": "ponder.local/ponder-go/rpc",
+    "go_test": "TestSourceRPCRequests/createRpc()_retry_BlockNotFoundError",
+    "assertion_policy": "Run the original request against a fresh local Anvil snapshot and reproduce the pinned fetch response and clock sequence when used.",
+    "original_assertions": 1,
+    "source_id": "02723965b4b2802bfe6b",
+    "source_line": 38,
+    "assertions_sha256": "a206645cf2e2d95e581502bbbd275b08442a0292a8e739ce02a89153d737cd1e"
+  },
+  {
+    "source_file": "packages/core/src/rpc/index.test.ts",
+    "source_name": "https://github.com/ponder-sh/ponder/pull/2143",
+    "target_file": "rpc/source_requests_test.go",
+    "go_package": "ponder.local/ponder-go/rpc",
+    "go_test": "TestSourceRPCRequests/https://github.com/ponder-sh/ponder/pull/2143",
+    "assertion_policy": "Run the original request against a fresh local Anvil snapshot and reproduce the pinned fetch response and clock sequence when used.",
+    "original_assertions": 0,
+    "source_id": "39f061c81f0b96913be0",
+    "source_line": 61,
+    "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source_file": "packages/core/src/rpc/index.test.ts",
+    "source_name": "sanitizeLogTopics removes trailing null values",
+    "target_file": "rpc/source_requests_test.go",
+    "go_package": "ponder.local/ponder-go/rpc",
+    "go_test": "TestSourceRPCRequests/sanitizeLogTopics_removes_trailing_null_values",
+    "assertion_policy": "Compare the returned topic list and the original input using the same 32-byte topics, null positions, and empty arrays.",
+    "original_assertions": 1,
+    "source_id": "219124b6a2b12ff300eb",
+    "source_line": 97,
+    "assertions_sha256": "87cbdbb1e30a415d4fae9c0510d9254c8b62c6716c50ef7b68a3de587b4f2ccf"
+  },
+  {
+    "source_file": "packages/core/src/rpc/index.test.ts",
+    "source_name": "sanitizeLogTopics preserves null wildcards before a topic",
+    "target_file": "rpc/source_requests_test.go",
+    "go_package": "ponder.local/ponder-go/rpc",
+    "go_test": "TestSourceRPCRequests/sanitizeLogTopics_preserves_null_wildcards_before_a_topic",
+    "assertion_policy": "Compare the returned topic list and the original input using the same 32-byte topics, null positions, and empty arrays.",
+    "original_assertions": 1,
+    "source_id": "9454ea25a23771a1cf93",
+    "source_line": 104,
+    "assertions_sha256": "bbd313b384e0156cfdbd1411fb49a954b6d41f26214aa1d45259103f758049a2"
+  },
+  {
+    "source_file": "packages/core/src/rpc/index.test.ts",
+    "source_name": "sanitizeLogTopics does not mutate the input",
+    "target_file": "rpc/source_requests_test.go",
+    "go_package": "ponder.local/ponder-go/rpc",
+    "go_test": "TestSourceRPCRequests/sanitizeLogTopics_does_not_mutate_the_input",
+    "assertion_policy": "Compare the returned topic list and the original input using the same 32-byte topics, null positions, and empty arrays.",
+    "original_assertions": 2,
+    "source_id": "57210adf9f603f5bf979",
+    "source_line": 112,
+    "assertions_sha256": "01d5b67743e54a580fe749fa6015b64df6d666095dddf521735a1aed7ca3aefa"
+  },
+  {
+    "source_file": "packages/core/src/rpc/index.test.ts",
+    "source_name": "sanitizeLogTopics preserves omitted and empty topics",
+    "target_file": "rpc/source_requests_test.go",
+    "go_package": "ponder.local/ponder-go/rpc",
+    "go_test": "TestSourceRPCRequests/sanitizeLogTopics_preserves_omitted_and_empty_topics",
+    "assertion_policy": "Compare the returned topic list and the original input using the same 32-byte topics, null positions, and empty arrays.",
+    "original_assertions": 2,
+    "source_id": "6d521532995cbe5e2cc6",
+    "source_line": 119,
+    "assertions_sha256": "6cb66ed863335225e637d489ecea644df8efeb415ff3687436b0a325c3a24e9e"
   }
 ]

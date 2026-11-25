@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"ponder.local/ponder-go/abi"
 	"ponder.local/ponder-go/checkpoint"
@@ -603,25 +604,15 @@ func (e *Engine) FinalizedBlock(ctx context.Context, latest Block) (Block, error
 	light := &finality.Block{Hash: latest.Hash, ParentHash: latest.ParentHash, Number: latest.Number, Timestamp: latest.Timestamp}
 	found, err := finality.GetFinalizedBlock(ctx, finality.Chain{ReorgWindow: e.chain.Window(), BlockTimeMS: e.chain.BlockTimeMS}, func(ctx context.Context, r finality.Request) (*finality.Block, error) {
 		var b *finality.Block
-		// The search requests headers (false), and retries null results at the RPC boundary.
-		for attempt := 0; ; attempt++ {
-			if err := e.Client.Call(ctx, "eth_getBlockByNumber", []any{Hex(r.Number), r.IncludeTransactions}, &b); err != nil {
-				return nil, err
-			}
-			if b != nil {
-				return b, nil
-			}
-			if !r.RetryNullBlockRequest || attempt >= e.Client.Retries {
-				return nil, fmt.Errorf("block %d is unavailable", r.Number)
-			}
-			timer := time.NewTimer(25 * time.Millisecond)
-			select {
-			case <-ctx.Done():
-				timer.Stop()
-				return nil, ctx.Err()
-			case <-timer.C:
-			}
+		options := rpc.RequestOptions{RetryNullBlockRequest: r.RetryNullBlockRequest}
+		err := e.Client.CallWithOptions(ctx, "eth_getBlockByNumber", []any{Hex(r.Number), r.IncludeTransactions}, &b, options)
+		if err != nil && !errors.Is(err, rpc.ErrBlockNotFound) {
+			return nil, err
 		}
+		if b == nil {
+			return nil, fmt.Errorf("block %d is unavailable", r.Number)
+		}
+		return b, nil
 	}, light, nil)
 	if err != nil {
 		return Block{}, err

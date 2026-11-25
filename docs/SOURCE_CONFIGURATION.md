@@ -12,6 +12,12 @@ M28 的完整模块验收通过：Go/race各1852、0失败/skip，PG198/PGlite19
 - 自动选择后端时，依次读取 `DATABASE_PRIVATE_URL` 和 `DATABASE_URL`。显式选择 PostgreSQL 时，连接串优先于这两个环境变量，也可以仅提供 `poolConfig`。
 - PostgreSQL 默认连接池上限为 30。自定义 TLS、连接超时和其他驱动参数会保留。诊断输出可调用 `pre.DatabaseConfig.PoolConfig.DatabaseName()` 获取主机、端口和数据库名。连接池配置本身含有连接凭据。
 
+## RPC 请求
+
+每条来源链通过 `rpc.NewSourceClient` 创建客户端。每个端点初始允许每秒 20 次请求。客户端记录最近 10 个整秒的流量，根据成功次数提高上限，收到 429 或传输超时后临时停用该端点。多个端点按近期延迟和在途请求数选择，缓存视图与异步请求共用这些限额。默认最多重试 9 次。
+
+调用 `CallWithOptions` 时可设置 `RetryNullBlockRequest`，让按编号或哈希查询区块时收到的空响应占用一次重试。历史日志分页收到可拆分的区间错误后立即调整下一次查询。[对应的上游用例与运行结果](../parity/runs/source-rpc-requests/RESULT.md)
+
 
 `EventCallbacks()` 返回带公共 `SourceFilter` 联合的回调。读取区块 interval 前须收窄到 `SourceBlockFilter`。`NativeConfig(chainName)` 为现有单链调度器选择一条链；`runtime.NewFromSource` 绑定真实 `runtime.Handler`，复用构建器的客户端、筛选条件和 ABI。多链配置构建不等于多链调度已经实现。
 

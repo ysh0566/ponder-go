@@ -30,11 +30,17 @@ func union(left, right []any) []any {
 	}
 	return dedupe(append(append([]any{}, left...), right...))
 }
-func sanitizeTopics(topics []any) []any {
-	for len(topics) > 0 && topics[len(topics)-1] == nil {
-		topics = topics[:len(topics)-1]
+
+// SanitizeLogTopics copies the topic list and trims trailing null wildcards.
+// Interior wildcards and alternative topics stay in their original positions.
+func SanitizeLogTopics(topics []any) []any {
+	n := len(topics)
+	for n > 0 && topics[n-1] == nil {
+		n--
 	}
-	return topics
+	result := make([]any, n)
+	copy(result, topics)
+	return result
 }
 
 func MergeLogFiltersToBlockRequest(logFilters, factories []Object) any {
@@ -81,7 +87,7 @@ func MergeLogFiltersToBlockRequest(logFilters, factories []Object) any {
 			ts = append(ts, v)
 		}
 	}
-	ts = sanitizeTopics(ts)
+	ts = SanitizeLogTopics(ts)
 	if len(ts) > 0 {
 		request["topics"] = ts
 	}
@@ -131,7 +137,7 @@ func MergeLogFiltersToRequests(filters []RequiredInterval, children map[string][
 			}
 		}
 		ts := []any{get(f, "topic0"), nullable(get(f, "topic1")), nullable(get(f, "topic2")), nullable(get(f, "topic3"))}
-		candidate := Object{"address": address, "topics": sanitizeTopics(ts), "fromBlock": fmt.Sprintf("0x%x", item.Interval[0]), "toBlock": fmt.Sprintf("0x%x", item.Interval[1])}
+		candidate := Object{"address": address, "topics": SanitizeLogTopics(ts), "fromBlock": fmt.Sprintf("0x%x", item.Interval[0]), "toBlock": fmt.Sprintf("0x%x", item.Interval[1])}
 		merged := false
 		for _, request := range requests {
 			p := object(request["params"].([]any)[0])
@@ -174,7 +180,7 @@ func MergeLogFiltersToRequests(filters []RequiredInterval, children map[string][
 					} else {
 						ts[i] = v
 					}
-					p["topics"] = sanitizeTopics(ts)
+					p["topics"] = SanitizeLogTopics(ts)
 				}
 			}
 			p["fromBlock"] = fmt.Sprintf("0x%x", int64(math.Min(float64(from), float64(item.Interval[0]))))
