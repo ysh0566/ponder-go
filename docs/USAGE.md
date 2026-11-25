@@ -252,7 +252,13 @@ ponder db create-views --database-url "$PONDER_LOCAL_DATABASE_URL" --schema pond
 
 查询方可以从 `indexer_api` 读取业务表、已声明的视图以及 `_ponder_checkpoint`。等新部署追上进度，再运行同一条命令把 `--schema` 改为 `ponder_go_green`，即可在一个事务中切换所有查询视图。外部查询依赖旧列类型时，数据库会拒绝不兼容的切换，原视图和数据继续可用。发布目标应使用新的专用 schema，或此前由该命令或生命周期管理器创建的视图 schema。
 
-`start --views-schema` 会把视图 schema 名称通过 `DATABASE_VIEWS_SCHEMA` 传给 Go 子进程。当前脚手架完成历史同步后仍需手动运行 `db create-views` 才会切换查询方看到的数据。
+也可以在启动新部署时指定同一个稳定视图命名空间，让 Go 项目在首次追上链头后自动切换。
+
+```sh
+./bin/ponder start --root ./examples/erc20 --schema ponder_go_green --views-schema indexer_api --port 42071
+```
+
+新部署回填期间，`indexer_api` 继续返回旧部署的数据，新进程的 `/ready` 返回 503。追上链头并提交视图切换事务后，`/ready` 返回 200。监听稳定视图的 SQL/SSE 查询会重新读取已提交的结果，已有数据可以立即展示。若数据库拒绝切换，新进程返回错误，原视图仍指向旧部署。同一进程只自动发布一次，短暂落后后再次追平会保留此后手动指定的部署。自行编写 Go 入口时，可在调用 `runtime.LaunchApplication` 前用 `runtime.PublishViewsOnReady` 包装索引器。[实测记录](../parity/runs/native-ready-view-publication/RESULT.md)
 
 停掉旧索引器、关闭其数据库连接，然后清理旧部署。该操作会删除登记的业务数据、撤销日志、checkpoint 和配对的同步数据。
 

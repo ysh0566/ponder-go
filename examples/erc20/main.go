@@ -94,6 +94,12 @@ func run(ctx context.Context) error {
 	if e != nil {
 		return e
 	}
+	if views := os.Getenv("DATABASE_VIEWS_SCHEMA"); os.Getenv("PONDER_COMMAND") == "start" && views != "" {
+		worker, e = indexer.PublishViewsOnReady(worker, s, views)
+		if e != nil {
+			return e
+		}
+	}
 	return serve(ctx, worker, query.New(s))
 }
 

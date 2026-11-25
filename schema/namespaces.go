@@ -2,6 +2,7 @@ package schema
 
 import (
 	"fmt"
+	"strings"
 	"unicode/utf16"
 )
 
@@ -23,6 +24,17 @@ func ValidateNamespaces(index, views string) error {
 		if len(utf16.Encode([]rune(item.name))) > 45 {
 			return fmt.Errorf("%s name cannot be longer than 45 characters.", item.label)
 		}
+	}
+	return nil
+}
+
+// ValidatePublishedNamespace checks the stable namespace used by query views.
+func ValidatePublishedNamespace(namespace, views string) error {
+	if err := ValidateNamespaces(namespace, views); err != nil {
+		return err
+	}
+	if !Identifier(views) || views == "public" || strings.HasPrefix(views, "pg_") || views == "information_schema" {
+		return fmt.Errorf("invalid published views schema %q", views)
 	}
 	return nil
 }
