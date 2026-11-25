@@ -1,0 +1,234 @@
+{
+  "code_commit": "d1d9150dfdeba06da4f60a545f4f558bbb41f98c",
+  "upstream_commit": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "sources": {
+    "packages/core/src/internal/metrics.test.ts": "07c877ee9975c0673069d641f76772f5ca538f7c30671477c8725af334f591b0",
+    "packages/core/src/server/index.test.ts": "1516b5e6c00e46e948cb2310a3c873a2fab9be1fa1f7c15f3671683d995f77f9",
+    "packages/core/src/utils/port.test.ts": "b8218494e689ca98842a985b7501ee9022543dc9b0c8d02057b141a1f3576304"
+  },
+  "original": {
+    "postgres": {
+      "passed": 18,
+      "vitest_json_sha256": "45c38db06bbea6d7c519304babf3a5825a1b2e687f74d2ab8a28edb39d140bf4"
+    },
+    "pglite": {
+      "passed": 18,
+      "vitest_json_sha256": "e9a3479c288f8937adddff7603967769a9bb68285c88df0e722eec9e85c6abc4"
+    }
+  },
+  "go": {
+    "normal": {
+      "ponder.local/ponder-go/query": {
+        "passed_leaves": 40,
+        "go_test_json_sha256": "938278e8681b48920b610b222d75cf3f7f6fdb664758af5dad8cf62444e69f85"
+      },
+      "ponder.local/ponder-go/metrics": {
+        "passed_leaves": 4,
+        "go_test_json_sha256": "938278e8681b48920b610b222d75cf3f7f6fdb664758af5dad8cf62444e69f85"
+      },
+      "ponder.local/ponder-go/indexing": {
+        "passed_leaves": 66,
+        "go_test_json_sha256": "6e08f690563c200298aa2f2708f497dd43404023d20a98afa86e531b64962cc2"
+      },
+      "ponder.local/ponder-go/store": {
+        "passed_leaves": 72,
+        "go_test_json_sha256": "b35819774a6f73f36cd21cabaf3fe637b060d181bd36115aeaa682b4d3bdd3e2"
+      }
+    },
+    "race": {
+      "ponder.local/ponder-go/query": {
+        "passed_leaves": 40,
+        "go_test_json_sha256": "9c2f61710debe3355ca9156883c8e94f1d7472be283f52f7408902e934c9b2a5"
+      },
+      "ponder.local/ponder-go/metrics": {
+        "passed_leaves": 4,
+        "go_test_json_sha256": "9c2f61710debe3355ca9156883c8e94f1d7472be283f52f7408902e934c9b2a5"
+      },
+      "ponder.local/ponder-go/indexing": {
+        "passed_leaves": 66,
+        "go_test_json_sha256": "342b727665f3f06a22e79644f4527c6f145c90d0a032c96e6354f12ae8b048fa"
+      },
+      "ponder.local/ponder-go/store": {
+        "passed_leaves": 72,
+        "go_test_json_sha256": "4981db16d8e7fbce57631187b3b023a3d039c0211e3fe535453f34b36bf452e6"
+      }
+    }
+  },
+  "maps": [
+    {
+      "source_id": "bd9a43a52d77e2eabac3",
+      "file": "packages/core/src/internal/metrics.test.ts",
+      "case": "batches indexing metrics until collection",
+      "native_test": "TestSourceMetrics/batches_indexing_metrics_until_collection",
+      "assertions_sha256": "9235f4ca05bb1b507f8d94b6cb9d030fdb9182b8483eab82e772482a4ca6c960"
+    },
+    {
+      "source_id": "04b15e27b0ff5a758652",
+      "file": "packages/core/src/internal/metrics.test.ts",
+      "case": "flushes pending indexing metrics before reset",
+      "native_test": "TestSourceMetrics/flushes_pending_indexing_metrics_before_reset",
+      "assertions_sha256": "7f2cb612d6e6510dfd391be2a194a0a9eb1a7c5d25637a2ea450c68fd2da97dd"
+    },
+    {
+      "source_id": "77988b480dacae907cac",
+      "file": "packages/core/src/internal/metrics.test.ts",
+      "case": "does not replay flushed completed event metrics",
+      "native_test": "TestSourceMetrics/does_not_replay_flushed_completed_event_metrics",
+      "assertions_sha256": "f34ba66c3d966dc9e27cd36ce5b78e6f7d1791feb96a782e03d47244a4742fd0"
+    },
+    {
+      "source_id": "563f5cbe68d8a74e9866",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "listens on ipv4",
+      "native_test": "TestSourceHTTPServer/postgres/listens_on_ipv4",
+      "assertions_sha256": "351a1b7a91c22873e8744d7351f462bbaf3ab00dc3b41792efc36d57ae111d90"
+    },
+    {
+      "source_id": "37f5d9da655f4ecddfce",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "listens on ipv6",
+      "native_test": "TestSourceHTTPServer/postgres/listens_on_ipv6",
+      "assertions_sha256": "351a1b7a91c22873e8744d7351f462bbaf3ab00dc3b41792efc36d57ae111d90"
+    },
+    {
+      "source_id": "ead0ebddb3d237983173",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "not ready",
+      "native_test": "TestSourceHTTPServer/postgres/not_ready",
+      "assertions_sha256": "9833ab0902c21524bb1c00483fb2760448d4d16af7239b441aaf570500564c38"
+    },
+    {
+      "source_id": "314d31adbea9f89b0b99",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "ready",
+      "native_test": "TestSourceHTTPServer/postgres/ready",
+      "assertions_sha256": "351a1b7a91c22873e8744d7351f462bbaf3ab00dc3b41792efc36d57ae111d90"
+    },
+    {
+      "source_id": "d0c77a130fa53d623f46",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "health",
+      "native_test": "TestSourceHTTPServer/postgres/health",
+      "assertions_sha256": "351a1b7a91c22873e8744d7351f462bbaf3ab00dc3b41792efc36d57ae111d90"
+    },
+    {
+      "source_id": "1d565f875bee4b247ef7",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "healthy PUT",
+      "native_test": "TestSourceHTTPServer/postgres/healthy_PUT",
+      "assertions_sha256": "57366b29a5769cbf7a0819476f17e512c2937e018a99bd7ffb635a70c0365c57"
+    },
+    {
+      "source_id": "c7bc9f1f230078df3a68",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "metrics",
+      "native_test": "TestSourceHTTPServer/postgres/metrics",
+      "assertions_sha256": "351a1b7a91c22873e8744d7351f462bbaf3ab00dc3b41792efc36d57ae111d90"
+    },
+    {
+      "source_id": "81217a65a8c5f6c86982",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "metrics error",
+      "native_test": "TestSourceHTTPServer/postgres/metrics_error",
+      "assertions_sha256": "47e81a67519a822712fd652dc8a684bc5aba17e5b547fce976229fece59bc44c"
+    },
+    {
+      "source_id": "1603fa0ddd06a036d312",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "metrics PUT",
+      "native_test": "TestSourceHTTPServer/postgres/metrics_PUT",
+      "assertions_sha256": "57366b29a5769cbf7a0819476f17e512c2937e018a99bd7ffb635a70c0365c57"
+    },
+    {
+      "source_id": "0724899ad45d0cf97526",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "metrics unmatched route",
+      "native_test": "TestSourceHTTPServer/postgres/metrics_unmatched_route",
+      "assertions_sha256": "e2ac743c17d66d57a41f24e2fc945fd635fb87e8a71f2aa8c28f4704b6bf206f"
+    },
+    {
+      "source_id": "37de96d26f6dde4dd96b",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "missing route",
+      "native_test": "TestSourceHTTPServer/postgres/missing_route",
+      "assertions_sha256": "57366b29a5769cbf7a0819476f17e512c2937e018a99bd7ffb635a70c0365c57"
+    },
+    {
+      "source_id": "62b74d2af3f8b016291e",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "custom api route",
+      "native_test": "TestSourceHTTPServer/postgres/custom_api_route",
+      "assertions_sha256": "b851b67fe077b71102ea3fb742206f573489b5e5ad74c83e4cdb6ed0ec56aa29"
+    },
+    {
+      "source_id": "70b5f745457fe49c4f87",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "custom hono route",
+      "native_test": "TestSourceHTTPServer/postgres/custom_hono_route",
+      "assertions_sha256": "b851b67fe077b71102ea3fb742206f573489b5e5ad74c83e4cdb6ed0ec56aa29"
+    },
+    {
+      "source_id": "4194dd4f2ad39ff922ec",
+      "file": "packages/core/src/server/index.test.ts",
+      "case": "kill closes idle keep-alive connections",
+      "native_test": "TestSourceHTTPServer/postgres/kill_closes_idle_keep-alive_connections",
+      "assertions_sha256": "c57129b2d8b0b038cb9d77a70088519faa9f2ad13f702ad2473c71cfa9660289"
+    },
+    {
+      "source_id": "bb43e8964bdbd929624b",
+      "file": "packages/core/src/utils/port.test.ts",
+      "case": "port",
+      "native_test": "TestSourceAvailablePort/port",
+      "assertions_sha256": "acb8e7e3c56c6c3cfc538d9418727ad03e84a6c6d595a6013725f1f9d0ff3c7d"
+    }
+  ],
+  "ledger": {
+    "ported": 694,
+    "go_ports": 690,
+    "retained_sdk": 4,
+    "unimplemented": 206,
+    "out_of_scope": 5
+  },
+  "independent_inventory_fields": [
+    "id",
+    "source_file",
+    "source_sha256",
+    "source_state",
+    "full_name",
+    "assertions",
+    "inputs",
+    "port_status",
+    "mapping",
+    "scope_reason"
+  ],
+  "module": {
+    "build": "passed",
+    "vet": "passed"
+  },
+  "commands": {
+    "original": "vitest run --configLoader native --maxWorkers=1 src/server/index.test.ts src/internal/metrics.test.ts src/utils/port.test.ts",
+    "query": "go test -count=1 [-race] ./metrics ./query",
+    "indexing": "go test -count=1 [-race] -run \"^(TestSourceIndexingService|TestSourceIndexingServiceCache|TestSourceIndexingActions|TestService.*)$\" ./indexing",
+    "store": "go test -count=1 [-race] -run \"^(TestUpstreamORM.*|TestORM.*|TestNativeProfilePrefetch|TestUpstreamCacheEviction|TestCacheConcurrentReadModifyWrite)$\" ./store"
+  },
+  "full_original_inventory": "../public-provider-archives/upstream.json",
+  "sdk_launches": {
+    "passed": 8,
+    "source_sha256": "fa1dd6979d4db32182e9bc6fdd98408e49ce15c791316570ac0c2c560ff08f49",
+    "launch_manifests_sha256": [
+      "20aa90e0820d4f4ee71c631be7ce4001621e8d24dcebcb79a4aa12a094606139",
+      "daa7f0aa1bfa602df72bf0f7cc70ce1ee225e4d537f0fe695a544afa64cb1600",
+      "bb4ca2b7bc56e9e044588fe1ec58a8ba93082901017b22e7e51b79175190c6df",
+      "f9f7a9b0666ac5091ed2c155664c37263b9fcc826feff799038628efed55ac7f",
+      "244f8c62bc42e8f08d9ae04d64b50abddc007cf8e2c099e3e313c1df65f1cdc4",
+      "98309a4c535b375447d5d1785e049a3504a6cdc663b40ac7bb534b887e931f26",
+      "fef41e338fa3b428037dc1cb70c051edc741e11b59e7bc8c2590c7ad39f1d3bf",
+      "cb61f8c97f1cb097948f7aca02a8945335a9c8ec02bc4b390e3a8bf6c6b4e556"
+    ]
+  },
+  "cleanup": {
+    "stage_directories_removed": 11,
+    "allocated_bytes_in_removed_directories": 1036517376,
+    "accounting": "Allocated bytes before removal; packages can share hard links with the store."
+  }
+}
