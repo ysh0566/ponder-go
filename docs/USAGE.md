@@ -392,6 +392,29 @@ if err != nil {
 
 默认排序的原子存储当前使用 `json-v4` 回执格式，包括只配置一条链的应用。如果显式指定的部署命名空间使用旧格式，换一个新的命名空间重新索引。使用独立业务库和同步库的部署可通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 创建托管运行器，其支持的来源与启动选项见运行矩阵。[运行模式矩阵](RUNTIME_SUPPORT.md)
 
+### 用编译后的 Go 来源配置启动多链
+
+如果项目用来源配置声明链、合约或区块，可以直接用整份构建结果创建索引器。下面的 `sourceConfig` 是 `config.ParseSourceConfiguration` 返回的配置，其中 `Head` 是在多条链上声明的区块来源。`db` 是按相同排序打开的 `*store.Store`，`onHead` 是 Go 函数 `func(context.Context, *runtime.Context) error`。
+
+```go
+base, err := config.BuildSourceConfig(sourceConfig, config.SourceBuildOptions{})
+if err != nil {
+    return err
+}
+build, err := config.BuildSourceIndexing(ctx, sourceConfig, base, []config.SourceIndexingFunction{
+    {Name: "Head:block", Fn: runtime.Handler(onHead)},
+})
+if err != nil {
+    return err
+}
+worker, err := runtime.NewIndexerFromSource(build, db, runtime.Options{})
+if err != nil {
+    return err
+}
+```
+
+将 `worker` 交给 `runtime.LaunchApplication`，或直接调用 `RunIndexing`。排序来自来源配置，每条参与链保留自己的 RPC 和缓存策略。只有注册了回调的来源决定索引范围。仅注册 `合约名:setup` 的合约在其起始区块执行一次。某条链还有持续事件来源时，该链会继续追块。[运行模式](RUNTIME_SUPPORT.md) · [双后端验收](../parity/runs/native-compiled-indexer/RESULT.md)
+
 ### 独立存储的有限区间索引
 
 Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 管理独立的业务数据与同步数据时，可以在默认多链排序下将 `RuntimeOptions.Live` 留空，并给每个事件来源设置 `endBlock`。这一有限区间入口要求事件从区块 1 或更高处开始，打开时各链都必须已经到达配置的结束高度。独立存储运行器通过持续模式支持来源级 checkpoint 和工厂合约发现。调用 `Run` 后，索引器处理到这个高度并返回 `Completed`。

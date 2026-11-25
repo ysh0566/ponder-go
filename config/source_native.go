@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"strings"
 
 	"github.com/ysh0566/ponder-go/abi"
 	"github.com/ysh0566/ponder-go/factory"
 	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // SourceFilter is the closed filter union returned by the source builder.
@@ -89,36 +91,41 @@ func sourceNativeValue(value any) any {
 }
 func (build *SourceIndexingBuild) EventCallbacks() [][]SourceEventCallback {
 	out := make([][]SourceEventCallback, len(build.callbacks))
-	for i, callbacks := range build.callbacks {
-		out[i] = []SourceEventCallback{}
-		for _, raw := range callbacks {
-			fields := sourceNativeValue(raw.get("filter")).(map[string]any)
-			base := sourceFilterBase{fields: fields}
-			var f SourceFilter
-			switch fields["type"] {
-			case "log":
-				f = SourceLogFilter{base}
-			case "trace":
-				f = SourceTraceFilter{base}
-			case "transaction":
-				f = SourceTransactionFilter{base}
-			case "transfer":
-				f = SourceTransferFilter{base}
-			case "block":
-				f = SourceBlockFilter{sourceFilterBase: base, Interval: fields["interval"].(float64), Offset: fields["offset"].(float64)}
-			}
-			callback := SourceEventCallback{Name: sourceString(raw.get("name")), Type: sourceString(raw.get("type")), Filter: f, Fn: raw.get("fn"), Chain: sourceNativeValue(raw.get("chain")).(map[string]any)}
-			if !filter.IsUndefined(raw.get("abiItem")) {
-				callback.ABIItem, _ = json.Marshal(sourcePlain(raw.get("abiItem")))
-			}
-			if !filter.IsUndefined(raw.get("metadata")) {
-				callback.Metadata = sourceNativeValue(raw.get("metadata")).(map[string]any)
-			}
-			if direction, ok := raw.get("direction").(string); ok {
-				callback.Direction = direction
-			}
-			out[i] = append(out[i], callback)
+	for i, group := range build.callbacks {
+		out[i] = nativeEventCallbacks(group)
+	}
+	return out
+}
+
+func nativeEventCallbacks(callbacks []*sourceObject) []SourceEventCallback {
+	out := make([]SourceEventCallback, 0, len(callbacks))
+	for _, raw := range callbacks {
+		fields := sourceNativeValue(raw.get("filter")).(map[string]any)
+		base := sourceFilterBase{fields: fields}
+		var f SourceFilter
+		switch fields["type"] {
+		case "log":
+			f = SourceLogFilter{base}
+		case "trace":
+			f = SourceTraceFilter{base}
+		case "transaction":
+			f = SourceTransactionFilter{base}
+		case "transfer":
+			f = SourceTransferFilter{base}
+		case "block":
+			f = SourceBlockFilter{sourceFilterBase: base, Interval: fields["interval"].(float64), Offset: fields["offset"].(float64)}
 		}
+		callback := SourceEventCallback{Name: sourceString(raw.get("name")), Type: sourceString(raw.get("type")), Filter: f, Fn: raw.get("fn"), Chain: sourceNativeValue(raw.get("chain")).(map[string]any)}
+		if !filter.IsUndefined(raw.get("abiItem")) {
+			callback.ABIItem, _ = json.Marshal(sourcePlain(raw.get("abiItem")))
+		}
+		if !filter.IsUndefined(raw.get("metadata")) {
+			callback.Metadata = sourceNativeValue(raw.get("metadata")).(map[string]any)
+		}
+		if direction, ok := raw.get("direction").(string); ok {
+			callback.Direction = direction
+		}
+		out = append(out, callback)
 	}
 	return out
 }
@@ -152,21 +159,48 @@ func sourceUintPointer(value any) (*uint64, error) {
 	return &n, err
 }
 
-// NativeConfig selects one source chain for the existing native scheduler. It
-// preserves compiled callbacks/clients/factory IDs. Multi-chain scheduling is
-// still a separate implementation track, so this API requires a chain name.
+// NativeConfig selects a single named chain and its compiled filters and handlers.
 func (build *SourceIndexingBuild) NativeConfig(name string) (Config, error) {
-	selected := -1
 	for i, chain := range build.chains {
 		if chain.get("name") == name {
-			selected = i
-			break
+			return build.nativeConfig(i, "", nil)
 		}
 	}
-	if selected < 0 {
-		return Config{}, fmt.Errorf("source chain %q has no registered indexing functions", name)
+	return Config{}, fmt.Errorf("source chain %q has no registered indexing functions", name)
+}
+
+// NativeConfigs returns the participating chains in build order with their
+// compiled ordering, handlers, factory identities, RPC clients and cache policy.
+func (build *SourceIndexingBuild) NativeConfigs() ([]Config, error) {
+	if build == nil || len(build.chains) == 0 {
+		return nil, fmt.Errorf("compiled source build requires at least one participating chain")
 	}
+	order, ok := build.ordering.(string)
+	if !ok || order == "" {
+		return nil, fmt.Errorf("invalid compiled source ordering %v", build.ordering)
+	}
+	configs := make([]Config, len(build.chains))
+	for i := range build.chains {
+		sourceHasEvents := make(map[string]bool)
+		for _, setup := range build.setup[i] {
+			sourceHasEvents[strings.TrimSuffix(sourceString(setup.get("name")), ":setup")] = false
+		}
+		for _, callback := range build.callbacks[i] {
+			fields := callback.get("filter").(*sourceObject)
+			sourceHasEvents[sourceString(fields.get("sourceId"))] = true
+		}
+		cfg, err := build.nativeConfig(i, schema.Ordering(order), sourceHasEvents)
+		if err != nil {
+			return nil, err
+		}
+		configs[i] = cfg
+	}
+	return configs, nil
+}
+
+func (build *SourceIndexingBuild) nativeConfig(selected int, ordering schema.Ordering, sourceHasEvents map[string]bool) (Config, error) {
 	rawChain := build.chains[selected]
+	name := sourceString(rawChain.get("name"))
 	id, err := sourceUint(rawChain.get("id"))
 	if err != nil {
 		return Config{}, err
@@ -185,15 +219,20 @@ func (build *SourceIndexingBuild) NativeConfig(name string) (Config, error) {
 			chain.BlockTimeMS = &hint
 		}
 	}
-	callbacks := build.EventCallbacks()[selected]
+	callbacks := nativeEventCallbacks(build.callbacks[selected])
 	plan := &SourceRuntimePlan{Version: 1, Callbacks: callbacks, Factories: map[string]factory.LogFactory{}, Client: build.base.value.RPCs[build.chainIndexes[selected]], CacheRPCRequests: rawChain.get("cacheRpcRequests") == true}
 	for _, setup := range build.setup[selected] {
 		plan.Setup = append(plan.Setup, SourceIndexingFunction{Name: sourceString(setup.get("name")), Fn: setup.get("fn")})
 	}
-	out := Config{Chains: []Chain{chain}, SourcePlan: plan}
+	out := Config{Ordering: ordering, Chains: []Chain{chain}, SourcePlan: plan}
 	for _, kind := range []string{"contracts", "accounts", "blocks"} {
 		for _, source := range build.sources[kind] {
 			if source.get("chain") != name {
+				continue
+			}
+			sourceName := sourceString(source.get("name"))
+			hasEvents, registered := sourceHasEvents[sourceName]
+			if sourceHasEvents != nil && !registered {
 				continue
 			}
 			latest := build.latest[build.chainIndexes[selected]]
@@ -207,7 +246,10 @@ func (build *SourceIndexingBuild) NativeConfig(name string) (Config, error) {
 			if err != nil {
 				return Config{}, err
 			}
-			sourceName := sourceString(source.get("name"))
+			// A setup-only contract finishes when its initialization block runs.
+			if registered && !hasEvents {
+				end = &start
+			}
 			if kind == "blocks" {
 				interval := sourceDefault(source.get("interval"), float64(1))
 				n, _ := sourceNumber(interval)

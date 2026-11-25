@@ -13,7 +13,7 @@ import (
 )
 
 // NewFromSource binds actual native handlers and the compiled source filters
-// to one selected chain. Multi-chain scheduling remains separate.
+// to one selected chain.
 func NewFromSource(build *config.SourceIndexingBuild, chain string, s *store.Store, options Options) (*Engine, error) {
 	cfg, err := build.NativeConfig(chain)
 	if err != nil {
@@ -25,6 +25,38 @@ func NewFromSource(build *config.SourceIndexingBuild, chain string, s *store.Sto
 	}
 	return NewWithOptions(cfg, s, handlers, options)
 }
+
+// NewIndexerFromSource starts from the complete compiled build. Its registered
+// callbacks use runtime.Handler. Serve or run the returned indexer with the same
+// application entry points used by NewIndexer.
+func NewIndexerFromSource(build *config.SourceIndexingBuild, db *store.Store, options Options) (ApplicationIndexer, error) {
+	if db == nil {
+		return nil, fmt.Errorf("indexer requires a store")
+	}
+	configs, err := build.NativeConfigs()
+	if err != nil {
+		return nil, err
+	}
+	var workers isolatedIndexer
+	for _, cfg := range configs {
+		handlers, err := sourceHandlers(cfg.SourcePlan)
+		if err != nil {
+			return nil, err
+		}
+		// Each deployment shares the compiled transport and owns its store cache.
+		cfg.SourcePlan.Client = cfg.SourcePlan.Client.WithCache(nil)
+		worker, err := newChainWorker(cfg, db, handlers, options)
+		if err != nil {
+			return nil, err
+		}
+		workers = append(workers, worker)
+	}
+	if len(workers) == 1 {
+		return workers[0], nil
+	}
+	return coordinateWorkers(workers, db.Ordering), nil
+}
+
 func sourceHandlers(plan *config.SourceRuntimePlan) (map[string]Handler, error) {
 	handlers := map[string]Handler{}
 	bind := func(name string, fn any) error {
@@ -35,6 +67,9 @@ func sourceHandlers(plan *config.SourceRuntimePlan) (map[string]Handler, error) 
 			handlers[name] = Handler(handler)
 		default:
 			return fmt.Errorf("source callback %q must bind a native runtime.Handler", name)
+		}
+		if handlers[name] == nil {
+			return fmt.Errorf("source callback %q must bind a non-nil native runtime.Handler", name)
 		}
 		return nil
 	}

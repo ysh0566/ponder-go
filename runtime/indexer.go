@@ -71,10 +71,14 @@ func NewIndexerWithOptions(cfg config.Config, db *store.Store, handlers map[stri
 	if len(workers) == 0 {
 		return nil, fmt.Errorf("no indexing sources configured")
 	}
-	if cfg.Ordering != schema.Isolated {
-		return &orderedIndexer{workers: workers}, nil
+	return coordinateWorkers(workers, cfg.Ordering), nil
+}
+
+func coordinateWorkers(workers isolatedIndexer, order schema.Ordering) ApplicationIndexer {
+	if order == schema.Isolated {
+		return workers
 	}
-	return workers, nil
+	return &orderedIndexer{workers: workers}
 }
 
 func newChainWorker(cfg config.Config, db *store.Store, handlers map[string]Handler, options Options) (*Engine, error) {

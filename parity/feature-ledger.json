@@ -2050,6 +2050,26 @@
         "parity/runs/native-bounded-setup-cache/RESULT.md"
       ],
       "remaining": "The independent Omnichain runner requires finality and RPC caching and excludes setup. The default bounded runner requires acquired finite end blocks and event callbacks on each chain."
+    },
+    {
+      "id": "native-compiled-indexer",
+      "status": "verified_subset",
+      "implementation_files": [
+        "config/source_native.go",
+        "runtime/indexer.go",
+        "runtime/source.go"
+      ],
+      "native_test_files": [
+        "runtime/compiled_indexer_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/build/config.ts",
+        "packages/core/src/build/config.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-compiled-indexer/RESULT.md"
+      ],
+      "remaining": "The constructor binds native runtime.Handler callbacks. The independent storage runtime has a separate lifecycle and callback interface."
     }
   ]
 }
