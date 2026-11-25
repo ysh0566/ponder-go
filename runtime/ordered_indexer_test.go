@@ -180,7 +180,11 @@ func TestOrderedIndexer(t *testing.T) {
 	}
 }
 
-func TestOrderedMixedSources(t *testing.T) {
+func TestOrderedMixedSources(t *testing.T) { testMixedSources(t, schema.Omnichain) }
+
+func TestDefaultMixedSources(t *testing.T) { testMixedSources(t, schema.Multichain) }
+
+func testMixedSources(t *testing.T, ordering schema.Ordering) {
 	for _, dialect := range []string{"postgres", "pglite"} {
 		t.Run(dialect, func(t *testing.T) {
 			ctx := t.Context()
@@ -236,7 +240,7 @@ func TestOrderedMixedSources(t *testing.T) {
 				}
 				return raw
 			}
-			cfg := config.Config{Ordering: schema.Omnichain,
+			cfg := config.Config{Ordering: ordering,
 				Chains: []config.Chain{{Name: "B", ID: 202, RPC: []string{second}, ReorgWindow: &zero}, {Name: "A", ID: 101, RPC: []string{first}, ReorgWindow: &zero}},
 				Contracts: []config.Contract{
 					{Name: "Child", Chain: "A", ABI: encode(ping, run), Factory: discovery, EndBlock: &firstEnd, IncludeTransactionReceipts: true, IncludeCallTraces: true},
@@ -249,7 +253,7 @@ func TestOrderedMixedSources(t *testing.T) {
 			path := filepath.Join(t.TempDir(), "data")
 			backend := stagedBackend(t, ctx, dialect, path)
 			t.Cleanup(func() { _ = backend.Close() })
-			db, err := store.New(ctx, backend, model, ns, schema.Omnichain)
+			db, err := store.New(ctx, backend, model, ns, ordering)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -306,6 +310,9 @@ func TestOrderedMixedSources(t *testing.T) {
 				}
 			})
 			firstCalls := []string{"A/0x0/Child:setup", "A/0x1/Head:block"}
+			if ordering == schema.Multichain {
+				firstCalls = append(firstCalls, "B/0x1/Fixed:Ping")
+			}
 			if !errors.Is(err, context.Canceled) || !reflect.DeepEqual(calls, firstCalls) {
 				t.Fatalf("first scan: %v, %v", calls, err)
 			}
@@ -320,7 +327,7 @@ func TestOrderedMixedSources(t *testing.T) {
 				t.Fatal(err)
 			}
 			backend = stagedBackend(t, ctx, dialect, path)
-			db, err = store.New(ctx, backend, model, ns, schema.Omnichain)
+			db, err = store.New(ctx, backend, model, ns, ordering)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -331,7 +338,11 @@ func TestOrderedMixedSources(t *testing.T) {
 			if err := worker.RunIndexing(finish, func(bool) {}); err != nil {
 				t.Fatal(err)
 			}
-			want := append(firstCalls, "B/0x1/Fixed:Ping", "A/0x2/Wallet:transaction:to", "A/0x2/Child:Ping", "A/0x2/Child.run()", "A/0x2/Wallet:transfer:to", "A/0x2/Head:block")
+			want := firstCalls
+			if ordering == schema.Omnichain {
+				want = append(want, "B/0x1/Fixed:Ping")
+			}
+			want = append(want, "A/0x2/Wallet:transaction:to", "A/0x2/Child:Ping", "A/0x2/Child.run()", "A/0x2/Wallet:transfer:to", "A/0x2/Head:block")
 			if !reflect.DeepEqual(calls, want) {
 				t.Fatalf("mixed source order %v, want %v", calls, want)
 			}

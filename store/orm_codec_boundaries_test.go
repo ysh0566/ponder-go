@@ -130,7 +130,7 @@ func TestStorageVersionRejectsOldJournal(t *testing.T) {
 			if e = b.Exec(ctx, "ALTER TABLE "+s.internal("_ponder_go_journal")+" ALTER COLUMN before_row TYPE jsonb USING before_row::jsonb"); e != nil {
 				t.Fatal(e)
 			}
-			if e = b.Exec(ctx, "UPDATE "+s.internal("_ponder_go_meta")+" SET value='old-owned-v1' WHERE key='fingerprint'"); e != nil {
+			if e = b.Exec(ctx, "UPDATE "+s.internal("_ponder_go_meta")+" SET value=replace(value,'json-v4:','json-v3:') WHERE key='fingerprint'"); e != nil {
 				t.Fatal(e)
 			}
 			if _, e = New(ctx, b, model, namespace, schema.Multichain); e == nil || !strings.Contains(e.Error(), "storage format changed") {
@@ -144,7 +144,7 @@ func TestStorageVersionRejectsOldJournal(t *testing.T) {
 			if e != nil {
 				t.Fatal(e)
 			}
-			if !strings.HasPrefix(fresh.Namespace, "ponder_go_shadow_v3_") {
+			if !strings.HasPrefix(fresh.Namespace, "ponder_go_shadow_v4_") {
 				t.Fatal("new default namespace lacks storage version", fresh.Namespace)
 			}
 		})

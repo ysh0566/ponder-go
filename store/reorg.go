@@ -71,6 +71,11 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 	}
 	finalQuery := "SELECT safe_checkpoint FROM " + s.internal("_ponder_go_finalized") + " WHERE chain_id=$1"
 	finalArgs := []any{target.ChainID}
+	if rewind && !s.staged && s.Ordering == schema.Multichain {
+		// Peers can replay observed-final blocks behind an unfinal callback, but
+		// the chain reporting the fork must respect its own finality proof.
+		finalQuery = "SELECT checkpoint AS safe_checkpoint FROM " + s.internal("_ponder_go_finalized") + " WHERE chain_id=$1"
+	}
 	if !s.staged && s.Ordering == schema.Omnichain {
 		finalQuery = "SELECT safe_checkpoint FROM " + s.internal("_ponder_go_finalized") + " ORDER BY safe_checkpoint DESC LIMIT 1"
 		finalArgs = nil
@@ -91,7 +96,11 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 	eventPredicate := predicate
 	eventArgs := args
 	if s.Ordering == schema.Multichain {
-		r, e := tx.Query(ctx, "SELECT MIN(operation_id)::text AS id FROM "+s.internal("_ponder_go_journal")+" WHERE "+predicate, args...)
+		cutQuery := "SELECT MIN(operation_id)::text AS id FROM " + s.internal("_ponder_go_journal") + " WHERE " + predicate
+		if !s.staged {
+			cutQuery = "SELECT MIN(operation_boundary)::text AS id FROM " + s.internal("_ponder_go_events") + " WHERE operation_end>operation_boundary AND " + predicate
+		}
+		r, e := tx.Query(ctx, cutQuery, args...)
 		if e != nil {
 			return e
 		}
@@ -117,31 +126,64 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 	if !s.staged {
 		// A global rollback invalidates the completion record of every affected
 		// chain, even when only one chain changed forks.
+		var affected Result
 		if rewind && s.Ordering != schema.Isolated {
-			affected, err := tx.Query(ctx, "SELECT MIN(checkpoint) AS first FROM "+s.internal("_ponder_go_events")+" WHERE "+eventPredicate+" GROUP BY chain_id", eventArgs...)
-			if err != nil {
-				return err
-			}
-			for _, row := range affected.Rows {
-				first, err := checkpoint.Decode(fmt.Sprint(row["first"]))
-				if err != nil {
-					return err
-				}
-				if first.ChainID == target.ChainID {
-					continue
-				}
-				if err = s.rewindSyncThrough(ctx, tx, first.ChainID, strconv.FormatInt(int64(first.BlockNumber)-1, 10)); err != nil {
-					return err
-				}
+			affected, e = tx.Query(ctx, "SELECT MIN(checkpoint) AS first FROM "+s.internal("_ponder_go_events")+" WHERE "+eventPredicate+" GROUP BY chain_id", eventArgs...)
+			if e != nil {
+				return e
 			}
 		}
 		if e = tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_events")+" WHERE "+eventPredicate, eventArgs...); e != nil {
 			return e
 		}
+		rewoundPeer := false
+		for _, row := range affected.Rows {
+			first, err := checkpoint.Decode(fmt.Sprint(row["first"]))
+			if err != nil {
+				return err
+			}
+			if first.ChainID == target.ChainID {
+				continue
+			}
+			// A failed handler can leave earlier callbacks in this same peer
+			// block committed. Keep their fork proof, but reopen the interval.
+			start := checkpoint.MustEncode(checkpoint.Block(first.BlockTimestamp, first.ChainID, first.BlockNumber, false))
+			end := checkpoint.MustEncode(checkpoint.Block(first.BlockTimestamp, first.ChainID, first.BlockNumber, true))
+			retained, err := tx.Query(ctx, "SELECT EXISTS(SELECT 1 FROM "+s.internal("_ponder_go_events")+" WHERE chain_id=$1 AND checkpoint BETWEEN $2 AND $3) AS partial, "+
+				"(SELECT checkpoint FROM "+s.internal("_ponder_go_finalized")+" WHERE chain_id=$1) AS observed", first.ChainID, start, end)
+			if err != nil {
+				return err
+			}
+			keep := strconv.FormatInt(int64(first.BlockNumber)-1, 10)
+			header := keep
+			if retained.Rows[0]["partial"] == true {
+				header = strconv.FormatUint(first.BlockNumber, 10)
+			}
+			if observed := retained.Rows[0]["observed"]; s.Ordering == schema.Multichain && observed != nil {
+				// Peer writes can still be undone behind another chain's
+				// unfinal callback. Their own finalized hash remains binding.
+				final, err := checkpoint.Decode(fmt.Sprint(observed))
+				if err != nil {
+					return err
+				}
+				if final.BlockNumber >= first.BlockNumber {
+					header = strconv.FormatUint(final.BlockNumber, 10)
+				}
+			}
+			rewoundPeer = true
+			if err = s.rewindSyncThrough(ctx, tx, first.ChainID, keep, header); err != nil {
+				return err
+			}
+		}
+		if rewoundPeer && s.Ordering == schema.Multichain {
+			if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_meta")+" (key,value) VALUES ('multichain_replay',nextval(pg_get_serial_sequence($1,'operation_id'))::text) ON CONFLICT (key) DO UPDATE SET value=excluded.value", s.internal("_ponder_go_journal")); e != nil {
+				return e
+			}
+		}
 		if e = tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_progress")); e != nil {
 			return e
 		}
-		if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_progress")+" SELECT chain_id,MAX(checkpoint) FROM (SELECT chain_id,checkpoint FROM "+s.internal("_ponder_go_events")+" UNION ALL SELECT chain_id,safe_checkpoint AS checkpoint FROM "+s.internal("_ponder_go_finalized")+") AS progress GROUP BY chain_id"); e != nil {
+		if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_progress")+" SELECT chain_id,MAX(checkpoint) FROM (SELECT chain_id,checkpoint FROM "+s.internal("_ponder_go_events")+" UNION ALL SELECT chain_id,safe_checkpoint AS checkpoint FROM "+s.internal("_ponder_go_finalized")+" WHERE safe_checkpoint<>$1) AS progress GROUP BY chain_id", checkpoint.ZeroString); e != nil {
 			return e
 		}
 	}
@@ -166,6 +208,45 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 		s.notify(tables)
 	}
 	return nil
+}
+
+// PendingMultichainReplay identifies a coordinated rewind whose surviving peer
+// callbacks still need a common round of RPC acquisition, including on restart.
+func (s *Store) PendingMultichainReplay(ctx context.Context) (string, error) {
+	rows, err := s.Backend.Query(ctx, "SELECT value FROM "+s.internal("_ponder_go_meta")+" WHERE key='multichain_replay'")
+	if err != nil || len(rows.Rows) == 0 {
+		return "", err
+	}
+	return fmt.Sprint(rows.Rows[0]["value"]), nil
+}
+
+// FinishMultichainReplay acknowledges only the rewind observed before processing.
+func (s *Store) FinishMultichainReplay(ctx context.Context, generation string) error {
+	if s.managedLive != nil {
+		return s.managedLive.rejectLegacy(ctx)
+	}
+	if s.staged || s.Ordering != schema.Multichain {
+		return fmt.Errorf("coordinated replay requires an atomic multichain store")
+	}
+	tx, err := s.Backend.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+	if err := s.lock(ctx, tx); err != nil {
+		return err
+	}
+	if err := s.requireLease(ctx, tx); err != nil {
+		return err
+	}
+	rows, err := tx.Query(ctx, "DELETE FROM "+s.internal("_ponder_go_meta")+" WHERE key='multichain_replay' AND value=$1 RETURNING value", generation)
+	if err != nil {
+		return err
+	}
+	if len(rows.Rows) == 0 {
+		return ErrIndexedBlockChanged
+	}
+	return tx.Commit(ctx)
 }
 
 // Finalize removes only an undo prefix that no future valid reorg may require.
@@ -265,6 +346,12 @@ func (s *Store) finalize(ctx context.Context, target checkpoint.Checkpoint, inde
 	if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_finalized")+" VALUES ($1,$2,$3) ON CONFLICT(chain_id) DO UPDATE SET checkpoint=excluded.checkpoint", target.ChainID, encoded, checkpoint.ZeroString); e != nil {
 		return e
 	}
+	if !s.staged && s.Ordering == schema.Multichain {
+		if e = s.finalizeCallbackPrefix(ctx, tx); e != nil {
+			return e
+		}
+		return tx.Commit(ctx)
+	}
 	predicate := "checkpoint<=$1"
 	args := []any{encoded}
 	if s.Ordering == schema.Isolated {
@@ -310,6 +397,28 @@ func (s *Store) finalize(ctx context.Context, target checkpoint.Checkpoint, inde
 		}
 	}
 	return tx.Commit(ctx)
+}
+
+// finalizeCallbackPrefix keeps every undo record at or after the first callback
+// whose own chain has not finalized it, including callbacks that wrote no rows.
+func (s *Store) finalizeCallbackPrefix(ctx context.Context, tx Transaction) error {
+	events := s.internal("_ponder_go_events")
+	finalized := s.internal("_ponder_go_finalized")
+	// Checkpoints are nondecreasing within a chain. The first unfinal
+	// callback on each chain can be found through its checkpoint index.
+	first, err := tx.Query(ctx, "SELECT MIN(candidate.operation_boundary)::text AS cut FROM "+s.internal("_ponder_go_progress")+" p LEFT JOIN "+finalized+" f USING (chain_id) CROSS JOIN LATERAL ("+
+		"SELECT e.operation_boundary FROM "+events+" e WHERE e.chain_id=p.chain_id AND (f.chain_id IS NULL OR e.checkpoint>f.checkpoint) AND e.operation_end>e.operation_boundary "+
+		"ORDER BY e.checkpoint,e.operation_boundary LIMIT 1) candidate")
+	if err != nil {
+		return err
+	}
+	cut := first.Rows[0]["cut"]
+	if err = tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_journal")+" WHERE ($1::bigint IS NULL OR operation_id<$1)", cut); err != nil {
+		return err
+	}
+	return tx.Exec(ctx, "UPDATE "+finalized+" f SET safe_checkpoint=COALESCE(("+
+		"SELECT e.checkpoint FROM "+events+" e WHERE e.chain_id=f.chain_id AND e.checkpoint>f.safe_checkpoint AND e.checkpoint<=f.checkpoint AND ($1::bigint IS NULL OR e.operation_boundary<$1) "+
+		"ORDER BY e.checkpoint DESC LIMIT 1),f.safe_checkpoint) WHERE f.safe_checkpoint<f.checkpoint", cut)
 }
 
 func (s *Store) QueryReadOnly(ctx context.Context, sql string, args ...any) (Result, error) {

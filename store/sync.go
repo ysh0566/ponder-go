@@ -179,16 +179,17 @@ func (s *Store) RewindSync(ctx context.Context, chain, number uint64) error {
 }
 
 func (s *Store) rewindSync(ctx context.Context, tx Transaction, chain, number uint64) error {
-	return s.rewindSyncThrough(ctx, tx, chain, strconv.FormatUint(number, 10))
+	keep := strconv.FormatUint(number, 10)
+	return s.rewindSyncThrough(ctx, tx, chain, keep, keep)
 }
 
 // keep is the inclusive last height; -1 clears the chain back through genesis.
-func (s *Store) rewindSyncThrough(ctx context.Context, tx Transaction, chain uint64, keep string) error {
+func (s *Store) rewindSyncThrough(ctx context.Context, tx Transaction, chain uint64, keep, header string) error {
 	if e := s.rewindProtocolCache(ctx, tx, chain, keep); e != nil {
 		return e
 	}
 	var e error
-	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number>$2", chain, keep); e != nil {
+	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number>$2", chain, header); e != nil {
 		return e
 	}
 	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("factory_addresses")+" WHERE chain_id=$1 AND block_number>$2", chain, keep); e != nil {

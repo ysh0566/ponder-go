@@ -1906,6 +1906,33 @@
         "parity/runs/native-local-pglite/RESULT.md"
       ],
       "remaining": "Standalone serve uses PostgreSQL, following the pinned serve command. Host power loss and coordinated engine crashes are separate acceptance scenarios."
+    },
+    {
+      "id": "native-default-multichain",
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/indexer.go",
+        "runtime/ordered_indexer.go",
+        "runtime/engine.go",
+        "store/store.go",
+        "store/reorg.go",
+        "store/sync.go"
+      ],
+      "native_test_files": [
+        "runtime/default_indexer_test.go",
+        "runtime/ordered_indexer_test.go",
+        "store/multichain_receipt_test.go",
+        "store/orm_codec_boundaries_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/realtime.ts",
+        "packages/core/src/sync-realtime/index.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-default-multichain/RESULT.md"
+      ],
+      "remaining": "Failover within multi-provider pools during a cross-chain fork, wider overlapping callbacks and separate database-domain engine failures still need acceptance."
     }
   ]
 }
