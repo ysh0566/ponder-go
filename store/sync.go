@@ -17,6 +17,21 @@ type SyncBlock struct {
 	Payload    json.RawMessage `json:"payload"`
 }
 
+// LatestSyncedHeight includes a header persisted before its callbacks committed.
+func (s *Store) LatestSyncedHeight(ctx context.Context, chain uint64) (uint64, bool, error) {
+	r, err := s.Backend.Query(ctx, "SELECT number::text AS number FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 ORDER BY number::numeric DESC LIMIT 1", chain)
+	if err != nil || len(r.Rows) == 0 {
+		return 0, false, err
+	}
+	n, err := strconv.ParseUint(fmt.Sprint(r.Rows[0]["number"]), 10, 64)
+	return n, true, err
+}
+
+// CompletionID identifies the durable receipt for all callbacks in this block.
+func (b SyncBlock) CompletionID() string {
+	return fmt.Sprintf("complete:%d:%s", b.ChainID, b.Hash)
+}
+
 func (s *Store) SyncedBlock(ctx context.Context, chain, number uint64) (*SyncBlock, error) {
 	r, e := s.Backend.Query(ctx, "SELECT hash,parent_hash,timestamp::text AS timestamp,payload::text AS payload FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number=$2", chain, number)
 	if e != nil {
@@ -164,20 +179,25 @@ func (s *Store) RewindSync(ctx context.Context, chain, number uint64) error {
 }
 
 func (s *Store) rewindSync(ctx context.Context, tx Transaction, chain, number uint64) error {
-	if e := s.rewindProtocolCache(ctx, tx, chain, number); e != nil {
+	return s.rewindSyncThrough(ctx, tx, chain, strconv.FormatUint(number, 10))
+}
+
+// keep is the inclusive last height; -1 clears the chain back through genesis.
+func (s *Store) rewindSyncThrough(ctx context.Context, tx Transaction, chain uint64, keep string) error {
+	if e := s.rewindProtocolCache(ctx, tx, chain, keep); e != nil {
 		return e
 	}
 	var e error
-	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number>$2", chain, number); e != nil {
+	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number>$2", chain, keep); e != nil {
 		return e
 	}
-	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("factory_addresses")+" WHERE chain_id=$1 AND block_number>$2", chain, number); e != nil {
+	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("factory_addresses")+" WHERE chain_id=$1 AND block_number>$2", chain, keep); e != nil {
 		return e
 	}
-	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("intervals")+" WHERE chain_id=$1 AND start_block>$2", chain, number); e != nil {
+	if e = tx.Exec(ctx, "DELETE FROM "+s.syncTable("intervals")+" WHERE chain_id=$1 AND start_block>$2", chain, keep); e != nil {
 		return e
 	}
-	if e = tx.Exec(ctx, "UPDATE "+s.syncTable("intervals")+" SET end_block=LEAST(end_block,$2) WHERE chain_id=$1", chain, number); e != nil {
+	if e = tx.Exec(ctx, "UPDATE "+s.syncTable("intervals")+" SET end_block=LEAST(end_block,$2) WHERE chain_id=$1", chain, keep); e != nil {
 		return e
 	}
 	return nil

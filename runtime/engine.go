@@ -126,7 +126,7 @@ func NewWithOptions(c config.Config, s *store.Store, handlers map[string]Handler
 		return nil, fmt.Errorf("runtime and store ordering differ")
 	}
 	if len(c.Chains) != 1 {
-		return nil, fmt.Errorf("single-chain engine requires one chain; use NewIndexer for isolated workers or historical.RuntimeRunner for coordinated chains")
+		return nil, fmt.Errorf("single-chain engine requires one chain; use NewIndexer for isolated or omnichain workers, or historical.RuntimeRunner for default multichain")
 	}
 	engine := &Engine{Config: c, Store: s, Handlers: handlers, chain: c.Chains[0], abis: map[string]abi.ABI{}, factories: map[string]factory.LogFactory{}, options: options}
 	for _, contract := range c.Contracts {
@@ -215,23 +215,7 @@ func (e *Engine) Sync(ctx context.Context) error {
 func (e *Engine) syncToHead(ctx context.Context) (bool, error) {
 	e.syncMu.Lock()
 	defer e.syncMu.Unlock()
-	if e.staged == nil && !e.options.DisableCache {
-		cache, err := e.Store.EnableProtocolCache(ctx)
-		if err != nil {
-			return false, err
-		}
-		e.cache = cache
-		e.Client.Cache = cache
-	}
-	var chainID string
-	if err := e.Client.Call(ctx, "eth_chainId", []any{}, &chainID); err != nil {
-		return false, err
-	}
-	id, err := Number(chainID)
-	if err != nil || id != e.chain.ID {
-		return false, fmt.Errorf("RPC chain ID mismatch: expected %d got %s", e.chain.ID, chainID)
-	}
-	latest, err := e.block(ctx, "latest")
+	latest, err := e.acquireHead(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -254,28 +238,9 @@ func (e *Engine) syncToHead(ctx context.Context) (bool, error) {
 	if err = e.checkReorg(ctx, head); err != nil {
 		return false, err
 	}
-	start := ^uint64(0)
-	hasSource := false
-	for _, c := range e.Config.Contracts {
-		start = min(start, c.StartBlock)
-		if f, ok := e.factories[c.Name]; ok && f.FromBlock != nil {
-			start = min(start, *f.FromBlock)
-		}
-		hasSource = true
-	}
-	for _, account := range e.Config.Accounts {
-		start = min(start, account.StartBlock)
-		if f, ok := e.factories[account.Name]; ok && f.FromBlock != nil {
-			start = min(start, *f.FromBlock)
-		}
-		hasSource = true
-	}
-	for _, b := range e.Config.Blocks {
-		start = min(start, b.StartBlock)
-		hasSource = true
-	}
-	if !hasSource {
-		return false, fmt.Errorf("no indexing sources configured")
+	start, err := e.firstSourceBlock()
+	if err != nil {
+		return false, err
 	}
 	if e.endBlock != nil {
 		head = min(head, *e.endBlock)
@@ -384,6 +349,53 @@ func (e *Engine) finalizeIndexed(ctx context.Context, latest Block, through uint
 	e.finalizedHash = candidate.Hash
 	return done, nil
 }
+func (e *Engine) acquireHead(ctx context.Context) (Block, error) {
+	if e.staged == nil && !e.options.DisableCache {
+		cache, err := e.Store.EnableProtocolCache(ctx)
+		if err != nil {
+			return Block{}, err
+		}
+		e.cache = cache
+		e.Client.Cache = cache
+	}
+	var chainID string
+	if err := e.Client.Call(ctx, "eth_chainId", []any{}, &chainID); err != nil {
+		return Block{}, err
+	}
+	id, err := Number(chainID)
+	if err != nil || id != e.chain.ID {
+		return Block{}, fmt.Errorf("RPC chain ID mismatch: expected %d got %s", e.chain.ID, chainID)
+	}
+	return e.block(ctx, "latest")
+}
+
+func (e *Engine) firstSourceBlock() (uint64, error) {
+	start := ^uint64(0)
+	hasSource := false
+	for _, c := range e.Config.Contracts {
+		start = min(start, c.StartBlock)
+		if f, ok := e.factories[c.Name]; ok && f.FromBlock != nil {
+			start = min(start, *f.FromBlock)
+		}
+		hasSource = true
+	}
+	for _, account := range e.Config.Accounts {
+		start = min(start, account.StartBlock)
+		if f, ok := e.factories[account.Name]; ok && f.FromBlock != nil {
+			start = min(start, *f.FromBlock)
+		}
+		hasSource = true
+	}
+	for _, b := range e.Config.Blocks {
+		start = min(start, b.StartBlock)
+		hasSource = true
+	}
+	if !hasSource {
+		return 0, fmt.Errorf("no indexing sources configured")
+	}
+	return start, nil
+}
+
 func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 	// Find the most recent completed block, including when the canonical tip shrinks.
 	progress, err := e.Store.Progress(ctx)
@@ -397,26 +409,42 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 			return err
 		}
 	}
-	if cursor == "" {
+	var height uint64
+	if cursor != "" {
+		cp, err := checkpoint.Decode(cursor)
+		if err != nil {
+			return err
+		}
+		height = cp.BlockNumber
+	}
+	if e.staged == nil {
+		saved, ok, err := e.Store.LatestSyncedHeight(ctx, e.chain.ID)
+		if err != nil {
+			return err
+		}
+		if cursor != "" && (!ok || saved < height) {
+			return fmt.Errorf("indexed progress is missing its persisted block header; shadow rebuild required")
+		}
+		if !ok {
+			return nil
+		}
+		height = saved
+	} else if cursor == "" {
 		return nil
 	}
-	cp, err := checkpoint.Decode(cursor)
-	if err != nil {
-		return err
-	}
-	n := min(cp.BlockNumber, head)
+	n := min(height, head)
 	stored, err := e.Store.SyncedBlock(ctx, e.chain.ID, n)
 	if err != nil {
 		return err
 	}
-	if stored == nil && n == cp.BlockNumber {
+	if stored == nil && n == height {
 		return fmt.Errorf("indexed progress is missing its persisted block header; shadow rebuild required")
 	}
 	canonical, err := e.block(ctx, Hex(n))
 	if err != nil {
 		return err
 	}
-	if stored != nil && canonical.Hash == stored.Hash && head >= cp.BlockNumber {
+	if stored != nil && canonical.Hash == stored.Hash && head >= height {
 		return nil
 	}
 	for {
@@ -669,25 +697,34 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 		}
 	}
 	// Every completed block gets durable progress even if it has no matching events.
-	if err = e.Store.Apply(ctx, store.Event{ID: fmt.Sprintf("complete:%d:%s", e.chain.ID, b.Hash), Checkpoint: checkpoint.Block(timestamp, e.chain.ID, number, true)}, func(*store.Writer) error { return nil }); err != nil {
+	block := store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}
+	if err = e.Store.Apply(ctx, store.Event{ID: block.CompletionID(), Checkpoint: checkpoint.Block(timestamp, e.chain.ID, number, true)}, func(*store.Writer) error { return nil }); err != nil {
 		return err
 	}
-	return e.Store.CompleteBlock(ctx, store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}, e.filter)
+	return e.Store.CompleteBlock(ctx, block, e.filter)
 }
 func (e *Engine) Run(ctx context.Context) error { return e.RunIndexing(ctx, func(bool) {}) }
 
 // RunIndexing resumes from committed progress after transient RPC outages.
 func (e *Engine) RunIndexing(ctx context.Context, ready func(bool)) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	heads := headNotifications(ctx, e.chain.WS)
+	return pollIndexer(ctx, e.pollingInterval(), ready, e.syncToHead, e.chain.WS)
+}
+
+func (e *Engine) pollingInterval() time.Duration {
 	interval := time.Duration(e.chain.PollingIntervalMS) * time.Millisecond
 	if interval <= 0 {
 		interval = time.Second
 	}
+	return interval
+}
+
+func pollIndexer(ctx context.Context, interval time.Duration, ready func(bool), sync func(context.Context) (bool, error), endpoints ...string) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	heads := headNotifications(ctx, endpoints...)
 	retry := min(interval, time.Second)
 	for {
-		done, err := e.syncToHead(ctx)
+		done, err := sync(ctx)
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}

@@ -197,7 +197,27 @@ return app.Wait()
 
 一条链的 RPC 临时不可用时，其他链继续追块，`/ready` 等待所有参与索引的链完成追赶。某条链所有来源均指定 `EndBlock` 时，该链处理到最后一个结束区块，等它达到配置的最终性后停止轮询。所有链结束后 HTTP 查询继续可用。
 
-已有的默认多链或全局排序配置使用 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 创建协调运行器，也可以将该运行器作为 `worker` 传给同一个 `runtime.LaunchApplication`。这些模式允许的来源和区间见[运行模式矩阵](RUNTIME_SUPPORT.md)。
+默认协调多链可使用 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 创建运行器，再传给 `runtime.LaunchApplication`。已有的托管全局排序历史任务也可继续使用这两个入口。[运行模式矩阵](RUNTIME_SUPPORT.md)
+
+## 按全局顺序索引多条链
+
+要让多条链的回调共同维护一张表，例如所有链的总余额，创建存储和运行器时都使用 `schema.Omnichain`。沿用独立多链示例中的 `cfg.Chains`、事件来源和处理函数，即可把运行器交给同一个 HTTP 应用。
+
+```go
+db, err := store.New(ctx, backend, model, namespace, schema.Omnichain)
+if err != nil {
+    return err
+}
+cfg.Ordering = schema.Omnichain
+worker, err := runtime.NewIndexer(cfg, db, handlers)
+if err != nil {
+    return err
+}
+```
+
+运行器按区块时间、链 ID、区块高度和区块内事件位置排序。只有各参与链的进度足以确定顺序，才会执行对应回调。某条链的 RPC 暂时不可用时，各链等待它恢复；网络较慢的链也会限制整体进度。所有来源都设置 `EndBlock` 的链抵达最终确认高度后，会释放对其他链排序进度的限制。所有链都完成后，查询服务继续提供数据。
+
+每次回调的数据库写入与事件检查点一起提交。重组会从共同祖先撤销共享状态中受影响的写入，再按规范链重放。超出已确认边界的重组会停止运行，需要使用新命名空间重新索引。需要关闭 RPC 缓存时，使用 `runtime.NewIndexerWithOptions(cfg, db, handlers, runtime.Options{DisableCache: true})`。[跨链排序和恢复实测](../parity/runs/native-ordered-indexing/RESULT.md)
 
 ## 发布查询视图与清理部署
 

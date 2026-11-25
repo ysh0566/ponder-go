@@ -327,7 +327,13 @@ func (s *Store) Apply(ctx context.Context, event Event, handler func(*Writer) er
 	if len(final.Rows) > 0 && encoded <= fmt.Sprint(final.Rows[0]["checkpoint"]) {
 		return fmt.Errorf("event is at or before finalized checkpoint")
 	}
-	progress, e := tx.Query(ctx, "SELECT checkpoint FROM "+s.internal("_ponder_go_progress")+" WHERE chain_id=$1", event.Checkpoint.ChainID)
+	progressQuery := "SELECT checkpoint FROM " + s.internal("_ponder_go_progress") + " WHERE chain_id=$1"
+	progressArgs := []any{event.Checkpoint.ChainID}
+	if s.Ordering == schema.Omnichain {
+		progressQuery = "SELECT checkpoint FROM " + s.internal("_ponder_go_progress") + " ORDER BY checkpoint DESC LIMIT 1"
+		progressArgs = nil
+	}
+	progress, e := tx.Query(ctx, progressQuery, progressArgs...)
 	if e != nil {
 		return e
 	}

@@ -1552,6 +1552,28 @@
         "parity/runs/native-head-notifications/RESULT.md"
       ],
       "remaining": "Managed coordinated runners use their own realtime acquisition paths."
+    },
+    {
+      "id": "native-ordered-indexer",
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/indexer.go",
+        "runtime/ordered_indexer.go",
+        "runtime/engine.go",
+        "store/omnichain.go",
+        "store/reorg.go",
+        "store/sync.go"
+      ],
+      "native_test_files": [
+        "runtime/ordered_indexer_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/omnichain.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-ordered-indexing/RESULT.md"
+      ],
+      "remaining": "Additional multi-provider, storage interruption and source overlap cases; default coordinated multichain uses a separate runner."
     }
   ]
 }

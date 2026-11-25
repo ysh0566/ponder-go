@@ -270,7 +270,7 @@ func (c *ProtocolCache) saveBlock(ctx context.Context, tx Transaction, block Syn
 	}
 	return nil
 }
-func (c *ProtocolCache) rewind(ctx context.Context, tx Transaction, chain, number uint64) error {
+func (c *ProtocolCache) rewind(ctx context.Context, tx Transaction, chain uint64, number string) error {
 	for _, table := range []string{"blocks", "logs", "transactions", "transaction_receipts", "traces", "factory_addresses", "rpc_request_results"} {
 		column := "block_number"
 		if table == "blocks" {
@@ -283,6 +283,9 @@ func (c *ProtocolCache) rewind(ctx context.Context, tx Transaction, chain, numbe
 		if e := tx.Exec(ctx, "DELETE FROM "+c.table(table)+" WHERE chain_id=$1 AND "+where, chain, number); e != nil {
 			return e
 		}
+	}
+	if number == "-1" {
+		return tx.Exec(ctx, "DELETE FROM "+c.table("intervals")+" WHERE chain_id=$1", chain)
 	}
 	// Source fragment IDs use closed type/chain prefixes and store end+1.
 	// Native completion descriptors retain their point-interval boundary.
@@ -319,7 +322,7 @@ func (c *ProtocolCache) factoryChildren(ctx context.Context, tx Transaction, id 
 // A disabled/cold runtime must still invalidate an already owned disk cache.
 // Discover it in the rewind transaction without enabling cache reads/writes or
 // creating schemas. Ownership and completeness are verified before any DELETE.
-func (s *Store) rewindProtocolCache(ctx context.Context, tx Transaction, chain, number uint64) error {
+func (s *Store) rewindProtocolCache(ctx context.Context, tx Transaction, chain uint64, number string) error {
 	cache := s.protocol.Load()
 	if cache == nil {
 		m, e := NewSyncMigrator(s.Backend, s.Namespace)
