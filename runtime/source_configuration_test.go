@@ -74,7 +74,7 @@ func TestSourceConfigurationRuntime(t *testing.T) {
 				send(overloaded, "0x")
 				chosenJSON := `{"type":"event","name":"Chosen","anonymous":false,"inputs":[{"name":"tag","type":"bytes32","internalType":"bytes32","indexed":true},{"name":"amount","type":"uint256","indexed":false}]}`
 				functionJSON := `{"type":"function","name":"run","stateMutability":"nonpayable","inputs":[{"name":"amount","type":"uint256"},{"name":"tag","type":"bytes32"}],"outputs":[{"type":"uint256"}]}`
-				input := fmt.Sprintf(`{"chains":{"local":{"id":1,"rpc":%q,"cacheRpcRequests":%t}},"contracts":{"C":{"chain":"local","abi":[%s,%s],"address":%q,"startBlock":1,"includeCallTraces":true,"includeTransactionReceipts":true,"filter":{"event":"Chosen","args":{"tag":"0x%064x"}}},"O":{"chain":"local","abi":[{"type":"event","name":"Value","inputs":[]},{"type":"event","name":"Value","inputs":[{"type":"bytes32","name":"tag","indexed":true}]}],"address":%q,"startBlock":1}},"accounts":{"A":{"chain":"local","address":%q,"startBlock":1,"includeTransactionReceipts":true}},"blocks":{"B":{"chain":"local","interval":2,"startBlock":1}}}`, url, !disabled, chosenJSON, functionJSON, contract, 1, overloaded, strings.ToLower(accounts[0]))
+				input := fmt.Sprintf(`{"chains":{"local":{"id":1,"rpc":%q,"ws":%q,"cacheRpcRequests":%t}},"contracts":{"C":{"chain":"local","abi":[%s,%s],"address":%q,"startBlock":1,"includeCallTraces":true,"includeTransactionReceipts":true,"filter":{"event":"Chosen","args":{"tag":"0x%064x"}}},"O":{"chain":"local","abi":[{"type":"event","name":"Value","inputs":[]},{"type":"event","name":"Value","inputs":[{"type":"bytes32","name":"tag","indexed":true}]}],"address":%q,"startBlock":1}},"accounts":{"A":{"chain":"local","address":%q,"startBlock":1,"includeTransactionReceipts":true}},"blocks":{"B":{"chain":"local","interval":2,"startBlock":1}}}`, url, "ws"+strings.TrimPrefix(url, "http"), !disabled, chosenJSON, functionJSON, contract, 1, overloaded, strings.ToLower(accounts[0]))
 				cfg, err := config.ParseSourceConfiguration([]byte(input))
 				if err != nil {
 					t.Fatal(err)
@@ -121,6 +121,10 @@ func TestSourceConfigurationRuntime(t *testing.T) {
 				indexing, err := config.BuildSourceIndexing(ctx, cfg, built, registrations)
 				if err != nil {
 					t.Fatal(err)
+				}
+				native, err := indexing.NativeConfig("local")
+				if err != nil || native.Chains[0].WS != "ws"+strings.TrimPrefix(url, "http") {
+					t.Fatalf("compiled notification endpoint: %v, %v", native.Chains, err)
 				}
 				callbacks := indexing.EventCallbacks()[0]
 				callbackNames := []string{}

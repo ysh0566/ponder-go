@@ -15,6 +15,7 @@ type Chain struct {
 	Name              string   `json:"name"`
 	ID                uint64   `json:"id"`
 	RPC               []string `json:"rpc"`
+	WS                string   `json:"ws,omitempty"`
 	BlockTimeMS       *float64 `json:"blockTime,omitempty"`
 	ReorgWindow       *int     `json:"reorgWindow,omitempty"`
 	PollingIntervalMS int      `json:"pollingInterval,omitempty"`
@@ -84,6 +85,12 @@ func (c Config) Validate() error {
 		ids[chain.ID] = true
 		if chain.Window() < 0 || chain.Window() > 600 {
 			return fmt.Errorf("Invalid 'reorgWindow' for chain '%s'. Expected an integer between 0 and 600 seconds, got %d.", chain.Name, chain.Window())
+		}
+		if chain.WS != "" {
+			u, err := url.Parse(chain.WS)
+			if err != nil || u.Host == "" || (u.Scheme != "ws" && u.Scheme != "wss") {
+				return fmt.Errorf("invalid WebSocket subscription endpoint for chain %s", chain.Name)
+			}
 		}
 		if len(chain.RPC) == 0 {
 			return fmt.Errorf("chain %s needs an RPC endpoint", chain.Name)
