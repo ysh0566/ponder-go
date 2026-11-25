@@ -8,7 +8,7 @@
 
 ## 当前验证与计数
 
-当前台账记录 905 条上游声明，746 条已映射，154 条待移植，另有 5 条专测已退役的缓存迁移。固定上游版本的完整结果为 875 通过、18 失败、10 跳过、2 待办。[模块支持矩阵](docs/RUNTIME_SUPPORT.md) · [GraphQL 表查询验证](parity/runs/graphql-table-pages/RESULT.md) · [GraphQL 实体和 HTTP 验证](parity/runs/graphql-entities-http/RESULT.md) · [索引客户端验证](parity/runs/indexing-client-requests/RESULT.md) · [SQL 客户端验证](parity/runs/sql-client-queries/RESULT.md) · [HTTP 服务和指标验证](parity/runs/http-server-metrics/RESULT.md) · [事件流验证](parity/runs/source-streams/RESULT.md) · [数据库查询验证](parity/runs/database-query-builder/RESULT.md) · [异步队列验证](parity/runs/source-async-queues/RESULT.md) · [RPC 请求验证](parity/runs/source-rpc-requests/RESULT.md) · [全量上游结果](parity/runs/public-provider-archives/upstream.json)
+当前台账记录 905 条上游声明，758 条已映射，142 条待移植，另有 5 条专测已退役的缓存迁移。固定上游版本的完整结果为 875 通过、18 失败、10 跳过、2 待办。[模块支持矩阵](docs/RUNTIME_SUPPORT.md) · [GraphQL 关联与视图验证](parity/runs/graphql-relations-views/RESULT.md) · [GraphQL 表查询验证](parity/runs/graphql-table-pages/RESULT.md) · [GraphQL 实体和 HTTP 验证](parity/runs/graphql-entities-http/RESULT.md) · [索引客户端验证](parity/runs/indexing-client-requests/RESULT.md) · [SQL 客户端验证](parity/runs/sql-client-queries/RESULT.md) · [HTTP 服务和指标验证](parity/runs/http-server-metrics/RESULT.md) · [事件流验证](parity/runs/source-streams/RESULT.md) · [数据库查询验证](parity/runs/database-query-builder/RESULT.md) · [异步队列验证](parity/runs/source-async-queues/RESULT.md) · [RPC 请求验证](parity/runs/source-rpc-requests/RESULT.md) · [全量上游结果](parity/runs/public-provider-archives/upstream.json)
 
 M45 追加的 factory 日志、交易、账户 transfer 及合约函数 CALL 的选定 RuntimeRunner 闭环，范围与验证说明见 [factory 函数 trace 阶段](parity/runs/m45-factory-traces-v13-20261103/VALIDATION.md)。这些补充运行测试不增加该阶段的 543/905 映射；其他运行模式、完整 CLI、引擎崩溃及 M45 整体验收仍未完成。
 
@@ -74,7 +74,7 @@ bin/ponder codegen --schema examples/erc20/schema.json --out examples/erc20/pond
 
 `start` / `serve` 编译并启动原生 Go 应用；`serve` 的语义由应用读取 `PONDER_COMMAND=serve` 实现。示例已实现该分支。当前 `dev`、`db prune`、`db create-views` 明确返回未实现，不伪装成功。完整 CLI 选项、模板与全部配置保留在 `parity/public-manifest.json`，功能状态在 `parity/feature-ledger.json`。
 
-可以用 `graphql.New(db, graphql.Options{})` 建立 GraphQL HTTP 处理器，再用 `mux.Handle("/graphql", handler)` 挂载到应用路由。它从当前数据库或指定的发布 schema 读取数据，支持复合主键、枚举、大整数、字节数组以及 `_meta.status`。表的复数字段支持过滤、排序、偏移量和双向游标分页，可选择返回匹配记录总数。GET 打开交互式查询页，POST 执行 GraphQL 文档。
+可以用 `graphql.New(db, graphql.Options{})` 建立 GraphQL HTTP 处理器，再用 `mux.Handle("/graphql", handler)` 挂载到应用路由。它从当前数据库或指定的发布 schema 读取数据，支持复合主键、枚举、大整数、字节数组以及 `_meta.status`。表的复数字段支持过滤、排序、偏移量和双向游标分页，可选择返回匹配记录总数。通过 `graphql.Options.Relations` 声明一对一和一对多字段，同一请求共享关联实体读取。SQL 视图支持过滤、排序和偏移量分页。GET 打开交互式查询页，POST 执行 GraphQL 文档。
 
 ## 存储边界
 
@@ -82,7 +82,7 @@ bin/ponder codegen --schema examples/erc20/schema.json --out examples/erc20/pond
 - 业务 DML 与 undo journal 在同一数据库语句的 trigger 内完成；事件去重与 checkpoint 进度在同一事务内提交。默认 multichain 回滚从目标链边界后的最小 operation_id 撤销全局后缀；isolated 只回滚目标链。
 - 四个应用进程边界（业务 SQL 后、确认 journal 后、进度后、commit 后）在两个后端分别测试；前两个现已位于同一业务/trigger SQL 语句完成之后。额外 journal 约束失败验证语句内回滚。没有测试数据库服务端断电或磁盘损坏，不外推这些保证。
 - `reorgWindow` 按时间戳秒计算。调度器目前明确限制单链；多链调度尚未实现，存储层的多链回滚已经有真实验证。
-- 当前原生 schema/ABI 已补齐 build/schema、event-log 和 finality 所选源测试，并在两个后端执行枚举及视图；业务 raw SQL 已统一经过数据库 trigger journal 并验证 savepoint 错误恢复；完整参数/类型测试、关系、factory、trace 以及 GraphQL 的视图和关联查询等仍待完整覆盖。
+- 当前原生 schema/ABI 已补齐 build/schema、event-log 和 finality 所选源测试，并在两个后端执行枚举及视图；业务 raw SQL 已统一经过数据库 trigger journal 并验证 savepoint 错误恢复；完整参数/类型测试、关系、factory、trace 等仍待完整覆盖。
 
 数据库按用途使用各自的当前格式。业务 journal 使用 `json-v3`，独立恢复库使用 `managed-live-recovery-v3`，RPC 缓存使用 `ponder_rpc_cache_1`，跨链纯日志历史使用 v17。重开已有业务库时，业务命名空间必须带有匹配的版本指纹，同步命名空间必须标记同一所有者。遇到旧格式、缺失标记或只剩一侧的命名空间时，请在新命名空间重新索引。修改 handler 或 config 时也需使用新命名空间，因为模型 hash 只覆盖数据库模型。[缓存初始化与重开](docs/SYNC_MIGRATIONS.md) [数据库重开验证](parity/runs/current-store-markers/RESULT.md)
 

@@ -62,7 +62,7 @@ func (s *Server) Execute(ctx context.Context, r Request) *gql.Result {
 		}
 		return &gql.Result{Errors: valid.Errors}
 	}
-	return gql.Execute(gql.ExecuteParams{Schema: s.schema, AST: doc, Context: ctx, OperationName: r.OperationName, Args: r.Variables})
+	return gql.Execute(gql.ExecuteParams{Schema: s.schema, AST: doc, Context: context.WithValue(ctx, loaderKey{}, &requestLoaders{groups: map[string]*relationBatch{}}), OperationName: r.OperationName, Args: r.Variables})
 }
 
 var unknownArg = regexp.MustCompile(`^Unknown argument "([^"]+)" on field "([^"]+)" of type "([^"]+)"\.`)

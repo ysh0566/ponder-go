@@ -3,7 +3,6 @@ package graphql
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -19,6 +18,7 @@ import (
 )
 
 type Options struct {
+	Relations           []Relation
 	Namespace           string
 	MaxOperationTokens  int
 	MaxOperationDepth   int
@@ -73,7 +73,8 @@ func New(database *store.Store, opts Options) (*Server, error) {
 		}
 		enums[e.Name] = gql.NewEnum(gql.EnumConfig{Name: name, Values: values})
 	}
-	pageInfo := newPageInfo()
+	collections := map[string]*collection{}
+	pageInfo := newPageInfo(false)
 	for _, table := range database.Schema.Tables {
 		name := table.ExportName
 		if name == "" {
@@ -86,16 +87,48 @@ func New(database *store.Store, opts Options) (*Server, error) {
 		if fields[key] != nil || fields[key+"s"] != nil {
 			return nil, fmt.Errorf("duplicate GraphQL field %q", key)
 		}
-		field, err := s.entity(table, name, enums)
+		object, err := entityObject(name, table.Columns, enums)
+		if err != nil {
+			return nil, err
+		}
+		field, err := s.entity(table, object, enums)
 		if err != nil {
 			return nil, err
 		}
 		fields[key] = field
-		page, err := s.tablePage(table, field.Type, pageInfo, enums)
+		page, err := s.tablePage(table, object, pageInfo, enums, false)
 		if err != nil {
 			return nil, err
 		}
-		fields[key+"s"] = page
+		fields[key+"s"] = page.field
+		collections[table.Name] = page
+	}
+	viewInfo := newPageInfo(true)
+	for _, view := range database.Schema.Views {
+		name := view.ExportName
+		if name == "" {
+			name = view.Name
+		}
+		if !schema.Identifier(name) {
+			return nil, fmt.Errorf("invalid GraphQL view name %q", name)
+		}
+		key := strings.ToLower(name[:1]) + name[1:] + "s"
+		if fields[key] != nil {
+			return nil, fmt.Errorf("duplicate GraphQL field %q", key)
+		}
+		table := schema.Table{Name: view.Name, Columns: viewColumns(view)}
+		object, err := entityObject(name, table.Columns, enums)
+		if err != nil {
+			return nil, err
+		}
+		page, err := s.tablePage(table, object, viewInfo, enums, true)
+		if err != nil {
+			return nil, err
+		}
+		fields[key] = page.field
+	}
+	if err := s.addRelations(collections, opts.Relations); err != nil {
+		return nil, err
 	}
 	buildSchemaMu.Lock()
 	defer buildSchemaMu.Unlock()
@@ -180,25 +213,50 @@ func property(c schema.Column) string {
 	return c.Name
 }
 
-func (s *Server) entity(table schema.Table, name string, enums map[string]*gql.Enum) (*gql.Field, error) {
+func entityObject(name string, cols []schema.Column, enums map[string]*gql.Enum) (*gql.Object, error) {
 	fields := gql.Fields{}
-	columns := map[string]schema.Column{}
-	for _, col := range table.Columns {
-		field := property(col)
-		core, err := columnType(col, enums)
+	for _, col := range cols {
+		key := property(col)
+		if fields[key] != nil {
+			return nil, fmt.Errorf("duplicate GraphQL field %s.%s", name, key)
+		}
+		typ, err := columnType(col, enums)
 		if err != nil {
 			return nil, err
 		}
-		if fields[field] != nil {
-			return nil, fmt.Errorf("duplicate GraphQL field %s.%s", name, field)
-		}
 		if col.NotNull || col.Primary {
-			core = gql.NewNonNull(core)
+			typ = gql.NewNonNull(typ)
 		}
-		fields[field] = &gql.Field{Type: core}
+		fields[key] = &gql.Field{Type: typ, Resolve: func(p gql.ResolveParams) (any, error) {
+			return columnValue(col, p.Source.(map[string]any)[col.Name])
+		}}
+	}
+	return gql.NewObject(gql.ObjectConfig{Name: name, Fields: fields}), nil
+}
+
+func viewColumns(view schema.View) []schema.Column {
+	out := make([]schema.Column, len(view.Fields))
+	for i, f := range view.Fields {
+		col := schema.Column{Type: "json"}
+		if f.Column != nil {
+			col = *f.Column
+			col.Primary = false
+		}
+		col.Name = f.Name
+		if f.Property != "" {
+			col.Property = f.Property
+		}
+		out[i] = col
+	}
+	return out
+}
+
+func (s *Server) entity(table schema.Table, entity *gql.Object, enums map[string]*gql.Enum) (*gql.Field, error) {
+	name := entity.Name()
+	columns := map[string]schema.Column{}
+	for _, col := range table.Columns {
 		columns[col.Name] = col
 	}
-	entity := gql.NewObject(gql.ObjectConfig{Name: name, Fields: fields})
 	args := gql.FieldConfigArgument{}
 	keys := table.PrimaryKeyColumns()
 	if len(keys) == 0 {
@@ -220,51 +278,17 @@ func (s *Server) entity(table schema.Table, name string, enums map[string]*gql.E
 		}
 		args[key.JS] = &gql.ArgumentConfig{Type: gql.NewNonNull(core)}
 	}
-	return &gql.Field{Type: entity, Args: args, Resolve: func(p gql.ResolveParams) (any, error) {
-		predicates := make([]string, len(keys))
-		values := make([]any, len(keys))
-		for i, key := range keys {
-			value, ok := p.Args[key.JS]
-			if !ok {
-				return nil, fmt.Errorf("missing primary key %s", key.JS)
-			}
-			col := columns[key.SQL]
-			if col.Type == "hex" || col.Type == "address" {
-				text, err := canonicalHex(fmt.Sprint(value))
-				if err != nil {
-					return nil, err
-				}
-				value = text
-			}
-			predicates[i] = schema.Quote(key.SQL) + fmt.Sprintf("=$%d", i+1)
-			values[i] = value
-		}
-		// Read JSON as text so database drivers cannot round a large numeric value.
-		query := "SELECT row_to_json(t)::text AS payload FROM " + schema.Quote(table.Name) + " t WHERE " + strings.Join(predicates, " AND ") + " LIMIT 1"
-		rows, err := s.database.QueryReadOnlyInNamespace(p.Context, s.namespace, query, values...)
-		if err != nil || len(rows.Rows) == 0 {
-			return nil, err
-		}
-		var record map[string]any
-		decoder := json.NewDecoder(strings.NewReader(fmt.Sprint(rows.Rows[0]["payload"])))
-		decoder.UseNumber()
-		if err := decoder.Decode(&record); err != nil {
-			return nil, err
-		}
-		return projectRow(table.Columns, record)
-	}}, nil
-}
-
-func projectRow(columns []schema.Column, record map[string]any) (map[string]any, error) {
-	out := make(map[string]any, len(columns))
-	for _, col := range columns {
-		v, err := columnValue(col, record[col.Name])
-		if err != nil {
-			return nil, err
-		}
-		out[property(col)] = v
+	keyCols := make([]schema.Column, len(keys))
+	for i, key := range keys {
+		keyCols[i] = columns[key.SQL]
 	}
-	return out, nil
+	return &gql.Field{Type: entity, Args: args, Resolve: func(p gql.ResolveParams) (any, error) {
+		vals := make([]any, len(keys))
+		for i, key := range keys {
+			vals[i] = p.Args[key.JS]
+		}
+		return s.loadOne(p.Context, table, keyCols, vals)
+	}}, nil
 }
 
 func canonicalHex(s string) (string, error) {
@@ -291,14 +315,15 @@ func columnValue(c schema.Column, v any) (any, error) {
 			return nil, fmt.Errorf("invalid array value for %s", c.Name)
 		}
 		c.Type = typ
+		out := make([]any, len(items))
 		for i, item := range items {
 			value, err := columnValue(c, item)
 			if err != nil {
 				return nil, err
 			}
-			items[i] = value
+			out[i] = value
 		}
-		return items, nil
+		return out, nil
 	}
 	switch c.Type {
 	case "bytes":
