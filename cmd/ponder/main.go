@@ -72,11 +72,16 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 		root := flags.String("root", ".", "Native Go project root")
 		app := flags.String("app", ".", "Go app package to build")
+		indexName := flags.String("schema", os.Getenv("DATABASE_SCHEMA"), "Indexing database schema")
+		viewsName := flags.String("views-schema", os.Getenv("DATABASE_VIEWS_SCHEMA"), "Published views schema")
 		if e := flags.Parse(args[1:]); e != nil {
 			return e
 		}
 		if flags.NArg() > 0 {
 			return fmt.Errorf("unexpected arguments")
+		}
+		if e := schema.ValidateNamespaces(*indexName, *viewsName); e != nil {
+			return e
 		}
 		directory, e := filepath.Abs(*root)
 		if e != nil {
@@ -97,6 +102,17 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		command := exec.CommandContext(ctx, binary)
 		command.Dir = directory
 		command.Env = append(os.Environ(), "PONDER_COMMAND="+args[0])
+		flags.Visit(func(f *flag.Flag) {
+			switch f.Name {
+			case "schema":
+				command.Env = append(command.Env, "DATABASE_SCHEMA="+*indexName)
+			case "views-schema":
+				command.Env = append(command.Env, "DATABASE_VIEWS_SCHEMA="+*viewsName)
+			}
+		})
+		if *indexName != "" {
+			command.Env = append(command.Env, "PONDER_SHADOW_SCHEMA="+*indexName)
+		}
 		command.Stdin = os.Stdin
 		command.Stdout = out
 		command.Stderr = os.Stderr

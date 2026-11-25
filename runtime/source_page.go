@@ -69,7 +69,7 @@ func (e *Engine) ReadSourcePage(ctx context.Context, source *store.SourceSyncSto
 		bloom, _ := raw.Block["logsBloom"].(string)
 		block := Block{Number: Hex(cursor.BlockNumber), Timestamp: Hex(cursor.BlockTimestamp), Hash: hash, ParentHash: parent, LogsBloom: bloom}
 		normalized := raw
-		event := Event{Name: name, Block: block, Transaction: raw.Transaction, Receipt: raw.TransactionReceipt, Trace: raw.Trace, Normalized: &normalized}
+		event := Event{ID: raw.Checkpoint, Name: name, Block: block, Transaction: raw.Transaction, Receipt: raw.TransactionReceipt, Trace: raw.Trace, Normalized: &normalized}
 		if raw.Log != nil {
 			topics := []string{}
 			if values, ok := raw.Log["topics"].([]any); ok {

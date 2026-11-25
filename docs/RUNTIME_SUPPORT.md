@@ -15,7 +15,7 @@ full Ponder 0.18.2 compatibility. The fixed upstream is
 | RPC / sync | Source-shaped actions, cache data, historical/realtime helpers and the selected actual RuntimeRunner pipelines. | Complete provider behavior, all archive/prefix failures and complete original runtime oracle coverage. |
 | Recovery | Selected native durable receipts, exact retries, safe progress and application process exits. | Database server/engine/power-loss failures; M45 PGlite abrupt process-exit acceptance. |
 | GraphQL HTTP and entities | Mountable read-only handler, primary and composite keys, scalar and enum fields, checkpoints and operation limits on PostgreSQL and PGlite. Table collections support typed filters, sorting, counts, offsets and bidirectional cursors. Relations support batched entity reads and filtered child pages. SQL views support aggregate fields and offset pages. | All 44 pinned GraphQL and middleware source cases mapped. |
-| CLI / development modes | Existing implemented commands and configuration compilation. | Complete CLI start/dev/db lifecycle and end-to-end acceptance. |
+| CLI / development modes | Native start and serve pass project namespaces to the child process. Runtime startup, real ERC-20 minting and factory swaps are verified through the original SDK on both database backends. | Complete CLI dev and database management lifecycle. |
 
 The source ledger records individual mappings, execution status, pending type obligations and the five retired database migration cases. [Source inventory](../parity/test-ledger.json)
 

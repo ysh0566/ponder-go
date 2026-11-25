@@ -65,6 +65,8 @@ type Log struct {
 	Removed          bool     `json:"removed"`
 }
 type Event struct {
+	// ID is the source checkpoint for an indexed chain event.
+	ID          string
 	Name        string
 	Args        any
 	Block       Block
@@ -581,6 +583,13 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 	return e.Store.CompleteBlock(ctx, store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}, e.filter)
 }
 func (e *Engine) Run(ctx context.Context) error {
+	if err := e.Sync(ctx); err != nil {
+		return err
+	}
+	return e.poll(ctx)
+}
+
+func (e *Engine) poll(ctx context.Context) error {
 	delay := time.Duration(e.chain.PollingIntervalMS) * time.Millisecond
 	if delay <= 0 {
 		delay = time.Second
@@ -588,13 +597,13 @@ func (e *Engine) Run(ctx context.Context) error {
 	ticker := time.NewTicker(delay)
 	defer ticker.Stop()
 	for {
-		if err := e.Sync(ctx); err != nil {
-			return err
-		}
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-ticker.C:
+			if err := e.Sync(ctx); err != nil {
+				return err
+			}
 		}
 	}
 }
