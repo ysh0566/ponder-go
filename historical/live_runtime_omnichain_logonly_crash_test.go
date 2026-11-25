@@ -21,8 +21,8 @@ import (
 )
 
 type omniLogOnlyCrashSpec struct {
-	RPC, Phase, Marker, Case, ParentCase, GoldenSHA256 string
-	Storage                                            store.IndependentStorageOptions
+	Backend, RPC, Phase, Marker, Case, ParentCase, GoldenSHA256 string
+	Storage                                                     store.IndependentStorageOptions
 }
 
 func omniLogOnlyCrashChild(t *testing.T, path string) {
@@ -46,7 +46,7 @@ func omniLogOnlyCrashChild(t *testing.T, path string) {
 	all := omniLogOnlyCompleteEvents(tc)
 	calls := []string{}
 	exit := func() {
-		proof := map[string]any{"phase": s.Phase, "testcase": s.ParentCase, "calls": calls, "pid": os.Getpid(), "exit": 83, "golden_sha256": s.GoldenSHA256, "query_size": tc.QuerySize, "postgres_engine_stays_running": true}
+		proof := map[string]any{"phase": s.Phase, "testcase": s.ParentCase, "calls": calls, "pid": os.Getpid(), "exit": 83, "golden_sha256": s.GoldenSHA256, "query_size": tc.QuerySize, "backend": s.Backend, "postgres_engine_stays_running": s.Backend == "postgres"}
 		data, _ := json.Marshal(proof)
 		if os.WriteFile(s.Marker, data, 0600) != nil {
 			os.Exit(87)
@@ -72,10 +72,7 @@ func omniLogOnlyCrashChild(t *testing.T, path string) {
 		o.Historical.QuerySize = tc.QuerySize
 	}
 	t.Logf("static-log child scope=%s phase=%s querySize=%d", s.ParentCase, s.Phase, tc.QuerySize)
-	r, err := OpenRuntimePostgres(context.Background(), o)
-	if err != nil {
-		t.Fatal(err)
-	}
+	r := runtimeOpen(t, s.Backend, o)
 	_, err = r.Run(context.Background())
 	t.Fatalf("log application child did not exit: %v", err)
 }
@@ -84,12 +81,18 @@ func TestRuntimeOmnichainLogOnlyApplicationExit(t *testing.T) {
 		omniLogOnlyCrashChild(t, path)
 		return
 	}
-	for _, name := range []string{"default_failure", "default_late_failure", "empty_chain_failure", "all_empty"} {
+	runOmniLogOnlyExitCases(t, "postgres", []string{"default_failure", "default_late_failure", "empty_chain_failure", "all_empty"})
+	runOmniLogOnlyExitCases(t, "pglite", []string{"default_failure", "all_empty"})
+}
+
+func runOmniLogOnlyExitCases(t *testing.T, backend string, names []string) {
+	t.Helper()
+	for _, name := range names {
 		for _, phase := range []string{"handler", "activated"} {
 			if name == "all_empty" && phase == "handler" {
 				continue
 			}
-			t.Run("postgres/"+name+"/"+phase, func(t *testing.T) {
+			t.Run(backend+"/"+name+"/"+phase, func(t *testing.T) {
 				continuousRoot(t)
 				g := omniLogOnlyFixture(t, name).Data
 				tc := omniLogsNamedCase(t, g, name)
@@ -101,7 +104,7 @@ func TestRuntimeOmnichainLogOnlyApplicationExit(t *testing.T) {
 				calls := []string{}
 				handlers := omniLogsHandlers(func() []omniLogsEvent { return expected }, &calls, nil)
 				b := omniLogOnlyBuild(t, g, p, handlers)
-				f := newManagedFiniteFixture(t, "postgres", b)
+				f := newManagedFiniteFixture(t, backend, b)
 				omnichainGoldenStorage(&f)
 				dir := newRuntimeExitDirectory(t, "omni-logonly-exit-"+name+"-"+phase+"-")
 				golden, err := os.ReadFile("testdata/runtime_omnichain_logonly_source_golden.json")
@@ -109,7 +112,7 @@ func TestRuntimeOmnichainLogOnlyApplicationExit(t *testing.T) {
 					t.Fatal(err)
 				}
 				marker := filepath.Join(dir, "exit-marker.json")
-				spec := omniLogOnlyCrashSpec{RPC: p.server.URL, Phase: phase, Marker: marker, Case: name, ParentCase: t.Name(), GoldenSHA256: fmt.Sprintf("%x", sha256.Sum256(golden)), Storage: f.options.Owned.Storage}
+				spec := omniLogOnlyCrashSpec{Backend: backend, RPC: p.server.URL, Phase: phase, Marker: marker, Case: name, ParentCase: t.Name(), GoldenSHA256: fmt.Sprintf("%x", sha256.Sum256(golden)), Storage: f.options.Owned.Storage}
 				raw, err := json.Marshal(spec)
 				if err != nil {
 					t.Fatal(err)
@@ -139,6 +142,7 @@ func TestRuntimeOmnichainLogOnlyApplicationExit(t *testing.T) {
 					t.Fatal(err)
 				}
 				var proof struct {
+					Backend      string   `json:"backend"`
 					Phase        string   `json:"phase"`
 					Testcase     string   `json:"testcase"`
 					Calls        []string `json:"calls"`
@@ -147,7 +151,7 @@ func TestRuntimeOmnichainLogOnlyApplicationExit(t *testing.T) {
 					QuerySize    int      `json:"query_size"`
 					EngineAlive  bool     `json:"postgres_engine_stays_running"`
 				}
-				if err = json.Unmarshal(raw, &proof); err != nil || proof.Phase != phase || proof.Testcase != t.Name() || proof.Exit != 83 || proof.GoldenSHA256 != spec.GoldenSHA256 || proof.QuerySize != tc.QuerySize || !proof.EngineAlive {
+				if err = json.Unmarshal(raw, &proof); err != nil || proof.Phase != phase || proof.Testcase != t.Name() || proof.Exit != 83 || proof.GoldenSHA256 != spec.GoldenSHA256 || proof.QuerySize != tc.QuerySize || proof.Backend != backend || proof.EngineAlive != (backend == "postgres") {
 					t.Fatalf("invalid log exit marker %s err%v", raw, err)
 				}
 				wantCalls := omniLogsKeys(omniLogOnlyCompleteEvents(tc))
@@ -177,7 +181,7 @@ func TestRuntimeOmnichainLogOnlyApplicationExit(t *testing.T) {
 					if attempt > 0 {
 						expected = []omniLogsEvent{}
 					}
-					r := runtimeOpen(t, "postgres", o)
+					r := runtimeOpen(t, backend, o)
 					if attempt == 0 && phase == "handler" {
 						c, e := r.Control(context.Background())
 						if e != nil {
@@ -224,6 +228,7 @@ func omniLogOnlyFixture(t *testing.T, name string) omniLogOnlyCase {
 	t.Fatalf("missing log-only case %s", name)
 	return omniLogOnlyCase{}
 }
+
 func omniLogOnlyCompleteEvents(tc omniLogsCase) []omniLogsEvent {
 	byKey := map[string]omniLogsEvent{}
 	for _, snapshot := range tc.Snapshots {
