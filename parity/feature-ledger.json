@@ -299,13 +299,19 @@
       "id": "rpc-websocket",
       "status": "partial",
       "implementation_files": [
-        "rpc/client.go"
+        "rpc/client.go",
+        "rpc/transient.go"
       ],
       "upstream_sources": [
         "packages/core/src/rpc/index.ts"
       ],
-      "evidence": [],
-      "remaining": "Requests/head subscription verified; reconnect/resubscribe and provider-specific behavior remain."
+      "evidence": [
+        "parity/runs/native-runtime-recovery/RESULT.md"
+      ],
+      "remaining": "Native subscriptions fail over and resubscribe after transient disconnects. Provider-specific subscription behavior and notification replay across downtime require separate coverage.",
+      "native_test_files": [
+        "rpc/subscription_reconnect_test.go"
+      ]
     },
     {
       "id": "rpc-rate-retry-cache",
@@ -370,9 +376,13 @@
         "parity/runs/bloom-m27/focused-runtime-03.jsonl",
         "parity/runs/batch-26.json",
         "parity/runs/bloom-m27/full-01-evidence/recovery.json",
-        "parity/runs/bloom-m27/focused-recovery-01.jsonl"
+        "parity/runs/bloom-m27/focused-recovery-01.jsonl",
+        "parity/runs/native-runtime-recovery/RESULT.md"
       ],
-      "remaining": "M27 bloom8 source cases/12 assertions and2 native compiler obligations verified; full Go/race1804 pass each. Native predicates precompiled once and only contract/factory log RPC screened; accounts/traces/setup/block/progress preserved. Original own widened scenario unchanged except explicitRPC3->1; separate4-case real-EVM false-positive fixture retains3RPC with local filtering and actual-source header checks. Missing cached field preserves validation/atomic retry; fresh uncached absence,empty0x/zero/short/malformed andrealchain143 verified. Full reconnect/stall/log validation/finality and scheduler remain."
+      "remaining": "M27 bloom8 source cases/12 assertions and2 native compiler obligations verified; full Go/race1804 pass each. Native predicates precompiled once and only contract/factory log RPC screened; accounts/traces/setup/block/progress preserved. Original own widened scenario unchanged except explicitRPC3->1; separate4-case real-EVM false-positive fixture retains3RPC with local filtering and actual-source header checks. Missing cached field preserves validation/atomic retry; fresh uncached absence,empty0x/zero/short/malformed andrealchain143 verified. Full reconnect/stall/log validation/finality and scheduler remain.",
+      "native_test_files": [
+        "runtime/application_recovery_test.go"
+      ]
     },
     {
       "id": "ordering-multichain",

@@ -67,7 +67,7 @@ export PONDER_LOCAL_CONTRACT
 ./bin/ponder start --root ./examples/erc20 --schema ponder_go_erc20_demo
 ```
 
-CLI 会调用 PATH 中的 `go` 构建示例，完成历史同步后打开 HTTP 服务并继续跟踪新区块。保持终端 B 运行。日志会给出实际监听地址，默认从 `127.0.0.1:42069` 开始，端口占用时会尝试下一个端口。
+CLI 会调用 PATH 中的 `go` 构建示例，先打开 HTTP 服务，在历史同步完成后继续跟踪新区块。回填期间可查看 `/health` 和 `/status`，`/ready` 返回 503。临时 RPC 连接或网关错误会触发退避重试，恢复到已提交进度后 `/ready` 返回 200。保持终端 B 运行。日志会给出实际监听地址，默认从 `127.0.0.1:42069` 开始，端口占用时会尝试下一个端口。
 
 ## 查询索引结果
 

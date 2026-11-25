@@ -287,7 +287,7 @@ func (c *Client) attemptResult(ctx context.Context, attempt rpcAttempt, method s
 	}
 	raw, err := c.request(ctx, attempt.url, data, attempt.id)
 	if err != nil {
-		return nil, err
+		return nil, markTransport(ctx, err)
 	}
 	var response struct {
 		ID     uint64          `json:"id"`
@@ -313,8 +313,12 @@ func (c *Client) attemptResult(ctx context.Context, attempt rpcAttempt, method s
 
 func (c *Client) request(ctx context.Context, url string, data []byte, id uint64) ([]byte, error) {
 	if strings.HasPrefix(url, "ws://") || strings.HasPrefix(url, "wss://") {
-		ws, _, e := websocket.DefaultDialer.DialContext(ctx, url, nil)
+		ws, response, e := websocket.DefaultDialer.DialContext(ctx, url, nil)
 		if e != nil {
+			if response != nil {
+				response.Body.Close()
+				return nil, &HTTPStatusError{StatusCode: response.StatusCode}
+			}
 			return nil, e
 		}
 		defer ws.Close()
@@ -402,62 +406,110 @@ func readHTTPBody(response *http.Response, limit int64) ([]byte, error) {
 	return nil, oversize()
 }
 
-// Subscribe uses a dedicated connection and closes it on cancellation.
+// Subscribe delivers notifications over a dedicated connection. If the transport
+// drops, it registers a new subscription. Providers do not replay missed events.
 func (c *Client) Subscribe(ctx context.Context, kind string, params ...any) (<-chan json.RawMessage, error) {
-	url := ""
+	var urls []string
 	for _, u := range c.URLs {
-		if strings.HasPrefix(u, "ws") {
-			url = u
-			break
+		if strings.HasPrefix(u, "ws://") || strings.HasPrefix(u, "wss://") {
+			urls = append(urls, u)
 		}
 	}
-	if url == "" {
+	if len(urls) == 0 {
 		return nil, fmt.Errorf("WebSocket endpoint required")
 	}
-	ws, _, e := websocket.DefaultDialer.DialContext(ctx, url, nil)
-	if e != nil {
-		return nil, e
+	request, err := json.Marshal(map[string]any{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": append([]any{kind}, params...)})
+	if err != nil {
+		return nil, err
 	}
-	p := append([]any{kind}, params...)
-	if e = ws.WriteJSON(map[string]any{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": p}); e != nil {
-		ws.Close()
-		return nil, e
+	connect := func(url string) (*websocket.Conn, string, func(), error) {
+		ws, response, err := websocket.DefaultDialer.DialContext(ctx, url, nil)
+		if err != nil {
+			if response != nil {
+				response.Body.Close()
+				return nil, "", nil, &HTTPStatusError{StatusCode: response.StatusCode}
+			}
+			return nil, "", nil, markTransport(ctx, err)
+		}
+		stop := context.AfterFunc(ctx, func() { ws.Close() })
+		closeConn := func() { stop(); ws.Close() }
+		var reply struct {
+			Result string
+			Error  *Error
+			ID     uint64
+		}
+		if err = ws.WriteMessage(websocket.TextMessage, request); err == nil {
+			err = ws.ReadJSON(&reply)
+		}
+		if err != nil {
+			closeConn()
+			return nil, "", nil, markTransport(ctx, err)
+		}
+		if reply.Error != nil {
+			closeConn()
+			return nil, "", nil, reply.Error
+		}
+		if reply.ID != 1 || reply.Result == "" {
+			closeConn()
+			return nil, "", nil, fmt.Errorf("invalid subscription response")
+		}
+		return ws, reply.Result, closeConn, nil
 	}
-	var reply struct {
-		Result string
-		Error  *Error
+	endpoint := 0
+	ws, id, closeConn, err := connect(urls[endpoint])
+	for IsTransient(err) && endpoint+1 < len(urls) {
+		endpoint++
+		ws, id, closeConn, err = connect(urls[endpoint])
 	}
-	if e = ws.ReadJSON(&reply); e != nil {
-		ws.Close()
-		return nil, e
-	}
-	if reply.Error != nil {
-		ws.Close()
-		return nil, reply.Error
+	if err != nil {
+		return nil, err
 	}
 	out := make(chan json.RawMessage, 16)
-	stop := context.AfterFunc(ctx, func() { ws.Close() })
 	go func() {
 		defer close(out)
-		defer ws.Close()
-		defer stop()
-		for {
+		defer func() {
+			if closeConn != nil {
+				closeConn()
+			}
+		}()
+		delay := 100 * time.Millisecond
+		for ctx.Err() == nil {
 			var msg struct {
+				Method string
 				Params struct {
 					Subscription string
 					Result       json.RawMessage
 				}
 			}
-			if e := ws.ReadJSON(&msg); e != nil {
-				return
-			}
-			if msg.Params.Subscription != reply.Result {
+			if err := ws.ReadJSON(&msg); err == nil {
+				if msg.Method != "eth_subscription" || msg.Params.Subscription != id {
+					continue
+				}
+				select {
+				case out <- msg.Params.Result:
+				case <-ctx.Done():
+					return
+				}
+				delay = 100 * time.Millisecond
 				continue
-			}
-			select {
-			case out <- msg.Params.Result:
-			case <-ctx.Done():
+			} else if !IsTransient(markTransport(ctx, err)) {
 				return
+			}
+			closeConn()
+			closeConn = nil
+			for {
+				if waitForRetry(ctx, delay) != nil {
+					return
+				}
+				delay = min(delay*2, 5*time.Second)
+				endpoint = (endpoint + 1) % len(urls)
+				ws, id, closeConn, err = connect(urls[endpoint])
+				if err == nil {
+					break
+				}
+				if !IsTransient(err) {
+					return
+				}
 			}
 		}
 	}()
