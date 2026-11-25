@@ -46,6 +46,7 @@ type Client struct {
 	cache               rpc.Cache
 	chainID             any
 	ensResolver         Object
+	ensTLDs             []string
 	multicallDeployment Object
 	cacheEnabled        bool
 	prefetched          map[string]*prefetchValue
@@ -80,6 +81,7 @@ func NewClientSet(chains []Object, requesters []rpc.Requester, caches ...rpc.Cac
 		metadata, _ := chain["viemChain"].(Object)
 		contracts, _ := metadata["contracts"].(Object)
 		c.ensResolver, _ = contracts["ensUniversalResolver"].(Object)
+		c.ensTLDs = ensSuffixes(metadata["ensTlds"])
 		c.multicallDeployment, _ = contracts["multicall3"].(Object)
 		c.cacheEnabled, _ = chain["cacheRpcRequests"].(bool)
 		if i < len(caches) {

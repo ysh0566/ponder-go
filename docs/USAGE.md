@@ -189,6 +189,8 @@ log.Printf("transaction %s, block %v, confirmations %s", hash, receipt["blockNum
 
 `GetTransaction` 和 `GetTransactionReceipt` 保留 JSON-RPC 字段表示，区块号和 gas 等数量是十六进制字符串。`GetTransactionCount` 读取账户 nonce，`GetBlockTransactionCount` 读取区块交易笔数，两者返回 `uint64`，默认读取当前链头。要在事件所在区块读取账户 nonce，可显式传入 `indexing.TransactionBlock{BlockNumber: n}`，其中 `n` 为 `*big.Int`。用 `TransactionLookup{Block: ..., Index: ...}` 可以按区块和交易序号定位交易。缺失的交易或回执默认会重试，可通过 `RetryEmptyResponse` 关闭重试。[回调交易 API 与重组实测](../parity/runs/native-transaction-actions/RESULT.md)
 
+对于已经按 ENS 规则规范化的名称，可以用 `args.Context.Client.GetEnsResolver(ctx, "alice.eth")` 查询负责这个名称的解析器合约地址。默认读取事件所在区块，可通过 `indexing.ENSResolverOptions` 显式传入其他高度或 Universal Resolver 地址。成功返回零地址表示该次查询没有找到解析器。读取名称对应的钱包地址是单独的操作。[ENS 历史查询示例与测试](../parity/runs/native-ens-resolver/RESULT.md)
+
 在生成的 Go 回调中，`GetFeeHistory` 默认以事件所在区块作为费用区间的末端。`GetProof` 在同一区块读取账户及指定存储槽的 EIP-1186 证明。费用、余额和存储值使用 `*big.Int`，证明节点保留 RPC 返回的十六进制编码。
 
 ```go
