@@ -1,0 +1,556 @@
+{
+  "code_commit": "236c28742dbbbd0c136af33af1492e0585c67bde",
+  "upstream_commit": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "source_file": "packages/core/src/config/utilityTypes.test-d.ts",
+  "source_sha256": "ee80e9c111ee164c7734a20081c481cd1047f8ec04fef64fa9eefff394feb7e5",
+  "original": {
+    "passed": 34,
+    "vitest_json_sha256": "c48ba26ec5fbf284902ce67c4612bba3165d41e305c2e4791ff9d2f935691280"
+  },
+  "typescript": {
+    "typescript": "5.4.5",
+    "cases": 34,
+    "assertions": 68,
+    "source_sha256": "ee80e9c111ee164c7734a20081c481cd1047f8ec04fef64fa9eefff394feb7e5"
+  },
+  "native": {
+    "normal": {
+      "ponder.local/ponder-go/cmd/ponder": [
+        {
+          "passed_leaves": 5,
+          "go_test_json_sha256": "db0b9cd30cd69fc4e3e976baf5193feaf07833b2788a67f9483266b634c3f0bc"
+        }
+      ],
+      "ponder.local/ponder-go/abi": [
+        {
+          "passed_leaves": 187,
+          "go_test_json_sha256": "db0b9cd30cd69fc4e3e976baf5193feaf07833b2788a67f9483266b634c3f0bc"
+        }
+      ],
+      "ponder.local/ponder-go/config": [
+        {
+          "passed_leaves": 38,
+          "go_test_json_sha256": "c19b39c2b4ea60839c7a395ed70a5f10148ce81e229bd292df77d1c6b836d4e4"
+        },
+        {
+          "passed_leaves": 39,
+          "go_test_json_sha256": "139fea7d66cc0f736860f840eedcc3a033a55a9f7ddb06801f96b14765e5f3c0"
+        }
+      ],
+      "ponder.local/ponder-go/runtime": [
+        {
+          "passed_leaves": 44,
+          "go_test_json_sha256": "b81a13f1474d4eeddc0a47bfb10a76bdc171db2d72b1075a0101c8fe3035d6a9"
+        }
+      ]
+    },
+    "race": {
+      "ponder.local/ponder-go/cmd/ponder": [
+        {
+          "passed_leaves": 5,
+          "go_test_json_sha256": "44d3a6485999076d82b587bd16b24d82574298333d4b2575fe5ee7c4499bf252"
+        }
+      ],
+      "ponder.local/ponder-go/abi": [
+        {
+          "passed_leaves": 187,
+          "go_test_json_sha256": "44d3a6485999076d82b587bd16b24d82574298333d4b2575fe5ee7c4499bf252"
+        }
+      ],
+      "ponder.local/ponder-go/config": [
+        {
+          "passed_leaves": 38,
+          "go_test_json_sha256": "860dbad4198fd0c52761a508258c6ebef9f50b16c55098d8fb1ba073a6d00367"
+        },
+        {
+          "passed_leaves": 39,
+          "go_test_json_sha256": "59d0b50762675a19a0738f8c314edabe79f9038f413cf6e1f9fb8cc5aed684aa"
+        }
+      ],
+      "ponder.local/ponder-go/runtime": [
+        {
+          "passed_leaves": 44,
+          "go_test_json_sha256": "72bc715f9d2af121e3637bc0e47b01f0868fb3ccabc2f3a98328da83f7bd560e"
+        }
+      ]
+    }
+  },
+  "configuration_replays": {
+    "normal": {
+      "directory": "live-1318532950",
+      "original_active_passed": 39,
+      "original_declared_skip": 1,
+      "original_sha256": "83b9260517a9b07b31f8f2b41fdc743f634049527df6bf32e148064333b7e4ff",
+      "native_sha256": "73afd07b0e85f28e2a58829fbc6a3cf0e7ce6902b9b4f59fdff5bcc2c22c2c30"
+    },
+    "race": {
+      "directory": "live-2799754206",
+      "original_active_passed": 39,
+      "original_declared_skip": 1,
+      "original_sha256": "7be135a576653300cf1827f08cded2b7acf6de3b4d17fef85cf210abddbb0d63",
+      "native_sha256": "19ad999eb589ee50e44bb2f930b9074be41022ad0e5f13900d5e59bca686206b"
+    }
+  },
+  "ledger": {
+    "ported": 817,
+    "go_ports": 813,
+    "retained_sdk": 4,
+    "unimplemented": 83,
+    "out_of_scope": 5
+  },
+  "manifest_fields": [
+    "id",
+    "source_file",
+    "source_sha256",
+    "source_state",
+    "full_name",
+    "inputs",
+    "assertions",
+    "port_status",
+    "mapping",
+    "scope_reason"
+  ],
+  "mappings": [
+    {
+      "source_id": "a9431cec418ebc8f48c3",
+      "title": "ExtractAbiEvents",
+      "source_line": 22,
+      "go_test": "TestSourceABIUtilityTypes/ExtractAbiEvents",
+      "assertions_sha256": "c52001fa465fa2756970ad5940e48fa852eefb9ba95d8ab7d2de9fd25a055a0f",
+      "operation": "ExtractAbiEvents",
+      "input_layout": "tuple",
+      "expected": [
+        "Event0",
+        "Event1",
+        "Event1Overloaded"
+      ]
+    },
+    {
+      "source_id": "c9c150014aeecd32fd8a",
+      "title": "ExtractAbiEvents semi-weak abi",
+      "source_line": 29,
+      "go_test": "TestSourceABIUtilityTypes/ExtractAbiEvents_semi-weak_abi",
+      "assertions_sha256": "c52001fa465fa2756970ad5940e48fa852eefb9ba95d8ab7d2de9fd25a055a0f",
+      "operation": "ExtractAbiEvents",
+      "input_layout": "array",
+      "expected": [
+        "Event0",
+        "Event1",
+        "Event1Overloaded"
+      ]
+    },
+    {
+      "source_id": "e7d37a4ba5ecb553efe5",
+      "title": "ExtractAbiEvents no events",
+      "source_line": 36,
+      "go_test": "TestSourceABIUtilityTypes/ExtractAbiEvents_no_events",
+      "assertions_sha256": "a31f7746f6c4f18794364fcb9d689215be7f0d03c01d1da8a1ef6fa03e6679f0",
+      "operation": "ExtractAbiEvents",
+      "input_layout": "tuple",
+      "expected": [
+        "AbiEvent"
+      ]
+    },
+    {
+      "source_id": "84f83fc6ae57393fe8ba",
+      "title": "ExtractAbiFunctions",
+      "source_line": 43,
+      "go_test": "TestSourceABIUtilityTypes/ExtractAbiFunctions",
+      "assertions_sha256": "0c7feec94bd30c387e78a58b8c08779bd275706d40e54ca70865108a25fc363d",
+      "operation": "ExtractAbiFunctions",
+      "input_layout": "tuple",
+      "expected": [
+        "Func0",
+        "Func1",
+        "Func1Overloaded"
+      ]
+    },
+    {
+      "source_id": "434502910ee3075b1a8c",
+      "title": "ExtractAbiFunctions semi-weak abi",
+      "source_line": 52,
+      "go_test": "TestSourceABIUtilityTypes/ExtractAbiFunctions_semi-weak_abi",
+      "assertions_sha256": "0c7feec94bd30c387e78a58b8c08779bd275706d40e54ca70865108a25fc363d",
+      "operation": "ExtractAbiFunctions",
+      "input_layout": "array",
+      "expected": [
+        "Func0",
+        "Func1",
+        "Func1Overloaded"
+      ]
+    },
+    {
+      "source_id": "8b69ca73cd6ce1f73e6e",
+      "title": "ExtractAbiFunctions no events",
+      "source_line": 59,
+      "go_test": "TestSourceABIUtilityTypes/ExtractAbiFunctions_no_events",
+      "assertions_sha256": "ca116d240646c1221b3a59810c75fc729d0e6256efc5f277f143aa7c3c70b964",
+      "operation": "ExtractAbiFunctions",
+      "input_layout": "tuple",
+      "expected": [
+        "AbiFunction"
+      ]
+    },
+    {
+      "source_id": "61bb53f778930e170763",
+      "title": "ParseAbiEvent no overloaded events ",
+      "source_line": 66,
+      "go_test": "TestSourceABIUtilityTypes/ParseAbiEvent_no_overloaded_events_",
+      "assertions_sha256": "0ddf0adb141c77050b5a1125eca8a42161be4a114005cd0ad67c3fed38ccfc42",
+      "operation": "ParseAbiEvent",
+      "input_layout": "tuple",
+      "expected": [
+        "Event0"
+      ]
+    },
+    {
+      "source_id": "e81721183be0fdee5c4d",
+      "title": "ParseAbiEvent overloaded events",
+      "source_line": 77,
+      "go_test": "TestSourceABIUtilityTypes/ParseAbiEvent_overloaded_events",
+      "assertions_sha256": "4c49073cea6af01ae785b2c81a52045c20c4e57ea976316e56b090497689a6b5",
+      "operation": "ParseAbiEvent",
+      "input_layout": "tuple",
+      "expected": [
+        "Event1Overloaded"
+      ]
+    },
+    {
+      "source_id": "75f8dcc8c7e33f1acb34",
+      "title": "ParseAbiEvent with semi-weak abi",
+      "source_line": 88,
+      "go_test": "TestSourceABIUtilityTypes/ParseAbiEvent_with_semi-weak_abi",
+      "assertions_sha256": "0ddf0adb141c77050b5a1125eca8a42161be4a114005cd0ad67c3fed38ccfc42",
+      "operation": "ParseAbiEvent",
+      "input_layout": "array",
+      "expected": [
+        "Event0"
+      ]
+    },
+    {
+      "source_id": "1a664084b7c2de34d509",
+      "title": "ParseAbiEvent with weak abi",
+      "source_line": 99,
+      "go_test": "TestSourceABIUtilityTypes/ParseAbiEvent_with_weak_abi",
+      "assertions_sha256": "a31f7746f6c4f18794364fcb9d689215be7f0d03c01d1da8a1ef6fa03e6679f0",
+      "operation": "ParseAbiEvent",
+      "input_layout": "weak",
+      "expected": [
+        "AbiEvent"
+      ]
+    },
+    {
+      "source_id": "727a8f96224d1f77c996",
+      "title": "ParseAbiEvent no matching events",
+      "source_line": 110,
+      "go_test": "TestSourceABIUtilityTypes/ParseAbiEvent_no_matching_events",
+      "assertions_sha256": "a31f7746f6c4f18794364fcb9d689215be7f0d03c01d1da8a1ef6fa03e6679f0",
+      "operation": "ParseAbiEvent",
+      "input_layout": "tuple",
+      "expected": [
+        "AbiEvent"
+      ]
+    },
+    {
+      "source_id": "ddcd7b4dc88794cbe88a",
+      "title": "ParseAbiFunction no overloaded events ",
+      "source_line": 121,
+      "go_test": "TestSourceABIUtilityTypes/ParseAbiFunction_no_overloaded_events_",
+      "assertions_sha256": "f3cb1e661a2331bd4c0f172b919c6c92107e787708b4827f3d7a6b4dd246c27d",
+      "operation": "ParseAbiFunction",
+      "input_layout": "tuple",
+      "expected": [
+        "Func0"
+      ]
+    },
+    {
+      "source_id": "ed3a13fa72617a1c6401",
+      "title": "ParseAbiFunction overloaded events",
+      "source_line": 132,
+      "go_test": "TestSourceABIUtilityTypes/ParseAbiFunction_overloaded_events",
+      "assertions_sha256": "53e169e90d59ed74e8edd7084a0b1e7bbd0344379e925350daa6912ee268ea87",
+      "operation": "ParseAbiFunction",
+      "input_layout": "tuple",
+      "expected": [
+        "Func1"
+      ]
+    },
+    {
+      "source_id": "9d69211e01091b06351b",
+      "title": "ParseAbiFunction with semi-weak abi",
+      "source_line": 143,
+      "go_test": "TestSourceABIUtilityTypes/ParseAbiFunction_with_semi-weak_abi",
+      "assertions_sha256": "f3cb1e661a2331bd4c0f172b919c6c92107e787708b4827f3d7a6b4dd246c27d",
+      "operation": "ParseAbiFunction",
+      "input_layout": "array",
+      "expected": [
+        "Func0"
+      ]
+    },
+    {
+      "source_id": "2a3be9aa3a3f9b0c5ae4",
+      "title": "ParseAbiFunction with weak abi",
+      "source_line": 154,
+      "go_test": "TestSourceABIUtilityTypes/ParseAbiFunction_with_weak_abi",
+      "assertions_sha256": "ca116d240646c1221b3a59810c75fc729d0e6256efc5f277f143aa7c3c70b964",
+      "operation": "ParseAbiFunction",
+      "input_layout": "weak",
+      "expected": [
+        "AbiFunction"
+      ]
+    },
+    {
+      "source_id": "2bf290f13c721b76cea0",
+      "title": "ParseAbiFunction no matching events",
+      "source_line": 165,
+      "go_test": "TestSourceABIUtilityTypes/ParseAbiFunction_no_matching_events",
+      "assertions_sha256": "ca116d240646c1221b3a59810c75fc729d0e6256efc5f277f143aa7c3c70b964",
+      "operation": "ParseAbiFunction",
+      "input_layout": "tuple",
+      "expected": [
+        "AbiFunction"
+      ]
+    },
+    {
+      "source_id": "313a020a29ac87f10ef7",
+      "title": "FormatAbiEvent no overloaded events",
+      "source_line": 176,
+      "go_test": "TestSourceABIUtilityTypes/FormatAbiEvent_no_overloaded_events",
+      "assertions_sha256": "dd1e24a526750301232f16b71d50d292376d23c6b30382560f86a64099e41613",
+      "operation": "FormatAbiEvent",
+      "input_layout": "tuple",
+      "expected": [
+        "Event0"
+      ]
+    },
+    {
+      "source_id": "c43c40cc3964ad30ce6e",
+      "title": "FormatAbiEvent overloaded events",
+      "source_line": 184,
+      "go_test": "TestSourceABIUtilityTypes/FormatAbiEvent_overloaded_events",
+      "assertions_sha256": "c41c2d0dc16ffc393f95d399a5dd11e9b574f115609b2332d8cb70b672bda087",
+      "operation": "FormatAbiEvent",
+      "input_layout": "tuple",
+      "expected": [
+        "Event1(bytes32 indexed)"
+      ]
+    },
+    {
+      "source_id": "39b47c7f9f2c87cd369d",
+      "title": "FormatAbiEvent with semi-weak abi",
+      "source_line": 195,
+      "go_test": "TestSourceABIUtilityTypes/FormatAbiEvent_with_semi-weak_abi",
+      "assertions_sha256": "dd1e24a526750301232f16b71d50d292376d23c6b30382560f86a64099e41613",
+      "operation": "FormatAbiEvent",
+      "input_layout": "array",
+      "expected": [
+        "Event0"
+      ]
+    },
+    {
+      "source_id": "32f76f0fa6c6dabe69fd",
+      "title": "FormatAbiEvent with weak abi",
+      "source_line": 203,
+      "go_test": "TestSourceABIUtilityTypes/FormatAbiEvent_with_weak_abi",
+      "assertions_sha256": "dd1e24a526750301232f16b71d50d292376d23c6b30382560f86a64099e41613",
+      "operation": "FormatAbiEvent",
+      "input_layout": "weak",
+      "expected": [
+        "Event0"
+      ]
+    },
+    {
+      "source_id": "f111ed82320e07c31a82",
+      "title": "FormatAbiEvent with no matching events",
+      "source_line": 211,
+      "go_test": "TestSourceABIUtilityTypes/FormatAbiEvent_with_no_matching_events",
+      "assertions_sha256": "6a9b22eb9f2b0e49b3e69911af8c3e7c31c912835f4daa854bcac4265affa69c",
+      "operation": "FormatAbiEvent",
+      "input_layout": "tuple",
+      "expected": [
+        "never"
+      ]
+    },
+    {
+      "source_id": "5bd6f04e20eb77f61d54",
+      "title": "FormatAbiFunction no overloaded events",
+      "source_line": 222,
+      "go_test": "TestSourceABIUtilityTypes/FormatAbiFunction_no_overloaded_events",
+      "assertions_sha256": "2efb4034c89af2d0e28e8899a51d60cb5140227643108788ba093bb37635879a",
+      "operation": "FormatAbiFunction",
+      "input_layout": "tuple",
+      "expected": [
+        "func0()"
+      ]
+    },
+    {
+      "source_id": "cc2128c1afc806c9a3a4",
+      "title": "FormatAbiFunction overloaded events",
+      "source_line": 230,
+      "go_test": "TestSourceABIUtilityTypes/FormatAbiFunction_overloaded_events",
+      "assertions_sha256": "65e23ab1678ef4ed1a123459fd0a655ebf294f5222def9a914d1fd2ce7d2fefb",
+      "operation": "FormatAbiFunction",
+      "input_layout": "tuple",
+      "expected": [
+        "func1(bytes32)"
+      ]
+    },
+    {
+      "source_id": "95b03f6151b4d774cbe2",
+      "title": "FormatAbiFunction with semi-weak abi",
+      "source_line": 241,
+      "go_test": "TestSourceABIUtilityTypes/FormatAbiFunction_with_semi-weak_abi",
+      "assertions_sha256": "2efb4034c89af2d0e28e8899a51d60cb5140227643108788ba093bb37635879a",
+      "operation": "FormatAbiFunction",
+      "input_layout": "array",
+      "expected": [
+        "func0()"
+      ]
+    },
+    {
+      "source_id": "b6f562314895c24758b0",
+      "title": "FormatAbiFunction with weak abi",
+      "source_line": 249,
+      "go_test": "TestSourceABIUtilityTypes/FormatAbiFunction_with_weak_abi",
+      "assertions_sha256": "2efb4034c89af2d0e28e8899a51d60cb5140227643108788ba093bb37635879a",
+      "operation": "FormatAbiFunction",
+      "input_layout": "weak",
+      "expected": [
+        "func0()"
+      ]
+    },
+    {
+      "source_id": "63d57a2126e4ea9f2062",
+      "title": "FormatAbiFunction with no matching events",
+      "source_line": 257,
+      "go_test": "TestSourceABIUtilityTypes/FormatAbiFunction_with_no_matching_events",
+      "assertions_sha256": "6a9b22eb9f2b0e49b3e69911af8c3e7c31c912835f4daa854bcac4265affa69c",
+      "operation": "FormatAbiFunction",
+      "input_layout": "tuple",
+      "expected": [
+        "never"
+      ]
+    },
+    {
+      "source_id": "c734ce7b293daa9c0784",
+      "title": "SafeEventNames no overloaded events",
+      "source_line": 268,
+      "go_test": "TestSourceABIUtilityTypes/SafeEventNames_no_overloaded_events",
+      "assertions_sha256": "d45c1bc586fb77d36720b14b299c0591a3a4449eb568050b1ce09b20aa054338",
+      "operation": "SafeEventNames",
+      "input_layout": "tuple",
+      "expected": [
+        "Event0",
+        "Event1"
+      ]
+    },
+    {
+      "source_id": "63b11e99ae369208a7fd",
+      "title": "SafeEventNames overloaded events",
+      "source_line": 277,
+      "go_test": "TestSourceABIUtilityTypes/SafeEventNames_overloaded_events",
+      "assertions_sha256": "2805f41c5854d549cd38151dbd84a6a849776604fde11f55b69bc9df84e5e1c7",
+      "operation": "SafeEventNames",
+      "input_layout": "tuple",
+      "expected": [
+        "Event0",
+        "Event1()",
+        "Event1(bytes32 indexed)"
+      ]
+    },
+    {
+      "source_id": "4e47db0e5b990a119356",
+      "title": "SafeEventNames semi-weak abi",
+      "source_line": 290,
+      "go_test": "TestSourceABIUtilityTypes/SafeEventNames_semi-weak_abi",
+      "assertions_sha256": "d45c1bc586fb77d36720b14b299c0591a3a4449eb568050b1ce09b20aa054338",
+      "operation": "SafeEventNames",
+      "input_layout": "array",
+      "expected": [
+        "Event0",
+        "Event1"
+      ]
+    },
+    {
+      "source_id": "bf2586855e8ab0b20a25",
+      "title": "SafeEventNames weak abi",
+      "source_line": 299,
+      "go_test": "TestSourceABIUtilityTypes/SafeEventNames_weak_abi",
+      "assertions_sha256": "e74aa83a230d2b6911559cdff66ab55a384ecdc241f29c453b0fd9f22b7667a3",
+      "operation": "SafeEventNames",
+      "input_layout": "weak",
+      "expected": [
+        "string"
+      ]
+    },
+    {
+      "source_id": "b183a9dde4b0bef87317",
+      "title": "SafeFunctionNames no overloaded events",
+      "source_line": 306,
+      "go_test": "TestSourceABIUtilityTypes/SafeFunctionNames_no_overloaded_events",
+      "assertions_sha256": "320069647cf5f4938ef43045c2d28273efd714850d182dd7e5f15f31d3128fd1",
+      "operation": "SafeFunctionNames",
+      "input_layout": "tuple",
+      "expected": [
+        "func0()",
+        "func1()"
+      ]
+    },
+    {
+      "source_id": "30e0638e27fab9e24419",
+      "title": "SafeFunctionNames overloaded events",
+      "source_line": 315,
+      "go_test": "TestSourceABIUtilityTypes/SafeFunctionNames_overloaded_events",
+      "assertions_sha256": "e8c3c8a9e92bac7d5651cab09e2d703ce0413b661270a59341f17a984b13b0ef",
+      "operation": "SafeFunctionNames",
+      "input_layout": "tuple",
+      "expected": [
+        "func0()",
+        "func1()",
+        "func1(bytes32)"
+      ]
+    },
+    {
+      "source_id": "944c6c1d3596ea9a106f",
+      "title": "SafeFunctionNames semi-weak abi",
+      "source_line": 324,
+      "go_test": "TestSourceABIUtilityTypes/SafeFunctionNames_semi-weak_abi",
+      "assertions_sha256": "320069647cf5f4938ef43045c2d28273efd714850d182dd7e5f15f31d3128fd1",
+      "operation": "SafeFunctionNames",
+      "input_layout": "array",
+      "expected": [
+        "func0()",
+        "func1()"
+      ]
+    },
+    {
+      "source_id": "4bcb0929eaf5a6ea087c",
+      "title": "SafeFunctionNames weak abi",
+      "source_line": 333,
+      "go_test": "TestSourceABIUtilityTypes/SafeFunctionNames_weak_abi",
+      "assertions_sha256": "f099256b92dbc90a85bad6a621f4f326c5ee9c556fb55c8373dd6e6ea1503451",
+      "operation": "SafeFunctionNames",
+      "input_layout": "weak",
+      "expected": [
+        "`${string}()`"
+      ]
+    }
+  ],
+  "module": {
+    "build": "passed",
+    "vet": "passed"
+  },
+  "commands": {
+    "original": "vitest run --configLoader native --typecheck.only --maxWorkers=1 src/config/utilityTypes.test-d.ts",
+    "source": "node tools/abi-catalog-source.mjs",
+    "abi": "go test -count=1 [-race] ./abi ./cmd/ponder",
+    "config": "go test -count=1 [-race] -run '^(TestSource.*|TestAccount.*|TestExecutableSource.*|TestTypedSource.*)$' ./config",
+    "config_live": "go test -count=1 [-race] -run '^TestUpstreamConfigRuntime$' ./config",
+    "runtime": "go test -count=1 [-race] -run '^(TestSourceApplications|TestContractLogAndTraceBatch|TestContractTraceRuntime|TestSourceTraceIdentityVectors|TestAccountTransferRuntime|TestAccountFactory.*|TestFactoryRuntime|TestFilterFactoryBirthAndReorg)$' ./runtime"
+  },
+  "cleanup": {
+    "temporary_directories": 6,
+    "allocated_bytes_before_removal": 1187966976,
+    "accounting": "Some package-store files use hard links."
+  }
+}
