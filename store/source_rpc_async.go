@@ -78,6 +78,13 @@ func (c *AsyncSourceRPCRequestCache) CacheGet(ctx context.Context, key string) (
 	return c.base.CacheGet(ctx, key)
 }
 
+func (c *AsyncSourceRPCRequestCache) CacheGetMany(ctx context.Context, keys []string) ([]json.RawMessage, error) {
+	if err := c.active(); err != nil {
+		return nil, err
+	}
+	return c.base.CacheGetMany(ctx, keys)
+}
+
 // CachePut retains the old synchronous operation; only BeginCachePut queues.
 func (c *AsyncSourceRPCRequestCache) CachePut(ctx context.Context, key string, value json.RawMessage) error {
 	if err := c.active(); err != nil {
@@ -91,6 +98,10 @@ func (c *AsyncSourceRPCRequestCache) CachePut(ctx context.Context, key string, v
 // owned queue before returning. The worker, not a scheduling handshake, consumes
 // this queue. Validation errors resolve the same single-result future immediately.
 func (c *AsyncSourceRPCRequestCache) BeginCachePut(ctx context.Context, key string, value json.RawMessage) <-chan error {
+	return c.BeginCachePutMany(ctx, []rpc.CacheEntry{{Key: key, Value: value}})
+}
+
+func (c *AsyncSourceRPCRequestCache) BeginCachePutMany(ctx context.Context, entries []rpc.CacheEntry) <-chan error {
 	result := make(chan error, 1)
 	fail := func(err error) <-chan error { result <- err; close(result); return result }
 	if err := ctx.Err(); err != nil {
@@ -99,18 +110,16 @@ func (c *AsyncSourceRPCRequestCache) BeginCachePut(ctx context.Context, key stri
 	if err := c.active(); err != nil {
 		return fail(err)
 	}
-	request, err := c.base.request(key)
+	if len(entries) == 0 {
+		result <- nil
+		close(result)
+		return result
+	}
+	rows, err := c.base.writeRows(entries)
 	if err != nil {
 		return fail(err)
 	}
-	if !json.Valid(value) {
-		return fail(fmt.Errorf("RPC result must be JSON"))
-	}
-	block, err := sourceRequestBlock(request)
-	if err != nil {
-		return fail(err)
-	}
-	query, args, err := c.base.cache.prepareSourceRPC(c.base.chain, []SourceRPCRawResult{{Request: request, BlockNumber: block, Result: string(value)}})
+	query, args, err := c.base.cache.prepareSourceRPC(c.base.chain, rows)
 	if err != nil {
 		return fail(err)
 	}

@@ -45,6 +45,21 @@ type Cache interface {
 	CachePut(context.Context, string, json.RawMessage) error
 }
 
+// CacheBatchReader returns results in key order. A nil entry is a miss.
+type CacheBatchReader interface {
+	CacheGetMany(context.Context, []string) ([]json.RawMessage, error)
+}
+
+type CacheEntry struct {
+	Key   string
+	Value json.RawMessage
+}
+
+// AsyncCacheBatchWriter admits the entire batch as one owned write.
+type AsyncCacheBatchWriter interface {
+	BeginCachePutMany(context.Context, []CacheEntry) <-chan error
+}
+
 // AsyncCache is an optional admission contract for fire-and-forget cache writes.
 // BeginCachePut must snapshot and validate its input, construct the actual write,
 // and admit it to an owned write queue before returning. The buffered future
