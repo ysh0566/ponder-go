@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"ponder.local/ponder-go/metrics"
 	"ponder.local/ponder-go/schema"
 	"ponder.local/ponder-go/sqlquery"
 	"reflect"
@@ -31,6 +32,7 @@ type BigIntSerializationError struct{ NonRetryableUserError }
 type InvalidStoreAccessError struct{ NonRetryableUserError }
 
 type CacheOptions struct {
+	Metrics  *metrics.Registry
 	Complete bool
 	MaxBytes int64
 	Profile  *CacheProfile
@@ -51,6 +53,7 @@ type Conflict struct {
 }
 
 type IndexingStore struct {
+	metrics  *metrics.Registry
 	readonly bool
 	writer   *Writer
 	Cache    *IndexingCache
@@ -102,6 +105,7 @@ func (w *Writer) indexingLocked(options ...CacheOptions) *IndexingStore {
 	profile := w.s.profileState
 	maxBytes := int64(128 << 20)
 	if len(options) > 0 {
+		db.metrics = options[0].Metrics
 		if options[0].Profile != nil {
 			profile = options[0].Profile
 		}
@@ -202,6 +206,14 @@ func (db *IndexingStore) table(name string) (schema.Table, *tableCache, error) {
 	return t, db.Cache.tables[name], nil
 }
 
+func (db *IndexingStore) queryTable(name, method string) (schema.Table, *tableCache, error) {
+	t, cache, err := db.table(name)
+	if err == nil && db.metrics != nil {
+		db.metrics.IncrementStoreQueries(t.Name, method, 1)
+	}
+	return t, cache, err
+}
+
 func (db *IndexingStore) checkAccess(table schema.Table, method string, key Row) error {
 	if db.writer.s.Ordering != schema.Isolated {
 		return nil
@@ -249,6 +261,13 @@ func (db *IndexingStore) get(ctx context.Context, t schema.Table, cache *tableCa
 	if e != nil {
 		return nil, e
 	}
+	kind := "hit"
+	if cache.complete {
+		kind = "complete"
+	}
+	if db.metrics != nil {
+		defer func() { db.metrics.IncrementCacheRequests(t.Name, kind, 1) }()
+	}
 	if row, ok := cache.updates[ck]; ok {
 		return row, nil
 	}
@@ -265,6 +284,7 @@ func (db *IndexingStore) get(ctx context.Context, t schema.Table, cache *tableCa
 	if cache.complete {
 		return nil, nil
 	}
+	kind = "miss"
 	cache.spillover[ck] = true
 	physical := Row{}
 	for _, c := range t.Columns {
@@ -296,7 +316,7 @@ func (db *IndexingStore) Find(ctx context.Context, name string, key Row) (Row, e
 	if e := db.active(); e != nil {
 		return nil, e
 	}
-	t, cache, e := db.table(name)
+	t, cache, e := db.queryTable(name, "find")
 	if e != nil {
 		return nil, e
 	}
@@ -369,7 +389,7 @@ func (db *IndexingStore) InsertOne(ctx context.Context, name string, input Row, 
 	if e := db.writable(); e != nil {
 		return nil, e
 	}
-	t, cache, e := db.table(name)
+	t, cache, e := db.queryTable(name, "insert")
 	if e != nil {
 		return nil, e
 	}
@@ -382,7 +402,7 @@ func (db *IndexingStore) InsertMany(ctx context.Context, name string, inputs []R
 	if e := db.writable(); e != nil {
 		return nil, e
 	}
-	t, cache, e := db.table(name)
+	t, cache, e := db.queryTable(name, "insert")
 	if e != nil {
 		return nil, e
 	}
@@ -444,7 +464,7 @@ func (db *IndexingStore) Update(ctx context.Context, name string, key, set Row) 
 	if e := db.writable(); e != nil {
 		return nil, e
 	}
-	t, cache, e := db.table(name)
+	t, cache, e := db.queryTable(name, "update")
 	if e != nil {
 		return nil, e
 	}
@@ -457,7 +477,7 @@ func (db *IndexingStore) UpdateFunc(ctx context.Context, name string, key Row, u
 	if e := db.writable(); e != nil {
 		return nil, e
 	}
-	t, cache, e := db.table(name)
+	t, cache, e := db.queryTable(name, "update")
 	if e != nil {
 		return nil, e
 	}
@@ -530,7 +550,7 @@ func (db *IndexingStore) Delete(ctx context.Context, name string, key Row) (bool
 	if e := db.writable(); e != nil {
 		return false, e
 	}
-	t, cache, e := db.table(name)
+	t, cache, e := db.queryTable(name, "delete")
 	if e != nil {
 		return false, e
 	}

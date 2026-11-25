@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"ponder.local/ponder-go/checkpoint"
+	"ponder.local/ponder-go/metrics"
 	"ponder.local/ponder-go/sqlquery"
 	"ponder.local/ponder-go/store"
 	"strconv"
@@ -18,17 +19,20 @@ import (
 )
 
 type Server struct {
-	Store      *store.Store
-	Ready      atomic.Bool
-	MaxLive    int64
-	live       atomic.Int64
-	requests   atomic.Uint64
-	ChainNames map[uint64]string
-	API        http.Handler
+	Store          *store.Store
+	Ready          atomic.Bool
+	Readiness      Readiness
+	Metrics        *metrics.Registry
+	CollectMetrics func(context.Context) (string, error)
+	MaxLive        int64
+	live           atomic.Int64
+	requests       atomic.Uint64
+	ChainNames     map[uint64]string
+	API            http.Handler
 }
 
 func New(s *store.Store) *Server {
-	return &Server{Store: s, MaxLive: 1000, ChainNames: map[uint64]string{}}
+	return &Server{Store: s, Metrics: metrics.New(), MaxLive: 1000, ChainNames: map[uint64]string{}}
 }
 
 type request struct {
@@ -111,38 +115,51 @@ func writeJSON(w http.ResponseWriter, status int, value any) {
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(value)
 }
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.requests.Add(1)
-	switch r.URL.Path {
-	case "/health", "/ready", "/metrics", "/status", "/sql/db", "/sql/live":
-	default:
-		if s.API != nil {
-			s.API.ServeHTTP(w, r)
-		} else {
-			http.NotFound(w, r)
-		}
-		return
-	}
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", 405)
-		return
-	}
+func (s *Server) serveRoute(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/health":
-		writeJSON(w, 200, map[string]string{"status": "ok"})
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
 		return
 	case "/ready":
-		if !s.Ready.Load() {
-			http.Error(w, "Not ready", 503)
+		ready, err := s.isReady(r.Context())
+		if err != nil {
+			http.Error(w, err.Error(), 500)
 			return
 		}
-		writeJSON(w, 200, map[string]bool{"ready": true})
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		if !ready {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, _ = w.Write([]byte("Historical indexing is not complete."))
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 		return
 	case "/metrics":
-		w.Header().Set("Content-Type", "text/plain; version=0.0.4")
-		fmt.Fprintf(w, "ponder_go_http_requests_total %d\nponder_go_live_queries %d\n", s.requests.Load(), s.live.Load())
+		collect := s.CollectMetrics
+		if collect == nil && s.Metrics != nil {
+			collect = s.Metrics.Collect
+		}
+		var body string
+		if collect != nil {
+			var err error
+			body, err = collect(r.Context())
+			if err != nil {
+				writeJSON(w, 500, struct{}{})
+				return
+			}
+		}
+		w.Header().Set("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+		if body != "" && !strings.HasSuffix(body, "\n") {
+			body += "\n"
+		}
+		fmt.Fprintf(w, "%sponder_go_http_requests_total %d\nponder_go_live_queries %d\n", body, s.requests.Load(), s.live.Load())
 		return
 	case "/status":
+		if s.Store == nil {
+			http.Error(w, "Database unavailable", 503)
+			return
+		}
 		p, e := s.Store.Progress(r.Context())
 		if e != nil {
 			http.Error(w, e.Error(), 500)
@@ -163,17 +180,20 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		writeJSON(w, 200, status)
 		return
-	case "/sql/db", "/sql/live":
-	default:
-		if s.API != nil {
-			s.API.ServeHTTP(w, r)
-		} else {
-			http.NotFound(w, r)
-		}
-		return
 	}
-	if r.URL.Path == "/sql/live" && !s.Ready.Load() {
-		http.Error(w, "Live queries are not available until the backfill is complete", 503)
+	if r.URL.Path == "/sql/live" {
+		ready, err := s.isReady(r.Context())
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		if !ready {
+			http.Error(w, "Live queries are not available until the backfill is complete", 503)
+			return
+		}
+	}
+	if s.Store == nil {
+		http.Error(w, "Database unavailable", 503)
 		return
 	}
 	q, e := decodeQuery(r.URL.Query().Get("sql"))

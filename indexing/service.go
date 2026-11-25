@@ -370,7 +370,7 @@ func (s *Service) ProcessHistoricalEvents(ctx context.Context, events []Object, 
 		if e = s.execute(ctx, event, view, false); e != nil {
 			return e
 		}
-		s.options.Metrics.Completed[name]++
+		s.options.Metrics.complete(name)
 		profile.Count++
 		s.options.EventCount[name]++
 		s.options.Clients.SetEventCounts(s.options.EventCount)
@@ -463,7 +463,7 @@ func (s *Service) ProcessRealtimeEvents(ctx context.Context, events []Object) er
 		if e = s.execute(ctx, event, view, false); e != nil {
 			return e
 		}
-		s.options.Metrics.Completed[name]++
+		s.options.Metrics.complete(name)
 		s.options.EventCount[name]++
 		s.options.Clients.SetEventCounts(s.options.EventCount)
 	}
