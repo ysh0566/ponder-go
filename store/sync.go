@@ -32,6 +32,27 @@ func (s *Store) SyncedBlock(ctx context.Context, chain, number uint64) (*SyncBlo
 	}
 	return &SyncBlock{ChainID: chain, Number: number, Hash: fmt.Sprint(row["hash"]), ParentHash: fmt.Sprint(row["parent_hash"]), Timestamp: timestamp, Payload: json.RawMessage(fmt.Sprint(row["payload"]))}, nil
 }
+
+// IndexedFinalityCandidate returns the newest indexed header within the reorg
+// cutoff. Genesis, when indexed, is immutable even during the initial window.
+func (s *Store) IndexedFinalityCandidate(ctx context.Context, chain, through, cutoff uint64) (*SyncBlock, error) {
+	const fields = "SELECT number::text AS height,timestamp::text AS time,hash FROM "
+	rows, err := s.Backend.Query(ctx, fields+s.syncTable("blocks")+" WHERE chain_id=$1 AND number<=$2 AND (timestamp<=$3 OR number=0) ORDER BY number DESC LIMIT 1", chain, through, cutoff)
+	if err != nil || len(rows.Rows) == 0 {
+		return nil, err
+	}
+	row := rows.Rows[0]
+	height, err := strconv.ParseUint(fmt.Sprint(row["height"]), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	timestamp, err := strconv.ParseUint(fmt.Sprint(row["time"]), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	return &SyncBlock{ChainID: chain, Number: height, Timestamp: timestamp, Hash: fmt.Sprint(row["hash"])}, nil
+}
+
 func (s *Store) CompleteBlock(ctx context.Context, b SyncBlock, filter string) error {
 	if s.managedLive != nil {
 		return s.managedLive.rejectLegacy(ctx)

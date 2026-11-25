@@ -56,8 +56,9 @@ func TestIsolatedIndexer(t *testing.T) {
 			snapshot := call(first, "evm_snapshot")
 			call(first, "evm_mine")
 			call(second, "evm_mine")
+			immediate := 0
 			cfg := config.Config{Ordering: schema.Isolated,
-				Chains: []config.Chain{{Name: "first", ID: 101, RPC: []string{first}, PollingIntervalMS: 20}, {Name: "second", ID: 202, RPC: []string{gateway.URL}, PollingIntervalMS: 20}},
+				Chains: []config.Chain{{Name: "first", ID: 101, RPC: []string{first}, PollingIntervalMS: 20}, {Name: "second", ID: 202, RPC: []string{gateway.URL}, PollingIntervalMS: 20, ReorgWindow: &immediate}},
 				Blocks: []config.BlockSource{{Name: "Head", Chain: "first", Interval: 1, StartBlock: 1}, {Name: "Head", Chain: "second", Interval: 1, StartBlock: 1}},
 			}
 			model := schema.Schema{Tables: []schema.Table{{Name: "height", PrimaryKey: []string{"chain_id", "number"}, Columns: []schema.Column{
@@ -137,6 +138,15 @@ func TestIsolatedIndexer(t *testing.T) {
 			call(first, "evm_mine")
 			call(second, "evm_mine")
 			await(func() bool { return len(rows()) == 4 })
+			// Chain B finalizes immediately while chain A still needs its undo records.
+			await(func() bool {
+				r, err := backend.Query(ctx, "SELECT checkpoint FROM "+schema.Quote(ns)+"._ponder_go_finalized WHERE chain_id=202")
+				if err != nil || len(r.Rows) != 1 {
+					return false
+				}
+				cp, err := checkpoint.Decode(fmt.Sprint(r.Rows[0]["checkpoint"]))
+				return err == nil && cp.BlockNumber == 2
+			})
 			before := rows()
 			if call(first, "evm_revert", snapshot) != true {
 				t.Fatal("snapshot did not revert")

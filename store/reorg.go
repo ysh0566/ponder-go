@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/schema"
@@ -143,6 +144,22 @@ func (s *Store) revert(ctx context.Context, target checkpoint.Checkpoint, rewind
 // Finalize removes only an undo prefix that no future valid reorg may require.
 // Multichain retains finalized writes behind an unfinalized write on another chain.
 func (s *Store) Finalize(ctx context.Context, target checkpoint.Checkpoint) error {
+	return s.finalize(ctx, target, nil)
+}
+
+// ErrIndexedBlockChanged reports that the indexed header was replaced or removed.
+var ErrIndexedBlockChanged = errors.New("indexed block changed before finalization")
+
+// FinalizeIndexedBlock binds the finality transaction to the indexed header
+// verified by the worker. A concurrent rewind cannot seal its replacement.
+func (s *Store) FinalizeIndexedBlock(ctx context.Context, b SyncBlock) error {
+	if s.staged || b.Hash == "" {
+		return fmt.Errorf("an atomic store and an indexed block hash are required")
+	}
+	return s.finalize(ctx, checkpoint.Block(b.Timestamp, b.ChainID, b.Number, true), &b)
+}
+
+func (s *Store) finalize(ctx context.Context, target checkpoint.Checkpoint, indexed *SyncBlock) error {
 	if s.managedLive != nil {
 		return s.managedLive.rejectLegacy(ctx)
 	}
@@ -163,6 +180,15 @@ func (s *Store) Finalize(ctx context.Context, target checkpoint.Checkpoint) erro
 	if e = s.requireLease(ctx, tx); e != nil {
 		return e
 	}
+	if indexed != nil {
+		r, err := tx.Query(ctx, "SELECT 1 FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number=$2 AND timestamp=$3 AND hash=$4", indexed.ChainID, indexed.Number, indexed.Timestamp, indexed.Hash)
+		if err != nil {
+			return err
+		}
+		if len(r.Rows) == 0 {
+			return ErrIndexedBlockChanged
+		}
+	}
 	if s.staged {
 		if e = prepareLiveQueryChanges(ctx, tx, s.Backend.Dialect()); e != nil {
 			return e
@@ -171,7 +197,7 @@ func (s *Store) Finalize(ctx context.Context, target checkpoint.Checkpoint) erro
 			return e
 		}
 	}
-	if len(s.Schema.Tables) == 0 {
+	if indexed == nil && len(s.Schema.Tables) == 0 {
 		if e = tx.Exec(ctx, "UPDATE "+s.internal("_ponder_go_finalized")+" SET checkpoint=$1,safe_checkpoint=$1 WHERE chain_id=$2", encoded, target.ChainID); e != nil {
 			return e
 		}
@@ -202,6 +228,9 @@ func (s *Store) Finalize(ctx context.Context, target checkpoint.Checkpoint) erro
 			return tx.Commit(ctx)
 		}
 		return fmt.Errorf("chain checkpoint state must be initialized before finalization")
+	}
+	if indexed != nil && len(r.Rows) > 0 && encoded <= fmt.Sprint(r.Rows[0]["checkpoint"]) {
+		return tx.Commit(ctx)
 	}
 	if len(r.Rows) > 0 && encoded < fmt.Sprint(r.Rows[0]["checkpoint"]) {
 		return fmt.Errorf("finality regressed")

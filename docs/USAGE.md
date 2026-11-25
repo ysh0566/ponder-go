@@ -177,6 +177,8 @@ if err != nil {
 return app.Wait()
 ```
 
+原子存储的单链和独立多链索引器会根据每条链的 `ReorgWindow`（单位为秒，默认 180）推进最终确认位置。即使持续索引且没有设置 `EndBlock`，较早区块的撤销日志也会清理。窗口内的写入保留撤销记录，发生重组时索引器会回到共同祖先并重放新区块。将窗口设为 0 会立即确认已索引区块。[两个后端的重组验证](../parity/runs/native-continuous-finality/RESULT.md)
+
 一条链的 RPC 临时不可用时，其他链继续追块，`/ready` 等待所有参与索引的链完成追赶。某条链所有来源均指定 `EndBlock` 时，该链处理到最后一个结束区块，等它达到配置的最终性后停止轮询。所有链结束后 HTTP 查询继续可用。
 
 已有的默认多链或全局排序配置使用 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 创建协调运行器，也可以将该运行器作为 `worker` 传给同一个 `runtime.LaunchApplication`。这些模式允许的来源和区间见[运行模式矩阵](RUNTIME_SUPPORT.md)。

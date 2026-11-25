@@ -1508,6 +1508,27 @@
         "parity/runs/native-engine-recovery/RESULT.md"
       ],
       "remaining": "Physical power loss and engine termination inside coordinated multi-domain runtime operations remain unverified."
+    },
+    {
+      "id": "native-continuous-finality",
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/engine.go",
+        "store/reorg.go",
+        "store/sync.go"
+      ],
+      "native_test_files": [
+        "runtime/continuous_finality_test.go",
+        "runtime/isolated_indexer_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/realtime.ts",
+        "packages/core/src/runtime/isolated.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-continuous-finality/RESULT.md"
+      ],
+      "remaining": "Coordinated multichain workers use their own finalization paths."
     }
   ]
 }
