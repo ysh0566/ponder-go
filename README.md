@@ -30,11 +30,12 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 
 | 使用场景 | 当前能用什么 | 还缺什么 |
 | --- | --- | --- |
-| 在同一个 Go 入口协调多链 | `runtime.NewIndexer` 支持默认、Isolated 和 Omnichain 三种排序。默认模式已验证无写入回调的跨链重放、空块重组、两条链的 RPC 同时中断后分批恢复和冷启动。 | 使用独立业务库和同步库的 `historical.RuntimeRunner` 仍要求有限区间启用 RPC 缓存，且不能注册 setup 回调。它的 Omnichain 模式仅支持已最终确认的有限区间，尚不支持实时追块或工厂合约事件。[选用默认模式](docs/USAGE.md#使用默认多链排序) · [双后端验证](parity/runs/native-default-multichain/RESULT.md) |
+| 在同一个 Go 入口协调多链 | `runtime.NewIndexer` 支持默认、Isolated 和 Omnichain 三种排序。默认模式已验证无写入回调的跨链重放、空块重组、两条链的 RPC 同时中断后分批恢复和冷启动。 | 使用独立业务库和同步库的 `historical.RuntimeRunner` 仍要求有限区间启用 RPC 缓存，且不能注册 setup 回调。它的 Omnichain 模式仅接收已最终确认的有限区间、静态 ABI 日志和特定区块回调组合。实时追块、工厂事件、账户交易或转账、函数调用 trace 和 setup 均待实现。[选用默认模式](docs/USAGE.md#使用默认多链排序) · [双后端验证](parity/runs/native-default-multichain/RESULT.md) |
+| 让一次编译生成的来源计划直接启动多链 | Go 项目可以在 `config.Config` 里直接声明多条链和来源，再通过 `runtime.NewIndexer` 运行。 | `SourceIndexingBuild.NativeConfig(name)` 每次只生成一条链的执行计划。原生多链构造器还不能直接接收一个包含全部链的编译计划。[来源计划](config/source_native.go) · [索引器入口](runtime/indexer.go) |
 | 在 RPC 故障或链重组时保持索引一致 | PostgreSQL 和 PGlite 均已验证同一条日志命中三个 Go 回调、同一笔 CALL 命中两个函数选择器相同的回调，以及回调失败后的重启和链重组重放。默认多链和 Omnichain 在同链节点切换、分支改变后均会重放受影响的跨链回调。 | 特定商业网关的限流与归档响应仍有 17 条上游断言未通过。[节点切换测试](parity/runs/native-rpc-pool-reorg/RESULT.md) · [回调重放测试](parity/runs/native-callback-overlap/RESULT.md) |
 | 验收生产部署 | 已验证只读查询、受限写入账号处理事件与重组、部署管理账号发布和清理原生部署，也验证了单库写事务中强杀数据库引擎。[PostgreSQL 账号配置](docs/USAGE.md#postgresql-写入与部署管理账号) | 业务库与同步库分开的协调多链运行中强杀数据库引擎、主机掉电、其他 PGlite 运行模式的异常退出，以及独立双库运行器的权限布局仍待验收。[恢复测试](parity/runs/native-engine-recovery/RESULT.md) · [读角色测试](parity/runs/native-standalone-serve/RESULT.md) |
 
-范围为用 Go 编写索引器、使用当前数据库格式。表中的独立存储指 `historical.RuntimeRunner` 分开管理业务数据与同步数据。PostgreSQL 使用同一个数据库 URL、不同命名空间和连接池。PGlite 使用两个独立目录和引擎进程。[存储构造](store/independent_storage.go) · [运行模式矩阵](docs/RUNTIME_SUPPORT.md)
+该清单以开发者用 Go 编写新索引器、使用当前数据库格式为范围。前两行列出会限制项目写法的功能。后两行记录上线前仍欠缺的故障与环境验收。表中的独立存储指 `historical.RuntimeRunner` 分开管理业务数据与同步数据。PostgreSQL 使用同一个数据库 URL、不同命名空间和连接池。PGlite 使用两个独立目录和引擎进程。[存储构造](store/independent_storage.go) · [运行模式矩阵](docs/RUNTIME_SUPPORT.md)
 
 ## 当前验证与计数
 
