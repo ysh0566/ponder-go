@@ -181,6 +181,27 @@ return app.Wait()
 
 已有的默认多链或全局排序配置使用 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 创建协调运行器，也可以将该运行器作为 `worker` 传给同一个 `runtime.LaunchApplication`。这些模式允许的来源和区间见[运行模式矩阵](RUNTIME_SUPPORT.md)。
 
+## 发布查询视图与清理部署
+
+以下命令使用 PostgreSQL。先在索引项目中用当前版本打开部署，让框架登记业务表和配对的同步 schema。下面用 `ponder_go_blue`、`ponder_go_green` 表示两次部署，`indexer_api` 是查询方固定使用的专用 schema。
+
+```sh
+ponder db list --database-url "$PONDER_LOCAL_DATABASE_URL"
+ponder db create-views --database-url "$PONDER_LOCAL_DATABASE_URL" --schema ponder_go_blue --views-schema indexer_api
+```
+
+查询方可以从 `indexer_api` 读取业务表、已声明的视图以及 `_ponder_checkpoint`。等新部署追上进度，再运行同一条命令把 `--schema` 改为 `ponder_go_green`，即可在一个事务中切换所有查询视图。外部查询依赖旧列类型时，数据库会拒绝不兼容的切换，原视图和数据继续可用。发布目标应使用新的专用 schema，或此前由该命令或生命周期管理器创建的视图 schema。
+
+停掉旧索引器、关闭其数据库连接，然后清理旧部署。该操作会删除登记的业务数据、撤销日志、checkpoint 和配对的同步数据。
+
+```sh
+ponder db prune --database-url "$PONDER_LOCAL_DATABASE_URL" --schema ponder_go_blue
+```
+
+返回的 JSON 数组逐项给出 schema 和处理结果。`pruned` 表示已清理，`active` 表示仍有索引器连接或有效租约，`busy` 表示另一个操作正在使用该部署。`published` 表示仍在为查询视图提供数据，`unregistered` 表示缺少当前部署登记，`absent` 表示已不存在。外部依赖或其他未登记对象会让该部署的清理事务回滚。数据库级的独立 RPC 缓存会保留。
+
+省略 `--schema` 会检查连接所指数据库中的所有候选部署，每个部署单独提交。命令遇错时会输出已经处理的结果；再次运行可以继续。使用独立双库运行器的部署有自己的存储所有权和恢复流程。
+
 ## 常见问题
 
 | 现象 | 检查方法 |

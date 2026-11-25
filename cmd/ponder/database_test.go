@@ -34,10 +34,10 @@ func TestDeploymentCommands(t *testing.T) {
 	}
 	admin := open()
 	ns := fmt.Sprintf("ponder_go_cmd_%x", time.Now().UnixNano())
-	old, next, views, external := ns+"_one", ns+"_two", ns+"_views", ns+"_dep"
+	old, next, views, external, staged := ns+"_one", ns+"_two", ns+"_views", ns+"_dep", ns+"_stage"
 	// Every name belongs to this test, including the intentionally retained view.
 	t.Cleanup(func() {
-		for _, name := range []string{external, views, old, old + "_sync", next, next + "_sync"} {
+		for _, name := range []string{external, views, old, old + "_sync", next, next + "_sync", staged, staged + "_sync"} {
 			_ = admin.Exec(context.Background(), "DROP SCHEMA IF EXISTS "+schema.Quote(name)+" CASCADE")
 		}
 	})
@@ -204,6 +204,20 @@ func TestDeploymentCommands(t *testing.T) {
 	}
 	reopened.Backend.Close()
 	prune(next, "published")
+	lifecycle, err := store.NewLifecycle(admin, model, staged, schema.Multichain, store.LifecycleOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = lifecycle.Close() })
+	if _, err = lifecycle.Migrate(ctx, store.Migration{BuildID: "prune-staged"}); err != nil {
+		t.Fatal(err)
+	}
+	prune(staged, "active")
+	if err = lifecycle.Close(); err != nil {
+		t.Fatal(err)
+	}
+	prune(staged, "pruned")
+	prune(external, "unregistered")
 }
 
 func TestDeploymentSweep(t *testing.T) {
