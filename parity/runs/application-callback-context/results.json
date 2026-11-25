@@ -1,0 +1,141 @@
+{
+  "code_commit": "e6615809c4b1aecfd64d126bd2875191c809b1f3",
+  "upstream_commit": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "original": {
+    "packages/core/src/types/virtual.test-d.ts": {
+      "passed": 22,
+      "vitest_sha256": "1474b8f8def835a46ac9dbdbaf6ccc9ad9b0b0970a396bb8db87542e7c36a2b0"
+    }
+  },
+  "typescript": {
+    "typescript": "5.4.5",
+    "cases": 4,
+    "strict_assertions": 11,
+    "registry_accesses": 10,
+    "files": {
+      "packages/core/src/types/virtual.test-d.ts": "2166b5442742cc2576c972a183d7f3577b48a9bda1f05603b4833e1e1b39da71"
+    },
+    "fixture_sha256": "7d59328a0ca3619f07ae902b92ada1cb725526f643c00fe987be1923f42411d2"
+  },
+  "native": {
+    "normal": {
+      "ponder.local/ponder-go/orm": {
+        "passed_leaves": 16,
+        "go_test_json_sha256": "5f53d883248b6d6aae3536bf79bac9fb5c1a86974f36c196ac70d116e3ec63e0"
+      },
+      "ponder.local/ponder-go/cmd/ponder": {
+        "passed_leaves": 9,
+        "go_test_json_sha256": "5f53d883248b6d6aae3536bf79bac9fb5c1a86974f36c196ac70d116e3ec63e0"
+      },
+      "ponder.local/ponder-go/config": {
+        "passed_leaves": 28,
+        "go_test_json_sha256": "9762b76f840927a842cb866b171811d261414751c55daad40039987e55b5589d"
+      },
+      "ponder.local/ponder-go/indexing": {
+        "passed_leaves": 78,
+        "go_test_json_sha256": "9857e7abfaf775cae551ba6de7b6f59f14b946c5d833e3211cd9f5ba7dc00534"
+      }
+    },
+    "race": {
+      "ponder.local/ponder-go/orm": {
+        "passed_leaves": 16,
+        "go_test_json_sha256": "d43d9040a611fcdb07b2df6cb923a674b4326d0f2f405f83b5884497d4f51368"
+      },
+      "ponder.local/ponder-go/cmd/ponder": {
+        "passed_leaves": 9,
+        "go_test_json_sha256": "d43d9040a611fcdb07b2df6cb923a674b4326d0f2f405f83b5884497d4f51368"
+      },
+      "ponder.local/ponder-go/config": {
+        "passed_leaves": 28,
+        "go_test_json_sha256": "9949649e357d4de3a4c821c2a7d3bef6baee928a5bb7e88b25fe804dd35a12f2"
+      },
+      "ponder.local/ponder-go/indexing": {
+        "passed_leaves": 78,
+        "go_test_json_sha256": "356b6705ab782895d377fb23def3e3c4cb2c973516127240034204775b7d8b07"
+      }
+    }
+  },
+  "mappings": [
+    {
+      "id": "e4e55f3f0670f82ff2a6",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 209,
+      "title": "Context db",
+      "go_test": "TestSourceCallbackContext/e4e55f3f0670f82ff2a6",
+      "type_assertions": 2,
+      "registry_accesses": [],
+      "backend_tests": [
+        "TestSourceCallbackContext/e4e55f3f0670f82ff2a6/postgres",
+        "TestSourceCallbackContext/e4e55f3f0670f82ff2a6/pglite"
+      ]
+    },
+    {
+      "id": "a7019d7981948f8df0f0",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 253,
+      "title": "Context client",
+      "go_test": "TestSourceCallbackContext/a7019d7981948f8df0f0",
+      "type_assertions": 1,
+      "registry_accesses": [],
+      "backend_tests": []
+    },
+    {
+      "id": "b1d67da8241fc3a5cf9b",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 273,
+      "title": "Context contracts",
+      "go_test": "TestSourceCallbackContext/b1d67da8241fc3a5cf9b",
+      "type_assertions": 8,
+      "registry_accesses": [],
+      "backend_tests": []
+    },
+    {
+      "id": "06c3c5e61c275b0cbb4e",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 455,
+      "title": "Registry",
+      "go_test": "TestSourceCallbackContext/06c3c5e61c275b0cbb4e",
+      "type_assertions": 0,
+      "registry_accesses": [
+        "event.id",
+        "event.args",
+        "event.log",
+        "event.block",
+        "event.transaction",
+        "context.chain",
+        "context.db",
+        "context.client",
+        "context.contracts.c1",
+        "context.contracts.c2"
+      ],
+      "backend_tests": []
+    }
+  ],
+  "ledger": {
+    "ported": 869,
+    "go_ports": 865,
+    "retained_sdk": 4,
+    "unimplemented": 31,
+    "out_of_scope": 5
+  },
+  "commands": {
+    "original": "vitest run --configLoader native --typecheck.only --maxWorkers=1 src/types/virtual.test-d.ts",
+    "source": "node tools/callback-context-source.mjs",
+    "native": "go test -count=1 [-race] ./orm ./cmd/ponder",
+    "configuration": "go test -count=1 [-race] -run '^(TestSourceCallbackContext|TestSourceVirtualEvents|TestSourceVirtualNames|TestVirtualNamesControls|TestExecutableSourceActualHandlers)$' ./config",
+    "indexing": "go test -count=1 [-race] -run '^(TestTypedEvent.*|TestService.*|TestSourceHandlerDeclarations|TestSourceClient.*|TestClient.*|TestDatabase.*)$' ./indexing",
+    "module": [
+      "go build ./...",
+      "go vet ./..."
+    ]
+  },
+  "module": {
+    "build": "passed",
+    "vet": "passed"
+  },
+  "cleanup": {
+    "stage_directories": 3,
+    "allocated_bytes": 1038323712,
+    "accounting": "Includes hard-linked dependency data."
+  }
+}
