@@ -65,7 +65,11 @@ type deployment struct {
 }
 
 func (s *Store) recordDeployment(ctx context.Context, tx Transaction) error {
-	if _, ok := s.Backend.(*pgBackend); !ok {
+	switch backend := s.Backend.(type) {
+	case *pgliteBackend:
+		backend.pinned[s.Namespace] = true
+	case *pgBackend:
+	default:
 		return nil
 	}
 	model, err := json.Marshal(s.Schema)
@@ -150,6 +154,9 @@ func OpenExisting(ctx context.Context, backend Backend, model schema.Schema, nam
 	}
 	if err = s.checkUnmanaged(ctx, tx); err != nil {
 		return nil, err
+	}
+	if p, ok := backend.(*pgliteBackend); ok {
+		p.pinned[s.Namespace] = true
 	}
 	if postgres {
 		if s.deploymentSession, err = pg.pinDeployment(ctx, s.Namespace); err != nil {

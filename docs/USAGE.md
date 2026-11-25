@@ -166,7 +166,7 @@ go mod tidy
 go build .
 ```
 
-示例使用 PostgreSQL。选择 PGlite 的独立应用需在项目目录安装 `@electric-sql/pglite@0.2.13` 并提供 Node.js，Go 程序已内置适配器脚本。可在自己的 Go 入口调用 `store.OpenPGlite(ctx, directory)` 后同时启动索引和查询。独立 `ponder serve` 使用 PostgreSQL。[上游 0.18.2 的独立查询限制](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/bin/commands/serve.ts#L102-L109)
+使用 PostgreSQL 时，通过数据库 URL 连接服务。使用 PGlite 时，在生成项目中执行 `npm install` 安装固定的数据库驱动。两种方式都用 Go 编写回调。[本地 PGlite](#使用本地-pglite)
 
 如果设置了 `GOBIN`，CLI 位于该目录。要使用自己的仓库地址，可在项目中执行 `go mod edit -module 你的模块路径`。生成的项目包含自己的 `go.mod`、Go 事件处理函数和表定义。沿用上文的数据库、RPC 和合约地址，在项目目录执行 `ponder start --schema ponder_go_my_indexer`，其中 `ponder` 取安装后的实际路径。
 
@@ -368,6 +368,33 @@ if err != nil {
 
 每次回调的数据库写入与事件检查点一起提交。重组会从共同祖先撤销共享状态中受影响的写入，再按规范链重放。超出已确认边界的重组会停止运行，需要使用新命名空间重新索引。需要关闭 RPC 缓存时，使用 `runtime.NewIndexerWithOptions(cfg, db, handlers, runtime.Options{DisableCache: true})`。[跨链排序和恢复实测](../parity/runs/native-ordered-indexing/RESULT.md)
 
+## 使用本地 PGlite
+
+准备好 Go、C 编译器、Node.js 和 npm。以下命令在新目录中生成索引器。先按上文设置 `PONDER_LOCAL_RPC_URL` 和 `PONDER_LOCAL_CONTRACT`，指向链 ID 为 1 的本地 Anvil 及其 ERC-20 合约。
+
+```sh
+ponder init local-indexer
+cd local-indexer
+go mod tidy
+npm install
+env -u PONDER_LOCAL_DATABASE_URL -u DATABASE_PRIVATE_URL -u DATABASE_URL -u PONDER_PGLITE_DIR \
+  ponder start --schema ponder_go_token
+```
+
+生成的 `package.json` 固定了 PGlite 0.2.13。Go 进程在同一应用中提供索引和 HTTP 查询。数据默认写入项目的 `.ponder/pglite`。重启时使用同一目录和 schema 即可恢复已提交进度。开发时改用 `ponder dev --schema ponder_go_token`，CLI 会显示实际使用的开发 schema。应用运行期间可按前文的 `/status` 和 `/sql/db` 示例查询。
+
+生成项目优先使用 `PONDER_LOCAL_DATABASE_URL` 指定的 PostgreSQL，其次使用 `PONDER_PGLITE_DIR` 指定的目录。两者均未设置时，依次检查 `DATABASE_PRIVATE_URL`、`DATABASE_URL`，最后使用默认 PGlite 目录。相对路径从 Go 项目目录解析。需要稳定的视图名称时，`start --views-schema` 会在首次追上链头后发布视图。独立的 `ponder serve` 使用 PostgreSQL。[上游独立查询范围](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/bin/commands/serve.ts#L102-L109)
+
+按 Ctrl+C 停止索引器后，在安装驱动的项目目录中管理本地部署。将下面的 schema 名替换为你的实际部署名称。
+
+```sh
+ponder db list --pglite-dir .ponder/pglite
+ponder db create-views --pglite-dir .ponder/pglite --schema ponder_go_token --views-schema token_live
+ponder db prune --pglite-dir .ponder/pglite --schema ponder_go_old
+```
+
+`--pglite-dir` 读取已经由本版 Go 后端打开过的 PGlite 目录。`prune` 会删除指定部署的业务数据和配对的同步数据；正在发布的部署返回 `published`。目录正由 Go 引擎占用时，管理命令会报错。路径不存在时会报错且保留原状。[索引、重开与目录管理实测](../parity/runs/native-local-pglite/RESULT.md)
+
 ## 发布查询视图与清理部署
 
 以下命令使用 PostgreSQL。先在索引项目中用当前版本打开部署，让框架登记业务表和配对的同步 schema。下面用 `ponder_go_blue`、`ponder_go_green` 表示两次部署，`indexer_api` 是查询方固定使用的专用 schema。
@@ -401,6 +428,6 @@ ponder db prune --database-url "$PONDER_LOCAL_DATABASE_URL" --schema ponder_go_b
 
 | 现象 | 检查方法 |
 | --- | --- |
-| 启动时要求设置 `PONDER_LOCAL_…` | 在启动 CLI 的同一个终端导出数据库 URL。索引模式还需要 RPC URL 和合约地址，独立 `serve` 使用数据库 URL 和已创建的部署命名空间。 |
+| 启动时要求设置 `PONDER_LOCAL_…` | 索引时需要 RPC URL 和合约地址。使用 PostgreSQL 时再提供数据库 URL；本地 PGlite 需要先安装其驱动。独立 `serve` 使用 PostgreSQL URL 和已有部署。 |
 | SQL 返回空数组 | 对照 `deploy.json` 里的 `deployedTo`、当前 Anvil 地址和 `/status`。确认索引已读到部署区块，且请求的是启动日志中的 HTTP 地址。 |
 | 打开已有命名空间失败 | 检查是否复用了不同 schema 定义、旧存储格式或由其他应用创建的命名空间。保留原库，在新的命名空间重新索引。 |

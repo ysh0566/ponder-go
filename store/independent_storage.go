@@ -243,7 +243,7 @@ func openIndependentPGlite(ctx context.Context, o IndependentStorageOptions, man
 	if err != nil {
 		return nil, err
 	}
-	releaseFiles, inheritedLocks, err := reserveIndependentFilesystem(a, b)
+	releaseFiles, inheritedLocks, err := reservePGliteFilesystem(true, a, b)
 	if err != nil {
 		releaseLocal()
 		return nil, err

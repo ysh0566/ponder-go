@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"syscall"
@@ -16,8 +17,8 @@ import (
 // Record files are deliberately retained; an unlocked record is not ownership.
 // Directory-inode flocks also fence aliases that identify the same inode,
 // without putting a file in a new PGlite data directory (initdb requires empty).
-func reserveIndependentFilesystem(a, b string) (func(), []*os.File, error) {
-	if a == "memory://" && b == "memory://" {
+func reservePGliteFilesystem(create bool, paths ...string) (func(), []*os.File, error) {
+	if !slices.ContainsFunc(paths, func(path string) bool { return path != "memory://" }) {
 		return func() {}, nil, nil
 	}
 	registry := filepath.Join("/tmp", fmt.Sprintf("ponder-go-independent-owners-%d", os.Getuid()))
@@ -73,11 +74,13 @@ func reserveIndependentFilesystem(a, b string) (func(), []*os.File, error) {
 			return fail(e)
 		}
 		path := string(data)
-		if independentDirectoriesOverlap(a, path) || independentDirectoriesOverlap(b, path) {
-			return fail(fmt.Errorf("PGlite directory overlaps an active filesystem owner"))
+		for _, requested := range paths {
+			if independentDirectoriesOverlap(requested, path) {
+				return fail(fmt.Errorf("PGlite directory overlaps an active filesystem owner"))
+			}
 		}
 	}
-	for _, path := range []string{a, b} {
+	for _, path := range paths {
 		if path == "memory://" {
 			continue
 		}
@@ -103,8 +106,10 @@ func reserveIndependentFilesystem(a, b string) (func(), []*os.File, error) {
 				return fail(e)
 			}
 		}
-		if e = os.MkdirAll(path, 0700); e != nil {
-			return fail(e)
+		if create {
+			if e = os.MkdirAll(path, 0700); e != nil {
+				return fail(e)
+			}
 		}
 		local, e := os.Open(path)
 		if e != nil {

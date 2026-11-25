@@ -19,6 +19,7 @@ func manageDatabase(ctx context.Context, args []string, out, diagnostics io.Writ
 	flags := flag.NewFlagSet("db "+op, flag.ContinueOnError)
 	flags.SetOutput(diagnostics)
 	url := flags.String("database-url", "", "PostgreSQL database URL")
+	dir := flags.String("pglite-dir", "", "Offline PGlite data directory")
 	var ns, views string
 	switch op {
 	case "list":
@@ -36,13 +37,19 @@ func manageDatabase(ctx context.Context, args []string, out, diagnostics io.Writ
 	if flags.NArg() != 0 {
 		return fmt.Errorf("unexpected arguments")
 	}
-	if *url == "" {
-		return fmt.Errorf("--database-url is required")
+	if (*url == "") == (*dir == "") {
+		return fmt.Errorf("specify exactly one of --database-url or --pglite-dir")
 	}
 	if op == "create-views" && (ns == "" || views == "") {
 		return fmt.Errorf("db create-views requires --schema and --views-schema")
 	}
-	backend, err := store.OpenPostgres(ctx, *url)
+	var backend store.Backend
+	var err error
+	if *dir == "" {
+		backend, err = store.OpenPostgres(ctx, *url)
+	} else {
+		backend, err = store.OpenExistingPGliteDirectory(ctx, *dir)
+	}
 	if err != nil {
 		return err
 	}
