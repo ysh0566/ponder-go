@@ -1,0 +1,279 @@
+{
+  "code_commit": "e7a521d186a797c9bb0292b80a6d9606bcc65fc6",
+  "upstream_commit": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "ledger": {
+    "ported": 779,
+    "go_ports": 775,
+    "retained_sdk": 4,
+    "unimplemented": 121,
+    "out_of_scope": 5
+  },
+  "original": {
+    "passed": 6,
+    "vitest_json_sha256": "7e16eabd0005895ed4c87ddb1ef485d28e17dcbb2e31a4b52f720ac141912fff"
+  },
+  "source_types": {
+    "version": "5.4.5",
+    "diagnostic_scope": "source file",
+    "directives": [
+      19,
+      30,
+      33,
+      45,
+      48,
+      52,
+      56,
+      62,
+      70,
+      84,
+      87,
+      99,
+      102,
+      114
+    ],
+    "clean": [],
+    "removed": [
+      {
+        "line": 19,
+        "code": 6196,
+        "message": "'_' is declared but never used."
+      },
+      {
+        "line": 30,
+        "code": 2322,
+        "message": "Type '() => void' is not assignable to type 'Find'.   Type 'void' is not assignable to type 'Promise<{ [K in keyof { [Key in keyof table[\"_\"][\"columns\"] & string as Key]: table[\"_\"][\"columns\"][Key][\"_\"][\"notNull\"] extends true ? table[\"_\"][\"columns\"][Key][\"_\"][\"data\"] : table[\"_\"][\"columns\"][Key][\"_\"][\"data\"] | null; }]: { [Key in keyof table[\"_\"][\"columns\"] & string as Key]: table[\"_\"][\"columns\"][Key][\"_\"][\"notNull\"] extends true ? table[\"_\"][\"columns\"][Key][\"_\"][\"data\"] : table[\"_\"][\"columns\"][Key][\"_\"][\"data\"] | null; }[K]; } | null>'."
+      },
+      {
+        "line": 33,
+        "code": 6133,
+        "message": "'_' is declared but its value is never read."
+      },
+      {
+        "line": 45,
+        "code": 2322,
+        "message": "Type '() => void' is not assignable to type 'Insert'.   Type 'void' is not assignable to type '{ values: <values extends insertModel | insertModel[]>(values: values) => Promise<values extends unknown[] ? selectModel[] : selectModel> & { onConflictDoNothing: () => Promise<values extends unknown[] ? (selectModel | null)[] : selectModel | null>; onConflictDoUpdate: (values: updateFn | Partial<updateModel>) => Promise<values extends unknown[] ? selectModel[] : selectModel>; }; }'."
+      },
+      {
+        "line": 48,
+        "code": 6133,
+        "message": "'_t1' is declared but its value is never read."
+      },
+      {
+        "line": 52,
+        "code": 6133,
+        "message": "'_t2' is declared but its value is never read."
+      },
+      {
+        "line": 56,
+        "code": 6133,
+        "message": "'_t3' is declared but its value is never read."
+      },
+      {
+        "line": 62,
+        "code": 6133,
+        "message": "'_t4' is declared but its value is never read."
+      },
+      {
+        "line": 70,
+        "code": 6133,
+        "message": "'_t5' is declared but its value is never read."
+      },
+      {
+        "line": 84,
+        "code": 2322,
+        "message": "Type '() => void' is not assignable to type 'Update'.   Type 'void' is not assignable to type '{ set: (values: updateFn | Partial<insertValues>) => Promise<selectModel>; }'."
+      },
+      {
+        "line": 87,
+        "code": 6133,
+        "message": "'_' is declared but its value is never read."
+      },
+      {
+        "line": 99,
+        "code": 2322,
+        "message": "Type '() => void' is not assignable to type 'Delete'.   Type 'void' is not assignable to type 'Promise<boolean>'."
+      },
+      {
+        "line": 102,
+        "code": 6133,
+        "message": "'_' is declared but its value is never read."
+      },
+      {
+        "line": 114,
+        "code": 2345,
+        "message": "Argument of type '\"\"' is not assignable to parameter of type '\"Table name cannot be empty\"'."
+      }
+    ]
+  },
+  "native": {
+    "normal": {
+      "ponder.local/ponder-go/cmd/ponder": {
+        "passed_leaves": 4,
+        "go_test_json_sha256": "c5d8475f416823e8900ef907ba6499e65cf61a524736467b88f43fe01c69cc45"
+      },
+      "ponder.local/ponder-go/orm": {
+        "passed_leaves": 16,
+        "go_test_json_sha256": "c5d8475f416823e8900ef907ba6499e65cf61a524736467b88f43fe01c69cc45"
+      },
+      "ponder.local/ponder-go/schema": {
+        "passed_leaves": 29,
+        "go_test_json_sha256": "c5d8475f416823e8900ef907ba6499e65cf61a524736467b88f43fe01c69cc45"
+      },
+      "ponder.local/ponder-go/store": {
+        "passed_leaves": 77,
+        "go_test_json_sha256": "db93c5d2612b1cab53ecdca7dfccfebec6609eb62d184856587b7bb15c7fc297"
+      }
+    },
+    "race": {
+      "ponder.local/ponder-go/cmd/ponder": {
+        "passed_leaves": 4,
+        "go_test_json_sha256": "97e929846635d1aa8a8242a19210c44ce492d3545d6554a7875e32a80c6d4527"
+      },
+      "ponder.local/ponder-go/orm": {
+        "passed_leaves": 16,
+        "go_test_json_sha256": "97e929846635d1aa8a8242a19210c44ce492d3545d6554a7875e32a80c6d4527"
+      },
+      "ponder.local/ponder-go/schema": {
+        "passed_leaves": 29,
+        "go_test_json_sha256": "97e929846635d1aa8a8242a19210c44ce492d3545d6554a7875e32a80c6d4527"
+      },
+      "ponder.local/ponder-go/store": {
+        "passed_leaves": 77,
+        "go_test_json_sha256": "561796eff3a2925eeb62aed769e58ca2cabaafcaa4bc47727ce2650a772e1d7c"
+      }
+    }
+  },
+  "maps": [
+    {
+      "source_id": "d31b3dde62ad77f86dac",
+      "source_file": "packages/core/src/types/db.test-d.ts",
+      "source_sha256": "28c0d7c2d2d5e2c65611977dc26b01c85f3589aee62c4ca68a99023b8716f054",
+      "name": "composite primary key",
+      "go_package": "ponder.local/ponder-go/orm",
+      "go_tests": [
+        "TestSourceDBTypes/composite_primary_key"
+      ],
+      "assertions": 0,
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_error_directives": [
+        "// @ts-expect-error"
+      ],
+      "native_verification": "Compile a key from the two source column types and reject a missing key component. The source unused type alias is a TypeScript-specific diagnostic. Go also checks a deliberately unused value of the generated key type."
+    },
+    {
+      "source_id": "17d6c9b6a4fa3b5025af",
+      "source_file": "packages/core/src/types/db.test-d.ts",
+      "source_sha256": "28c0d7c2d2d5e2c65611977dc26b01c85f3589aee62c4ca68a99023b8716f054",
+      "name": "find",
+      "go_package": "ponder.local/ponder-go/orm",
+      "go_tests": [
+        "TestSourceDBTypes/find"
+      ],
+      "assertions": 0,
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_error_directives": [
+        "// @ts-expect-error",
+        "// @ts-expect-error"
+      ],
+      "native_verification": "Compile the actual generated table, method signature and concrete result type. Diagnose incompatible callback assignment and every unused result corresponding to a stripped source directive."
+    },
+    {
+      "source_id": "75bd9917efd21f45ac63",
+      "source_file": "packages/core/src/types/db.test-d.ts",
+      "source_sha256": "28c0d7c2d2d5e2c65611977dc26b01c85f3589aee62c4ca68a99023b8716f054",
+      "name": "insert",
+      "go_package": "ponder.local/ponder-go/orm",
+      "go_tests": [
+        "TestSourceDBTypes/insert"
+      ],
+      "assertions": 0,
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_error_directives": [
+        "// @ts-expect-error",
+        "// @ts-expect-error",
+        "// @ts-expect-error",
+        "// @ts-expect-error",
+        "// @ts-expect-error",
+        "// @ts-expect-error"
+      ],
+      "native_verification": "Compile the actual generated table, method signature and concrete result type. Diagnose incompatible callback assignment and every unused result corresponding to a stripped source directive."
+    },
+    {
+      "source_id": "1bebf62eefc12504a597",
+      "source_file": "packages/core/src/types/db.test-d.ts",
+      "source_sha256": "28c0d7c2d2d5e2c65611977dc26b01c85f3589aee62c4ca68a99023b8716f054",
+      "name": "update",
+      "go_package": "ponder.local/ponder-go/orm",
+      "go_tests": [
+        "TestSourceDBTypes/update"
+      ],
+      "assertions": 0,
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_error_directives": [
+        "// @ts-expect-error",
+        "// @ts-expect-error"
+      ],
+      "native_verification": "Compile the actual generated table, method signature and concrete result type. Diagnose incompatible callback assignment and every unused result corresponding to a stripped source directive."
+    },
+    {
+      "source_id": "82ef40b2857e485ae1d4",
+      "source_file": "packages/core/src/types/db.test-d.ts",
+      "source_sha256": "28c0d7c2d2d5e2c65611977dc26b01c85f3589aee62c4ca68a99023b8716f054",
+      "name": "delete",
+      "go_package": "ponder.local/ponder-go/orm",
+      "go_tests": [
+        "TestSourceDBTypes/delete"
+      ],
+      "assertions": 0,
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_error_directives": [
+        "// @ts-expect-error",
+        "// @ts-expect-error"
+      ],
+      "native_verification": "Compile the actual generated table, method signature and concrete result type. Diagnose incompatible callback assignment and every unused result corresponding to a stripped source directive."
+    },
+    {
+      "source_id": "5418a2ce00de3e300367",
+      "source_file": "packages/core/src/types/db.test-d.ts",
+      "source_sha256": "28c0d7c2d2d5e2c65611977dc26b01c85f3589aee62c4ca68a99023b8716f054",
+      "name": "non-empty table name",
+      "go_package": "ponder.local/ponder-go/orm",
+      "go_tests": [
+        "TestSourceDBTypes/non-empty_table_name"
+      ],
+      "assertions": 0,
+      "assertions_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_error_directives": [
+        "// @ts-expect-error"
+      ],
+      "native_verification": "Use go generate with the public typed model generator. A valid schema produces the compiled table handle. An empty name fails the generation step and produces no handle. The source TypeScript compiler rejects its empty string literal directly."
+    }
+  ],
+  "independently_compared_inventory_fields": [
+    "id",
+    "source_file",
+    "source_sha256",
+    "source_state",
+    "full_name",
+    "assertions",
+    "inputs",
+    "port_status",
+    "mapping",
+    "scope_reason"
+  ],
+  "commands": {
+    "upstream": "vitest run --typecheck.only --configLoader native --maxWorkers=1 src/types/db.test-d.ts",
+    "typed": "go test -count=1 [-race] ./orm ./schema ./cmd/ponder",
+    "store": "go test -count=1 [-race] -run '^(TestCachedRowCopyOwnership|TestSourceRowCopies|TestUpstreamORM.*|TestORM.*)$' ./store"
+  },
+  "module": {
+    "build": "passed",
+    "vet": "passed"
+  },
+  "full_original_inventory": "../public-provider-archives/upstream.json",
+  "cleanup": {
+    "temporary_directories": 3,
+    "allocated_bytes_before_removal": 1037533184,
+    "accounting": "Some package files share underlying storage through hard links."
+  }
+}
