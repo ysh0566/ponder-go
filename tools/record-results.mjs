@@ -1,3 +1,4 @@
+import { hasQueryStorageDirectives, verifiedQueryStorageDirectives } from "./query-storage-evidence.mjs";
 import {cacheTypeTests, verifyCacheTypeTests} from "./runtime-index-cache-types.mjs";
 import {finiteHistoricalProofReferencesValid} from './finite-historical-evidence.mjs';
 import {atomicMultichainProofReferencesValid} from './multichain-atomic-evidence.mjs';
@@ -121,6 +122,8 @@ const compilerFixtures = new Map([
 ].map(([file, suite, fixtureFile, proofFile, children = []]) => [file, {
 	suite, fixtureFile, proofFile, children, fixture: read(fixtureFile), proof: exists(proofFile) ? read(proofFile) : null,
 }]));
+const queryStorageFile = "parity/runs/query-storage-types.json";
+const queryStorage = exists(queryStorageFile) ? read(queryStorageFile) : null;
 const configCompile = exists("parity/runs/config-live-verification.json") ? read("parity/runs/config-live-verification.json") : null;
 const parameterTypes = exists("parity/runs/parameters-typecheck.json") ? read("parity/runs/parameters-typecheck.json") : null;
 const syncVerification = exists("parity/runs/source-sync-verification.json") ? read("parity/runs/source-sync-verification.json") : null;
@@ -618,6 +621,14 @@ for (const test of ledger.tests) {
 			if (typed) test.type_verification = {...verification, obligations: typed};
 			if (entry?.accesses?.length) test.registry_verification = {...verification, property_accesses: entry.accesses.length};
 			if (!valid) { status = "skip"; test.blockers.push("Missing source compiler check or native compiler run."); }
+		} else if (hasQueryStorageDirectives(test)) {
+			const valid = verifiedQueryStorageDirectives(test, {proof: queryStorage, toolHash: fileHash("tools/query-storage-types.mjs"),
+				revision: ledger.baseline.revision, executions, normal: go, race});
+			test.type_directives_verification = {status: valid ? "passed" : "blocked", obligations: test.type_error_directives.length, evidence: [queryStorageFile, goFile, raceFile]};
+			if (!valid) {
+				status = "skip";
+				test.blockers.push("Source diagnostics and native compiler checks are required for these result and database types.");
+			}
 		} else if (test.type_error_directives.length && !(runtimeIndexVerification && test.source_file==="packages/core/src/runtime/index.test.ts" && test.type_directives_verification?.status==="passed")) {
 			const directives=[...(compile?.directives??[]),...(ormCompile?.directives??[]),...(eventCompile?.directives??[]),...(bloomCompile?.directives??[]),...(configCompile?.directives??[]),...(syncVerification?.directives??[]),...(historicalVerification?.directives??[])].filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256);
 			const generatedValid=!ormCompile?.directives.some(x=>x.source_id===test.id)||((ormCompile.inputs?.length??0)>=3&&[...ormCompile.generated,...ormCompile.inputs].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));

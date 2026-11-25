@@ -71,6 +71,7 @@ node tools/source-realtime-observer-probe.mjs
 node tools/source-realtime-pristine.mjs
 node tools/provider-policy-cases.mjs
 node tools/record-native-inputs.mjs
+node tools/query-storage-types.mjs > parity/runs/query-storage-types.json
 # Preparations above supply shared inputs. After they succeed, execute every
 # independent check and keep its exit code beside this invocation's captures.
 verification_status="parity/runs/original-captures/$capture_run/verification.tsv"
