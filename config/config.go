@@ -95,12 +95,13 @@ func (c Config) Validate() error {
 			}
 		}
 	}
-	sources := map[string]bool{}
+	type sourceKey struct{ chain, name string }
+	sources := map[sourceKey]bool{}
 	for _, contract := range c.Contracts {
-		if !names[contract.Chain] || contract.Name == "" || sources[contract.Name] {
+		if !names[contract.Chain] || contract.Name == "" || sources[sourceKey{contract.Chain, contract.Name}] {
 			return fmt.Errorf("invalid contract source %q", contract.Name)
 		}
-		sources[contract.Name] = true
+		sources[sourceKey{contract.Chain, contract.Name}] = true
 		if contract.EndBlock != nil && *contract.EndBlock < contract.StartBlock {
 			return fmt.Errorf("endBlock precedes startBlock")
 		}
@@ -128,10 +129,10 @@ func (c Config) Validate() error {
 		}
 	}
 	for _, account := range c.Accounts {
-		if !names[account.Chain] || account.Name == "" || sources[account.Name] {
+		if !names[account.Chain] || account.Name == "" || sources[sourceKey{account.Chain, account.Name}] {
 			return fmt.Errorf("invalid account source %q", account.Name)
 		}
-		sources[account.Name] = true
+		sources[sourceKey{account.Chain, account.Name}] = true
 		if account.EndBlock != nil && *account.EndBlock < account.StartBlock {
 			return fmt.Errorf("account end block precedes start")
 		}
@@ -207,10 +208,13 @@ func (c Config) Validate() error {
 		}
 	}
 	for _, block := range c.Blocks {
-		if !names[block.Chain] || block.Name == "" || sources[block.Name] {
+		if !names[block.Chain] || block.Name == "" || sources[sourceKey{block.Chain, block.Name}] {
 			return fmt.Errorf("invalid block source %q", block.Name)
 		}
-		sources[block.Name] = true
+		sources[sourceKey{block.Chain, block.Name}] = true
+		if block.EndBlock != nil && *block.EndBlock < block.StartBlock {
+			return fmt.Errorf("block source end block precedes start")
+		}
 		if block.Interval == 0 {
 			return fmt.Errorf("block interval must be positive")
 		}

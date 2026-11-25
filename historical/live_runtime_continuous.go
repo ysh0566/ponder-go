@@ -354,12 +354,13 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 	return q, nil
 }
 
-func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl, headers map[uint64]indexing.Object, result RuntimeResult) (out RuntimeResult, runErr error) {
+func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl, headers map[uint64]indexing.Object, result RuntimeResult, ready func(bool)) (out RuntimeResult, runErr error) {
 	out = result
 	var q *runtimeLiveQueue
 	defer func() {
 		if runErr != nil {
 			r.transitioning.Store(true)
+			ready(false)
 			out.Ready = false
 			out.Completed = false
 		}
@@ -389,6 +390,7 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			return e
 		}
 		r.transitioning.Store(false)
+		ready(true)
 		out.Ready = true
 		if r.options.OnActivated != nil {
 			if e := r.options.OnActivated(context.WithValue(ctx, runtimeRunnerCallbackKey{}, r)); e != nil {
@@ -396,6 +398,9 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			}
 		}
 		return r.liveNotify(ctx, "ready", 0, store.ManagedLiveHead{})
+	}
+	if c.Serving {
+		ready(true)
 	}
 	if runtimeCanActivate(c) && !c.Serving {
 		if err = activate(); err != nil {
@@ -425,6 +430,7 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			// A failed constructor has already canceled and joined its partial
 			// queue. Seal this generation before any retry; keep only profiles.
 			r.transitioning.Store(true)
+			ready(false)
 			out.Ready = false
 			learned, e = epoch.Seal(ctx)
 			if e != nil {
@@ -461,6 +467,7 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			return e
 		}
 		r.transitioning.Store(true)
+		ready(false)
 		out.Ready = false
 		q.close()
 		q = nil
@@ -628,6 +635,7 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			}
 		case "reorg":
 			r.transitioning.Store(true)
+			ready(false)
 			out.Ready = false
 			q.close()
 			q = nil

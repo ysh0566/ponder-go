@@ -99,6 +99,7 @@ type Engine struct {
 	options   Options
 	cache     *store.ProtocolCache
 	syncMu    sync.Mutex
+	endBlock  *uint64
 	staged    *stagedState
 }
 type Options struct {
@@ -124,7 +125,7 @@ func NewWithOptions(c config.Config, s *store.Store, handlers map[string]Handler
 		return nil, fmt.Errorf("runtime and store ordering differ")
 	}
 	if len(c.Chains) != 1 {
-		return nil, fmt.Errorf("multi-chain runtime scheduling is not implemented yet; storage rollback modes are implemented")
+		return nil, fmt.Errorf("single-chain engine requires one chain; use NewIndexer for isolated workers or historical.RuntimeRunner for coordinated chains")
 	}
 	engine := &Engine{Config: c, Store: s, Handlers: handlers, chain: c.Chains[0], abis: map[string]abi.ABI{}, factories: map[string]factory.LogFactory{}, options: options}
 	for _, contract := range c.Contracts {
@@ -201,46 +202,51 @@ func (e *Engine) block(ctx context.Context, number any) (Block, error) {
 	return *b, nil
 }
 func (e *Engine) Sync(ctx context.Context) error {
+	_, err := e.syncToHead(ctx)
+	return err
+}
+
+func (e *Engine) syncToHead(ctx context.Context) (bool, error) {
 	e.syncMu.Lock()
 	defer e.syncMu.Unlock()
 	if e.staged == nil && !e.options.DisableCache {
 		cache, err := e.Store.EnableProtocolCache(ctx)
 		if err != nil {
-			return err
+			return false, err
 		}
 		e.cache = cache
 		e.Client.Cache = cache
 	}
 	var chainID string
 	if err := e.Client.Call(ctx, "eth_chainId", []any{}, &chainID); err != nil {
-		return err
+		return false, err
 	}
 	id, err := Number(chainID)
 	if err != nil || id != e.chain.ID {
-		return fmt.Errorf("RPC chain ID mismatch: expected %d got %s", e.chain.ID, chainID)
+		return false, fmt.Errorf("RPC chain ID mismatch: expected %d got %s", e.chain.ID, chainID)
 	}
 	latest, err := e.block(ctx, "latest")
 	if err != nil {
-		return err
+		return false, err
 	}
 	head, err := Number(latest.Number)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if e.staged != nil {
 		if err = e.initializeStaged(ctx, latest); err != nil {
-			return err
+			return false, err
 		}
 		if !e.options.DisableCache {
 			e.cache, err = e.Store.EnableProtocolCache(ctx)
 			if err != nil {
-				return err
+				return false, err
 			}
 			e.Client.Cache = e.cache
 		}
 	}
 	if err = e.checkReorg(ctx, head); err != nil {
-		return err
+		return false, err
 	}
 	start := ^uint64(0)
 	hasSource := false
@@ -263,44 +269,61 @@ func (e *Engine) Sync(ctx context.Context) error {
 		hasSource = true
 	}
 	if !hasSource {
-		return fmt.Errorf("no indexing sources configured")
+		return false, fmt.Errorf("no indexing sources configured")
+	}
+	if e.endBlock != nil {
+		head = min(head, *e.endBlock)
 	}
 	if start > head {
 		if e.staged != nil {
-			return e.startRealtime(ctx)
+			return false, e.startRealtime(ctx)
 		}
-		return nil
+		return false, nil
 	}
 	missing, err := e.Store.Missing(ctx, e.chain.ID, e.filter, interval.Interval{int64(start), int64(head)})
 	if err != nil {
-		return err
+		return false, err
 	}
 	for _, gap := range missing {
 		for n := uint64(gap[0]); n <= uint64(gap[1]); n++ {
 			if err = ctx.Err(); err != nil {
-				return err
+				return false, err
 			}
 			b, err := e.block(ctx, Hex(n))
 			if err != nil {
-				return err
+				return false, err
 			}
 			if e.staged != nil && n > e.staged.historyEnd {
 				if err = e.startRealtime(ctx); err != nil {
-					return err
+					return false, err
 				}
 			}
 			if err = e.process(ctx, b); err != nil {
-				return err
+				return false, err
 			}
 		}
 	}
 	if e.staged != nil {
 		if err = e.startRealtime(ctx); err != nil {
-			return err
+			return false, err
 		}
-		return e.finalizeStaged(ctx, latest)
+		return false, e.finalizeStaged(ctx, latest)
 	}
-	return nil
+	if e.endBlock == nil || head < *e.endBlock {
+		return false, nil
+	}
+	last, err := e.Store.SyncedBlock(ctx, e.chain.ID, head)
+	if err != nil {
+		return false, err
+	}
+	if last == nil {
+		return false, fmt.Errorf("missing indexed end block %d", head)
+	}
+	now, err := Number(latest.Timestamp)
+	if err != nil || now < last.Timestamp || now-last.Timestamp < uint64(e.chain.Window()) {
+		return false, err
+	}
+	return true, e.Store.Finalize(ctx, checkpoint.Block(last.Timestamp, e.chain.ID, head, true))
 }
 func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 	// Find the most recent completed block, including when the canonical tip shrinks.
@@ -327,26 +350,28 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 	if err != nil {
 		return err
 	}
-	if stored == nil {
+	if stored == nil && n == cp.BlockNumber {
 		return fmt.Errorf("indexed progress is missing its persisted block header; shadow rebuild required")
 	}
 	canonical, err := e.block(ctx, Hex(n))
 	if err != nil {
 		return err
 	}
-	if canonical.Hash == stored.Hash && head >= cp.BlockNumber {
+	if stored != nil && canonical.Hash == stored.Hash && head >= cp.BlockNumber {
 		return nil
 	}
 	for {
-		stored, err = e.Store.SyncedBlock(ctx, e.chain.ID, n)
-		if err != nil {
-			return err
+		matches := stored != nil && stored.Hash == canonical.Hash
+		if stored == nil {
+			// The parent of the earliest indexed block is still proven by the
+			// child's header when a reorg replaces the first included block.
+			child, err := e.Store.SyncedBlock(ctx, e.chain.ID, n+1)
+			if err != nil {
+				return err
+			}
+			matches = child != nil && child.ParentHash == canonical.Hash
 		}
-		canonical, err = e.block(ctx, Hex(n))
-		if err != nil {
-			return err
-		}
-		if stored != nil && stored.Hash == canonical.Hash {
+		if matches {
 			timestamp, err := Number(canonical.Timestamp)
 			if err != nil {
 				return err
@@ -361,6 +386,14 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 			return fmt.Errorf("no common persisted ancestor; shadow rebuild required")
 		}
 		n--
+		stored, err = e.Store.SyncedBlock(ctx, e.chain.ID, n)
+		if err != nil {
+			return err
+		}
+		canonical, err = e.block(ctx, Hex(n))
+		if err != nil {
+			return err
+		}
 	}
 }
 
@@ -592,7 +625,7 @@ func (e *Engine) RunIndexing(ctx context.Context, ready func(bool)) error {
 	}
 	retry := min(interval, time.Second)
 	for {
-		err := e.Sync(ctx)
+		done, err := e.syncToHead(ctx)
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
@@ -606,6 +639,9 @@ func (e *Engine) RunIndexing(ctx context.Context, ready func(bool)) error {
 			retry = min(retry*2, 30*time.Second)
 		} else {
 			ready(true)
+			if done {
+				return nil
+			}
 			retry = min(interval, time.Second)
 		}
 		timer := time.NewTimer(delay)

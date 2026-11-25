@@ -389,6 +389,10 @@ func (w *Writer) Find(ctx context.Context, name string, key Row) (Row, error) {
 	if w.closed.Load() {
 		return nil, &NonRetryableUserError{Message: "A store API method was called after the indexing function returned."}
 	}
+	chain, present := key["chain_id"]
+	if err := w.checkChainKey(name, "find", chain, present); err != nil {
+		return nil, err
+	}
 	if orm := w.indexingSession(); orm != nil {
 		if e := orm.Cache.Flush(ctx, name); e != nil {
 			return nil, e
