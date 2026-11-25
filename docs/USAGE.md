@@ -176,6 +176,22 @@ log.Printf("transaction %s, block %v, confirmations %s", hash, receipt["blockNum
 
 `GetTransaction` 和 `GetTransactionReceipt` 保留 JSON-RPC 字段表示，区块号和 gas 等数量是十六进制字符串。`GetTransactionCount` 读取账户 nonce，`GetBlockTransactionCount` 读取区块交易笔数，两者返回 `uint64`，默认读取当前链头。要在事件所在区块读取账户 nonce，可显式传入 `indexing.TransactionBlock{BlockNumber: n}`，其中 `n` 为 `*big.Int`。用 `TransactionLookup{Block: ..., Index: ...}` 可以按区块和交易序号定位交易。缺失的交易或回执默认会重试，可通过 `RetryEmptyResponse` 关闭重试。[回调交易 API 与重组实测](../parity/runs/native-transaction-actions/RESULT.md)
 
+在生成的 Go 回调中，`GetFeeHistory` 默认以事件所在区块作为费用区间的末端。`GetProof` 在同一区块读取账户及指定存储槽的 EIP-1186 证明。费用、余额和存储值使用 `*big.Int`，证明节点保留 RPC 返回的十六进制编码。
+
+```go
+history, err := client.GetFeeHistory(ctx, 4, []float64{25, 75})
+if err != nil {
+    return err
+}
+proof, err := client.GetProof(ctx, address, nil)
+if err != nil {
+    return err
+}
+log.Printf("oldest block %s, account nonce %d, balance %s", history.OldestBlock, proof.Nonce, proof.Balance)
+```
+
+传入 `[]string{slot}` 可同时读取存储证明，其中 `slot` 是 32 字节的十六进制存储键。两种方法均可通过 `indexing.BlockOptions{BlockNumber: n}` 指定其他高度。非创世区块在重组后会重新向节点读取。如显式设置 `Cache: "immutable"`，客户端会读取链头并允许复用已缓存的响应。[历史区块与重组验证](../parity/runs/native-state-reads/RESULT.md)
+
 在仓库根目录查看为 `account` 表生成的 Go 模型。
 
 ```sh

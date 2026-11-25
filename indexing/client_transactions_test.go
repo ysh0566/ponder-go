@@ -47,9 +47,7 @@ func TestCallbackTransactionActions(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer clients.Close(context.Background())
-			var invoked bool
 			handler := Handler(func(ctx context.Context, args *HandlerArgs) error {
-				invoked = true
 				c := args.Context.Client
 				count, err := c.GetTransactionCount(ctx, accounts[0])
 				if err != nil || count != 0 {
@@ -205,21 +203,33 @@ func TestCallbackTransactionActions(t *testing.T) {
 				}
 				return clients.WaitCacheWrites(ctx)
 			})
-			cb := Object{"name": "Token:Transfer", "fn": handler, "filter": Object{"type": "log", "include": DefaultFilterInclude("log", false)}}
-			business := adapterStore(t, dialect)
-			err = business.Apply(ctx, adapterEvent("transactions", 1), func(w *store.Writer) error {
-				state := &ErrorState{}
-				db := NewDatabase(w.Indexing(), state)
-				service := mustSemanticService(t, Options{Build: Build{Chains: []Object{chain}, Contracts: []Object{{}}, EventCallbacks: [][]Object{{cb}}, IndexingFunctions: []Object{{"name": "Token:Transfer"}}}, Database: db, Clients: clients, Errors: state})
-				return service.ProcessHistoricalEvents(ctx, []Object{semanticEvent(chain, cb, 1)}, nil)
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-			if !invoked {
-				t.Fatal("callback was not invoked")
-			}
+			runClientCallback(t, ctx, dialect, chain, clients, handler)
 		})
+	}
+}
+
+// runClientCallback dispatches a block-one historical event through the
+// indexing service, inside the selected backend's business transaction.
+func runClientCallback(t *testing.T, ctx context.Context, dialect string, chain Object, clients *ClientSet, handler Handler) {
+	t.Helper()
+	var invoked bool
+	fn := Handler(func(ctx context.Context, args *HandlerArgs) error {
+		invoked = true
+		return handler(ctx, args)
+	})
+	cb := Object{"name": "Token:Transfer", "fn": fn, "filter": Object{"type": "log", "include": DefaultFilterInclude("log", false)}}
+	business := adapterStore(t, dialect)
+	err := business.Apply(ctx, adapterEvent("callback", 1), func(w *store.Writer) error {
+		state := &ErrorState{}
+		db := NewDatabase(w.Indexing(), state)
+		service := mustSemanticService(t, Options{Build: Build{Chains: []Object{chain}, Contracts: []Object{{}}, EventCallbacks: [][]Object{{cb}}, IndexingFunctions: []Object{{"name": "Token:Transfer"}}}, Database: db, Clients: clients, Errors: state})
+		return service.ProcessHistoricalEvents(ctx, []Object{semanticEvent(chain, cb, 1)}, nil)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !invoked {
+		t.Fatal("callback was not invoked")
 	}
 }
 
