@@ -2,8 +2,12 @@
 
 `NewSyncMigrator(backend, scope).Migrate(ctx)` creates the current RPC cache
 in `<scope>_rpc_1`. `Lifecycle.MigrateSync` uses the lifecycle namespace as
-its scope. A fresh cache has nine tables. Reopening checks the ownership
-comment and catalog, then preserves the cached results. Scope names start with
+its scope. Before committing creation or reopening a cache, the migrator verifies the nine tables
+against the pinned DDL. The catalog check covers ordered columns, types and
+modifiers, nullability, generated identities, defaults, collation and keys.
+A mismatched table raises a migration error naming the table. Standalone cache
+reads and writes run the same check. Ordinary secondary indexes can be added
+without changing the data format. Scope names start with
 `ponder_go_` and are at most 45 characters.
 
 Startup requires a fresh scope or an existing current cache. If only an old
