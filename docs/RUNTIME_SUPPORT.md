@@ -22,13 +22,13 @@ Of the 883 upstream cases ported to Go, 866 passed and 17 provider RPC cases fai
 
 ## Callback RPC methods
 
-The Go starter passes an `*rpc.Client` to `runtime.Handler`. Generated callback registries expose an `*indexing.Client` with event-aware reads. The pinned Ponder callback API lists 21 named actions. Fourteen have high-level methods on `indexing.Client`. [Go callback context](../indexing/types.go) · [Upstream action list](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/indexing/client.ts#L122-L152)
+The Go starter passes an `*rpc.Client` to `runtime.Handler`. Generated callback registries expose an `*indexing.Client` with event-aware reads. The pinned Ponder callback API lists 21 named actions. Fifteen have high-level methods on `indexing.Client`. [Go callback context](../indexing/types.go) · [Upstream action list](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/indexing/client.ts#L122-L152)
 
 | Area | Available on `indexing.Client` | Missing high-level methods |
 | --- | --- | --- |
 | State and contract reads | `GetBalance`, `GetCode`, `GetStorageAt`, `ReadContract`, `Multicall`, `GetFeeHistory`, `GetProof`. Fee history and EIP-1186 proofs default to the event block. [Backend tests](../parity/runs/native-state-reads/RESULT.md) | `Call`, `EstimateGas`, `SimulateContract` |
 | Blocks and transactions | `GetBlock`, `GetTransactionCount`, `GetBlockTransactionCount`, `GetTransaction`, `GetTransactionReceipt`, `GetTransactionConfirmations` | All six named methods are present. Transaction, receipt and block objects retain their JSON-RPC field representation. [Transaction tests](../parity/runs/native-transaction-actions/RESULT.md) |
-| ENS | `GetEnsName` | `GetEnsAddress`, `GetEnsAvatar`, `GetEnsResolver`, `GetEnsText` |
+| ENS | `GetEnsName`, `GetEnsResolver`. Forward resolver discovery uses the event block and chain deployment metadata. [Resolver tests](../parity/runs/native-ens-resolver/RESULT.md) | `GetEnsAddress`, `GetEnsAvatar`, `GetEnsText` |
 
 `Request` accepts raw JSON-RPC methods and parameters. Callers supply the block argument for historical reads and implement any higher-level action logic they need. The lower-level `rpc.Client` has its own receipt helper. Native multicall resolves the chain’s Multicall3 deployment at the requested height or accepts an explicit address. A sender or state override applies to the whole aggregate. Per-contract caching applies to aggregates that use the ordinary sender and state. [Multicall verification](../parity/runs/native-multicall-options/RESULT.md) [Raw request handling](../indexing/client_requests.go) · [RPC receipt helpers](../rpc/actions.go) · [Multicall options](../indexing/client_multicall.go)
 

@@ -1725,6 +1725,24 @@
         "parity/runs/native-multicall-options/RESULT.md"
       ],
       "remaining": "Custom chains without registered deployments need an explicit contract address. Individual chains and providers may support different simulated state overrides."
+    },
+    {
+      "id": "native-ens-resolver",
+      "status": "verified_subset",
+      "implementation_files": [
+        "indexing/client_ens_resolver.go",
+        "indexing/client.go"
+      ],
+      "native_test_files": [
+        "indexing/client_ens_resolver_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing/client.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-ens-resolver/RESULT.md"
+      ],
+      "remaining": "Address, text and avatar resolution are separate actions. Three high-level contract actions also remain open."
     }
   ]
 }
