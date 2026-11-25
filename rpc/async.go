@@ -25,8 +25,7 @@ type asyncCallTask struct {
 	stopCancel  func() bool
 }
 type callAdmission struct {
-	id      uint64
-	url     string
+	first   rpcAttempt
 	release func()
 }
 
@@ -89,15 +88,15 @@ func (c *Client) dispatchAsyncCalls() {
 			complete(err)
 			continue
 		}
-		if err = c.wait(task.ctx); err != nil {
+		first, err := c.reserveAttempt(task.ctx)
+		if err != nil {
 			release()
 			complete(err)
 			continue
 		}
-		id := c.next.Add(1)
-		admission := &callAdmission{id: id, url: c.URLs[(id-1)%uint64(len(c.URLs))], release: release}
+		admission := &callAdmission{first: first, release: release}
 		go func(task *asyncCallTask, admission *callAdmission) {
-			err := task.client.callWithAdmission(task.ctx, false, task.method, task.params, task.out, admission)
+			err := task.client.callWithAdmission(task.ctx, false, task.method, task.params, task.out, RequestOptions{}, admission)
 			task.state.Store(2)
 			task.stopCancel()
 			task.result <- err

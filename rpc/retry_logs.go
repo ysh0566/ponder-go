@@ -69,6 +69,12 @@ var logsRetrySubstrings = []string{"allowed block range threshold exceeded", "ex
 // GetLogsRetryHelper preserves the source's inclusive delta, provider ordering,
 // JSON error matching and exact hexadecimal unchanged-range comparison.
 func GetLogsRetryHelper(query map[string]any, failure any) (LogsRetryPlan, error) {
+	return logsRetryPlan(query, failure, true)
+}
+
+// The transport only needs to decide whether pagination can change the range.
+// Materialize the subranges only for callers that actually consume them.
+func logsRetryPlan(query map[string]any, failure any, materialize bool) (LogsRetryPlan, error) {
 	from, err := rpcQuantity(query["fromBlock"])
 	if err != nil {
 		return LogsRetryPlan{}, err
@@ -96,9 +102,15 @@ func GetLogsRetryHelper(query map[string]any, failure any) (LogsRetryPlan, error
 	var fields map[string]any
 	_ = json.Unmarshal(buffer.Bytes(), &fields)
 	plan := func(delta *big.Int, suggested bool) (LogsRetryPlan, bool, error) {
-		if delta.Sign() < 0 {
+		if delta.Sign() < 0 || from.Cmp(to) > 0 {
 			return LogsRetryPlan{}, false, nil
 		} // Never loop on an invalid zero-width provider hint.
+		if new(big.Int).Add(from, delta).Cmp(to) >= 0 && "0x"+from.Text(16) == query["fromBlock"] && "0x"+to.Text(16) == query["toBlock"] {
+			return LogsRetryPlan{}, false, nil
+		}
+		if !materialize {
+			return LogsRetryPlan{ShouldRetry: true, IsSuggestedRange: suggested}, true, nil
+		}
 		one := big.NewInt(1)
 		step := new(big.Int).Add(delta, one)
 		ranges := []LogRange{}
@@ -108,9 +120,6 @@ func GetLogsRetryHelper(query map[string]any, failure any) (LogsRetryPlan, error
 				end.Set(to)
 			}
 			ranges = append(ranges, LogRange{"0x" + start.Text(16), "0x" + end.Text(16)})
-		}
-		if len(ranges) == 0 || len(ranges) == 1 && ranges[0].FromBlock == query["fromBlock"] && ranges[0].ToBlock == query["toBlock"] {
-			return LogsRetryPlan{}, false, nil
 		}
 		return LogsRetryPlan{true, suggested, ranges}, true, nil
 	}

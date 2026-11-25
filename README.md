@@ -8,7 +8,7 @@
 
 ## 当前验证与计数
 
-当前台账记录 905 条上游声明，593 条已映射，307 条待移植，另有 5 条专测已退役的缓存迁移。固定上游版本的完整结果为 875 通过、18 失败、10 跳过、2 待办。[模块支持矩阵](docs/RUNTIME_SUPPORT.md) · [全量上游结果](parity/runs/public-provider-archives/upstream.json)
+当前台账记录 905 条上游声明，602 条已映射，298 条待移植，另有 5 条专测已退役的缓存迁移。固定上游版本的完整结果为 875 通过、18 失败、10 跳过、2 待办。[模块支持矩阵](docs/RUNTIME_SUPPORT.md) · [RPC 请求验证](parity/runs/source-rpc-requests/RESULT.md) · [全量上游结果](parity/runs/public-provider-archives/upstream.json)
 
 M45 追加的 factory 日志、交易、账户 transfer 及合约函数 CALL 的选定 RuntimeRunner 闭环，范围与验证说明见 [factory 函数 trace 阶段](parity/runs/m45-factory-traces-v13-20261103/VALIDATION.md)。这些补充运行测试不增加该阶段的 543/905 映射；其他运行模式、完整 CLI、引擎崩溃及 M45 整体验收仍未完成。
 
