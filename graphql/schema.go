@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
+	"sync"
 
 	gql "github.com/graphql-go/graphql"
 	"github.com/graphql-go/graphql/language/ast"
@@ -29,6 +30,9 @@ type Server struct {
 	schema    gql.Schema
 	options   Options
 }
+
+// graphql-go lazily initializes shared introspection types during schema construction.
+var buildSchemaMu sync.Mutex
 
 // New builds a handler that can be mounted at any path. Namespace defaults to the store's writer schema.
 func New(database *store.Store, opts Options) (*Server, error) {
@@ -86,10 +90,20 @@ func New(database *store.Store, opts Options) (*Server, error) {
 		}
 		fields[key] = field
 	}
+	buildSchemaMu.Lock()
+	defer buildSchemaMu.Unlock()
 	var err error
 	s.schema, err = gql.NewSchema(gql.SchemaConfig{Query: gql.NewObject(gql.ObjectConfig{Name: "Query", Fields: fields})})
 	if err != nil {
 		return nil, err
+	}
+	// Both enum lookup maps must be initialized before concurrent requests use them.
+	for _, typ := range s.schema.TypeMap() {
+		if enum, ok := typ.(*gql.Enum); ok && len(enum.Values()) > 0 {
+			first := enum.Values()[0]
+			enum.ParseValue(first.Name)
+			enum.Serialize(first.Value)
+		}
 	}
 	return s, nil
 }

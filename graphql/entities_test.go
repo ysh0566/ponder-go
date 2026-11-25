@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -93,4 +94,36 @@ func TestGraphQLEnumKeys(t *testing.T) {
 			t.Fatal("missing key", field)
 		}
 	}
+}
+
+func TestConcurrentGraphQLIntrospection(t *testing.T) {
+	db := &store.Store{Namespace: "ponder_go_graph", Schema: schema.Schema{Enums: []schema.Enum{{Name: "mood", Values: []string{"A", "B"}}}, Tables: []schema.Table{{Name: "item", Columns: []schema.Column{{Name: "id", Type: "mood", Primary: true}}}}}}
+	shared, err := New(db, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := make(chan struct{})
+	var workers sync.WaitGroup
+	for range 16 {
+		workers.Add(1)
+		go func() {
+			defer workers.Done()
+			<-start
+			v := shared.Execute(t.Context(), Request{Query: `query Q($m:mood!){item(id:$m) @skip(if:true){id}}`, Variables: map[string]any{"m": "A"}})
+			if v.HasErrors() {
+				t.Error(v.Errors)
+			}
+			s, err := New(db, Options{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			r := s.Execute(t.Context(), Request{Query: `{__type(name:"mood"){kind enumValues{name}}}`})
+			if r.HasErrors() {
+				t.Error(r.Errors)
+			}
+		}()
+	}
+	close(start)
+	workers.Wait()
 }

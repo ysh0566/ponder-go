@@ -182,6 +182,9 @@ func compareJSON(t *testing.T, actual, expected any) {
 
 func testBackend(t *testing.T, dialect string) store.Backend {
 	t.Helper()
+	// Keep the database process alive until the tests have dropped their schemas.
+	lifetime, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
 	var db store.Backend
 	var err error
 	if dialect == "postgres" {
@@ -189,9 +192,9 @@ func testBackend(t *testing.T, dialect string) store.Backend {
 		if dsn == "" {
 			t.Skip("requires task PostgreSQL")
 		}
-		db, err = store.OpenPostgres(t.Context(), dsn)
+		db, err = store.OpenPostgres(lifetime, dsn)
 	} else {
-		db, err = store.OpenPGlite(t.Context(), "memory://")
+		db, err = store.OpenPGlite(lifetime, "memory://")
 	}
 	if err != nil {
 		t.Fatal(err)
