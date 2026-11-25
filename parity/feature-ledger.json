@@ -2029,6 +2029,27 @@
         "parity/runs/native-rpc-pool-reorg/RESULT.md"
       ],
       "remaining": "The tested pool has two HTTP providers for one chain. They agree again before the original node returns to service. Named commercial gateways have independent archival and throttling expectations."
+    },
+    {
+      "id": "native-bounded-setup-cache",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "store/managed_live_runtime.go"
+      ],
+      "native_test_files": [
+        "historical/bounded_features_test.go",
+        "historical/live_runtime_preflight_test.go",
+        "historical/live_runtime_setup_preflight_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing/index.test.ts",
+        "packages/core/src/indexing/client.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-bounded-setup-cache/RESULT.md"
+      ],
+      "remaining": "The independent Omnichain runner requires finality and RPC caching and excludes setup. The default bounded runner requires acquired finite end blocks and event callbacks on each chain."
     }
   ]
 }

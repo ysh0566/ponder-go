@@ -392,6 +392,12 @@ if err != nil {
 
 默认排序的原子存储当前使用 `json-v4` 回执格式，包括只配置一条链的应用。如果显式指定的部署命名空间使用旧格式，换一个新的命名空间重新索引。使用独立业务库和同步库的部署可通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 创建托管运行器，其支持的来源与启动选项见运行矩阵。[运行模式矩阵](RUNTIME_SUPPORT.md)
 
+### 独立存储的有限区间索引
+
+Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 管理独立的业务数据与同步数据时，可以在默认多链排序下将 `RuntimeOptions.Live` 留空，并给每个事件来源设置 `endBlock`。这一有限区间入口要求事件从区块 1 或更高处开始，打开时各链都必须已经到达配置的结束高度。独立存储运行器通过持续模式支持来源级 checkpoint 和工厂合约发现。调用 `Run` 后，索引器处理到这个高度并返回 `Completed`。
+
+可在同一个构建中注册合约的 `合约名:setup` 回调，并逐链配置 `cacheRpcRequests`。setup 在首个事件前提交。第二条链的 setup 失败时，两条链的初始化写入会一起回滚。用相同的 `BuildID`、存储位置和新的 `OpenID` 重试后可重新执行初始化。对关闭缓存的链，回调通过 RPC 读取区块状态，已有的 RPC 缓存记录会保留。独立存储的 Omnichain 有自己的来源与最终确认要求。[双后端测试](../parity/runs/native-bounded-setup-cache/RESULT.md) · [运行模式矩阵](RUNTIME_SUPPORT.md)
+
 ### 为同一条链配置多个 RPC 节点
 
 在 Go 配置中将同一条链的 RPC 地址放入 `config.Chain.RPC`。下面的 `firstURL` 和 `secondURL` 指向链 ID 均为 101、创世区块相同的两个节点。

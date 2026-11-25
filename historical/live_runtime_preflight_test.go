@@ -9,7 +9,7 @@ import (
 )
 
 func TestRuntimePreflightRejectsUnsupported(t *testing.T) {
-	for _, kind := range []string{"experimental_isolated", "omnichain", "setup", "start_zero", "cache_disabled", "future_end"} {
+	for _, kind := range []string{"experimental_isolated", "omnichain", "setup", "start_zero", "invalid_cache_policy", "future_end", "uncached_future_end"} {
 		t.Run(kind, func(t *testing.T) {
 			p := newFiniteRPC(t, 3)
 			b := runtimeBuild(t, p, 3, 1, indexing.Handler(func(context.Context, *indexing.HandlerArgs) error { return nil }))
@@ -24,14 +24,17 @@ func TestRuntimePreflightRejectsUnsupported(t *testing.T) {
 				}
 			case "setup":
 				x.SetupCallbacks[0] = []indexing.Object{{"name": "bad:setup"}}
-				reason = "setup callbacks"
+				reason = "non-nil indexing.Handler"
 			case "start_zero":
 				x.EventCallbacks[0][0]["filter"].(map[string]any)["fromBlock"] = float64(0)
 				reason = "startBlock>=1"
-			case "cache_disabled":
-				x.Chains[0]["cacheRpcRequests"] = false
-				reason = "cacheRpcRequests=true"
-			case "future_end":
+			case "invalid_cache_policy":
+				x.Chains[0]["cacheRpcRequests"] = "false"
+				reason = "boolean cacheRpcRequests"
+			case "future_end", "uncached_future_end":
+				if kind == "uncached_future_end" {
+					x.Chains[0]["cacheRpcRequests"] = false
+				}
 				x.EventCallbacks[0][0]["filter"].(map[string]any)["toBlock"] = float64(4)
 				reason = "exceeds acquired latest"
 			}
