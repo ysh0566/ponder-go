@@ -6,9 +6,9 @@ import { spawnSync } from "node:child_process";
 const prefixes = ["abi/", "bloom/", "bridge/", "checkpoint/", "cmd/", "config/", "events/", "examples/", "factory/", "filter/", "finality/", "historical/", "indexing/", "internal/", "interval/", "orm/", "query/", "rpc/", "runtime/", "schema/", "sdk/", "sqlquery/", "store/", "testdata/", "third_party/"];
 const individualInputs = new Set([
 	"go.mod", "go.sum", "parity/sync-migration-assets.json",
-	"tools/provider_archive_nodes.py", "tools/historical_log_rpc.py",
+	"tools/provider_archive_nodes.py", "tools/historical_log_rpc.py", "tools/historical-rpc-fetch.mjs",
 	"tools/rpcnode-fixtures/celo-10000000-10001000.json.gz",
-	"tools/rpcnode-fixtures/historical-blast-zkevm.tar.gz",
+	"tools/rpcnode-fixtures/historical-blast-zkevm.tar.gz", "tools/rpcnode-fixtures/public-provider-indexes.tar.gz",
 	"tools/rpcnode-fixtures/moonriver-error.json",
 	"tools/rpcnode-fixtures/tron-and-base-indexes.tar.gz", "tools/rpcnode-fixtures/tron-error.json",
 ]);

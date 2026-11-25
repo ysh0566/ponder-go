@@ -45,6 +45,7 @@ var logsRetryRules = []logsRetryRule{
 	rule(`Try with this block range \[0x([0-9a-fA-F]+),\s*0x([0-9a-fA-F]+)\]`, "hex_span", 0, 0),
 	rule(`block range is too wide`, "ankr", 0, 3000),
 	rule(`this block range should work: \[0x([0-9a-fA-F]+),\s*0x([0-9a-fA-F]+)\]`, "hex_span", 0, 0),
+	rule(`eth_getLogs is limited to 0 - ([\d,]+) blocks range`, "decimal", 1, 0),
 	rule(`limited to a ([\d,.]+)`, "decimal", 1, 0),
 	rule(`limited to ([\d,.]+) block`, "decimal", 1, 0),
 	rule(`exceeds the range allowed for your plan \(\d+ > (\d+)\)`, "decimal", 1, 0),

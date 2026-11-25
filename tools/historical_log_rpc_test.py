@@ -41,6 +41,57 @@ class HistoricalLogTest(unittest.TestCase):
             archive.collect("http://localhost", 1, 1, 3, 1, address, self.output)
         return archive.Index(self.output)
 
+    def test_aurora_transaction_local_log_positions(self):
+        other = {**self.log, "transactionIndex": "0x2", "transactionHash": "0x" + "cc" * 32}
+        rows = [self.log, other]
+        archive.validate_logs(rows, 2, 2, None, chain=1313161554)
+        with self.assertRaises(ValueError):
+            archive.validate_logs(rows, 2, 2, None, chain=1)
+        for invalid in (list(reversed(rows)), [self.log, self.log],
+                        [self.log, {**other, "transactionIndex": "0x1", "logIndex": "0x1"}]):
+            with self.assertRaises(ValueError):
+                archive.validate_logs(invalid, 2, 2, None, chain=1313161554)
+
+    def test_error_source_and_separate_canonical_headers(self):
+        endpoint, headers = "https://policy.example", "https://history.example"
+        output = self.output.parent / "policy.json"
+        responses = []
+        def read(url, method, params):
+            if method == "eth_chainId":
+                return "0x1"
+            self.assertEqual((url, method, params), (headers, "eth_getBlockByNumber", ["0x3", False]))
+            return {"number": "0x3", "hash": self.block, "parentHash": self.tx}
+        def failure(url, method, params):
+            self.assertEqual((url, method), (endpoint, "eth_getLogs"))
+            responses.append(params)
+            return {"error": {"code": -32000, "message": "range limit"}}
+        with patch.object(archive, "rpc", side_effect=read), patch.object(archive, "rpc_response", side_effect=failure):
+            archive.capture_error(endpoint, 1, 1, 3, None, output, headers)
+        result = json.loads(output.read_bytes())
+        self.assertEqual((result["source"], result["headerSource"], result["anchor"]),
+                         ("policy.example", "history.example", self.block))
+        self.assertEqual(responses, [[{"fromBlock": "0x1", "toBlock": "0x3"}]] * 2)
+        with patch.object(archive, "rpc", side_effect=["0x1", "0x2"]):
+            with self.assertRaisesRegex(ValueError, "wrong header RPC chain"):
+                archive.capture_error(endpoint, 1, 1, 3, None, self.output, headers)
+        self.assertFalse(self.output.exists())
+
+    def test_node_fetch_checks_jsonrpc_response(self):
+        index = self.collect()
+        with archive.server([index], 0) as http:
+            thread = Thread(target=http.serve_forever, daemon=True)
+            thread.start()
+            url = f"http://127.0.0.1:{http.server_port}"
+            token = archive.NODE_FETCH.set(True)
+            try:
+                self.assertEqual(archive.rpc(url, "eth_chainId", []), "0x1")
+                self.assertEqual(archive.rpc(url, "eth_getLogs", [{"fromBlock": "0x1", "toBlock": "0x2"}]), [self.log])
+                self.assertIn("error", archive.rpc_response(url, "another_method", []))
+            finally:
+                archive.NODE_FETCH.reset(token)
+                http.shutdown()
+                thread.join()
+
     def test_live_node_range_policy(self):
         params = [{"fromBlock": "0xa", "toBlock": "0xc"}]
         pruned = "failed to fetch block result from CometBFT: failed to fetch block result from CometBFT 10: height 10 is not available, lowest height is 13"
