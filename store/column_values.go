@@ -133,6 +133,12 @@ func NormalizeColumn(column schema.Column, value any, isUpdate bool) (any, error
 			s = "0x0" + s[2:]
 		}
 		return strings.ToLower(s), nil
+	case "cidr", "inet", "interval", "macaddr", "macaddr8", "time":
+		text, ok := value.(string)
+		if !ok {
+			return nil, fmt.Errorf("%s requires %s text", column.Name, column.Type)
+		}
+		return text, nil
 	case "text":
 		s, ok := value.(string)
 		if !ok {
@@ -210,7 +216,7 @@ func typedArray(base schema.Column, values []any) any {
 		}
 	case "bigint":
 		typ = reflect.TypeOf((*big.Int)(nil))
-	case "text", "hex", "address", "varchar", "char", "numeric":
+	case "text", "hex", "address", "varchar", "char", "numeric", "cidr", "inet", "interval", "macaddr", "macaddr8", "time":
 		typ = reflect.TypeOf("")
 	case "boolean":
 		typ = reflect.TypeOf(false)

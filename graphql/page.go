@@ -143,7 +143,7 @@ func (s *Server) readPage(p gql.ResolveParams, c *collection, matches []columnMa
 		if err != nil {
 			return nil, err
 		}
-		predicates = append(predicates, schema.Quote(match.column.Name)+" = "+v)
+		predicates = append(predicates, comparisonExpression(match.column, schema.Quote(match.column.Name))+" = "+v)
 	}
 	base := "SELECT * FROM " + schema.Quote(s.namespace) + "." + schema.Quote(table.Name)
 	if len(predicates) > 0 {
@@ -161,7 +161,7 @@ func (s *Server) readPage(p gql.ResolveParams, c *collection, matches []columnMa
 	}
 	orderTerms := make([]string, len(order))
 	for i, col := range order {
-		orderTerms[i] = schema.Quote(col.Name)
+		orderTerms[i] = comparisonExpression(col, schema.Quote(col.Name))
 		if descending != hasBefore {
 			orderTerms[i] += " DESC"
 		}

@@ -1574,6 +1574,33 @@
         "parity/runs/native-ordered-indexing/RESULT.md"
       ],
       "remaining": "Additional multi-provider, storage interruption and source overlap cases; default coordinated multichain uses a separate runner."
+    },
+    {
+      "id": "native-postgres-columns",
+      "status": "verified_subset",
+      "implementation_files": [
+        "schema/schema.go",
+        "store/column_values.go",
+        "store/row_sql.go",
+        "store/store.go",
+        "orm/generate.go",
+        "graphql/schema.go",
+        "graphql/filter.go",
+        "graphql/cursor.go",
+        "graphql/page.go",
+        "graphql/loader.go"
+      ],
+      "native_test_files": [
+        "graphql/native_column_types_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/index.ts",
+        "packages/core/src/graphql/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-postgres-columns/RESULT.md"
+      ],
+      "remaining": "Combinations beyond the native dual-backend and pinned GraphQL cases remain unverified."
     }
   ]
 }
