@@ -12,7 +12,7 @@ import (
 )
 
 type bindingSource struct {
-	names  []string
+	events []bindingEvent
 	chains []string
 }
 
@@ -34,44 +34,79 @@ func bindingGroup(root *sourceObject, key string) (*sourceObject, error) {
 	return group, nil
 }
 
-func bindingSourceNames(group, name string, source *sourceObject, dynamic bool) ([]string, error) {
-	switch group {
-	case "blocks":
-		return []string{name + ":block"}, nil
-	case "accounts":
-		return []string{name + ":transaction:from", name + ":transaction:to", name + ":transfer:from", name + ":transfer:to"}, nil
+type bindingEvent struct {
+	name, kind      string
+	inputs, outputs []abi.Parameter
+	receipt         receiptPresence
+}
+type receiptPresence int
+
+const (
+	noReceipt receiptPresence = iota
+	optionalReceipt
+	requiredReceipt
+)
+
+// The source type includes the base value (undefined when absent) and every explicit override.
+func bindingFlag(source *sourceObject, key string) (set, unset bool) {
+	set = source.get(key) == true
+	unset = !set
+	if overrides, ok := sourceAsObject(source.get("chain")); ok {
+		for _, chain := range overrides.keys {
+			if override, ok := sourceAsObject(overrides.get(chain)); ok && override.has(key) {
+				set = set || override.get(key) == true
+				unset = unset || override.get(key) != true
+			}
+		}
 	}
-	names := []string{name + ":setup"}
+	return
+}
+
+func bindingSourceEvents(group, name string, source *sourceObject, dynamic bool) ([]bindingEvent, error) {
+	if group == "blocks" {
+		return []bindingEvent{{name: name + ":block", kind: "block"}}, nil
+	}
+	receipt := noReceipt
+	if set, unset := bindingFlag(source, "includeTransactionReceipts"); set {
+		receipt = requiredReceipt
+		if unset {
+			receipt = optionalReceipt
+		}
+	}
+	if group == "accounts" {
+		var events []bindingEvent
+		for _, kind := range []string{"transaction", "transfer"} {
+			presence := receipt
+			if kind == "transaction" {
+				presence = requiredReceipt
+			}
+			for _, direction := range []string{"from", "to"} {
+				events = append(events, bindingEvent{name: name + ":" + kind + ":" + direction, kind: kind, receipt: presence})
+			}
+		}
+		return events, nil
+	}
+	result := []bindingEvent{{name: name + ":setup", kind: "setup"}}
 	if dynamic {
-		return names, nil
+		return result, nil
 	}
 	parsed, _, err := sourceParseABI(source.get("abi"))
 	if err != nil {
 		return nil, err
 	}
-	events, functions, err := parsed.DeclarationNames()
+	events, functions, err := parsed.DeclarationItems()
 	if err != nil {
 		return nil, err
 	}
-	for _, event := range events {
-		names = append(names, name+":"+event)
+	for _, e := range events {
+		result = append(result, bindingEvent{name: name + ":" + e.Name, kind: "log", inputs: e.Item.Inputs, receipt: receipt})
 	}
-	traces := source.get("includeCallTraces") == true
-	if overrides, ok := sourceAsObject(source.get("chain")); ok {
-		for _, chain := range overrides.keys {
-			override, err := sourceObjects(overrides.get(chain))
-			if err != nil {
-				return nil, fmt.Errorf("chain %s: %w", chain, err)
-			}
-			traces = traces || override.get("includeCallTraces") == true
+	if traces, _ := bindingFlag(source, "includeCallTraces"); traces {
+		for _, f := range functions {
+			result = append(result, bindingEvent{name: name + "." + f.Name, kind: "trace", inputs: f.Item.Inputs, outputs: f.Item.Outputs, receipt: receipt})
 		}
 	}
-	if traces {
-		for _, fn := range functions {
-			names = append(names, name+"."+fn)
-		}
-	}
-	return names, nil
+	return result, nil
 }
 
 func readBindingApplication(cfg *SourceConfiguration, dynamicABIs []string) (*bindingApplication, error) {
@@ -109,18 +144,25 @@ func readBindingApplication(cfg *SourceConfiguration, dynamicABIs []string) (*bi
 			if err != nil || name == "" {
 				return nil, fmt.Errorf("invalid %s source %q", groupName, name)
 			}
-			names, err := bindingSourceNames(groupName, name, source, groupName == "contracts" && dynamic[name])
+			if overrides, ok := sourceAsObject(source.get("chain")); ok {
+				for _, chain := range overrides.keys {
+					if _, err = sourceObjects(overrides.get(chain)); err != nil {
+						return nil, fmt.Errorf("%s %s chain %s: %w", groupName, name, chain, err)
+					}
+				}
+			}
+			events, err := bindingSourceEvents(groupName, name, source, groupName == "contracts" && dynamic[name])
 			if err != nil {
 				return nil, fmt.Errorf("%s %s: %w", groupName, name, err)
 			}
 			if groupName == "contracts" {
 				delete(dynamic, name)
 			}
-			for _, event := range names {
-				if registered[event] {
-					return nil, fmt.Errorf("ambiguous indexing function name %q", event)
+			for _, event := range events {
+				if registered[event.name] {
+					return nil, fmt.Errorf("ambiguous indexing function name %q", event.name)
 				}
-				registered[event] = true
+				registered[event.name] = true
 			}
 			var selected []string
 			if len(chains.keys) > 0 {
@@ -141,7 +183,7 @@ func readBindingApplication(cfg *SourceConfiguration, dynamicABIs []string) (*bi
 					}
 				}
 			}
-			app.sources = append(app.sources, bindingSource{names, selected})
+			app.sources = append(app.sources, bindingSource{events, selected})
 		}
 	}
 	for _, name := range dynamicABIs {
@@ -155,6 +197,15 @@ func readBindingApplication(cfg *SourceConfiguration, dynamicABIs []string) (*bi
 // GenerateApplicationBindings emits callback names and chain types for an application.
 // Contracts listed in dynamicABIs have a runtime ABI with no statically known items.
 func GenerateApplicationBindings(pkg string, cfg *SourceConfiguration, dynamicABIs ...string) ([]byte, error) {
+	return generateApplicationBindings(pkg, cfg, false, dynamicABIs)
+}
+
+// GenerateApplicationEventBindings includes the typed event projection and On handler for each callback.
+func GenerateApplicationEventBindings(pkg string, cfg *SourceConfiguration, dynamicABIs ...string) ([]byte, error) {
+	return generateApplicationBindings(pkg, cfg, true, dynamicABIs)
+}
+
+func generateApplicationBindings(pkg string, cfg *SourceConfiguration, eventTypes bool, dynamicABIs []string) ([]byte, error) {
 	if !token.IsIdentifier(pkg) || pkg == "_" {
 		return nil, fmt.Errorf("invalid package name %q", pkg)
 	}
@@ -166,7 +217,9 @@ func GenerateApplicationBindings(pkg string, cfg *SourceConfiguration, dynamicAB
 	fmt.Fprintf(&out, "// Code generated by ponder-go codegen; DO NOT EDIT.\npackage %s\n", pkg)
 	var names []string
 	for _, source := range app.sources {
-		names = append(names, source.names...)
+		for _, e := range source.events {
+			names = append(names, e.name)
+		}
 	}
 	if len(names) > 0 {
 		out.WriteString("import (\"ponder.local/ponder-go/config\"; \"ponder.local/ponder-go/indexing\")\n")
@@ -178,6 +231,28 @@ func GenerateApplicationBindings(pkg string, cfg *SourceConfiguration, dynamicAB
 		}
 	}
 	fields := abi.GoFieldNames(names)
+	var payloads strings.Builder
+	if eventTypes {
+		for _, source := range app.sources {
+			for _, e := range source.events {
+				if e.kind == "setup" {
+					continue
+				}
+				if err := writeBindingEvent(&payloads, fields[e.name], e); err != nil {
+					return nil, fmt.Errorf("%s: %w", e.name, err)
+				}
+			}
+		}
+	}
+	if payloads.Len() > 0 {
+		out.WriteString("import \"context\"\n")
+		if strings.Contains(payloads.String(), "abi.") {
+			out.WriteString("import \"ponder.local/ponder-go/abi\"\n")
+		}
+		if strings.Contains(payloads.String(), "*big.Int") {
+			out.WriteString("import \"math/big\"\n")
+		}
+	}
 	chainFields := abi.GoFieldNames(app.chainNames)
 	for _, name := range app.chainNames {
 		typ := "Chain" + chainFields[name]
@@ -196,7 +271,8 @@ func GenerateApplicationBindings(pkg string, cfg *SourceConfiguration, dynamicAB
 	var nameTypes []string
 	for _, source := range app.sources {
 		group := w.write(&out, source.chains)
-		for _, name := range source.names {
+		for _, event := range source.events {
+			name := event.name
 			typ := "Name" + fields[name]
 			nameTypes = append(nameTypes, typ)
 			fmt.Fprintf(&out, "type %s struct{}\nfunc (%s) String()string{return %q}\nfunc (%s) isEventName(){}\n", typ, typ, name, typ)
@@ -215,6 +291,7 @@ func GenerateApplicationBindings(pkg string, cfg *SourceConfiguration, dynamicAB
 		out.WriteString("isEventName()")
 	}
 	out.WriteString("}\n")
+	out.WriteString(payloads.String())
 	return format.Source([]byte(out.String()))
 }
 

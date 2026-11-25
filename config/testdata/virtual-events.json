@@ -1,0 +1,484 @@
+{
+  "files": {
+    "packages/core/src/types/virtual.test-d.ts": "2166b5442742cc2576c972a183d7f3577b48a9bda1f05603b4833e1e1b39da71",
+    "packages/core/src/types/eth.ts": "f655e545328046a63f47f071fb61c71da94a615b8625bd11efc708636108a340"
+  },
+  "properties": {
+    "Block": [
+      "baseFeePerGas",
+      "difficulty",
+      "extraData",
+      "gasLimit",
+      "gasUsed",
+      "hash",
+      "logsBloom",
+      "miner",
+      "mixHash",
+      "nonce",
+      "number",
+      "parentHash",
+      "receiptsRoot",
+      "sha3Uncles",
+      "size",
+      "stateRoot",
+      "timestamp",
+      "totalDifficulty",
+      "transactionsRoot"
+    ],
+    "Transaction": [
+      "accessList",
+      "from",
+      "gas",
+      "gasPrice",
+      "hash",
+      "input",
+      "maxFeePerGas",
+      "maxPriorityFeePerGas",
+      "nonce",
+      "r",
+      "s",
+      "to",
+      "transactionIndex",
+      "type",
+      "v",
+      "value"
+    ],
+    "Log": [
+      "address",
+      "data",
+      "logIndex",
+      "removed",
+      "topics"
+    ],
+    "TransactionReceipt": [
+      "contractAddress",
+      "cumulativeGasUsed",
+      "effectiveGasPrice",
+      "from",
+      "gasUsed",
+      "logsBloom",
+      "status",
+      "to",
+      "type"
+    ],
+    "Trace": [
+      "from",
+      "gas",
+      "gasUsed",
+      "input",
+      "output",
+      "to",
+      "traceAddress",
+      "type",
+      "value"
+    ],
+    "Transfer": [
+      "from",
+      "to",
+      "value"
+    ]
+  },
+  "cases": [
+    {
+      "id": "fe54b0eb9d236246b505",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 321,
+      "title": "Event",
+      "event": "c1:Event0",
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "type": "string"
+        },
+        {
+          "name": "args",
+          "optional": false,
+          "type": "{\n      arg: Hex;\n      arg1: Hex;\n    }"
+        },
+        {
+          "name": "log",
+          "optional": false,
+          "type": "Log"
+        },
+        {
+          "name": "block",
+          "optional": false,
+          "type": "Block"
+        },
+        {
+          "name": "transaction",
+          "optional": false,
+          "type": "Transaction"
+        }
+      ],
+      "strict": [
+        "assertType<a>({} as any as expectedEvent)",
+        "assertType<expectedEvent>({} as any as a)"
+      ],
+      "receipt": "absent",
+      "item": {
+        "name": "Event0",
+        "type": "event",
+        "inputs": [
+          {
+            "type": "bytes32",
+            "name": "arg",
+            "indexed": true
+          },
+          {
+            "type": "bytes32",
+            "name": "arg1",
+            "indexed": true
+          }
+        ]
+      },
+      "wire": {
+        "topics": [
+          "0x4ff8269e7045013bbeb04bb0586ce9991f103299a491b40bb1f30497f0df1df5",
+          "0x1111111111111111111111111111111111111111111111111111111111111111",
+          "0x2222222222222222222222222222222222222222222222222222222222222222"
+        ],
+        "data": "0x"
+      },
+      "args": {
+        "arg": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "arg1": "0x2222222222222222222222222222222222222222222222222222222222222222"
+      }
+    },
+    {
+      "id": "0a024bd641beb3a02c0c",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 340,
+      "title": "Event transaction receipt",
+      "event": "c2:Event1()",
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "type": "string"
+        },
+        {
+          "name": "args",
+          "optional": false,
+          "type": "readonly []"
+        },
+        {
+          "name": "log",
+          "optional": false,
+          "type": "Log"
+        },
+        {
+          "name": "block",
+          "optional": false,
+          "type": "Block"
+        },
+        {
+          "name": "transaction",
+          "optional": false,
+          "type": "Transaction"
+        },
+        {
+          "name": "transactionReceipt",
+          "optional": true,
+          "type": "TransactionReceipt"
+        }
+      ],
+      "strict": [
+        "assertType<a>({} as any as expectedEvent)",
+        "assertType<expectedEvent>({} as any as a)"
+      ],
+      "receipt": "optional",
+      "item": {
+        "name": "Event1",
+        "type": "event",
+        "inputs": []
+      },
+      "wire": {
+        "topics": [
+          "0xeb0647d2fd18e9d48417458d5ceb82e5e455b589086e6a791507d38a59f9f5cb"
+        ],
+        "data": "0x"
+      },
+      "args": []
+    },
+    {
+      "id": "1e71b0fdbc820e52a616",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 357,
+      "title": "Event with unnamed parameters",
+      "event": "c2:Event1(bytes32)",
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "type": "string"
+        },
+        {
+          "name": "args",
+          "optional": false,
+          "type": "readonly [Hex]"
+        },
+        {
+          "name": "log",
+          "optional": false,
+          "type": "Log"
+        },
+        {
+          "name": "block",
+          "optional": false,
+          "type": "Block"
+        },
+        {
+          "name": "transaction",
+          "optional": false,
+          "type": "Transaction"
+        }
+      ],
+      "strict": [
+        "assertType<a>({} as any as expectedEvent)",
+        "assertType<expectedEvent>({} as any as a)"
+      ],
+      "receipt": "optional",
+      "item": {
+        "name": "Event1",
+        "type": "event",
+        "inputs": [
+          {
+            "type": "bytes32"
+          }
+        ]
+      },
+      "wire": {
+        "topics": [
+          "0x8c5ef8f5670e096749c7d0bd79364744b28e871bc6c65c5541b0b30f727ad8be"
+        ],
+        "data": "0x1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "args": [
+        "0x1111111111111111111111111111111111111111111111111111111111111111"
+      ]
+    },
+    {
+      "id": "7ec7890dc68807fd4d76",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 373,
+      "title": "Event with functions",
+      "event": "c1.func0()",
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "type": "string"
+        },
+        {
+          "name": "args",
+          "optional": false,
+          "type": "readonly [Address]"
+        },
+        {
+          "name": "result",
+          "optional": false,
+          "type": "bigint"
+        },
+        {
+          "name": "trace",
+          "optional": false,
+          "type": "Trace"
+        },
+        {
+          "name": "block",
+          "optional": false,
+          "type": "Block"
+        },
+        {
+          "name": "transaction",
+          "optional": false,
+          "type": "Transaction"
+        }
+      ],
+      "strict": [
+        "assertType<a>({} as any as expectedEvent)",
+        "assertType<expectedEvent>({} as any as a)"
+      ],
+      "receipt": "absent",
+      "item": {
+        "name": "func0",
+        "type": "function",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          {
+            "type": "address"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "uint256"
+          }
+        ]
+      },
+      "wire": {
+        "input": "0xf8be7e52000000000000000000000000abababababababababababababababababababab",
+        "output": "0x0000000000000000000000000000000000000000000000000000000000000083"
+      },
+      "args": [
+        "0xABaBaBaBABabABabAbAbABAbABabababaBaBABaB"
+      ],
+      "result": "131"
+    },
+    {
+      "id": "11c576e30cb8a3649378",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 390,
+      "title": "Event with functions and no inputs or outputs",
+      "event": "c2.func1()",
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "type": "string"
+        },
+        {
+          "name": "args",
+          "optional": false,
+          "type": "never"
+        },
+        {
+          "name": "result",
+          "optional": false,
+          "type": "never"
+        },
+        {
+          "name": "trace",
+          "optional": false,
+          "type": "Trace"
+        },
+        {
+          "name": "block",
+          "optional": false,
+          "type": "Block"
+        },
+        {
+          "name": "transaction",
+          "optional": false,
+          "type": "Transaction"
+        }
+      ],
+      "strict": [
+        "assertType<a>({} as any as expectedEvent)",
+        "assertType<expectedEvent>({} as any as a)"
+      ],
+      "receipt": "optional",
+      "item": {
+        "name": "func1",
+        "type": "function",
+        "stateMutability": "nonpayable",
+        "inputs": [],
+        "outputs": []
+      },
+      "wire": {
+        "input": "0x74135154",
+        "output": "0x"
+      },
+      "args": null,
+      "result": null
+    },
+    {
+      "id": "e477ea41a315318bd375",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 407,
+      "title": "Event with account transaction",
+      "event": "a1:transaction:from",
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "type": "string"
+        },
+        {
+          "name": "block",
+          "optional": false,
+          "type": "Block"
+        },
+        {
+          "name": "transaction",
+          "optional": false,
+          "type": "Transaction"
+        },
+        {
+          "name": "transactionReceipt",
+          "optional": false,
+          "type": "TransactionReceipt"
+        }
+      ],
+      "strict": [
+        "assertType<a>({} as any as expectedEvent)",
+        "assertType<expectedEvent>({} as any as a)"
+      ],
+      "receipt": "required"
+    },
+    {
+      "id": "3f58e4a17054f117a963",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 422,
+      "title": "Event with account transfer",
+      "event": "a1:transfer:from",
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "type": "string"
+        },
+        {
+          "name": "transfer",
+          "optional": false,
+          "type": "{\n      from: Address;\n      to: Address;\n      value: bigint;\n    }"
+        },
+        {
+          "name": "block",
+          "optional": false,
+          "type": "Block"
+        },
+        {
+          "name": "transaction",
+          "optional": false,
+          "type": "Transaction"
+        },
+        {
+          "name": "trace",
+          "optional": false,
+          "type": "Trace"
+        }
+      ],
+      "strict": [
+        "assertType<a>({} as any as expectedEvent)",
+        "assertType<expectedEvent>({} as any as a)"
+      ],
+      "receipt": "absent"
+    },
+    {
+      "id": "7302328249807fea99e3",
+      "file": "packages/core/src/types/virtual.test-d.ts",
+      "line": 442,
+      "title": "Event with block",
+      "event": "b1:block",
+      "fields": [
+        {
+          "name": "id",
+          "optional": false,
+          "type": "string"
+        },
+        {
+          "name": "block",
+          "optional": false,
+          "type": "Block"
+        }
+      ],
+      "strict": [
+        "assertType<a>({} as any as expectedEvent)",
+        "assertType<expectedEvent>({} as any as a)"
+      ],
+      "receipt": "absent"
+    }
+  ]
+}

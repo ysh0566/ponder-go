@@ -37,19 +37,19 @@ func GoFieldName(name string) string {
 	return out.String()
 }
 
-func parameterType(p Parameter) (string, error) {
+func goParameterType(p Parameter, hexType string) (string, error) {
 	if m := fixedArray.FindStringSubmatch(p.Type); m != nil {
 		n, e := strconv.ParseUint(m[2], 10, 32)
 		if e != nil || n > 1<<20 {
 			return "", fmt.Errorf("unsupported fixed ABI array length %q", m[2])
 		}
 		p.Type = m[1]
-		element, e := parameterType(p)
+		element, e := goParameterType(p, hexType)
 		return fmt.Sprintf("[%d]%s", n, element), e
 	}
 	if m := dynamicArray.FindStringSubmatch(p.Type); m != nil {
 		p.Type = m[1]
-		element, e := parameterType(p)
+		element, e := goParameterType(p, hexType)
 		return "[]" + element, e
 	}
 	if p.Type == "tuple" {
@@ -57,9 +57,12 @@ func parameterType(p Parameter) (string, error) {
 		for _, c := range p.Components {
 			named = named && (c.HasName || c.Name != "")
 		}
-		return parametersType(p.Components, named)
+		return goTupleType(p.Components, named, hexType)
 	}
-	if p.Type == "string" || p.Type == "address" || p.Type == "bytes" {
+	if p.Type == "address" || p.Type == "bytes" {
+		return hexType, nil
+	}
+	if p.Type == "string" {
 		return "string", nil
 	}
 	if p.Type == "bool" {
@@ -68,7 +71,7 @@ func parameterType(p Parameter) (string, error) {
 	if strings.HasPrefix(p.Type, "bytes") {
 		n, e := strconv.Atoi(strings.TrimPrefix(p.Type, "bytes"))
 		if e == nil && n >= 1 && n <= 32 {
-			return "string", nil
+			return hexType, nil
 		}
 	}
 	for _, prefix := range []string{"uint", "int"} {
@@ -89,6 +92,10 @@ func parameterType(p Parameter) (string, error) {
 	return "", fmt.Errorf("unsupported ABI type %q", p.Type)
 }
 func parametersType(params []Parameter, named bool) (string, error) {
+	return goTupleType(params, named, "string")
+}
+
+func goTupleType(params []Parameter, named bool, hexType string) (string, error) {
 	var out strings.Builder
 	out.WriteString("struct {\n")
 	seen := map[string]bool{}
@@ -101,7 +108,7 @@ func parametersType(params []Parameter, named bool) (string, error) {
 			return "", fmt.Errorf("ABI component names collide at Go field %q", field)
 		}
 		seen[field] = true
-		typ, e := parameterType(p)
+		typ, e := goParameterType(p, hexType)
 		if e != nil {
 			return "", e
 		}
@@ -176,7 +183,7 @@ func assignDecoded(dst reflect.Value, value any) error {
 	}
 	if dst.Type() == bigIntType {
 		n, ok := value.(*big.Int)
-		if !ok {
+		if !ok || n == nil {
 			return fmt.Errorf("ABI output requires *big.Int, got %T", value)
 		}
 		dst.Set(reflect.ValueOf(new(big.Int).Set(n)))
