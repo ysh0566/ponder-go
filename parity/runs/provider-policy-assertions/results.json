@@ -1,0 +1,430 @@
+{
+  "upstream": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+  "provider_implementation": "ac3e770ce9fdd26b766648edd0070920a47e4900",
+  "verification_tools": "9c1ef8215508f9897aea5ef260595a5ca535ab02",
+  "case_count": 17,
+  "assertions": 62,
+  "unique_source_files": 15,
+  "scope": {
+    "source_files": 104,
+    "test_declarations": 897,
+    "expanded_static_records": 905,
+    "unresolved_expansion_records": 0,
+    "assertion_expressions": 1905,
+    "type_records": 73,
+    "inline_type_assertions": 63,
+    "type_error_directives": 84,
+    "source_states": {
+      "active": 893,
+      "skip": 10,
+      "todo": 2,
+      "expected_failure": 0
+    },
+    "ported": 888,
+    "executed": 647,
+    "passed": 630,
+    "failed": 17,
+    "blocked": 0,
+    "unimplemented": 12,
+    "go_ports": 883,
+    "retained_sdk": 5,
+    "oracle_passed": 630,
+    "oracle_blocked": 0,
+    "go_passed": 625,
+    "sdk_passed": 5,
+    "go_and_original_oracle_passed": 625,
+    "target_and_original_oracle_passed": 630,
+    "current_original_oracle_passed": 630,
+    "historical_only_original_oracles": 0,
+    "runtime_passed_type_pending": 0,
+    "out_of_scope": 5
+  },
+  "upstream_full_run": {
+    "failed": 18,
+    "passed": 875,
+    "skipped": 10,
+    "todo": 2
+  },
+  "cases": [
+    {
+      "id": "348a8e37b07b6dc18282",
+      "name": "1rpc block range",
+      "source_file": "packages/utils/src/_test/1rpc.test.ts",
+      "assertions": 3,
+      "assertions_sha256": "5960e69187f9ff48e560c35b0212ceeca07ec6dfa419e230c03b537d5651cfbc",
+      "public": "fail",
+      "public_observations": [
+        "1rpc block range: JSON-RPC -32602",
+        "expected InvalidInputRpcError",
+        "provider details do not contain \"eth_getLogs is limited to a 1000 blocks range\"",
+        "retry plan differs from original expectation: retry=true suggested=true ranges=20"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "1rpc block range: JSON-RPC -32602",
+        "expected InvalidInputRpcError",
+        "provider details do not contain \"eth_getLogs is limited to a 1000 blocks range\"",
+        "retry plan differs from original expectation: retry=true suggested=true ranges=20"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "6e0331aa610922520c57",
+      "name": "alchemy block range",
+      "source_file": "packages/utils/src/_test/alchemy.test.ts",
+      "assertions": 5,
+      "assertions_sha256": "dea55aa3c5bb968130158f3059a0a1252c4b52d1ef691928b965443d9d5a5ddf",
+      "public": "skip",
+      "public_observations": [
+        "no endpoint for alchemy (RPC_URL_ALCHEMY_1)"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "alchemy block range: JSON-RPC -32602",
+        "provider details do not contain \"this block range should work\"",
+        "retry=false, want true",
+        "got 0 ranges, want 30",
+        "expected first range {FromBlock:0x112a880 ToBlock:0x112a8c2}"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "d650131ba080274e5537",
+      "name": "hyperliquid block range",
+      "source_file": "packages/utils/src/_test/altitude.test.ts",
+      "assertions": 4,
+      "assertions_sha256": "4de1a3c2d2940fc11946afb7ca42b998a3b4de0e9e998fcd5501bca9a2534354",
+      "public": "skip",
+      "public_observations": [
+        "no endpoint for altitude (RPC_URL_ALTITUDE_999)"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "hyperliquid block range: JSON-RPC -32602",
+        "error class RpcError, want HttpRequestError",
+        "provider details do not contain \"allowed block range threshold exceeded\"",
+        "retry=false, want true",
+        "got 0 ranges, want 2"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "f7bd5146724fd30daebf",
+      "name": "hyperliquid response size",
+      "source_file": "packages/utils/src/_test/altitude.test.ts",
+      "assertions": 4,
+      "assertions_sha256": "efbc81497d4ff3e3ccac1b177347bd3d0b2317023e13ac060d68c68e5bb7ed3a",
+      "public": "skip",
+      "public_observations": [
+        "no endpoint for altitude (RPC_URL_ALTITUDE_999)"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "hyperliquid response size: JSON-RPC -32602",
+        "error class RpcError, want HttpRequestError",
+        "provider details do not contain \"query exceeds max results 20000\"",
+        "retry=false, want true",
+        "got 0 ranges, want 2"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "ec36e43b4edbccdd66bd",
+      "name": "ankr response size",
+      "source_file": "packages/utils/src/_test/ankr.test.ts",
+      "assertions": 5,
+      "assertions_sha256": "57cfc37a7d171941338d05fc29d515b7de919f98bc1c8beaaeceeb96430ff291",
+      "public": "skip",
+      "public_observations": [
+        "no endpoint for ankr (RPC_URL_ANKR_1)"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "ankr response size: JSON-RPC -32602",
+        "provider details do not contain \"query exceeds max results\"",
+        "retry=false, want true",
+        "got 0 ranges, want 2",
+        "expected first range {FromBlock:0x112a880 ToBlock:0x112ae5c}"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "4986ab39680c8e7a4ac7",
+      "name": "blast block range",
+      "source_file": "packages/utils/src/_test/blast.test.ts",
+      "assertions": 3,
+      "assertions_sha256": "83fb1373a1a204ec9cb9e1f7eb3292ea7b513d1cc1aaaa88789eea47dcf91b60",
+      "public": "fail",
+      "public_observations": [
+        "blast block range: transport returned *url.Error without provider details"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "blast block range: JSON-RPC -32602",
+        "error class RpcError, want HttpRequestError",
+        "provider details do not contain \"eth_getLogs is limited to a 10,000 range\"",
+        "retry plan differs from original expectation: retry=false suggested=false ranges=0"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "42c60199315b737e0f1c",
+      "name": "blockpi block range",
+      "source_file": "packages/utils/src/_test/blockpi.test.ts",
+      "assertions": 3,
+      "assertions_sha256": "7c6b06a57e1e4ac20b27d96f86560f0d3252ba97b805dacab32dfc1b07bfaef0",
+      "public": "fail",
+      "public_observations": [
+        "blockpi block range: HTTP 503",
+        "expected InvalidParamsRpcError",
+        "provider details do not contain \"eth_getLogs is limited to 1024 block range\"",
+        "retry plan differs from original expectation: retry=false suggested=false ranges=0"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "blockpi block range: expected provider rejection, got 9 logs"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "4a1e21d4dcfea25650ed",
+      "name": "chainstack block range",
+      "source_file": "packages/utils/src/_test/chainstack.test.ts",
+      "assertions": 3,
+      "assertions_sha256": "1546c4a51e6cf13d7c4f2b3be2d55c8275df799a8488d5e2e72a669dc7009851",
+      "public": "skip",
+      "public_observations": [
+        "no endpoint for chainstack (RPC_URL_CHAINSTACK_1)"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "chainstack block range: expected provider rejection, got 1 logs"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "a5c165fcfffd635850d0",
+      "name": "coinbase block range",
+      "source_file": "packages/utils/src/_test/coinbase.test.ts",
+      "assertions": 3,
+      "assertions_sha256": "fa80c0fd2a86124c16cd7bb0fbd7f2c8c8efdd38a234224aa947f0055deabed2",
+      "public": "skip",
+      "public_observations": [
+        "no endpoint for coinbase (RPC_URL_COINBASE_8453)"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "coinbase block range: expected provider rejection, got 77 logs"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "70a6963becb25618fa7c",
+      "name": "infura block range",
+      "source_file": "packages/utils/src/_test/infura.test.ts",
+      "assertions": 5,
+      "assertions_sha256": "a7073836decaf8562fb5cfa8bf08f3b42f7cee99b637ba89a87401184223f4ba",
+      "public": "skip",
+      "public_observations": [
+        "no endpoint for infura (RPC_URL_INFURA_1)"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "infura block range: expected provider rejection, got 70777 logs"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "97acfa90ed9347c67690",
+      "name": "llamarpc response size",
+      "source_file": "packages/utils/src/_test/llamarpc.test.ts",
+      "assertions": 5,
+      "assertions_sha256": "4f19ad1cb1a10141deb2ae716b9d919b3beafa6c95e6c8d9a21ffbe4035fc7bd",
+      "public": "fail",
+      "public_observations": [
+        "llamarpc response size: HTTP 525",
+        "expected InvalidParamsRpcError",
+        "provider details do not contain \"query exceeds max results 20000\"",
+        "retry=false, want true",
+        "got 0 ranges, want 2",
+        "expected first range {FromBlock:0x112a880 ToBlock:0x112aa74}"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "llamarpc response size: expected provider rejection, got 70777 logs"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "f9064819749ec8f29669",
+      "name": "merkle block range 10k",
+      "source_file": "packages/utils/src/_test/merkle.test.ts",
+      "assertions": 4,
+      "assertions_sha256": "579f5547e3a1b5c95af90b871661550852cee1c5215485572cd2fcc634910c2f",
+      "public": "fail",
+      "public_observations": [
+        "merkle block range 10k: HTTP 403",
+        "error class HttpRequestError, want RpcError",
+        "provider details do not contain \"eth_getLogs range is too large, max is 10k blocks\"",
+        "retry plan differs from original expectation: retry=false suggested=false ranges=0",
+        "retry=false, want true"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "merkle block range 10k: JSON-RPC -32602",
+        "provider details do not contain \"eth_getLogs range is too large, max is 10k blocks\"",
+        "retry plan differs from original expectation: retry=false suggested=false ranges=0",
+        "retry=false, want true"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "3d3fd5270ec61a56ac1b",
+      "name": "merkle block range 1k",
+      "source_file": "packages/utils/src/_test/merkle.test.ts",
+      "assertions": 4,
+      "assertions_sha256": "ccf653ccaf3a8619de553a4eea1430ee09a6ea8729cbebfef1cf0f2bcbcea9e7",
+      "public": "fail",
+      "public_observations": [
+        "merkle block range 1k: HTTP 403",
+        "error class HttpRequestError, want RpcError",
+        "provider details do not contain \"eth_getLogs range is too large, max is 1k blocks\"",
+        "retry plan differs from original expectation: retry=false suggested=false ranges=0",
+        "retry=false, want true"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "merkle block range 1k: expected provider rejection, got 70861 logs"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "b5713ed2730e0f1645ab",
+      "name": "optimism block range",
+      "source_file": "packages/utils/src/_test/optimism.test.ts",
+      "assertions": 5,
+      "assertions_sha256": "2b1bd29a8861ef4cb27d826c7f19a07d7e5e5082048532369f89ce1aa9f856b6",
+      "public": "fail",
+      "public_observations": [
+        "optimism block range: expected provider rejection, got 3478 logs"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "optimism block range: expected provider rejection, got 3478 logs"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "4fe5b0a1e635d75c7425",
+      "name": "publicnode block range",
+      "source_file": "packages/utils/src/_test/publicnode.test.ts",
+      "assertions": 2,
+      "assertions_sha256": "3adf3360b728f8b70945abbde5bf64e0cb1d7d6047751da8767cbb286f7ae3ac",
+      "public": "fail",
+      "public_observations": [
+        "publicnode block range: HTTP 403",
+        "provider details do not contain \"exceed maximum block range: 50000\"",
+        "retry plan differs from original expectation: retry=false suggested=false ranges=0"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "publicnode block range: JSON-RPC -32602",
+        "provider details do not contain \"exceed maximum block range: 50000\"",
+        "retry plan differs from original expectation: retry=false suggested=false ranges=0"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "c88fe611a7ecaf0ee90d",
+      "name": "quicknode block range",
+      "source_file": "packages/utils/src/_test/quicknode.test.ts",
+      "assertions": 3,
+      "assertions_sha256": "83fb1373a1a204ec9cb9e1f7eb3292ea7b513d1cc1aaaa88789eea47dcf91b60",
+      "public": "skip",
+      "public_observations": [
+        "no endpoint for quicknode (RPC_URL_QUICKNODE_1)"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "quicknode block range: JSON-RPC -32602",
+        "error class RpcError, want HttpRequestError",
+        "provider details do not contain \"eth_getLogs is limited to a 10,000 range\"",
+        "retry plan differs from original expectation: retry=false suggested=false ranges=0"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    },
+    {
+      "id": "51499e4858745db713da",
+      "name": "swell success",
+      "source_file": "packages/utils/src/_test/swell.test.ts",
+      "assertions": 1,
+      "assertions_sha256": "42c1970ac6ef54cf2aa55d2a9269d8f5c6b0e0c5111b79e8251b13f3d2424c32",
+      "public": "fail",
+      "public_observations": [
+        "swell success: expected 58 logs, got *url.Error"
+      ],
+      "self_hosted": "fail",
+      "self_hosted_observations": [
+        "swell success: got 0 logs, want 58"
+      ],
+      "self_hosted_race": "fail",
+      "original_self_hosted": "failed"
+    }
+  ],
+  "rpc_package": {
+    "normal": {
+      "leaf_tests": {
+        "pass": 237,
+        "skip": 17
+      },
+      "sha256": "bfb8fcfdd150b7d112aee749f111740015526b7b5e416496b58ad97fde1fa5c6"
+    },
+    "race": {
+      "leaf_tests": {
+        "pass": 237,
+        "skip": 17
+      },
+      "sha256": "9d32adbff987168bb2eedb1535d6976af8851fd6de6d84cbe6675ff9482bd987"
+    }
+  },
+  "original_local_report": {
+    "matched": 17,
+    "failed": 17,
+    "sha256": "c15accc9a696789e6c642a6ef4d0a64ad57e8f659d9c79ece94288f4e2749aec"
+  },
+  "stage_checks": {
+    "node_tests_passed": 501,
+    "node_groups": {
+      "source-indexing-service-evidence": 20,
+      "source-indexing-service-cache-evidence": 8,
+      "source-indexing-service-proxy-evidence": 10,
+      "main": 463
+    },
+    "python_tests_passed": 40,
+    "go_build": "passed",
+    "go_vet": "passed"
+  },
+  "sha256": {
+    "selfhosted-normal.log": "6e99925d16eca60225d93fa6745f96a03af16baa5b5b148cbce640ae85b5e07f",
+    "selfhosted-race.log": "c2dd27d96e073844ad229d6ba8ed0172c44b71193b4a5e60fd379f41c44f2530",
+    "public-live.log": "e76f4e0aa42bc086d043968be026b0f7bfb5408f09ba2d06e657f0321d447da2",
+    "original-local.json": "c15accc9a696789e6c642a6ef4d0a64ad57e8f659d9c79ece94288f4e2749aec",
+    "swell-public.json": "f034fb1d2eef18db4d8fb1cb60e6971d413a8085947699a5e93db44fdd81b7af"
+  }
+}
