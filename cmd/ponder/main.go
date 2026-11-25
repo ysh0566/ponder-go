@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"go/format"
@@ -19,6 +20,7 @@ import (
 	"ponder.local/ponder-go/store"
 	"strings"
 	"syscall"
+	"time"
 )
 
 const version = "0.18.2-go.0"
@@ -100,6 +102,8 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 			return e
 		}
 		command := exec.CommandContext(ctx, binary)
+		command.Cancel = func() error { return command.Process.Signal(os.Interrupt) }
+		command.WaitDelay = 5 * time.Second
 		command.Dir = directory
 		command.Env = append(os.Environ(), "PONDER_COMMAND="+args[0])
 		flags.Visit(func(f *flag.Flag) {
@@ -116,7 +120,11 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		command.Stdin = os.Stdin
 		command.Stdout = out
 		command.Stderr = os.Stderr
-		return command.Run()
+		err := command.Run()
+		if errors.Is(err, context.Canceled) && command.ProcessState != nil && command.ProcessState.Success() {
+			return nil
+		}
+		return err
 	case "codegen":
 		flags := flag.NewFlagSet("codegen", flag.ContinueOnError)
 		input := flags.String("schema", "ponder.schema.json", "Native Go schema JSON")

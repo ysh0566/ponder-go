@@ -28,7 +28,7 @@ M42 的历史基线见[验收记录](parity/runs/batch-41.json)、[冻结证据]
 
 静态发现不能证明任意 JavaScript 动态执行的全部实例均已收集。4 个 literal `test.each` 声明已展开；本基线未发现动态测试生成、别名测试遗漏、`describe.each` 或 `only`。Simulation 的 8 个应用和无限 seed 空间单列。详见 [discovery-audit.json](parity/discovery-audit.json)，完整测试源码和 247 个依赖/fixture 模块分别保存在 `parity/source-tests/`、`parity/source-support/`。早期 1,957 个断言表达式计数重复计算了链式 `expect().rejects`，已修正为 1,905；905 条测试记录不变。
 
-原生应用可以通过 `runtime.StartApplication` 启动索引和查询服务。初次同步完成后，客户端能从 `/status` 读取进度，从 `/sql` 查询已提交的数据。关闭应用会等待正在执行的索引回调退出。CLI 的 `start` 和 `serve` 接受 `--schema` 和 `--views-schema`，并把选定的命名空间传给应用。
+原生应用可以通过 `runtime.StartApplication` 启动索引和查询服务。初次同步完成后，客户端能从 `/status` 读取进度，从 `/sql` 查询已提交的数据。关闭应用会等待正在执行的索引回调退出。CLI 的 `start` 和 `serve` 接受 `--schema` 和 `--views-schema`，并把选定的命名空间传给应用。停止 CLI 时，子进程会先收到中断信号，有 5 秒时间完成关闭。
 
 ## 验证
 

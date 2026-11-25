@@ -2,12 +2,15 @@ package main
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestSourceNamespaces(t *testing.T) {
@@ -31,15 +34,10 @@ func TestSourceNamespaces(t *testing.T) {
 }
 
 func TestLaunchNamespaces(t *testing.T) {
-	root := t.TempDir()
 	project := `package main
 import("fmt"; "os")
 func main(){fmt.Print(os.Getenv("PONDER_COMMAND"),"/",os.Getenv("DATABASE_SCHEMA"),"/",os.Getenv("DATABASE_VIEWS_SCHEMA"),"/",os.Getenv("PONDER_SHADOW_SCHEMA"))}`
-	for name, data := range map[string]string{"go.mod": "module example\n\ngo 1.25\n", "main.go": project} {
-		if err := os.WriteFile(filepath.Join(root, name), []byte(data), 0600); err != nil {
-			t.Fatal(err)
-		}
-	}
+	root := writeApplication(t, project)
 	t.Setenv("DATABASE_SCHEMA", "ponder_go_env")
 	t.Setenv("DATABASE_VIEWS_SCHEMA", "views_env")
 	for _, c := range []struct {
@@ -54,5 +52,56 @@ func main(){fmt.Print(os.Getenv("PONDER_COMMAND"),"/",os.Getenv("DATABASE_SCHEMA
 		if err := run(t.Context(), append([]string{c.command, "--root", root}, c.args...), &out); err != nil || strings.TrimSpace(out.String()) != c.want {
 			t.Fatal(err, out.String())
 		}
+	}
+}
+
+func writeApplication(t *testing.T, program string) string {
+	t.Helper()
+	root := t.TempDir()
+	for name, data := range map[string]string{"go.mod": "module example\n\ngo 1.25\n", "main.go": program} {
+		if err := os.WriteFile(filepath.Join(root, name), []byte(data), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return root
+}
+
+func TestLaunchGracefulShutdown(t *testing.T) {
+	program := `package main
+import("os";"os/signal";"syscall")
+func main() {
+	sig:=make(chan os.Signal,1)
+	signal.Notify(sig,os.Interrupt,syscall.SIGTERM)
+	if err:=os.WriteFile("ready",nil,0600);err!=nil{panic(err)}
+	<-sig
+	if err:=os.WriteFile("closed",nil,0600);err!=nil{panic(err)}
+}`
+	root := writeApplication(t, program)
+	ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+	defer cancel()
+	exit := make(chan error, 1)
+	go func() { exit <- run(ctx, []string{"start", "--root", root}, io.Discard) }()
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		if _, err := os.Stat(filepath.Join(root, "ready")); err == nil {
+			break
+		} else if !errors.Is(err, os.ErrNotExist) {
+			t.Fatal(err)
+		}
+		select {
+		case err := <-exit:
+			t.Fatalf("child exited before readiness: %v", err)
+		case <-ctx.Done():
+			t.Fatal(ctx.Err())
+		case <-ticker.C:
+		}
+	}
+	cancel()
+	if err := <-exit; err != nil {
+		t.Errorf("graceful stop: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(root, "closed")); err != nil {
+		t.Fatal("child did not finish shutdown", err)
 	}
 }
