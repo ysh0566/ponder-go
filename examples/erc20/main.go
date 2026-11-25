@@ -1,7 +1,8 @@
-// An explicit local Ethereum + PostgreSQL example. See README before running.
+// A local Ethereum indexer using PostgreSQL or a persistent PGlite directory.
 package main
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -31,11 +32,25 @@ func main() {
 	}
 }
 func run(ctx context.Context, logger *logging.Logger) error {
-	url := os.Getenv("PONDER_LOCAL_DATABASE_URL")
-	if url == "" {
-		return fmt.Errorf("set PONDER_LOCAL_DATABASE_URL")
+	mode := os.Getenv("PONDER_COMMAND")
+	rpcURL, address := os.Getenv("PONDER_LOCAL_RPC_URL"), os.Getenv("PONDER_LOCAL_CONTRACT")
+	if mode != "serve" && (rpcURL == "" || address == "") {
+		return fmt.Errorf("set PONDER_LOCAL_RPC_URL and PONDER_LOCAL_CONTRACT to index events")
 	}
-	backend, e := store.OpenPostgres(ctx, url)
+	url, directory := os.Getenv("PONDER_LOCAL_DATABASE_URL"), os.Getenv("PONDER_PGLITE_DIR")
+	if url == "" && directory == "" {
+		url = cmp.Or(os.Getenv("DATABASE_PRIVATE_URL"), os.Getenv("DATABASE_URL"))
+	}
+	var backend store.Backend
+	var e error
+	switch {
+	case url != "":
+		backend, e = store.OpenPostgres(ctx, url)
+	case mode == "serve":
+		return fmt.Errorf("independent serve requires PostgreSQL; set PONDER_LOCAL_DATABASE_URL")
+	default:
+		backend, e = store.OpenPGlite(ctx, cmp.Or(directory, ".ponder/pglite"))
+	}
 	if e != nil {
 		return e
 	}
@@ -49,7 +64,7 @@ func run(ctx context.Context, logger *logging.Logger) error {
 		return e
 	}
 	namespace := os.Getenv("PONDER_SHADOW_SCHEMA")
-	if os.Getenv("PONDER_COMMAND") == "serve" {
+	if mode == "serve" {
 		s, err := store.OpenExisting(ctx, backend, model, namespace, schema.Multichain)
 		if err != nil {
 			return err
@@ -61,16 +76,14 @@ func run(ctx context.Context, logger *logging.Logger) error {
 		defer server.Close()
 		return serve(ctx, nil, server, logger)
 	}
-	rpcURL, address := os.Getenv("PONDER_LOCAL_RPC_URL"), os.Getenv("PONDER_LOCAL_CONTRACT")
-	if rpcURL == "" || address == "" {
-		return fmt.Errorf("set PONDER_LOCAL_RPC_URL and PONDER_LOCAL_CONTRACT to index events")
-	}
 	s, e := store.New(ctx, backend, model, namespace, schema.Multichain)
 	if e != nil {
 		return e
 	}
-	if e = s.EnableQueryNotifications(ctx); e != nil {
-		return e
+	if backend.Dialect() == "postgres" {
+		if e = s.EnableQueryNotifications(ctx); e != nil {
+			return e
+		}
 	}
 	abi := `[{"type":"event","name":"Transfer","inputs":[{"name":"from","type":"address","indexed":true},{"name":"to","type":"address","indexed":true},{"name":"value","type":"uint256","indexed":false}]}]`
 	chain := config.Chain{Name: "local", ID: 1, RPC: []string{rpcURL}}
@@ -101,7 +114,7 @@ func run(ctx context.Context, logger *logging.Logger) error {
 	if e != nil {
 		return e
 	}
-	if views := os.Getenv("DATABASE_VIEWS_SCHEMA"); os.Getenv("PONDER_COMMAND") == "start" && views != "" {
+	if views := os.Getenv("DATABASE_VIEWS_SCHEMA"); mode == "start" && views != "" {
 		worker, e = indexer.PublishViewsOnReady(worker, s, views)
 		if e != nil {
 			return e

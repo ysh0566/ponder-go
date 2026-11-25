@@ -95,7 +95,7 @@ func TestInitGoProject(t *testing.T) {
 	if err := run(t.Context(), []string{"init", root}, io.Discard); err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"schema.json", "main.go"} {
+	for _, name := range []string{"schema.json", "main.go", "package.json"} {
 		got, err := os.ReadFile(filepath.Join(root, name))
 		if err != nil {
 			t.Fatal(err)
@@ -104,6 +104,10 @@ func TestInitGoProject(t *testing.T) {
 		if err != nil || string(got) != string(want) {
 			t.Fatalf("generated %s differs from executable example", name)
 		}
+	}
+	ignore, err := os.ReadFile(filepath.Join(root, ".gitignore"))
+	if err != nil || !strings.Contains(string(ignore), ".ponder/") {
+		t.Fatal("generated project does not ignore its local database", err)
 	}
 	mod, err := os.ReadFile(filepath.Join(root, "go.mod"))
 	if err != nil || !strings.HasPrefix(string(mod), "module example.com/my-indexer\n") {

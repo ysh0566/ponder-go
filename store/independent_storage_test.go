@@ -445,7 +445,7 @@ func TestIndependentPGliteLocksSurviveOwnerExit(t *testing.T) {
 		}
 	}
 	for {
-		release, _, e := reserveIndependentFilesystem(o.BusinessDirectory, o.SyncDirectory)
+		release, _, e := reservePGliteFilesystem(true, o.BusinessDirectory, o.SyncDirectory)
 		if e == nil {
 			release()
 			break

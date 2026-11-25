@@ -1874,6 +1874,38 @@
         "parity/runs/native-dev-progress/RESULT.md"
       ],
       "remaining": "Per-chain request rates, callback counts and durations, backfill percentages and ETA are not displayed."
+    },
+    {
+      "id": "native-local-pglite",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/pglite_directory.go",
+        "store/independent_filesystem.go",
+        "store/backend.go",
+        "store/deployment.go",
+        "store/prune.go",
+        "cmd/ponder/database.go",
+        "examples/erc20/main.go",
+        "examples/erc20/package.json",
+        "runtime/published_views.go"
+      ],
+      "native_test_files": [
+        "cmd/ponder/pglite_database_test.go",
+        "cmd/ponder/scaffold_test.go",
+        "store/independent_storage_test.go",
+        "store/engine_recovery_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/build/pre.ts",
+        "packages/core/src/bin/commands/list.ts",
+        "packages/core/src/bin/commands/prune.ts",
+        "packages/core/src/bin/commands/createViews.ts",
+        "packages/core/src/bin/commands/serve.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-local-pglite/RESULT.md"
+      ],
+      "remaining": "Standalone serve uses PostgreSQL, following the pinned serve command. Host power loss and coordinated engine crashes are separate acceptance scenarios."
     }
   ]
 }

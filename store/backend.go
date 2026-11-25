@@ -150,6 +150,8 @@ func pgQuery(ctx context.Context, q sqlQuerier, s string, args ...any) (Result, 
 }
 
 type pgliteBackend struct {
+	// Accessed while a transaction holds mu. Closing the engine releases all pins.
+	pinned    map[string]bool
 	mu        sync.Mutex
 	cmd       *exec.Cmd
 	in        io.WriteCloser
@@ -164,10 +166,6 @@ type pgliteTx struct {
 	p      *pgliteBackend
 	done   bool
 	failed bool
-}
-
-func OpenPGlite(ctx context.Context, directory string) (Backend, error) {
-	return openPGlite(ctx, directory, nil)
 }
 
 func openPGlite(ctx context.Context, directory string, inheritedLocks []*os.File) (Backend, error) {
@@ -203,7 +201,7 @@ func openPGlite(ctx context.Context, directory string, inheritedLocks []*os.File
 		cmd.Wait()
 		return nil, fmt.Errorf("invalid PGlite handshake")
 	}
-	p := &pgliteBackend{cmd: cmd, in: in, responses: make(chan []byte, 1), scanDone: make(chan struct{}), listeners: map[string]map[*notificationQueue]struct{}{}}
+	p := &pgliteBackend{pinned: make(map[string]bool), cmd: cmd, in: in, responses: make(chan []byte, 1), scanDone: make(chan struct{}), listeners: map[string]map[*notificationQueue]struct{}{}}
 	go p.readResponses(lines)
 	return p, nil
 }
@@ -220,6 +218,12 @@ func (p *pgliteBackend) Close() error {
 	<-p.scanDone
 	return e
 }
+
+type pgliteError struct{ Message, Code string }
+
+func (e *pgliteError) Error() string    { return fmt.Sprintf("%s (%s)", e.Message, e.Code) }
+func (e *pgliteError) SQLState() string { return e.Code }
+
 func (p *pgliteBackend) roundtrip(ctx context.Context, action, sql string, args ...any) (Result, error) {
 	out := Result{Rows: []map[string]any{}}
 	if p.closed {
@@ -247,10 +251,7 @@ func (p *pgliteBackend) roundtrip(ctx context.Context, action, sql string, args 
 	}
 	var response struct {
 		Result
-		Error *struct {
-			Message string
-			Code    string
-		}
+		Error *pgliteError
 	}
 	d := json.NewDecoder(strings.NewReader(string(responseData)))
 	d.UseNumber()
@@ -258,7 +259,7 @@ func (p *pgliteBackend) roundtrip(ctx context.Context, action, sql string, args 
 		return out, e
 	}
 	if response.Error != nil {
-		return out, fmt.Errorf("%s (%s)", response.Error.Message, response.Error.Code)
+		return out, response.Error
 	}
 	return response.Result, nil
 }

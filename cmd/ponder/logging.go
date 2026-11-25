@@ -78,7 +78,7 @@ func subcommandValue(arg string) bool {
 		return false
 	}
 	switch strings.TrimLeft(arg, "-") {
-	case "root", "app", "schema", "views-schema", "hostname", "port", "template", "database-url", "out", "package", "abi", "app-config", "bigint-shape", "abi-parameters", "decoder", "merge-abi", "dynamic-abi":
+	case "root", "app", "schema", "views-schema", "hostname", "port", "template", "database-url", "pglite-dir", "out", "package", "abi", "app-config", "bigint-shape", "abi-parameters", "decoder", "merge-abi", "dynamic-abi":
 		return true
 	}
 	return false

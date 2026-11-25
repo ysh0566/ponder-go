@@ -10,10 +10,10 @@ import (
 )
 
 // PublishViewsOnReady wraps a Go indexer so its first successful catch-up
-// publishes a PostgreSQL query namespace before the application reports ready.
+// publishes a query namespace before the application reports ready.
 func PublishViewsOnReady(indexer ApplicationIndexer, db *store.Store, namespace string) (ApplicationIndexer, error) {
-	if indexer == nil || db == nil || db.Backend == nil || db.Backend.Dialect() != "postgres" {
-		return nil, fmt.Errorf("publishing query views requires an indexer and a PostgreSQL store")
+	if indexer == nil || db == nil || db.Backend == nil {
+		return nil, fmt.Errorf("publishing query views requires an indexer and a store")
 	}
 	if err := schema.ValidatePublishedNamespace(db.Namespace, namespace); err != nil {
 		return nil, err

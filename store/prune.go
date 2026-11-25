@@ -50,6 +50,9 @@ func pruneOne(ctx context.Context, b Backend, ns string) (string, error) {
 		return "", err
 	}
 	defer tx.Rollback(context.Background())
+	if p, ok := b.(*pgliteBackend); ok && p.pinned[ns] {
+		return "active", nil
+	}
 	locks, err := tx.Query(ctx, "SELECT pg_try_advisory_xact_lock(hashtextextended($1,0)) AS available", ns)
 	if err != nil {
 		return "", err
