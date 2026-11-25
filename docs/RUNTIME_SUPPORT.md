@@ -12,10 +12,22 @@ This matrix lists verified native Go features and the product capabilities still
 | ABI / events | Selected logs, account callbacks and dynamic contract CALL ABI decoding, including overloaded and dynamic tuple/array results. | Additional callback overlap and selector-collision combinations. Static ABIs generate typed function callbacks, including overloads and tuple arrays with colliding Go field names. |
 | RPC / sync | Source-shaped actions, cache data, historical/realtime helpers and the selected actual RuntimeRunner pipelines. | Complete provider behavior, all archive/prefix failures and complete original runtime oracle coverage. |
 | Recovery | Selected native durable receipts, exact retries, safe progress and application process exits. | Database server/engine/power-loss failures; M45 PGlite abrupt process-exit acceptance. |
-| GraphQL HTTP and entities | Mountable read-only handler, primary and composite keys, scalar and enum fields, checkpoints and operation limits on PostgreSQL and PGlite. Table collections support typed filters, sorting, counts, offsets and bidirectional cursors. Relations support batched entity reads and filtered child pages. SQL views support aggregate fields and offset pages. | Coverage is based on the 44 pinned GraphQL and middleware cases. |
+| GraphQL HTTP and entities | Mountable read-only handler, primary and composite keys, scalar and enum fields, checkpoints and operation limits on PostgreSQL and PGlite. Table collections support typed filters, sorting, counts, offsets and bidirectional cursors. Relations support batched entity reads and filtered child pages. SQL views support aggregate fields and offset pages. | The 44 pinned GraphQL and middleware cases cover selected column types. Tables with a `point` or `line` column cause `graphql.New` to return an error. The generated Go models support both types. |
 | CLI / development modes | Native dev, start and serve pass the listener address and namespaces to the child process. Dev rebuilds changed Go projects, keeps the running child during build errors and selects a per-revision shadow schema. Runtime startup, real ERC-20 minting and factory swaps are verified through the original SDK on both database backends. | `db prune` and `db create-views`. |
 
-All 888 in-scope source cases have recorded outcomes. 871 passed and 17 provider RPC cases failed in separate live runs. The Go ordinary and race suites each covered 30 packages. [Source inventory](../parity/test-ledger.json) · [Full module regression](../parity/runs/complete-module-regression/RESULT.md)
+Of the 883 upstream cases ported to Go, 866 passed and 17 provider RPC cases failed in separate live runs. Five retained SDK cases also passed. The last recorded full Go ordinary and race suites each covered 30 packages. [Source inventory](../parity/test-ledger.json) · [Full module regression](../parity/runs/complete-module-regression/RESULT.md)
+
+## Callback RPC methods
+
+The Go starter passes an `*rpc.Client` to `runtime.Handler`. Generated callback registries expose an `*indexing.Client` with event-aware reads. The pinned Ponder callback API lists 21 named actions. Seven have high-level methods on `indexing.Client`. [Go callback context](../indexing/types.go) · [Upstream action list](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/indexing/client.ts#L122-L152)
+
+| Area | Available on `indexing.Client` | Missing high-level methods |
+| --- | --- | --- |
+| State and contract reads | `GetBalance`, `GetCode`, `GetStorageAt`, `ReadContract`, `Multicall` | `Call`, `EstimateGas`, `GetFeeHistory`, `GetProof`, `SimulateContract` |
+| Blocks and transactions | `GetBlock` | `GetTransactionCount`, `GetBlockTransactionCount`, `GetTransaction`, `GetTransactionReceipt`, `GetTransactionConfirmations` |
+| ENS | `GetEnsName` | `GetEnsAddress`, `GetEnsAvatar`, `GetEnsResolver`, `GetEnsText` |
+
+`Request` accepts raw JSON-RPC methods and parameters. Callers supply the block argument for historical reads and implement any higher-level action logic they need. The lower-level `rpc.Client` has its own receipt helper. The current `indexing.Client.Multicall` requires an explicit Multicall3 deployment address and lacks account and state override options. [Raw request handling](../indexing/client_requests.go) · [RPC receipt helpers](../rpc/actions.go) · [Multicall options](../indexing/client_multicall.go)
 
 ## Historical runtime selections
 
