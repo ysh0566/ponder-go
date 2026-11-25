@@ -17,6 +17,10 @@ func (a ABI) EventSafeName(item Event) string {
 	if count < 2 {
 		return item.Name
 	}
+	return overloadedEventName(item)
+}
+
+func overloadedEventName(item Event) string {
 	parts := make([]string, len(item.Inputs))
 	for i, parameter := range item.Inputs {
 		unnamed := parameter

@@ -11,10 +11,11 @@ import (
 
 type ABI struct {
 	ethabi.ABI
-	originalEvents    map[string]Event
-	originalFunctions map[string]Function
-	functionEntries   []Function
-	eventEntries      []Event
+	originalEvents     map[string]Event
+	originalFunctions  map[string]Function
+	functionNameCounts map[string]int
+	functionEntries    []Function
+	eventEntries       []Event
 }
 
 func signatureType(p Parameter) string {
@@ -56,6 +57,7 @@ func Parse(data string) (ABI, error) {
 	}
 	events := map[string]Event{}
 	functions := map[string]Function{}
+	functionCounts := map[string]int{}
 	functionEntries := []Function{}
 	eventEntries := []Event{}
 	for _, entry := range entries {
@@ -69,6 +71,7 @@ func Parse(data string) (ABI, error) {
 				return ABI{}, e
 			}
 			functions[FunctionSelector(function)] = function
+			functionCounts[function.Name]++
 			functionEntries = append(functionEntries, function)
 			continue
 		}
@@ -82,7 +85,7 @@ func Parse(data string) (ABI, error) {
 			}
 		}
 	}
-	return ABI{ABI: a, originalEvents: events, originalFunctions: functions, functionEntries: functionEntries, eventEntries: eventEntries}, nil
+	return ABI{ABI: a, originalEvents: events, originalFunctions: functions, functionNameCounts: functionCounts, functionEntries: functionEntries, eventEntries: eventEntries}, nil
 }
 func (a ABI) DecodeEvent(name string, topics []string, data string) (any, error) {
 	event, ok := a.originalEvents[name]

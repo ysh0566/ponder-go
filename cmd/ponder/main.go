@@ -131,6 +131,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		output := flags.String("out", "ponder_generated.go", "Output Go model file")
 		packageName := flags.String("package", "main", "Go package")
 		typed := flags.Bool("typed", false, "Generate typed native ORM model/key/insert/update APIs")
+		catalog := flags.String("abi", "", "Contract ABI JSON for typed event and function names")
 		parameters := flags.String("abi-parameters", "", "ABI parameter JSON for a typed decoder")
 		decoderName := flags.String("decoder", "Parameters", "Exported ABI decoder name")
 		if e := flags.Parse(args[1:]); e != nil {
@@ -138,6 +139,20 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		}
 		if !schema.Identifier(*packageName) {
 			return fmt.Errorf("invalid package name")
+		}
+		if *catalog != "" {
+			if *parameters != "" || *typed {
+				return fmt.Errorf("choose one ABI catalog, parameter decoder, or ORM model")
+			}
+			raw, err := os.ReadFile(*catalog)
+			if err != nil {
+				return err
+			}
+			source, err := abi.GenerateCatalog(*packageName, raw)
+			if err != nil {
+				return err
+			}
+			return os.WriteFile(*output, source, 0644)
 		}
 		if *parameters != "" {
 			raw, e := os.ReadFile(*parameters)

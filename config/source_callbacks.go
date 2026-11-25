@@ -208,10 +208,6 @@ func sourceBuildAllCallbacks(sources map[string][]*sourceObject, chains, latest 
 		functionItems := map[string]any{}
 		eventNames, functionNames := []string{}, []string{}
 		eventIndex, functionIndex := 0, 0
-		counts := map[string]int{}
-		for _, f := range parsed.FunctionEntries() {
-			counts[f.Name]++
-		}
 		for _, item := range raw {
 			object, ok := item.(*sourceObject)
 			if !ok {
@@ -229,7 +225,7 @@ func sourceBuildAllCallbacks(sources map[string][]*sourceObject, chains, latest 
 			case "function":
 				function := parsed.FunctionEntries()[functionIndex]
 				functionIndex++
-				safe := function.SafeName(counts[function.Name] > 1)
+				safe := parsed.FunctionSafeName(function)
 				functionNames = append(functionNames, safe)
 				if _, ok := functionItems[safe]; !ok {
 					functionItems[safe] = item
