@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"ponder.local/ponder-go/filter"
+	"ponder.local/ponder-go/metrics"
 )
 
 // Handler is synchronous with respect to service dispatch. Retained event
@@ -80,10 +81,19 @@ type DurationObservation struct {
 // Metrics preserves source observation order and labels; durations use the real
 // monotonic clock unless an explicit clock is supplied for deterministic tests.
 type Metrics struct {
+	Registry  *metrics.Registry
 	Durations []DurationObservation
 	Completed map[string]uint64
 	HasError  bool
 }
+
+func (m *Metrics) complete(event string) {
+	m.Completed[event]++
+	if m.Registry != nil {
+		m.Registry.IncrementCompleted(event, 1)
+	}
+}
+
 type ErrorObservation struct {
 	Event Object
 	Err   error

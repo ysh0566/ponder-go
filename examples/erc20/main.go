@@ -4,10 +4,10 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"math/big"
-	"net/http"
 	"os"
 	"os/signal"
 	"ponder.local/ponder-go/config"
@@ -26,7 +26,7 @@ func main() {
 		log.Fatal(e)
 	}
 }
-func run(ctx context.Context) error {
+func run(ctx context.Context) (result error) {
 	url, rpcURL, address := os.Getenv("PONDER_LOCAL_DATABASE_URL"), os.Getenv("PONDER_LOCAL_RPC_URL"), os.Getenv("PONDER_LOCAL_CONTRACT")
 	if url == "" || rpcURL == "" || address == "" {
 		return fmt.Errorf("set explicit PONDER_LOCAL_DATABASE_URL, PONDER_LOCAL_RPC_URL and PONDER_LOCAL_CONTRACT for a task-owned local database and chain")
@@ -84,19 +84,25 @@ func run(ctx context.Context) error {
 		}
 	}
 	server.Ready.Store(true)
-	httpServer := &http.Server{Addr: "127.0.0.1:42069", Handler: server, ReadHeaderTimeout: 5 * time.Second}
-	errors := make(chan error, 2)
-	go func() { errors <- httpServer.ListenAndServe() }()
-	if os.Getenv("PONDER_COMMAND") != "serve" {
-		go func() { errors <- engine.Run(ctx) }()
+	httpServer, e := query.Listen(ctx, "127.0.0.1", 42069, server)
+	if e != nil {
+		return e
 	}
-	log.Printf("local example at http://127.0.0.1:42069; indexing schema %s", s.Namespace)
-	select {
-	case <-ctx.Done():
+	outcomes := make(chan error, 2)
+	go func() { outcomes <- httpServer.Wait() }()
+	defer func() {
 		shutdown, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()
-		return httpServer.Shutdown(shutdown)
-	case e := <-errors:
+		result = errors.Join(result, httpServer.Shutdown(shutdown))
+	}()
+	if os.Getenv("PONDER_COMMAND") != "serve" {
+		go func() { outcomes <- engine.Run(ctx) }()
+	}
+	log.Printf("local example at http://%s; indexing schema %s", httpServer.Addr(), s.Namespace)
+	select {
+	case <-ctx.Done():
+		return nil
+	case e := <-outcomes:
 		return e
 	}
 }

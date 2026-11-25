@@ -239,6 +239,9 @@ func (cache *IndexingCache) Prefetch(ctx context.Context, events []ProfileEvent)
 	loaded := map[string]map[string]Row{}
 	for _, table := range tables {
 		prediction := predictions[table.Name]
+		if cache.db.metrics != nil {
+			cache.db.metrics.IncrementCacheRequests(table.Name, "prefetch", uint64(len(prediction)))
+		}
 		if len(prediction) == 0 {
 			continue
 		}
