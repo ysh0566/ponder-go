@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
 	"time"
@@ -163,11 +164,8 @@ func OpenExisting(ctx context.Context, backend Backend, model schema.Schema, nam
 
 // PublishViews creates a published schema alongside a current native deployment.
 func PublishViews(ctx context.Context, backend Backend, namespace, views string) error {
-	if err := schema.ValidateNamespaces(namespace, views); err != nil {
+	if err := schema.ValidatePublishedNamespace(namespace, views); err != nil {
 		return err
-	}
-	if !schema.Identifier(views) || views == "public" || strings.HasPrefix(views, "pg_") || views == "information_schema" {
-		return fmt.Errorf("invalid published views schema %q", views)
 	}
 	tx, err := backend.Begin(ctx)
 	if err != nil {
@@ -205,6 +203,7 @@ func PublishViews(ctx context.Context, backend Backend, namespace, views string)
 		return err
 	}
 	s.viewsSchema = views
+	affected := s.publishedNames()
 	if previous != "" {
 		old := s
 		if previous != namespace {
@@ -213,6 +212,7 @@ func PublishViews(ctx context.Context, backend Backend, namespace, views string)
 				return err
 			}
 			old.viewsSchema = views
+			maps.Copy(affected, old.publishedNames())
 		}
 		if err = s.preparePublication(ctx, tx, old); err != nil {
 			return err
@@ -220,6 +220,14 @@ func PublishViews(ctx context.Context, backend Backend, namespace, views string)
 	}
 	if err = s.createAliasViews(ctx, tx); err != nil {
 		return err
+	}
+	if previous != namespace {
+		// Live readers of the stable name must see existing rows in the new
+		// deployment even if neither writer commits again after the switch.
+		names := slices.Sorted(maps.Keys(affected))
+		if err = tx.Exec(ctx, "SELECT pg_notify($1,json_build_array(name)::text) FROM unnest($2::text[]) AS changed(name)", views+"_live_query", names); err != nil {
+			return err
+		}
 	}
 	return tx.Commit(ctx)
 }

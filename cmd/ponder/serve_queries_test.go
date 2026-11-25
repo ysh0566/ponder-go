@@ -17,23 +17,14 @@ import (
 	"time"
 
 	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/internal/testanvil"
 	"github.com/ysh0566/ponder-go/query"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
 
-func TestGeneratedGoServe(t *testing.T) {
-	address := os.Getenv("PONDER_TEST_POSTGRES")
-	if address == "" {
-		t.Skip("requires a task PostgreSQL database")
-	}
-	ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
-	defer cancel()
-	b, err := store.OpenPostgres(ctx, address)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer b.Close()
+func generatedGoProject(t *testing.T, ctx context.Context) string {
+	t.Helper()
 	root := filepath.Join(t.TempDir(), "reader")
 	if err := run(ctx, []string{"init", root}, io.Discard); err != nil {
 		t.Fatal(err)
@@ -49,6 +40,22 @@ func TestGeneratedGoServe(t *testing.T) {
 			t.Fatalf("prepare generated project: %s %v", out, err)
 		}
 	}
+	return root
+}
+
+func TestGeneratedGoServe(t *testing.T) {
+	address := os.Getenv("PONDER_TEST_POSTGRES")
+	if address == "" {
+		t.Skip("requires a task PostgreSQL database")
+	}
+	ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
+	defer cancel()
+	b, err := store.OpenPostgres(ctx, address)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer b.Close()
+	root := generatedGoProject(t, ctx)
 	raw, err := os.ReadFile(filepath.Join(root, "schema.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -169,4 +176,57 @@ func TestGeneratedGoServe(t *testing.T) {
 		t.Fatal(err)
 	}
 	next(0)
+}
+
+func TestGeneratedGoStartViews(t *testing.T) {
+	address := os.Getenv("PONDER_TEST_POSTGRES")
+	if address == "" {
+		t.Skip("requires a task PostgreSQL database")
+	}
+	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
+	defer cancel()
+	root := generatedGoProject(t, ctx)
+	backend, err := store.OpenPostgres(ctx, address)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer backend.Close()
+	source := fmt.Sprintf("ponder_go_start_%x", time.Now().UnixNano())
+	views := source + "_v"
+	defer func() {
+		if err := backend.Exec(context.Background(), "DROP SCHEMA IF EXISTS "+schema.Quote(views)+", "+schema.Quote(source)+", "+schema.Quote(source+"_sync")+" CASCADE"); err != nil {
+			t.Error(err)
+		}
+	}()
+	t.Setenv("PONDER_LOCAL_DATABASE_URL", address)
+	t.Setenv("PONDER_LOCAL_RPC_URL", testanvil.Start(t, "--no-mining"))
+	t.Setenv("PONDER_LOCAL_CONTRACT", "0x00000000000000000000000000000000000000ab")
+	child, stop := context.WithCancel(ctx)
+	done := make(chan struct{})
+	var childErr error
+	go func() {
+		defer close(done)
+		childErr = run(child, []string{"start", "--root", root, "--schema", source, "--views-schema", views, "--port", "0"}, io.Discard)
+	}()
+	defer func() { stop(); <-done }()
+	for {
+		found, err := backend.Query(ctx, "SELECT to_regclass($1)::text AS name", schema.Quote(views)+".account")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if found.Rows[0]["name"] != nil {
+			break
+		}
+		select {
+		case <-done:
+			t.Fatalf("generated start stopped before publishing: %v", childErr)
+		case <-ctx.Done():
+			t.Fatal("generated start did not publish", ctx.Err())
+		case <-time.After(25 * time.Millisecond):
+		}
+	}
+	rows, err := backend.Query(ctx, "SELECT chain_id::text AS id FROM "+schema.Quote(views)+"._ponder_checkpoint")
+	if err != nil || len(rows.Rows) != 1 || rows.Rows[0]["id"] != "1" {
+		t.Fatalf("published checkpoint: %v, %v", rows, err)
+	}
 }

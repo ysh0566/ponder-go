@@ -1644,6 +1644,28 @@
         "parity/runs/native-standalone-serve/RESULT.md"
       ],
       "remaining": "The generated standalone server uses PostgreSQL. Other deployment roles and directory administration remain separate acceptance cases."
+    },
+    {
+      "id": "native-ready-view-publication",
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/published_views.go",
+        "examples/erc20/main.go",
+        "store/deployment.go",
+        "schema/namespaces.go"
+      ],
+      "native_test_files": [
+        "runtime/published_views_test.go",
+        "cmd/ponder/serve_queries_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/bin/ponder.ts",
+        "packages/core/src/bin/isolatedController.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-ready-view-publication/RESULT.md"
+      ],
+      "remaining": "Automatic publication is verified with current PostgreSQL deployments. PGlite directory administration remains separate."
     }
   ]
 }
