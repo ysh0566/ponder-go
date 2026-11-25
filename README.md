@@ -19,7 +19,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 
 | 功能 | 可以使用的范围 |
 | --- | --- |
-| 链上索引 | 单链支持历史同步、持续索引、重组撤销和重新索引。可处理静态合约及 factory 发现的日志；账户、交易和合约调用 trace 的支持范围见矩阵。[运行模式](docs/RUNTIME_SUPPORT.md) |
+| 链上索引 | 单链支持历史同步、持续索引、重组撤销和重新索引。单链和独立多链可用 WebSocket 新区块通知追块，并按重组窗口清理撤销日志。可处理静态合约及 factory 发现的日志；账户、交易和合约调用 trace 的支持范围见矩阵。[运行模式](docs/RUNTIME_SUPPORT.md) |
 | 多链 | 默认多链运行器已验证部分有限区间和持续索引组合。Omnichain 已验证限定的历史区间与来源组合。Isolated 模式可让各链独立索引、重试和撤销重组。[多链边界](docs/RUNTIME_SUPPORT.md) |
 | 数据库 | PostgreSQL 和 PGlite 均有验证。业务写入、撤销日志和 checkpoint 在事务中提交。各存储组件只支持自己的当前格式；旧库需使用新命名空间重新索引。[存储格式](parity/runs/current-database-formats/RESULT.md) |
 | 查询 | 支持只读 SQL、SSE 订阅、状态与指标接口。应用可另行挂载 GraphQL 处理器，支持实体、过滤、分页、关联及视图。[HTTP 查询示例](docs/USAGE.md#查询索引结果) · [GraphQL](graphql) |
@@ -29,7 +29,6 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 
 | 使用场景 | 当前边界 |
 | --- | --- |
-| 长期运行单链或独立多链 | 脚手架的 `runtime.NewIndexer` 默认轮询链头。底层 RPC 客户端支持 WebSocket 订阅和重连，默认启动流程缺少用 `newHeads` 唤醒索引的接入。持续运行现已按重组窗口推进最终确认检查点并清理撤销日志。[持续索引与重组实测](parity/runs/native-continuous-finality/RESULT.md) |
 | 在同一 Go 应用中协调多条链 | `runtime.NewIndexer` 可运行单链和独立多链。默认协调多链和全局排序要改用 `historical.RuntimeRunner`。全局排序只支持已最终确认的有限历史区间，缺持续追块、跨链重组重放、动态 factory、账户交易与转账、合约调用 trace，以及混合区块回调链和纯日志链。 |
 | 在回调中查询链上状态 | `indexing.Client` 提供七个上游高层方法。其余十四个还缺对应的 Go 方法，包括合约模拟、gas 估算及交易确认数查询。可用 `Request` 发原始 RPC；批量读合约需显式指定 Multicall3 地址。[方法清单](docs/RUNTIME_SUPPORT.md#callback-rpc-methods) |
 | 选择列类型和查询接口 | Go 模型可在两个数据库上读写 `point`、`line`。含这两类列的表目前会让 `graphql.New` 返回错误。上游提供的 `cidr`、`inet`、`interval`、`macaddr`、`macaddr8` 和 `time` 六种列类型尚不能用于原生 schema。[模型验证](parity/runs/native-go-models/RESULT.md) |

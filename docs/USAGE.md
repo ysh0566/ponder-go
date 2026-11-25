@@ -157,6 +157,22 @@ head "$model_dir/model.go"
 
 生成的模型用 `[]byte` 表示二进制，`json.RawMessage` 表示 JSON，`[2]float64` 和 `[3]float64` 表示点和线。SQL 数组使用 `[]orm.Nullable[T]`，可通过 `orm.Some(value)` 和 `orm.Null[T]()` 分别写入值和空元素。生成的 ABI 回调保留 tuple 的原始组件名，两个组件转换成相同 Go 名字时会得到不同的字段名。
 
+## 用 WebSocket 通知追块
+
+在 `config.Chain` 中设置 `WS`，单链和独立多链运行器会在收到 `newHeads` 通知时立即查询 RPC，然后从持久化进度补齐所有新区块。
+
+```go
+chain := config.Chain{
+    Name: "local",
+    ID:   31337,
+    RPC:  []string{"http://127.0.0.1:8545"},
+    WS:   "ws://127.0.0.1:8545",
+    PollingIntervalMS: 1000,
+}
+```
+
+`PollingIntervalMS` 控制定时检查的间隔。订阅断线或网关拒绝订阅时，定时检查仍会追块。使用普通 HTTP 轮询的项目可以省略 `WS`。同一项目只更换通知地址时会沿用已有索引区间。[通知、断线与重连实测](../parity/runs/native-head-notifications/RESULT.md)
+
 ## 从同一个 Go 项目索引多条链
 
 需要各链独立写入时，将 `store.New` 和 `config.Config.Ordering` 都设置为 `schema.Isolated`。每张业务表要有 SQL 列 `chain_id`、Go 模型属性 `chainId`，并将该列包含在主键中。在 `cfg.Chains` 配置各链的名称、ID 和 RPC，在每个来源的 `Chain` 指定所属链。多条链可以使用同一个来源名称和处理函数。回调从 `c.Chain.ID` 获取当前链 ID。
