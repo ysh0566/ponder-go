@@ -364,6 +364,16 @@ func (s *Server) stream(w http.ResponseWriter, r *http.Request, queryKey string,
 				continue
 			}
 			result, e := s.queryResult(r.Context(), queryKey, q, relations, true)
+			for stopped != nil && s.Store.Backend.Dialect() == "postgres" && store.PostgresConnectionInterrupted(e) {
+				select {
+				case <-r.Context().Done():
+					return
+				case <-stopped:
+					return
+				case <-time.After(250 * time.Millisecond):
+				}
+				result, e = s.queryResult(r.Context(), queryKey, q, relations, true)
+			}
 			if e != nil {
 				return
 			}

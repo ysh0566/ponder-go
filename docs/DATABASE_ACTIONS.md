@@ -75,7 +75,8 @@ owns a dedicated LISTEN connection; PGlite routes asynchronous notification fram
 separately from ordered SQL responses. Call Close to release a subscription.
 Canceling a Wait does not cancel the subscription. The Listen context or backend
 close ends the subscription. Messages are queued without silently dropping them;
-consumers must keep up. There is no automatic reconnect or durable message replay.
+consumers must keep up. Raw listeners deliver ephemeral database messages. The
+higher-level query listener handles PostgreSQL reconnection and result refreshes.
 
 Business writes, Writer.CommitBlock and Writer.AdvanceLatest inside one RawBatch
 publish changed tables only when that transaction commits. Aborting after the
@@ -89,6 +90,6 @@ scheduling from the granular primitives.
 All eleven source actions.test.ts records have native mappings, including the
 160-table large-payload notification case. Published view channels and the
 SQL/SSE listener have since been exercised on both database backends.
-The independent query service still needs automatic resubscription after a
-PostgreSQL LISTEN connection is interrupted. Current role and runtime limits
-are recorded in the module matrix. [SQL/SSE tests](../parity/runs/sql-client-queries/RESULT.md) · [Listener interruption](../parity/runs/native-query-deployment-audit/RESULT.md) · [Runtime support](RUNTIME_SUPPORT.md)
+The independent query service reopens interrupted PostgreSQL LISTEN sessions
+and refreshes active live queries with the latest committed data. Current role and runtime limits
+are recorded in the module matrix. [SQL/SSE tests](../parity/runs/sql-client-queries/RESULT.md) · [Listener recovery](../parity/runs/native-query-reconnect/RESULT.md) · [Runtime support](RUNTIME_SUPPORT.md)
