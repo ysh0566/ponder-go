@@ -35,8 +35,10 @@ type RuntimeOptions struct {
 	// multichain runs, including a first event at block zero.
 	// The finalized omnichain format enables these positions automatically.
 	SourceCheckpoints bool
-	FactorySources    bool
-	Live              *RuntimeLiveOptions
+	// FactorySources discovers child addresses on the canonical branch.
+	// It requires source checkpoints and default multichain ordering.
+	FactorySources bool
+	Live           *RuntimeLiveOptions
 	// Historical.QuerySize is the bounded omnichain SQL target (1..12000);
 	// zero uses12000. Other historical scheduling options remain unsupported.
 	Historical                   Options
@@ -102,8 +104,8 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		}
 		o.Live = &copy
 	}
-	if o.FactorySources && (!o.SourceCheckpoints || o.Live == nil) {
-		return nil, fmt.Errorf("factory sources require source checkpoints and continuous lifecycle")
+	if o.FactorySources && !o.SourceCheckpoints {
+		return nil, fmt.Errorf("factory sources require source checkpoints")
 	}
 	b := o.Historical.Build.Executable()
 	session, release, err := b.AcquireSession()

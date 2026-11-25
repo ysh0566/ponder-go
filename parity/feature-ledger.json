@@ -2112,7 +2112,7 @@
       "evidence": [
         "parity/runs/native-bounded-source-checkpoints/RESULT.md"
       ],
-      "remaining": "Finite default ranges still require acquired end blocks and at least one event source per participating chain. Independent factory discovery uses the continuous runtime."
+      "remaining": "Finite default ranges require acquired end blocks and at least one event source per participating chain."
     },
     {
       "id": "native-multichain-engine-recovery",
@@ -2134,6 +2134,31 @@
         "parity/runs/native-multichain-engine-recovery/RESULT.md"
       ],
       "remaining": "The native scenarios interrupt a block callback while replaying a replacement branch. Host power loss and independent Omnichain engine failures require additional verification."
+    },
+    {
+      "id": "native-bounded-factory",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "historical/live_runtime_completion.go",
+        "runtime/source_managed_factory.go",
+        "store/managed_live_runtime.go"
+      ],
+      "native_test_files": [
+        "historical/bounded_factory_test.go",
+        "historical/live_runtime_factory_transaction_test.go",
+        "historical/live_runtime_factory_transfer_test.go",
+        "historical/live_runtime_factory_trace_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/sync-historical/in-memory.ts",
+        "packages/core/src/sync-historical/in-memory.test.ts",
+        "packages/core/src/runtime/index.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-bounded-factory/RESULT.md"
+      ],
+      "remaining": "Independent Omnichain still excludes factory sources. Bounded default runs require source checkpoints for factory discovery and a known end on each chain."
     }
   ]
 }

@@ -73,8 +73,8 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 	opts.liveRuntime = true
 	opts.runtimeSetup = in.Setup
 	opts.runtimeInitial = in.SourceCheckpoints
-	if in.FactorySources && (!in.SourceCheckpoints || !in.Continuous) {
-		return nil, fmt.Errorf("factory runtime requires source positions continuous lifecycle")
+	if in.FactorySources && !in.SourceCheckpoints {
+		return nil, fmt.Errorf("factory runtime requires source checkpoints")
 	}
 	opts.runtimeFactories = in.FactorySources
 	if in.CacheRPCRequests != nil {

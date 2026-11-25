@@ -647,7 +647,7 @@ func TestRuntimeFactoryTraceDefaultReceipts(t *testing.T) {
 
 // Rejected options must fail before requester ownership or storage DDL.
 func TestRuntimeFactoryTraceCapability(t *testing.T) {
-	for _, kind := range []string{"opt_out", "account_trace", "non_call", "missing_source_checkpoints", "missing_live"} {
+	for _, kind := range []string{"opt_out", "account_trace", "non_call", "missing_source_checkpoints", "bounded_without_checkpoints"} {
 		t.Run(kind, func(t *testing.T) {
 			g := factoryTraceGoldens(t)
 			s, _ := factoryTraceRPC(t, 3, g)
@@ -674,10 +674,11 @@ func TestRuntimeFactoryTraceCapability(t *testing.T) {
 				o.FactorySources = false
 			case "missing_source_checkpoints":
 				o.SourceCheckpoints = false
-				want = "require source checkpoints and continuous lifecycle"
-			case "missing_live":
+				want = "require source checkpoints"
+			case "bounded_without_checkpoints":
+				o.SourceCheckpoints = false
 				o.Live = nil
-				want = "require source checkpoints and continuous lifecycle"
+				want = "require source checkpoints"
 			}
 			r, err := OpenRuntimePostgres(context.Background(), o)
 			if r != nil || err == nil || !strings.Contains(err.Error(), want) || requested {

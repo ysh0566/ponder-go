@@ -261,7 +261,7 @@ func factoryTransactionExpected(g factoryTransactionGolden, branches map[uint64]
 	}
 	return expected
 }
-func factoryTransactionRows(t *testing.T, f finiteFixture, want map[string]string) {
+func factoryBusinessRows(t *testing.T, f finiteFixture, want map[string]string) {
 	t.Helper()
 	managedInspect(t, f, func(db store.Backend) {
 		rows := managedRows(t, db, "SELECT id,balance::text AS balance FROM "+schema.Quote(f.options.Owned.Storage.BusinessNamespace)+".account ORDER BY id")
@@ -270,7 +270,7 @@ func factoryTransactionRows(t *testing.T, f finiteFixture, want map[string]strin
 			got[fmt.Sprint(r["id"])] = fmt.Sprint(r["balance"])
 		}
 		if !reflect.DeepEqual(got, want) {
-			t.Fatalf("business rows differ from actual pinned factory transaction oracle: got=%v want=%v", got, want)
+			t.Fatalf("business rows differ from expected factory events: got=%v want=%v", got, want)
 		}
 	})
 }
@@ -340,7 +340,7 @@ func TestRuntimeFactoryTransactionLifecycle(t *testing.T) {
 						t.Fatal(err)
 					}
 					want := factoryTransactionExpected(g, map[uint64]string{1: "old", 2: "old"}, start)
-					factoryTransactionRows(t, f, want)
+					factoryBusinessRows(t, f, want)
 					o.OpenID = "transaction-reopen"
 					o.Live.OnProgress = nil
 					r = runtimeOpen(t, backend, o)
@@ -351,7 +351,7 @@ func TestRuntimeFactoryTransactionLifecycle(t *testing.T) {
 					if err = r.Close(context.Background()); err != nil {
 						t.Fatal(err)
 					}
-					factoryTransactionRows(t, f, want)
+					factoryBusinessRows(t, f, want)
 				})
 			}
 		}
@@ -412,7 +412,7 @@ func TestRuntimeFactoryTransactionReorg(t *testing.T) {
 					t.Fatal(err)
 				}
 				want := factoryTransactionExpected(g, map[uint64]string{1: "fresh", 2: "old"}, 1)
-				factoryTransactionRows(t, f, want)
+				factoryBusinessRows(t, f, want)
 				o.OpenID = "canonical-reopen"
 				o.Live.OnProgress = nil
 				r = runtimeOpen(t, backend, o)
@@ -423,7 +423,7 @@ func TestRuntimeFactoryTransactionReorg(t *testing.T) {
 				if err = r.Close(context.Background()); err != nil {
 					t.Fatal(err)
 				}
-				factoryTransactionRows(t, f, want)
+				factoryBusinessRows(t, f, want)
 			})
 		}
 	}
@@ -488,7 +488,7 @@ func TestRuntimeFactoryTransactionFailedCommit(t *testing.T) {
 				if err = r.Close(context.Background()); err != nil {
 					t.Fatal(err)
 				}
-				factoryTransactionRows(t, f, factoryTransactionExpected(g, map[uint64]string{1: "old", 2: "old"}, 1))
+				factoryBusinessRows(t, f, factoryTransactionExpected(g, map[uint64]string{1: "old", 2: "old"}, 1))
 			})
 		}
 	}
@@ -634,7 +634,7 @@ func TestRuntimeFactoryTransactionCrash(t *testing.T) {
 				if err = r.Close(context.Background()); err != nil {
 					t.Fatal(err)
 				}
-				factoryTransactionRows(t, f, factoryTransactionExpected(g, map[uint64]string{1: "fresh", 2: "old"}, 1))
+				factoryBusinessRows(t, f, factoryTransactionExpected(g, map[uint64]string{1: "fresh", 2: "old"}, 1))
 			})
 		}
 	}
@@ -642,7 +642,7 @@ func TestRuntimeFactoryTransactionCrash(t *testing.T) {
 
 // Rejection must precede requester creation and storage DDL.
 func TestRuntimeFactoryTransactionCapability(t *testing.T) {
-	for _, kind := range []string{"opt_out", "trace", "missing_source_checkpoints", "missing_live"} {
+	for _, kind := range []string{"opt_out", "trace", "missing_source_checkpoints", "bounded_without_checkpoints"} {
 		t.Run(kind, func(t *testing.T) {
 			g := factoryTransactionGoldens(t)
 			s, _ := factoryTransactionRPC(t, 3, g)
@@ -665,10 +665,11 @@ func TestRuntimeFactoryTransactionCapability(t *testing.T) {
 				o.FactorySources = false
 			case "missing_source_checkpoints":
 				o.SourceCheckpoints = false
-				want = "require source checkpoints and continuous lifecycle"
-			case "missing_live":
+				want = "require source checkpoints"
+			case "bounded_without_checkpoints":
+				o.SourceCheckpoints = false
 				o.Live = nil
-				want = "require source checkpoints and continuous lifecycle"
+				want = "require source checkpoints"
 			}
 			r, err := OpenRuntimePostgres(context.Background(), o)
 			if r != nil || err == nil || !strings.Contains(err.Error(), want) || requested {
