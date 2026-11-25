@@ -13,18 +13,12 @@ import (
 	"ponder.local/ponder-go/schema"
 )
 
-// These files retain the exact fixed-source SQL, including copy exclusions,
-// ranges, numeric widths, identity sequences, constraints and indexes.
+// The current cache schema uses the pinned upstream DDL.
 //
 //go:embed syncsql/create.sql
 var syncCreateSQL string
 
-//go:embed syncsql/copy.sql
-var syncCopySQL string
-
-// SyncMigrator creates the source's versioned RPC cache in a fresh task-owned
-// scope. Its optional legacy input is an explicitly owned shadow. It never opens,
-// alters or adopts a real ponder_sync/ponder_rpc_cache_1 schema.
+// SyncMigrator initializes the current RPC cache in an explicitly owned scope.
 type SyncMigrator struct {
 	backend Backend
 	scope   string
@@ -39,16 +33,9 @@ func NewSyncMigrator(backend Backend, scope string) (*SyncMigrator, error) {
 	}
 	return &SyncMigrator{backend: backend, scope: scope}, nil
 }
-func (m *SyncMigrator) LegacySchema() string { return m.scope + "_legacy" }
 func (m *SyncMigrator) LatestSchema() string { return m.scope + "_rpc_1" }
-func (m *SyncMigrator) owner(kind string) string {
-	return "ponder-go:sync-migration:17c6d5ba:v1:" + m.scope + ":" + kind
-}
-func (m *SyncMigrator) legacyOwner() string { return m.owner("legacy-shadow") }
-func (m *SyncMigrator) latestOwner() string { return m.owner("ponder_rpc_cache_1") }
-func (m *SyncMigrator) remap(sql string) string {
-	sql = strings.ReplaceAll(sql, `"ponder_sync"`, schema.Quote(m.LegacySchema()))
-	return strings.ReplaceAll(sql, `"ponder_rpc_cache_1"`, schema.Quote(m.LatestSchema()))
+func (m *SyncMigrator) latestOwner() string {
+	return "ponder-go:sync-migration:17c6d5ba:v1:" + m.scope + ":ponder_rpc_cache_1"
 }
 func (m *SyncMigrator) owned(ctx context.Context, q Querier, name, owner string) (bool, error) {
 	r, e := q.Query(ctx, "SELECT obj_description(oid,'pg_namespace') AS owner FROM pg_namespace WHERE nspname=$1", name)
@@ -116,19 +103,6 @@ func (m *SyncMigrator) migrateOnce(ctx context.Context) error {
 	if e = m.lock(ctx, tx); e != nil {
 		return e
 	}
-	legacy, e := m.owned(ctx, tx, m.LegacySchema(), m.legacyOwner())
-	if e != nil {
-		return e
-	}
-	if legacy {
-		r, e := tx.Query(ctx, "SELECT name FROM "+schema.Quote(m.LegacySchema())+".kysely_migration WHERE name='2025_02_26_1_rpc_request_results'")
-		if e != nil {
-			return e
-		}
-		if len(r.Rows) == 0 {
-			return &MigrationError{Message: `"ponder_sync" migration failed. Please first update to v0.10 or "DROP SCHEMA ponder_sync CASCADE".`}
-		}
-	}
 	latest, e := m.owned(ctx, tx, m.LatestSchema(), m.latestOwner())
 	if e != nil {
 		return e
@@ -139,16 +113,20 @@ func (m *SyncMigrator) migrateOnce(ctx context.Context) error {
 		}
 		return tx.Commit(ctx)
 	}
-	files := []string{syncCreateSQL}
-	if legacy {
-		files = append(files, syncCopySQL)
+	// An older standalone cache is never an input to initialization.
+	// Refuse an occupied scope before creating any current tables.
+	previous, e := tx.Query(ctx, "SELECT 1 FROM pg_namespace WHERE nspname=$1", m.scope+"_legacy")
+	if e != nil {
+		return e
 	}
-	for _, file := range files {
-		for _, statement := range strings.Split(file, "--> statement-breakpoint") {
-			if strings.TrimSpace(statement) != "" {
-				if e = tx.Exec(ctx, m.remap(statement)); e != nil {
-					return e
-				}
+	if len(previous.Rows) != 0 {
+		return &MigrationError{Message: "unsupported sync cache format; choose a fresh scope"}
+	}
+	ddl := strings.ReplaceAll(syncCreateSQL, `"ponder_rpc_cache_1"`, schema.Quote(m.LatestSchema()))
+	for _, statement := range strings.Split(ddl, "--> statement-breakpoint") {
+		if strings.TrimSpace(statement) != "" {
+			if e = tx.Exec(ctx, statement); e != nil {
+				return e
 			}
 		}
 	}

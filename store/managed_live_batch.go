@@ -122,7 +122,7 @@ func (m *ManagedLive) readDurableState(ctx context.Context, q Querier, prior boo
 		}
 		token, generation, heads = fmt.Sprint(app.Rows[0]["lease_token"]), c.Generation, c.FinalizedHeads
 	}
-	if pagedLogOnlyOptions(m.opts) {
+	if logOnlyOptions(m.opts) {
 		d.rangeParents, err = m.auditLineagePages(ctx, q, d.Operations)
 		if err != nil {
 			return d, "", err
@@ -132,7 +132,7 @@ func (m *ManagedLive) readDurableState(ctx context.Context, q Querier, prior boo
 	if err != nil {
 		return d, "", err
 	}
-	if !pagedLogOnlyOptions(m.opts) {
+	if !logOnlyOptions(m.opts) {
 		for _, op := range d.Operations {
 			if err := rejectPagedReceipt(op); err != nil {
 				return d, "", err
@@ -140,7 +140,7 @@ func (m *ManagedLive) readDurableState(ctx context.Context, q Querier, prior boo
 		}
 	}
 	if !logOnlyOptions(m.opts) {
-		if err := validateLegacyLogOnlyExtensions(d.Operations); err != nil {
+		if err := rejectLogOnlyOperationFields(d.Operations); err != nil {
 			return d, "", err
 		}
 	}

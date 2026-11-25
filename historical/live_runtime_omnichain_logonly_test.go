@@ -97,7 +97,7 @@ func TestRuntimeOmnichainLogOnlySource(t *testing.T) {
 					f := newManagedFiniteFixture(t, backend, build)
 					omnichainGoldenStorage(&f)
 					epochs := []uint64{}
-					o := RuntimeOptions{Historical: runtimeFixtureInput(f), BuildID: "omnichain-logonly-v16-" + fixture.Name, Requesters: runtimeFactory(p, &epochs)}
+					o := RuntimeOptions{Historical: runtimeFixtureInput(f), BuildID: "omnichain-logonly-" + fixture.Name, Requesters: runtimeFactory(p, &epochs)}
 					if tc.QuerySize != 12000 {
 						o.Historical.QuerySize = tc.QuerySize
 					}
@@ -132,33 +132,40 @@ func TestRuntimeOmnichainLogOnlySource(t *testing.T) {
 						if e != nil {
 							t.Fatal(e)
 						}
-						if control.Version != "managed-live-omnichain-logonly-v16" {
+						if control.Version != "managed-live-omnichain-logonly-v17" {
 							t.Fatalf("log-only position format %s", control.Version)
 						}
 						if want.Ready {
-							lineage := map[uint64][]store.ManagedLiveHead{}
+							headers := map[uint64]map[uint64]store.ManagedLiveHead{}
 							for _, chain := range g.Chains {
-								cursor, _ := checkpoint.Decode(control.Cursors[chain.ID].Checkpoint)
+								headers[chain.ID] = map[uint64]store.ManagedLiveHead{}
 								for _, raw := range chain.Blocks {
 									n, _ := uintQuantity(raw["number"])
-									if n < cursor.BlockNumber {
-										continue
-									}
 									head, err := runtimeHead(chain.ID, raw)
 									if err != nil {
 										t.Fatal(err)
 									}
-									lineage[chain.ID] = append(lineage[chain.ID], head)
+									headers[chain.ID][n] = head
 								}
 							}
-							if e = r.domains.ActivateLogOnlyRuntime(context.Background(), control.LastOperation, control.Cursors, lineage); e != nil {
+							read := func(chain, height uint64) (store.ManagedLiveHead, error) {
+								head, ok := headers[chain][height]
+								if !ok {
+									return head, fmt.Errorf("missing header %d/%d", chain, height)
+								}
+								return head, nil
+							}
+							if e = r.domains.ActivatePagedLogOnlyRuntime(context.Background(), control.LastOperation, control.Cursors, read); e != nil {
 								t.Fatalf("exact activation retry: %v", e)
 							}
 							if e = r.domains.ActivateRuntime(context.Background(), control.LastOperation, control.Cursors); e == nil {
 								t.Fatal("proof-free retry accepted")
 							}
-							lineage[1][0].Hash = "0x" + strings.Repeat("a", 64)
-							if e = r.domains.ActivateLogOnlyRuntime(context.Background(), control.LastOperation, control.Cursors, lineage); e == nil {
+							cursor, _ := checkpoint.Decode(control.Cursors[1].Checkpoint)
+							stale := headers[1][cursor.BlockNumber]
+							stale.Hash = "0x" + strings.Repeat("a", 64)
+							headers[1][cursor.BlockNumber] = stale
+							if e = r.domains.ActivatePagedLogOnlyRuntime(context.Background(), control.LastOperation, control.Cursors, read); e == nil {
 								t.Fatal("changed lineage retry accepted")
 							}
 						}

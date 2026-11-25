@@ -6,7 +6,6 @@ import (
 	"math"
 	"sort"
 
-	"ponder.local/ponder-go/checkpoint"
 	"ponder.local/ponder-go/filter"
 )
 
@@ -18,11 +17,12 @@ type managedLogOnlyFragment struct {
 }
 type managedLogOnlyScan struct {
 	FiltersHash string
-	Lineage     []ManagedLiveHead
-	Scanned     *managedLineageRange `json:"scannedRange,omitempty"`
-	FinalTail   *managedLineageRange `json:"finalTailRange,omitempty"`
-	Coverage    [][]managedLogOnlyFragment
-	EmptyFrom   uint64
+	// v17 receipts encode this field as null. It participates in their stored hash.
+	Lineage   []ManagedLiveHead
+	Scanned   *managedLineageRange `json:"scannedRange,omitempty"`
+	FinalTail *managedLineageRange `json:"finalTailRange,omitempty"`
+	Coverage  [][]managedLogOnlyFragment
+	EmptyFrom uint64
 }
 
 func logOnlySpanCovered(spans []SourceInterval, start, end uint64) bool {
@@ -62,35 +62,12 @@ func (m *ManagedLive) validateLogOnlyScan(c ManagedLiveControl, scans map[uint64
 		if !ok || scan.FiltersHash != managedHash(filters) || len(scan.Coverage) != len(filters) {
 			return nil, ErrManagedLiveBatchConflict
 		}
-		if pagedLogOnlyOptions(m.opts) {
-			end, err := scan.pagedScanEnd(c, id)
-			if err != nil {
-				return nil, err
-			}
-			ends[id] = end
-		} else {
-			if scan.Scanned != nil || scan.FinalTail != nil || len(scan.Lineage) == 0 || scan.Lineage[0] != c.Cursors[id] || scan.Lineage[len(scan.Lineage)-1] != c.FinalizedHeads[id] {
-				return nil, ErrManagedLiveBatchConflict
-			}
-			for i, h := range scan.Lineage {
-				normalized, cp, err := normalizeLiveHead(h)
-				if err != nil || normalized != h || cp.ChainID != id {
-					return nil, ErrManagedLiveBatchConflict
-				}
-				if i > 0 {
-					previous := scan.Lineage[i-1]
-					prior, _ := checkpoint.Decode(previous.Checkpoint)
-					if cp.BlockNumber != prior.BlockNumber+1 || cp.BlockTimestamp < prior.BlockTimestamp || h.ParentHash != previous.Hash {
-						return nil, ErrManagedLiveBatchConflict
-					}
-				}
-				if cp.BlockNumber == m.opts.EndBlocks[id] {
-					ends[id] = h
-				}
-			}
+		end, err := scan.pagedScanEnd(c, id)
+		if err != nil {
+			return nil, err
 		}
-		end, ok := ends[id]
-		if !ok || c.HistoryCuts[id] != m.opts.EndBlocks[id] {
+		ends[id] = end
+		if c.HistoryCuts[id] != m.opts.EndBlocks[id] {
 			return nil, ErrManagedLiveBatchConflict
 		}
 		if prior, ok := c.LogOnlyScanHeads[id]; ok && prior != end {
@@ -155,10 +132,6 @@ func (d *ManagedLiveDomains) logOnlyScan(ctx context.Context, c ManagedLiveContr
 	return scans, err
 }
 
-func (d *ManagedLiveDomains) ActivateLogOnlyRuntime(ctx context.Context, id string, heads map[uint64]ManagedLiveHead, lineage map[uint64][]ManagedLiveHead) error {
-	return d.setRuntimeServingWithScan(ctx, id, true, heads, lineage, nil)
-}
-
 func logOnlyEmptyTail(ctx context.Context, args SourceEventDataArgs, read func(context.Context, SourceEventDataArgs) (SourceEventData, error)) error {
 	for {
 		if err := ctx.Err(); err != nil {
@@ -180,19 +153,6 @@ func logOnlyEmptyTail(ctx context.Context, args SourceEventDataArgs, read func(c
 		args.FromBlock = rows.Cursor + 1
 	}
 }
-func logOnlySameLineage(scans map[uint64]managedLogOnlyScan, lineage map[uint64][]ManagedLiveHead) bool {
-	if len(scans) != len(lineage) {
-		return false
-	}
-	for id, s := range scans {
-		rows, ok := lineage[id]
-		if !ok || managedHash(rows) != managedHash(s.Lineage) {
-			return false
-		}
-	}
-	return true
-}
-
 func validateLogCoverage(filters []filter.Object, coverage [][]managedLogOnlyFragment, start, end uint64) error {
 	if len(coverage) != len(filters) {
 		return ErrManagedLiveBatchConflict

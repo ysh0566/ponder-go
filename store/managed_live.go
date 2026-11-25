@@ -200,7 +200,7 @@ func (m *ManagedLive) createFormat(ctx context.Context, tx Transaction) error {
 			return err
 		}
 	}
-	if pagedLogOnlyOptions(m.opts) {
+	if logOnlyOptions(m.opts) {
 		return s.createLineagePages(ctx, tx)
 	}
 	return nil
@@ -224,6 +224,9 @@ func (m *ManagedLive) readControl(ctx context.Context, q Querier) (ManagedLiveCo
 	decoder.DisallowUnknownFields()
 	if err = decoder.Decode(&c); err != nil {
 		return c, err
+	}
+	if expected := m.version(); c.Version != expected {
+		return c, fmt.Errorf("incompatible managed live format %q; expected %q", c.Version, expected)
 	}
 	if err := validateLiveControl(c); err != nil {
 		return c, err
@@ -285,9 +288,6 @@ func (m *ManagedLive) prepareReopen(ctx context.Context, tx Transaction) error {
 	c, err := m.readControl(ctx, tx)
 	if err != nil {
 		return err
-	}
-	if c.Version != m.version() {
-		return fmt.Errorf("incompatible managed live format; use a new namespace")
 	}
 	if m.opts.recovery && c.Batches != 0 {
 		return m.prepareRecovery(ctx, tx)

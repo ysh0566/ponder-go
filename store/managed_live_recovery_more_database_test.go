@@ -130,18 +130,18 @@ func TestManagedLiveRecoveryFinality(t *testing.T) {
 func TestManagedLiveRecoveryFormatIsolation(t *testing.T) {
 	for _, dialect := range []string{"postgres", "pglite"} {
 		t.Run(dialect, func(t *testing.T) {
-			for _, initialV2 := range []bool{false, true} {
-				t.Run(fmt.Sprintf("initial_v2_%v", initialV2), func(t *testing.T) {
-					o, opts, oldOpen := liveDBFixture(t, dialect)
-					newOpen := func(in ManagedLiveOptions) (*IndependentStorage, error) {
+			for _, recoveryFirst := range []bool{false, true} {
+				t.Run(fmt.Sprintf("recovery_first_%v", recoveryFirst), func(t *testing.T) {
+					o, opts, bootstrapOpen := liveDBFixture(t, dialect)
+					recoveryOpen := func(in ManagedLiveOptions) (*IndependentStorage, error) {
 						if dialect == "postgres" {
 							return OpenManagedLiveRecoveryIndependentPostgres(context.Background(), o, in)
 						}
 						return OpenManagedLiveRecoveryIndependentPGlite(context.Background(), o, in)
 					}
-					first, second := oldOpen, newOpen
-					if initialV2 {
-						first, second = newOpen, oldOpen
+					first, second := bootstrapOpen, recoveryOpen
+					if recoveryFirst {
+						first, second = recoveryOpen, bootstrapOpen
 					}
 					s, err := first(opts)
 					if err != nil {

@@ -62,7 +62,7 @@ func omniLogOnlyCrashChild(t *testing.T, path string) {
 	p := &finiteRPC{server: &httptest.Server{URL: s.RPC}}
 	b := omniLogOnlyBuild(t, g, p, handlers)
 	epochs := []uint64{}
-	o := RuntimeOptions{Historical: Options{Build: b, Owned: indexing.OwnedOptions{Storage: s.Storage, Service: indexing.Options{Errors: &indexing.ErrorState{}}}}, BuildID: "omni-logonly-exit-v16-" + tc.Name, OpenID: "logonly-exit-child", Requesters: runtimeFactory(p, &epochs), OnActivated: func(context.Context) error {
+	o := RuntimeOptions{Historical: Options{Build: b, Owned: indexing.OwnedOptions{Storage: s.Storage, Service: indexing.Options{Errors: &indexing.ErrorState{}}}}, BuildID: "omni-logonly-exit-" + tc.Name, OpenID: "logonly-exit-child", Requesters: runtimeFactory(p, &epochs), OnActivated: func(context.Context) error {
 		if s.Phase == "activated" {
 			exit()
 		}
@@ -167,7 +167,7 @@ func TestRuntimeOmnichainLogOnlyApplicationExit(t *testing.T) {
 					})
 				}
 				epochs := []uint64{}
-				o := RuntimeOptions{Historical: runtimeFixtureInput(f), BuildID: "omni-logonly-exit-v16-" + tc.Name, Requesters: runtimeFactory(p, &epochs)}
+				o := RuntimeOptions{Historical: runtimeFixtureInput(f), BuildID: "omni-logonly-exit-" + tc.Name, Requesters: runtimeFactory(p, &epochs)}
 				if tc.QuerySize != 12000 {
 					o.Historical.QuerySize = tc.QuerySize
 				}

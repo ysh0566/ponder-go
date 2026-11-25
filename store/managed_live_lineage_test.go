@@ -168,7 +168,7 @@ func TestLogOnlyPagedScanBoundaries(t *testing.T) {
 	c.HistoryCuts[1] = m.opts.EndBlocks[1]
 	c.Cursors[1] = sparseRangeHead(1, 12990)
 	c.FinalizedHeads[1] = sparseRangeHead(1, 13002)
-	scans, err := m.acquiredScanRanges(context.Background(), c, nil, get)
+	scans, err := m.acquiredScanRanges(context.Background(), c, get)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -177,7 +177,7 @@ func TestLogOnlyPagedScanBoundaries(t *testing.T) {
 	if err != nil || end != sparseRangeHead(1, 13000) {
 		t.Fatalf("scan endpoint %v %v", end, err)
 	}
-	for _, name := range []string{"missing-tail", "wrong-cursor", "wrong-cut", "wrong-final", "broken-parent", "repeated-boundary", "foreign-chain", "legacy-array"} {
+	for _, name := range []string{"missing-tail", "wrong-cursor", "wrong-cut", "wrong-final", "broken-parent", "repeated-boundary", "foreign-chain", "empty-array", "legacy-array"} {
 		t.Run(name, func(t *testing.T) {
 			a, b := *base.Scanned, *base.FinalTail
 			scan := managedLogOnlyScan{Scanned: &a, FinalTail: &b}
@@ -196,6 +196,8 @@ func TestLogOnlyPagedScanBoundaries(t *testing.T) {
 				b.First = a.Last
 			case "foreign-chain":
 				a.Last = sparseRangeHead(2, 13000)
+			case "empty-array":
+				scan.Lineage = []ManagedLiveHead{}
 			case "legacy-array":
 				scan.Lineage = []ManagedLiveHead{a.First}
 			}
@@ -212,12 +214,12 @@ func TestLogOnlyPagedFormatSelection(t *testing.T) {
 	m.opts.runtimeStarts = map[uint64]uint64{1: 3, 2: 10}
 	limit := uint64(ManagedLiveOmnichainBlockLimit(2))
 	m.opts.EndBlocks = map[uint64]uint64{1: 2 + limit/2, 2: 9 + limit/2}
-	if m.version() != managedLiveOmnichainLogOnlyVersion {
+	if m.version() != managedLivePagedLogOnlyVersion {
 		t.Fatal("old boundary changed format")
 	}
 	m.opts.EndBlocks[2]++
 	if m.version() != managedLivePagedLogOnlyVersion {
-		t.Fatal("combined ranges exceeding v16 selected the old format")
+		t.Fatal("long range did not select the current format")
 	}
 	m.opts.runtimeLogFilters = nil
 	if m.version() != managedLiveOmnichainVersion {

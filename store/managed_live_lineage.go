@@ -158,7 +158,7 @@ func (s *Store) verifyLineageRange(ctx context.Context, q Querier, op string, ex
 // of a chain that produced no source group.
 func (scan managedLogOnlyScan) pagedScanEnd(c ManagedLiveControl, id uint64) (ManagedLiveHead, error) {
 	fail := ErrManagedLiveBatchConflict
-	if len(scan.Lineage) != 0 || scan.Scanned == nil || scan.Scanned.First != c.Cursors[id] || !liveDigest(scan.Scanned.Digest) {
+	if scan.Lineage != nil || scan.Scanned == nil || scan.Scanned.First != c.Cursors[id] || !liveDigest(scan.Scanned.Digest) {
 		return ManagedLiveHead{}, fail
 	}
 	end := scan.Scanned.Last
@@ -183,18 +183,9 @@ func (scan managedLogOnlyScan) pagedScanEnd(c ManagedLiveControl, id uint64) (Ma
 	return end, nil
 }
 
-func (m *ManagedLive) acquiredScanRanges(ctx context.Context, c ManagedLiveControl, lineage map[uint64][]ManagedLiveHead, get ManagedLiveHeaderReader) (map[uint64]managedLogOnlyScan, error) {
+func (m *ManagedLive) acquiredScanRanges(ctx context.Context, c ManagedLiveControl, get ManagedLiveHeaderReader) (map[uint64]managedLogOnlyScan, error) {
 	scans := make(map[uint64]managedLogOnlyScan, len(m.opts.Chains))
-	if !pagedLogOnlyOptions(m.opts) {
-		if get != nil || len(lineage) != len(m.opts.Chains) {
-			return nil, ErrManagedLiveBatchConflict
-		}
-		for id, heads := range lineage {
-			scans[id] = managedLogOnlyScan{Lineage: append([]ManagedLiveHead{}, heads...)}
-		}
-		return scans, nil
-	}
-	if get == nil || lineage != nil {
+	if get == nil {
 		return nil, ErrManagedLiveBatchConflict
 	}
 	for _, chain := range m.opts.Chains {
@@ -230,7 +221,7 @@ func (m *ManagedLive) acquiredScanRanges(ctx context.Context, c ManagedLiveContr
 }
 
 func (d *ManagedLiveDomains) ActivatePagedLogOnlyRuntime(ctx context.Context, id string, heads map[uint64]ManagedLiveHead, get ManagedLiveHeaderReader) error {
-	return d.setRuntimeServingWithScan(ctx, id, true, heads, nil, get)
+	return d.setRuntimeServingWithScan(ctx, id, true, heads, get)
 }
 
 func samePagedScanInputs(a, b map[uint64]managedLogOnlyScan) bool {

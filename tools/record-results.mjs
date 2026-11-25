@@ -628,7 +628,8 @@ ledger.summary = {
 	passed: ledger.tests.filter((x) => x.pass_status === "passed").length,
 	failed: ledger.tests.filter((x) => x.pass_status === "failed").length,
 	blocked: ledger.tests.filter((x) => x.execution_status === "blocked").length,
-	unimplemented: ledger.tests.filter((x) => !x.mapping).length,
+	unimplemented: ledger.tests.filter((x) => x.port_status === "unimplemented").length,
+	out_of_scope: ledger.tests.filter((x) => x.port_status === "out_of_scope").length,
 	oracle_passed: ledger.tests.filter(
 		(x) => x.mapping && x.oracle?.status === "passed",
 	).length,
@@ -670,7 +671,7 @@ const summary = {
 	counting:
 		"Only exact source mappings count toward upstream parity. Native regression cases and generated differential vectors are separate evidence.",
 	parity: ledger.summary,
-	source_records: {statically_discovered:ledger.tests.length,mapped:ledger.summary.ported,unimplemented:ledger.summary.unimplemented,discovery_is_not_proven_runtime_exhaustive:true},
+	source_records: {statically_discovered:ledger.tests.length,mapped:ledger.summary.ported,unimplemented:ledger.summary.unimplemented,out_of_scope:ledger.summary.out_of_scope,discovery_is_not_proven_runtime_exhaustive:true},
 	mapped_go: {mapped:ledger.summary.go_ports,passed_with_required_type_checks:ledger.summary.go_passed,original_oracle_also_passed:ledger.summary.go_and_original_oracle_passed,original_oracle_blocked:ledger.tests.filter(x=>x.mapping&&x.mapping.target_kind!=="retained_sdk"&&x.oracle?.status==="blocked").length},
 	retained_sdk: {mapped:ledger.summary.retained_sdk,passed:ledger.summary.sdk_passed},
 	rpc_action_differential: exists("testdata/rpc/actions-differential.json") ? (() => {

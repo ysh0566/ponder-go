@@ -147,7 +147,7 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 	seenSegments := map[uint64]bool{}
 	var historicalJournalHigh int64
 	auditOpts := m.opts
-	if pagedLogOnlyOptions(m.opts) {
+	if logOnlyOptions(m.opts) {
 		auditOpts.verifiedRangeParents = make(map[ManagedLiveHead]ManagedLiveHead)
 	}
 	rollingOpts := auditOpts

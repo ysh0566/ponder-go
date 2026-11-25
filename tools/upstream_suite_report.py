@@ -143,7 +143,7 @@ def reconcile(upstream, pglite, postgres, others):
     return {"upstream": ledger["baseline"]["revision"], "files": len(known), "declarations": len(ledger["tests"]),
             "unique_outcomes": counts, "runs": runs, "backend_differences": differences,
             "unresolved_active_groups": unresolved,
-            "native_port_ledger": {k: ledger["summary"][k] for k in ("ported", "unimplemented")}}
+            "native_port_ledger": {k: ledger["summary"][k] for k in ("ported", "unimplemented", "out_of_scope") if k in ledger["summary"]}}
 
 
 def main():

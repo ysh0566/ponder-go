@@ -36,7 +36,7 @@
         "parity/runs/native-provider-archives/results.json",
         "parity/runs/observed-gateway-policies/results.json"
       ],
-      "remaining": "567/905 original records mapped, including 24 provider cases exercised on loopback archives. 338 remain unimplemented. The previous module-wide acceptance covers 543 records. Seven runtime-passed cases (four runtime-index, three handler service) still lack exact native type obligations and remain unmapped."
+      "remaining": "562/905 original records mapped. 338 remain unimplemented and five historical sync migration cases are out of scope. Seven runtime-passed cases still lack their native type obligations."
     },
     {
       "id": "differential-harness",
@@ -412,7 +412,15 @@
         "parity/runs/m45-omnichain-events-v15-20261103/VALIDATION.md",
         "parity/runs/m45-omnichain-events-v15-20261103/SOURCE-CONTRACT.md"
       ],
-      "remaining": "Only bounded globally finalized cachetrue ranges with one interval1/offset0 closing block callback per chain covering static ABI log ranges, start>=1. Actual source SQL pages/overlap callbacks and complete Groups transactions, source logical positions, PG/PGlite failure/cold replay and selected PG application exits are covered. Live/pending/reorg, factory/log-only/account/trace, cachefalse/setup/start0, PGlite abrupt exits, engine failures and complete mapping remain outside this closure."
+      "remaining": "Only bounded globally finalized cachetrue ranges with one interval1/offset0 closing block callback per chain covering static ABI log ranges, start>=1. Actual source SQL pages/overlap callbacks and complete Groups transactions, source logical positions, PG/PGlite failure/cold replay and selected PG application exits are covered. Live/pending/reorg, factory/log-only/account/trace, cachefalse/setup/start0, PGlite abrupt exits, engine failures and complete mapping remain outside this closure.",
+      "native_test_files": [
+        "historical/live_runtime_omnichain_logonly_crash_test.go",
+        "historical/live_runtime_omnichain_logonly_test.go",
+        "historical/live_runtime_sparse_crash_test.go",
+        "historical/live_runtime_sparse_test.go",
+        "store/managed_live_lineage_test.go",
+        "store/managed_live_logonly_test.go"
+      ]
     },
     {
       "id": "ordering-isolated",
@@ -568,7 +576,12 @@
         "parity/runs/reorg-provenance-go.jsonl",
         "parity/runs/batch-11.json"
       ],
-      "remaining": "Native single-database rewind and selected durable receipt/application-exit controls are verified. For M45 RuntimeRunner, PG abrupt application exit and PG/PGlite graceful reopen are distinct; PGlite abrupt exit and database-engine/server/power-loss crash acceptance remain open."
+      "remaining": "Native single-database rewind and selected durable receipt/application-exit controls are verified. For M45 RuntimeRunner, PG abrupt application exit and PG/PGlite graceful reopen are distinct; PGlite abrupt exit and database-engine/server/power-loss crash acceptance remain open.",
+      "native_test_files": [
+        "store/managed_live_recovery_bounded_database_test.go",
+        "store/managed_live_recovery_database_test.go",
+        "store/managed_live_recovery_more_database_test.go"
+      ]
     },
     {
       "id": "finalize",
@@ -986,7 +999,7 @@
         "parity/runs/lifecycle-boundaries-race.jsonl",
         "parity/runs/lifecycle-crash-race.jsonl"
       ],
-      "remaining": "All18 database/index.test.ts records mapped and full unchanged file passes separately on cloud PG/PGlite. Source physical layout, camelCase/views-schema lifecycle, permission roles, full dev reset and old-database takeover remain incomplete."
+      "remaining": "Thirteen database/index.test.ts declarations are mapped. Five old-cache migration declarations are outside the current format contract. Role permissions, development reset and physical schema differences remain."
     },
     {
       "id": "versioned-sync-migration",
@@ -994,22 +1007,24 @@
       "implementation_files": [
         "store/sync_migration.go",
         "store/syncsql/create.sql",
-        "store/syncsql/copy.sql",
         "store/values.go"
       ],
       "upstream_sources": [
         "packages/core/src/database/index.ts:migrateSync",
         "packages/core/src/sync-store/schema.ts",
-        "packages/core/src/sync-store/sql/ponder_rpc_cache_1/create.sql",
-        "packages/core/src/sync-store/sql/ponder_rpc_cache_1/copy.sql"
+        "packages/core/src/sync-store/sql/ponder_rpc_cache_1/create.sql"
       ],
       "evidence": [
         "parity/sync-migration-source-cases.json",
         "parity/sync-migration-assets.json",
-        "parity/runs/sync-migration-boundaries-race.jsonl",
-        "parity/runs/sync-migration-crash-race.jsonl"
+        "parity/runs/current-database-formats/results.json"
       ],
-      "remaining": "Eight migrateSync source records mapped through owned shadows using unchanged SQL. Real old database/global-schema adoption, full sync-store event CRUD and automatic runtime integration remain unimplemented. Nullable/int64 RPC row API and decimal scalar transport verified; permission roles and remaining source features still pending."
+      "remaining": "The current nine-table RPC cache supports fresh creation, repeat and concurrent startup. Five upstream legacy migration cases are outside the supported database contract.",
+      "native_test_files": [
+        "store/sync_migration_boundaries_test.go",
+        "store/sync_migration_crash_test.go",
+        "store/sync_migration_upstream_test.go"
+      ]
     },
     {
       "id": "protocol-cache-runtime",
@@ -1030,7 +1045,7 @@
         "docs/PROTOCOL_CACHE.md",
         "parity/runs/batch-16.json"
       ],
-      "remaining": "Selected source-shaped cache/actions/store helpers and actual default multichain RuntimeRunner cache policies are verified by later M32–M45 records. Complete provider/archive behavior, all source combinations and old-database takeover remain open; see docs/RUNTIME_SUPPORT.md."
+      "remaining": "Selected source-shaped cache/actions/store helpers and actual default multichain RuntimeRunner cache policies are verified by later M32–M45 records. Complete provider/archive behavior, all source combinations remain open; see docs/RUNTIME_SUPPORT.md."
     },
     {
       "id": "staged-runtime-single-chain",

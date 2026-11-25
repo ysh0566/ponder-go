@@ -1,0 +1,282 @@
+{
+  "native_code_revision": "35abf3b23db1d892247b5f396716ffa8eddabac4",
+  "reviewed_inputs": {
+    "verified_code_revision": "35abf3b23db1d892247b5f396716ffa8eddabac4",
+    "input_trees": {
+      "historical": "a3e91079dfcb40b0cd658b14b306d70d05009b10",
+      "store": "b12499b9878fe19bd26e9c4d5c2edd3dc3ea8a74",
+      "tools": "448f6c0966a3694b9385a7ae387ced03c873d100",
+      "rpc": "b0a454a9dff8604d15540eda1273bdb51d2099b7"
+    },
+    "rpc_cache_ddl_sha256": "7696380cc63a526f1496744857735ca265cf264e09706ec48127c028ee6dd2fa"
+  },
+  "formats": {
+    "generic_journal": "json-v3",
+    "standalone_recovery": "managed-live-recovery-v3",
+    "recovery_receipt": "managed-live-recovery-receipt-v2",
+    "rpc_cache": "ponder_rpc_cache_1",
+    "omnichain_static_log_history": "managed-live-omnichain-logonly-v17"
+  },
+  "upstream": {
+    "revision": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
+    "complete_inventory": "upstream.json",
+    "database_index_fresh_run": {
+      "postgres": {
+        "passed": 18,
+        "original_source_ids": [
+          "ff74c6c71a871121c108",
+          "2cc3017d73cff9f004eb",
+          "5fdc659a3cd7dea27764",
+          "a83c51b68d89c75c9095",
+          "7960354f5e463685b86f",
+          "27e6122359c0c7dc5ab0",
+          "d1f4b9b1b221583e3b9f",
+          "5e9195e3768f6718a932",
+          "98c0b79c36296529001b",
+          "a7a38ea6cc600d52a23c",
+          "65d565b7c92dadc9b178",
+          "e9b7f486851526c0b13b",
+          "cc383fdf74c284fe3850",
+          "5f831a3f919a8144afa1",
+          "3813ee03d59e149c556f",
+          "688108a7658e1ae083e3",
+          "dc7f1dcc697fcad856a8",
+          "a8e07ec7cc849e360caf"
+        ],
+        "vitest_sha256": "950dcf7ab447f29232f15580701b863fcd50831a23b7e229391580faf9e2d592"
+      },
+      "pglite": {
+        "passed": 18,
+        "original_source_ids": [
+          "ff74c6c71a871121c108",
+          "2cc3017d73cff9f004eb",
+          "5fdc659a3cd7dea27764",
+          "a83c51b68d89c75c9095",
+          "7960354f5e463685b86f",
+          "27e6122359c0c7dc5ab0",
+          "d1f4b9b1b221583e3b9f",
+          "5e9195e3768f6718a932",
+          "98c0b79c36296529001b",
+          "a7a38ea6cc600d52a23c",
+          "65d565b7c92dadc9b178",
+          "e9b7f486851526c0b13b",
+          "cc383fdf74c284fe3850",
+          "5f831a3f919a8144afa1",
+          "3813ee03d59e149c556f",
+          "688108a7658e1ae083e3",
+          "dc7f1dcc697fcad856a8",
+          "a8e07ec7cc849e360caf"
+        ],
+        "vitest_sha256": "0fbd787b05fe4ef395c288b303be1d2efa55e7e49cf4237a87439984d51d665d"
+      }
+    }
+  },
+  "ledger_audit": {
+    "declarations_compared": 905,
+    "original_fields_checked": [
+      "source_file",
+      "source_sha256",
+      "suite_path",
+      "full_name",
+      "test_source",
+      "inputs",
+      "assertions",
+      "source_state",
+      "modifiers",
+      "parameter",
+      "type_error_directives"
+    ],
+    "source_migration_assertions": 13,
+    "current_migration_assertions": 4,
+    "all_5_original_outcomes": {
+      "98c0b79c36296529001b": "passed",
+      "a7a38ea6cc600d52a23c": "passed",
+      "65d565b7c92dadc9b178": "passed",
+      "e9b7f486851526c0b13b": "passed",
+      "5f831a3f919a8144afa1": "passed"
+    },
+    "native_mapped": 562,
+    "historical_compatible_passed": 538
+  },
+  "manifest_negative_controls": {
+    "renamed_declaration": "rejected",
+    "unknown_id": "rejected",
+    "simultaneous_mapping": "rejected"
+  },
+  "go_test": {
+    "flags": [
+      "-count=1",
+      "-timeout=60m",
+      "-json"
+    ],
+    "race_runs": [
+      "final-store-race",
+      "short-and-application-exit-race",
+      "sparse-postgres-race",
+      "sparse-pglite-race"
+    ],
+    "race_job_timeouts": {
+      "final-store-race": "60m",
+      "short-and-application-exit-race": "60m",
+      "sparse-postgres-race": "120m",
+      "sparse-pglite-race": "120m"
+    },
+    "jobs": {
+      "final-store-normal": {
+        "package": "ponder.local/ponder-go/store",
+        "top_level": [
+          "TestLogOnlyEmptyTailPagination",
+          "TestLogOnlyLineageRangeDatabase",
+          "TestLogOnlyPagedFormatSelection",
+          "TestLogOnlyPagedReceiptIsolation",
+          "TestLogOnlyPagedScanBoundaries",
+          "TestLogOnlyPhysicalInputs",
+          "TestLogOnlyScanReceiptBinding",
+          "TestLogOnlyServeRetryLineage",
+          "TestLogOnlyWireIsolation",
+          "TestManagedLiveRecoveryBoundedFork",
+          "TestManagedLiveRecoveryDatabase",
+          "TestManagedLiveRecoveryFormatIsolation",
+          "TestSyncMigrationBoundaries",
+          "TestSyncMigrationProcessCrash",
+          "TestSyncMigrationSQLAssets",
+          "TestUpstreamSyncMigration"
+        ],
+        "subtests": 106,
+        "leaves": 98,
+        "elapsed_seconds": 493.409,
+        "jsonl_sha256": "420cd257ca8b943442b670b0ac36d1ddc793957c1c9ad8b6905868690c7fb790"
+      },
+      "final-store-race": {
+        "package": "ponder.local/ponder-go/store",
+        "top_level": [
+          "TestLogOnlyEmptyTailPagination",
+          "TestLogOnlyLineageRangeDatabase",
+          "TestLogOnlyPagedFormatSelection",
+          "TestLogOnlyPagedReceiptIsolation",
+          "TestLogOnlyPagedScanBoundaries",
+          "TestLogOnlyPhysicalInputs",
+          "TestLogOnlyScanReceiptBinding",
+          "TestLogOnlyServeRetryLineage",
+          "TestLogOnlyWireIsolation",
+          "TestManagedLiveRecoveryBoundedFork",
+          "TestManagedLiveRecoveryDatabase",
+          "TestManagedLiveRecoveryFormatIsolation",
+          "TestSyncMigrationBoundaries",
+          "TestSyncMigrationProcessCrash",
+          "TestSyncMigrationSQLAssets",
+          "TestUpstreamSyncMigration"
+        ],
+        "subtests": 106,
+        "leaves": 98,
+        "elapsed_seconds": 278.756,
+        "jsonl_sha256": "dd9913e23848f131918eb12b9c300ca21d0b761c167641e2b9dd24f2a881ecb3"
+      },
+      "final-short-runtime": {
+        "package": "ponder.local/ponder-go/historical",
+        "top_level": [
+          "TestRuntimeOmnichainLogOnlySource"
+        ],
+        "subtests": 20,
+        "leaves": 18,
+        "elapsed_seconds": 735.872,
+        "jsonl_sha256": "5ef2412dfb0e6617cd95b7f40b2294c06af21b04d32bcca5cc1f93153855171d"
+      },
+      "runtime-additional": {
+        "package": "ponder.local/ponder-go/historical",
+        "top_level": [
+          "TestRuntimeOmnichainLogOnlyApplicationExit",
+          "TestRuntimeOmnichainSparseApplicationExit",
+          "TestRuntimeOmnichainSparseRanges"
+        ],
+        "subtests": 26,
+        "leaves": 26,
+        "elapsed_seconds": 1608.803,
+        "jsonl_sha256": "9226e3a5d90798995d5886b0fe1389a1afc11a01d123990e748600132f37c911"
+      },
+      "short-and-application-exit-race": {
+        "package": "ponder.local/ponder-go/historical",
+        "top_level": [
+          "TestRuntimeOmnichainLogOnlyApplicationExit",
+          "TestRuntimeOmnichainLogOnlySource",
+          "TestRuntimeOmnichainSparseApplicationExit"
+        ],
+        "subtests": 30,
+        "leaves": 28,
+        "elapsed_seconds": 2507.34,
+        "jsonl_sha256": "591acda480c147827d930c8c0f2d19444898d778ad2542e131de288f33f85778",
+        "evidence_scope": "Completed top-level test events from the combined race run, ending immediately after the last named top-level pass"
+      },
+      "sparse-postgres-race": {
+        "package": "ponder.local/ponder-go/historical",
+        "top_level": [
+          "TestRuntimeOmnichainSparseRanges"
+        ],
+        "subtests": 8,
+        "leaves": 8,
+        "elapsed_seconds": 1442.075,
+        "jsonl_sha256": "bb1addae68fd8bedab80fead66f55d8312db5e07e710425e7cb50188cd7d76db"
+      },
+      "sparse-pglite-race": {
+        "package": "ponder.local/ponder-go/historical",
+        "top_level": [
+          "TestRuntimeOmnichainSparseRanges"
+        ],
+        "subtests": 8,
+        "leaves": 8,
+        "elapsed_seconds": 1811.252,
+        "jsonl_sha256": "cd683f651caaa1f050b6b87c2d775aaa7b9912bf98027a6d19b8ff2fb183d6e2"
+      }
+    },
+    "pending_jobs": [],
+    "superseded_combined_job": {
+      "reason": "Three top-level race tests finished; the remaining 16 sparse cases are already running in dedicated PostgreSQL and PGlite test processes. Releasing the duplicate process preserves CPU and scratch storage.",
+      "exit_code": 2,
+      "credited_top_level": [
+        "TestRuntimeOmnichainLogOnlyApplicationExit",
+        "TestRuntimeOmnichainLogOnlySource",
+        "TestRuntimeOmnichainSparseApplicationExit"
+      ],
+      "full_package_pass": false
+    }
+  },
+  "checks": {
+    "module_build": "go build -p 2 ./...",
+    "module_vet": "go vet -p 2 ./...",
+    "python_tests": 35,
+    "node_checks": {
+      "node-final": {
+        "passed": 462,
+        "log_sha256": "c567b07c8d9d7a1101aa56043f562fd69393607e3b06660b407a10c06bb35213"
+      },
+      "control-live": {
+        "passed": 20,
+        "log_sha256": "1b3ac2b7aed453db0ab63fcb0b136b094476b13c8911a3448665a0258d2864f0"
+      },
+      "control-cache": {
+        "passed": 8,
+        "log_sha256": "46762e16cb1969989f769b6419fd6542b07707078dec71b479a5131f3b08b5c2"
+      },
+      "control-proxy": {
+        "passed": 10,
+        "log_sha256": "1bf6f6234107e647f4b8b945c496bbc2f2122ffd6f3c836f47a1ab1d29b08009"
+      }
+    }
+  },
+  "environment": {
+    "go": "1.25.11",
+    "node": "24.19.0",
+    "postgres": "14.24",
+    "pglite": "0.2.13",
+    "foundry": "1.8.5",
+    "foundry_linux_amd64_archive_sha256": "6c66ffcc55fa4249197721baa3098bc208014ea1d8aa04b2ed50ac6bccffb226"
+  },
+  "workspace_cleanup": {
+    "superseded_or_completed_build_and_fixture_paths": 14,
+    "allocated_bytes_before_removal": 3159019520,
+    "restored_archive_inputs": {
+      "restored_files_removed": 52,
+      "bytes_removed": 12341038
+    }
+  }
+}

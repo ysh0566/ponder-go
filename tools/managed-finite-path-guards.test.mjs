@@ -81,8 +81,9 @@ test('native registration guard accepts mapped originals and rejects unknown sup
  assert(start>=0);const end=original.indexOf('\n});',start);assert(end>start);
  const body=original.slice(start,end),lines=body.split('\n').filter(l=>l.trim().startsWith('const changed=')||l.trim().startsWith('for(const file of new Set(changed))')||l.trim().startsWith('assert.equal(new Set(finiteHistoricalNativeFiles)'));
  assert.equal(lines.length,3,'Use the actual guard predicate, never a rewritten approximation');
- const run=(files,mappedSourceFiles=new Set())=>vm.runInNewContext(lines.join('\n'),{finiteHistoricalNativeFiles,mappedSourceFiles,assert,git:(command)=>command==='ls-files'?files:[]});
+ const run=(files,mappedSourceFiles=new Set(),nativeFeatureFiles=new Set())=>vm.runInNewContext(lines.join('\n'),{finiteHistoricalNativeFiles,mappedSourceFiles,nativeFeatureFiles,assert,git:(command)=>command==='ls-files'?files:[]});
  assert.doesNotThrow(()=>run(managedFiniteNativeFiles));
  assert.throws(()=>run([...managedFiniteNativeFiles,'store/m44_unregistered_probe_test.go']),/Unregistered native test file: store\/m44_unregistered_probe_test.go/);
  assert.doesNotThrow(()=>run(['rpc/provider_archives_test.go'], new Set(['rpc/provider_archives_test.go'])));
+ assert.doesNotThrow(()=>run(['store/managed_live_lineage_test.go'], new Set(), new Set(['store/managed_live_lineage_test.go'])));
 });

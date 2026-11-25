@@ -14,13 +14,13 @@ import (
 	"ponder.local/ponder-go/filter"
 )
 
-func TestLogOnlyLegacyWireIsolation(t *testing.T) {
+func TestLogOnlyWireIsolation(t *testing.T) {
 	for _, key := range []string{"omnichainEventCount", "omnichainFirstEvent", "omnichainLastEvent", "logOnlyLastEvent", "logOnlyScanHeads", "logOnlyScan"} {
 		for _, wire := range []string{key, strings.ToUpper(key)} {
 			t.Run(wire, func(t *testing.T) {
 				raw := json.RawMessage(fmt.Sprintf("{\"before\":{\"nested\":[{\"%s\":null}]}}", wire))
-				if validateLegacyLogOnlyExtensions([]managedLiveOperation{{Kind: "serve", Payload: raw}}) == nil {
-					t.Fatal("legacy receipt accepted v16 wire key")
+				if rejectLogOnlyOperationFields([]managedLiveOperation{{Kind: "serve", Payload: raw}}) == nil {
+					t.Fatal("non-log receipt accepted log-only wire key")
 				}
 			})
 		}
@@ -83,7 +83,7 @@ func logOnlyScanFixture(t *testing.T) (*ManagedLive, ManagedLiveControl, map[uin
 	for n := uint64(1); n <= 4; n++ {
 		heads = append(heads, ManagedLiveHead{Checkpoint: checkpoint.MustEncode(checkpoint.Block(100+n, 1, n, true)), Hash: fmt.Sprintf("0x%064x", n), ParentHash: fmt.Sprintf("0x%064x", n-1)})
 	}
-	c := ManagedLiveControl{Version: managedLiveOmnichainLogOnlyVersion, Batches: 1, Cursors: map[uint64]ManagedLiveHead{1: heads[0]}, FinalizedHeads: map[uint64]ManagedLiveHead{1: heads[3]}, HistoryCuts: map[uint64]uint64{1: 3}, LogicalCursors: map[uint64]string{1: checkpoint.MustEncode(checkpoint.Block(101, 1, 1, false))}}
+	c := ManagedLiveControl{Version: managedLivePagedLogOnlyVersion, Batches: 1, Cursors: map[uint64]ManagedLiveHead{1: heads[0]}, FinalizedHeads: map[uint64]ManagedLiveHead{1: heads[3]}, HistoryCuts: map[uint64]uint64{1: 3}, LogicalCursors: map[uint64]string{1: checkpoint.MustEncode(checkpoint.Block(101, 1, 1, false))}}
 	fragments, err := filter.GetFragments(f)
 	if err != nil || len(fragments) == 0 {
 		t.Fatalf("fragments %v %v", fragments, err)
@@ -92,7 +92,21 @@ func logOnlyScanFixture(t *testing.T) (*ManagedLive, ManagedLiveControl, map[uin
 	for _, p := range fragments {
 		coverage = append(coverage, managedLogOnlyFragment{ID: filter.EncodeFragment(p["fragment"].(filter.Object)), Intervals: []SourceInterval{{1, 3}}})
 	}
-	return m, c, map[uint64]managedLogOnlyScan{1: {FiltersHash: managedHash([]filter.Object{f}), Lineage: heads, Coverage: [][]managedLogOnlyFragment{coverage}, EmptyFrom: 1}}
+	scans, err := m.acquiredScanRanges(context.Background(), c, func(id, height uint64) (ManagedLiveHead, error) {
+		if id != 1 || height < 1 || height > uint64(len(heads)) {
+			return ManagedLiveHead{}, fmt.Errorf("unexpected header %d/%d", id, height)
+		}
+		return heads[height-1], nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	scan := scans[1]
+	scan.FiltersHash = managedHash([]filter.Object{f})
+	scan.Coverage = [][]managedLogOnlyFragment{coverage}
+	scan.EmptyFrom = 1
+	scans[1] = scan
+	return m, c, scans
 }
 
 func TestLogOnlyScanReceiptBinding(t *testing.T) {
@@ -114,15 +128,15 @@ func TestLogOnlyScanReceiptBinding(t *testing.T) {
 			case "malformed-after-covered":
 				scan.Coverage[0][0].Intervals = []SourceInterval{{1, 3}, {5, 4}}
 			case "missing-final":
-				scan.Lineage = scan.Lineage[:3]
+				scan.FinalTail = nil
 			case "broken-parent":
-				scan.Lineage[2].ParentHash = fmt.Sprintf("0x%064x", 99)
+				scan.FinalTail.First.ParentHash = fmt.Sprintf("0x%064x", 99)
 			case "skipped-header":
-				scan.Lineage = append(scan.Lineage[:1], scan.Lineage[2:]...)
+				scan.FinalTail.First = scan.Scanned.Last
 			case "wrong-empty-start":
 				scan.EmptyFrom = 2
 			case "stale-scan-end":
-				h := scan.Lineage[2]
+				h := scan.Scanned.Last
 				h.Hash = fmt.Sprintf("0x%064x", 99)
 				c.LogOnlyScanHeads = map[uint64]ManagedLiveHead{1: h}
 			case "wrong-end-cut":
@@ -135,7 +149,7 @@ func TestLogOnlyScanReceiptBinding(t *testing.T) {
 			if (err == nil) != (name == "valid") {
 				t.Fatalf("receipt %s ends%v err%v", name, ends, err)
 			}
-			if name == "valid" && ends[1] != scan.Lineage[2] {
+			if name == "valid" && ends[1] != scan.Scanned.Last {
 				t.Fatal("source scan endpoint changed")
 			}
 		})
@@ -144,22 +158,22 @@ func TestLogOnlyScanReceiptBinding(t *testing.T) {
 
 func TestLogOnlyServeRetryLineage(t *testing.T) {
 	_, _, scans := logOnlyScanFixture(t)
-	good := map[uint64][]ManagedLiveHead{1: append([]ManagedLiveHead{}, scans[1].Lineage...)}
-	if !logOnlySameLineage(scans, good) {
+	_, _, identical := logOnlyScanFixture(t)
+	if !samePagedScanInputs(scans, identical) {
 		t.Fatal("exact retry rejected")
 	}
-	if logOnlySameLineage(scans, nil) {
-		t.Fatal("proof-free ordinary activation accepted")
+	if samePagedScanInputs(scans, nil) {
+		t.Fatal("missing ranges accepted")
 	}
-	good[1][2].Hash = fmt.Sprintf("0x%064x", 99)
-	if logOnlySameLineage(scans, good) {
+	identical[1].Scanned.Digest = managedHash("different headers")
+	if samePagedScanInputs(scans, identical) {
 		t.Fatal("changed lineage retry accepted")
 	}
 }
 
 func TestLogOnlyPhysicalInputs(t *testing.T) {
 	m, _, scans := logOnlyScanFixture(t)
-	head := scans[1].Lineage[0]
+	head := scans[1].Scanned.First
 	cp, _ := checkpoint.Decode(head.Checkpoint)
 	cp.TransactionIndex = 0
 	cp.EventType = checkpoint.Logs
