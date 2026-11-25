@@ -8,7 +8,7 @@
 
 ## 当前验证与计数
 
-当前台账记录 905 条上游声明，779 条已映射，121 条待移植，另有 5 条专测已退役的缓存迁移。固定上游版本的完整结果为 875 通过、18 失败、10 跳过、2 待办。[模块支持矩阵](docs/RUNTIME_SUPPORT.md) · [类型化数据库写入验证](parity/runs/typed-database-writes/RESULT.md) · [应用启动和端到端验证](parity/runs/indexing-application-e2e/RESULT.md) · [索引行副本验证](parity/runs/indexing-row-copies/RESULT.md) · [GraphQL 关联与视图验证](parity/runs/graphql-relations-views/RESULT.md) · [GraphQL 表查询验证](parity/runs/graphql-table-pages/RESULT.md) · [GraphQL 实体和 HTTP 验证](parity/runs/graphql-entities-http/RESULT.md) · [索引客户端验证](parity/runs/indexing-client-requests/RESULT.md) · [SQL 客户端验证](parity/runs/sql-client-queries/RESULT.md) · [HTTP 服务和指标验证](parity/runs/http-server-metrics/RESULT.md) · [事件流验证](parity/runs/source-streams/RESULT.md) · [数据库查询验证](parity/runs/database-query-builder/RESULT.md) · [异步队列验证](parity/runs/source-async-queues/RESULT.md) · [RPC 请求验证](parity/runs/source-rpc-requests/RESULT.md) · [全量上游结果](parity/runs/public-provider-archives/upstream.json)
+当前台账记录 905 条上游声明，831 条已映射，69 条待移植，另有 5 条专测已退役的缓存迁移。固定上游版本的完整结果为 875 通过、18 失败、10 跳过、2 待办。[模块支持矩阵](docs/RUNTIME_SUPPORT.md) · [应用配置声明验证](parity/runs/application-config-declarations/RESULT.md) · [ABI 类型验证](parity/runs/abi-configuration-types/RESULT.md) · [类型化数据库写入验证](parity/runs/typed-database-writes/RESULT.md) · [应用启动和端到端验证](parity/runs/indexing-application-e2e/RESULT.md) · [索引行副本验证](parity/runs/indexing-row-copies/RESULT.md) · [GraphQL 关联与视图验证](parity/runs/graphql-relations-views/RESULT.md) · [GraphQL 表查询验证](parity/runs/graphql-table-pages/RESULT.md) · [GraphQL 实体和 HTTP 验证](parity/runs/graphql-entities-http/RESULT.md) · [索引客户端验证](parity/runs/indexing-client-requests/RESULT.md) · [SQL 客户端验证](parity/runs/sql-client-queries/RESULT.md) · [HTTP 服务和指标验证](parity/runs/http-server-metrics/RESULT.md) · [事件流验证](parity/runs/source-streams/RESULT.md) · [数据库查询验证](parity/runs/database-query-builder/RESULT.md) · [异步队列验证](parity/runs/source-async-queues/RESULT.md) · [RPC 请求验证](parity/runs/source-rpc-requests/RESULT.md) · [全量上游结果](parity/runs/public-provider-archives/upstream.json)
 
 M45 追加的 factory 日志、交易、账户 transfer 及合约函数 CALL 的选定 RuntimeRunner 闭环，范围与验证说明见 [factory 函数 trace 阶段](parity/runs/m45-factory-traces-v13-20261103/VALIDATION.md)。这些补充运行测试不增加该阶段的 543/905 映射；其他运行模式、完整 CLI、引擎崩溃及 M45 整体验收仍未完成。
 
@@ -110,6 +110,9 @@ bin/ponder codegen --schema examples/erc20/schema.json --out examples/erc20/pond
 ## ABI 原生类型适配
 
 `ponder codegen --abi contract.json --package bindings --out bindings.go` 生成事件、函数和名称的 Go 类型。以 `Transfer` 事件为例，`bindings.FormatEvent(bindings.EventItemTransfer{}).String()` 返回回调名称，`bindings.ParseEvent(bindings.EventNameTransfer{}).Definition()` 返回其 ABI 定义。生成的条目可以组成 `[]bindings.Declaration` 并直接序列化为 ABI JSON。运行时加载的 ABI 可通过 `FindEventSafe` 和 `FindFunctionSafe` 查找名称。
+
+应用配置可用 `config.CreateConfig` 保留调用方声明的链、合约、账户和区块类型，再用 `.Source()` 交给 `config.BuildSourceConfig`。生成的 `ContractABI{}` 保留 ABI 项的原始顺序。工厂参数可写成 `config.FactoryByParameter(event, event.Parameters().ArgsArg2, opts)`，对应源路径 `args.arg2`。声明中尚未解析的 Solidity 自定义类型可以传给 `abi.GenerateEventCatalog` 生成参数引用，链上解码需要其实际 ABI 类型。
+
 
 `ponder codegen --abi-parameters params.json --decoder Transfer --package main --out transfer_generated.go` 从 ABI 参数生成有返回类型的解码器；位置 tuple 为 `Value0` 等字段，命名 tuple 保留 `abi` 字段标签，固定数组保留长度，较大整数为 `*big.Int`。Go 没有 TypeScript readonly tuple 或 Hex 模板字符串类型；这些差异在 `parity/runs/compile-fixtures.json` 注明。53 条编译 fixture 的预期类型独立来自原断言，未从 Go 签名反向生成。
 

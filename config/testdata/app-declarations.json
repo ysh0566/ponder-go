@@ -1,0 +1,604 @@
+{
+  "files": {
+    "packages/core/src/config/index.test.ts": "0af7ee6cfd59f8438fa9d733c70c9189c19d1634a2eff3b12bd50ec1f9b86c36",
+    "packages/core/src/config/address.test-d.ts": "355e3383b2b9514a147a743f7a6c9d163cae15b12819d05fc3ca7a6649b5b619"
+  },
+  "diagnostics": [
+    {
+      "file": "index.test.ts",
+      "line": 46,
+      "code": 2353
+    },
+    {
+      "file": "index.test.ts",
+      "line": 54,
+      "code": 2353
+    },
+    {
+      "file": "address.test-d.ts",
+      "line": 15,
+      "code": 2322
+    }
+  ],
+  "cases": [
+    {
+      "id": "036f65a48c96f716477f",
+      "file": "packages/core/src/config/index.test.ts",
+      "name": "createConfig basic",
+      "line": 12,
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "https://rpc.com"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "https://rpc.com"
+          }
+        },
+        "contracts": {
+          "c1": {
+            "abi": [
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "chain": "mainnet",
+            "startBlock": 0
+          },
+          "c2": {
+            "abi": [
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "chain": "optimism",
+            "startBlock": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "e37b99283cdc529dd5a0",
+      "file": "packages/core/src/config/index.test.ts",
+      "name": "createConfig no extra properties",
+      "line": 39,
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "https://rpc.com",
+            "a": 0
+          }
+        },
+        "contracts": {
+          "c2": {
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  },
+                  {
+                    "type": "bytes32",
+                    "name": "arg1",
+                    "indexed": true
+                  }
+                ]
+              }
+            ],
+            "chain": "mainnet",
+            "a": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "663ce50fbe074b46cdd1",
+      "file": "packages/core/src/config/index.test.ts",
+      "name": "createConfig address",
+      "line": 60,
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "https://rpc.com"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "https://rpc.com"
+          }
+        },
+        "contracts": {
+          "c2": {
+            "abi": [
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "chain": "mainnet",
+            "address": "0x1"
+          }
+        }
+      }
+    },
+    {
+      "id": "acdfa0856342392ce948",
+      "file": "packages/core/src/config/index.test.ts",
+      "name": "createConfig factory",
+      "line": 82,
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "https://rpc.com"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "https://rpc.com"
+          }
+        },
+        "contracts": {
+          "c2": {
+            "abi": [
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "chain": "mainnet",
+            "address": {
+              "address": "0x",
+              "event": {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  },
+                  {
+                    "type": "bytes32",
+                    "name": "arg1",
+                    "indexed": true
+                  }
+                ]
+              },
+              "parameter": "arg"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "3fb93481f547cbecd6c2",
+      "file": "packages/core/src/config/index.test.ts",
+      "name": "createConfig with filter",
+      "line": 108,
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "https://rpc.com"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "https://rpc.com"
+          }
+        },
+        "contracts": {
+          "c2": {
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  },
+                  {
+                    "type": "bytes32",
+                    "name": "arg1",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "chain": "mainnet",
+            "filter": {
+              "event": "Event0",
+              "args": {
+                "arg": [
+                  "0x"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c521139e77fd7bf49576",
+      "file": "packages/core/src/config/index.test.ts",
+      "name": "createConfig with multiple filters",
+      "line": 137,
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "https://rpc.com"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "https://rpc.com"
+          }
+        },
+        "contracts": {
+          "c2": {
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  },
+                  {
+                    "type": "bytes32",
+                    "name": "arg1",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "chain": "mainnet",
+            "filter": [
+              {
+                "event": "Event0",
+                "args": {
+                  "arg": [
+                    "0x"
+                  ]
+                }
+              },
+              {
+                "event": "Event1",
+                "args": []
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "7f3c153fd92b6fe93448",
+      "file": "packages/core/src/config/index.test.ts",
+      "name": "createConfig chain overrides",
+      "line": 172,
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "https://rpc.com"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "https://rpc.com"
+          }
+        },
+        "contracts": {
+          "c1": {
+            "abi": [
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "chain": "mainnet",
+            "startBlock": 0
+          },
+          "c2": {
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  },
+                  {
+                    "type": "bytes32",
+                    "name": "arg1",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "chain": {
+              "optimism": {
+                "address": "0x",
+                "filter": {
+                  "event": "Event0",
+                  "args": {
+                    "arg": [
+                      "0x"
+                    ]
+                  }
+                }
+              }
+            },
+            "startBlock": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "1e7899e0aec12b712940",
+      "file": "packages/core/src/config/index.test.ts",
+      "name": "createConfig weak Abi",
+      "line": 209,
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "https://rpc.com"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "https://rpc.com"
+          }
+        },
+        "contracts": {
+          "c2": {
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  },
+                  {
+                    "type": "bytes32",
+                    "name": "arg1",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "func",
+                "type": "function",
+                "stateMutability": "nonpayable",
+                "inputs": [],
+                "outputs": []
+              }
+            ],
+            "chain": "mainnet",
+            "filter": {
+              "event": "event0",
+              "args": {}
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "1b296f08989e38ca0517",
+      "file": "packages/core/src/config/index.test.ts",
+      "name": "createConfig strict return type",
+      "line": 238,
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "https://rpc.com"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "https://rpc.com"
+          }
+        },
+        "contracts": {
+          "c2": {
+            "abi": [
+              {
+                "name": "Event0",
+                "type": "event",
+                "inputs": [
+                  {
+                    "type": "bytes32",
+                    "name": "arg",
+                    "indexed": true
+                  },
+                  {
+                    "type": "bytes32",
+                    "name": "arg1",
+                    "indexed": true
+                  }
+                ]
+              },
+              {
+                "name": "Event1",
+                "type": "event",
+                "inputs": []
+              }
+            ],
+            "chain": "mainnet",
+            "filter": {
+              "event": "Event0",
+              "args": {
+                "arg": [
+                  "0x"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "552ecbba729683f13b39",
+      "file": "packages/core/src/config/index.test.ts",
+      "name": "createConfig accounts",
+      "line": 280,
+      "input": {
+        "chains": {
+          "mainnet": {
+            "id": 1,
+            "rpc": "https://rpc.com"
+          },
+          "optimism": {
+            "id": 10,
+            "rpc": "https://rpc.com"
+          }
+        },
+        "accounts": {
+          "me": {
+            "chain": "mainnet",
+            "address": [
+              "0x"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "ca5aeb38077fec8ac1b4",
+      "file": "packages/core/src/config/address.test-d.ts",
+      "name": "factory with invalid event",
+      "line": 10,
+      "input": {
+        "address": "0x",
+        "event": {
+          "name": "func",
+          "type": "function",
+          "stateMutability": "nonpayable",
+          "inputs": [],
+          "outputs": []
+        },
+        "parameter": "arg"
+      }
+    },
+    {
+      "id": "c443f44bd0a698830cd8",
+      "file": "packages/core/src/config/address.test-d.ts",
+      "name": "factory with weak event",
+      "line": 20,
+      "input": {
+        "address": "0x",
+        "event": {},
+        "parameter": "arg"
+      }
+    },
+    {
+      "id": "aa53acd8f2d5fdbc0a92",
+      "file": "packages/core/src/config/address.test-d.ts",
+      "name": "factory",
+      "line": 29,
+      "input": {
+        "address": "0x",
+        "event": {
+          "name": "Event0",
+          "type": "event",
+          "inputs": [
+            {
+              "type": "bytes32",
+              "name": "arg",
+              "indexed": true
+            },
+            {
+              "type": "bytes32",
+              "name": "arg1",
+              "indexed": true
+            }
+          ]
+        },
+        "parameter": "arg"
+      }
+    },
+    {
+      "id": "89a2d0891034e67e100b",
+      "file": "packages/core/src/config/address.test-d.ts",
+      "name": "factory",
+      "line": 43,
+      "input": {
+        "address": "0xa",
+        "event": {
+          "name": "CreateMarket",
+          "type": "event",
+          "inputs": [
+            {
+              "type": "Id",
+              "name": "id",
+              "indexed": true
+            },
+            {
+              "type": "tuple",
+              "components": [
+                {
+                  "type": "address",
+                  "name": "arg0"
+                },
+                {
+                  "type": "address",
+                  "name": "arg1"
+                },
+                {
+                  "type": "address",
+                  "name": "arg2"
+                },
+                {
+                  "type": "address",
+                  "name": "arg3"
+                },
+                {
+                  "type": "uint256",
+                  "name": "arg4"
+                }
+              ],
+              "name": "args"
+            }
+          ]
+        },
+        "parameter": "args.arg2"
+      }
+    }
+  ]
+}

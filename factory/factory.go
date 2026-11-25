@@ -149,15 +149,8 @@ func Build(config Config) (LogFactory, error) {
 		}
 	} else if config.Location != nil {
 		location = *config.Location
-		if location != "topic1" && location != "topic2" && location != "topic3" {
-			valid := false
-			if strings.HasPrefix(location, "offset") {
-				n, e := number(location[6:])
-				valid = e == nil && !math.IsInf(n, 0) && !math.IsNaN(n) && math.Trunc(n) == n
-			}
-			if !valid {
-				return LogFactory{}, fmt.Errorf("Factory location is invalid. Got '%s', expected 'topic1', 'topic2', 'topic3', or 'offset[number]'.", location)
-			}
+		if err := ValidateLocation(location); err != nil {
+			return LogFactory{}, err
 		}
 	} else {
 		return LogFactory{}, fmt.Errorf("Factory must specify \"parameter\" or \"location\".")
@@ -170,6 +163,21 @@ func Build(config Config) (LogFactory, error) {
 	}
 	id := fmt.Sprintf("log_%s_%d_%s_%s_%s_%s", addressID, config.ChainID, location, selector, bound(config.FromBlock), bound(config.ToBlock))
 	return LogFactory{ID: id, Type: "log", ChainID: config.ChainID, SourceID: config.SourceID, Address: address, EventSelector: selector, ChildAddressLocation: location, FromBlock: config.FromBlock, ToBlock: config.ToBlock}, nil
+}
+
+// ValidateLocation checks an explicit factory child location with the source's numeric rules.
+func ValidateLocation(location string) error {
+	if location != "topic1" && location != "topic2" && location != "topic3" {
+		valid := false
+		if strings.HasPrefix(location, "offset") {
+			n, e := number(location[6:])
+			valid = e == nil && !math.IsInf(n, 0) && !math.IsNaN(n) && math.Trunc(n) == n
+		}
+		if !valid {
+			return fmt.Errorf("Factory location is invalid. Got '%s', expected 'topic1', 'topic2', 'topic3', or 'offset[number]'.", location)
+		}
+	}
+	return nil
 }
 
 // ChildAddress extracts the source's 20-byte substring from its configured word.

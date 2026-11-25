@@ -106,6 +106,10 @@ const compile = exists("parity/runs/compile-fixtures.json") ? read("parity/runs/
 const ormCompile = exists("parity/runs/orm-compile-fixtures.json") ? read("parity/runs/orm-compile-fixtures.json") : null;
 const eventCompile = exists("parity/runs/event-compile-fixtures.json") ? read("parity/runs/event-compile-fixtures.json") : null;
 const bloomCompile = exists("parity/runs/bloom-compile-fixtures.json") ? read("parity/runs/bloom-compile-fixtures.json") : null;
+const applicationProofFile = "parity/runs/config-declarations-source.json";
+const applicationFixtureFile = "config/testdata/app-declarations.json";
+const applicationProof = exists(applicationProofFile) ? read(applicationProofFile) : null;
+const applicationFixture = read(applicationFixtureFile);
 const configCompile = exists("parity/runs/config-live-verification.json") ? read("parity/runs/config-live-verification.json") : null;
 const parameterTypes = exists("parity/runs/parameters-typecheck.json") ? read("parity/runs/parameters-typecheck.json") : null;
 const syncVerification = exists("parity/runs/source-sync-verification.json") ? read("parity/runs/source-sync-verification.json") : null;
@@ -581,7 +585,23 @@ for (const test of ledger.tests) {
 			test.runtime_status = status;
 			if (!valid) {status="skip";test.blockers.push("Native runtime alone is insufficient: inline type compilation/typed output evidence is incomplete.");}
 		}
-		if (test.type_error_directives.length && !(runtimeIndexVerification && test.source_file==="packages/core/src/runtime/index.test.ts" && test.type_directives_verification?.status==="passed")) {
+		if (test.mapping.target_file === "config/application_declaration_test.go" &&
+		    (test.type_error_directives.length || test.assertions.some(a => a.kind === "type"))) {
+			const entry = applicationFixture.cases.find(c => c.id === test.id);
+			const diagnostics = applicationProof?.removed_diagnostics?.filter(d =>
+				d.file === path.basename(test.source_file) && d.line >= test.line &&
+				d.line < test.line + test.test_source.split("\n").length);
+			const valid = status === "pass" && race.get(key)?.Action === "pass" &&
+				entry?.file === test.source_file && entry.line === test.line &&
+				test.mapping.go_test === "TestSourceApplicationDeclarations/" + test.id &&
+				applicationProof?.files?.[entry.file] === test.source_sha256 &&
+				applicationProof.fixture_sha256 === fileHash(applicationFixtureFile) &&
+				diagnostics?.length === test.type_error_directives.length;
+			const proof = {status: valid ? "passed" : "blocked", evidence: [applicationProofFile,goFile,raceFile]};
+			if (test.type_error_directives.length) test.type_directives_verification = {...proof, obligations: diagnostics?.length ?? 0};
+			if (test.assertions.some(a => a.kind === "type")) test.type_verification = {...proof, obligations: test.assertions.filter(a => a.kind === "type").length};
+			if (!valid) { status = "skip"; test.blockers.push("Application declaration requires its source compiler check and both native compiler runs."); }
+		} else if (test.type_error_directives.length && !(runtimeIndexVerification && test.source_file==="packages/core/src/runtime/index.test.ts" && test.type_directives_verification?.status==="passed")) {
 			const directives=[...(compile?.directives??[]),...(ormCompile?.directives??[]),...(eventCompile?.directives??[]),...(bloomCompile?.directives??[]),...(configCompile?.directives??[]),...(syncVerification?.directives??[]),...(historicalVerification?.directives??[])].filter(x=>x.source_id===test.id&&x.source_sha256===test.source_sha256);
 			const generatedValid=!ormCompile?.directives.some(x=>x.source_id===test.id)||((ormCompile.inputs?.length??0)>=3&&[...ormCompile.generated,...ormCompile.inputs].every(f=>exists(f.file)&&fileHash(f.file)===f.sha256));
 			const eventValid=!eventCompile?.directives.some(x=>x.source_id===test.id)||((eventCompile.inputs?.length??0)>=3&&eventCompile.inputs.every(f=>exists(f.file)&&fileHash(f.file)===f.sha256)&&directives.every(x=>x.build_positive?.exit_code===0&&x.execute_positive?.exit_code===0&&Number.isInteger(x.build_negative?.exit_code)&&x.build_negative.exit_code>0&&/callbacks\[0\]\.ABIItem undefined/.test(x.build_negative?.stderr??"")));
