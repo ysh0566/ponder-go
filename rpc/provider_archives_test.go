@@ -62,7 +62,8 @@ func TestUpstreamProviderArchives(t *testing.T) {
 		first, width                    uint64
 		logs                            int
 	}{
-		{"1rpc", "1rpc success", "1rpc", uni, 18_000_000, 1_000, 9},
+		// The pinned source checks canonical UNI history. The current provider limit is covered below.
+		{"1rpc", "1rpc success", "ethereum", uni, 18_000_000, 1_000, 9},
 		{"alchemy", "alchemy success response size", "ethereum", weth, 18_000_000, 2_000, 140_192},
 		{"alchemy", "alchemy success block range", "ethereum", uni, 18_000_000, 1_000_000, 3_773},
 		{"altitude", "hyperliquid success", "hyper", "0xfD739d4e423301CE9385c1fb8850539D657C296D", 9_419_400, 29_999, 4_217},

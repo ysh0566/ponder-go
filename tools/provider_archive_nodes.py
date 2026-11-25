@@ -54,7 +54,8 @@ def start_server(name, indexes, output, stack, bytes_per_second=None, range_poli
     if name in PUBLIC_ERRORS:
         args += ["--error-capture", str(indexes / "public-errors" / (name + ".json"))]
     if name == "1rpc":
-        args += ["--error-capture", str(indexes / "public-errors/1rpc-narrow.json")]
+        for variant in ("1rpc-narrow", "1rpc-filtered"):
+            args += ["--error-capture", str(indexes / "public-errors" / (variant + ".json"))]
     if name in ("moon", "tron"):
         capture = "moonriver-error.json" if name == "moon" else "tron-error.json"
         args += ["--error-capture", str(FIXTURES / capture)]
@@ -84,7 +85,7 @@ def archive_nodes(archive, output, gateways=None, range_policy_nodes=None):
         extract_bundle(FIXTURES / "tron-and-base-indexes.tar.gz",
                        "e6763e4f812e41c91d031a7c5c7a4c952345e1ca93a116ef239fea8741e4b70a", indexes)
         extract_bundle(FIXTURES / "public-provider-indexes.tar.gz",
-                       "e7f7378fa90ad3fc3537c5f07335f7a44788a87bb5e55d9ea6cea517c47f6cb8", indexes)
+                       "026f05727b8ffc09af0a80266a733d59eae6729931c8fa7cad76c07f62d43ca9", indexes)
         celo = FIXTURES / "celo-10000000-10001000.json.gz"
         if hashlib.sha256(celo.read_bytes()).hexdigest() != "13017272c4960fb1da5e08b7bdb2fa0d5d528a59d87af3245dd275200d6df06c":
             raise ValueError("Celo capture differs from the reviewed fixture")
