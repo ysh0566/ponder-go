@@ -65,9 +65,10 @@ namespaces need explicit checkpoint initialization. API steps are:
 5. Mark ready and eventually close the lifecycle before its backend.
 
 This API is not yet connected to the automatic runtime/migration scheduler.
-Versioned sync migration is available separately through `MigrateSync`, using
-owned shadows and exact source SQL; see [SYNC_MIGRATIONS.md](SYNC_MIGRATIONS.md).
-Full historical-baseline semantics, dev reset, real legacy DB takeover,
+`MigrateSync` initializes the current RPC cache in the lifecycle’s owned namespace.
+[Cache initialization and reopen](SYNC_MIGRATIONS.md)
+
+Full historical-baseline semantics, dev reset,
 views-schema aliases, permissions and complete original lifecycle tests remain.
 
 ## Verification

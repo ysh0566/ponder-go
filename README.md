@@ -82,7 +82,7 @@ bin/ponder codegen --schema examples/erc20/schema.json --out examples/erc20/pond
 - `reorgWindow` 按时间戳秒计算。调度器目前明确限制单链；多链调度尚未实现，存储层的多链回滚已经有真实验证。
 - 当前原生 schema/ABI 已补齐 build/schema、event-log 和 finality 所选源测试，并在两个后端执行枚举及视图；业务 raw SQL 已统一经过数据库 trigger journal 并验证 savepoint 错误恢复；完整参数/类型测试、关系、factory、trace、GraphQL 等尚待实现。
 
-Go 功能等价与任意 TS/Hono/Drizzle 源码零修改执行、旧 DB 原地接管，是不同工作轨道。后两项均未实现。已实现的 sync migration 仅操作任务所属影子 schema，不代表真实旧库原地接管。当前模型 hash 不包含 handler/config 内容，修改这些内容时必须选择新的影子 schema；自动开发重建尚待实现。
+数据库按用途使用各自的当前格式。业务 journal 使用 `json-v3`，独立恢复库使用 `managed-live-recovery-v3`，RPC 缓存使用 `ponder_rpc_cache_1`，跨链纯日志历史使用 v17。遇到旧格式时，请选择新的命名空间重新索引。修改 handler 或 config 时也需使用新命名空间，因为模型 hash 只覆盖数据库模型。[缓存初始化与重开](docs/SYNC_MIGRATIONS.md)
 
 ## 来源与许可
 
