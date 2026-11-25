@@ -2008,6 +2008,27 @@
         "parity/runs/native-deployment-roles/RESULT.md"
       ],
       "remaining": "The grants apply to the native atomic PostgreSQL store and the example business table. Independent business and sync database lifecycles, host loss and cross-chain provider pool failover are separate scenarios."
+    },
+    {
+      "id": "native-rpc-pool-reorg",
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/ordered_indexer.go",
+        "runtime/engine.go",
+        "rpc/client.go",
+        "rpc/source_endpoints.go"
+      ],
+      "native_test_files": [
+        "runtime/provider_reorg_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/rpc/index.test.ts",
+        "packages/core/src/sync-realtime/index.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-rpc-pool-reorg/RESULT.md"
+      ],
+      "remaining": "The tested pool has two HTTP providers for one chain. They agree again before the original node returns to service. Named commercial gateways have independent archival and throttling expectations."
     }
   ]
 }

@@ -392,6 +392,20 @@ if err != nil {
 
 默认排序的原子存储当前使用 `json-v4` 回执格式，包括只配置一条链的应用。如果显式指定的部署命名空间使用旧格式，换一个新的命名空间重新索引。使用独立业务库和同步库的部署可通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 创建托管运行器，其支持的来源与启动选项见运行矩阵。[运行模式矩阵](RUNTIME_SUPPORT.md)
 
+### 为同一条链配置多个 RPC 节点
+
+在 Go 配置中将同一条链的 RPC 地址放入 `config.Chain.RPC`。下面的 `firstURL` 和 `secondURL` 指向链 ID 均为 101、创世区块相同的两个节点。
+
+```go
+chain := config.Chain{
+    Name: "A",
+    ID:   101,
+    RPC:  []string{firstURL, secondURL},
+}
+```
+
+原生客户端会在这些地址之间分配请求，临时错误会触发重试。已验证的场景中，同一条链的两个端点分别返回 HTTP 503 和 429 时，`/ready` 显示未就绪，已提交的数据保留。一个端点恢复后，若它返回重组窗口内的新分支，索引器会找到共同祖先，撤销受影响的回调并重放其他链上依赖它们的写入。原节点同步到新分支后可以再次接手。在替代节点上完成重放后重启，索引器会复用已提交的进度。[默认多链与 Omnichain 双后端验收](../parity/runs/native-rpc-pool-reorg/RESULT.md)
+
 ## 按全局顺序索引多条链
 
 要让多条链的回调共同维护一张表，例如所有链的总余额，创建存储和运行器时都使用 `schema.Omnichain`。沿用独立多链示例中的 `cfg.Chains`、事件来源和处理函数，即可把运行器交给同一个 HTTP 应用。
