@@ -206,6 +206,9 @@ func (d *Lifecycle) tryMigrate(ctx context.Context, request Migration) ([]Recove
 	}
 	var recovery []RecoveryCheckpoint
 	if len(rows.Rows) == 0 {
+		if len(existing.Rows) != 0 {
+			return nil, 0, &MigrationError{Message: "existing schema has no application metadata; use a new shadow schema"}
+		}
 		if e = d.s.createUserObjects(ctx, tx, false); e != nil {
 			return nil, 0, e
 		}
@@ -220,7 +223,7 @@ func (d *Lifecycle) tryMigrate(ctx context.Context, request Migration) ([]Recove
 		if e = json.Unmarshal([]byte(fmt.Sprint(rows.Rows[0]["value"])), &old); e != nil {
 			return nil, 0, e
 		}
-		if old.Version != "6" {
+		if old.Version != metadata.Version {
 			return nil, 0, &MigrationError{Message: "schema was previously used by an incompatible application metadata version; use a new shadow schema"}
 		}
 		if old.IsDev != 0 {
