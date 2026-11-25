@@ -468,6 +468,32 @@ ponder db prune --database-url "$PONDER_LOCAL_DATABASE_URL" --schema ponder_go_b
 
 省略 `--schema` 会检查连接所指数据库中的所有候选部署，每个部署单独提交。命令遇错时会输出已经处理的结果；再次运行可以继续。使用独立双库运行器的部署有自己的存储所有权和恢复流程。
 
+## PostgreSQL 写入与部署管理账号
+
+原生 Go 项目可以由两个 PostgreSQL 登录账号运行。部署管理账号创建并拥有业务、同步和缓存 schema，负责发布视图和清理旧部署。写入账号重开已准备好的部署，处理回调、提交 checkpoint 和撤销重组。独立查询服务还可以使用单独的只读账号。[只读查询验证](../parity/runs/native-standalone-serve/RESULT.md)
+
+下面以**新的专用数据库** `indexer` 为例，登录角色 `deploy_manager` 和 `index_writer` 已由管理员创建。两者都使用普通登录权限。先连接 `indexer`，由数据库管理员设置该库的初始权限。
+
+```sql
+REVOKE ALL ON DATABASE indexer FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+GRANT CONNECT, CREATE ON DATABASE indexer TO deploy_manager;
+GRANT CONNECT ON DATABASE indexer TO index_writer;
+```
+
+1. 用 `deploy_manager` 的连接设置 `PONDER_LOCAL_DATABASE_URL`，运行 `ponder start --schema ponder_go_live`。设置 RPC 和合约地址的方法见前文。首次启动会创建业务对象、通知触发器和原生 RPC 缓存。在 `/ready` 返回 200 后停止进程。自定义 Go 入口也可调用 `store.New`、`EnableQueryNotifications` 和 `EnableProtocolCache` 完成准备。
+2. 以 `deploy_manager` 登录，为新部署执行下方链接里的 SQL，例如 `psql "$MANAGER_URL" -X -v ON_ERROR_STOP=1 -f docs/examples/postgres-writer.sql`。示例适用于 ERC-20 项目的 `account` 表。使用其他部署名称或业务表时，替换 SQL 中的名称，并给回调实际读写的业务表授予对应权限。默认多链模式在回放时还会写入 `multichain_replay` 元数据；脚本用 PostgreSQL 行级安全策略将元数据写入限于这一行。[部署写入授权 SQL](examples/postgres-writer.sql)
+3. 使用下列命令切换到写入账号。`PONDER_DATABASE_MODE=existing` 让 `ponder init` 生成的 Go 入口校验并打开指定部署。首次创建仍使用默认的 `create` 模式。自定义 Go 入口可直接调用 `store.OpenExisting`。
+
+```sh
+PONDER_LOCAL_DATABASE_URL="$WRITER_URL" PONDER_DATABASE_MODE=existing \
+  ponder start --schema ponder_go_live
+```
+
+视图发布由 `deploy_manager` 运行 `ponder db create-views`，写入进程使用普通的 `start`。部署和首次发布所需的 schema 均已创建后，管理员可执行 `REVOKE CREATE ON DATABASE indexer FROM deploy_manager`。该账号仍能把已有视图切换到已准备好的下一部署，或清理已停用、未发布的旧部署。要创建新的部署或新的视图 schema，再授予数据库级 `CREATE`。
+
+测试使用独立登录账号和真实 Anvil 交易，覆盖 ERC-20 回调、重启后的重组、跨链回放标记、发布切换和定向清理。使用独立业务库与同步库的 `historical.RuntimeRunner` 有自己的对象与启动流程。[受限账号验证](../parity/runs/native-deployment-roles/RESULT.md)
+
 ## 常见问题
 
 | 现象 | 检查方法 |

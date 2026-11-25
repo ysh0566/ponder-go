@@ -32,7 +32,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 | --- | --- | --- |
 | 在同一个 Go 入口协调多链 | `runtime.NewIndexer` 支持默认、Isolated 和 Omnichain 三种排序。默认模式已验证无写入回调的跨链重放、空块重组、两条链的 RPC 同时中断后分批恢复和冷启动。 | 使用独立业务库和同步库的 `historical.RuntimeRunner` 仍要求有限区间启用 RPC 缓存，且不能注册 setup 回调。它的 Omnichain 模式仅支持已最终确认的有限区间，尚不支持实时追块或工厂合约事件。[选用默认模式](docs/USAGE.md#使用默认多链排序) · [双后端验证](parity/runs/native-default-multichain/RESULT.md) |
 | 在 RPC 故障或链重组时保持索引一致 | PostgreSQL 和 PGlite 均已验证同一条日志命中三个 Go 回调、同一笔 CALL 命中两个函数选择器相同的回调，以及回调失败后的重启和链重组重放。 | 同一条链在多个 RPC 提供商之间切换时又发生跨链重组，这个组合仍待验收。[回调重放测试](parity/runs/native-callback-overlap/RESULT.md) · [多链重组测试](parity/runs/native-ordered-indexing/RESULT.md) |
-| 验收生产部署 | 已验证读角色查询、单库写事务中强杀数据库引擎，以及部分协调任务的应用进程异常退出。 | 业务库与同步库分开的协调多链运行中强杀数据库引擎、主机掉电、其他 PGlite 运行模式的异常退出，以及写入和部署管理角色的最小权限仍待验收。[恢复测试](parity/runs/native-engine-recovery/RESULT.md) · [读角色测试](parity/runs/native-standalone-serve/RESULT.md) |
+| 验收生产部署 | 已验证只读查询、受限写入账号处理事件与重组、部署管理账号发布和清理原生部署，也验证了单库写事务中强杀数据库引擎。[PostgreSQL 账号配置](docs/USAGE.md#postgresql-写入与部署管理账号) | 业务库与同步库分开的协调多链运行中强杀数据库引擎、主机掉电、其他 PGlite 运行模式的异常退出，以及独立双库运行器的权限布局仍待验收。[恢复测试](parity/runs/native-engine-recovery/RESULT.md) · [读角色测试](parity/runs/native-standalone-serve/RESULT.md) |
 
 范围为用 Go 编写索引器、使用当前数据库格式。不同运行器支持的事件来源和启动选项见[运行模式矩阵](docs/RUNTIME_SUPPORT.md)。
 
