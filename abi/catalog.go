@@ -56,7 +56,7 @@ func GenerateCatalog(packageName string, data []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return generateCatalog(packageName, data, parsed.eventEntries, parsed.functionEntries)
+	return generateCatalog(packageName, data, parsed.eventEntries, parsed.functionEntries, nil)
 }
 
 // GenerateEventCatalog describes a source-level event before custom Solidity
@@ -69,10 +69,10 @@ func GenerateEventCatalog(packageName string, event Event) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return generateCatalog(packageName, data, []Event{event}, nil)
+	return generateCatalog(packageName, data, []Event{event}, nil, nil)
 }
 
-func generateCatalog(packageName string, data []byte, eventEntries []Event, functionEntries []Function) ([]byte, error) {
+func generateCatalog(packageName string, data []byte, eventEntries []Event, functionEntries []Function, merged []json.RawMessage) ([]byte, error) {
 	if !token.IsIdentifier(packageName) || packageName == "_" {
 		return nil, fmt.Errorf("invalid ABI catalog package %q", packageName)
 	}
@@ -88,11 +88,17 @@ func generateCatalog(packageName string, data []byte, eventEntries []Event, func
 	for _, item := range functionEntries {
 		functions = append(functions, catalogEntry{name: item.Name, compact: item.SafeName(true), definition: fmt.Sprintf("%#v", item)})
 	}
-	if err := writeCatalogFamily(&out, "Event", events); err != nil {
+	itemTypes := make(map[string]string)
+	if err := writeCatalogFamily(&out, "Event", events, itemTypes); err != nil {
 		return nil, err
 	}
-	if err := writeCatalogFamily(&out, "Function", functions); err != nil {
+	if err := writeCatalogFamily(&out, "Function", functions, itemTypes); err != nil {
 		return nil, err
+	}
+	if merged != nil {
+		if err := writeMergedItems(&out, merged, itemTypes); err != nil {
+			return nil, err
+		}
 	}
 	return format.Source([]byte(out.String()))
 }
@@ -118,7 +124,7 @@ func catalogIdentifiers(values []string) map[string]string {
 	return result
 }
 
-func writeCatalogFamily(out *strings.Builder, kind string, entries []catalogEntry) error {
+func writeCatalogFamily(out *strings.Builder, kind string, entries []catalogEntry, itemTypes map[string]string) error {
 	// A type union contains each distinct declaration once, even if a slice
 	// contains the same event or function multiple times.
 	unique := entries[:0]
@@ -163,6 +169,7 @@ func writeCatalogFamily(out *strings.Builder, kind string, entries []catalogEntr
 			writtenBase[entry.name] = true
 		}
 		itemType, nameType := kind+"Item"+field, kind+"Name"+field
+		itemTypes[entry.definition] = itemType
 		items = append(items, itemType)
 		names = append(names, nameType)
 		fmt.Fprintf(out, "type %s struct{}\ntype %s struct{}\n", itemType, nameType)

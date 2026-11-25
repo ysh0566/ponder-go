@@ -1,0 +1,399 @@
+{
+  "files": {
+    "packages/utils/src/mergeAbis.test.ts": "5daf5d5c94257b86b9ae18822327c9e71cdc3a4db2f0420c5807c10849c25921",
+    "packages/utils/src/replaceBigInts.test.ts": "29c7b4c80a0d2c4578a3bc8310e56c6c4f3c1299271e00868a635b223cd64817",
+    "packages/core/src/utils/truncate.test.ts": "7bc1d9e05855f6da9d5a7d50f3d746731ab83453eefca948cd2461df778e6dd8",
+    "packages/core/src/utils/chains.test.ts": "b65a3a2d4219cfe6beb689622e355ed3bc51dbbb3349ecd34edec5cea9d224a8"
+  },
+  "cases": [
+    {
+      "id": "bbb6c64e767d44888780",
+      "file": "packages/utils/src/mergeAbis.test.ts",
+      "line": 6,
+      "title": "mergeAbis() removes constructors, receive, fallback",
+      "strict": [
+        "readonly []"
+      ],
+      "assertions": [
+        {
+          "method": "toBe",
+          "expected": 0
+        },
+        {
+          "method": "toMatchObject",
+          "expected": []
+        }
+      ],
+      "input": [
+        [
+          [
+            {
+              "type": "constructor",
+              "stateMutability": "nonpayable",
+              "inputs": []
+            },
+            {
+              "type": "fallback"
+            },
+            {
+              "type": "receive",
+              "stateMutability": "payable"
+            }
+          ]
+        ]
+      ],
+      "output": []
+    },
+    {
+      "id": "a0104fe9a78d8a507f21",
+      "file": "packages/utils/src/mergeAbis.test.ts",
+      "line": 22,
+      "title": "mergeAbis() duplicate items",
+      "strict": [
+        "readonly [{ readonly name: \"a\"; readonly type: \"function\"; readonly stateMutability: \"nonpayable\"; readonly inputs: readonly []; readonly outputs: readonly []; }]"
+      ],
+      "assertions": [
+        {
+          "method": "toBe",
+          "expected": 1
+        },
+        {
+          "method": "toMatchObject",
+          "expected": [
+            {
+              "name": "a",
+              "type": "function",
+              "stateMutability": "nonpayable",
+              "inputs": [],
+              "outputs": []
+            }
+          ]
+        }
+      ],
+      "input": [
+        [
+          [
+            {
+              "name": "a",
+              "type": "function",
+              "stateMutability": "nonpayable",
+              "inputs": [],
+              "outputs": []
+            }
+          ],
+          [
+            {
+              "name": "a",
+              "type": "function",
+              "stateMutability": "nonpayable",
+              "inputs": [],
+              "outputs": []
+            }
+          ]
+        ]
+      ],
+      "output": [
+        {
+          "name": "a",
+          "type": "function",
+          "stateMutability": "nonpayable",
+          "inputs": [],
+          "outputs": []
+        }
+      ]
+    },
+    {
+      "id": "953ccb25beef22bea3bb",
+      "file": "packages/utils/src/mergeAbis.test.ts",
+      "line": 34,
+      "title": "mergeAbis() overloaded items",
+      "strict": [
+        "readonly [{ readonly name: \"a\"; readonly type: \"function\"; readonly stateMutability: \"nonpayable\"; readonly inputs: readonly []; readonly outputs: readonly []; }, { readonly name: \"a\"; readonly type: \"function\"; readonly stateMutability: \"nonpayable\"; readonly inputs: readonly [...]; readonly outputs: readonly []; }]"
+      ],
+      "assertions": [
+        {
+          "method": "toBe",
+          "expected": 2
+        },
+        {
+          "method": "toMatchObject",
+          "expected": [
+            {
+              "name": "a",
+              "type": "function",
+              "stateMutability": "nonpayable",
+              "inputs": [],
+              "outputs": []
+            },
+            {
+              "name": "a",
+              "type": "function",
+              "stateMutability": "nonpayable",
+              "inputs": [
+                {
+                  "type": "bytes32"
+                }
+              ],
+              "outputs": []
+            }
+          ]
+        }
+      ],
+      "input": [
+        [
+          [
+            {
+              "name": "a",
+              "type": "function",
+              "stateMutability": "nonpayable",
+              "inputs": [],
+              "outputs": []
+            }
+          ],
+          [
+            {
+              "name": "a",
+              "type": "function",
+              "stateMutability": "nonpayable",
+              "inputs": [
+                {
+                  "type": "bytes32"
+                }
+              ],
+              "outputs": []
+            }
+          ]
+        ]
+      ],
+      "output": [
+        {
+          "name": "a",
+          "type": "function",
+          "stateMutability": "nonpayable",
+          "inputs": [],
+          "outputs": []
+        },
+        {
+          "name": "a",
+          "type": "function",
+          "stateMutability": "nonpayable",
+          "inputs": [
+            {
+              "type": "bytes32"
+            }
+          ],
+          "outputs": []
+        }
+      ]
+    },
+    {
+      "id": "93cfd6af04e84043cc15",
+      "file": "packages/utils/src/mergeAbis.test.ts",
+      "line": 47,
+      "title": "mergeAbis() empty abi",
+      "strict": [
+        "readonly [{ readonly name: \"a\"; readonly type: \"function\"; readonly stateMutability: \"nonpayable\"; readonly inputs: readonly []; readonly outputs: readonly []; }]"
+      ],
+      "assertions": [
+        {
+          "method": "toMatchObject",
+          "expected": [
+            {
+              "name": "a",
+              "type": "function",
+              "stateMutability": "nonpayable",
+              "inputs": [],
+              "outputs": []
+            }
+          ]
+        }
+      ],
+      "input": [
+        [
+          [
+            {
+              "name": "a",
+              "type": "function",
+              "stateMutability": "nonpayable",
+              "inputs": [],
+              "outputs": []
+            }
+          ],
+          []
+        ]
+      ],
+      "output": [
+        {
+          "name": "a",
+          "type": "function",
+          "stateMutability": "nonpayable",
+          "inputs": [],
+          "outputs": []
+        }
+      ]
+    },
+    {
+      "id": "705a1f2d45cd110f68e6",
+      "file": "packages/utils/src/replaceBigInts.test.ts",
+      "line": 5,
+      "title": "scalar",
+      "strict": [
+        "`0x${string}`"
+      ],
+      "assertions": [
+        {
+          "method": "toBe",
+          "expected": "0x5"
+        }
+      ],
+      "input": {
+        "$bigint": "5"
+      },
+      "output": "0x5"
+    },
+    {
+      "id": "045d0f16a7ca1e8b7670",
+      "file": "packages/utils/src/replaceBigInts.test.ts",
+      "line": 12,
+      "title": "array",
+      "strict": [
+        "readonly [`0x${string}`]"
+      ],
+      "assertions": [
+        {
+          "method": "toStrictEqual",
+          "expected": [
+            "0x5"
+          ]
+        }
+      ],
+      "input": [
+        {
+          "$bigint": "5"
+        }
+      ],
+      "output": [
+        "0x5"
+      ]
+    },
+    {
+      "id": "f9fa27b264b33e858efb",
+      "file": "packages/utils/src/replaceBigInts.test.ts",
+      "line": 19,
+      "title": "readonly array",
+      "strict": [
+        "readonly [`0x${string}`]"
+      ],
+      "assertions": [
+        {
+          "method": "toStrictEqual",
+          "expected": [
+            "0x5"
+          ]
+        }
+      ],
+      "input": [
+        {
+          "$bigint": "5"
+        }
+      ],
+      "output": [
+        "0x5"
+      ]
+    },
+    {
+      "id": "5e267e36d6b6bbc2927d",
+      "file": "packages/utils/src/replaceBigInts.test.ts",
+      "line": 26,
+      "title": "object",
+      "strict": [
+        "{ kevin: { kevin: `0x${string}`; }; }"
+      ],
+      "assertions": [
+        {
+          "method": "toStrictEqual",
+          "expected": {
+            "kevin": {
+              "kevin": "0x5"
+            }
+          }
+        }
+      ],
+      "input": {
+        "kevin": {
+          "kevin": {
+            "$bigint": "5"
+          }
+        }
+      },
+      "output": {
+        "kevin": {
+          "kevin": "0x5"
+        }
+      }
+    },
+    {
+      "id": "83d97d70833a7a4f19c7",
+      "file": "packages/core/src/utils/truncate.test.ts",
+      "line": 4,
+      "title": "truncates a long string correctly",
+      "strict": [],
+      "assertions": [
+        {
+          "method": "toBe",
+          "expected": "EnergyMark...V1Contract"
+        }
+      ],
+      "input": [
+        "EnergyMarketOrderBookV1Contract",
+        24
+      ],
+      "output": "EnergyMark...V1Contract"
+    },
+    {
+      "id": "f1fa265bf41c4db29eee",
+      "file": "packages/core/src/utils/truncate.test.ts",
+      "line": 10,
+      "title": "returns the same string if it's within maxLength",
+      "strict": [],
+      "assertions": [
+        {
+          "method": "toBe",
+          "expected": "EnergyMarketOrderBookV1Contract"
+        }
+      ],
+      "input": [
+        "EnergyMarketOrderBookV1Contract",
+        31
+      ],
+      "output": "EnergyMarketOrderBookV1Contract"
+    },
+    {
+      "id": "3bf92d72c48ef21d5238",
+      "file": "packages/core/src/utils/truncate.test.ts",
+      "line": 16,
+      "title": "truncates a long string correctly with default maxLength",
+      "strict": [],
+      "assertions": [
+        {
+          "method": "toBe",
+          "expected": "EnergyMarketOrde...1Contract:Action"
+        }
+      ],
+      "input": [
+        "EnergyMarketOrderBookV1Contract:Action"
+      ],
+      "output": "EnergyMarketOrde...1Contract:Action"
+    },
+    {
+      "id": "6dfea1e218dbb7214d77",
+      "file": "packages/core/src/utils/chains.test.ts",
+      "line": 5,
+      "title": "test",
+      "strict": [],
+      "assertions": [],
+      "export_count": 621,
+      "exports_sha256": "a08d3c68549b05f619fa8280f7d20cee8690eda7aef52a3ac9e177c3914335b5"
+    }
+  ]
+}

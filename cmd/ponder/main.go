@@ -18,6 +18,7 @@ import (
 	"ponder.local/ponder-go/orm"
 	"ponder.local/ponder-go/schema"
 	"ponder.local/ponder-go/store"
+	"ponder.local/ponder-go/values"
 	"strings"
 	"syscall"
 	"time"
@@ -132,6 +133,9 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		packageName := flags.String("package", "main", "Go package")
 		typed := flags.Bool("typed", false, "Generate typed native ORM model/key/insert/update APIs")
 		catalog := flags.String("abi", "", "Contract ABI JSON for typed event and function names")
+		var mergeFiles []string
+		flags.Func("merge-abi", "ABI file to include in an ordered merge (repeatable)", func(file string) error { mergeFiles = append(mergeFiles, file); return nil })
+		bigint := flags.String("bigint-shape", "", "Go type expression with BigInt leaves for a typed replacer")
 		parameters := flags.String("abi-parameters", "", "ABI parameter JSON for a typed decoder")
 		decoderName := flags.String("decoder", "Parameters", "Exported ABI decoder name")
 		if e := flags.Parse(args[1:]); e != nil {
@@ -139,6 +143,30 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		}
 		if !schema.Identifier(*packageName) {
 			return fmt.Errorf("invalid package name")
+		}
+		if len(mergeFiles) > 0 || *bigint != "" {
+			if *catalog != "" || *parameters != "" || *typed || (len(mergeFiles) > 0 && *bigint != "") {
+				return fmt.Errorf("choose a single code generation mode")
+			}
+			var source []byte
+			var err error
+			if len(mergeFiles) > 0 {
+				var inputs []json.RawMessage
+				for _, file := range mergeFiles {
+					data, e := os.ReadFile(file)
+					if e != nil {
+						return e
+					}
+					inputs = append(inputs, data)
+				}
+				source, err = abi.GenerateMergedCatalog(*packageName, inputs...)
+			} else {
+				source, err = values.GenerateBigIntReplacer(*packageName, "ReplaceBigInts", *bigint)
+			}
+			if err != nil {
+				return err
+			}
+			return os.WriteFile(*output, source, 0644)
 		}
 		if *catalog != "" {
 			if *parameters != "" || *typed {
