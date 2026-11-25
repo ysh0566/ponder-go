@@ -697,10 +697,11 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 		}
 	}
 	// Every completed block gets durable progress even if it has no matching events.
-	if err = e.Store.Apply(ctx, store.Event{ID: fmt.Sprintf("complete:%d:%s", e.chain.ID, b.Hash), Checkpoint: checkpoint.Block(timestamp, e.chain.ID, number, true)}, func(*store.Writer) error { return nil }); err != nil {
+	block := store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}
+	if err = e.Store.Apply(ctx, store.Event{ID: block.CompletionID(), Checkpoint: checkpoint.Block(timestamp, e.chain.ID, number, true)}, func(*store.Writer) error { return nil }); err != nil {
 		return err
 	}
-	return e.Store.CompleteBlock(ctx, store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}, e.filter)
+	return e.Store.CompleteBlock(ctx, block, e.filter)
 }
 func (e *Engine) Run(ctx context.Context) error { return e.RunIndexing(ctx, func(bool) {}) }
 

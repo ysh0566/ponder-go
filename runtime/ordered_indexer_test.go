@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/factory"
 	"github.com/ysh0566/ponder-go/internal/testanvil"
@@ -128,9 +129,53 @@ func TestOrderedIndexer(t *testing.T) {
 			if calls != before {
 				t.Fatalf("cold reopen reran %d callbacks", calls-before)
 			}
+			// A stale proof from one chain must roll back the entire finalization transaction.
+			state := func() string {
+				t.Helper()
+				rows, err := db.Backend.Query(ctx, "SELECT chain_id::text,checkpoint,safe_checkpoint FROM "+schema.Quote(ns)+"._ponder_go_finalized ORDER BY chain_id")
+				if err != nil {
+					t.Fatal(err)
+				}
+				undo, err := db.Backend.Query(ctx, "SELECT count(*)::text AS n FROM "+schema.Quote(ns)+"._ponder_go_journal")
+				if err != nil {
+					t.Fatal(err)
+				}
+				return fmt.Sprint(rows.Rows, undo.Rows)
+			}
+			blockA, err := db.SyncedBlock(ctx, 101, 1)
+			if err != nil || blockA == nil {
+				t.Fatal("missing first anchor", err)
+			}
+			blockB, err := db.SyncedBlock(ctx, 202, 1)
+			if err != nil || blockB == nil {
+				t.Fatal("missing second anchor", err)
+			}
+			blockB.Hash = "orphan"
+			prior := state()
+			if err := db.FinalizeOmnichainThrough(ctx, checkpoint.Max, []store.SyncBlock{*blockA, *blockB}); !errors.Is(err, store.ErrIndexedBlockChanged) || state() != prior {
+				t.Fatal("partial finalization", err)
+			}
+			deepFork := call(first, "evm_snapshot")
 			mine(second, 60)
 			mine(first, 70)
 			poll(w, "A0,B0,B20,A25,B40,A50,B60")
+			mine(first, 330)
+			mine(second, 340)
+			stable := "A0,B0,B20,A25,B40,A50,B60,A70,A330"
+			poll(w, stable)
+			if call(first, "evm_revert", deepFork) != true {
+				t.Fatal("deep fork setup")
+			}
+			mine(first, 55)
+			run, cancel := context.WithTimeout(ctx, 10*time.Second)
+			defer cancel()
+			if err := w.RunIndexing(run, func(bool) {}); err == nil || !strings.Contains(err.Error(), "before safe checkpoint") {
+				t.Fatalf("deep reorg was not fenced: %v", err)
+			}
+			rows, err := db.Read(ctx, "ledger")
+			if err != nil || len(rows.Rows) != 1 || rows.Rows[0]["history"] != stable {
+				t.Fatalf("deep reorg altered published state: %v %v", rows, err)
+			}
 		})
 	}
 }

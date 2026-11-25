@@ -27,6 +27,11 @@ func (s *Store) LatestSyncedHeight(ctx context.Context, chain uint64) (uint64, b
 	return n, true, err
 }
 
+// CompletionID identifies the durable receipt for all callbacks in this block.
+func (b SyncBlock) CompletionID() string {
+	return fmt.Sprintf("complete:%d:%s", b.ChainID, b.Hash)
+}
+
 func (s *Store) SyncedBlock(ctx context.Context, chain, number uint64) (*SyncBlock, error) {
 	r, e := s.Backend.Query(ctx, "SELECT hash,parent_hash,timestamp::text AS timestamp,payload::text AS payload FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number=$2", chain, number)
 	if e != nil {

@@ -2,11 +2,13 @@ package runtime
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/interval"
+	"github.com/ysh0566/ponder-go/store"
 )
 
 type orderedIndexer struct {
@@ -159,25 +161,72 @@ func (r *orderedIndexer) sync(ctx context.Context) (bool, error) {
 		}
 	}
 	if r.sealed != finalWatermark {
-		// Never discard undo records on evidence from a snapshot that forked while
-		// RPC acquisition or the handlers were running.
-		for _, c := range chains {
-			tip, err := c.engine.block(ctx, Hex(c.head))
-			if err != nil {
-				return false, err
-			}
-			if tip.Hash != c.latest.Hash {
-				return false, errIndexingFork
-			}
-		}
 		safe, err := checkpoint.Decode(finalWatermark)
 		if err != nil {
 			return false, err
 		}
-		if err = r.workers[0].Store.FinalizeOmnichainThrough(ctx, safe); err != nil {
+		var anchors []store.SyncBlock
+		for _, c := range chains {
+			anchor, err := c.finalAnchor(ctx, safe)
+			if err != nil {
+				return false, err
+			}
+			if anchor != nil {
+				anchors = append(anchors, *anchor)
+			}
+		}
+		if err := r.workers[0].Store.FinalizeOmnichainThrough(ctx, safe, anchors); err != nil {
+			if errors.Is(err, store.ErrIndexedBlockChanged) {
+				return false, errIndexingFork
+			}
 			return false, err
 		}
 		r.sealed = finalWatermark
 	}
 	return allFinished, nil
+}
+
+// finalAnchor selects a completed block within the global prefix. Chain ID
+// breaks ties between blocks with identical timestamps.
+func (c *orderedChain) finalAnchor(ctx context.Context, safe checkpoint.Checkpoint) (*store.SyncBlock, error) {
+	e := c.engine
+	through := c.head
+	if e.endBlock != nil {
+		through = min(through, *e.endBlock)
+	}
+	cutoff := safe.BlockTimestamp
+	if e.chain.ID == safe.ChainID {
+		through = min(through, safe.BlockNumber)
+	}
+	if e.chain.ID > safe.ChainID && cutoff > 0 {
+		cutoff--
+	}
+	anchor, err := e.Store.IndexedFinalityCandidate(ctx, e.chain.ID, through, cutoff)
+	if err != nil {
+		return nil, err
+	}
+	if anchor != nil {
+		cp := checkpoint.Block(anchor.Timestamp, anchor.ChainID, anchor.Number, true)
+		if checkpoint.Greater(cp, safe) {
+			anchor = nil
+		}
+	}
+	if anchor != nil && anchor.Number != c.head {
+		block, err := e.block(ctx, Hex(anchor.Number))
+		if err != nil {
+			return nil, err
+		}
+		if block.Hash != anchor.Hash {
+			return nil, errIndexingFork
+		}
+	}
+	// Confirm the head used to decide the watermark even on an empty chain.
+	tip, err := e.block(ctx, Hex(c.head))
+	if err != nil {
+		return nil, err
+	}
+	if tip.Hash != c.latest.Hash || (anchor != nil && anchor.Number == c.head && anchor.Hash != tip.Hash) {
+		return nil, errIndexingFork
+	}
+	return anchor, nil
 }
