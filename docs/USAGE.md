@@ -112,6 +112,18 @@ curl -fsSG "$base/sql/db" \
 
 完成后，在终端 B 停止查询服务，在终端 A 停止 Anvil。若要丢弃本次教程数据，运行 `docker stop ponder-erc20-guide`，并删除终端 B 中 `$demo_dir` 指向的临时目录。
 
+## 开发时自动重载
+
+在原生 Go 项目目录中启动开发模式。它会监视 Go 源码、模块文件、JSON 配置和 SQL 文件，开发服务器会打印实际监听地址和数据所在的 schema。
+
+```sh
+ponder dev --hostname 127.0.0.1 --port 42069 --schema ponder_go_demo
+```
+
+保存修改且编译成功后，CLI 会停止上一个进程并启动新的索引器。编译失败时，之前成功启动的进程继续运行，下一次编辑会重新构建。开发 schema 的名字由前缀和项目内容的摘要生成，修改处理函数或表定义会选择新的命名空间并重新索引。按 Ctrl+C 退出。
+
+`--hostname` 和 `--port` 也可用于 `start` 和 `serve`。端口 0 让操作系统分配空闲端口。使用 `runtime.LaunchApplication` 的 Go 应用会读取这两个选项。自行创建 HTTP 服务的应用可从 `PONDER_HOSTNAME`、`PONDER_PORT` 读取对应值。
+
 ## 用于自己的项目
 
 在自己的工作目录中安装 CLI、创建索引器并构建。首次使用需要能访问 Go 模块代理或 GitHub。
