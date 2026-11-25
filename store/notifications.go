@@ -3,16 +3,19 @@ package store
 import (
 	"bufio"
 	"context"
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"strings"
 	"sync"
 	"time"
 	"unicode/utf8"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/ysh0566/ponder-go/schema"
 )
 
@@ -31,6 +34,29 @@ type NotificationListener interface {
 }
 
 var ErrNotificationsClosed = errors.New("database notification listener is closed")
+
+// PostgresConnectionInterrupted identifies transport and server availability
+// errors for reconnecting listeners and retrying read-only live queries.
+func PostgresConnectionInterrupted(err error) bool {
+	if err == nil || errors.Is(err, context.Canceled) {
+		return false
+	}
+	var pg *pgconn.PgError
+	if errors.As(err, &pg) {
+		switch pg.Code {
+		case "53300", "57P01", "57P02", "57P03":
+			return true
+		case "55000":
+			var connecting *pgconn.ConnectError
+			return errors.As(err, &connecting)
+		default:
+			return strings.HasPrefix(pg.Code, "08")
+		}
+	}
+	var network net.Error
+	return errors.As(err, &network) || errors.Is(err, io.EOF) ||
+		errors.Is(err, io.ErrUnexpectedEOF) || errors.Is(err, driver.ErrBadConn) || pgconn.SafeToRetry(err)
+}
 
 func Listen(ctx context.Context, backend Backend, channel string) (NotificationListener, error) {
 	if channel == "" || len(channel) > 63 || strings.ContainsRune(channel, 0) || !utf8.ValidString(channel) {
@@ -124,6 +150,12 @@ type pgNotifications struct {
 }
 
 func (p *pgBackend) listen(ctx context.Context, channel string) (NotificationListener, error) {
+	p.notifyMu.Lock()
+	closed := p.closed
+	p.notifyMu.Unlock()
+	if closed {
+		return nil, ErrNotificationsClosed
+	}
 	conn, e := pgx.Connect(ctx, p.url)
 	if e != nil {
 		return nil, e

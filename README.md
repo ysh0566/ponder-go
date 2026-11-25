@@ -31,7 +31,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 | --- | --- |
 | 在同一 Go 应用中协调多条链 | 原生 `runtime.NewIndexer` 支持独立多链和按全局顺序索引。默认协调模式仍需使用 `historical.RuntimeRunner`。各模式还需扩展来源组合和服务商故障验证。[全局排序使用方式](docs/USAGE.md#按全局顺序索引多条链) |
 | 在回调中查询链上状态 | `indexing.Client` 提供七个上游高层方法。其余十四个还缺对应的 Go 方法，包括合约模拟、gas 估算及交易确认数查询。可用 `Request` 发原始 RPC；批量读合约需显式指定 Multicall3 地址。[方法清单](docs/RUNTIME_SUPPORT.md#callback-rpc-methods) |
-| 分开部署索引和实时查询 | Go 脚手架的 `serve` 仍要求 RPC 和合约配置，默认只接收同进程写入通知。独立查询进程可通过 `query.NewAtNamespace` 订阅已配置的数据库通知，但 PostgreSQL 的监听连接断开后需重建订阅。[实测记录](parity/runs/native-query-deployment-audit/RESULT.md) |
+| 分开部署索引和实时查询 | Go 脚手架的 `serve` 仍要求 RPC 和合约配置，默认只接收同进程写入通知。独立查询进程需显式使用 `query.NewAtNamespace` 订阅数据库通知。PostgreSQL 的监听连接短暂中断后会自动恢复，已有 SSE 连接会重新读取当前结果。[断线恢复实测](parity/runs/native-query-reconnect/RESULT.md) |
 | 管理部署和日志 | PostgreSQL 已支持视图发布和部署清理。PGlite 数据目录的独立运维命令仍待补齐。Go 脚手架也缺追上链头后自动将查询视图切到新部署的步骤。热重载已可用，CLI 尚缺统一的日志级别、JSON 日志格式和开发终端 UI。 |
 | 生产故障验收 | 已在写事务提交前强制终止 PostgreSQL 和 PGlite 引擎，验证重启后的余额、检查点、重放和撤销。全局排序的纯日志历史任务也覆盖了 PGlite 应用异常退出。仍需验证主机掉电、协调多链运行中数据库引擎崩溃，以及生产数据库角色与权限。[故障恢复实测](parity/runs/native-engine-recovery/RESULT.md) |
 

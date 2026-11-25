@@ -110,7 +110,7 @@ curl -fsSG "$base/sql/db" \
 
 `db list` 会列出示例的业务和同步命名空间。`serve` 会重新打开同一数据库，只提供查询。用终端 C 的 SQL 再次查询应得到相同的两行。要恢复跟链，停止 `serve` 并重新运行前面的 `start` 命令。如果换了链、要从头索引或现有库格式已过期，请选择新的 `ponder_go_…` 命名空间。[数据库格式与重开约定](../parity/runs/current-database-formats/RESULT.md)
 
-这份 Go 示例在 `serve` 模式也会检查 RPC 地址和合约地址，请保留教程里的两个环境变量。独立启动的示例能通过 SQL 读取另一个进程已经提交的数据。要接收该进程的实时推送，写入方需配置数据库通知，查询方需用 `query.NewAtNamespace` 订阅对应命名空间。PostgreSQL 监听连接中断后，当前 SSE 流结束，应用需重新创建订阅并重新读取当前结果。[查询部署实测](../parity/runs/native-query-deployment-audit/RESULT.md)
+这份 Go 示例在 `serve` 模式也会检查 RPC 地址和合约地址，请保留教程里的两个环境变量。独立启动的示例能通过 SQL 读取另一个进程已经提交的数据。要接收该进程的实时推送，写入方需配置数据库通知，查询方需用 `query.NewAtNamespace` 订阅对应命名空间。PostgreSQL 监听暂时不可用时，查询服务每 250 毫秒重试，暂停复用依赖表通知的缓存结果。恢复监听后，原 SSE 连接会重新读取当前结果并在数据有变化时推送。断线期间的多次提交通常合并为一次最新结果推送。[断线恢复实测](../parity/runs/native-query-reconnect/RESULT.md)
 
 完成后，在终端 B 停止查询服务，在终端 A 停止 Anvil。若要丢弃本次教程数据，运行 `docker stop ponder-erc20-guide`，并删除终端 B 中 `$demo_dir` 指向的临时目录。
 

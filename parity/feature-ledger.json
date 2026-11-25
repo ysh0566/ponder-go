@@ -1601,6 +1601,25 @@
         "parity/runs/native-postgres-columns/RESULT.md"
       ],
       "remaining": "Combinations beyond the native dual-backend and pinned GraphQL cases remain unverified."
+    },
+    {
+      "id": "native-postgres-query-reconnect",
+      "status": "verified_subset",
+      "implementation_files": [
+        "query/http.go",
+        "store/notifications.go",
+        "store/query_changes.go"
+      ],
+      "native_test_files": [
+        "query/notification_reconnect_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/client/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-query-reconnect/RESULT.md"
+      ],
+      "remaining": "PGlite uses a process-bound notification transport. The scaffold has its own independent query deployment setup."
     }
   ]
 }

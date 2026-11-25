@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-
 	"sync"
+	"time"
 
 	"github.com/ysh0566/ponder-go/schema"
 )
@@ -46,8 +46,9 @@ func (n *QueryNotifications) Close() error { n.cancel(); <-n.done; return n.err 
 // The returned subscription borrows the database and owns its LISTEN session.
 func (s *QueryChanges) Listen(parent context.Context, backend Backend, namespace string, tables []schema.Table) (*QueryNotifications, error) {
 	ctx, cancel := context.WithCancel(parent)
-	listener, err := Listen(ctx, backend, namespace+"_live_query")
-	if err != nil {
+	channel := namespace + "_live_query"
+	listener, err := Listen(ctx, backend, channel)
+	if err != nil && (ctx.Err() != nil || backend == nil || backend.Dialect() != "postgres" || !PostgresConnectionInterrupted(err)) {
 		cancel()
 		return nil, err
 	}
@@ -57,46 +58,88 @@ func (s *QueryChanges) Listen(parent context.Context, backend Backend, namespace
 		all = append(all, table.Name)
 		names[table.Name] = true
 	}
-	s.mu.Lock()
-	s.listeners++
-	s.revision++
-	s.epoch = s.revision
-	s.mu.Unlock()
+	if listener != nil {
+		s.listenerChange(1)
+	}
 	n := &QueryNotifications{cancel: cancel, done: make(chan struct{})}
 	go func() {
 		defer close(n.done)
 		defer cancel()
 		for {
-			event, err := listener.Wait(ctx)
-			if err != nil {
-				if ctx.Err() == nil {
-					n.err = err
+			if listener == nil {
+				listener, err = reconnectQueryListener(ctx, backend, channel)
+				if err != nil {
+					if ctx.Err() == nil {
+						n.err = err
+					}
+					return
 				}
-				break
-			}
-			var changed []string
-			if err = json.Unmarshal([]byte(event.Payload), &changed); err != nil || changed == nil {
+				s.listenerChange(1)
+				// A disconnected session could have missed any commit.
 				s.notify(all)
-				continue
 			}
-			tables := []string{"_ponder_checkpoint"}
-			for _, table := range changed {
-				if names[table] && table != "_ponder_checkpoint" {
-					tables = append(tables, table)
-				}
+			err = s.receive(ctx, listener, all, names)
+			s.listenerChange(-1)
+			closeErr := listener.Close()
+			if ctx.Err() != nil {
+				n.err = closeErr
+				s.notify(all)
+				return
 			}
-			s.notify(tables)
+			if backend.Dialect() != "postgres" || errors.Is(err, ErrNotificationsClosed) || closeErr != nil {
+				n.err = errors.Join(err, closeErr)
+				s.notify(all)
+				return
+			}
+			listener = nil
 		}
-		s.mu.Lock()
-		s.listeners--
-		s.revision++
-		s.epoch = s.revision
-		s.mu.Unlock()
-		s.notify(all)
-		n.err = errors.Join(n.err, listener.Close())
 	}()
 	return n, nil
 }
+
+func reconnectQueryListener(ctx context.Context, backend Backend, channel string) (NotificationListener, error) {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(250 * time.Millisecond):
+		}
+		listener, err := Listen(ctx, backend, channel)
+		if err == nil || !PostgresConnectionInterrupted(err) {
+			return listener, err
+		}
+	}
+}
+
+func (s *QueryChanges) listenerChange(delta int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.listeners += delta
+	s.revision++
+	s.epoch = s.revision
+}
+
+func (s *QueryChanges) receive(ctx context.Context, listener NotificationListener, all []string, names map[string]bool) error {
+	for {
+		event, err := listener.Wait(ctx)
+		if err != nil {
+			return err
+		}
+		var changed []string
+		if err := json.Unmarshal([]byte(event.Payload), &changed); err != nil || changed == nil {
+			s.notify(all)
+			continue
+		}
+		tables := []string{"_ponder_checkpoint"}
+		for _, table := range changed {
+			if names[table] && table != "_ponder_checkpoint" {
+				tables = append(tables, table)
+			}
+		}
+		s.notify(tables)
+	}
+}
+
 func (s *QueryChanges) Subscribe() (chan Change, func()) {
 	ch := make(chan Change, 1)
 	s.mu.Lock()
