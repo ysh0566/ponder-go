@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ysh0566/ponder-go/rpc"
 	"sync"
 
 	ponderabi "github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 const aggregate3ABIJSON = `[{"type":"function","name":"aggregate3","stateMutability":"payable","inputs":[{"name":"calls","type":"tuple[]","components":[{"name":"target","type":"address"},{"name":"allowFailure","type":"bool"},{"name":"callData","type":"bytes"}]}],"outputs":[{"name":"returnData","type":"tuple[]","components":[{"name":"success","type":"bool"},{"name":"returnData","type":"bytes"}]}]}]`
@@ -23,6 +23,8 @@ var aggregate3ABI = func() ponderabi.ABI {
 type MulticallOptions struct {
 	BlockOptions
 	MulticallAddress string
+	Account          string
+	StateOverride    StateOverride
 	// Nil defaults to true, as in viem. Wire aggregate3 always allows failures;
 	// this option controls decoding and whether the outer action fails.
 	AllowFailure       *bool
@@ -55,19 +57,32 @@ type multicallWireResult struct {
 
 // Multicall uses real aggregate3 RPC requests, with persistent per-child cache
 // lookup and miss-only batching. Duplicates retain their original positions.
-// It requires an explicit deployment address; chain deployment discovery,
-// and account/state overrides are not implemented.
+// The default deployment comes from the configured chain. Requests with a
+// sender or state override keep that context on the entire aggregate call.
 func (c *Client) Multicall(ctx context.Context, contracts []ContractCall, options MulticallOptions) ([]any, error) {
 	ctx, finish, admissionErr := c.set.managedRoots.begin(ctx)
 	if admissionErr != nil {
 		return nil, admissionErr
 	}
 	defer finish()
-	if options.MulticallAddress == "" {
-		return nil, fmt.Errorf("multicallAddress is required")
-	}
-	if err := c.recordContracts(contracts, options.BlockOptions, true); err != nil {
+	address, err := c.deploymentAddress(ctx, options.BlockOptions, options.MulticallAddress, c.multicallDeployment, "Multicall3")
+	if err != nil {
 		return nil, err
+	}
+	if options.Account != "" {
+		if _, ok := contractAddress(options.Account); !ok {
+			return nil, fmt.Errorf("invalid multicall account %q", options.Account)
+		}
+	}
+	override, err := options.StateOverride.rpcParams()
+	if err != nil {
+		return nil, err
+	}
+	execution := aggregateExecution{address: address, account: options.Account, override: override}
+	if !execution.custom() {
+		if err := c.recordContracts(contracts, options.BlockOptions, true); err != nil {
+			return nil, err
+		}
 	}
 	allowFailure := options.AllowFailure == nil || *options.AllowFailure
 	batchSize := 1024
@@ -105,7 +120,7 @@ func (c *Client) Multicall(ctx context.Context, contracts []ContractCall, option
 	}
 	firstAttempt := true
 	return retryEmpty(ctx, options.RetryEmptyResponse, func() ([]any, error) {
-		if !firstAttempt {
+		if !firstAttempt && !execution.custom() {
 			if err := c.recordContracts(contracts, options.BlockOptions, true); err != nil {
 				return nil, err
 			}
@@ -125,7 +140,7 @@ func (c *Client) Multicall(ctx context.Context, contracts []ContractCall, option
 			// Prepare and admit each transport operation in source chunk order. A real
 			// AsyncRequester binds the RPC before returning; synchronous-only custom
 			// requesters preserve settlement but have weaker invocation ordering.
-			await := c.beginMulticallChunk(ctx, chunk, options.MulticallAddress, tag)
+			await := c.beginMulticallChunk(ctx, chunk, execution, tag)
 			pending.Add(1)
 			go func(index int) { defer pending.Done(); settled[index].wire, settled[index].err = await() }(index)
 		}
@@ -169,7 +184,30 @@ func (c *Client) Multicall(ctx context.Context, contracts []ContractCall, option
 		return results, nil
 	})
 }
-func (c *Client) beginMulticallChunk(ctx context.Context, items []multicallItem, address, tag string) func() ([]multicallWireResult, error) {
+
+type aggregateExecution struct {
+	address  string
+	account  string
+	override Object
+}
+
+func (e aggregateExecution) custom() bool {
+	return e.account != "" || e.override != nil
+}
+
+func (e aggregateExecution) params(data, tag string) []any {
+	call := Object{"to": e.address, "data": data}
+	if e.account != "" {
+		call["from"] = e.account
+	}
+	params := []any{call, tag}
+	if e.override != nil {
+		params = append(params, e.override)
+	}
+	return params
+}
+
+func (c *Client) beginMulticallChunk(ctx context.Context, items []multicallItem, execution aggregateExecution, tag string) func() ([]multicallWireResult, error) {
 	fail := func(err error) func() ([]multicallWireResult, error) {
 		return func() ([]multicallWireResult, error) { return nil, err }
 	}
@@ -206,7 +244,7 @@ func (c *Client) beginMulticallChunk(ctx context.Context, items []multicallItem,
 		}
 	}
 	batch, batched := c.cache.(rpc.CacheBatchReader)
-	batched = batched && c.cacheEnabled
+	batched = batched && c.cacheEnabled && !execution.custom()
 	keys := []string{}
 	results := make([]multicallWireResult, len(items))
 	misses := []int{}
@@ -215,6 +253,10 @@ func (c *Client) beginMulticallChunk(ctx context.Context, items []multicallItem,
 	var advance func(int, *prefetchValue) func() ([]multicallWireResult, error)
 	advance = func(start int, retained *prefetchValue) func() ([]multicallWireResult, error) {
 		for i := start; i < len(items); i++ {
+			if execution.custom() {
+				misses = append(misses, i)
+				continue
+			}
 			item := items[i]
 			params[i] = []any{Object{"to": item.contract.Address, "data": item.data}, tag}
 			key, err := c.cacheKey("eth_call", params[i])
@@ -297,12 +339,12 @@ func (c *Client) beginMulticallChunk(ctx context.Context, items []multicallItem,
 			item := items[i]
 			calls = append(calls, Object{"target": item.contract.Address, "allowFailure": !item.requireSuccess, "callData": item.data})
 		}
-		data, selected, err := encodeContractCall(ContractCall{ABI: aggregate3ABI, Address: address, FunctionName: "aggregate3", Args: []any{calls}})
+		data, selected, err := encodeContractCall(ContractCall{ABI: aggregate3ABI, Address: execution.address, FunctionName: "aggregate3", Args: []any{calls}})
 		if err != nil {
 			return fail(err)
 		}
 		var raw json.RawMessage
-		callParams := []any{Object{"to": address, "data": data}, tag}
+		callParams := execution.params(data, tag)
 		var completion <-chan error
 		if requester, ok := c.requester.(rpc.AsyncRequester); ok {
 			completion = requester.BeginCall(ctx, "eth_call", callParams, &raw)
@@ -341,7 +383,7 @@ func (c *Client) beginMulticallChunk(ctx context.Context, items []multicallItem,
 					return nil, fmt.Errorf("invalid aggregate3 returnData")
 				}
 				results[index] = multicallWireResult{success, value}
-				if success {
+				if success && !execution.custom() {
 					encoded, _ := json.Marshal(value)
 					queueWrite(params[index], encoded, false)
 				}

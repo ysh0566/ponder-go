@@ -1703,6 +1703,28 @@
         "parity/runs/native-state-reads/RESULT.md"
       ],
       "remaining": "Three high-level contract actions, four ENS methods and further multicall options remain open."
+    },
+    {
+      "id": "native-multicall-deployment-and-overrides",
+      "status": "verified_subset",
+      "implementation_files": [
+        "indexing/client.go",
+        "indexing/client_actions.go",
+        "indexing/client_ens.go",
+        "indexing/client_multicall.go",
+        "indexing/client_overrides.go",
+        "indexing/client_requests.go"
+      ],
+      "native_test_files": [
+        "indexing/client_multicall_deployment_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing/client.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-multicall-options/RESULT.md"
+      ],
+      "remaining": "Custom chains without registered deployments need an explicit contract address. Individual chains and providers may support different simulated state overrides."
     }
   ]
 }
