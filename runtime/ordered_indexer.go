@@ -8,6 +8,8 @@ import (
 
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/interval"
+	"github.com/ysh0566/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
 
@@ -21,6 +23,7 @@ type orderedChain struct {
 	engine *Engine
 	latest Block
 	head   uint64
+	start  uint64
 	gaps   []interval.Interval
 	next   Block
 	key    string
@@ -73,6 +76,9 @@ func (c *orderedChain) advance(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
+		if previous == nil && n > c.start {
+			return fmt.Errorf("missing indexed parent of block %d on chain %s", n, c.engine.chain.Name)
+		}
 		if previous != nil && previous.Hash != b.ParentHash {
 			return errIndexingFork
 		}
@@ -90,6 +96,9 @@ func (c *orderedChain) advance(ctx context.Context) error {
 func (r *orderedIndexer) sync(ctx context.Context) (bool, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.workers[0].Store.Ordering == schema.Multichain {
+		return r.syncMultichain(ctx)
+	}
 	chains := make([]orderedChain, len(r.workers))
 	watermark, finalWatermark := checkpoint.MaxString, checkpoint.MaxString
 	allFinished := true
@@ -122,43 +131,8 @@ func (r *orderedIndexer) sync(ctx context.Context) (bool, error) {
 			finalWatermark = min(finalWatermark, checkpoint.MustEncode(safe))
 		}
 	}
-	for i := range chains {
-		c := &chains[i]
-		start, err := c.engine.firstSourceBlock()
-		if err != nil {
-			return false, err
-		}
-		through := c.head
-		if c.engine.endBlock != nil {
-			through = min(through, *c.engine.endBlock)
-		}
-		if start <= through {
-			c.gaps, err = c.engine.Store.Missing(ctx, c.engine.chain.ID, c.engine.filter, interval.Interval{int64(start), int64(through)})
-			if err != nil {
-				return false, err
-			}
-			if err = c.advance(ctx); err != nil {
-				return false, err
-			}
-		}
-	}
-	for {
-		var picked *orderedChain
-		for i := range chains {
-			c := &chains[i]
-			if c.key != "" && c.key <= watermark && (picked == nil || c.key < picked.key) {
-				picked = c
-			}
-		}
-		if picked == nil {
-			break
-		}
-		if err := picked.engine.process(ctx, picked.next); err != nil {
-			return false, err
-		}
-		if err := picked.advance(ctx); err != nil {
-			return false, err
-		}
+	if err := processAvailable(ctx, chains, watermark); err != nil {
+		return false, err
 	}
 	if r.sealed != finalWatermark {
 		safe, err := checkpoint.Decode(finalWatermark)
@@ -184,6 +158,109 @@ func (r *orderedIndexer) sync(ctx context.Context) (bool, error) {
 		r.sealed = finalWatermark
 	}
 	return allFinished, nil
+}
+
+// syncMultichain reconciles all available heads before collecting missing ranges.
+// A peer rewind can invalidate gaps on any chain. Only omnichain waits for
+// the slowest head's checkpoint before applying a block.
+func (r *orderedIndexer) syncMultichain(ctx context.Context) (bool, error) {
+	var chains []orderedChain
+	var unavailable error
+	for _, e := range r.workers {
+		latest, err := e.acquireHead(ctx)
+		var head checkpoint.Checkpoint
+		if err == nil {
+			head, err = e.blockCheckpoint(latest)
+		}
+		if err == nil {
+			err = e.checkReorg(ctx, head.BlockNumber)
+		}
+		if err != nil {
+			if rpc.IsTransient(err) {
+				unavailable = err
+				continue
+			}
+			return false, err
+		}
+		chains = append(chains, orderedChain{engine: e, latest: latest, head: head.BlockNumber})
+	}
+	db := r.workers[0].Store
+	replay, err := db.PendingMultichainReplay(ctx)
+	if err != nil {
+		return false, err
+	}
+	if replay != "" && unavailable != nil {
+		// Survivors are part of the replacement batch. An offline peer must
+		// not silently move its callbacks behind the new fork on restart.
+		return false, unavailable
+	}
+	if err := processAvailable(ctx, chains, checkpoint.MaxString); err != nil {
+		return false, err
+	}
+	if replay != "" {
+		if err := db.FinishMultichainReplay(ctx, replay); err != nil {
+			if errors.Is(err, store.ErrIndexedBlockChanged) {
+				return false, errIndexingFork
+			}
+			return false, err
+		}
+	}
+	done := unavailable == nil
+	for _, c := range chains {
+		through := c.head
+		if c.engine.endBlock != nil {
+			through = min(through, *c.engine.endBlock)
+		}
+		finished, err := c.engine.finalizeIndexed(ctx, c.latest, through)
+		if err != nil {
+			return false, err
+		}
+		done = done && finished
+	}
+	return done, unavailable
+}
+
+func processAvailable(ctx context.Context, chains []orderedChain, watermark string) error {
+	for i := range chains {
+		c := &chains[i]
+		start, err := c.engine.firstSourceBlock()
+		if err != nil {
+			return err
+		}
+		through := c.head
+		if c.engine.endBlock != nil {
+			through = min(through, *c.engine.endBlock)
+		}
+		if start <= through {
+			c.start = start
+			c.gaps, err = c.engine.Store.Missing(ctx, c.engine.chain.ID, c.engine.filter, interval.Interval{int64(start), int64(through)})
+			if err != nil {
+				return err
+			}
+			if err = c.advance(ctx); err != nil {
+				return err
+			}
+		}
+	}
+	for {
+		var picked *orderedChain
+		for i := range chains {
+			c := &chains[i]
+			if c.key != "" && c.key <= watermark && (picked == nil || c.key < picked.key) {
+				picked = c
+			}
+		}
+		if picked == nil {
+			break
+		}
+		if err := picked.engine.process(ctx, picked.next); err != nil {
+			return err
+		}
+		if err := picked.advance(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // finalAnchor selects a completed block within the global prefix. Chain ID

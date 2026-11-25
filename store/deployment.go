@@ -103,7 +103,7 @@ func readDeployment(ctx context.Context, backend Backend, tx Transaction, ns str
 	if err = json.Unmarshal([]byte(values["deployment"]), &d); err != nil {
 		return nil, fmt.Errorf("schema %q has no current deployment manifest", ns)
 	}
-	want := fmt.Sprintf("%s:%x:%s:staged=%t", storageVersion, sha256.Sum256(d.Model), d.Ordering, d.Staged)
+	want := fmt.Sprintf("json-%s:%x:%s:staged=%t", journalVersion(d.Ordering, d.Staged), sha256.Sum256(d.Model), d.Ordering, d.Staged)
 	if values["fingerprint"] != want {
 		return nil, fmt.Errorf("deployment fingerprint differs for %s", ns)
 	}

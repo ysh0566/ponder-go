@@ -126,7 +126,7 @@ func NewWithOptions(c config.Config, s *store.Store, handlers map[string]Handler
 		return nil, fmt.Errorf("runtime and store ordering differ")
 	}
 	if len(c.Chains) != 1 {
-		return nil, fmt.Errorf("single-chain engine requires one chain; use NewIndexer for isolated or omnichain workers, or historical.RuntimeRunner for default multichain")
+		return nil, fmt.Errorf("single-chain engine requires one chain; use NewIndexer to coordinate multiple chains")
 	}
 	engine := &Engine{Config: c, Store: s, Handlers: handlers, chain: c.Chains[0], abis: map[string]abi.ABI{}, factories: map[string]factory.LogFactory{}, options: options}
 	for _, contract := range c.Contracts {
@@ -698,7 +698,7 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 	}
 	// Every completed block gets durable progress even if it has no matching events.
 	block := store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}
-	if err = e.Store.Apply(ctx, store.Event{ID: block.CompletionID(), Checkpoint: checkpoint.Block(timestamp, e.chain.ID, number, true)}, func(*store.Writer) error { return nil }); err != nil {
+	if err = e.Store.RecordBlockCompletion(ctx, block); err != nil {
 		return err
 	}
 	return e.Store.CompleteBlock(ctx, block, e.filter)

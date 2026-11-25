@@ -57,7 +57,12 @@ type WriteMode int
 
 // Storage changes use a fresh default shadow. Explicit older namespaces are
 // rejected by the fingerprint instead of silently rewriting an undo journal.
-const storageVersion = "json-v3"
+func journalVersion(ordering schema.Ordering, staged bool) string {
+	if ordering == schema.Multichain && !staged {
+		return "v4"
+	}
+	return "v3"
+}
 
 const (
 	Insert WriteMode = iota
@@ -83,7 +88,7 @@ func describeStore(backend Backend, model schema.Schema, namespace string, order
 		if staged {
 			prefix = "actions"
 		}
-		namespace = fmt.Sprintf("ponder_go_%s_v3_%x", prefix, hash[:6])
+		namespace = fmt.Sprintf("ponder_go_%s_%s_%x", prefix, journalVersion(ordering, staged), hash[:6])
 	}
 	if err := schema.ValidateNamespaces(namespace, ""); err != nil {
 		return nil, err
@@ -147,7 +152,7 @@ func (s *Store) storageFingerprint() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%s:%x:%s:staged=%t", storageVersion, sha256.Sum256(encoded), s.Ordering, s.staged), nil
+	return fmt.Sprintf("json-%s:%x:%s:staged=%t", journalVersion(s.Ordering, s.staged), sha256.Sum256(encoded), s.Ordering, s.staged), nil
 }
 
 func (s *Store) verifyStorageMarkers(ctx context.Context, tx Transaction, fingerprint string) error {
@@ -213,6 +218,9 @@ func (s *Store) initializeInternal(ctx context.Context, tx Transaction) error {
 		"CREATE TABLE IF NOT EXISTS " + s.syncTable("intervals") + " (chain_id numeric NOT NULL,filter text NOT NULL,start_block numeric NOT NULL,end_block numeric NOT NULL,PRIMARY KEY(chain_id,filter,start_block,end_block))",
 		"CREATE TABLE IF NOT EXISTS " + s.syncTable("rpc_cache") + " (key text PRIMARY KEY,value jsonb NOT NULL)",
 		"CREATE TABLE IF NOT EXISTS " + s.syncTable("factory_addresses") + " (factory_id text NOT NULL,chain_id numeric NOT NULL,address text NOT NULL,block_number numeric NOT NULL,block_hash text NOT NULL,log_index numeric NOT NULL,PRIMARY KEY(factory_id,chain_id,block_number,log_index,address))",
+	}
+	if !s.staged && s.Ordering == schema.Multichain {
+		statements = append(statements, "CREATE INDEX IF NOT EXISTS _ponder_go_events_chain_checkpoint ON "+s.internal("_ponder_go_events")+" (chain_id, checkpoint, operation_boundary)")
 	}
 	for _, sql := range statements {
 		if e = tx.Exec(ctx, sql); e != nil {
@@ -310,6 +318,20 @@ func (s *Store) lock(ctx context.Context, tx Transaction) error {
 	return nil
 }
 func (s *Store) Apply(ctx context.Context, event Event, handler func(*Writer) error) error {
+	if handler == nil {
+		return fmt.Errorf("event handler is required")
+	}
+	return s.apply(ctx, event, handler)
+}
+
+// RecordBlockCompletion records progress even when no callback matched. A fork
+// through an empty block does not invalidate callbacks on another chain.
+func (s *Store) RecordBlockCompletion(ctx context.Context, b SyncBlock) error {
+	event := Event{ID: b.CompletionID(), Checkpoint: checkpoint.Block(b.Timestamp, b.ChainID, b.Number, true)}
+	return s.apply(ctx, event, nil)
+}
+
+func (s *Store) apply(ctx context.Context, event Event, handler func(*Writer) error) error {
 	if s.managedLive != nil {
 		return s.managedLive.rejectLegacy(ctx)
 	}
@@ -363,13 +385,23 @@ func (s *Store) Apply(ctx context.Context, event Event, handler func(*Writer) er
 	if len(progress.Rows) > 0 && encoded < fmt.Sprint(progress.Rows[0]["checkpoint"]) {
 		return fmt.Errorf("event checkpoint regressed; rollback first")
 	}
-	boundary, e := tx.Query(ctx, "SELECT COALESCE(MAX(operation_id),0)::text AS id FROM "+s.internal("_ponder_go_journal"))
+	position := "SELECT COALESCE(MAX(operation_id),0)::text AS id FROM " + s.internal("_ponder_go_journal")
+	var positionArgs []any
+	if s.Ordering == schema.Multichain {
+		// The journal and receipts share one sequence under the namespace lock.
+		// A callback owns an interval even when it produces no business writes.
+		position = "SELECT nextval(pg_get_serial_sequence($1,'operation_id'))::text AS id"
+		positionArgs = []any{s.internal("_ponder_go_journal")}
+	}
+	boundary, e := tx.Query(ctx, position, positionArgs...)
 	if e != nil {
 		return e
 	}
 	w := &Writer{s: s, tx: tx, event: event, encoded: encoded, changed: map[string]bool{}}
 	defer w.closed.Store(true)
-	e = handler(w)
+	if handler != nil {
+		e = handler(w)
+	}
 	w.closed.Store(true)
 	if e != nil {
 		return e
@@ -382,9 +414,12 @@ func (s *Store) Apply(ctx context.Context, event Event, handler func(*Writer) er
 	if w.err != nil {
 		return w.err
 	}
-	end, e := tx.Query(ctx, "SELECT COALESCE(MAX(operation_id),0)::text AS id FROM "+s.internal("_ponder_go_journal"))
-	if e != nil {
-		return e
+	end := boundary
+	if handler != nil {
+		end, e = tx.Query(ctx, position, positionArgs...)
+		if e != nil {
+			return e
+		}
 	}
 	mutations, e := tx.Query(ctx, "SELECT DISTINCT table_name FROM "+s.internal("_ponder_go_journal")+" WHERE operation_id>$1", boundary.Rows[0]["id"])
 	if e != nil {

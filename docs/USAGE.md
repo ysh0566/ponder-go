@@ -346,7 +346,25 @@ return app.Wait()
 
 一条链的 RPC 临时不可用时，其他链继续追块，`/ready` 等待所有参与索引的链完成追赶。某条链所有来源均指定 `EndBlock` 时，该链处理到最后一个结束区块，等它达到配置的最终性后停止轮询。所有链结束后 HTTP 查询继续可用。
 
-默认协调多链可使用 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 创建运行器，再传给 `runtime.LaunchApplication`。已有的托管全局排序历史任务也可继续使用这两个入口。[运行模式矩阵](RUNTIME_SUPPORT.md)
+## 使用默认多链排序
+
+要让多条链的 Go 回调更新同一张业务表，并允许较快的链先提交，在 `cfg.Chains` 中配置各链，在每个来源的 `Chain` 字段指定链名。下面沿用前例的 `cfg`、`handlers` 和存储后端。
+
+```go
+db, err := store.New(ctx, backend, model, namespace, schema.Multichain)
+if err != nil {
+    return err
+}
+cfg.Ordering = schema.Multichain // 新建配置也可省略 Ordering
+worker, err := runtime.NewIndexer(cfg, db, handlers)
+if err != nil {
+    return err
+}
+```
+
+将 `worker` 传给 `runtime.LaunchApplication`。同一轮可用的区块按 checkpoint 处理，单条链可以先于其他链提交。若链 A 重组，运行器从 A 上第一个失效回调起撤销其后的写入，并重放其他链受影响的回调。即使失效回调没有写行也会触发重放。单纯替换空块会保留其他链已提交的回调结果。检测到跨链回滚且有 RPC 离线时，运行器保留恢复标记，等各链可读取后再重放。这个标记可跨进程重启保留。[重组与恢复测试](../runtime/default_indexer_test.go)
+
+默认排序的原子存储当前使用 `json-v4` 回执格式，包括只配置一条链的应用。如果显式指定的部署命名空间使用旧格式，换一个新的命名空间重新索引。使用独立业务库和同步库的部署可通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 创建托管运行器，其支持的来源与启动选项见运行矩阵。[运行模式矩阵](RUNTIME_SUPPORT.md)
 
 ## 按全局顺序索引多条链
 

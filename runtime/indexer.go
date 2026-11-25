@@ -10,7 +10,7 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 )
 
-// NewIndexer constructs the single-chain, isolated, or globally ordered worker
+// NewIndexer constructs the single-chain or multichain worker
 // passed to LaunchApplication.
 func NewIndexer(cfg config.Config, db *store.Store, handlers map[string]Handler) (ApplicationIndexer, error) {
 	return NewIndexerWithOptions(cfg, db, handlers, Options{})
@@ -31,8 +31,11 @@ func NewIndexerWithOptions(cfg config.Config, db *store.Store, handlers map[stri
 		}
 		return engine, nil
 	}
-	if cfg.Ordering != db.Ordering || (cfg.Ordering != schema.Isolated && cfg.Ordering != schema.Omnichain) {
-		return nil, fmt.Errorf("multiple native chain workers require matching isolated or omnichain ordering; for default multichain use historical.RuntimeRunner")
+	if cfg.Ordering == "" {
+		cfg.Ordering = schema.Multichain
+	}
+	if cfg.Ordering != db.Ordering {
+		return nil, fmt.Errorf("runtime and store ordering differ")
 	}
 	if cfg.SourcePlan != nil {
 		return nil, fmt.Errorf("a compiled source plan belongs to one chain")
@@ -68,7 +71,7 @@ func NewIndexerWithOptions(cfg config.Config, db *store.Store, handlers map[stri
 	if len(workers) == 0 {
 		return nil, fmt.Errorf("no indexing sources configured")
 	}
-	if cfg.Ordering == schema.Omnichain {
+	if cfg.Ordering != schema.Isolated {
 		return &orderedIndexer{workers: workers}, nil
 	}
 	return workers, nil
