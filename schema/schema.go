@@ -95,16 +95,18 @@ type Enum struct {
 	Values     []string `json:"values"`
 }
 type ViewField struct {
+	Property   string  `json:"property,omitempty"`
 	Name       string  `json:"name"`
 	Column     *Column `json:"column,omitempty"`
 	Expression string  `json:"expression,omitempty"`
 	Aliased    bool    `json:"aliased,omitempty"`
 }
 type View struct {
-	Name     string      `json:"name"`
-	Fields   []ViewField `json:"fields"`
-	Query    string      `json:"query"`
-	Existing bool        `json:"existing,omitempty"`
+	ExportName string      `json:"exportName,omitempty"`
+	Name       string      `json:"name"`
+	Fields     []ViewField `json:"fields"`
+	Query      string      `json:"query"`
+	Existing   bool        `json:"existing,omitempty"`
 }
 
 var identifier = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z_0-9]*$`)

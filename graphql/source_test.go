@@ -20,6 +20,7 @@ import (
 )
 
 type sourceCase struct {
+	Relations   []Relation
 	Schema      schema.Schema
 	Rows        map[string]json.RawMessage
 	Checkpoints []struct {
@@ -32,6 +33,7 @@ type sourceCase struct {
 	Requests []struct {
 		Method, Path, Query string
 		FilterFields        map[string]string
+		SelectCalls         map[string]int
 		Errors              []string
 		Data                any
 		Status              int
@@ -73,6 +75,28 @@ func sourceServer(t *testing.T, db store.Backend, c sourceCase, opts Options) *S
 		relation := q + schema.Quote(table.Name)
 		exec("INSERT INTO "+relation+" SELECT * FROM json_populate_recordset(NULL::"+relation+",$1::json)", string(c.Rows[table.Name]))
 	}
+	if len(c.Schema.Views) > 0 {
+		tx, err := db.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(context.Background())
+		if err := tx.Exec(ctx, "SET LOCAL search_path TO "+schema.Quote(published)+",pg_catalog"); err != nil {
+			t.Fatal(err)
+		}
+		for _, v := range c.Schema.Views {
+			cols := make([]string, len(v.Fields))
+			for i, f := range v.Fields {
+				cols[i] = schema.Quote(f.Name)
+			}
+			if err := tx.Exec(ctx, "CREATE VIEW "+q+schema.Quote(v.Name)+" ("+strings.Join(cols, ",")+") AS "+v.Query); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if err := tx.Commit(ctx); err != nil {
+			t.Fatal(err)
+		}
+	}
 	exec("CREATE TABLE " + q + "_ponder_checkpoint (chain_name text,chain_id bigint, latest_checkpoint text,finalized_checkpoint text,safe_checkpoint text)")
 	for _, cp := range c.Checkpoints {
 		exec("INSERT INTO "+q+"_ponder_checkpoint VALUES ($1,$2,$3,$4,$5)", cp.Name, cp.ID, cp.Latest, cp.Finalized, cp.Safe)
@@ -85,6 +109,7 @@ func sourceServer(t *testing.T, db store.Backend, c sourceCase, opts Options) *S
 		}
 	})
 	opts.Namespace = published
+	opts.Relations = c.Relations
 	s, err := New(st, opts)
 	if err != nil {
 		t.Fatal(err)
@@ -98,6 +123,10 @@ func TestSourceGraphQL(t *testing.T) {
 
 func TestSourceGraphQLTablePages(t *testing.T) {
 	runSourceGraphQL(t, "table-pages.json")
+}
+
+func TestSourceGraphQLRelations(t *testing.T) {
+	runSourceGraphQL(t, "relations-views.json")
 }
 
 func runSourceGraphQL(t *testing.T, fixture string) {
@@ -147,7 +176,21 @@ func runSourceGraphQL(t *testing.T, fixture string) {
 							continue
 						}
 						if req.Method == "" {
+							var counter *selectCounter
+							if req.SelectCalls != nil {
+								counter = &selectCounter{Backend: db, namespace: s.namespace, counts: map[string]int{}}
+								for name := range req.SelectCalls {
+									counter.counts[name] = 0
+								}
+								s.database.Backend = counter
+							}
 							result := s.Execute(t.Context(), Request{Query: req.Query})
+							if counter != nil {
+								s.database.Backend = db
+								if !reflect.DeepEqual(counter.counts, req.SelectCalls) {
+									t.Fatalf("SELECT counts: got %v, want %v", counter.counts, req.SelectCalls)
+								}
+							}
 							var errors []string
 							for _, e := range result.Errors {
 								errors = append(errors, e.Message)

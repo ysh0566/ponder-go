@@ -12,16 +12,29 @@ import (
 	"ponder.local/ponder-go/schema"
 )
 
-func newPageInfo() *gql.Object {
-	return gql.NewObject(gql.ObjectConfig{Name: "PageInfo", Fields: gql.Fields{
-		"hasNextPage":     &gql.Field{Type: gql.NewNonNull(gql.Boolean)},
-		"hasPreviousPage": &gql.Field{Type: gql.NewNonNull(gql.Boolean)},
-		"startCursor":     &gql.Field{Type: gql.String},
-		"endCursor":       &gql.Field{Type: gql.String},
-	}})
+type collection struct {
+	table   schema.Table
+	object  *gql.Object
+	field   *gql.Field
+	filters map[string]condition
+	view    bool
 }
 
-func (s *Server) tablePage(table schema.Table, entity gql.Output, info *gql.Object, enums map[string]*gql.Enum) (*gql.Field, error) {
+func newPageInfo(view bool) *gql.Object {
+	fields := gql.Fields{
+		"hasNextPage":     &gql.Field{Type: gql.NewNonNull(gql.Boolean)},
+		"hasPreviousPage": &gql.Field{Type: gql.NewNonNull(gql.Boolean)},
+	}
+	name := "ViewPageInfo"
+	if !view {
+		name = "PageInfo"
+		fields["startCursor"] = &gql.Field{Type: gql.String}
+		fields["endCursor"] = &gql.Field{Type: gql.String}
+	}
+	return gql.NewObject(gql.ObjectConfig{Name: name, Fields: fields})
+}
+
+func (s *Server) tablePage(table schema.Table, entity *gql.Object, info *gql.Object, enums map[string]*gql.Enum, view bool) (*collection, error) {
 	filter, ops, err := tableFilter(entity.Name(), table.Columns, enums)
 	if err != nil {
 		return nil, err
@@ -32,15 +45,19 @@ func (s *Server) tablePage(table schema.Table, entity gql.Output, info *gql.Obje
 		"totalCount": &gql.Field{Type: gql.NewNonNull(gql.Int)},
 	}})
 	args := gql.FieldConfigArgument{"where": &gql.ArgumentConfig{Type: filter}}
-	for _, key := range []string{"orderBy", "orderDirection", "after", "before"} {
+	for _, key := range []string{"orderBy", "orderDirection"} {
 		args[key] = &gql.ArgumentConfig{Type: gql.String}
+	}
+	if !view {
+		args["before"] = &gql.ArgumentConfig{Type: gql.String}
+		args["after"] = &gql.ArgumentConfig{Type: gql.String}
 	}
 	for _, key := range []string{"limit", "offset"} {
 		args[key] = &gql.ArgumentConfig{Type: gql.Int}
 	}
-	return &gql.Field{Type: gql.NewNonNull(page), Args: args, Resolve: func(p gql.ResolveParams) (any, error) {
-		return s.readPage(p, table, ops)
-	}}, nil
+	c := &collection{table: table, object: entity, filters: ops, view: view}
+	c.field = &gql.Field{Type: gql.NewNonNull(page), Args: args, Resolve: func(p gql.ResolveParams) (any, error) { return s.readPage(p, c, nil) }}
+	return c, nil
 }
 
 func wantsCount(info gql.ResolveInfo) bool {
@@ -80,7 +97,8 @@ func wantsCount(info gql.ResolveInfo) bool {
 	return false
 }
 
-func (s *Server) readPage(p gql.ResolveParams, table schema.Table, fields map[string]condition) (any, error) {
+func (s *Server) readPage(p gql.ResolveParams, c *collection, matches []columnMatch) (any, error) {
+	table := c.table
 	limit, ok := p.Args["limit"].(int)
 	if !ok {
 		limit = 50
@@ -116,9 +134,16 @@ func (s *Server) readPage(p gql.ResolveParams, table schema.Table, fields map[st
 	}
 	params := queryParams{model: s.database.Schema}
 	where, _ := p.Args["where"].(map[string]any)
-	predicates, err := params.where(where, fields)
+	predicates, err := params.where(where, c.filters)
 	if err != nil {
 		return nil, err
+	}
+	for _, match := range matches {
+		v, err := params.value(match.column, match.value)
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, schema.Quote(match.column.Name)+" = "+v)
 	}
 	base := "SELECT * FROM " + schema.Quote(s.namespace) + "." + schema.Quote(table.Name)
 	if len(predicates) > 0 {
@@ -141,7 +166,10 @@ func (s *Server) readPage(p gql.ResolveParams, table schema.Table, fields map[st
 			orderTerms[i] += " DESC"
 		}
 	}
-	rowsQuery += " ORDER BY " + strings.Join(orderTerms, ",") + " LIMIT " + strconv.Itoa(take) + " OFFSET " + strconv.Itoa(offset)
+	if len(orderTerms) > 0 {
+		rowsQuery += " ORDER BY " + strings.Join(orderTerms, ",")
+	}
+	rowsQuery += " LIMIT " + strconv.Itoa(take) + " OFFSET " + strconv.Itoa(offset)
 	// The count, when selected, and the items share one PostgreSQL snapshot.
 	stmt := "WITH filtered AS NOT MATERIALIZED (" + base + ") SELECT array_to_json(ARRAY(" + rowsQuery + "))::text AS items"
 	countRequested := wantsCount(p.Info)
@@ -183,7 +211,7 @@ func (s *Server) readPage(p gql.ResolveParams, table schema.Table, fields map[st
 		hasNext, hasPrevious = hasPrevious, hasNext
 	}
 	pageInfo := map[string]any{"hasNextPage": hasNext, "hasPreviousPage": hasPrevious}
-	if len(records) > 0 && offset == 0 {
+	if !c.view && len(records) > 0 && offset == 0 {
 		for key, idx := range map[string]int{"startCursor": 0, "endCursor": len(records) - 1} {
 			pageInfo[key], err = encodeCursor(order, records[idx])
 			if err != nil {
@@ -191,14 +219,7 @@ func (s *Server) readPage(p gql.ResolveParams, table schema.Table, fields map[st
 			}
 		}
 	}
-	items := make([]map[string]any, len(records))
-	for i, record := range records {
-		items[i], err = projectRow(table.Columns, record)
-		if err != nil {
-			return nil, err
-		}
-	}
-	page := map[string]any{"items": items, "pageInfo": pageInfo}
+	page := map[string]any{"items": records, "pageInfo": pageInfo}
 	if countRequested {
 		count, err := strconv.ParseInt(fmt.Sprint(row["total"]), 10, 64)
 		if err != nil {
