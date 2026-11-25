@@ -111,8 +111,16 @@
     ],
     "race_runs": [
       "final-store-race",
-      "runtime-race"
+      "short-and-application-exit-race",
+      "sparse-postgres-race",
+      "sparse-pglite-race"
     ],
+    "race_job_timeouts": {
+      "final-store-race": "60m",
+      "short-and-application-exit-race": "60m",
+      "sparse-postgres-race": "120m",
+      "sparse-pglite-race": "120m"
+    },
     "jobs": {
       "final-store-normal": {
         "package": "ponder.local/ponder-go/store",
@@ -185,11 +193,52 @@
         "leaves": 26,
         "elapsed_seconds": 1608.803,
         "jsonl_sha256": "9226e3a5d90798995d5886b0fe1389a1afc11a01d123990e748600132f37c911"
+      },
+      "short-and-application-exit-race": {
+        "package": "ponder.local/ponder-go/historical",
+        "top_level": [
+          "TestRuntimeOmnichainLogOnlyApplicationExit",
+          "TestRuntimeOmnichainLogOnlySource",
+          "TestRuntimeOmnichainSparseApplicationExit"
+        ],
+        "subtests": 30,
+        "leaves": 28,
+        "elapsed_seconds": 2507.34,
+        "jsonl_sha256": "591acda480c147827d930c8c0f2d19444898d778ad2542e131de288f33f85778",
+        "evidence_scope": "Completed top-level test events from the combined race run, ending immediately after the last named top-level pass"
+      },
+      "sparse-postgres-race": {
+        "package": "ponder.local/ponder-go/historical",
+        "top_level": [
+          "TestRuntimeOmnichainSparseRanges"
+        ],
+        "subtests": 8,
+        "leaves": 8,
+        "elapsed_seconds": 1442.075,
+        "jsonl_sha256": "bb1addae68fd8bedab80fead66f55d8312db5e07e710425e7cb50188cd7d76db"
+      },
+      "sparse-pglite-race": {
+        "package": "ponder.local/ponder-go/historical",
+        "top_level": [
+          "TestRuntimeOmnichainSparseRanges"
+        ],
+        "subtests": 8,
+        "leaves": 8,
+        "elapsed_seconds": 1811.252,
+        "jsonl_sha256": "cd683f651caaa1f050b6b87c2d775aaa7b9912bf98027a6d19b8ff2fb183d6e2"
       }
     },
-    "pending_jobs": [
-      "runtime-race"
-    ]
+    "pending_jobs": [],
+    "superseded_combined_job": {
+      "reason": "Three top-level race tests finished; the remaining 16 sparse cases are already running in dedicated PostgreSQL and PGlite test processes. Releasing the duplicate process preserves CPU and scratch storage.",
+      "exit_code": 2,
+      "credited_top_level": [
+        "TestRuntimeOmnichainLogOnlyApplicationExit",
+        "TestRuntimeOmnichainLogOnlySource",
+        "TestRuntimeOmnichainSparseApplicationExit"
+      ],
+      "full_package_pass": false
+    }
   },
   "checks": {
     "module_build": "go build -p 2 ./...",
@@ -219,6 +268,15 @@
     "node": "24.19.0",
     "postgres": "14.24",
     "pglite": "0.2.13",
-    "foundry": "1.8.5"
+    "foundry": "1.8.5",
+    "foundry_linux_amd64_archive_sha256": "6c66ffcc55fa4249197721baa3098bc208014ea1d8aa04b2ed50ac6bccffb226"
+  },
+  "workspace_cleanup": {
+    "superseded_or_completed_build_and_fixture_paths": 14,
+    "allocated_bytes_before_removal": 3159019520,
+    "restored_archive_inputs": {
+      "restored_files_removed": 52,
+      "bytes_removed": 12341038
+    }
   }
 }
