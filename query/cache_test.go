@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"runtime"
 	"sync/atomic"
@@ -35,7 +36,7 @@ func TestSQLCacheCancellation(t *testing.T) {
 	deadline := time.Now().Add(3 * time.Second)
 	for {
 		cache.mu.Lock()
-		joined := cache.entries["same"].pending.waiters == 2
+		joined := cache.entries[sha256.Sum256([]byte("same"))].pending.waiters == 2
 		cache.mu.Unlock()
 		if joined {
 			break
@@ -71,6 +72,9 @@ func TestSQLCacheRetriedAfterLastReaderLeaves(t *testing.T) {
 		caller <- err
 	}()
 	<-started
+	cache.mu.Lock()
+	old := cache.entries[sha256.Sum256([]byte("query"))].pending
+	cache.mu.Unlock()
 	cancel()
 	<-aborted
 	if err := <-caller; !errors.Is(err, context.Canceled) {
@@ -84,6 +88,7 @@ func TestSQLCacheRetriedAfterLastReaderLeaves(t *testing.T) {
 		t.Fatal(err)
 	}
 	close(release)
+	<-old.done
 	result, err := cache.read(t.Context(), "query", 0, true, func(context.Context) (store.Result, error) { return store.Result{}, errors.New("replacement evicted") })
 	if err != nil || result != replacement {
 		t.Fatal(result, err)

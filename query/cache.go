@@ -3,6 +3,7 @@ package query
 import (
 	"container/list"
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"sync"
 	"weak"
@@ -27,7 +28,7 @@ type queryFlight struct {
 
 type resultCache struct {
 	mu      sync.Mutex
-	entries map[string]*queryEntry
+	entries map[[sha256.Size]byte]*queryEntry
 	order   list.List
 }
 
@@ -35,7 +36,7 @@ type resultCache struct {
 // completed keys as well, including when new queries arrive faster than GC.
 const maxCompletedQueries = 512
 
-func (c *resultCache) remove(key string, e *queryEntry) {
+func (c *resultCache) remove(key [sha256.Size]byte, e *queryEntry) {
 	delete(c.entries, key)
 	if e.order != nil {
 		c.order.Remove(e.order)
@@ -43,13 +44,14 @@ func (c *resultCache) remove(key string, e *queryEntry) {
 	}
 }
 
-func (c *resultCache) read(ctx context.Context, key string, version uint64, retain bool, load func(context.Context) (store.Result, error)) (*store.Result, error) {
+func (c *resultCache) read(ctx context.Context, queryString string, version uint64, retain bool, load func(context.Context) (store.Result, error)) (*store.Result, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
+	key := sha256.Sum256([]byte(queryString))
 	c.mu.Lock()
 	if c.entries == nil {
-		c.entries = make(map[string]*queryEntry)
+		c.entries = make(map[[sha256.Size]byte]*queryEntry)
 	}
 	e := c.entries[key]
 	if e != nil && e.version == version {
@@ -90,7 +92,7 @@ func (c *resultCache) read(ctx context.Context, key string, version uint64, reta
 				e.result = weak.Make(&result)
 				e.order = c.order.PushBack(key)
 				if c.order.Len() > maxCompletedQueries {
-					old := c.order.Front().Value.(string)
+					old := c.order.Front().Value.([sha256.Size]byte)
 					c.remove(old, c.entries[old])
 				}
 			} else {
@@ -102,7 +104,7 @@ func (c *resultCache) read(ctx context.Context, key string, version uint64, reta
 	return c.wait(ctx, key, e, f)
 }
 
-func (c *resultCache) wait(ctx context.Context, key string, e *queryEntry, f *queryFlight) (*store.Result, error) {
+func (c *resultCache) wait(ctx context.Context, key [sha256.Size]byte, e *queryEntry, f *queryFlight) (*store.Result, error) {
 	select {
 	case <-f.done:
 		return f.result, f.err
