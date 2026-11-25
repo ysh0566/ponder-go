@@ -2,7 +2,7 @@
 
 Ponder-Go 把 Ethereum 链上事件交给 Go 处理函数，将索引结果写入数据库，并通过 HTTP 提供查询。它移植自 Ponder 0.18.2，固定上游提交为 `17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334`。[上游源码](https://github.com/ponder-sh/ponder/tree/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334)
 
-**可以用 Go 编写、运行和查询单链索引器。** 第一次使用可以从本地 ERC-20 示例开始。它会从 Anvil 读取一条 `Transfer` 日志，在 PostgreSQL 中记录两个地址的余额变动，并让你通过 SQL 核对结果。[本地使用指南](docs/USAGE.md)
+**可以用 Go 编写单链索引器，也可以让多条链独立索引。** 第一次使用可以从本地 ERC-20 示例开始。它会从 Anvil 读取一条 `Transfer` 日志，在 PostgreSQL 中记录两个地址的余额变动，并让你通过 SQL 核对结果。[本地使用指南](docs/USAGE.md) · [独立多链示例](docs/USAGE.md#从同一个-go-项目索引多条链)
 
 ## 快速开始
 
@@ -29,15 +29,17 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 
 | 使用场景 | 当前边界 |
 | --- | --- |
-| 多条链按全局顺序处理事件 | `omnichain` 支持各链都已最终确认的有限历史区间。仍缺持续追块、跨链重组重放、factory 动态地址、账户交易与转账、合约调用 trace，以及混合区块回调与纯日志链。 |
-| 管理部署 | CLI 缺 `db prune` 清理废弃部署和 `db create-views` 发布查询视图。 |
-| 故障恢复与验收 | 单链索引器已验证临时 RPC 中断后的追块及 WebSocket 重订阅。还需验证 PostgreSQL 服务或 PGlite 进程异常终止后的恢复。主机掉电仍缺实测。17 条服务商 RPC 断言的结果见下文。 |
+| 在同一 Go 应用中协调多条链 | `runtime.NewIndexer` 可运行单链和独立多链。默认协调多链和全局排序要改用 `historical.RuntimeRunner`。全局排序只支持已最终确认的有限历史区间，缺持续追块、跨链重组重放、动态 factory、账户交易与转账、合约调用 trace，以及混合区块回调链和纯日志链。 |
+| 在回调中查询链上状态 | `indexing.Client` 提供七个上游高层方法。其余十四个还缺对应的 Go 方法，包括合约模拟、gas 估算及交易确认数查询。可用 `Request` 发原始 RPC；批量读合约需显式指定 Multicall3 地址。[方法清单](docs/RUNTIME_SUPPORT.md#callback-rpc-methods) |
+| 选择列类型和查询接口 | Go 模型可在两个数据库上读写 `point`、`line`。含这两类列的表目前会让 `graphql.New` 返回错误。原生 schema 也缺 `inet`、`interval` 等 PostgreSQL 列类型。[模型验证](parity/runs/native-go-models/RESULT.md) |
+| 管理部署和日志 | 主分支 CLI 缺 `db prune` 清理停用的部署和 `db create-views` 发布查询视图。热重载已可用，CLI 尚缺统一的日志级别、JSON 日志格式和开发终端 UI。 |
+| 生产故障验收 | PostgreSQL 服务、PGlite 引擎异常终止和主机掉电后的恢复仍待实测。还需补充多链来源组合、数据库角色与权限的验证。17 条外部 RPC 断言的结果见下文。 |
 
 这些条目按使用 Go 编写索引器的目标维护。数据库范围为当前格式。[各运行模式的具体限制](docs/RUNTIME_SUPPORT.md)
 
 ## 当前验证与计数
 
-固定上游共有 **905 条测试记录**。Go 项目范围内的 **888 条**均已执行，**871 条通过**（866 条 Go、5 条 SDK），**17 条服务商 RPC 用例失败**。这些用例依赖特定网关的响应或真实链的历史日志，自建节点的实测结果已逐项记录。其余为上游跳过 10 条、TODO 2 条，以及已退出 Go 支持范围的旧缓存迁移 5 条。[逐例台账](parity/test-ledger.json) · [RPC 实测结果](parity/runs/provider-policy-assertions/RESULT.md)
+固定上游共有 **905 条测试记录**。其中 **883 条已移植为 Go 用例并执行，866 条通过，17 条服务商 RPC 用例失败**。另有 5 条保留的 SDK 用例通过。17 条失败用例依赖特定网关的响应或真实链的历史日志，自建节点的实测结果已逐项记录。其余为上游跳过 10 条、TODO 2 条，以及已退出 Go 支持范围的旧缓存迁移 5 条。[逐例台账](parity/test-ledger.json) · [RPC 实测结果](parity/runs/provider-policy-assertions/RESULT.md)
 
 全模块 Go 普通和竞态回归各覆盖 30 个包，各通过 4,877 个叶子用例。两种离线运行各跳过了上述 17 条在线用例，它们另行执行后仍失败。上游原版全量复验为 876 通过、17 失败、10 跳过、2 TODO。[Go 全模块回归](parity/runs/complete-module-regression/RESULT.md) · [固定上游复验](parity/runs/current-release-verification/RESULT.md)
 

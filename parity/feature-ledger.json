@@ -1,7 +1,7 @@
 {
   "format_version": 1,
   "baseline": "17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334",
-  "policy": "verified_subset never means full upstream functionality or complete exact test coverage. Source manifests and test ledger are authoritative for remaining work.",
+  "policy": "Feature entries record milestone-specific evidence. Use parity/test-ledger.json for current upstream case counts and docs/RUNTIME_SUPPORT.md for current Go product limits.",
   "features": [
     {
       "id": "baseline",
@@ -19,7 +19,7 @@
         "parity/public-manifest.json",
         "parity/discovery-audit.json"
       ],
-      "remaining": "Full runtime collection still pending; static finite records are not proof of dynamic exhaustiveness."
+      "remaining": "The pinned inventory contains 905 records with zero unresolved expansions. Full upstream execution and backend reconciliation are recorded in parity/runs/current-release-verification/RESULT.md."
     },
     {
       "id": "test-parity",
@@ -34,9 +34,11 @@
         "parity/runs/summary.json",
         "parity/runs/batch-40.json",
         "parity/runs/native-provider-archives/results.json",
-        "parity/runs/observed-gateway-policies/results.json"
+        "parity/runs/observed-gateway-policies/results.json",
+        "parity/runs/current-release-verification/RESULT.md",
+        "parity/runs/complete-module-regression/RESULT.md"
       ],
-      "remaining": "562/905 original records mapped. 338 remain unimplemented and five historical sync migration cases are out of scope. Seven runtime-passed cases still lack their native type obligations."
+      "remaining": "All 883 native Go mappings executed. 866 passed and 17 live provider assertions failed. Five retained SDK mappings passed. The other source records are 10 upstream skips, two upstream TODOs and five retired database migrations."
     },
     {
       "id": "differential-harness",
