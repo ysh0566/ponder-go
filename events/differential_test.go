@@ -3,8 +3,8 @@ package events
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"github.com/ysh0566/ponder-go/abi"
+	"os"
 	"testing"
 )
 

@@ -5,22 +5,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/schema"
 	"math/big"
 	"net/http/httptest"
 	"os/exec"
 	"path/filepath"
-	"github.com/ysh0566/ponder-go/checkpoint"
-	"github.com/ysh0566/ponder-go/rpc"
-	"github.com/ysh0566/ponder-go/schema"
 	"strings"
 	"testing"
 	"time"
 
-	"os"
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/indexing"
 	"github.com/ysh0566/ponder-go/store"
+	"os"
 )
 
 type factoryTraceGolden struct {

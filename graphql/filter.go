@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	gql "github.com/ysh0566/ponder-go/third_party/graphqlgo"
 	"github.com/ysh0566/ponder-go/schema"
+	gql "github.com/ysh0566/ponder-go/third_party/graphqlgo"
 )
 
 type condition struct {

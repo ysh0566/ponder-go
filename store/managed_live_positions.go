@@ -2,8 +2,8 @@ package store
 
 import (
 	"fmt"
-	"math"
 	"github.com/ysh0566/ponder-go/checkpoint"
+	"math"
 )
 
 const managedLiveSourceVersion = "managed-live-source-v9"

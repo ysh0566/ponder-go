@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ysh0566/ponder-go/schema"
 	gql "github.com/ysh0566/ponder-go/third_party/graphqlgo"
 	"github.com/ysh0566/ponder-go/third_party/graphqlgo/language/ast"
-	"github.com/ysh0566/ponder-go/schema"
 )
 
 type collection struct {

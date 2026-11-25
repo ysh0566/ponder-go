@@ -4,10 +4,10 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"github.com/ysh0566/ponder-go/abi"
 	"github.com/ysh0566/ponder-go/factory"
 	"github.com/ysh0566/ponder-go/schema"
+	"net/url"
 	"regexp"
 )
 

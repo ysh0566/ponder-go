@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ysh0566/ponder-go/schema"
 	"math/big"
 	"os"
-	"github.com/ysh0566/ponder-go/schema"
 	"testing"
 	"time"
 )

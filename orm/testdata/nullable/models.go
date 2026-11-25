@@ -4,9 +4,9 @@ package nullable
 import (
 	"encoding/json"
 	"fmt"
-	"math/big"
 	"github.com/ysh0566/ponder-go/orm"
 	"github.com/ysh0566/ponder-go/store"
+	"math/big"
 )
 
 type AccountRow struct {

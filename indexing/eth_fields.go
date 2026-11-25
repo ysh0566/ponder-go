@@ -1,8 +1,8 @@
 package indexing
 
 import (
-	"math/big"
 	"github.com/ysh0566/ponder-go/abi"
+	"math/big"
 )
 
 // EventBlock reads Ethereum block fields from the current callback.

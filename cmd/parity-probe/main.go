@@ -4,10 +4,10 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"os"
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/factory"
 	"github.com/ysh0566/ponder-go/interval"
+	"os"
 	"strconv"
 )
 

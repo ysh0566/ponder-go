@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ysh0566/ponder-go/config"
 	"io"
 	"os"
-	"github.com/ysh0566/ponder-go/config"
 )
 
 func main() {

@@ -3,10 +3,10 @@ package historical
 import (
 	"context"
 	"fmt"
-	"math/big"
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/indexing"
 	"github.com/ysh0566/ponder-go/store"
+	"math/big"
 )
 
 // This is an optimization, never a proof store. Evicted identities are fetched
