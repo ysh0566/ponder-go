@@ -109,14 +109,27 @@ type FactoryDeclaration[E FactoryEvent] struct {
 	parameter, location string
 }
 
-func (f FactoryDeclaration[E]) MarshalJSON() ([]byte, error) {
+func (f FactoryDeclaration[E]) metadata() (any, error) {
 	if nilFactoryValue(f.Event) || (f.parameter == "") == (f.location == "") {
 		return nil, fmt.Errorf("factory requires an event and exactly one parameter or location")
 	}
 	def := f.Event.Definition()
-	var metadata any = def
 	if def.Type == "" && def.Name == "" && def.Inputs == nil && !def.Anonymous {
-		metadata = struct{}{}
+		return struct{}{}, nil
+	}
+	if def.Type != "event" {
+		return nil, fmt.Errorf("factory requires an ABI event, got %q", def.Type)
+	}
+	if f.parameter != "" && !slices.Contains(def.FactoryParameterPaths(), f.parameter) {
+		return nil, fmt.Errorf("unknown factory parameter %q on %s", f.parameter, def.Name)
+	}
+	return def, nil
+}
+
+func (f FactoryDeclaration[E]) MarshalJSON() ([]byte, error) {
+	metadata, err := f.metadata()
+	if err != nil {
+		return nil, err
 	}
 	return json.Marshal(struct {
 		FactoryOptions
@@ -144,20 +157,21 @@ func FactoryByParameter[E FactoryEvent](event E, parameter FactoryParameter[E], 
 	if path == "" {
 		return zero, fmt.Errorf("factory event parameter is empty")
 	}
-	def := event.Definition()
-	if (def.Type != "" || def.Name != "" || def.Inputs != nil) && !slices.Contains(def.FactoryParameterPaths(), path) {
-		return zero, fmt.Errorf("unknown factory parameter %q on %s", path, def.Name)
+	f := FactoryDeclaration[E]{FactoryOptions: opts, Event: event, parameter: path}
+	if _, err := f.metadata(); err != nil {
+		return zero, err
 	}
-	return FactoryDeclaration[E]{FactoryOptions: opts, Event: event, parameter: path}, nil
+	return f, nil
 }
 
 // FactoryByLocation selects a raw topic or data offset instead of a parameter.
 func FactoryByLocation[E FactoryEvent](event E, location string, opts FactoryOptions) (FactoryDeclaration[E], error) {
-	if nilFactoryValue(event) {
-		return FactoryDeclaration[E]{}, fmt.Errorf("factory event is missing")
-	}
 	if err := factory.ValidateLocation(location); err != nil {
 		return FactoryDeclaration[E]{}, err
 	}
-	return FactoryDeclaration[E]{FactoryOptions: opts, Event: event, location: location}, nil
+	f := FactoryDeclaration[E]{FactoryOptions: opts, Event: event, location: location}
+	if _, err := f.metadata(); err != nil {
+		return FactoryDeclaration[E]{}, err
+	}
+	return f, nil
 }

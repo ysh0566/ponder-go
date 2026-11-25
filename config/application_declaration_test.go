@@ -168,6 +168,19 @@ func TestSourceFactoryDeclarationControls(t *testing.T) {
 			t.Fatalf("accepted parameter %q", key)
 		}
 	}
+	bad := e
+	bad.Type = "function"
+	if _, err := config.FactoryByLocation(bad, "topic1", config.FactoryOptions{}); err == nil {
+		t.Fatal("accepted a function decoded into event metadata")
+	}
+	param, err := config.FactoryByParameter(e, config.DynamicFactoryParameter("child"), config.FactoryOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	param.Event.Inputs = nil
+	if _, err := json.Marshal(param); err == nil {
+		t.Fatal("serialized a stale factory parameter")
+	}
 	var missing *config.DynamicFactoryParameter
 	if _, err := config.FactoryByParameter(e, missing, config.FactoryOptions{}); err == nil {
 		t.Fatal("accepted nil parameter")
