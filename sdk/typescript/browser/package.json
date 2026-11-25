@@ -1,0 +1,50 @@
+{
+  "name": "@ponder-go/browser",
+  "version": "0.18.2",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "index.d.ts",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node build.mjs --test",
+    "prepack": "node build.mjs"
+  },
+  "dependencies": {
+    "@escape.tech/graphql-armor-max-aliases": "2.4.0",
+    "@escape.tech/graphql-armor-max-depth": "2.3.0",
+    "@escape.tech/graphql-armor-max-tokens": "2.4.0",
+    "dataloader": "2.2.2",
+    "drizzle-orm": "0.41.0",
+    "graphql": "16.8.2",
+    "graphql-yoga": "5.17.1",
+    "pg-query-emscripten": "5.1.0",
+    "superjson": "2.2.2"
+  },
+  "devDependencies": {
+    "hono": "4.5.0",
+    "viem": "2.35.0",
+    "vite": "8.3.1",
+    "vitest": "5.0.2"
+  },
+  "peerDependencies": {
+    "ponder": "0.18.2"
+  },
+  "peerDependenciesMeta": {
+    "ponder": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
+}

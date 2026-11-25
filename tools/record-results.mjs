@@ -98,6 +98,11 @@ const typedGo = goResults(typedGoFile, !!runDir);
 const typedRace = goResults(typedRaceFile, !!runDir);
 const clientFile = runDir ? requireFile(runFile("sdk-client.json")) : "parity/client-original.json";
 const reactFile = runDir ? requireFile(runFile("sdk-react.json")) : "parity/react-original-typecheck-supported.json";
+const sdkFiles = {
+	"@ponder/client": clientFile,
+	"@ponder/react": reactFile,
+	"@ponder-go/browser": runDir ? runFile("sdk-browser.json") : "parity/browser-original.json",
+};
 if (runDir) for (const name of ["sync-type-controls", "historical-type-controls", "sdk-client-build", "prepared-native-inputs", "abi-generated-normal", "abi-generated-race", "go-normal", "go-race", "go-vet", "cli-build", "erc20-build", "core-oracle", "parameters-types", "sync-types", "historical-types", "runtime-index-types", "sdk-client-tests", "sdk-react-types"]) {
 	const commands = fullRun.commands.filter(command => command.name === name);
 	if (commands.length !== 1 || commands[0].exit_code !== 0 || !commands[0].finished_utc) throw Error("Current full-run command did not complete successfully: " + name);
@@ -567,10 +572,8 @@ for (const test of ledger.tests) {
 		const hash = crypto.createHash("sha256").update(actual).digest("hex");
 		if (hash !== test.source_sha256)
 			throw Error("Retained SDK test changed: " + test.mapping.target_file);
-		evidence =
-			test.mapping.owner === "@ponder/react"
-				? reactFile
-				: clientFile;
+		evidence = sdkFiles[test.mapping.owner];
+		if (!evidence) throw Error("Unknown retained SDK owner: " + test.mapping.owner);
 		status = sdkResult(evidence, test.title)?.status;
 		test.ownership = test.mapping.owner;
 	} else {

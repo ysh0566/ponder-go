@@ -1,15 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 const root = path.resolve(import.meta.dirname, ".."),
-	upstream = path.resolve(root, "../ponder-upstream");
-for (const packageName of ["client", "react"]) {
+	upstream = path.resolve(root, process.env.PONDER_UPSTREAM ?? "../ponder-upstream");
+for (const packageName of ["client", "react", "browser"]) {
 	const destination = path.join(
 			root,
 			"sdk/typescript",
 			packageName,
 			"node_modules",
 		),
-		source = path.join(upstream, "packages", packageName, "node_modules");
+		source = path.join(upstream, "packages", packageName === "browser" ? "core" : packageName, "node_modules");
 	if (!fs.existsSync(source))
 		throw Error("Install the pinned baseline dependencies first.");
 	if (fs.lstatSync(path.dirname(destination)).isSymbolicLink())
@@ -31,6 +31,11 @@ for (const packageName of ["client", "react"]) {
 		if (fs.existsSync(to)) return;
 		fs.symlinkSync(from, to, "dir");
 	};
+	if (packageName === "browser") {
+		for (const peer of ["hono", "viem"]) {
+			link(path.join(upstream, "node_modules", peer), path.join(destination, peer));
+		}
+	}
 	for (const entry of fs.readdirSync(source, { withFileTypes: true })) {
 		const from = path.join(source, entry.name),
 			to = path.join(destination, entry.name);
