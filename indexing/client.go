@@ -41,13 +41,14 @@ type ClientSet struct {
 	lookupDrained     chan struct{}
 }
 type Client struct {
-	set          *ClientSet
-	requester    rpc.Requester
-	cache        rpc.Cache
-	chainID      any
-	ensResolver  Object
-	cacheEnabled bool
-	prefetched   map[string]*prefetchValue
+	set                 *ClientSet
+	requester           rpc.Requester
+	cache               rpc.Cache
+	chainID             any
+	ensResolver         Object
+	multicallDeployment Object
+	cacheEnabled        bool
+	prefetched          map[string]*prefetchValue
 }
 
 // NewClientSet accepts optional persistent RPC caches in the same order as chains.
@@ -79,6 +80,7 @@ func NewClientSet(chains []Object, requesters []rpc.Requester, caches ...rpc.Cac
 		metadata, _ := chain["viemChain"].(Object)
 		contracts, _ := metadata["contracts"].(Object)
 		c.ensResolver, _ = contracts["ensUniversalResolver"].(Object)
+		c.multicallDeployment, _ = contracts["multicall3"].(Object)
 		c.cacheEnabled, _ = chain["cacheRpcRequests"].(bool)
 		if i < len(caches) {
 			c.cache = caches[i]

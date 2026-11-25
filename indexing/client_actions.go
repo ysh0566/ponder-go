@@ -63,6 +63,40 @@ func (c *Client) blockTag(ctx context.Context, options []BlockOptions) (string, 
 	return "0x" + n.Text(16), nil
 }
 
+// deploymentAddress resolves shared chain metadata at the requested block.
+func (c *Client) deploymentAddress(ctx context.Context, opts BlockOptions, explicit string, deployment Object, name string) (string, error) {
+	if explicit != "" {
+		return explicit, nil
+	}
+	address, _ := deployment["address"].(string)
+	if address == "" {
+		return "", fmt.Errorf("%s is unavailable for chain %v", name, c.chainID)
+	}
+	created := deployment["blockCreated"]
+	if created == nil {
+		return address, nil
+	}
+	tag, err := c.blockTag(ctx, []BlockOptions{opts})
+	if err != nil {
+		return "", err
+	}
+	if tag == "latest" {
+		return address, nil
+	}
+	first, err := clientInteger(created)
+	if err != nil {
+		return "", fmt.Errorf("invalid %s deployment block: %w", name, err)
+	}
+	block, err := clientInteger(tag)
+	if err != nil {
+		return "", err
+	}
+	if block.Cmp(first) < 0 {
+		return "", fmt.Errorf("%s was deployed at block %s", name, first)
+	}
+	return address, nil
+}
+
 // cacheKey retains the established adapter envelope. JSON map keys are sorted
 // recursively by encoding/json, and request values are lowercased just like the
 // source cache key. The fixed method spelling in the envelope is an adapter

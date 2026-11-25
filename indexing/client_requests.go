@@ -45,12 +45,21 @@ func (c *Client) rpcRequest(ctx context.Context, method string, params []any, ca
 			return nil, err
 		}
 		if strings.HasPrefix(call.Data, aggregateSelector) {
+			// Splitting an aggregate loses its sender, gas bounds or overrides.
+			var fields map[string]json.RawMessage
+			if err := json.Unmarshal(raw, &fields); err != nil {
+				return nil, err
+			}
+			if len(params) > 2 || len(fields) != 2 || fields["to"] == nil || fields["data"] == nil {
+				return c.sendRPC(ctx, method, params)
+			}
 			tag := "latest"
 			if len(params) > 1 {
 				var ok bool
 				tag, ok = params[1].(string)
 				if !ok {
-					return nil, fmt.Errorf("aggregate3 requires a block tag or number")
+					// Hash-based block selectors have no per-member cache scope.
+					return c.sendRPC(ctx, method, params)
 				}
 			}
 			return c.rawAggregate(ctx, call.To, tag, call.Data)
@@ -103,7 +112,7 @@ func (c *Client) rawAggregate(ctx context.Context, address, tag, data string) (j
 		}
 		items[i] = multicallItem{contract: ContractCall{Address: target}, data: input, requireSuccess: !allow}
 	}
-	rows, err := c.beginMulticallChunk(ctx, items, address, tag)()
+	rows, err := c.beginMulticallChunk(ctx, items, aggregateExecution{address: address}, tag)()
 	if err != nil {
 		return nil, err
 	}

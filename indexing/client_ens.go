@@ -40,31 +40,9 @@ func (c *Client) GetEnsName(ctx context.Context, address string, options ...ENSN
 	if len(options) > 0 {
 		opts = options[0]
 	}
-	resolver := opts.UniversalResolverAddress
-	if resolver == "" {
-		resolver, _ = c.ensResolver["address"].(string)
-		if resolver == "" {
-			return nil, fmt.Errorf("ENS universal resolver is unavailable for chain %v", c.chainID)
-		}
-		if created := c.ensResolver["blockCreated"]; created != nil {
-			tag, err := c.blockTag(ctx, []BlockOptions{opts.BlockOptions})
-			if err != nil {
-				return nil, err
-			}
-			if tag != "latest" {
-				n, err := clientInteger(created)
-				if err != nil {
-					return nil, fmt.Errorf("invalid ENS deployment block: %w", err)
-				}
-				block, err := clientInteger(tag)
-				if err != nil {
-					return nil, err
-				}
-				if block.Cmp(n) < 0 {
-					return nil, fmt.Errorf("ENS universal resolver was deployed at block %s", n)
-				}
-			}
-		}
+	resolver, err := c.deploymentAddress(ctx, opts.BlockOptions, opts.UniversalResolverAddress, c.ensResolver, "ENS universal resolver")
+	if err != nil {
+		return nil, err
 	}
 	if _, ok := contractAddress(address); !ok {
 		return nil, fmt.Errorf("invalid ENS address %q", address)

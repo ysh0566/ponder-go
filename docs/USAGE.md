@@ -157,7 +157,20 @@ go build .
 - **生成模型。** 使用 `codegen --schema … --typed` 生成类型化模型。对自己的应用，将 `--out` 指向目标 Go 包目录，并用 `--package` 指定包名。`codegen --abi` 可生成事件和函数类型，`--app-config` 可生成回调名称与链类型。[类型化配置](TYPED_SOURCE_CONFIGURATION.md)
 - **提供查询。** 示例用 `query.New` 创建 SQL 服务，通过 `runtime.LaunchApplication` 启动索引和 HTTP 监听，在查询模式下传入 `nil`。需要 GraphQL 时可用 `graphql.New` 创建处理器，通过 `http.ServeMux` 挂到 `/graphql` 并把 mux 赋给 `query.Server.API`。示例默认提供上表中的接口。[示例入口](../examples/erc20/main.go) · [GraphQL 实现](../graphql)
 
-脚手架的 `runtime.Handler` 通过 `c.Client.Call` 发 JSON-RPC 请求。使用生成的回调注册表时，客户端类型是 `*indexing.Client`，可调用 `GetBalance`、`ReadContract` 等方法，也可用 `Request` 传入 RPC 方法和参数。使用原始 RPC 读取历史状态时，请显式传入事件的区块号。使用 `Multicall` 批量读合约时，请在 `MulticallOptions.MulticallAddress` 指定目标链上已部署的 Multicall3 合约地址。[回调客户端方法](RUNTIME_SUPPORT.md#callback-rpc-methods)
+脚手架的 `runtime.Handler` 通过 `c.Client.Call` 发 JSON-RPC 请求。使用生成的回调注册表时，客户端类型是 `*indexing.Client`，可调用 `GetBalance`、`ReadContract` 等方法，也可用 `Request` 传入 RPC 方法和参数。使用原始 RPC 读取历史状态时，请显式传入事件的区块号。使用 `Multicall` 批量读合约时，默认采用链配置登记的 Multicall3 部署及起始高度。自定义链可通过 `MulticallOptions.MulticallAddress` 指定已部署的合约地址。[回调客户端方法](RUNTIME_SUPPORT.md#callback-rpc-methods)
+
+批量模拟可使用 `Account` 指定外层调用的发送地址，使用 `StateOverride` 临时改变账户余额、nonce、代码或存储。下面的 `calls` 是要读取的 `[]indexing.ContractCall`，`slot` 和 `value` 是 32 字节十六进制字符串。
+
+```go
+results, err := args.Context.Client.Multicall(ctx, calls, indexing.MulticallOptions{
+    Account: sender,
+    StateOverride: indexing.StateOverride{
+        target: {StateDiff: map[string]string{slot: value}},
+    },
+})
+```
+
+`StateDiff` 只覆盖指定存储槽，`State` 替换整个账户存储。覆盖只在本次批量模拟中生效。[双后端与缓存测试](../parity/runs/native-multicall-options/RESULT.md)
 
 在生成的回调中，`args.Context.Client` 可直接查询交易和回执。按交易哈希查找时会查询节点当前的收录状态。按高度查找时会读取该高度的规范区块，重组后相同高度可能返回另一笔交易。确认数从收录区块到当前链头计算，待打包交易返回零。下例中的 `hash` 是交易哈希。
 
