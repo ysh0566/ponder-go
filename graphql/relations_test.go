@@ -116,3 +116,15 @@ func TestViewFieldNames(t *testing.T) {
 		})
 	}
 }
+
+func TestGraphQLOptionalRequestContext(t *testing.T) {
+	s, err := New(&store.Store{Namespace: "ponder_go_optional"}, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := s.Execute(nil, Request{Query: `{__typename}`})
+	if r.HasErrors() {
+		t.Fatal(r.Errors)
+	}
+	compareJSON(t, r.Data, map[string]any{"__typename": "Query"})
+}

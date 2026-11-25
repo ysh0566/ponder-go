@@ -62,6 +62,9 @@ func (s *Server) Execute(ctx context.Context, r Request) *gql.Result {
 		}
 		return &gql.Result{Errors: valid.Errors}
 	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	return gql.Execute(gql.ExecuteParams{Schema: s.schema, AST: doc, Context: context.WithValue(ctx, loaderKey{}, &requestLoaders{groups: map[string]*relationBatch{}}), OperationName: r.OperationName, Args: r.Variables})
 }
 
