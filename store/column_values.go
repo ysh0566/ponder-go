@@ -148,7 +148,9 @@ func NormalizeColumn(column schema.Column, value any, isUpdate bool) (any, error
 			return nil, e
 		}
 		var normalized any
-		e = json.Unmarshal(raw, &normalized)
+		decoder := json.NewDecoder(bytes.NewReader(raw))
+		decoder.UseNumber()
+		e = decoder.Decode(&normalized)
 		return normalized, e
 	case "bigint":
 		n, ok := new(big.Int).SetString(fmt.Sprint(value), 10)

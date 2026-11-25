@@ -26,6 +26,14 @@ func modelGoName(value string) string {
 	return strings.Join(parts, "")
 }
 func typedColumn(column schema.Column, enums []schema.Enum) (typ, decoder, encoder string, e error) {
+	if element, ok := strings.CutSuffix(column.Type, "[]"); ok {
+		column.Type = element
+		typ, decode, encode, err := typedColumn(column, enums)
+		if err != nil {
+			return "", "", "", err
+		}
+		return "[]orm.Nullable[" + typ + "]", "orm.ArrayDecoder(" + decode + ")", "orm.EncodeArray(%s, func(v " + typ + ") any { return " + fmt.Sprintf(encode, "v") + " })", nil
+	}
 	switch column.Type {
 	case "bigint":
 		return "big.Int", "orm.DecodeBigInt", "orm.EncodeBigInt(%s)", nil
@@ -36,12 +44,20 @@ func typedColumn(column schema.Column, enums []schema.Enum) (typ, decoder, encod
 		fallthrough
 	case "integer", "smallint":
 		return "int64", "orm.DecodeInt64", "%s", nil
-	case "text", "hex", "address", "numeric", "uuid", "date":
+	case "text", "varchar", "char", "hex", "address", "numeric", "uuid", "date":
 		return "string", "orm.DecodeString", "%s", nil
 	case "boolean":
 		return "bool", "orm.DecodeBool", "%s", nil
 	case "real", "doublePrecision":
 		return "float64", "orm.DecodeFloat64", "%s", nil
+	case "bytes":
+		return "[]byte", "orm.DecodeBytes", "orm.CloneBytes(%s)", nil
+	case "json", "jsonb":
+		return "json.RawMessage", "orm.DecodeJSON", "orm.CloneBytes(%s)", nil
+	case "point":
+		return "[2]float64", "orm.DecodePoint", "%s", nil
+	case "line":
+		return "[3]float64", "orm.DecodeLine", "%s", nil
 	case "timestamp":
 		return "time.Time", "orm.DecodeTime", "orm.EncodeTime(%s)", nil
 	}
@@ -65,8 +81,7 @@ func (c generatedColumn) encoded(value string) string {
 	return fmt.Sprintf(c.encode, value)
 }
 
-// GenerateModels emits scalar typed model/key/insert/update APIs. Unsupported
-// container/custom column codecs are rejected explicitly, never replaced by any.
+// GenerateModels emits typed model, key, insert and update APIs.
 // Constructors encode required argument presence; Go zero values remain legal
 // Go syntax and are checked at runtime before a dynamic store call.
 func GenerateModels(packageName string, model schema.Schema) ([]byte, error) {
@@ -115,10 +130,10 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 			if e != nil {
 				return nil, e
 			}
-			if typ == "big.Int" {
+			if strings.Contains(typ, "big.Int") {
 				imports["math/big"] = true
 			}
-			if typ == "time.Time" {
+			if strings.Contains(typ, "time.Time") {
 				imports["time"] = true
 			}
 			columns = append(columns, generatedColumn{column: column, property: property, field: field, typ: typ, decoder: decoder, encode: encoder, key: keys[column.Name], nullable: !column.NotNull && !keys[column.Name], required: keys[column.Name] || (column.NotNull && !column.HasDefault && column.Default == nil && column.DefaultFn == nil && column.OnUpdateFn == nil)})

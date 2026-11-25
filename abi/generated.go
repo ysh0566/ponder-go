@@ -12,8 +12,7 @@ import (
 	"unicode"
 )
 
-// GoFieldName maps Solidity component names to exported Go fields. Generation
-// rejects collisions; it never silently merges distinct component names.
+// GoFieldName converts one Solidity name to an exported Go identifier.
 func GoFieldName(name string) string {
 	var out strings.Builder
 	upper := true
@@ -98,16 +97,22 @@ func parametersType(params []Parameter, named bool) (string, error) {
 func goTupleType(params []Parameter, named bool, hexType string) (string, error) {
 	var out strings.Builder
 	out.WriteString("struct {\n")
-	seen := map[string]bool{}
+	var fields map[string]string
+	if named {
+		names := make([]string, len(params))
+		for i, p := range params {
+			names[i] = p.Name
+		}
+		fields = GoFieldNames(names)
+		if len(fields) != len(params) {
+			return "", fmt.Errorf("duplicate named ABI tuple component")
+		}
+	}
 	for i, p := range params {
 		field := fmt.Sprintf("Value%d", i)
 		if named {
-			field = GoFieldName(p.Name)
+			field = fields[p.Name]
 		}
-		if seen[field] {
-			return "", fmt.Errorf("ABI component names collide at Go field %q", field)
-		}
-		seen[field] = true
 		typ, e := goParameterType(p, hexType)
 		if e != nil {
 			return "", e
