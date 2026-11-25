@@ -276,3 +276,28 @@ python3 tools/upstream_suite_report.py --upstream "$PONDER_UPSTREAM" \
 ```sh
 go test -count=1 -run '^TestUpstreamProviderRangeErrors$' ./rpc
 ```
+
+## Run the remaining live provider assertions
+
+The 17 source cases in `TestUpstreamLiveProviderPolicies` send their original
+`eth_getLogs` requests through the Go client. They check the response count or
+the provider error, its viem error class and the exact retry expectations for
+that case. The fixture generator reads the pinned source and its assertion list.
+
+```sh
+node tools/provider-policy-cases.mjs
+PONDER_TEST_LIVE_PROVIDER_POLICIES=1 go test -count=1 -v -run '^TestUpstreamLiveProviderPolicies$' ./rpc
+```
+
+Public cases use the URL from the original declaration. Dedicated services use
+the corresponding `RPC_URL_*` variables in the upstream utils environment
+example. To run against your own services, set `PONDER_TEST_PROVIDER_POLICY_URLS`
+to a JSON file keyed by the provider names in `testdata/rpc/provider-policy-cases.json`.
+The file takes precedence for the whole run. A missing endpoint appears as a
+skip. The normal offline suite runs the archive and error-capture tests, while
+the opt-in suite records the actual responses of the selected services.
+
+The Swell success case needs the 58 canonical logs in blocks 6,002,000 through
+6,003,000 inclusive. Starting a fresh local chain at that height produced zero
+logs. The original and native results include that failure.
+[Provider observations and test outcomes](../parity/runs/provider-policy-assertions/RESULT.md)

@@ -69,6 +69,7 @@ node tools/source-trace-fixtures.mjs
 node tools/source-realtime-controls.mjs
 node tools/source-realtime-observer-probe.mjs
 node tools/source-realtime-pristine.mjs
+node tools/provider-policy-cases.mjs
 node tools/record-native-inputs.mjs
 # Preparations above supply shared inputs. After they succeed, execute every
 # independent check and keep its exit code beside this invocation's captures.
