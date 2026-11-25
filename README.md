@@ -92,6 +92,9 @@ bin/ponder codegen --schema examples/erc20/schema.json --out examples/erc20/pond
 
 数据库按用途使用各自的当前格式。业务 journal 使用 `json-v3`，独立恢复库使用 `managed-live-recovery-v3`，RPC 缓存使用 `ponder_rpc_cache_1`，跨链纯日志历史使用 v17。重开已有业务库时，业务命名空间必须带有匹配的版本指纹，同步命名空间必须标记同一所有者。遇到旧格式、缺失标记或只剩一侧的命名空间时，请在新命名空间重新索引。修改 handler 或 config 时也需使用新命名空间，因为模型 hash 只覆盖数据库模型。[缓存初始化与重开](docs/SYNC_MIGRATIONS.md) [数据库重开验证](parity/runs/current-store-markers/RESULT.md)
 
+同步区间缓存按对象身份区分键。调用 `store.NewSourceIntervalMap[store.SourceCacheEntry]` 可同时传入 `store.FilterCacheEntry` 和 `store.FactoryCacheEntry`。再次写入同一对象会原位更新其片段，内容相同的另一个对象有独立条目。
+
+
 ## 来源与许可
 
 保留原 MIT [LICENSE](LICENSE)、SDK 各自许可证、实际 Go 依赖许可证清单 [licenses/manifest.json](licenses/manifest.json)。`third_party/pg_query_go` 固定为 v5.1.0，保留原许可证；仅将本地 `strchrnul` fallback 重命名，解决 macOS SDK 15.4+ 同名声明冲突，未改变 SQL 解析规则。`sqlquery/rules.json` 从固定源码的 83 个允许节点、62 个函数与 264 个系统表限制生成。

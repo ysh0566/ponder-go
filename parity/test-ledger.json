@@ -21,23 +21,23 @@
       "todo": 2,
       "expected_failure": 0
     },
-    "ported": 779,
+    "ported": 783,
     "executed": 545,
-    "passed": 538,
+    "passed": 542,
     "failed": 0,
     "blocked": 0,
-    "unimplemented": 121,
-    "go_ports": 775,
+    "unimplemented": 117,
+    "go_ports": 779,
     "retained_sdk": 4,
-    "oracle_passed": 538,
+    "oracle_passed": 542,
     "oracle_blocked": 0,
-    "go_passed": 534,
+    "go_passed": 538,
     "sdk_passed": 4,
-    "go_and_original_oracle_passed": 534,
-    "target_and_original_oracle_passed": 538,
-    "current_original_oracle_passed": 538,
+    "go_and_original_oracle_passed": 538,
+    "target_and_original_oracle_passed": 542,
+    "current_original_oracle_passed": 542,
     "historical_only_original_oracles": 0,
-    "runtime_passed_type_pending": 7,
+    "runtime_passed_type_pending": 3,
     "out_of_scope": 5
   },
   "unresolved_expansion_ids": [],
@@ -40101,10 +40101,31 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/index.test.ts",
+        "source_name": "getCachedBlock() with factory",
+        "source_id": "02613908644ac30deaea",
+        "source_line": 290,
+        "assertions_sha256": "72f969ede128d99d4d26b340e6aa5462bbc2028ea89e10fbdca7c0e2530b3a11",
+        "original_assertions": 2,
+        "target_file": "runtime/source_index_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeIndexFullFile/postgres/getCachedBlock()_with_factory",
+        "backend_companion": "TestSourceRuntimeIndexFullFile/pglite/getCachedBlock()_with_factory",
+        "source_fixture": "testdata/runtime/source-runtime-index-live.json",
+        "source_verification": "parity/runs/typed-interval-cache/results.json",
+        "assertion_policy": "Replay every source assertion against the filter/factory cache on both backends. Compile an explicit heterogeneous cache, check the inferred homogeneous constructor diagnostic, and verify key identity, order and replacement. All six TypeScript Map diagnostics share this native type relationship.",
+        "native_type_package": "ponder.local/ponder-go/store",
+        "native_type_tests": [
+          "TestSourceIntervalMapTypes/union",
+          "TestSourceIntervalMapTypes/inferred",
+          "TestSourceIntervalMapTypes/outside_union",
+          "TestSourceIntervalMapIdentity"
+        ]
+      },
       "execution_status": "executed",
-      "pass_status": null,
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle_current_status": "passed",
@@ -40187,21 +40208,21 @@
         "meaning": "All original runtime/index inputs and assertions replayed against native Go in both complete module modes and both backends; adapted source capture and native execution remain separately identified."
       },
       "runtime_status": "passed",
-      "execution_evidence": "parity/runs/source-runtime-index-verification.json",
+      "execution_evidence": "parity/runs/typed-interval-cache/results.json",
       "race": {
         "status": "pass",
-        "evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-race.jsonl"
+        "evidence": "parity/runs/typed-interval-cache/results.json"
       },
-      "remaining_native_type_obligations": 2,
+      "remaining_native_type_obligations": 0,
       "type_directives_verification": {
-        "status": "pending",
+        "status": "passed",
         "source_language_status": "verified",
-        "source_language_evidence": "parity/runs/source-runtime-index-types.json",
-        "native_verified": 0,
+        "source_language_evidence": "parity/runs/typed-interval-cache/results.json",
+        "native_verified": 2,
         "obligations": 2,
-        "meaning": "Heterogeneous TypeScript Map inference, not rejection of Factory keys. Dynamic Go keys preserve positive runtime behavior, but equivalent native type treatment remains pending."
+        "evidence": "parity/runs/typed-interval-cache/results.json"
       },
-      "parity_status": "runtime_passed_type_obligations_pending"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "cfc3d65d78ce2707a366",
@@ -40531,10 +40552,31 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/index.test.ts",
+        "source_name": "getRequiredIntervalsWithFilters() with factory",
+        "source_id": "1469b5672695375f7fe2",
+        "source_line": 542,
+        "assertions_sha256": "3c8fbf302a4990a1f52aeac2a8d77732e6a69f0805ceab2972bc955ffe19c537",
+        "original_assertions": 1,
+        "target_file": "runtime/source_index_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervalsWithFilters()_with_factory",
+        "backend_companion": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervalsWithFilters()_with_factory",
+        "source_fixture": "testdata/runtime/source-runtime-index-live.json",
+        "source_verification": "parity/runs/typed-interval-cache/results.json",
+        "assertion_policy": "Replay every source assertion against the filter/factory cache on both backends. Compile an explicit heterogeneous cache, check the inferred homogeneous constructor diagnostic, and verify key identity, order and replacement. All six TypeScript Map diagnostics share this native type relationship.",
+        "native_type_package": "ponder.local/ponder-go/store",
+        "native_type_tests": [
+          "TestSourceIntervalMapTypes/union",
+          "TestSourceIntervalMapTypes/inferred",
+          "TestSourceIntervalMapTypes/outside_union",
+          "TestSourceIntervalMapIdentity"
+        ]
+      },
       "execution_status": "executed",
-      "pass_status": null,
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle_current_status": "passed",
@@ -40617,21 +40659,21 @@
         "meaning": "All original runtime/index inputs and assertions replayed against native Go in both complete module modes and both backends; adapted source capture and native execution remain separately identified."
       },
       "runtime_status": "passed",
-      "execution_evidence": "parity/runs/source-runtime-index-verification.json",
+      "execution_evidence": "parity/runs/typed-interval-cache/results.json",
       "race": {
         "status": "pass",
-        "evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-race.jsonl"
+        "evidence": "parity/runs/typed-interval-cache/results.json"
       },
-      "remaining_native_type_obligations": 1,
+      "remaining_native_type_obligations": 0,
       "type_directives_verification": {
-        "status": "pending",
+        "status": "passed",
         "source_language_status": "verified",
-        "source_language_evidence": "parity/runs/source-runtime-index-types.json",
-        "native_verified": 0,
+        "source_language_evidence": "parity/runs/typed-interval-cache/results.json",
+        "native_verified": 1,
         "obligations": 1,
-        "meaning": "Heterogeneous TypeScript Map inference, not rejection of Factory keys. Dynamic Go keys preserve positive runtime behavior, but equivalent native type treatment remains pending."
+        "evidence": "parity/runs/typed-interval-cache/results.json"
       },
-      "parity_status": "runtime_passed_type_obligations_pending"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "34b296bcde7be28a3324",
@@ -40670,10 +40712,31 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/index.test.ts",
+        "source_name": "getRequiredIntervalsWithFilters() with factory and missing parent",
+        "source_id": "34b296bcde7be28a3324",
+        "source_line": 633,
+        "assertions_sha256": "17ffd80ef0c2d75f659506fd678b76945fef6538284ecee5a9e1275a288c2034",
+        "original_assertions": 1,
+        "target_file": "runtime/source_index_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervalsWithFilters()_with_factory_and_missing_parent",
+        "backend_companion": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervalsWithFilters()_with_factory_and_missing_parent",
+        "source_fixture": "testdata/runtime/source-runtime-index-live.json",
+        "source_verification": "parity/runs/typed-interval-cache/results.json",
+        "assertion_policy": "Replay every source assertion against the filter/factory cache on both backends. Compile an explicit heterogeneous cache, check the inferred homogeneous constructor diagnostic, and verify key identity, order and replacement. All six TypeScript Map diagnostics share this native type relationship.",
+        "native_type_package": "ponder.local/ponder-go/store",
+        "native_type_tests": [
+          "TestSourceIntervalMapTypes/union",
+          "TestSourceIntervalMapTypes/inferred",
+          "TestSourceIntervalMapTypes/outside_union",
+          "TestSourceIntervalMapIdentity"
+        ]
+      },
       "execution_status": "executed",
-      "pass_status": null,
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle_current_status": "passed",
@@ -40756,21 +40819,21 @@
         "meaning": "All original runtime/index inputs and assertions replayed against native Go in both complete module modes and both backends; adapted source capture and native execution remain separately identified."
       },
       "runtime_status": "passed",
-      "execution_evidence": "parity/runs/source-runtime-index-verification.json",
+      "execution_evidence": "parity/runs/typed-interval-cache/results.json",
       "race": {
         "status": "pass",
-        "evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-race.jsonl"
+        "evidence": "parity/runs/typed-interval-cache/results.json"
       },
-      "remaining_native_type_obligations": 1,
+      "remaining_native_type_obligations": 0,
       "type_directives_verification": {
-        "status": "pending",
+        "status": "passed",
         "source_language_status": "verified",
-        "source_language_evidence": "parity/runs/source-runtime-index-types.json",
-        "native_verified": 0,
+        "source_language_evidence": "parity/runs/typed-interval-cache/results.json",
+        "native_verified": 1,
         "obligations": 1,
-        "meaning": "Heterogeneous TypeScript Map inference, not rejection of Factory keys. Dynamic Go keys preserve positive runtime behavior, but equivalent native type treatment remains pending."
+        "evidence": "parity/runs/typed-interval-cache/results.json"
       },
-      "parity_status": "runtime_passed_type_obligations_pending"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "82f711b0ecef2ba1a7c9",
@@ -40812,10 +40875,31 @@
         "// @ts-expect-error"
       ],
       "discovered": true,
-      "port_status": "unimplemented",
-      "mapping": null,
+      "port_status": "ported",
+      "mapping": {
+        "source_file": "packages/core/src/runtime/index.test.ts",
+        "source_name": "getRequiredIntervals() with factory",
+        "source_id": "82f711b0ecef2ba1a7c9",
+        "source_line": 684,
+        "assertions_sha256": "d13c8d364495a368b5e2fcae6c4711ba951c19df4db6c944229ec7edb132dd6d",
+        "original_assertions": 2,
+        "target_file": "runtime/source_index_live_test.go",
+        "go_package": "ponder.local/ponder-go/runtime",
+        "go_test": "TestSourceRuntimeIndexFullFile/postgres/getRequiredIntervals()_with_factory",
+        "backend_companion": "TestSourceRuntimeIndexFullFile/pglite/getRequiredIntervals()_with_factory",
+        "source_fixture": "testdata/runtime/source-runtime-index-live.json",
+        "source_verification": "parity/runs/typed-interval-cache/results.json",
+        "assertion_policy": "Replay every source assertion against the filter/factory cache on both backends. Compile an explicit heterogeneous cache, check the inferred homogeneous constructor diagnostic, and verify key identity, order and replacement. All six TypeScript Map diagnostics share this native type relationship.",
+        "native_type_package": "ponder.local/ponder-go/store",
+        "native_type_tests": [
+          "TestSourceIntervalMapTypes/union",
+          "TestSourceIntervalMapTypes/inferred",
+          "TestSourceIntervalMapTypes/outside_union",
+          "TestSourceIntervalMapIdentity"
+        ]
+      },
       "execution_status": "executed",
-      "pass_status": null,
+      "pass_status": "passed",
       "blockers": [],
       "expansion_status": "statically_expanded",
       "oracle_current_status": "passed",
@@ -40898,21 +40982,21 @@
         "meaning": "All original runtime/index inputs and assertions replayed against native Go in both complete module modes and both backends; adapted source capture and native execution remain separately identified."
       },
       "runtime_status": "passed",
-      "execution_evidence": "parity/runs/source-runtime-index-verification.json",
+      "execution_evidence": "parity/runs/typed-interval-cache/results.json",
       "race": {
         "status": "pass",
-        "evidence": "parity/runs/finite-historical-m43/m44-regression-full-02-20261026/native/go-race.jsonl"
+        "evidence": "parity/runs/typed-interval-cache/results.json"
       },
-      "remaining_native_type_obligations": 2,
+      "remaining_native_type_obligations": 0,
       "type_directives_verification": {
-        "status": "pending",
+        "status": "passed",
         "source_language_status": "verified",
-        "source_language_evidence": "parity/runs/source-runtime-index-types.json",
-        "native_verified": 0,
+        "source_language_evidence": "parity/runs/typed-interval-cache/results.json",
+        "native_verified": 2,
         "obligations": 2,
-        "meaning": "Heterogeneous TypeScript Map inference, not rejection of Factory keys. Dynamic Go keys preserve positive runtime behavior, but equivalent native type treatment remains pending."
+        "evidence": "parity/runs/typed-interval-cache/results.json"
       },
-      "parity_status": "runtime_passed_type_obligations_pending"
+      "parity_status": "target_and_original_oracle_passed"
     },
     {
       "id": "489c3d1a0dd13ea3e901",

@@ -120,17 +120,7 @@ func sourceFilterTotalInterval(f filter.Object) (store.SourceInterval, error) {
 // EmptySourceCachedIntervals retains actual filter/factory map keys and source
 // fragment order, as used before memory acquisition without a SQL cache.
 func EmptySourceCachedIntervals(filters []filter.Object) ([]store.SourceIntervalEntry, error) {
-	result := []store.SourceIntervalEntry{}
-	indices := map[uintptr]int{}
-	set := func(key filter.Object, values []store.SourceFragmentIntervals) {
-		identity := reflect.ValueOf(key).Pointer()
-		if index, exists := indices[identity]; exists {
-			result[index].Values = values
-		} else {
-			indices[identity] = len(result)
-			result = append(result, store.SourceIntervalEntry{Key: key, Values: values})
-		}
-	}
+	var result store.SourceIntervalMap
 	for _, f := range filters {
 		fragments, err := filter.GetFragments(f)
 		if err != nil {
@@ -140,16 +130,20 @@ func EmptySourceCachedIntervals(filters []filter.Object) ([]store.SourceInterval
 		for _, fragment := range fragments {
 			entries = append(entries, store.SourceFragmentIntervals{Fragment: fragment["fragment"].(filter.Object), Intervals: []store.SourceInterval{}})
 		}
-		set(f, entries)
+		if err := result.Set(store.FilterCacheEntry(f, entries)); err != nil {
+			return nil, err
+		}
 		for _, factory := range filter.GetFilterFactories(f) {
 			entries := []store.SourceFragmentIntervals{}
 			for _, fragment := range filter.FactoryFragments(factory) {
 				entries = append(entries, store.SourceFragmentIntervals{Fragment: fragment, Intervals: []store.SourceInterval{}})
 			}
-			set(factory, entries)
+			if err := result.Set(store.FactoryCacheEntry(factory, entries)); err != nil {
+				return nil, err
+			}
 		}
 	}
-	return result, nil
+	return result.Entries(), nil
 }
 
 // RequiredSourceIntervals recovers minimal filters from missing source cache

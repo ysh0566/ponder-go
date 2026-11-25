@@ -49,6 +49,27 @@ type SourceIntervalEntry struct {
 	Values []SourceFragmentIntervals
 }
 
+// SourceCacheEntry is a filter or factory paired with its cached fragments.
+type SourceCacheEntry interface {
+	sourceCacheEntry()
+}
+
+type filterCacheEntry SourceIntervalEntry
+type factoryCacheEntry SourceIntervalEntry
+
+func (filterCacheEntry) sourceCacheEntry()  {}
+func (factoryCacheEntry) sourceCacheEntry() {}
+
+// FilterCacheEntry pairs a source filter with its fragments without copying its key.
+func FilterCacheEntry(key filter.Object, values []SourceFragmentIntervals) filterCacheEntry {
+	return filterCacheEntry{Key: key, Values: values}
+}
+
+// FactoryCacheEntry pairs a source factory with its fragments without copying its key.
+func FactoryCacheEntry(key filter.Object, values []SourceFragmentIntervals) factoryCacheEntry {
+	return factoryCacheEntry{Key: key, Values: values}
+}
+
 // SourceIntervalMap retains the actual filter/factory map identities and Map
 // insertion order. Key maps stay strongly reachable while pointer indices live.
 type SourceIntervalMap struct {
@@ -67,19 +88,58 @@ func (m *SourceIntervalMap) Get(key filter.Object) ([]SourceFragmentIntervals, b
 	}
 	return m.entries[i].Values, true
 }
-func (m *SourceIntervalMap) set(key filter.Object, values []SourceFragmentIntervals) {
-	id := reflect.ValueOf(key).Pointer()
+
+// NewSourceIntervalMap retains the first insertion position of each key.
+// Use SourceCacheEntry as the type argument to combine filters and factories.
+func NewSourceIntervalMap[E SourceCacheEntry](entries ...E) (*SourceIntervalMap, error) {
+	result := new(SourceIntervalMap)
+	for _, entry := range entries {
+		if err := result.Set(entry); err != nil {
+			return nil, err
+		}
+	}
+	return result, nil
+}
+
+// Set stores fragments under the original object's identity. The zero map is ready for use.
+func (m *SourceIntervalMap) Set(entry SourceCacheEntry) error {
+	var pair SourceIntervalEntry
+	switch e := entry.(type) {
+	case filterCacheEntry:
+		switch e.Key["type"] {
+		case "block", "log", "transaction", "trace", "transfer":
+		default:
+			return fmt.Errorf("unknown source interval filter type %v", e.Key["type"])
+		}
+		if _, factory := e.Key["childAddressLocation"]; factory {
+			return fmt.Errorf("expected a filter cache key, got a factory")
+		}
+		pair = SourceIntervalEntry(e)
+	case factoryCacheEntry:
+		// Source factory fragments can omit the original type and ID. They
+		// retain the event selector and the child's location in the log.
+		_, selector := e.Key["eventSelector"]
+		_, location := e.Key["childAddressLocation"]
+		_, id := e.Key["id"]
+		kind := e.Key["type"]
+		if kind != nil && kind != "log" || !(selector && location || id && kind == "log") {
+			return fmt.Errorf("expected a log factory cache key")
+		}
+		pair = SourceIntervalEntry(e)
+	default:
+		return fmt.Errorf("expected a filter or factory cache entry")
+	}
+	if m.indices == nil {
+		m.indices = make(map[uintptr]int)
+	}
+	id := reflect.ValueOf(pair.Key).Pointer()
 	if i, ok := m.indices[id]; ok {
-		m.entries[i].Values = values
+		m.entries[i].Values = pair.Values
 	} else {
 		m.indices[id] = len(m.entries)
-		m.entries = append(m.entries, SourceIntervalEntry{key, values})
+		m.entries = append(m.entries, pair)
 	}
-}
-func (m *SourceIntervalMap) append(key filter.Object, value SourceFragmentIntervals) {
-	id := reflect.ValueOf(key).Pointer()
-	i := m.indices[id]
-	m.entries[i].Values = append(m.entries[i].Values, value)
+	return nil
 }
 
 func (s *SourceSyncStore) InsertIntervals(ctx context.Context, chain uint64, intervals []SourceFilterInterval, factories []SourceFactoryInterval) error {
@@ -141,26 +201,37 @@ func (s *SourceSyncStore) GetIntervals(ctx context.Context, filters []filter.Obj
 		return nil, err
 	}
 	type part struct {
-		key, fragment filter.Object
-		ids           []string
-		factory       bool
+		value *SourceFragmentIntervals
+		ids   []string
 	}
-	parts := []part{}
+	var parts []part
+	result := new(SourceIntervalMap)
 	for _, f := range filters {
 		fragments, e := filter.GetFragments(f)
 		if e != nil {
 			return nil, e
 		}
-		for _, fragment := range fragments {
+		values := make([]SourceFragmentIntervals, len(fragments))
+		for i, fragment := range fragments {
+			values[i].Fragment = fragment["fragment"].(filter.Object)
 			ids := []string{}
 			for _, id := range fragment["adjacentIds"].([]any) {
 				ids = append(ids, fmt.Sprint(id))
 			}
-			parts = append(parts, part{f, fragment["fragment"].(filter.Object), ids, false})
+			parts = append(parts, part{&values[i], ids})
+		}
+		if err := result.Set(FilterCacheEntry(f, values)); err != nil {
+			return nil, err
 		}
 		for _, factory := range filter.GetFilterFactories(f) {
-			for _, fragment := range filter.FactoryFragments(factory) {
-				parts = append(parts, part{factory, fragment, []string{filter.EncodeFragment(fragment)}, true})
+			fragments := filter.FactoryFragments(factory)
+			values := make([]SourceFragmentIntervals, len(fragments))
+			for i, fragment := range fragments {
+				values[i].Fragment = fragment
+				parts = append(parts, part{&values[i], []string{filter.EncodeFragment(fragment)}})
+			}
+			if err := result.Set(FactoryCacheEntry(factory, values)); err != nil {
+				return nil, err
 			}
 		}
 	}
@@ -169,7 +240,6 @@ func (s *SourceSyncStore) GetIntervals(ctx context.Context, filters []filter.Obj
 	if len(parts) == 0 {
 		return nil, fmt.Errorf("source interval query has no executable query")
 	}
-	ranges := make([][]SourceInterval, len(parts))
 	for offset := 0; offset < len(parts); offset += 200 {
 		end := min(offset+200, len(parts))
 		queries := []string{}
@@ -192,7 +262,7 @@ func (s *SourceSyncStore) GetIntervals(ctx context.Context, filters []filter.Obj
 				if e != nil {
 					return e
 				}
-				ranges[i] = []SourceInterval{}
+				parts[i].value.Intervals = []SourceInterval{}
 				if row["merged_blocks"] == nil {
 					continue
 				}
@@ -206,34 +276,12 @@ func (s *SourceSyncStore) GetIntervals(ctx context.Context, filters []filter.Obj
 				}
 				for _, span := range spans {
 					span[1] -= 1
-					ranges[i] = append(ranges[i], span)
+					parts[i].value.Intervals = append(parts[i].value.Intervals, span)
 				}
 			}
 			return nil
 		}); e != nil {
 			return nil, e
-		}
-	}
-	result := &SourceIntervalMap{entries: []SourceIntervalEntry{}, indices: map[uintptr]int{}}
-	index := 0
-	for _, f := range filters {
-		result.set(f, []SourceFragmentIntervals{})
-		fragments, e := filter.GetFragments(f)
-		if e != nil {
-			return nil, e
-		}
-		for range fragments {
-			p := parts[index]
-			result.append(f, SourceFragmentIntervals{p.fragment, ranges[index]})
-			index++
-		}
-		for _, factory := range filter.GetFilterFactories(f) {
-			result.set(factory, []SourceFragmentIntervals{})
-			for range filter.FactoryFragments(factory) {
-				p := parts[index]
-				result.append(factory, SourceFragmentIntervals{p.fragment, ranges[index]})
-				index++
-			}
 		}
 	}
 	return result, nil

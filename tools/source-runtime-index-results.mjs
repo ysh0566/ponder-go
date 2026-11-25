@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import {cacheTypeTests, verifyCacheTypeTests} from './runtime-index-cache-types.mjs';
 import {sourceFingerprint} from './go-source-fingerprint.mjs';
 import {validateContextEntry} from './loopback-context.mjs';
 const root=path.resolve(import.meta.dirname,'..'),arg=process.argv.find(x=>x.startsWith('--run-dir='));
@@ -30,6 +31,7 @@ for(const mode of ['normal','race']){
  check(manifest.complete&&manifest.success&&manifest.scope==='all_module_packages'&&equal(manifest.source_fingerprint,fingerprint)&&equal(manifest.finished_source_fingerprint,fingerprint),'Complete current module execution required');
  check(Date.parse(prepared.recorded_utc)<=Date.parse(manifest.started_utc),'Prepared inventory must precede native execution');
  const events=fs.readFileSync(log,'utf8').trim().split('\n').map(JSON.parse),passed=test=>events.filter(e=>e.Package==='ponder.local/ponder-go/runtime'&&e.Test===test&&e.Action==='pass').length===1;
+ verifyCacheTypeTests((pkg,test)=>events.filter(e=>e.Package===pkg&&e.Test===test&&e.Action==='pass').length===1);
  check(!events.some(e=>e.Test&&['fail','skip'].includes(e.Action)),'Aggregate must have no native failures/skips');
  for(const pkg of manifest.packages)for(const test of pkg.listed_functions)check(events.filter(e=>e.Package===pkg.package&&e.Test===test&&e.Action==='pass').length===1,'Missing/duplicate listed function');
  for(const test of ['TestSourceRuntimeIndexFullFile','TestSourceRuntimeIndexEvidenceCompleteness','TestSourceLocalSyncProgressAssertions','TestSourceLocalSyncProgressSameHeightIdentity','TestSourceLocalSyncProgressControls','TestSourceSyncProgressMethods','TestSourceSyncProgressRPC','TestSourceEventOrderOriginal','TestSourceEventOrderControls'])check(passed(test),'Supplemental runtime prerequisite missing: '+test);
@@ -47,11 +49,11 @@ for(const mode of ['normal','race']){
    check(c&&c.source_sha256===item.source_sha256&&c.test_source===item.test_source&&equal(c.assertions,item.assertions)&&equal(c.type_error_directives,item.type_error_directives)&&c.source_state===item.source_state&&c.calls.length>0,'Original declaration or inputs changed');
    const sourceTests=original.testResults.flatMap(x=>x.assertionResults).filter(x=>x.title===item.title);
    check(sourceTests.length===1&&sourceTests[0].status==='passed'&&passed(test),'Original/native mapped case missing');
-   calls+=c.calls.length;cases.push({source_id:item.id,go_test:test,runtime_passed:true,native_type_obligations:item.type_error_directives.length,native_type_status:item.type_error_directives.length?'pending':'not_applicable'});
+   calls+=c.calls.length;cases.push({source_id:item.id,go_test:test,runtime_passed:true,native_type_obligations:item.type_error_directives.length,native_type_status:item.type_error_directives.length?'passed':'not_applicable'});
   }
   check(calls===28,'Complete actual operation census changed');
   executions.push({mode,backend,complete:true,cases,native_calls:28,log:hash(log),native:hash(log),native_test_prefix:'TestSourceRuntimeIndexFullFile/'+backend,capture:hash(source+'/calls.json'),original:hash(source+'/original.json'),result:hash(source+'/result.json'),source_context:result.inputs,context_archive:result.context_archive});
  }
 }
-const report={complete:true,success:true,scope:'complete_module_source_runtime_index',run_dir:relative,environment_adapted:true,pristine_file:false,summary:{source_cases:15,source_assertions:30,source_error_directives:6,runtime_passed_cases:15,complete_mapping_candidates:11,native_type_pending_cases:4,native_type_obligations_verified:0,supplementary_source_credit:0},full_verification:hash(directory+'/result.json'),prepared_native_inputs:full.prepared_native_inputs,context_archive:full.context_archive,source_types:hash('parity/runs/source-runtime-index-types.json'),executions,inputs:['tools/source-runtime-index-results.mjs','runtime/source_index_live_test.go','runtime/source_sync_progress.go','runtime/source_event_merge.go','runtime/source_sync_cache.go','rpc/async.go','testdata/runtime/source-runtime-index-live.json','parity/runs/runtime-index-progress-order-source/probe.json'].map(hash)};
+const report={complete:true,success:true,scope:'complete_module_source_runtime_index',run_dir:relative,environment_adapted:true,pristine_file:false,summary:{source_cases:15,source_assertions:30,source_error_directives:6,runtime_passed_cases:15,complete_mapping_candidates:15,native_type_pending_cases:0,native_type_obligations_verified:6,supplementary_source_credit:0},full_verification:hash(directory+'/result.json'),prepared_native_inputs:full.prepared_native_inputs,context_archive:full.context_archive,native_type_tests:cacheTypeTests,source_types:hash('parity/runs/source-runtime-index-types.json'),executions,inputs:['tools/source-runtime-index-results.mjs','tools/runtime-index-cache-types.mjs','store/source_interval_map_test.go','store/source_intervals.go','runtime/source_index_pure_test.go','runtime/source_required_intervals.go','runtime/source_index_live_test.go','runtime/source_sync_progress.go','runtime/source_event_merge.go','runtime/source_sync_cache.go','rpc/async.go','testdata/runtime/source-runtime-index-live.json','parity/runs/runtime-index-progress-order-source/probe.json'].map(hash)};
 fs.writeFileSync(path.resolve(root,process.argv.find(x=>x.startsWith('--output='))?.slice(9)??'parity/runs/source-runtime-index-verification.json'),JSON.stringify(report,null,2)+'\n');console.log(report.summary);

@@ -17,13 +17,13 @@ func sourceIndexPureCache(value any) ([]store.SourceIntervalEntry, error) {
 	if !ok {
 		return nil, fmt.Errorf("cachedIntervals is not a source Map")
 	}
-	cached := []store.SourceIntervalEntry{}
+	var cached store.SourceIntervalMap
 	for _, pair := range pairs {
 		key, ok := pair.Key.(filter.Object)
 		if !ok {
 			return nil, fmt.Errorf("cache key is not a filter/factory object")
 		}
-		entry := store.SourceIntervalEntry{Key: key, Values: []store.SourceFragmentIntervals{}}
+		fragments := []store.SourceFragmentIntervals{}
 		values, err := historicalLiveObjects(pair.Value)
 		if err != nil {
 			return nil, err
@@ -45,11 +45,17 @@ func sourceIndexPureCache(value any) ([]store.SourceIntervalEntry, error) {
 				}
 				intervals = append(intervals, span)
 			}
-			entry.Values = append(entry.Values, store.SourceFragmentIntervals{Fragment: fragment, Intervals: intervals})
+			fragments = append(fragments, store.SourceFragmentIntervals{Fragment: fragment, Intervals: intervals})
 		}
-		cached = append(cached, entry)
+		var entry store.SourceCacheEntry = store.FilterCacheEntry(key, fragments)
+		if _, factory := key["childAddressLocation"]; factory {
+			entry = store.FactoryCacheEntry(key, fragments)
+		}
+		if err := cached.Set(entry); err != nil {
+			return nil, err
+		}
 	}
-	return cached, nil
+	return cached.Entries(), nil
 }
 
 func sourceIndexReplayPure(operation string, args filter.Object) (any, error) {
