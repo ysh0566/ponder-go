@@ -51,6 +51,31 @@ func newProviderGate(t *testing.T, target string, status int) *providerGate {
 	return g
 }
 
+type reorgNodeRPC struct{ t *testing.T }
+
+func (r reorgNodeRPC) call(endpoint, method string, args ...any) any {
+	r.t.Helper()
+	if args == nil {
+		args = []any{}
+	}
+	var value any
+	if err := rpc.New(endpoint).Call(r.t.Context(), method, args, &value); err != nil {
+		r.t.Fatal(err)
+	}
+	return value
+}
+
+func (r reorgNodeRPC) head(endpoint string, n uint64) map[string]any {
+	r.t.Helper()
+	return r.call(endpoint, "eth_getBlockByNumber", Hex(n), false).(map[string]any)
+}
+
+func (r reorgNodeRPC) mine(endpoint string, offset int) {
+	r.t.Helper()
+	r.call(endpoint, "evm_setNextBlockTimestamp", 1700000000+offset)
+	r.call(endpoint, "evm_mine")
+}
+
 func TestMultiProviderCrossChainReorg(t *testing.T) {
 	for _, order := range []schema.Ordering{schema.Multichain, schema.Omnichain} {
 		for _, backend := range []string{"postgres", "pglite"} {
@@ -61,32 +86,13 @@ func TestMultiProviderCrossChainReorg(t *testing.T) {
 
 func testProviderReorg(t *testing.T, order schema.Ordering, backend string) {
 	ctx := t.Context()
-	const genesis = 1700000000
 	node := func(id uint64) string { return testanvil.StartChain(t, id, "--no-mining", "--timestamp", "1700000000") }
 	original, replacement, peer := node(101), node(101), node(202)
 	primary := newProviderGate(t, original, http.StatusServiceUnavailable)
 	standby := newProviderGate(t, replacement, http.StatusTooManyRequests)
 	standby.offline.Store(true)
-	call := func(endpoint, method string, args ...any) any {
-		t.Helper()
-		if args == nil {
-			args = []any{}
-		}
-		var v any
-		if err := rpc.New(endpoint).Call(ctx, method, args, &v); err != nil {
-			t.Fatal(err)
-		}
-		return v
-	}
-	head := func(endpoint string, n uint64) map[string]any {
-		t.Helper()
-		return call(endpoint, "eth_getBlockByNumber", Hex(n), false).(map[string]any)
-	}
-	mine := func(endpoint string, offset int) {
-		t.Helper()
-		call(endpoint, "evm_setNextBlockTimestamp", genesis+offset)
-		call(endpoint, "evm_mine")
-	}
+	nodeRPC := reorgNodeRPC{t}
+	call, head, mine := nodeRPC.call, nodeRPC.head, nodeRPC.mine
 	if head(original, 0)["hash"] != head(replacement, 0)["hash"] {
 		t.Fatal("providers must have identical genesis")
 	}

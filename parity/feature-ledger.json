@@ -450,9 +450,10 @@
       "evidence": [
         "parity/runs/batch-11.json",
         "parity/runs/native-chain-scheduling/RESULT.md",
-        "parity/runs/native-isolated-mixed-sources/RESULT.md"
+        "parity/runs/native-isolated-mixed-sources/RESULT.md",
+        "parity/runs/native-mixed-source-reorg/RESULT.md"
       ],
-      "remaining": "The atomic Store supports independent chain progress and rollback. Static and factory logs, account transfers and transactions, and contract CALLs have a bounded mixed-source retry and reopen case. Mixed-source live fork and engine-interruption coverage remain open. The independent-store RuntimeRunner rejects Isolated.",
+      "remaining": "The native atomic Store covers mixed-source live forks during provider failover, handler failure and cold reopen. A database engine exit during replacement mixed-source callbacks still needs coverage. The independent-store RuntimeRunner rejects Isolated.",
       "native_test_files": [
         "runtime/isolated_indexer_test.go",
         "runtime/ordered_indexer_test.go"
@@ -1965,9 +1966,10 @@
         "packages/core/src/sync-realtime/index.test.ts"
       ],
       "evidence": [
-        "parity/runs/native-default-multichain/RESULT.md"
+        "parity/runs/native-default-multichain/RESULT.md",
+        "parity/runs/native-mixed-source-reorg/RESULT.md"
       ],
-      "remaining": "Failover within multi-provider pools during a cross-chain fork, wider overlapping callbacks and separate database-domain engine failures still need acceptance."
+      "remaining": "A two-provider fork during mixed-source callbacks and its dependent peer replay are verified. Further overlapping callbacks, database engine exits during mixed events and separate-domain engine failures need coverage."
     },
     {
       "id": "native-dev-metrics",
@@ -2997,6 +2999,31 @@
         "parity/runs/native-omnichain-block-intervals/RESULT.md"
       ],
       "remaining": "Independent-store live Omnichain and Isolated ordering remain open. The finalized runner requires bounded sources and positive block intervals."
+    },
+    {
+      "id": "native-mixed-source-reorg",
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/indexer.go",
+        "runtime/ordered_indexer.go",
+        "runtime/factory.go",
+        "runtime/engine.go",
+        "store/reorg.go",
+        "store/sync.go"
+      ],
+      "native_test_files": [
+        "runtime/mixed_source_reorg_test.go",
+        "runtime/provider_reorg_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts",
+        "packages/core/src/sync-realtime/index.ts",
+        "packages/core/src/rpc/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-mixed-source-reorg/RESULT.md"
+      ],
+      "remaining": "The three native schedulers cover real pooled RPC failure and branch replacement with mixed factory, contract and account events. Database engine interruption during these callbacks and managed dual-store Isolated or live Omnichain remain open."
     }
   ]
 }
