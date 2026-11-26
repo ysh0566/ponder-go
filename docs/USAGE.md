@@ -159,6 +159,12 @@ curl -fsS http://127.0.0.1:42069/metrics | grep '^ponder_historical_'
 
 `runtime.NewIndexer` 和 `runtime.NewIndexerFromSource` 在首次追平过程中计入已达到最终确认范围的区块。双库 `historical.RuntimeRunner` 按实际回填阶段计时。实时追块和实时分叉重放均沿用原有累计值。独立 `serve` 进程拥有自己的指标注册表，要看回填耗时应抓取写入进程。`runtime.LaunchApplication` 自动连接查询服务的注册表。直接调用 `Run` 时，可传入 `metrics.WithHistorical(ctx, registry)`，再用 `registry.Collect(ctx)` 读取。[运行时验证](../parity/runs/native-historical-duration-metrics/RESULT.md)
 
+### 在分叉后复用按高度读取的 RPC 结果
+
+普通 Go 运行器开启 RPC 缓存后，回调可用 `rpc.Client.CallCached` 重复读取已最终确认的数据。例如，`eth_getBalance` 在参数中指定 `"0x64"`，缓存就记录第 100 块。若链回滚到第 100 块，重放时会复用该结果。若共同祖先是第 99 块，下一次读取会重新请求节点。全局回滚需要重放其他链的回调时，每条受影响的链按自己的回退高度清理。处理函数失败时，本次事务新写入的缓存也会回滚。
+
+区块查询、状态读取、存储证明和费用历史可使用显式十六进制高度。支持 EIP-1898 的状态读取也可传仅含 `blockNumber` 的对象。对于 `eth_getLogs`，同时指定数值 `fromBlock` 和 `toBlock` 时，以结束高度判断整个区间能否复用。只给区块哈希、动态标签或自定义方法的结果会在该链分叉时清除。需要随新区块变化的数据应使用 `Call`。[两种数据库上的分叉测试](../parity/runs/native-rpc-rewind-heights/RESULT.md)
+
 ### 查看 RPC 耗时与错误数
 
 从写入进程读取 `/metrics`，用 `chain` 和 `method` 标签筛选链名与 JSON-RPC 方法。下面的 PromQL 查询给出过去 5 分钟内各链、各方法成功请求的 P95 耗时，单位为毫秒。

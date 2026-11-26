@@ -86,21 +86,27 @@ func (c *ProtocolCache) GetSourceRPCRawRequestResults(ctx context.Context, chain
 	err := c.transaction(ctx, func(tx Transaction) error { var e error; out, e = c.getSourceRPC(ctx, tx, chain, requests); return e })
 	return out, err
 }
+func rpcBlockParamIndex(method string) int {
+	switch method {
+	case "eth_getBlockByNumber", "eth_getBlockTransactionCountByNumber", "eth_getTransactionByBlockNumberAndIndex", "eth_getUncleByBlockNumberAndIndex", "debug_traceBlockByNumber":
+		return 0
+	case "eth_getBalance", "eth_call", "eth_getCode", "eth_estimateGas", "eth_feeHistory", "eth_getTransactionCount":
+		return 1
+	case "eth_getProof", "eth_getStorageAt":
+		return 2
+	default:
+		return -1
+	}
+}
+
 func sourceRequestBlock(request any) (*uint64, error) {
 	object, ok := request.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("source request must be an object")
 	}
 	method, _ := object["method"].(string)
-	var position int
-	switch method {
-	case "eth_getBlockByNumber", "eth_getBlockTransactionCountByNumber", "eth_getTransactionByBlockNumberAndIndex", "eth_getUncleByBlockNumberAndIndex", "debug_traceBlockByNumber":
-		position = 0
-	case "eth_getBalance", "eth_call", "eth_getCode", "eth_estimateGas", "eth_feeHistory", "eth_getTransactionCount":
-		position = 1
-	case "eth_getProof", "eth_getStorageAt":
-		position = 2
-	default:
+	position := rpcBlockParamIndex(method)
+	if position < 0 {
 		return nil, nil
 	}
 	var params []any
