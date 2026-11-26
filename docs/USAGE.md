@@ -171,6 +171,18 @@ histogram_quantile(0.95, sum by (le, chain, method) (rate(ponder_rpc_request_dur
 
 `runtime.LaunchApplication` 自动为写入进程接入统计，覆盖历史回填和实时追块。自行启动运行器时，可将 `metrics.WithRPC(ctx, registry)` 传入 `Run` 或 `RunIndexing`。通过来源配置创建的客户端使用配置中的链名。手动创建 `rpc.Client` 时，在发起请求前设置 `ChainName`。[请求与缓存测试](../rpc/custom_transport_test.go) · [运行中采集指标](../runtime/historical_metrics_test.go)
 
+### 查看发生分叉的链
+
+在写入进程的 `/metrics` 中，`ponder_realtime_reorg_total{chain="mainnet"}` 表示这个进程观测到并成功处理的 mainnet 分叉次数。一次分叉即使替换多个区块，或引起其他链的回调重放，也只给发生分叉的链加一。下面的 PromQL 查询估算每条链在过去一小时新增的次数。
+
+```promql
+increase(ponder_realtime_reorg_total[1h])
+```
+
+一条链首次成功回滚未确认区块时，第一个样本的值为 1。Prometheus 需要同一条链的至少两个样本才能计算 `increase`，刚出现分叉时可以直接查看计数器的当前值。节点暂时离线、相同链头的重复轮询，以及超过最终确认边界而被拒绝的回滚，都没有成功回滚的样本。双库运行器在收到协调回滚的成功结果后计数，有限区间内已经写入的未确认区块同样适用。写入进程如果在结果返回前退出，恢复时可能只能从数据库查到这次回滚。新的指标注册表从空开始。
+
+`runtime.LaunchApplication` 自动接入此指标。直接运行索引器时，把 `metrics.WithReorgs(ctx, registry)` 传给 `RunIndexing` 或双库运行器的 `Run`。[真实节点分叉与 HTTP 指标](../runtime/mixed_source_reorg_test.go) · [双库回滚与恢复](../historical/live_runtime_bounded_reorg_test.go)
+
 ## 重开索引或只提供查询
 
 保留运行中的 `start`，在另一个终端配置同一个 `PONDER_LOCAL_DATABASE_URL`。使用相同的业务命名空间，选择另一个 HTTP 端口。查询进程只需要数据库连接，RPC 和合约地址由写入进程使用。

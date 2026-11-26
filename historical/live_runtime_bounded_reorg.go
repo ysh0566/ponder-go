@@ -115,7 +115,7 @@ func (r *RuntimeRunner) boundedReorgBranch(ctx context.Context, epoch *indexing.
 }
 
 // The caller seals the active epoch before changing either storage domain.
-func (r *RuntimeRunner) applyBoundedReorg(ctx context.Context, c store.ManagedLiveControl, request store.ManagedLiveDomainReorg) (store.ManagedLiveControl, error) {
+func (r *RuntimeRunner) applyBoundedReorg(ctx context.Context, index int, c store.ManagedLiveControl, request store.ManagedLiveDomainReorg) (store.ManagedLiveControl, error) {
 	if c.Serving {
 		if err := r.domains.PauseRuntime(ctx, r.nextID("reorg-pause")); err != nil {
 			return c, err
@@ -134,7 +134,7 @@ func (r *RuntimeRunner) applyBoundedReorg(ctx context.Context, c store.ManagedLi
 	request.Reorg.ExpectedLastOperation = c.LastOperation
 	request.Reorg.ExpectedTail = c.Tail
 	request.Reorg.ReplayBeforeServing = true
-	if err := r.coordinateRuntimeReorg(ctx, request); err != nil {
+	if err := r.coordinateRuntimeReorg(ctx, index, request); err != nil {
 		return c, err
 	}
 	return r.domains.Control(ctx)

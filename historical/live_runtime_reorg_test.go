@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 	"math/big"
@@ -326,7 +327,9 @@ func TestRuntimeContinuousReorg(t *testing.T) {
 					return nil
 				}}}
 				r = runtimeOpen(t, backend, o)
-				out, err := r.Run(context.Background())
+				registry := metrics.New()
+				out, err := r.Run(metrics.WithReorgs(t.Context(), registry))
+				assertReorgCount(t, registry, 2)
 				if err != nil || !out.Completed || !out.Ready || reorgs != 2 || pauses != 2 || ready != 3 || step != 3 {
 					t.Fatalf("actual reorg result=%+v reorg=%d paused=%d ready=%d step=%d trace=%v err=%v", out, reorgs, pauses, ready, step, trace, err)
 				}
@@ -358,5 +361,26 @@ func TestRuntimeContinuousReorg(t *testing.T) {
 				})
 			})
 		}
+	}
+}
+
+func assertReorgCount(t *testing.T, registry *metrics.Registry, want int) {
+	t.Helper()
+	text, err := registry.Collect(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	var samples []string
+	for line := range strings.SplitSeq(text, "\n") {
+		if strings.HasPrefix(line, "ponder_realtime_reorg_total{") {
+			samples = append(samples, line)
+		}
+	}
+	if want == 0 && len(samples) == 0 {
+		return
+	}
+	expected := fmt.Sprintf(`ponder_realtime_reorg_total{chain="one"} %d`, want)
+	if want == 0 || len(samples) != 1 || samples[0] != expected {
+		t.Fatalf("reorg samples: got %v (expected %d for chain one)", samples, want)
 	}
 }

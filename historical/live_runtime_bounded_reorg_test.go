@@ -12,6 +12,7 @@ import (
 
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -23,6 +24,8 @@ func TestRuntimeBoundedReorg(t *testing.T) {
 				continuousRoot(t)
 				ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 				defer cancel()
+				registry := metrics.New()
+				ctx = metrics.WithReorgs(ctx, registry)
 				end := uint64(3)
 				if scenario == "parent_changed" {
 					end = 4
@@ -132,6 +135,7 @@ func TestRuntimeBoundedReorg(t *testing.T) {
 					t.Fatal(ce)
 				}
 				if scenario == "finalized_changed" {
+					assertReorgCount(t, registry, 0)
 					if !errors.Is(err, store.ErrManagedLiveDeepReorg) || out.Completed || out.Ready || c.Serving || c.Reorgs != 0 {
 						t.Fatalf("finalized fork result=%+v serving=%t reorgs=%d err=%v", out, c.Serving, c.Reorgs, err)
 					}
@@ -155,6 +159,7 @@ func TestRuntimeBoundedReorg(t *testing.T) {
 						t.Fatalf("reopened result=%+v controlErr=%v runErr=%v", out, ce, err)
 					}
 				}
+				assertReorgCount(t, registry, 1)
 				if err != nil || !out.Completed || !out.Ready || !c.Serving || len(c.ReplayTargets) != 0 || c.Reorgs != 1 || activations != 2 {
 					t.Fatalf("result=%+v reorgs=%d activations=%d commits=%v err=%v", out, c.Reorgs, activations, commits, err)
 				}

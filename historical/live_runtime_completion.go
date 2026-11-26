@@ -407,7 +407,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 					return result, e
 				}
 				epoch = nil
-				control, e = r.applyBoundedReorg(run, control, request)
+				control, e = r.applyBoundedReorg(run, fork.index, control, request)
 				if e != nil {
 					return result, e
 				}

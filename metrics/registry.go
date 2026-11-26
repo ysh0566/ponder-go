@@ -20,6 +20,7 @@ var networkDurationBuckets = []float64{1, 5, 10, 50, 100, 500, 1000, 5000, 10000
 type Registry struct {
 	mu                                  sync.Mutex
 	reg                                 *prometheus.Registry
+	reorgs                              *prometheus.CounterVec
 	rpcDuration                         *prometheus.HistogramVec
 	rpcErrors                           *prometheus.CounterVec
 	extract, transform                  *prometheus.GaugeVec
@@ -34,6 +35,7 @@ type Registry struct {
 func New() *Registry {
 	r := &Registry{
 		reg:            prometheus.NewRegistry(),
+		reorgs:         prometheus.NewCounterVec(prometheus.CounterOpts{Name: "ponder_realtime_reorg_total", Help: "Count of how many re-orgs have occurred"}, []string{"chain"}),
 		rpcDuration:    prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "ponder_rpc_request_duration", Help: "Duration of successful RPC requests", Buckets: networkDurationBuckets}, []string{"chain", "method"}),
 		rpcErrors:      prometheus.NewCounterVec(prometheus.CounterOpts{Name: "ponder_rpc_request_error_total", Help: "Total count of failed RPC requests"}, []string{"chain", "method"}),
 		extract:        prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: "ponder_historical_extract_duration", Help: "Duration of historical extract phase"}, []string{"step"}),
@@ -53,7 +55,7 @@ func New() *Registry {
 	r.requestSize = histogram("ponder_http_server_request_size_bytes", "Size of HTTP requests received by the server", sizes)
 	r.responseSize = histogram("ponder_http_server_response_size_bytes", "Size of HTTP responses served by the server", sizes)
 	r.duration = histogram("ponder_http_server_request_duration_ms", "Duration of HTTP responses served by the server", networkDurationBuckets)
-	r.reg.MustRegister(r.rpcDuration, r.rpcErrors, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
+	r.reg.MustRegister(r.reorgs, r.rpcDuration, r.rpcErrors, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
 	return r
 }
 
@@ -94,13 +96,14 @@ func (r *Registry) FlushIndexing() {
 	r.flush()
 }
 
-// ResetIndexing starts fresh RPC measurements and event counts. Cache requests and
+// ResetIndexing clears RPC measurements, reorg counts and event counts. Cache requests and
 // store operation counters are cumulative across indexing runs.
 func (r *Registry) ResetIndexing() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.flush()
 	r.completed.Reset()
+	r.reorgs.Reset()
 	r.rpcDuration.Reset()
 	r.rpcErrors.Reset()
 }
