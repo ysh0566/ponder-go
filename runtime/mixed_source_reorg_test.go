@@ -27,7 +27,7 @@ func TestMixedSourceProviderReorg(t *testing.T) {
 	for _, order := range []schema.Ordering{schema.Isolated, schema.Multichain, schema.Omnichain} {
 		for _, backend := range []string{"postgres", "pglite"} {
 			t.Run(string(order)+"/"+backend, func(t *testing.T) {
-				testMixedSourceProviderReorg(t, order, backend)
+				testMixedSourceProviderReorg(t, order, backend, "")
 			})
 		}
 	}
@@ -113,13 +113,36 @@ func startMixedSourceNetwork(t *testing.T, order schema.Ordering) mixedSourceNet
 	}
 }
 
-func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend string) {
+func (network mixedSourceNetwork) checkDiscoveredChild(t *testing.T, db *store.Store, child string) {
+	t.Helper()
+	ctx := t.Context()
+	from := uint64(1)
+	for _, name := range []string{"Wallet", "Child"} {
+		f := network.discovery
+		f.ChainID, f.SourceID, f.FromBlock = 101, name, &from
+		filter, err := factory.Build(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		children, err := db.FactoryChildren(ctx, filter.ID, 101, 2)
+		if err != nil || len(children) != 1 || children[child] != 1 {
+			t.Fatalf("factory %s children %v, want %s at block one: %v", name, children, child, err)
+		}
+	}
+}
+
+func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend, interruptEvent string) {
 	ctx := t.Context()
 	network := startMixedSourceNetwork(t, order)
 	model := schema.Schema{Tables: []schema.Table{{Name: "deliveries", PrimaryKey: []string{"chain_id", "event"}, Columns: []schema.Column{
 		{Name: "chain_id", Property: "chainId", Type: "integer", NotNull: true}, {Name: "event", Type: "text", NotNull: true},
 		{Name: "block_hash", Type: "text", NotNull: true}, {Name: "payload", Type: "text", NotNull: true},
 	}}}}
+	dir := filepath.Join(t.TempDir(), "db")
+	var fault *mixedSourceEngineFault
+	if interruptEvent != "" {
+		fault = newMixedSourceEngineFault(t, backend, dir)
+	}
 	var mu sync.Mutex
 	var chainCalls, peerCalls []string
 	names := []string{"Wallet:transaction:to", "Child:Ping", "Child.run()", "Wallet:transfer:to"}
@@ -159,29 +182,39 @@ func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend s
 				return err
 			}
 			mu.Lock()
-			defer mu.Unlock()
 			if c.Chain.ID == 101 {
 				chainCalls = append(chainCalls, event.Name+"@"+event.Block.Hash)
 			} else {
 				peerCalls = append(peerCalls, event.Block.Hash)
+			}
+			mu.Unlock()
+			if fault != nil && event.Name == interruptEvent && fault.armed.Load() {
+				return fault.afterWrite(ctx, c)
 			}
 			return nil
 		}
 	}
 
 	ns := fmt.Sprintf("ponder_go_mixfork_%x", time.Now().UnixNano())
-	dir := filepath.Join(t.TempDir(), "db")
 	var db *store.Store
 	var app *Application
 	var routes *query.Server
-	open := func() {
+	open := func(inspect func(*store.Store)) {
 		t.Helper()
-		b := stagedBackend(t, ctx, backend, dir)
+		var b store.Backend
+		if fault != nil {
+			b = fault.open()
+		} else {
+			b = stagedBackend(t, ctx, backend, dir)
+		}
 		t.Cleanup(func() { _ = b.Close() })
 		var err error
 		db, err = store.New(ctx, b, model, ns, order)
 		if err != nil {
 			t.Fatal(err)
+		}
+		if inspect != nil {
+			inspect(db)
 		}
 		indexer, err := NewIndexerWithOptions(network.config, db, handlers, Options{DisableCache: backend == "pglite"})
 		if err != nil {
@@ -219,6 +252,9 @@ func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend s
 			peerPayload += "/" + branch.amount
 			if len(branches) == 2 {
 				wantPeerCalls = append(wantPeerCalls, network.peerHash)
+				if interruptEvent == "Peer:Ping" {
+					wantPeerCalls = append(wantPeerCalls, network.peerHash)
+				}
 			}
 		}
 		want := map[string]string{"Wallet:transaction:to": branch.child, "Child:Ping": branch.amount, "Child.run()": branch.child, "Wallet:transfer:to": branch.amount, "Peer:Ping": peerPayload}
@@ -238,19 +274,7 @@ func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend s
 			}
 			delete(want, event)
 		}
-		from := uint64(1)
-		for _, name := range []string{"Wallet", "Child"} {
-			f := network.discovery
-			f.ChainID, f.SourceID, f.FromBlock = 101, name, &from
-			filter, err := factory.Build(f)
-			if err != nil {
-				t.Fatal(err)
-			}
-			children, err := db.FactoryChildren(ctx, filter.ID, 101, 2)
-			if err != nil || len(children) != 1 || children[branch.child] != 1 {
-				t.Fatalf("factory %s children %v, want %s at block one: %v", name, children, branch.child, err)
-			}
-		}
+		network.checkDiscoveredChild(t, db, branch.child)
 		progress, err := db.Progress(ctx)
 		if err != nil || len(progress) != 2 {
 			t.Fatalf("progress: %v, %v", progress, err)
@@ -274,6 +298,9 @@ func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend s
 		for _, block := range branches {
 			for _, name := range names {
 				wantCalls = append(wantCalls, name+"@"+block)
+				if interruptEvent == "Child.run()" && name == interruptEvent && block == network.replacement.blockHash {
+					wantCalls = append(wantCalls, name+"@"+block)
+				}
 			}
 		}
 		mu.Lock()
@@ -284,7 +311,7 @@ func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend s
 		return progress
 	}
 
-	open()
+	open(nil)
 	awaitReady(true)
 	initialBranch := []string{network.original.blockHash}
 	initial := check(network.original, initialBranch)
@@ -295,10 +322,27 @@ func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend s
 	if after := check(network.original, initialBranch); !maps.Equal(initial, after) || network.primary.rejected.Load() == primaryRejections || network.standby.rejected.Load() == standbyRejections {
 		t.Fatal("pool outage or unchanged checkpoints not observed")
 	}
+	if fault != nil {
+		fault.armed.Store(true)
+	}
 	network.standby.offline.Store(false)
+	if fault != nil {
+		fault.interrupt(t, app)
+		_ = db.Backend.Close()
+		fault.restart()
+		open(func(reopened *store.Store) {
+			checkInterruptedMixedSource(t, reopened, network, initial, interruptEvent)
+		})
+	}
 	awaitReady(true)
 	replayed := []string{network.original.blockHash, network.replacement.blockHash}
 	after := check(network.replacement, replayed)
+	if order == schema.Multichain && fault != nil {
+		replay, err := db.PendingMultichainReplay(ctx)
+		if err != nil || replay != "" {
+			t.Fatalf("recovered peer replay still pending: %q, %v", replay, err)
+		}
+	}
 	if network.standby.accepted.Load() == 0 || initial["202"] != after["202"] {
 		t.Fatal("provider switch or per-chain checkpoints differ", initial, after)
 	}
@@ -308,7 +352,7 @@ func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend s
 	if err := db.Backend.Close(); err != nil {
 		t.Fatal(err)
 	}
-	open()
+	open(nil)
 	awaitReady(true)
 	if final := check(network.replacement, replayed); !maps.Equal(after, final) {
 		t.Fatal("cold reopen changed checkpoints", after, final)
