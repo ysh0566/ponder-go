@@ -86,6 +86,9 @@ func omniLogsRPC(t *testing.T, g omniLogsGolden) (*finiteRPC, *omniLogsRPCCounts
 	return omniLogsRPCWithHeaders(t, g, nil)
 }
 func omniLogsRPCWithHeaders(t *testing.T, g omniLogsGolden, header func(uint64, uint64) map[string]any) (*finiteRPC, *omniLogsRPCCounts) {
+	return omniLogsRPCWithSelectors(t, g, header, nil)
+}
+func omniLogsRPCWithSelectors(t *testing.T, g omniLogsGolden, header func(uint64, uint64) map[string]any, selectNumber func(uint64, string) string) (*finiteRPC, *omniLogsRPCCounts) {
 	t.Helper()
 	blocks := map[uint64]map[string]map[string]any{}
 	logs := map[uint64][]map[string]any{}
@@ -150,6 +153,9 @@ func omniLogsRPCWithHeaders(t *testing.T, g omniLogsGolden, header func(uint64, 
 				b = hashes[fmt.Sprint(q.Params[0])]
 			} else {
 				n := fmt.Sprint(q.Params[0])
+				if selectNumber != nil {
+					n = selectNumber(id, n)
+				}
 				if n == "latest" {
 					n = latest[id]
 				}

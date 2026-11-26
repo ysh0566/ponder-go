@@ -32,7 +32,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 
 业务数据和同步缓存分开管理时，`historical.RuntimeRunner` 已支持默认多链和 Isolated 持续追块。Isolated 遇到分叉时仅撤销该链的未确认写入。进程重启时，各链从自己的安全检查点继续。[双库 Isolated 用法](docs/USAGE.md#双库-isolated-实时追块) · [分叉与重启验证](parity/runs/native-isolated-live/RESULT.md)
 
-**双库 Omnichain 实时索引仍待实现。** 目前支持各链结束高度均在全局最终确认范围内的历史回填。回填结束时，还需要把尚未最终确认的事件交给实时运行器。持续追块时需要按全局检查点排列各链事件。一条链分叉时，需要协调两个库撤销受影响的写入，并按顺序重放依赖这些写入的其他链回调。[最终性边界](historical/live_runtime_omnichain_source_test.go)
+**双库 Omnichain 实时索引仍待实现。** 固定区间的作业可以提前启动，等每条链的结束区块和初始化区块都达到全局最终确认位置后再回填。默认在打开时检查一次，Go 应用也可配置轮询间隔。[提前启动的用法](docs/USAGE.md#等待双库-omnichain-的区间最终确认) 回填结束时，还需要把尚未最终确认的事件交给实时运行器。持续追块时需要按全局检查点排列各链事件。一条链分叉时，需要协调两个库撤销受影响的写入，并按顺序重放依赖这些写入的其他链回调。[最终性边界](historical/live_runtime_omnichain_source_test.go)
 
 | 使用场景 | 当前能用什么 | 还缺什么 |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 
 还有两处会影响 Go 项目的具体写法。
 
-- 双库运行器的历史回填只允许在 Omnichain 有限区间调整 `QuerySize`。三种排序都可以设置 `MaxQueryParameters` 来控制同步数据的 SQL 批量写入。历史重试等待 `RetryWait` 和提交后通知 `OnCommitted` 仍未开放。[设置批量写入大小](docs/USAGE.md#独立存储的有限区间索引) · [配置校验](historical/live_runtime.go)
+- 双库运行器的历史回填只允许在 Omnichain 有限区间调整 `QuerySize`。三种排序都可以设置 `MaxQueryParameters` 来控制同步数据的 SQL 批量写入。双库入口仍缺少三项历史回填选项，包括用 `Clock` 提供时钟、用 `RetryWait` 定制重试等待，以及用 `OnCommitted` 接收每组回调提交后的通知。[设置批量写入大小](docs/USAGE.md#独立存储的有限区间索引) · [配置校验](historical/live_runtime.go)
 - Go 模型生成器把数据库枚举和 `hex` 列生成为 `string`。枚举取值的编译期约束和自定义列编解码器的生成仍待实现。JSON、字节串和数组已有生成及数据库读写测试。[生成器](orm/generate.go) · [模型测试](orm/container_models_test.go)
 
 ## 当前验证与计数

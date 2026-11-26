@@ -12,7 +12,7 @@
 
 如果各链分别维护自己的余额，使用 Isolated，在业务表主键中包含 `chain_id`。如果多条链共同维护一个按事件先后计算的值，使用 Omnichain，运行器会按跨链 checkpoint 排序回调。PostgreSQL 双库存储使用同一数据库内的两个命名空间，PGlite 使用两个数据目录。[独立多链示例](#从同一个-go-项目索引多条链) · [跨链排序示例](#按全局顺序索引多条链) · [双库存储](#独立存储的有限区间索引)
 
-在双库 Isolated 中，设置 `RuntimeOptions.Live` 即可跟随链头。双库 Omnichain 应保留 `Live = nil`，并指定已最终确认的结束高度。需要 Omnichain 持续追块时可选用普通 Go 入口。[Isolated 实时配置](#双库-isolated-实时追块) · [运行器检查](../historical/live_runtime.go)
+在双库 Isolated 中，设置 `RuntimeOptions.Live` 即可跟随链头。双库 Omnichain 应保留 `Live = nil`，并指定有限的结束高度。作业可以提前启动，等待区间最终确认。[提前启动](#等待双库-omnichain-的区间最终确认) 需要 Omnichain 持续追块时可选用普通 Go 入口。[Isolated 实时配置](#双库-isolated-实时追块) · [运行器检查](../historical/live_runtime.go)
 
 ## 准备环境
 
@@ -643,6 +643,29 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 在默认多链排序下使用工厂合约发现子地址时，将 `RuntimeOptions.FactorySources` 和 `SourceCheckpoints` 都设为 `true`。将 `Live` 留空即可在固定高度结束。工厂地址配置里的 `startBlock` 和 `endBlock` 决定扫描创建事件的范围，子合约或账户配置的区间决定向 Go 回调投递哪些事件。例如，工厂在区块 1 创建的子合约，即使其日志回调从区块 3 才开始，仍可在区块 3 收到事件。重开同一部署时，运行器按区块哈希恢复子地址，RPC 节点需能返回创建区间的区块和日志。未最终确认的区块被替换后，回放会使用新分支创建的子地址。[有限区间工厂测试](../parity/runs/native-bounded-factory/RESULT.md)
 
 独立存储的 Omnichain 会自动启用来源 checkpoint。可以注册一个或多个区块回调，各自选择采样间隔，也可以只订阅合约日志、合约 CALL 或账户事件。每个来源都需要声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
+
+#### 等待双库 Omnichain 的区间最终确认
+
+两个构造函数都支持 `RuntimeOptions.OmnichainFinalityPollInterval`。零值表示在打开时检查一次。正值表示按指定间隔重新读取各链的最新区块，再按各自的重组窗口计算最终确认位置。例如，链 A 已产生结束区块，链 B 的最终确认时间仍早于这个区块时，作业会继续等待。若某个 `setup` 回调读取的区块高于该链最后一个事件，也会等到该区块最终确认。
+
+下面的 `opts` 是已配置好存储、来源和 Go 回调的 `historical.RuntimeOptions`。示例为等待和回填合计预留十分钟，作业结束后释放上下文。
+
+```go
+opts.OmnichainFinalityPollInterval = 3 * time.Second
+jobCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+defer cancel()
+runner, err := historical.OpenRuntimePostgres(jobCtx, opts)
+if err != nil {
+    return err
+}
+defer runner.Close(context.Background())
+_, err = runner.Run(jobCtx)
+return err
+```
+
+等待期间，运行器只读取链数据。达到条件后才打开业务库和同步库，随后由 `Run` 执行回调。取消等待或达到超时会结束这次打开。节点请求返回的错误和无效区块头也会返回给调用方。使用 PGlite 时将构造函数换成 `historical.OpenRuntimePGlite`。[双后端回填与取消测试](../parity/runs/native-omnichain-finality-wait/RESULT.md)
+
+#### 配置双库 Omnichain 的区块回调
 
 例如，在 Go 来源配置的 `blocks` 字段中加入以下两个来源，然后向 `config.BuildSourceIndexing` 注册 `Sample:block` 和 `Audit:block`。采样从各自的 `startBlock` 开始，两个端点都包含在内。
 
