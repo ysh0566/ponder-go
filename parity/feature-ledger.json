@@ -983,7 +983,7 @@
         "parity/discovery-audit.json",
         "parity/runs/native-go-indexer-reaudit/RESULT.md"
       ],
-      "remaining": "Both pinned E2E declarations passed. The three-chain WETH historical simulation has a seeded account-table comparison. Its fault schedule and the other seven simulation applications remain open."
+      "remaining": "Both pinned E2E declarations passed. The WETH and ERC-20 simulations have historical reference-table comparisons. Their full seeded fault schedules and the remaining six applications are open."
     },
     {
       "id": "strict-ts-source-compatibility",
@@ -3386,10 +3386,12 @@
       "implementation_files": [
         "parity/simulation/feature-multichain/config.json",
         "parity/simulation/feature-multichain/capture.py",
-        "parity/simulation/feature-multichain/oracle.cjs"
+        "parity/simulation/feature-multichain/oracle.cjs",
+        "parity/simulation/archive_capture.py"
       ],
       "native_test_files": [
-        "runtime/simulation_multichain_test.go"
+        "runtime/simulation_multichain_test.go",
+        "runtime/simulation_archive_test.go"
       ],
       "upstream_sources": [
         "simulation-test/apps/feature-multichain/ponder.config.ts",
@@ -3400,7 +3402,34 @@
       "evidence": [
         "parity/runs/native-seeded-multichain/RESULT.md"
       ],
-      "remaining": "Full seeded fault and restart simulation, the other seven application table comparisons, and the separate rETH and Uniswap benchmarks."
+      "remaining": "Full seeded WETH fault and restart scenarios, including database errors, RPC outages and realtime reorgs."
+    },
+    {
+      "id": "native-seeded-erc20",
+      "status": "verified_subset",
+      "implementation_files": [
+        "parity/simulation/archive_capture.py",
+        "parity/simulation/reference-erc20/oracle.config.mjs",
+        "parity/simulation/reference-erc20/oracle.test.mjs",
+        "parity/simulation/reference-erc20/config.json"
+      ],
+      "native_test_files": [
+        "runtime/simulation_erc20_test.go",
+        "runtime/simulation_archive_test.go"
+      ],
+      "upstream_sources": [
+        "simulation-test/apps/reference-erc20/ponder.config.ts",
+        "simulation-test/apps/reference-erc20/ponder.schema.ts",
+        "simulation-test/apps/reference-erc20/src/index.ts",
+        "simulation-test/src/rpc-sim.ts",
+        "packages/core/src/indexing-store/index.ts",
+        "packages/core/src/indexing-store/cache.ts",
+        "packages/core/src/utils/checkpoint.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-seeded-erc20/RESULT.md"
+      ],
+      "remaining": "Initial numeric header read failures are covered. Other simulated RPC and DB faults, realtime and restart schedules, and six other applications remain open."
     }
   ]
 }
