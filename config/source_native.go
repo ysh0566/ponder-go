@@ -253,10 +253,12 @@ func (build *SourceIndexingBuild) nativeConfig(selected int, ordering schema.Ord
 			if kind == "blocks" {
 				interval := sourceDefault(source.get("interval"), float64(1))
 				n, _ := sourceNumber(interval)
-				if n < 1 || math.Trunc(n) != n {
-					return Config{}, fmt.Errorf("native runtime requires a positive block interval, got %s", sourceString(interval))
+				// A negative divisor selects the same heights from start as its magnitude.
+				period := math.Abs(n)
+				if !sourceInteger(interval) || period == 0 || period >= 1<<64 {
+					return Config{}, fmt.Errorf("native runtime requires a nonzero block interval with a uint64 magnitude, got %s", sourceString(interval))
 				}
-				out.Blocks = append(out.Blocks, BlockSource{Name: sourceName, Chain: name, StartBlock: start, EndBlock: end, Interval: uint64(n)})
+				out.Blocks = append(out.Blocks, BlockSource{Name: sourceName, Chain: name, StartBlock: start, EndBlock: end, Interval: uint64(period)})
 				continue
 			}
 			address, err := sourceAddress(source, rawChain, latest)

@@ -17,6 +17,15 @@ import (
 )
 
 func TestRuntimeOmnichainBlockIntervals(t *testing.T) {
+	testRuntimeOmnichainBlockIntervals(t, 1)
+}
+
+func TestRuntimeOmnichainSignedBlockIntervals(t *testing.T) {
+	testRuntimeOmnichainBlockIntervals(t, -1)
+}
+
+func testRuntimeOmnichainBlockIntervals(t *testing.T, sign int) {
+	t.Helper()
 	chains := map[uint64]omniAccountChain{
 		101: mineOmniAccountChain(t, 101, []uint64{10, 20, 30, 40, 50, 60, 70, 80, 90}),
 		202: mineOmniAccountChain(t, 202, []uint64{12, 22, 32, 42, 52, 62, 72, 82, 92}),
@@ -40,12 +49,12 @@ func TestRuntimeOmnichainBlockIntervals(t *testing.T) {
 					},
 					"blocks": {
 						"Genesis": {"chain":"two","startBlock":0,"endBlock":0,"interval":5},
-						"A": {"chain":{"one":{},"two":{}},"startBlock":1,"endBlock":8,"interval":5},
-						"B": {"chain":"one","startBlock":2,"endBlock":7,"interval":2},
-						"C": {"chain":"two","startBlock":3,"endBlock":5,"interval":1}
+						"A": {"chain":{"one":{},"two":{}},"startBlock":1,"endBlock":8,"interval":%d},
+						"B": {"chain":"one","startBlock":2,"endBlock":7,"interval":%d},
+						"C": {"chain":"two","startBlock":3,"endBlock":5,"interval":%d}
 					},
 					"accounts": {"Wallet":{"chain":"one","address":%q,"startBlock":1,"endBlock":8}}
-				}`, chains[101].url, cached, chains[202].url, !cached, chains[101].wallet)
+				}`, chains[101].url, cached, chains[202].url, !cached, 5*sign, 2*sign, sign, chains[101].wallet)
 				cfg, err := config.ParseSourceConfiguration([]byte(raw))
 				if err != nil {
 					t.Fatal(err)

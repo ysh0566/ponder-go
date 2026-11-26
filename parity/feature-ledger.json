@@ -78,9 +78,14 @@
       "evidence": [
         "docs/TYPED_SOURCE_CONFIGURATION.md",
         "parity/runs/native-compiled-indexer/RESULT.md",
-        "parity/runs/native-custom-transport/RESULT.md"
+        "parity/runs/native-custom-transport/RESULT.md",
+        "parity/runs/native-signed-block-intervals/RESULT.md"
       ],
-      "remaining": "The typed configuration cases cover all 39 active upstream records. Native Go builds accept named custom RPC transports and start every registered chain. The source configuration validator accepts a nonzero signed block interval. The conversion used by the ordinary Go indexer still requires a positive interval."
+      "remaining": "The 39 active upstream configuration records are covered. Compiled sources retain signed block intervals and schedule by magnitude. The native BlockSource stores a uint64 period.",
+      "native_test_files": [
+        "config/source_executable_test.go",
+        "runtime/compiled_indexer_test.go"
+      ]
     },
     {
       "id": "schema",
@@ -3073,9 +3078,10 @@
         "packages/core/src/runtime/historical.test.ts"
       ],
       "evidence": [
-        "parity/runs/native-omnichain-block-intervals/RESULT.md"
+        "parity/runs/native-omnichain-block-intervals/RESULT.md",
+        "parity/runs/native-signed-block-intervals/RESULT.md"
       ],
-      "remaining": "Independent-store live Omnichain remains open. The finalized runner requires bounded sources and positive block intervals."
+      "remaining": "The finalized independent-store runner requires finite globally finalized source ranges and a nonzero safe-integer block period. Live Omnichain and cross-chain reorgs remain open."
     },
     {
       "id": "native-mixed-source-reorg",

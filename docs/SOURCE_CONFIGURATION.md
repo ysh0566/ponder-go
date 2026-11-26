@@ -35,7 +35,7 @@ M28 的完整模块验收通过：Go/race各1852、0失败/skip，PG198/PGlite19
 
 Go 索引器可按链名向来源构建器传入 RPC 函数。[自定义传输](USAGE.md#为单条链配置-go-rpc-传输)
 
-当前边界仍包括9项原版类型义务、原版skip、完整静态DSL/字面量约束、完整RPC订阅与自适应策略、全部事件/context/include公开形状、负数区块/interval到现有无符号调度器的支持、完整历史planner和多链调度。JSON动态适配器不是完整TypeScript类型等价证明。其余查询/API/CLI/dev/templates/SDK/simulation范围继续保留。
+M28 验收时记录的边界包括9项原版类型义务、原版skip、完整静态DSL/字面量约束、完整RPC订阅与自适应策略、全部事件/context/include公开形状、负数区块/interval到当时无符号调度器的支持、完整历史planner和多链调度。JSON动态适配器不是完整TypeScript类型等价证明。其余查询/API/CLI/dev/templates/SDK/simulation范围继续保留。
 
 完整首轮在发现Hyperliquid对象身份断言缺口后主动停止，退出143；已完成1473个native叶用例、0失败/skip，normal未完整结束且race未启动。快照full-01-evidence保留原日志、原native测试和输入指纹；补上身份断言后须完整重跑，不能把该部分执行当作验收通过。
 
@@ -44,3 +44,5 @@ Go 索引器可按链名向来源构建器传入 RPC 函数。[自定义传输](
 正式full02退出0。测试前记录的952文件指纹`ded57969d2f68ba7910400427e04ecae8ffc552be7f9f4400f9d776443a11a8e`贯穿normal/race开始、结束与最终汇总一致。35个映射原例的独立完整原版oracle也通过。桥将Go的(value,error)返回规范化为来源safe状态/BuildError JSON表示；这不宣称导出的来源safe-status API或完整原生错误类层次。
 
 M29后续已补齐此前4例9项原生类型义务：全部39active/92断言映射并经完整Go/race/original通过，原skip1/2断言仍保留未映射。新的生产构造/消费/生成绑定边界及其范围见TYPED_SOURCE_CONFIGURATION.md；上面的M28限制作为历史保留。
+
+目前的编译入口保留区块筛选器的有符号间隔，并将其绝对值传给原生调度器。例如，从高度 2 开始，间隔 `-3` 会匹配 2、5、8。参见[采样用法](USAGE.md#配置双库-omnichain-的区块回调)。

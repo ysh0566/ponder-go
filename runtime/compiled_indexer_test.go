@@ -186,6 +186,104 @@ func testCompiledIndexer(t *testing.T, urls []string, order schema.Ordering, dia
 	}
 }
 
+func TestCompiledSignedBlockIntervals(t *testing.T) {
+	ctx := t.Context()
+	url := testanvil.StartChain(t, 101, "--no-mining")
+	client := rpc.New(url)
+	var mined any
+	if err := client.Call(ctx, "anvil_mine", []any{"0x9"}, &mined); err != nil {
+		t.Fatal(err)
+	}
+	raw := fmt.Sprintf(`{"chains":{"one":{"id":101,"rpc":%q,"reorgWindow":0}},"blocks":{
+		"Negative":{"chain":"one","startBlock":2,"endBlock":9,"interval":-3},
+		"Positive":{"chain":"one","startBlock":2,"endBlock":9,"interval":3}
+	}}`, url)
+	cfg, err := config.ParseSourceConfiguration([]byte(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	base, err := config.BuildSourceConfig(cfg, config.SourceBuildOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	onBlock := Handler(func(ctx context.Context, c *Context) error {
+		id := c.Event.Name + "/" + c.Event.Block.Number
+		return c.DB.Write(ctx, "sample", store.Row{"id": id}, store.Insert)
+	})
+	build, err := config.BuildSourceIndexing(ctx, cfg, base, []config.SourceIndexingFunction{
+		{Name: "Negative:block", Fn: onBlock}, {Name: "Positive:block", Fn: onBlock},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	native, err := build.NativeConfig("one")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, interval := range []float64{-3, 3} {
+		f := native.SourcePlan.Callbacks[i].Filter.(config.SourceBlockFilter)
+		if f.Interval != interval || f.Offset != 2 || native.Blocks[i].Interval != 3 {
+			t.Fatalf("source filter %+v, block schedule %+v", f, native.Blocks[i])
+		}
+	}
+	end := uint64(9)
+	direct := config.Config{Chains: native.Chains, Blocks: []config.BlockSource{
+		{Name: "Negative", Chain: "one", StartBlock: 2, EndBlock: &end, Interval: config.BlockPeriod(-3)},
+		{Name: "Positive", Chain: "one", StartBlock: 2, EndBlock: &end, Interval: 3},
+	}}
+	handlers := map[string]Handler{"Negative:block": onBlock, "Positive:block": onBlock}
+	for _, tc := range []struct {
+		name string
+		open func(*store.Store) (ApplicationIndexer, error)
+	}{
+		{"compiled", func(db *store.Store) (ApplicationIndexer, error) { return NewIndexerFromSource(build, db, Options{}) }},
+		{"direct", func(db *store.Store) (ApplicationIndexer, error) { return NewIndexer(direct, db, handlers) }},
+	} {
+		for _, backend := range []string{"postgres", "pglite"} {
+			t.Run(backend+"/"+tc.name, func(t *testing.T) {
+				dir := filepath.Join(t.TempDir(), "data")
+				namespace := fmt.Sprintf("ponder_go_signed_%x", time.Now().UnixNano())
+				model := schema.Schema{Tables: []schema.Table{{Name: "sample", Columns: []schema.Column{{Name: "id", Type: "text", Primary: true}}}}}
+				for attempt := 0; attempt < 2; attempt++ {
+					b := stagedBackend(t, ctx, backend, dir)
+					t.Cleanup(func() { _ = b.Close() })
+					db, err := store.New(ctx, b, model, namespace, schema.Multichain)
+					if err != nil {
+						t.Fatal(err)
+					}
+					idx, err := tc.open(db)
+					if err != nil {
+						t.Fatal(err)
+					}
+					run, cancel := context.WithTimeout(ctx, time.Minute)
+					var ready bool
+					err = idx.RunIndexing(run, func(v bool) { ready = v })
+					cancel()
+					if err != nil || !ready {
+						t.Fatalf("bounded indexing ready=%v: %v", ready, err)
+					}
+					rows, err := db.Read(ctx, "sample")
+					if err != nil {
+						t.Fatal(err)
+					}
+					var ids []string
+					for _, row := range rows.Rows {
+						ids = append(ids, fmt.Sprint(row["id"]))
+					}
+					slices.Sort(ids)
+					want := []string{"Negative:block/0x2", "Negative:block/0x5", "Negative:block/0x8", "Positive:block/0x2", "Positive:block/0x5", "Positive:block/0x8"}
+					if !slices.Equal(ids, want) {
+						t.Fatalf("attempt %d: rows %v", attempt, ids)
+					}
+					if err = b.Close(); err != nil {
+						t.Fatal(err)
+					}
+				}
+			})
+		}
+	}
+}
+
 func TestCompiledIndexerAdmission(t *testing.T) {
 	ctx := t.Context()
 	url := testanvil.StartChain(t, 101)

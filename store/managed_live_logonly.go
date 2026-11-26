@@ -24,15 +24,34 @@ func logOnlyVersion(version string) bool {
 }
 
 func logOnlyOptions(o ManagedLiveOptions) bool { return o.runtimeLogFilters != nil }
+
+// RuntimeBlockPeriod returns the positive sampling period used when checking
+// finalized Omnichain block receipts. Source filters retain their signed interval.
+func RuntimeBlockPeriod(interval any) (uint64, bool) {
+	period, ok := logOnlyInteger(interval, true)
+	return period, ok && period > 0 && period <= 1<<53-1
+}
+
 func logOnlyQuantity(v any) (uint64, bool) {
-	if n, ok := v.(*big.Int); ok {
-		if n != nil && n.IsUint64() {
-			return n.Uint64(), true
-		}
-		return 0, false
-	}
+	return logOnlyInteger(v, false)
+}
+
+// Block periods use magnitude. All other scan quantities must be nonnegative.
+func logOnlyInteger(v any, magnitude bool) (uint64, bool) {
 	if n, ok := v.(big.Int); ok {
-		return n.Uint64(), n.IsUint64()
+		v = &n
+	}
+	if n, ok := v.(*big.Int); ok {
+		if n == nil {
+			return 0, false
+		}
+		if magnitude && n.Sign() < 0 {
+			n = new(big.Int).Abs(n)
+		}
+		if !n.IsUint64() {
+			return 0, false
+		}
+		return n.Uint64(), true
 	}
 	r := reflect.ValueOf(v)
 	if !r.IsValid() {
@@ -40,13 +59,20 @@ func logOnlyQuantity(v any) (uint64, bool) {
 	}
 	switch r.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		if r.Int() >= 0 {
-			return uint64(r.Int()), true
+		n := r.Int()
+		if n >= 0 {
+			return uint64(n), true
+		}
+		if magnitude {
+			return -uint64(n), true
 		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return r.Uint(), true
 	case reflect.Float32, reflect.Float64:
 		n := r.Float()
+		if magnitude {
+			n = math.Abs(n)
+		}
 		if !math.IsNaN(n) && !math.IsInf(n, 0) && n >= 0 && n <= 9007199254740991 && math.Trunc(n) == n {
 			return uint64(n), true
 		}
@@ -60,8 +86,8 @@ func logOnlyQuantity(v any) (uint64, bool) {
 			base = 0
 		}
 		n, ok := new(big.Int).SetString(s, base)
-		if ok && n.IsUint64() {
-			return n.Uint64(), true
+		if ok {
+			return logOnlyInteger(n, magnitude)
 		}
 	}
 	return 0, false
@@ -161,10 +187,10 @@ func normalizeLogOnlyFilters(in map[uint64][]filter.Object, o ManagedLiveOptions
 			to, te := logOnlyQuantity(filter.FilterToBlock(f))
 			kind := f["type"]
 			if kind == "block" {
-				interval, ie := logOnlyQuantity(f["interval"])
+				period, validPeriod := RuntimeBlockPeriod(f["interval"])
 				offset, oe := logOnlyQuantity(f["offset"])
 				name, _ := f["sourceId"].(string)
-				if !ie || !oe || interval == 0 || interval > 1<<53-1 || offset >= interval || name == "" || blockSources[name] {
+				if !validPeriod || !oe || offset >= period || name == "" || blockSources[name] {
 					return nil, ErrManagedLiveBatchConflict
 				}
 				blockSources[name] = true

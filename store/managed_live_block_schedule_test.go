@@ -1,7 +1,9 @@
 package store
 
 import (
+	"encoding/json"
 	"errors"
+	"math/big"
 	"slices"
 	"testing"
 
@@ -57,5 +59,25 @@ func TestSparseBlockScheduleEvidence(t *testing.T) {
 	}
 	if sparseEventAllowed(checkpoint.Checkpoint{BlockTimestamp: cp.BlockTimestamp, ChainID: 1, BlockNumber: 6, TransactionIndex: cp.TransactionIndex, EventType: checkpoint.Blocks}, filters, "block") {
 		t.Fatal("off-schedule block")
+	}
+}
+
+func TestSignedBlockScheduleEvidence(t *testing.T) {
+	for _, signed := range []any{int64(-3), float64(-3), json.Number("-3"), big.NewInt(-3)} {
+		if n, ok := logOnlyQuantity(signed); ok || n != 0 {
+			t.Fatalf("negative scan quantity %v accepted as %d", signed, n)
+		}
+		filters := []filter.Object{{"type": "block", "interval": signed, "offset": 2, "fromBlock": 2, "toBlock": 9}}
+		for _, tc := range []struct {
+			from, to uint64
+			hit      bool
+		}{
+			{0, 1, false}, {2, 2, true}, {3, 4, false}, {4, 6, true}, {7, 7, false}, {8, 8, true}, {9, 15, false},
+		} {
+			err := checkEmptyBlockSchedules(filters, tc.from, tc.to)
+			if tc.hit && !errors.Is(err, ErrManagedLivePendingActions) || !tc.hit && err != nil {
+				t.Errorf("interval %v, range %d..%d: %v", signed, tc.from, tc.to, err)
+			}
+		}
 	}
 }

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"math"
 	"reflect"
 	"sync"
 	"testing"
@@ -70,4 +71,12 @@ func TestExecutableSourceExclusiveSession(t *testing.T) {
 		t.Fatal("stale release revoked new lease")
 	}
 	end()
+}
+
+func TestBlockPeriod(t *testing.T) {
+	for input, want := range map[int64]uint64{0: 0, 3: 3, -3: 3, math.MinInt64: 1 << 63, math.MaxInt64: math.MaxInt64} {
+		if got := BlockPeriod(input); got != want {
+			t.Errorf("BlockPeriod(%d) = %d, want %d", input, got, want)
+		}
+	}
 }

@@ -34,9 +34,9 @@ func omnichainDenseCallbacks(callbacks []indexing.Object) (bool, error) {
 		last = max(last, to)
 		switch f["type"] {
 		case "block":
-			interval, ie := uintQuantity(f["interval"])
+			period, validPeriod := store.RuntimeBlockPeriod(f["interval"])
 			offset, oe := uintQuantity(f["offset"])
-			if cb["type"] != "block" || ie != nil || oe != nil || interval == 0 || interval > 1<<53-1 || offset >= interval {
+			if cb["type"] != "block" || !validPeriod || oe != nil || offset >= period {
 				return false, fmt.Errorf("invalid omnichain block interval or offset")
 			}
 			name, _ := f["sourceId"].(string)
@@ -44,7 +44,7 @@ func omnichainDenseCallbacks(callbacks []indexing.Object) (bool, error) {
 				return false, fmt.Errorf("missing or duplicate omnichain block source %q", name)
 			}
 			blockSources[name] = true
-			if interval == 1 {
+			if period == 1 {
 				closing = f
 			}
 		case "log":
