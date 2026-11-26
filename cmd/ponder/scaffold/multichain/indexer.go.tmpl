@@ -1,0 +1,24 @@
+package main
+
+import (
+	"context"
+	_ "embed"
+
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+//go:embed abi.json
+var wethABI []byte
+
+func newProjectIndexer(_ context.Context, db *store.Store, networks []networkConfig, logger *logging.Logger) (runtime.ApplicationIndexer, error) {
+	cfg := config.Config{Ordering: projectOrdering}
+	for _, n := range networks {
+		cfg.Chains = append(cfg.Chains, n.chain())
+		cfg.Contracts = append(cfg.Contracts, n.contract("weth9", wethABI))
+	}
+	handlers := map[string]runtime.Handler{"weth9:Deposit": recordDeposit}
+	return runtime.NewIndexerWithOptions(cfg, db, handlers, runtime.Options{Logger: logger})
+}

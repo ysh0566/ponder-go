@@ -301,6 +301,7 @@ head "$model_dir/model.go"
 | --- | --- | --- |
 | `empty` | Ethereum 主网，占位起始区块 1,234,567 | 提供 `example(id, name)` 空表和空 ABI，供项目自行定义事件及 Go 回调。 |
 | `blocks` | Ethereum 主网，从 19,750,000 开始，每 5 个区块一次 | 读取 Chainlink 的 `latestAnswer()`，以区块时间戳为主键将报价记录到 `chainlink_price`。 |
+| `multichain` | Ethereum、Base、Optimism、Polygon，各自首次启动时的链头（含） | 累计每条链上每个地址收到的 WETH9 `Deposit` 金额，主键为链 ID 和地址。 |
 | `filter` | Ethereum 主网，从 14,438,081 开始 | 只请求 PrimitiveManager 的 `Swap` 事件，在 `"swapEvent"` 中保存事件 ID、付款方和接收方。 |
 | `api-functions` | Ethereum 主网，13,142,655 至 13,150,000（含） | 索引 ERC-20 转账和授权，提供计数、转账排名和 GraphQL 接口。 |
 | `read-contract` | Ethereum 主网，从 15,963,553 开始 | 监听 FileStore 的文件创建和删除事件。`file` 保存文件内容、大小、创建时间及可选的元数据。 |
@@ -315,6 +316,21 @@ head "$model_dir/model.go"
 用 `ponder init --template empty my-indexer` 新建自己的索引器。将 `network.json` 中的零地址和起始高度改为目标合约及部署高度，把事件 ABI 写入 `abi.json`，再在 `handlers.go` 的 `handlers` 中以 `ExampleContract:事件名` 注册回调。`schema.json` 定义回调写入的业务表。
 
 用 `ponder init --template blocks my-prices` 生成区块采样项目。节点须能在来源区间按区块高度执行历史 `eth_call`。回调从起始高度开始每隔 5 块调用一次 `latestAnswer()`，将带符号的结果除以 10⁸。启动后可执行 `SELECT timestamp, price FROM chainlink_price ORDER BY timestamp` 查看报价。使用自己的预言机时，修改 `network.json` 中的 `address`，或设置 `PONDER_LOCAL_CONTRACT`。[本地双后端验证](../parity/runs/native-block-templates/RESULT.md)
+
+用 `ponder init --template multichain my-weth` 创建多链索引器。将 `PONDER_RPC_URL_1`、`PONDER_RPC_URL_8453`、`PONDER_RPC_URL_10`、`PONDER_RPC_URL_137` 分别设为 Ethereum、Base、Optimism、Polygon 的 RPC 地址。每条链都可以另设 `PONDER_WS_URL_<链 ID>` 接收新区块通知。四条链使用各自的 RPC 和 `network.json` 中各自的合约地址。若只需其中几条链，可在新部署启动前删去其他网络条目。
+
+按下方生成项目的依赖设置步骤准备好项目后，在项目目录运行 `ponder start`。首次启动时分别记录各链的起始高度，之后重启会从同一部署的进度补块。`handlers.go` 把 `Deposit(dst, wad)` 的金额加到 `account`，即从起始区块起的累计存款；转出、取款不参与这一指标。Isolated 排序使每条链独立推进，并在重组时只回滚对应链的写入。可用 SQL 或 GraphQL 按链查询同一地址。
+
+```sql
+SELECT chain_id, address, balance FROM account ORDER BY chain_id, address;
+```
+
+```sh
+curl -fsS http://127.0.0.1:42069/graphql -H 'Content-Type: application/graphql' \
+  --data '{ accounts(where: {chainId: 8453}) { items { address balance } } }'
+```
+
+状态接口 `/status` 按网络名返回进度。PostgreSQL 支持在相同部署上另开 `ponder serve` 提供查询，该进程只需数据库连接与项目配置。[四链存款与重组验证](../parity/runs/native-multichain-template/RESULT.md)
 
 用 `ponder init --template filter my-swaps` 创建事件过滤项目。`indexer.go` 在合约配置中选定 `Swap`，生成的日志请求携带对应的主题。用 `SELECT id, payer, recipient FROM "swapEvent"` 查询结果。HTTP 服务也在 `/` 和 `/graphql` 提供 GraphQL，可以查询 `{ swapEvents { items { id payer recipient } } }`。
 
@@ -345,7 +361,7 @@ export DATABASE_URL="$INDEXER_DATABASE_URL"
 ponder start --schema ponder_go_nfts
 ```
 
-`PONDER_RPC_URL_<链ID>` 指向节点。`PONDER_LOCAL_RPC_URL` 和 `PONDER_LOCAL_CONTRACT` 可以分别覆盖节点和监听地址。切换到自建链时，同时将 `network.json` 中的 `name`、`id`、`startBlock` 和可选的 `endBlock` 改为该链及部署区间。工厂模板的 `address` 填工厂地址，账户模板填被观察的账户，代理模板填代理地址。Go 回调在 `handlers.go` 中，启动和查询服务在 `main.go` 中。使用 PGlite 时执行 `npm install` 安装驱动，再按本地 PGlite 一节启动。[链上事件验证](../parity/runs/native-project-templates/RESULT.md)
+`PONDER_RPC_URL_<链ID>` 指向节点。单链模板还可用 `PONDER_LOCAL_RPC_URL` 和 `PONDER_LOCAL_CONTRACT` 分别覆盖节点和监听地址。切换到自建链时，同时将 `network.json` 中的 `name`、`id`、`startBlock` 和可选的 `endBlock` 改为该链及部署区间。工厂模板的 `address` 填工厂地址，账户模板填被观察的账户，代理模板填代理地址。Go 回调在 `handlers.go` 中，启动和查询服务在 `main.go` 中。使用 PGlite 时执行 `npm install` 安装驱动，再按本地 PGlite 一节启动。[链上事件验证](../parity/runs/native-project-templates/RESULT.md)
 
 账户项目使用支持 `callTracer` 的节点来识别转入的原生币。首次用部署命名空间启动时，`"startBlock": "latest"` 将节点当前高度保存到数据库；同一部署重启时会补齐停机期间的区块。需要从指定高度回填时，在新部署的 `network.json` 填入该高度的整数。可以通过以下 SQL 核对累计金额和最后一次调用数据。
 
