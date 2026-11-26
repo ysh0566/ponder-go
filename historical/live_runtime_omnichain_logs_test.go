@@ -261,11 +261,19 @@ func omniLogsFields(v any, keys ...string) (map[string]any, error) {
 }
 func assertOmniLogsSnapshot(t *testing.T, f finiteFixture, c store.ManagedLiveControl, want omniLogsSnapshot) {
 	t.Helper()
+	assertOmniLogsPositions(t, c, want)
+	assertOmniLogsRows(t, f, want)
+}
+func assertOmniLogsPositions(t *testing.T, c store.ManagedLiveControl, want omniLogsSnapshot) {
+	t.Helper()
 	for _, cp := range want.Checkpoints {
 		if c.LogicalCursors[cp.ID] != cp.Latest || c.LogicalSafe[cp.ID] != cp.Safe || c.LogicalFinality[cp.ID] != cp.Finalized {
 			t.Fatalf("source log recovery positions differ chain%d got%+v want%+v", cp.ID, c, cp)
 		}
 	}
+}
+func assertOmniLogsRows(t *testing.T, f finiteFixture, want omniLogsSnapshot) {
+	t.Helper()
 	managedInspect(t, f, func(db store.Backend) {
 		rows := managedRows(t, db, "SELECT id,value FROM "+schema.Quote(f.options.Owned.Storage.BusinessNamespace)+".account ORDER BY id")
 		if len(rows) != len(want.Rows) || (len(rows) > 0 && !reflect.DeepEqual(rows, want.Rows)) {
