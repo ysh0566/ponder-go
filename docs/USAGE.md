@@ -302,6 +302,8 @@ head "$model_dir/model.go"
 | `empty` | Ethereum 主网，占位起始区块 1,234,567 | 提供 `example(id, name)` 空表和空 ABI，供项目自行定义事件及 Go 回调。 |
 | `blocks` | Ethereum 主网，从 19,750,000 开始，每 5 个区块一次 | 读取 Chainlink 的 `latestAnswer()`，以区块时间戳为主键将报价记录到 `chainlink_price`。 |
 | `multichain` | Ethereum、Base、Optimism、Polygon，各自首次启动时的链头（含） | 累计每条链上每个地址收到的 WETH9 `Deposit` 金额，主键为链 ID 和地址。 |
+| `friendtech` | Base，从 2,430,440 开始 | 索引 Friendtech Shares V1 的买卖事件、持仓和双方的累计统计。 |
+| `uniswap-v3-flash` | Ethereum 主网，从 12,369,621 开始 | 从 Uniswap V3 工厂发现池子，按代币汇总闪电贷事件。 |
 | `filter` | Ethereum 主网，从 14,438,081 开始 | 只请求 PrimitiveManager 的 `Swap` 事件，在 `"swapEvent"` 中保存事件 ID、付款方和接收方。 |
 | `api-functions` | Ethereum 主网，13,142,655 至 13,150,000（含） | 索引 ERC-20 转账和授权，提供计数、转账排名和 GraphQL 接口。 |
 | `read-contract` | Ethereum 主网，从 15,963,553 开始 | 监听 FileStore 的文件创建和删除事件。`file` 保存文件内容、大小、创建时间及可选的元数据。 |
@@ -316,6 +318,12 @@ head "$model_dir/model.go"
 用 `ponder init --template empty my-indexer` 新建自己的索引器。将 `network.json` 中的零地址和起始高度改为目标合约及部署高度，把事件 ABI 写入 `abi.json`，再在 `handlers.go` 的 `handlers` 中以 `ExampleContract:事件名` 注册回调。`schema.json` 定义回调写入的业务表。
 
 用 `ponder init --template blocks my-prices` 生成区块采样项目。节点须能在来源区间按区块高度执行历史 `eth_call`。回调从起始高度开始每隔 5 块调用一次 `latestAnswer()`，将带符号的结果除以 10⁸。启动后可执行 `SELECT timestamp, price FROM chainlink_price ORDER BY timestamp` 查看报价。使用自己的预言机时，修改 `network.json` 中的 `address`，或设置 `PONDER_LOCAL_CONTRACT`。[本地双后端验证](../parity/runs/native-block-templates/RESULT.md)
+
+生成项目后，`filter`、`multichain`、`friendtech`、`uniswap-v3-flash` 在 `/` 和 `/graphql` 提供 GraphQL，`api-functions` 在 `/graphql` 提供 GraphQL。其他 Go 模板默认通过 `/sql` 查询数据。需要 GraphQL 时，可在生成项目的 `api.go` 中挂载同一个 Go 处理器。[GraphQL 路由示例](../cmd/ponder/scaffold/graphql.go.tmpl)
+
+用 `ponder init --template friendtech my-shares` 新建 Friendtech 索引器，设置 `PONDER_RPC_URL_8453`。有效交易写入 `trade_event`，并更新按 subject 和 trader 组成的主键记录的 `share.amount`。份额为零的事件会被跳过。买入时 `trader_amount` 为 ETH 金额加协议费和 subject 费用，卖出时减去这两项费用。上游示例在 subject 或 trader 首次出现时创建零值汇总行，从该地址的后续交易起更新统计。查询逐笔交易可用 `SELECT trade_type, share_amount, trader_amount FROM trade_event ORDER BY id`。
+
+用 `ponder init --template uniswap-v3-flash my-flash` 新建闪电贷索引器，设置 `PONDER_RPC_URL_1`。`network.json` 的地址指向工厂，Go 回调监听工厂通过 `PoolCreated` 公布的池子。每个池子的 `token0()` 和 `token1()` 用 `latest` 读取并按不可变结果缓存。`token_borrowed.amount` 累加借款额。按上游示例，`token_paid.amount` 首次写入该代币的实付额，之后每次累加该代币的借款额。各代币保留合约原始单位。两个模板均提供 SQL，以及位于 `/` 和 `/graphql` 的 GraphQL。[本地合约与双后端验证](../parity/runs/native-protocol-templates/RESULT.md)
 
 用 `ponder init --template multichain my-weth` 创建多链索引器。将 `PONDER_RPC_URL_1`、`PONDER_RPC_URL_8453`、`PONDER_RPC_URL_10`、`PONDER_RPC_URL_137` 分别设为 Ethereum、Base、Optimism、Polygon 的 RPC 地址。每条链都可以另设 `PONDER_WS_URL_<链 ID>` 接收新区块通知。四条链使用各自的 RPC 和 `network.json` 中各自的合约地址。若只需其中几条链，可在新部署启动前删去其他网络条目。
 

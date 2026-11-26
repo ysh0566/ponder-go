@@ -1,0 +1,124 @@
+package main
+
+import (
+	"context"
+	_ "embed"
+	"math/big"
+
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+//go:embed abi.json
+var sharesABI []byte
+
+func project(network networkConfig, _ *logging.Logger) (config.Config, map[string]runtime.Handler) {
+	contract := network.contract("FriendtechSharesV1", sharesABI)
+	return config.Config{Contracts: []config.Contract{contract}}, map[string]runtime.Handler{"FriendtechSharesV1:Trade": trade}
+}
+
+// Sum without modifying the existing row or the decoded event arguments.
+func add(row store.Row, field string, amount *big.Int) *big.Int {
+	return new(big.Int).Add(row[field].(*big.Int), amount)
+}
+
+func trade(ctx context.Context, c *runtime.Context) error {
+	args := c.Event.Args.(map[string]any)
+	shares := args["shareAmount"].(*big.Int)
+	if shares.Sign() == 0 {
+		return nil
+	}
+	subject, trader := args["subject"].(string), args["trader"].(string)
+	eth := args["ethAmount"].(*big.Int)
+	protocolFee, subjectFee := args["protocolEthAmount"].(*big.Int), args["subjectEthAmount"].(*big.Int)
+	fees := new(big.Int).Add(protocolFee, subjectFee)
+	buy := args["isBuy"].(bool)
+	kind := "SELL"
+	traderAmount := new(big.Int).Sub(eth, fees)
+	shareDelta := new(big.Int).Neg(shares)
+	volume := eth
+	spend, earnings := new(big.Int), traderAmount
+	if buy {
+		kind = "BUY"
+		traderAmount = new(big.Int).Add(eth, fees)
+		shareDelta, volume = shares, traderAmount
+		spend, earnings = traderAmount, new(big.Int)
+	}
+	timestamp, err := runtime.Number(c.Event.Block.Timestamp)
+	if err != nil {
+		return err
+	}
+	db := c.DB.Indexing()
+	_, err = db.InsertOne(ctx, "trade_event", store.Row{
+		"id":                c.Event.ID,
+		"subject":           subject,
+		"trader":            trader,
+		"shareAmount":       shares,
+		"tradeType":         kind,
+		"ethAmount":         eth,
+		"protocolEthAmount": protocolFee,
+		"subjectEthAmount":  subjectFee,
+		"traderAmount":      traderAmount,
+		"supply":            args["supply"],
+		"timestamp":         timestamp,
+	}, store.Conflict{})
+	if err != nil {
+		return err
+	}
+
+	// The reference initializes the aggregate on the first trade and applies deltas on conflict.
+	zero, one := new(big.Int), big.NewInt(1)
+	_, err = db.InsertOne(ctx, "subject", store.Row{
+		"address":               subject,
+		"totalTrades":           zero,
+		"totalShares":           zero,
+		"lastPrice":             zero,
+		"earnings":              zero,
+		"traderVolume":          zero,
+		"protocolFeesGenerated": zero,
+	}, store.Conflict{Action: store.ConflictUpdate, Update: func(row store.Row) (store.Row, error) {
+		return store.Row{
+			"totalTrades":           add(row, "totalTrades", one),
+			"totalShares":           add(row, "totalShares", shareDelta),
+			"lastPrice":             new(big.Int).Quo(volume, shares),
+			"earnings":              add(row, "earnings", subjectFee),
+			"traderVolume":          add(row, "traderVolume", volume),
+			"protocolFeesGenerated": add(row, "protocolFeesGenerated", protocolFee),
+		}, nil
+	}})
+	if err != nil {
+		return err
+	}
+	_, err = db.InsertOne(ctx, "trader", store.Row{
+		"address":          trader,
+		"totalTrades":      zero,
+		"spend":            zero,
+		"earnings":         zero,
+		"profit":           zero,
+		"subjectFeesPaid":  zero,
+		"protocolFeesPaid": zero,
+	}, store.Conflict{Action: store.ConflictUpdate, Update: func(row store.Row) (store.Row, error) {
+		return store.Row{
+			"totalTrades":      add(row, "totalTrades", one),
+			"spend":            add(row, "spend", spend),
+			"earnings":         add(row, "earnings", earnings),
+			"profit":           add(row, "profit", new(big.Int).Sub(earnings, spend)),
+			"subjectFeesPaid":  add(row, "subjectFeesPaid", subjectFee),
+			"protocolFeesPaid": add(row, "protocolFeesPaid", protocolFee),
+		}, nil
+	}})
+	if err != nil {
+		return err
+	}
+	updateShares := func(row store.Row) (store.Row, error) {
+		return store.Row{"amount": add(row, "amount", shareDelta)}, nil
+	}
+	if buy {
+		_, err = db.InsertOne(ctx, "share", store.Row{"subject": subject, "trader": trader, "amount": shares}, store.Conflict{Action: store.ConflictUpdate, Update: updateShares})
+	} else {
+		_, err = db.UpdateFunc(ctx, "share", store.Row{"subject": subject, "trader": trader}, updateShares)
+	}
+	return err
+}
