@@ -451,9 +451,10 @@
         "parity/runs/batch-11.json",
         "parity/runs/native-chain-scheduling/RESULT.md",
         "parity/runs/native-isolated-mixed-sources/RESULT.md",
-        "parity/runs/native-mixed-source-reorg/RESULT.md"
+        "parity/runs/native-mixed-source-reorg/RESULT.md",
+        "parity/runs/native-isolated-finalized/RESULT.md"
       ],
-      "remaining": "The native atomic Store covers mixed-source live forks during provider failover, handler failure and cold reopen. A database engine exit during replacement mixed-source callbacks still needs coverage. The independent-store RuntimeRunner rejects Isolated.",
+      "remaining": "The native atomic Store covers mixed-source live forks during provider failover, handler failure and cold reopen. A database engine exit during replacement mixed-source callbacks still needs coverage. The independent-store RuntimeRunner supports finalized ranges. Its per-chain setup, continuous tracking and unfinalized fork recovery remain open.",
       "native_test_files": [
         "runtime/isolated_indexer_test.go",
         "runtime/ordered_indexer_test.go"
@@ -2453,7 +2454,7 @@
       "evidence": [
         "parity/runs/native-managed-cli-start/RESULT.md"
       ],
-      "remaining": "The independent default multichain start flow covers two block sources with SQL, SSE and restart. PostgreSQL standalone serving is covered by native-managed-cli-serve. Development hot reload is covered by native-managed-cli-dev. Isolated ordering remains open."
+      "remaining": "The independent default multichain start flow covers two block sources with SQL, SSE and restart. PostgreSQL standalone serving is covered by native-managed-cli-serve. Development hot reload is covered by native-managed-cli-dev. Isolated per-chain setup and continuous indexing remain open for this runner."
     },
     {
       "id": "native-omnichain-uncached-logs",
@@ -2503,7 +2504,7 @@
       "evidence": [
         "parity/runs/native-managed-cli-serve/RESULT.md"
       ],
-      "remaining": "Independent PostgreSQL query serving on a business namespace. Isolated ordering remains open for this runner."
+      "remaining": "Independent PostgreSQL query serving uses a business namespace. The default multichain example targets continuous indexing. Independent-store Isolated supports bounded finalized deployments."
     },
     {
       "id": "native-managed-cli-dev",
@@ -2998,7 +2999,7 @@
       "evidence": [
         "parity/runs/native-omnichain-block-intervals/RESULT.md"
       ],
-      "remaining": "Independent-store live Omnichain and Isolated ordering remain open. The finalized runner requires bounded sources and positive block intervals."
+      "remaining": "Independent-store live Omnichain and live Isolated ordering remain open. The finalized runner requires bounded sources and positive block intervals."
     },
     {
       "id": "native-mixed-source-reorg",
@@ -3023,7 +3024,36 @@
       "evidence": [
         "parity/runs/native-mixed-source-reorg/RESULT.md"
       ],
-      "remaining": "The three native schedulers cover real pooled RPC failure and branch replacement with mixed factory, contract and account events. Database engine interruption during these callbacks and managed dual-store Isolated or live Omnichain remain open."
+      "remaining": "The three native schedulers cover real pooled RPC failure and branch replacement with mixed factory, contract and account events. Database engine interruption during these callbacks and managed dual-store live Isolated or live Omnichain remain open."
+    },
+    {
+      "id": "native-isolated-finalized",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "historical/live_runtime_completion.go",
+        "store/managed_live_runtime.go",
+        "store/managed_live_segments.go",
+        "store/managed_live_batch.go",
+        "store/managed_live_omnichain_receipts.go",
+        "store/managed_live_finalize.go"
+      ],
+      "native_test_files": [
+        "historical/isolated_finalized_test.go",
+        "historical/live_runtime_preflight_test.go",
+        "store/managed_live_omnichain_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/isolated.ts",
+        "packages/core/src/bin/isolatedController.ts",
+        "packages/core/src/build/schema.test.ts",
+        "packages/core/src/database/actions.test.ts",
+        "packages/core/src/runtime/historical.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-isolated-finalized/RESULT.md"
+      ],
+      "remaining": "Independent-store per-chain setup, continuous tracking, chain-local rollback on unfinalized forks and engine termination during callbacks remain open."
     }
   ]
 }

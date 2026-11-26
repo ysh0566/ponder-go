@@ -69,14 +69,14 @@ func normalizeLiveFinalize(opts ManagedLiveOptions, in ManagedLiveFinalize) (Man
 		chains[chain.ID] = true
 	}
 	out := in
-	if (!opts.runtimeOmnichain && in.SourceCheckpoints != nil) || (opts.runtimeOmnichain && len(in.SourceCheckpoints) != len(in.Finalized)) {
+	if (!opts.atomicFinality() && in.SourceCheckpoints != nil) || (opts.atomicFinality() && len(in.SourceCheckpoints) != len(in.Finalized)) {
 		return out, ErrManagedLiveBatchConflict
 	}
 	out.SourceCheckpoints = cloneLiveCheckpoints(in.SourceCheckpoints)
 	out.Finalized = map[uint64]ManagedLiveHead{}
 	for id, head := range in.Finalized {
 		normalized, cp, err := normalizeLiveHead(head)
-		if err != nil || !chains[id] || cp.ChainID != id || (opts.runtimeOmnichain && (!positionForOptions(in.SourceCheckpoints[id], normalized, opts) || liveDown(in.SourceCheckpoints[id]))) {
+		if err != nil || !chains[id] || cp.ChainID != id || (opts.atomicFinality() && (!positionForOptions(in.SourceCheckpoints[id], normalized, opts) || liveDown(in.SourceCheckpoints[id]))) {
 			return out, errors.Join(ErrManagedLiveBatchConflict, err)
 		}
 		out.Finalized[id] = normalized

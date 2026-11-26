@@ -28,12 +28,13 @@ type runtimeRunnerCallbackKey struct{}
 
 // RuntimeOptions selects the owned RuntimeRunner lifecycle. A nil Live runs a
 // fixed range. Default multichain supports setup and per-chain RPC caching in
-// either mode. Omnichain uses finalized ranges and source checkpoints.
+// either mode. Isolated admits ranges finalized by each chain. Omnichain
+// requires the ranges to fit within the common finalized watermark.
 // BuildID identifies handler code. OpenID is unique to a single opening.
 type RuntimeOptions struct {
 	// SourceCheckpoints enables source initial positions for bounded or continuous
 	// multichain runs, including a first event at block zero.
-	// The finalized omnichain format enables these positions automatically.
+	// Finalized Isolated and Omnichain enable these positions automatically.
 	SourceCheckpoints bool
 	// Development marks this deployment as a development shadow in its metadata.
 	Development bool
@@ -120,19 +121,21 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 			release()
 		}
 	}()
-	if b == nil || (b.Ordering != "multichain" && b.Ordering != "omnichain") || len(b.Chains) == 0 || len(b.Chains) != len(b.EventCallbacks) || len(b.Chains) != len(b.Contracts) || len(b.Chains) != len(b.SetupCallbacks) {
-		return nil, fmt.Errorf("runtime closure requires complete default multichain or supported finalized omnichain executable build")
+	if b == nil || (b.Ordering != "multichain" && b.Ordering != "omnichain" && b.Ordering != string(schema.Isolated)) || len(b.Chains) == 0 || len(b.Chains) != len(b.EventCallbacks) || len(b.Chains) != len(b.Contracts) || len(b.Chains) != len(b.SetupCallbacks) {
+		return nil, fmt.Errorf("runtime closure requires a complete multichain, finalized omnichain or finalized isolated executable build")
 	}
-	if b.Ordering == "omnichain" && o.Live != nil {
-		return nil, fmt.Errorf("omnichain currently requires bounded finalized runtime")
+	if b.Ordering != "multichain" && o.Live != nil {
+		return nil, fmt.Errorf("%s currently requires bounded finalized runtime", b.Ordering)
 	}
 	if b.Ordering == "omnichain" {
 		if o.Historical.QuerySize < 0 || o.Historical.QuerySize > 12000 {
 			return nil, fmt.Errorf("omnichain query size must be between1 and12000, or0 for the source default")
 		}
-		o.SourceCheckpoints = true
 	} else if o.Historical.QuerySize != 0 {
 		return nil, fmt.Errorf("runtime-v5 does not support historical scheduling, query or observer options")
+	}
+	if b.Ordering != "multichain" {
+		o.SourceCheckpoints = true
 	}
 	if o.Historical.Owned.Storage.Ordering != "" && o.Historical.Owned.Storage.Ordering != schema.Ordering(b.Ordering.(string)) {
 		return nil, fmt.Errorf("unsupported runtime ordering")
@@ -193,6 +196,9 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 			first = min(first, from)
 		}
 		r.starts[id] = first
+	}
+	if b.Ordering == string(schema.Isolated) && r.setup {
+		return nil, fmt.Errorf("bounded isolated setup requires per-chain bootstrap")
 	}
 	if o.OnSetupCommitted != nil && !r.setup {
 		return nil, fmt.Errorf("setup observer requires setup callbacks")
@@ -307,6 +313,12 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		r.finalized[id], e = runtimeHead(id, final)
 		if e != nil {
 			return nil, e
+		}
+		if b.Ordering == string(schema.Isolated) {
+			f, _ := checkpoint.Decode(r.finalized[id].Checkpoint)
+			if r.ends[id] > f.BlockNumber {
+				return nil, fmt.Errorf("isolated end on chain %d exceeds chain finality", id)
+			}
 		}
 		r.finalBlocks[i] = final
 	}

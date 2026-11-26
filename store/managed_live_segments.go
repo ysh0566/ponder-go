@@ -154,6 +154,10 @@ func cloneLiveHeads(in map[uint64]ManagedLiveHead) map[uint64]ManagedLiveHead {
 
 func normalizeLiveBatch(opts ManagedLiveOptions, in ManagedLiveBatch) (ManagedLiveBatch, error) {
 	limit := managedLiveMaxBatchBlocks
+	if opts.runtimeIsolated {
+		// A failed block on one chain cannot roll back a peer's callback.
+		limit = 1
+	}
 	if opts.runtimeOmnichain {
 		limit = ManagedLiveOmnichainBlockLimit(len(opts.Chains))
 	}
@@ -368,6 +372,13 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 		}
 		if err != nil || pe != nil || !ok || !extends || cp.BlockTimestamp < previous.BlockTimestamp || cp.BlockNumber > opts.EndBlocks[cp.ChainID] {
 			return nil, nil, c, fmt.Errorf("managed block must extend its exact acquired cursor without gaps")
+		}
+		if opts.runtimeIsolated {
+			final := opts.FinalizedHeads[cp.ChainID]
+			_, limit, err := normalizeLiveHead(final)
+			if err != nil || cp.BlockNumber > limit.BlockNumber || cp.BlockTimestamp > limit.BlockTimestamp || (cp.BlockNumber == limit.BlockNumber && block.Head != final) {
+				return nil, nil, c, fmt.Errorf("isolated block exceeds or differs from its chain finality")
+			}
 		}
 		if opts.runtimeOmnichain {
 			if block.Head.Checkpoint > watermark {

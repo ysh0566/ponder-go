@@ -67,6 +67,9 @@ type managedLiveReorgEvidence struct {
 }
 
 func normalizeLiveReorg(opts ManagedLiveOptions, in ManagedLiveReorg) (ManagedLiveReorg, error) {
+	if opts.runtimeIsolated {
+		return in, fmt.Errorf("bounded finalized isolated has no live reorg transition")
+	}
 	if !liveID(in.ID) || !liveID(in.ExpectedLastOperation) || in.ID == in.ExpectedLastOperation || in.Generation == 0 || in.Generation >= math.MaxInt64 || in.ExpectedTail >= math.MaxInt64-1 {
 		return in, ErrManagedLiveBatchConflict
 	}
@@ -152,8 +155,8 @@ func partitionLiveJournal(segments []ManagedLiveSegment, rows []managedLiveJourn
 
 func planLiveReorg(opts ManagedLiveOptions, c ManagedLiveControl, baselines map[uint64]ManagedLiveHead, active []ManagedLiveSegment, journal []managedLiveJournalEntry, proofs []ManagedLiveHead, r ManagedLiveReorg) (managedLiveReorgPlan, error) {
 	var plan managedLiveReorgPlan
-	if opts.runtimeOmnichain {
-		return plan, fmt.Errorf("bounded finalized omnichain has no live reorg transition")
+	if opts.atomicFinality() {
+		return plan, fmt.Errorf("bounded finalized %s has no live reorg transition", managedStorageOrdering(&opts))
 	}
 	if err := validateLiveControl(c); err != nil {
 		return plan, err

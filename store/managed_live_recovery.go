@@ -14,6 +14,9 @@ const managedLiveRecoveryVersion = "managed-live-recovery-v3"
 const managedLiveRecoveryReceiptVersion = "managed-live-recovery-receipt-v2"
 
 func (m *ManagedLive) version() string {
+	if m.opts.runtimeIsolated {
+		return managedLiveIsolatedVersion
+	}
 	if logOnlyOptions(m.opts) {
 		if m.opts.runtimeBlockScan {
 			return managedLiveAccountScanVersion

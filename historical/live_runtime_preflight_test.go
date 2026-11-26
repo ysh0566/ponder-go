@@ -18,7 +18,7 @@ func TestRuntimePreflightRejectsUnsupported(t *testing.T) {
 			switch kind {
 			case "experimental_isolated", "omnichain":
 				x.Ordering = kind
-				reason = "default multichain"
+				reason = "exceeds chain finality"
 				if kind == "omnichain" {
 					reason = "chain finality"
 				}
