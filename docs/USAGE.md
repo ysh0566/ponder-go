@@ -776,7 +776,9 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 默认多链将 `Live` 留空时，所有结束高度都需要在打开作业时已经存在。若未确认的区块发生分叉，运行器会暂停就绪状态，协调业务库和同步缓存回滚，并重新执行受影响的跨链回调。追平回滚前各链的进度后恢复就绪。返回 `Completed` 前还会按高度核对各链未确认的结束区块，因此已经先跑完的链也能发现同高度替换。如果分叉穿过本次打开时的最终确认边界，`Run` 会返回错误。[双库有限区间分叉测试](../parity/runs/native-bounded-reorg/RESULT.md)
 
-`RuntimeOptions.Historical.MaxQueryParameters` 控制同步库单条批量 INSERT 可使用的绑定参数数量，适用于区块、日志、交易、回执、调用轨迹、同步区间和工厂子地址。默认值为 16000。运行器按每行需要的参数个数拆批。例如，每条日志需要 12 个参数，设置为 25 时，每条 INSERT 最多写入两条日志。预算容不下一行时，错误会指出数据表和所需的参数数量。可保留原 `BuildID` 和两个存储位置，使用新的 `OpenID` 和更大的预算重启，继续已提交的进度。该设置适用于两种后端和当前支持的排序模式。Omnichain 的 `Historical.QuerySize` 单独控制历史事件查询的分页。[配置与恢复测试](../parity/runs/native-runtime-query-budget/RESULT.md)
+`RuntimeOptions.Historical.MaxQueryParameters` 控制同步库单条批量 INSERT 可使用的绑定参数数量，适用于区块、日志、交易、回执、调用轨迹、同步区间和工厂子地址。默认值为 16000。运行器按每行需要的参数个数拆批。例如，每条日志需要 12 个参数，设置为 25 时，每条 INSERT 最多写入两条日志。预算容不下一行时，错误会指出数据表和所需的参数数量。可保留原 `BuildID` 和两个存储位置，使用新的 `OpenID` 和更大的预算重启，继续已提交的进度。该设置适用于两种后端和当前支持的排序模式。[批量写入与恢复测试](../parity/runs/native-runtime-query-budget/RESULT.md)
+
+`RuntimeOptions.Historical.QuerySize` 控制历史事件 SQL 查询的初始行数。取值为 1 到 12000，传 0 使用默认预算 12000。默认多链和 Omnichain 按参与链数分摊预算。Isolated 先将预算按链数整除，再由单链回填器计算查询行数。例如，两条链共用预算 12 时，默认多链每次从 10 行开始，Isolated 从 9 行开始。若一个区块的事件填满查询结果，同步库会扩大查询，直到能完整读取该区块。关闭 RPC 缓存的链直接从内存解码。这个设置也适用于默认多链和 Isolated 持续运行时的历史回填及最终确认区块的缓存读取。[小预算回填与中断恢复](../parity/runs/native-historical-query-size/RESULT.md)
 
 要让默认多链等待尚未出现的结束区块，给每个来源设置有限的 `endBlock`，并设置 `RuntimeOptions.Live = &historical.RuntimeLiveOptions{}`。提前启动后，运行器先处理现有区块，再轮询各链，所有链都达到各自的结束高度时返回 `Completed`。到达结束高度时仍在重组窗口内的区块，重启后可能从安全检查点重新执行。[双链未来结束高度与重放测试](../historical/live_runtime_continuous_test.go)
 

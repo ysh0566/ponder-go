@@ -808,7 +808,7 @@ func (r *RuntimeRunner) persistContinuousFinality(ctx context.Context, epoch *in
 			return err
 		}
 		if err = r.domains.WithRuntimeSync(epoch.Context(), func(io context.Context, s *store.SourceSyncStore) error {
-			_, e := prepared.PersistAndDecode(io, s)
+			_, e := prepared.PersistAndDecodeWithLimit(io, s, r.historicalQueryLimit())
 			return e
 		}); err != nil {
 			return err

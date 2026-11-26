@@ -80,15 +80,13 @@ func TestRuntimeTimestampFinality(t *testing.T) {
 	}
 }
 func TestRuntimeRejectsHistoricalOptions(t *testing.T) {
-	for _, kind := range []string{"query_size", "clock", "isolated_clock", "on_committed", "live_isolated_observer"} {
+	for _, kind := range []string{"clock", "isolated_clock", "on_committed", "live_isolated_observer"} {
 		t.Run(kind, func(t *testing.T) {
 			p := newFiniteRPC(t, 3)
 			b := runtimeBuild(t, p, 3, 1, indexing.Handler(func(context.Context, *indexing.HandlerArgs) error { return nil }))
 			var live *RuntimeLiveOptions
 			input := Options{Build: b}
 			switch kind {
-			case "query_size":
-				input.QuerySize = 1
 			case "clock", "isolated_clock":
 				input.Clock = time.Now
 				if kind == "isolated_clock" {

@@ -3199,22 +3199,33 @@
         "store/managed_live_runtime.go",
         "store/managed_live_runtime_persistence.go",
         "store/source_intervals.go",
-        "store/source_crud.go"
+        "store/source_crud.go",
+        "historical/live_runtime_completion.go",
+        "historical/live_runtime_continuous.go",
+        "runtime/source_history_coordinator.go",
+        "runtime/source_managed_prepared.go",
+        "store/source_query.go"
       ],
       "native_test_files": [
         "historical/runtime_query_budget_test.go",
         "historical/live_runtime_review_test.go",
-        "store/source_query_budget_test.go"
+        "store/source_query_budget_test.go",
+        "historical/runtime_historical_query_size_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/internal/options.ts",
         "packages/core/src/sync-store/index.ts",
-        "packages/core/src/sync-store/index.test.ts"
+        "packages/core/src/sync-store/index.test.ts",
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/historical.test.ts",
+        "packages/core/src/bin/isolatedWorker.ts",
+        "packages/core/src/bin/isolatedController.ts"
       ],
       "evidence": [
-        "parity/runs/native-runtime-query-budget/RESULT.md"
+        "parity/runs/native-runtime-query-budget/RESULT.md",
+        "parity/runs/native-historical-query-size/RESULT.md"
       ],
-      "remaining": "The dual-store runtime still supports configuring historical QuerySize only for finalized Omnichain."
+      "remaining": "Default and Isolated dual-store backfills acquire finalized blocks individually. Throughput comparisons against upstream multi-block historical scans remain open."
     },
     {
       "id": "native-omnichain-finality-wait",

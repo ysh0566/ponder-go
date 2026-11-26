@@ -234,11 +234,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 	for _, c := range chains {
 		crash = append(crash, source.SourceCrashRecoveryCheckpoint{ChainID: c.Local.ChainID, Checkpoint: store.ManagedLiveCursorCheckpoint(control, c.Local.ChainID)})
 	}
-	querySize := r.options.Historical.QuerySize
-	if querySize == 0 {
-		querySize = 12000
-	}
-	options := source.SourceHistoricalCoordinatorOptions{Chains: chains, BuildChains: chains, CrashRecovery: crash, QuerySize: querySize, Clock: r.options.Historical.Clock}
+	options := source.SourceHistoricalCoordinatorOptions{Chains: chains, BuildChains: chains, CrashRecovery: crash, QuerySize: r.options.Historical.QuerySize, Clock: r.options.Historical.Clock}
 	for output, e := range source.HistoricalSourceOmnichain(epoch.Context(), options) {
 		if e != nil {
 			return out, e

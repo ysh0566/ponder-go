@@ -79,6 +79,15 @@ func managedSourceHeaderEqual(actual, expected filter.Object) error {
 	return nil
 }
 func (p *PreparedManagedSourceBlock) PersistAndDecode(ctx context.Context, s *store.SourceSyncStore) ([]protocol.Object, error) {
+	return p.PersistAndDecodeWithLimit(ctx, s, 100000)
+}
+
+// PersistAndDecodeWithLimit reads the persisted block with an initial SQL row
+// limit. The sync store expands the query until it includes the entire block.
+func (p *PreparedManagedSourceBlock) PersistAndDecodeWithLimit(ctx context.Context, s *store.SourceSyncStore, limit int) ([]protocol.Object, error) {
+	if limit <= 0 {
+		return nil, fmt.Errorf("historical event query limit must be positive")
+	}
 	if err := s.InsertChildAddresses(ctx, p.id, p.factories); err != nil {
 		return nil, err
 	}
@@ -91,7 +100,7 @@ func (p *PreparedManagedSourceBlock) PersistAndDecode(ctx context.Context, s *st
 	for _, cb := range p.session.Callbacks(p.callbacks) {
 		filters = append(filters, cb["filter"].(map[string]any))
 	}
-	data, err := s.GetEventData(ctx, store.SourceEventDataArgs{FilterSession: p.session, Filters: filters, FromBlock: float64(p.number), ToBlock: float64(p.number), ChainID: p.id, Limit: 100000})
+	data, err := s.GetEventData(ctx, store.SourceEventDataArgs{FilterSession: p.session, Filters: filters, FromBlock: float64(p.number), ToBlock: float64(p.number), ChainID: p.id, Limit: limit})
 	if err != nil {
 		return nil, err
 	}
