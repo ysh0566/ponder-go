@@ -40,7 +40,7 @@ func (r *RuntimeRunner) logScanLineageStart(id, cursor uint64) uint64 {
 			}
 			for _, cb := range r.build.EventCallbacks[i] {
 				source := cb["filter"].(filter.Object)
-				if cb["type"] == "account" {
+				if cb["type"] == "account" || source["type"] == "trace" {
 					start, _ := uintQuantity(filter.FilterFromBlock(source))
 					cursor = min(cursor, start)
 				}
@@ -98,7 +98,7 @@ func (r *RuntimeRunner) validateOmnichainPartition(id uint64, events []indexing.
 		raw, ok := event["checkpoint"].(string)
 		cp, ce := checkpoint.Decode(raw)
 		kind, _ := event["type"].(string)
-		if !ok || ce != nil || (kind != "log" && kind != "transfer" && kind != "transaction") || !cp.MatchesEvent(kind) || cp.ChainID != h.ChainID || cp.BlockNumber != h.BlockNumber || cp.BlockTimestamp != h.BlockTimestamp || raw < previous {
+		if !ok || ce != nil || kind == "block" || !cp.MatchesEvent(kind) || cp.ChainID != h.ChainID || cp.BlockNumber != h.BlockNumber || cp.BlockTimestamp != h.BlockTimestamp || raw < previous {
 			return fmt.Errorf("sparse event partition differs from acquired source identity/order")
 		}
 		previous = raw

@@ -47,8 +47,8 @@ func validateOmnichainCallbacks(callbacks []indexing.Object) error {
 			f := cb["filter"].(map[string]any)
 			from, fe := uintQuantity(filter.FilterFromBlock(f))
 			to, te := uintQuantity(filter.FilterToBlock(f))
-			if f["type"] == "trace" || fe != nil || te != nil || to < from {
-				return fmt.Errorf("omnichain without a block callback requires finite log, transaction or transfer ranges")
+			if fe != nil || te != nil || to < from {
+				return fmt.Errorf("omnichain without a block callback requires finite event ranges")
 			}
 		}
 		if len(callbacks) == 0 {

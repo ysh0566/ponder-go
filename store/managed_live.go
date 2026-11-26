@@ -49,7 +49,7 @@ type ManagedLiveOptions struct {
 	runtimeInitial      bool
 	runtimeFactories    bool
 	runtimeOmnichain    bool
-	runtimeAccountScan  bool
+	runtimeBlockScan    bool
 	runtimeLogFilters   map[uint64][]filter.Object
 	runtimeLogCallbacks map[uint64][]filter.Object
 	// Populated on a local copy for planning after the page contents have been verified.

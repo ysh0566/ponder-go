@@ -131,12 +131,21 @@ func (d *ManagedLiveDomains) logOnlyScan(ctx context.Context, c ManagedLiveContr
 	return scans, err
 }
 
-// The plain filter hash certifies a range without matching raw logs. If raw
-// logs were skipped, the receipt binds the ordered ABI/filter pairs used by
-// the real decoder. The two proofs share the same coverage and lineage checks.
+// Trace scans always bind the ABI. A skipped raw log also binds all callback
+// ABIs. Both forms of evidence share the same coverage and lineage checks.
+func (o ManagedLiveOptions) scanFilterHash(id uint64, filters []filter.Object) string {
+	// The ABI determines whether a candidate CALL decodes to a business event.
+	for _, f := range filters {
+		if f["type"] == "trace" {
+			return managedHash(o.runtimeLogCallbacks[id])
+		}
+	}
+	return managedHash(filters)
+}
+
 func (o ManagedLiveOptions) validLogScanHash(id uint64, digest string) bool {
 	callbacks := o.runtimeLogCallbacks[id]
-	return digest == managedHash(o.runtimeLogFilters[id]) || (len(callbacks) > 0 && digest == managedHash(callbacks))
+	return digest == o.scanFilterHash(id, o.runtimeLogFilters[id]) || (len(callbacks) > 0 && digest == managedHash(callbacks))
 }
 
 func logOnlyABICallbacks(filters map[uint64][]filter.Object, abis map[uint64][]any) (map[uint64][]filter.Object, error) {
@@ -157,6 +166,17 @@ func logOnlyABICallbacks(filters map[uint64][]filter.Object, abis map[uint64][]a
 			if err != nil {
 				return nil, err
 			}
+			if f["type"] == "trace" {
+				var fn abi.Function
+				if err := json.Unmarshal(raw, &fn); err != nil {
+					return nil, err
+				}
+				if fn.Type != "function" || fn.Name == "" {
+					return nil, fmt.Errorf("invalid contract CALL ABI for chain %d", id)
+				}
+				result[id] = append(result[id], filter.Object{"type": "contract", "filter": f, "abiItem": fn})
+				continue
+			}
 			var item abi.Event
 			if err := json.Unmarshal(raw, &item); err != nil {
 				return nil, err
@@ -170,18 +190,27 @@ func logOnlyABICallbacks(filters map[uint64][]filter.Object, abis map[uint64][]a
 	return result, nil
 }
 
+func blockScanCallbacks(filters, callbacks []filter.Object) []filter.Object {
+	var selected []filter.Object
+	for i, f := range filters {
+		switch f["type"] {
+		case "transaction", "transfer":
+			selected = append(selected, filter.Object{"type": "account", "filter": f})
+		case "trace":
+			selected = append(selected, callbacks[i])
+		}
+	}
+	return selected
+}
+
 func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEventDataArgs, children logFactoryChildren, read func(context.Context, SourceEventDataArgs) (SourceEventData, error)) (string, error) {
 	callbacks := o.runtimeLogCallbacks[args.ChainID]
 	skipped := false
-	var accounts, logCallbacks []filter.Object
+	blockCallbacks := blockScanCallbacks(args.Filters, callbacks)
+	var logCallbacks []filter.Object
 	for _, cb := range callbacks {
-		if cb["type"] == "contract" {
+		if cb["filter"].(filter.Object)["type"] == "log" {
 			logCallbacks = append(logCallbacks, cb)
-		}
-	}
-	for _, f := range args.Filters {
-		if f["type"] == "transaction" || f["type"] == "transfer" {
-			accounts = append(accounts, filter.Object{"type": "account", "filter": f})
 		}
 	}
 	for {
@@ -208,8 +237,8 @@ func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEven
 		if err != nil {
 			return "", err
 		}
-		if len(accounts) > 0 {
-			if err := verifyEmptyAccountPage(args.ChainID, accounts, rows, children); err != nil {
+		if len(blockCallbacks) > 0 {
+			if err := verifyEmptyBlockPage(args.ChainID, blockCallbacks, rows, children); err != nil {
 				return "", err
 			}
 		}
@@ -226,16 +255,15 @@ func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEven
 			if skipped {
 				return managedHash(callbacks), nil
 			}
-			return managedHash(args.Filters), nil
+			return o.scanFilterHash(args.ChainID, args.Filters), nil
 		}
 		args.FromBlock = rows.Cursor + 1
 	}
 }
 
-// Account pages may contain unrelated transactions or traces and reverted
-// transactions. Apply the same address, factory birth, receipt and value
-// filters as the historical coordinator before certifying an empty range.
-func verifyEmptyAccountPage(chainID uint64, callbacks []filter.Object, rows SourceEventData, children logFactoryChildren) error {
+// Cached and RPC pages use the historical event builder and ABI decoder.
+// A candidate may match several callbacks or predate its factory address.
+func verifyEmptyBlockPage(chainID uint64, callbacks []filter.Object, rows SourceEventData, children logFactoryChildren) error {
 	heights := make(map[uint64]bool, len(rows.Blocks))
 	for _, b := range rows.Blocks {
 		height, ok := logOnlyQuantity(b["number"])
@@ -256,8 +284,13 @@ func verifyEmptyAccountPage(chainID uint64, callbacks []filter.Object, rows Sour
 	if err != nil {
 		return err
 	}
-	if len(raw) > 0 {
-		return fmt.Errorf("unprocessed account event in scanned range: %w", ErrManagedLivePendingActions)
+	var decoder events.Decoder
+	decoded, err := decoder.DecodeEvents(nil, callbacks, raw)
+	if err != nil {
+		return err
+	}
+	if len(decoded) > 0 {
+		return fmt.Errorf("unprocessed %s event in scanned range: %w", decoded[0]["type"], ErrManagedLivePendingActions)
 	}
 	return nil
 }

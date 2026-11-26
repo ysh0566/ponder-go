@@ -159,7 +159,7 @@ func normalizeLogOnlyFilters(in map[uint64][]filter.Object, o ManagedLiveOptions
 			from, fe := logOnlyQuantity(filter.FilterFromBlock(f))
 			to, te := logOnlyQuantity(filter.FilterToBlock(f))
 			kind := f["type"]
-			if kind != "log" && kind != "transaction" && kind != "transfer" {
+			if kind != "log" && kind != "transaction" && kind != "transfer" && !(kind == "trace" && f["callType"] == "CALL") {
 				return nil, ErrManagedLiveBatchConflict
 			}
 			if !ie || !fe || !te || id != c.ID || from > to || (!o.runtimeFactories && len(filter.GetFilterFactories(f)) != 0) {
@@ -203,10 +203,10 @@ func normalizeLogOnlyFilters(in map[uint64][]filter.Object, o ManagedLiveOptions
 
 // A sparse chain has no closing block event. Its cursor can be a block
 // boundary or an event from one of its configured source filters.
-func sparseEventAllowed(cp checkpoint.Checkpoint, filters []filter.Object) bool {
+func sparseEventAllowed(cp checkpoint.Checkpoint, filters []filter.Object, kind string) bool {
 	for _, f := range filters {
-		kind, _ := f["type"].(string)
-		if cp.MatchesEvent(kind) && filter.IsBlockInFilter(f, float64(cp.BlockNumber)) {
+		filterKind, _ := f["type"].(string)
+		if (kind == "" || kind == filterKind) && cp.MatchesEvent(filterKind) && filter.IsBlockInFilter(f, float64(cp.BlockNumber)) {
 			return true
 		}
 	}
@@ -229,7 +229,7 @@ func optsPosition(raw string, o ManagedLiveOptions) (checkpoint.Checkpoint, bool
 		return cp, false
 	}
 	if filters := o.runtimeLogFilters[cp.ChainID]; filters != nil {
-		if sparseEventAllowed(cp, filters) {
+		if sparseEventAllowed(cp, filters, "") {
 			return cp, true
 		}
 		return liveCanonicalPosition(raw)
@@ -276,7 +276,7 @@ func validateLogOnlyBlock(o ManagedLiveOptions, b ManagedLiveBlock) error {
 		last, le := checkpoint.Decode(b.LogLastEvent)
 		_, h, he := normalizeLiveHead(b.Head)
 		filters := o.runtimeLogFilters[head.ChainID]
-		if fe != nil || le != nil || he != nil || !sparseEventAllowed(first, filters) || !sparseEventAllowed(last, filters) || b.LogFirstEvent > b.LogLastEvent || first.ChainID != h.ChainID || last.ChainID != h.ChainID || first.BlockNumber != h.BlockNumber || last.BlockNumber != h.BlockNumber || first.BlockTimestamp != h.BlockTimestamp || last.BlockTimestamp != h.BlockTimestamp || b.LogEventCount > math.MaxInt64 {
+		if fe != nil || le != nil || he != nil || !sparseEventAllowed(first, filters, "") || !sparseEventAllowed(last, filters, "") || b.LogFirstEvent > b.LogLastEvent || first.ChainID != h.ChainID || last.ChainID != h.ChainID || first.BlockNumber != h.BlockNumber || last.BlockNumber != h.BlockNumber || first.BlockTimestamp != h.BlockTimestamp || last.BlockTimestamp != h.BlockTimestamp || b.LogEventCount > math.MaxInt64 {
 			return ErrManagedLiveBatchConflict
 		}
 	}
@@ -311,7 +311,7 @@ func (d *ManagedLiveDomains) ValidateRuntimeBlockInputs(b ManagedLiveBlock, even
 	for _, v := range events {
 		cp, decodeErr := checkpoint.Decode(v.Checkpoint)
 		_, h, e := normalizeLiveHead(b.Head)
-		if (v.Kind != "log" && v.Kind != "transfer" && v.Kind != "transaction") || decodeErr != nil || e != nil || !cp.MatchesEvent(v.Kind) || !sparseEventAllowed(cp, d.live().opts.runtimeLogFilters[head.ChainID]) || cp.ChainID != h.ChainID || cp.BlockNumber != h.BlockNumber || cp.BlockTimestamp != h.BlockTimestamp || v.Checkpoint < previous {
+		if v.Kind == "block" || decodeErr != nil || e != nil || !cp.MatchesEvent(v.Kind) || !sparseEventAllowed(cp, d.live().opts.runtimeLogFilters[head.ChainID], v.Kind) || cp.ChainID != h.ChainID || cp.BlockNumber != h.BlockNumber || cp.BlockTimestamp != h.BlockTimestamp || v.Checkpoint < previous {
 			return ErrManagedLiveBatchConflict
 		}
 		previous = v.Checkpoint

@@ -69,7 +69,7 @@ func (d *ManagedLiveDomains) readLogScans(ctx context.Context, ranges []logScanR
 			if err != nil {
 				return err
 			}
-			digest := managedHash(filters)
+			digest := opts.scanFilterHash(r.chain, filters)
 			if r.checkEmpty {
 				children, err := readLogFactoryChildren(ctx, filters, func(ctx context.Context, factory filter.Object) ([]filter.ChildAddress, error) {
 					rows, err := source.GetChildAddresses(ctx, factory)
@@ -106,7 +106,7 @@ func (reader LogScanRPC) scan(ctx context.Context, opts ManagedLiveOptions, r lo
 	if err != nil {
 		return managedGapScan{}, err
 	}
-	if err := reader.scanAccountRanges(ctx, r, filters, children, get); err != nil {
+	if err := reader.scanBlockRanges(ctx, r, blockScanCallbacks(filters, callbacks), children, get); err != nil {
 		return managedGapScan{}, err
 	}
 	var scan managedGapScan
@@ -158,7 +158,7 @@ func (reader LogScanRPC) scan(ctx context.Context, opts ManagedLiveOptions, r lo
 	if skipped {
 		scan.FiltersHash = managedHash(callbacks)
 	} else {
-		scan.FiltersHash = managedHash(filters)
+		scan.FiltersHash = opts.scanFilterHash(r.chain, filters)
 	}
 	return scan, nil
 }

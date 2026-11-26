@@ -2837,6 +2837,38 @@
         "parity/runs/native-protocol-templates/RESULT.md"
       ],
       "remaining": "The verification uses locally emitted events. Public-chain history, a dedicated reference ERC-20 project and default GraphQL routing for the older Go templates remain open."
+    },
+    {
+      "id": "native-omnichain-sparse-contract-calls",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime_logonly.go",
+        "historical/live_runtime_omnichain_callbacks.go",
+        "store/managed_live.go",
+        "store/managed_live_account_rpc.go",
+        "store/managed_live_log_rpc.go",
+        "store/managed_live_logonly.go",
+        "store/managed_live_logonly_scan.go",
+        "store/managed_live_recovery.go",
+        "store/managed_live_runtime.go"
+      ],
+      "native_test_files": [
+        "historical/omnichain_sparse_calls_test.go",
+        "historical/live_runtime_omnichain_source_test.go",
+        "store/managed_live_call_scan_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts",
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/omnichain.ts",
+        "packages/core/src/runtime/events.test.ts",
+        "packages/core/src/runtime/historical.test.ts",
+        "packages/core/src/build/factory.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-sparse-contract-calls/RESULT.md"
+      ],
+      "remaining": "Independent-store Isolated scheduling and live Omnichain reorgs remain open. Uncached historical proofs require node access to hash-addressed call traces."
     }
   ]
 }
