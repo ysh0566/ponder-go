@@ -2732,7 +2732,7 @@
         "query/http.go",
         "query/routes.go",
         "cmd/ponder/scaffold/filter/abi.json",
-        "cmd/ponder/scaffold/filter/api.go.tmpl",
+        "cmd/ponder/scaffold/graphql.go.tmpl",
         "cmd/ponder/scaffold/filter/handlers.go.tmpl",
         "cmd/ponder/scaffold/filter/indexer.go.tmpl",
         "cmd/ponder/scaffold/filter/network.json",
@@ -2774,7 +2774,7 @@
         "examples/erc20/indexer.go",
         "cmd/ponder/scaffold/filter/indexer.go.tmpl",
         "cmd/ponder/scaffold/multichain/abi.json",
-        "cmd/ponder/scaffold/multichain/api.go.tmpl",
+        "cmd/ponder/scaffold/graphql.go.tmpl",
         "cmd/ponder/scaffold/multichain/handlers.go.tmpl",
         "cmd/ponder/scaffold/multichain/indexer.go.tmpl",
         "cmd/ponder/scaffold/multichain/network.go.tmpl",
@@ -2795,6 +2795,48 @@
         "parity/runs/native-multichain-template/RESULT.md"
       ],
       "remaining": "Live public deployments and the dedicated Friendtech and Uniswap V3 flash loan templates remain open."
+    },
+    {
+      "id": "native-protocol-templates",
+      "status": "verified_subset",
+      "implementation_files": [
+        "cmd/ponder/main.go",
+        "cmd/ponder/scaffold.go",
+        "examples/erc20/main.go",
+        "examples/erc20/indexer.go",
+        "examples/erc20/network.go",
+        "cmd/ponder/scaffold/graphql.go.tmpl",
+        "cmd/ponder/scaffold/friendtech/abi.json",
+        "cmd/ponder/scaffold/friendtech/handlers.go.tmpl",
+        "cmd/ponder/scaffold/friendtech/network.json",
+        "cmd/ponder/scaffold/friendtech/schema.json",
+        "cmd/ponder/scaffold/uniswap-v3-flash/abi.json",
+        "cmd/ponder/scaffold/uniswap-v3-flash/handlers.go.tmpl",
+        "cmd/ponder/scaffold/uniswap-v3-flash/network.json",
+        "cmd/ponder/scaffold/uniswap-v3-flash/schema.json"
+      ],
+      "native_test_files": [
+        "cmd/ponder/protocol_templates_test.go",
+        "cmd/ponder/testdata/templates/ProtocolExamples.sol",
+        "cmd/ponder/testdata/templates/protocol-examples.hex"
+      ],
+      "upstream_sources": [
+        "examples/project-friendtech/abis/FriendtechSharesV1Abi.ts",
+        "examples/project-friendtech/ponder.config.ts",
+        "examples/project-friendtech/ponder.schema.ts",
+        "examples/project-friendtech/src/FriendtechSharesV1.ts",
+        "examples/project-friendtech/src/api/index.ts",
+        "examples/project-uniswap-v3-flash/abis/UniswapV3FactoryAbi.ts",
+        "examples/project-uniswap-v3-flash/abis/UniswapV3PoolAbi.ts",
+        "examples/project-uniswap-v3-flash/ponder.config.ts",
+        "examples/project-uniswap-v3-flash/ponder.schema.ts",
+        "examples/project-uniswap-v3-flash/src/api/index.ts",
+        "examples/project-uniswap-v3-flash/src/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-protocol-templates/RESULT.md"
+      ],
+      "remaining": "The verification uses locally emitted events. Public-chain history, a dedicated reference ERC-20 project and default GraphQL routing for the older Go templates remain open."
     }
   ]
 }

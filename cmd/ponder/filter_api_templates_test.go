@@ -34,15 +34,15 @@ const (
 	filterAPIAccountC = "0x00000000000000000000000000000000000000cc"
 )
 
-// Observe the actual RPC filter sent by the generated application to Anvil.
-func observeTemplateLogs(t *testing.T, node string) (string, func() []json.RawMessage) {
+// Observe matching RPC requests sent by the generated application to Anvil.
+func observeTemplateRPC(t *testing.T, node, method string) (string, func() [][]json.RawMessage) {
 	t.Helper()
 	dest, err := url.Parse(node)
 	if err != nil {
 		t.Fatal(err)
 	}
 	var mu sync.Mutex
-	var filters []json.RawMessage
+	var requests [][]json.RawMessage
 	proxy := httputil.NewSingleHostReverseProxy(dest)
 	gateway := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
@@ -56,18 +56,18 @@ func observeTemplateLogs(t *testing.T, node string) (string, func() []json.RawMe
 			Method string
 			Params []json.RawMessage
 		}
-		if json.Unmarshal(body, &call) == nil && call.Method == "eth_getLogs" && len(call.Params) == 1 {
+		if json.Unmarshal(body, &call) == nil && call.Method == method {
 			mu.Lock()
-			filters = append(filters, call.Params[0])
+			requests = append(requests, call.Params)
 			mu.Unlock()
 		}
 		proxy.ServeHTTP(w, r)
 	}))
 	t.Cleanup(gateway.Close)
-	return gateway.URL, func() []json.RawMessage {
+	return gateway.URL, func() [][]json.RawMessage {
 		mu.Lock()
 		defer mu.Unlock()
-		return append([]json.RawMessage(nil), filters...)
+		return slices.Clone(requests)
 	}
 }
 
@@ -142,7 +142,7 @@ func TestGoFilterAndAPITemplates(t *testing.T) {
 					ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
 					t.Cleanup(cancel)
 					node := testanvil.StartChain(t, 1, "--no-mining", "--timestamp", "1700000000")
-					endpoint, requests := observeTemplateLogs(t, node)
+					endpoint, requests := observeTemplateRPC(t, node, "eth_getLogs")
 					t.Setenv("PONDER_RPC_URL_1", endpoint)
 					chain := contractTemplateChain{t: t, rpc: rpc.New(node)}
 					chain.call("eth_accounts", []any{}, &chain.accounts)
@@ -208,7 +208,7 @@ func TestGoFilterAndAPITemplates(t *testing.T) {
 	}
 }
 
-func checkSwapFilter(t *testing.T, ctx context.Context, q query.Client, base string, filters []json.RawMessage) {
+func checkSwapFilter(t *testing.T, ctx context.Context, q query.Client, base string, filters [][]json.RawMessage) {
 	t.Helper()
 	const a, b = filterAPIAccountA, filterAPIAccountB
 	checkTemplateRows(t, ctx, q, `SELECT payer,recipient FROM "swapEvent" WHERE length(id)>0`, a+" "+b)
@@ -229,7 +229,11 @@ func checkSwapFilter(t *testing.T, ctx context.Context, q query.Client, base str
 		t.Fatal("missing eth_getLogs requests")
 	}
 	selector := crypto.Keccak256Hash([]byte(swapSignature)).Hex()
-	for _, raw := range filters {
+	for _, params := range filters {
+		if len(params) != 1 {
+			t.Fatalf("unexpected eth_getLogs parameters %s", params)
+		}
+		raw := params[0]
 		var f struct {
 			Address []string
 			Topics  [][]string

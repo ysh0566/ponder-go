@@ -1,0 +1,92 @@
+package main
+
+import (
+	"context"
+	_ "embed"
+	"fmt"
+	"math/big"
+	"sync"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/factory"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+//go:embed abi.json
+var poolABI []byte
+
+var parsePool = sync.OnceValues(func() (abi.ABI, error) { return abi.Parse(string(poolABI)) })
+
+func project(network networkConfig, _ *logging.Logger) (config.Config, map[string]runtime.Handler) {
+	pool := network.contract("UniswapV3Pool", poolABI)
+	parameter := "pool"
+	created := abi.Event{Type: "event", Name: "PoolCreated", Inputs: []abi.Parameter{
+		{Name: "token0", Type: "address", Indexed: true}, {Name: "token1", Type: "address", Indexed: true},
+		{Name: "fee", Type: "uint24", Indexed: true}, {Name: "tickSpacing", Type: "int24"}, {Name: "pool", Type: "address"},
+	}}
+	pool.Address = nil
+	pool.Factory = &factory.Config{Address: network.Address, Event: created, Parameter: &parameter}
+	return config.Config{Contracts: []config.Contract{pool}}, map[string]runtime.Handler{"UniswapV3Pool:Flash": flash}
+}
+
+func poolToken(ctx context.Context, c *runtime.Context, method string) (string, error) {
+	contract, err := parsePool()
+	if err != nil {
+		return "", err
+	}
+	data, err := contract.Pack(method)
+	if err != nil {
+		return "", err
+	}
+	var raw hexutil.Bytes
+	call := map[string]string{"to": c.Event.Log.Address, "data": hexutil.Encode(data)}
+	// token0 and token1 are immutable for the life of a Uniswap V3 pool.
+	if err := c.Client.CallCached(ctx, "eth_call", []any{call, "latest"}, &raw); err != nil {
+		return "", err
+	}
+	var addr common.Address
+	if err := contract.UnpackIntoInterface(&addr, method, raw); err != nil {
+		return "", err
+	}
+	return addr.Hex(), nil
+}
+
+func flash(ctx context.Context, c *runtime.Context) error {
+	pool := c.Event.Log.Address
+	token0, err := poolToken(ctx, c, "token0")
+	if err != nil {
+		return fmt.Errorf("read token0 from pool %s: %w", pool, err)
+	}
+	token1, err := poolToken(ctx, c, "token1")
+	if err != nil {
+		return fmt.Errorf("read token1 from pool %s: %w", pool, err)
+	}
+	args := c.Event.Args.(map[string]any)
+	amount0, amount1 := args["amount0"].(*big.Int), args["amount1"].(*big.Int)
+	db := c.DB.Indexing()
+	for _, total := range []struct {
+		table, token   string
+		initial, delta *big.Int
+	}{
+		{"token_borrowed", token0, amount0, amount0},
+		{"token_borrowed", token1, amount1, amount1},
+		// The reference seeds token_paid with paidN, then adds amountN on later flashes.
+		{"token_paid", token0, args["paid0"].(*big.Int), amount0},
+		{"token_paid", token1, args["paid1"].(*big.Int), amount1},
+	} {
+		_, err := db.InsertOne(ctx, total.table, store.Row{
+			"address": total.token, "amount": total.initial,
+		}, store.Conflict{Action: store.ConflictUpdate, Update: func(row store.Row) (store.Row, error) {
+			return store.Row{"amount": new(big.Int).Add(row["amount"].(*big.Int), total.delta)}, nil
+		}})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

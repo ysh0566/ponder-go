@@ -1,0 +1,193 @@
+{
+  "enums": [
+    {
+      "name": "trade_type",
+      "exportName": "tradeType",
+      "values": [
+        "BUY",
+        "SELL"
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "name": "share",
+      "columns": [
+        {
+          "name": "subject",
+          "type": "hex",
+          "notNull": true
+        },
+        {
+          "name": "trader",
+          "type": "hex",
+          "notNull": true
+        },
+        {
+          "name": "amount",
+          "type": "bigint",
+          "notNull": true
+        }
+      ],
+      "primaryKey": [
+        "subject",
+        "trader"
+      ]
+    },
+    {
+      "name": "trade_event",
+      "exportName": "tradeEvent",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "primary": true
+        },
+        {
+          "name": "subject",
+          "type": "hex",
+          "notNull": true
+        },
+        {
+          "name": "trader",
+          "type": "hex",
+          "notNull": true
+        },
+        {
+          "name": "share_amount",
+          "type": "bigint",
+          "property": "shareAmount",
+          "notNull": true
+        },
+        {
+          "name": "trade_type",
+          "type": "trade_type",
+          "property": "tradeType",
+          "notNull": true
+        },
+        {
+          "name": "eth_amount",
+          "type": "bigint",
+          "property": "ethAmount",
+          "notNull": true
+        },
+        {
+          "name": "protocol_eth_amount",
+          "type": "bigint",
+          "property": "protocolEthAmount",
+          "notNull": true
+        },
+        {
+          "name": "subject_eth_amount",
+          "type": "bigint",
+          "property": "subjectEthAmount",
+          "notNull": true
+        },
+        {
+          "name": "trader_amount",
+          "type": "bigint",
+          "property": "traderAmount",
+          "notNull": true
+        },
+        {
+          "name": "supply",
+          "type": "bigint",
+          "notNull": true
+        },
+        {
+          "name": "timestamp",
+          "type": "integer",
+          "notNull": true
+        }
+      ]
+    },
+    {
+      "name": "subject",
+      "columns": [
+        {
+          "name": "address",
+          "type": "hex",
+          "primary": true
+        },
+        {
+          "name": "total_shares",
+          "type": "bigint",
+          "property": "totalShares",
+          "notNull": true
+        },
+        {
+          "name": "total_trades",
+          "type": "bigint",
+          "property": "totalTrades",
+          "notNull": true
+        },
+        {
+          "name": "last_price",
+          "type": "bigint",
+          "property": "lastPrice",
+          "notNull": true
+        },
+        {
+          "name": "earnings",
+          "type": "bigint",
+          "notNull": true
+        },
+        {
+          "name": "trader_volume",
+          "type": "bigint",
+          "property": "traderVolume",
+          "notNull": true
+        },
+        {
+          "name": "protocol_fees_generated",
+          "type": "bigint",
+          "property": "protocolFeesGenerated",
+          "notNull": true
+        }
+      ]
+    },
+    {
+      "name": "trader",
+      "columns": [
+        {
+          "name": "address",
+          "type": "hex",
+          "primary": true
+        },
+        {
+          "name": "total_trades",
+          "type": "bigint",
+          "property": "totalTrades",
+          "notNull": true
+        },
+        {
+          "name": "spend",
+          "type": "bigint",
+          "notNull": true
+        },
+        {
+          "name": "earnings",
+          "type": "bigint",
+          "notNull": true
+        },
+        {
+          "name": "profit",
+          "type": "bigint",
+          "notNull": true
+        },
+        {
+          "name": "subject_fees_paid",
+          "type": "bigint",
+          "property": "subjectFeesPaid",
+          "notNull": true
+        },
+        {
+          "name": "protocol_fees_paid",
+          "type": "bigint",
+          "property": "protocolFeesPaid",
+          "notNull": true
+        }
+      ]
+    }
+  ]
+}
