@@ -424,7 +424,7 @@
         "parity/runs/m45-omnichain-events-v15-20261103/VALIDATION.md",
         "parity/runs/m45-omnichain-events-v15-20261103/SOURCE-CONTRACT.md"
       ],
-      "remaining": "Subsequent native Omnichain records cover log-only ranges, genesis, account and contract CALL callbacks, setup and application exits on both engines. Independent storage still requires cached finalized ranges, one closing block callback per chain or static logs on every chain. Live reorgs, factories, mixed modes and engine interruptions remain open.",
+      "remaining": "Subsequent native Omnichain records cover log-only ranges, genesis, account and contract CALL callbacks, setup and application exits on both engines. Independent storage still requires cached finalized ranges, one closing block callback per chain or static logs on every chain. Live reorgs, factories, mixed source modes and engine exits at other lifecycle stages remain open.",
       "native_test_files": [
         "historical/live_runtime_omnichain_logonly_crash_test.go",
         "historical/live_runtime_omnichain_logonly_test.go",
@@ -2252,7 +2252,7 @@
       "evidence": [
         "parity/runs/native-omnichain-app-recovery/RESULT.md"
       ],
-      "remaining": "Application exits during finalized closing-block and static-log processing use the existing durable formats. Independent database-engine interruption, host power loss and other source combinations require separate evidence."
+      "remaining": "Independent database-engine exits during a finalized static-log callback are tracked in native-omnichain-engine-recovery. Host power loss and other source and interruption combinations remain open."
     },
     {
       "id": "native-omnichain-setup",
@@ -2276,6 +2276,29 @@
         "parity/runs/native-omnichain-setup/RESULT.md"
       ],
       "remaining": "Independent Omnichain setup covers bounded, finalized and cached deployments. Live indexing, factories and mixed event modes remain open."
+    },
+    {
+      "id": "native-omnichain-engine-recovery",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime_omnichain_history.go",
+        "store/managed_live_runtime.go",
+        "store/managed_live_batch.go"
+      ],
+      "native_test_files": [
+        "historical/omnichain_engine_test.go",
+        "historical/live_runtime_omnichain_logs_test.go",
+        "historical/managed_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/index.test.ts",
+        "packages/core/src/database/actions.test.ts",
+        "packages/core/src/runtime/omnichain.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-engine-recovery/RESULT.md"
+      ],
+      "remaining": "Scoped to engine exits during a finalized historical event transaction. Host power loss, engine interruption during setup and activation, and additional source combinations remain open."
     }
   ]
 }

@@ -471,6 +471,8 @@ functions = append(functions, config.SourceIndexingFunction{
 
 若索引进程在已确认区间的区块或静态日志回调中突然退出，用原来的业务库和同步库、同一份来源配置和相同的 `BuildID` 重新打开，并为这次打开分配新的 `OpenID`。运行器从已提交的跨链回调组继续。若进程在运行器进入就绪状态后退出，已经完成的回调不会再次执行。PostgreSQL 使用原来的数据库及命名空间，PGlite 使用原来的两个目录。[应用进程退出验证](../parity/runs/native-omnichain-app-recovery/RESULT.md)
 
+若数据库引擎在静态日志回调里退出，先关闭失败的运行器。PostgreSQL 使用原有数据卷重启服务。PGlite 重新打开原有业务和同步目录。沿用同一来源配置与 `BuildID`，用新的 `OpenID` 启动。已提交的跨链事件组会保留，中断的事务会回滚，其回调在恢复时重新执行。带逐块回调和纯日志这两种已确认区间模式都覆盖了这个场景。[引擎中断与恢复测试](../parity/runs/native-omnichain-engine-recovery/RESULT.md)
+
 ### 为同一条链配置多个 RPC 节点
 
 在 Go 配置中将同一条链的 RPC 地址放入 `config.Chain.RPC`。下面的 `firstURL` 和 `secondURL` 指向链 ID 均为 101、创世区块相同的两个节点。
