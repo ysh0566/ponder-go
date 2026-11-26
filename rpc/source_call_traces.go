@@ -10,6 +10,10 @@ import (
 // Source traversal completes before standardization, preserving mutation order
 // when a later required property fails validation.
 func FlattenSourceCallTraces(input []map[string]any, request ActionRequest) ([]CallTrace, error) {
+	return flattenSourceCallTraces(input, request, nil)
+}
+
+func flattenSourceCallTraces(input []map[string]any, request ActionRequest, checkFrame func(map[string]any) error) ([]CallTrace, error) {
 	type pendingTrace struct {
 		hash  any
 		frame map[string]any
@@ -20,6 +24,11 @@ func FlattenSourceCallTraces(input []map[string]any, request ActionRequest) ([]C
 		for index, frame := range frames {
 			if frame == nil {
 				return fmt.Errorf("invalid source trace frame")
+			}
+			if checkFrame != nil {
+				if err := checkFrame(frame); err != nil {
+					return err
+				}
 			}
 			if !jsvalue.IsUndefined(sourceRPCProperty(frame, "error")) {
 				continue

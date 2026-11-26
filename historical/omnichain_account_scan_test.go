@@ -24,6 +24,12 @@ func TestOmnichainAccountScan(t *testing.T) {
 		if id == 202 {
 			offset = 5
 		}
+		// The tail contains a reverted outgoing transaction from the watched wallet.
+		const reverter = "0x3333333333333333333333333333333333333333"
+		var out any
+		if err := client.Call(t.Context(), "anvil_setCode", []any{reverter, "0x60006000fd"}, &out); err != nil {
+			t.Fatal(err)
+		}
 		for _, ts := range []uint64{40, 50, 70} {
 			var out any
 			if err := client.Call(t.Context(), "evm_setNextBlockTimestamp", []any{1700000000 + ts + offset}, &out); err != nil {
@@ -35,14 +41,23 @@ func TestOmnichainAccountScan(t *testing.T) {
 					t.Fatal(err)
 				}
 				c.tx[4] = hash
+			} else if ts == 50 {
+				var hash string
+				if err := client.Call(t.Context(), "eth_sendTransaction", []any{map[string]any{"from": c.wallet, "to": reverter, "value": "0x1", "gas": "0x186a0"}}, &hash); err != nil {
+					t.Fatal(err)
+				}
 			}
 			if err := client.Call(t.Context(), "evm_mine", []any{}, &out); err != nil {
 				t.Fatal(err)
 			}
 		}
 	}
-	for _, backend := range []string{"postgres", "pglite"} {
-		t.Run(backend, func(t *testing.T) {
+	for _, tc := range []struct {
+		backend string
+		cached  bool
+	}{{"postgres", true}, {"postgres", false}, {"pglite", true}, {"pglite", false}} {
+		backend, cached := tc.backend, tc.cached
+		t.Run(fmt.Sprintf("%s/cache-202-%t", backend, cached), func(t *testing.T) {
 			continuousRoot(t)
 			ctx := t.Context()
 			var calls []string
@@ -78,7 +93,7 @@ func TestOmnichainAccountScan(t *testing.T) {
 					return nil
 				}
 			}
-			raw := fmt.Sprintf(`{"ordering":"omnichain","chains":{"one":{"id":101,"rpc":%q,"reorgWindow":0},"two":{"id":202,"rpc":%q,"reorgWindow":0}},"accounts":{"Wallet":{"chain":{"one":{},"two":{}},"address":%q,"startBlock":1,"endBlock":5,"includeTransactionReceipts":true}}}`, chains[101].url, chains[202].url, chains[101].wallet)
+			raw := fmt.Sprintf(`{"ordering":"omnichain","chains":{"one":{"id":101,"rpc":%q,"reorgWindow":0},"two":{"id":202,"rpc":%q,"reorgWindow":0,"cacheRpcRequests":%t}},"accounts":{"Wallet":{"chain":{"one":{},"two":{}},"address":%q,"startBlock":1,"endBlock":5,"includeTransactionReceipts":true}}}`, chains[101].url, chains[202].url, cached, chains[101].wallet)
 			cfg, err := config.ParseSourceConfiguration([]byte(raw))
 			if err != nil {
 				t.Fatal(err)
@@ -143,7 +158,12 @@ func TestOmnichainAccountScan(t *testing.T) {
 					for id := range chains {
 						end, err := checkpoint.Decode(ctrl.LogOnlyScanHeads[id].Checkpoint)
 						logical, e := checkpoint.Decode(store.ManagedLiveCursorCheckpoint(ctrl, id))
-						if err != nil || e != nil || end.ChainID != id || end.BlockNumber != 5 || logical.ChainID != id || !(logical == end || logical.BlockNumber == 4 && logical.MatchesEvent("transfer")) {
+						// An uncached group commits the block-end position at its last event block.
+						validPosition := logical == end || logical.BlockNumber == 4 && logical.MatchesEvent("transfer")
+						if id == 202 && !cached {
+							validPosition = logical == checkpoint.Block(1700000045, id, 4, true)
+						}
+						if err != nil || e != nil || end.ChainID != id || end.BlockNumber != 5 || logical.ChainID != id || !validPosition {
 							t.Fatalf("scan and source positions on %d: %+v %+v, err=%v %v", id, end, logical, err, e)
 						}
 					}
@@ -170,6 +190,17 @@ func TestOmnichainAccountScan(t *testing.T) {
 				})
 				fail = false
 			}
+			syncStore := f
+			syncStore.options.Owned.Storage.BusinessDirectory = f.options.Owned.Storage.SyncDirectory
+			managedInspect(t, syncStore, func(db store.Backend) {
+				ns := schema.Quote(f.options.Owned.Storage.SyncNamespace + "_rpc_1")
+				for _, table := range []string{"intervals", "transactions", "traces", "transaction_receipts"} {
+					rows := managedRows(t, db, "SELECT 1 FROM "+ns+"."+table+" WHERE chain_id=$1 LIMIT 1", 202)
+					if (len(rows) > 0) != cached {
+						t.Fatalf("cache-202=%t table %s, rows=%v", cached, table, rows)
+					}
+				}
+			})
 		})
 	}
 }

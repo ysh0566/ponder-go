@@ -9,7 +9,7 @@ import (
 	"github.com/ysh0566/ponder-go/rpc"
 )
 
-// LogScanRPC rechecks finalized log ranges without writing a sync cache.
+// LogScanRPC rechecks finalized log and account ranges without writing a sync cache.
 // The reader belongs to one chain and one scan.
 type LogScanRPC struct {
 	Actions *rpc.Actions
@@ -106,6 +106,9 @@ func (reader LogScanRPC) scan(ctx context.Context, opts ManagedLiveOptions, r lo
 	if err != nil {
 		return managedGapScan{}, err
 	}
+	if err := reader.scanAccountRanges(ctx, r, filters, children, get); err != nil {
+		return managedGapScan{}, err
+	}
 	var scan managedGapScan
 	skipped := false
 	for _, f := range filters {
@@ -114,7 +117,7 @@ func (reader LogScanRPC) scan(ctx context.Context, opts ManagedLiveOptions, r lo
 			return managedGapScan{}, err
 		}
 		from, to := max(r.from, start), min(r.to, end)
-		if from <= to {
+		if f["type"] == "log" && from <= to {
 			queries, err := filter.MergeLogFiltersToRequests([]filter.RequiredInterval{{Filter: f, Interval: [2]int64{int64(from), int64(to)}}}, children, filter.AddressChunkSize)
 			if err != nil {
 				return managedGapScan{}, err
@@ -169,7 +172,7 @@ func verifyUncachedEmptyLog(chain, number uint64, log, internal filter.Object, c
 	var raw []events.RawEvent
 	for i, callback := range callbacks {
 		f := callback["filter"].(filter.Object)
-		if filter.IsLogFilterMatched(f, internal) && children.matches(f, internal, number) {
+		if f["type"] == "log" && filter.IsLogFilterMatched(f, internal) && children.matches(f, internal, number) {
 			raw = append(raw, events.RawEvent{ChainID: chain, EventCallbackIndex: i, Log: internal})
 		}
 	}

@@ -159,7 +159,7 @@ func normalizeLogOnlyFilters(in map[uint64][]filter.Object, o ManagedLiveOptions
 			from, fe := logOnlyQuantity(filter.FilterFromBlock(f))
 			to, te := logOnlyQuantity(filter.FilterToBlock(f))
 			kind := f["type"]
-			if kind != "log" && !((kind == "transaction" || kind == "transfer") && runtimeRPCCacheEnabled(o, c.ID)) {
+			if kind != "log" && kind != "transaction" && kind != "transfer" {
 				return nil, ErrManagedLiveBatchConflict
 			}
 			if !ie || !fe || !te || id != c.ID || from > to || (!o.runtimeFactories && len(filter.GetFilterFactories(f)) != 0) {

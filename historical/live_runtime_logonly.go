@@ -31,15 +31,20 @@ func (r *RuntimeRunner) sparseSources() (map[uint64][]filter.Object, map[uint64]
 	return filters, abis
 }
 
-// An uncached factory scan may rediscover births before the durable cursor.
+// Activation rechecks account blocks and factory births before the durable cursor.
 func (r *RuntimeRunner) logScanLineageStart(id, cursor uint64) uint64 {
-	if r.sparseChains[id] && r.options.FactorySources {
+	if r.sparseChains[id] {
 		for i, chain := range r.build.Chains {
 			if runtimeChainID(chain) != id || runtimeRPCCacheEnabled(chain) {
 				continue
 			}
 			for _, cb := range r.build.EventCallbacks[i] {
-				for _, factory := range filter.GetFilterFactories(cb["filter"].(filter.Object)) {
+				source := cb["filter"].(filter.Object)
+				if cb["type"] == "account" {
+					start, _ := uintQuantity(filter.FilterFromBlock(source))
+					cursor = min(cursor, start)
+				}
+				for _, factory := range filter.GetFilterFactories(source) {
 					start, _ := uintQuantity(filter.FilterFromBlock(factory))
 					cursor = min(cursor, start)
 				}
