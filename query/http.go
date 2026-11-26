@@ -90,6 +90,21 @@ func NewReader(ctx context.Context, reader store.QueryReader) (*Server, error) {
 	return server.listenForChanges(ctx)
 }
 
+// OpenManaged serves an independently owned PostgreSQL RuntimeRunner through
+// its business namespace. Close the server before closing the supplied backend.
+func OpenManaged(ctx context.Context, backend store.Backend, model schema.Schema, namespace string, ordering schema.Ordering) (*Server, error) {
+	reader, err := store.OpenManagedQueryReader(ctx, backend, model, namespace, ordering)
+	if err != nil {
+		return nil, err
+	}
+	server, err := NewReader(ctx, reader.QueryReader)
+	if err != nil {
+		return nil, err
+	}
+	server.Readiness = reader
+	return server, nil
+}
+
 func (s *Server) database() store.QueryReader {
 	if s.Store != nil {
 		return s.Store.QueryReader()

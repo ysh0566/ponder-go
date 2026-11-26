@@ -480,6 +480,32 @@ curl -NsSG "$base/sql/live" --data-urlencode "sql=$sql"
 
 用 Ctrl-C 停止索引器，保留两个节点。`start` 默认给子进程 5 秒完成退出，示例用 `--shutdown-timeout 30s` 为两个 PGlite 引擎完成事务和关闭留出时间。停机期间出块后，重新执行同一条 `ponder start` 即可补块。PGlite 将两个目录保存在示例的 `.ponder/ponder_go_blocks/` 下。PostgreSQL 使用 `ponder_go_blocks` 和 `ponder_go_blocks_cache` 两个命名空间。自己的 Go 应用可以调用 `runner.QueryServer(ctx)` 创建查询服务，再将 `runner` 和该服务传给 `runtime.LaunchApplication`。修改处理函数逻辑后，用新的 `BuildID` 和命名空间启动新部署。退出时等待应用停止，依次关闭查询服务和运行器。[端到端测试](../cmd/ponder/managed_start_test.go)
 
+### 双库 PostgreSQL 的独立查询进程
+
+用 PostgreSQL 运行上一节的 `ponder start`，等写入进程建立业务命名空间后，可以在另一终端运行以下命令。将 `READER_DATABASE_URL` 设为同一数据库的只读账号连接串，`--schema` 填写入进程的业务命名空间。查询进程从业务库读取链名、检查点和就绪标记，运行时只需项目的 Go 代码和数据库连接。[Go 示例入口](../examples/managed-multichain/main.go)
+
+```sh
+DATABASE_PRIVATE_URL="$READER_DATABASE_URL" ./bin/ponder serve \
+  --root examples/managed-multichain --schema ponder_go_blocks \
+  --hostname 127.0.0.1 --port 42070
+curl -s http://127.0.0.1:42070/status
+```
+
+以业务表所有者身份给现有的 PostgreSQL 登录角色授权。下面的角色名、业务命名空间及表名对应这个示例。账号还需具备该数据库的 `CONNECT` 权限。
+
+```sql
+GRANT USAGE ON SCHEMA ponder_go_blocks TO query_reader;
+GRANT SELECT ON ponder_go_blocks.indexed_block,
+                ponder_go_blocks._ponder_go_meta,
+                ponder_go_blocks._ponder_go_app,
+                ponder_go_blocks._ponder_go_chains,
+                ponder_go_blocks._ponder_go_progress TO query_reader;
+```
+
+历史回填期间，`/health` 可用，`/ready` 和新建的 `/sql/live` 请求返回 503。写入进程发布就绪状态后，查询端能按链名返回区块高度，已有 SSE 连接也能接收写入进程重启后补入的数据。查询角色只需读取业务命名空间。独立查询部署使用 PostgreSQL。使用 PGlite 时可访问 `start` 自带的 HTTP 服务。
+
+自己的 Go 应用可以调用 `query.OpenManaged(ctx, backend, model, namespace, ordering)`，再将返回值传给 `runtime.LaunchApplication(ctx, nil, routes, host, port)`。退出时先停止 HTTP 服务，再关闭查询服务和 PostgreSQL 连接。[运行和重启测试](../parity/runs/native-managed-cli-serve/RESULT.md)
+
 ### 独立存储的有限区间索引
 
 Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 管理独立的业务数据与同步数据时，可以在默认多链排序下将 `RuntimeOptions.Live` 留空，并给每个事件来源设置 `endBlock`。打开时各链都必须已经到达配置的结束高度。要包含创世区块，请为来源设置 `startBlock: 0` 并将 `RuntimeOptions.SourceCheckpoints` 设为 `true`。此时初始 checkpoint 标记区块的起点，回调会收到区块 0。只需索引创世区块时可设置 `endBlock: 0`。新建部署时选择 checkpoint 模式，重开原存储时沿用相同设置。不启用该选项时，有限区间从区块 1 或更高处开始。调用 `Run` 后，索引器处理到各链的结束高度并返回 `Completed`。[来源 checkpoint 验证](../parity/runs/native-bounded-source-checkpoints/RESULT.md)

@@ -656,17 +656,22 @@ func (s *Store) Read(ctx context.Context, name string) (Result, error) {
 	return s.Backend.Query(ctx, "SELECT * FROM "+s.table(name))
 }
 func (s *Store) Progress(ctx context.Context) (map[string]string, error) {
-	return readProgress(ctx, s.Backend, s.internal("_ponder_go_progress"))
+	return s.readProgress(ctx, s.Backend, false)
 }
 
-func readProgress(ctx context.Context, q Querier, table string) (map[string]string, error) {
-	r, e := q.Query(ctx, "SELECT chain_id::text AS chain_id, checkpoint FROM "+table)
+func (s *Store) readProgress(ctx context.Context, q Querier, named bool) (map[string]string, error) {
+	table := s.internal("_ponder_go_progress")
+	sql := "SELECT chain_id::text AS chain,checkpoint FROM " + table
+	if named {
+		sql = "SELECT c.chain_name AS chain,p.checkpoint FROM " + table + " p JOIN " + s.internal("_ponder_go_chains") + " c USING(chain_id)"
+	}
+	r, e := q.Query(ctx, sql)
 	if e != nil {
 		return nil, e
 	}
 	m := map[string]string{}
 	for _, row := range r.Rows {
-		m[fmt.Sprint(row["chain_id"])] = fmt.Sprint(row["checkpoint"])
+		m[fmt.Sprint(row["chain"])] = fmt.Sprint(row["checkpoint"])
 	}
 	return m, nil
 }

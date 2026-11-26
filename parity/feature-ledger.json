@@ -2416,7 +2416,7 @@
       "evidence": [
         "parity/runs/native-managed-cli-start/RESULT.md"
       ],
-      "remaining": "The independent default multichain start flow covers two block sources with SQL, SSE and restart. Independent hot reload, standalone query deployment and Isolated ordering remain open."
+      "remaining": "The independent default multichain start flow covers two block sources with SQL, SSE and restart. PostgreSQL standalone serving is covered by native-managed-cli-serve. Independent hot reload and Isolated ordering remain open."
     },
     {
       "id": "native-omnichain-uncached-logs",
@@ -2443,6 +2443,30 @@
         "parity/runs/native-omnichain-uncached-logs/RESULT.md"
       ],
       "remaining": "Static contract log sources only, with finite ranges under global finality. Pure-log factories, mixed closing-block and log-only chains and live reorgs remain open."
+    },
+    {
+      "id": "native-managed-cli-serve",
+      "status": "verified_subset",
+      "implementation_files": [
+        "examples/managed-multichain/main.go",
+        "store/managed_query_reader.go",
+        "store/query_reader.go",
+        "query/http.go",
+        "store/managed_live_runtime_activation.go"
+      ],
+      "native_test_files": [
+        "cmd/ponder/managed_start_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/bin/commands/serve.ts",
+        "packages/core/src/server/index.ts",
+        "packages/core/src/server/index.test.ts",
+        "packages/core/src/database/actions.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-managed-cli-serve/RESULT.md"
+      ],
+      "remaining": "Independent PostgreSQL query serving on a business namespace. Development hot reload and Isolated ordering remain open for this runner."
     }
   ]
 }

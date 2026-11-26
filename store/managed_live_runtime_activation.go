@@ -260,6 +260,13 @@ func (d *ManagedLiveDomains) setRuntimeServingWithScan(ctx context.Context, id s
 	if err = tx.Exec(ctx, "UPDATE "+s.internal("_ponder_go_app")+" SET value=jsonb_set(value,'{is_ready}',to_jsonb($1::integer)) WHERE key='app' AND lease_token=$2", flag, s.leaseToken); err != nil {
 		return err
 	}
+	// Independent PostgreSQL listeners may have survived a writer restart.
+	// Historical commits before live-query triggers are installed need a refresh.
+	if ready && s.Backend.Dialect() == "postgres" {
+		if err := notifyPublishedRelations(ctx, tx, s.Namespace, s.publishedNames()); err != nil {
+			return err
+		}
+	}
 	hash := m.runtimeServeHash(e, s.leaseToken)
 	if err = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_live_operations")+"(id,generation,owner_token,kind,request_hash,previous_operation,before_hash,after_hash,payload) VALUES($1,$2,$3,'serve',$4,$5,$6,'',$7::jsonb)", id, after.Generation, s.leaseToken, hash, before.Control.LastOperation, beforeHash, string(payload)); err != nil {
 		return err

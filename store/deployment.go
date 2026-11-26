@@ -231,12 +231,16 @@ func PublishViews(ctx context.Context, backend Backend, namespace, views string)
 	if previous != namespace {
 		// Live readers of the stable name must see existing rows in the new
 		// deployment even if neither writer commits again after the switch.
-		names := slices.Sorted(maps.Keys(affected))
-		if err = tx.Exec(ctx, "SELECT pg_notify($1,json_build_array(name)::text) FROM unnest($2::text[]) AS changed(name)", views+"_live_query", names); err != nil {
+		if err = notifyPublishedRelations(ctx, tx, views, affected); err != nil {
 			return err
 		}
 	}
 	return tx.Commit(ctx)
+}
+
+func notifyPublishedRelations(ctx context.Context, tx Transaction, namespace string, affected map[string]bool) error {
+	names := slices.Sorted(maps.Keys(affected))
+	return tx.Exec(ctx, "SELECT pg_notify($1,json_build_array(name)::text) FROM unnest($2::text[]) AS changed(name)", namespace+"_live_query", names)
 }
 
 func (s *Store) publishedNames() map[string]bool {

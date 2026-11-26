@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,11 +17,13 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"strings"
+	"sync"
 	"syscall"
 	"testing"
 	"time"
 
 	"github.com/ysh0566/ponder-go/internal/testanvil"
+	"github.com/ysh0566/ponder-go/internal/testpostgres"
 	"github.com/ysh0566/ponder-go/query"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
@@ -29,7 +32,7 @@ import (
 
 // Hold the first full block at the configured start until HTTP readiness has
 // been observed. All headers and transaction data come from the local node.
-func gateManagedHistory(t *testing.T, endpoint string) (string, func()) {
+func gateManagedHistory(t *testing.T, endpoint string) (string, <-chan struct{}, func()) {
 	t.Helper()
 	target, err := url.Parse(endpoint)
 	if err != nil {
@@ -37,6 +40,8 @@ func gateManagedHistory(t *testing.T, endpoint string) (string, func()) {
 	}
 	proxy := httputil.NewSingleHostReverseProxy(target)
 	next := make(chan struct{})
+	entered := make(chan struct{})
+	var enteredOnce sync.Once
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -48,6 +53,7 @@ func gateManagedHistory(t *testing.T, endpoint string) (string, func()) {
 			Params []any
 		}
 		if json.Unmarshal(body, &call) == nil && call.Method == "eth_getBlockByNumber" && len(call.Params) == 2 && call.Params[0] == "0x1" && call.Params[1] == true {
+			enteredOnce.Do(func() { close(entered) })
 			select {
 			case <-next:
 			case <-r.Context().Done():
@@ -65,7 +71,7 @@ func gateManagedHistory(t *testing.T, endpoint string) (string, func()) {
 		}
 	}
 	t.Cleanup(release)
-	return server.URL, release
+	return server.URL, entered, release
 }
 
 func TestManagedMultichainCLIStart(t *testing.T) {
@@ -89,7 +95,7 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 	if out, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("build CLI: %v\n%s", err, out)
 	}
-	for _, backend := range []string{"postgres", "pglite"} {
+	for _, backend := range []string{"postgres", "pglite", "postgres-serve"} {
 		t.Run(backend, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Minute)
 			defer cancel()
@@ -115,8 +121,13 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 			t.Setenv("DATABASE_URL", "")
 			t.Setenv("DATABASE_VIEWS_SCHEMA", "")
 			t.Setenv("PONDER_PGLITE_DIR", filepath.Join(project, "data"))
-			if backend == "postgres" {
+			var readerURL string
+			var admin store.Backend
+			if backend != "pglite" {
 				addr := os.Getenv("PONDER_TEST_POSTGRES")
+				if backend == "postgres-serve" {
+					addr = testpostgres.Start(t).URL()
+				}
 				if addr == "" {
 					t.Skip("requires a task PostgreSQL database")
 				}
@@ -124,6 +135,23 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 				db, err := store.OpenPostgres(ctx, addr)
 				if err != nil {
 					t.Fatal(err)
+				}
+				if backend == "postgres-serve" {
+					admin = db
+					// Only this disposable cluster gets a new login.
+					password := rand.Text()
+					if err := db.Exec(ctx, "CREATE ROLE query_reader LOGIN PASSWORD '"+password+"'"); err != nil {
+						t.Fatal(err)
+					}
+					u, err := url.Parse(addr)
+					if err != nil {
+						t.Fatal(err)
+					}
+					u.User = url.UserPassword("query_reader", password)
+					params := u.Query()
+					params.Set("default_transaction_read_only", "on")
+					u.RawQuery = params.Encode()
+					readerURL = u.String()
 				}
 				families := []string{namespace, namespace + "_sync", namespace + "_cache", namespace + "_cache_sync", namespace + "_cache_rpc_1"}
 				t.Cleanup(func() { _ = db.Close() })
@@ -141,13 +169,17 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 					}
 				})
 			}
-			one := testanvil.StartChain(t, 1, "--no-mining")
-			two := testanvil.StartChain(t, 2, "--no-mining")
+			one := testanvil.StartChain(t, 1, "--no-mining", "--timestamp", "1700000000")
+			two := testanvil.StartChain(t, 2, "--no-mining", "--timestamp", "1700000000")
 			mine := func(endpoint string, n int) {
 				t.Helper()
 				cl := rpc.New(endpoint)
 				for i := 0; i < n; i++ {
 					var result any
+					// Keep the previous block outside the one-second reorg window.
+					if err := cl.Call(ctx, "evm_increaseTime", []any{12}, &result); err != nil {
+						t.Fatal(err)
+					}
 					if err := cl.Call(ctx, "evm_mine", []any{}, &result); err != nil {
 						t.Fatal(err)
 					}
@@ -155,23 +187,31 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 			}
 			mine(one, 3)
 			mine(two, 3)
-			gated, release := gateManagedHistory(t, one)
+			gated, entered, release := gateManagedHistory(t, one)
 			cfg, err := os.ReadFile(filepath.Join(project, "ponder.json"))
 			if err != nil {
 				t.Fatal(err)
 			}
+			if backend == "postgres-serve" {
+				// Make the block mined while the writer is offline historical
+				// on reopen, before live-query triggers are reinstalled.
+				cfg = bytes.ReplaceAll(cfg, []byte(`"reorgWindow": 1`), []byte(`"reorgWindow": 0`))
+			}
 			write("ponder.json", strings.NewReplacer("http://127.0.0.1:8545", gated, "http://127.0.0.1:8546", two).Replace(string(cfg)))
-			start := func(owner string) (string, func()) {
+			launch := func(mode, owner string) (string, func()) {
 				t.Helper()
 				log, err := os.Create(filepath.Join(project, owner+".log"))
 				if err != nil {
 					t.Fatal(err)
 				}
-				args := []string{"start", "--root", project, "--schema", namespace, "--hostname", "127.0.0.1", "--port", "0"}
-				if backend == "pglite" {
+				args := []string{mode, "--root", project, "--schema", namespace, "--hostname", "127.0.0.1", "--port", "0"}
+				if mode == "start" {
 					args = append(args, "--shutdown-timeout", "30s")
 				}
 				cmd := exec.CommandContext(ctx, cli, args...)
+				if mode == "serve" {
+					cmd.Env = append(os.Environ(), "DATABASE_PRIVATE_URL="+readerURL, "DATABASE_URL=")
+				}
 				cmd.Cancel = func() error { return cmd.Process.Signal(syscall.SIGTERM) }
 				cmd.WaitDelay = 40 * time.Second
 				cmd.Stdout, cmd.Stderr = log, log
@@ -286,7 +326,12 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 					}
 				}
 			}
-			addr, stop := start("first")
+			addr, stop := launch("start", "first")
+			select {
+			case <-entered:
+			case <-ctx.Done():
+				t.Fatal("writer did not request initial block", ctx.Err())
+			}
 			if code, _ := get(addr + "/health"); code != 200 {
 				t.Fatalf("health during backfill %d", code)
 			}
@@ -296,12 +341,82 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 			if code, _ := get(addr + "/sql/live" + arg); code != 503 {
 				t.Fatalf("premature live query %d", code)
 			}
+			var readerAddr string
+			var stopReader func()
+			var activation store.NotificationListener
+			if backend == "postgres-serve" {
+				relations := []string{"indexed_block", "_ponder_go_meta", "_ponder_go_app", "_ponder_go_chains", "_ponder_go_progress"}
+				for i, name := range relations {
+					relations[i] = schema.Quote(namespace) + "." + schema.Quote(name)
+				}
+				if err := admin.Exec(ctx, "GRANT USAGE ON SCHEMA "+schema.Quote(namespace)+" TO query_reader"); err != nil {
+					t.Fatal(err)
+				}
+				if err := admin.Exec(ctx, "GRANT SELECT ON "+strings.Join(relations, ",")+" TO query_reader"); err != nil {
+					t.Fatal(err)
+				}
+				// Opening a mismatched or missing namespace must leave the database intact.
+				readonly, err := store.OpenPostgres(ctx, readerURL)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer readonly.Close()
+				activation, err = store.Listen(ctx, readonly, namespace+"_live_query")
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer activation.Close()
+				if r, err := store.OpenManagedQueryReader(ctx, readonly, schema.Schema{}, namespace, schema.Multichain); err == nil || r != nil {
+					t.Fatal("opened a mismatched business model")
+				}
+				if r, err := store.OpenManagedQueryReader(ctx, readonly, schema.Schema{}, namespace+"_absent", schema.Multichain); err == nil || r != nil {
+					t.Fatal("opened a missing namespace")
+				}
+				check, err := admin.Query(ctx, "SELECT has_schema_privilege('query_reader',$1,'USAGE') AS cache_access, has_table_privilege('query_reader',$2,'INSERT') AS can_write, to_regnamespace($3)::text AS absent", namespace+"_cache", schema.Quote(namespace)+".indexed_block", namespace+"_absent")
+				if err != nil || len(check.Rows) != 1 || check.Rows[0]["cache_access"] != false || check.Rows[0]["can_write"] != false || check.Rows[0]["absent"] != nil {
+					t.Fatalf("reader privileges or namespace changed: %+v %v", check, err)
+				}
+				// The standalone reader must start without the chain configuration.
+				path := filepath.Join(project, "ponder.json")
+				if err := os.Rename(path, path+".writer"); err != nil {
+					t.Fatal(err)
+				}
+				readerAddr, stopReader = launch("serve", "reader")
+				if err := os.Rename(path+".writer", path); err != nil {
+					t.Fatal(err)
+				}
+				if code, _ := get(readerAddr + "/ready"); code != 503 {
+					t.Fatalf("standalone readiness before catchup %d", code)
+				}
+				if code, _ := get(readerAddr + "/sql/live" + arg); code != 503 {
+					t.Fatalf("standalone live query during backfill %d", code)
+				}
+			}
 			release()
 			ready(addr)
 			checkRows(addr, 3, 3)
-			streamCtx, closeStream := context.WithTimeout(ctx, time.Minute)
+			streamAddr := addr
+			if readerAddr != "" {
+				ready(readerAddr)
+				checkRows(readerAddr, 3, 3)
+				// No further block has been mined. Activation must notify readers
+				// about the rows committed before the live triggers existed.
+				wait, cancelWait := context.WithTimeout(ctx, 10*time.Second)
+				defer cancelWait()
+				for {
+					event, err := activation.Wait(wait)
+					if err != nil {
+						t.Fatalf("historical activation notification: %v", err)
+					}
+					if event.Payload == `["indexed_block"]` {
+						break
+					}
+				}
+				streamAddr = readerAddr
+			}
+			streamCtx, closeStream := context.WithCancel(ctx)
 			defer closeStream()
-			req, _ := http.NewRequestWithContext(streamCtx, "GET", addr+"/sql/live"+arg, nil)
+			req, _ := http.NewRequestWithContext(streamCtx, "GET", streamAddr+"/sql/live"+arg, nil)
 			stream, err := http.DefaultClient.Do(req)
 			if err != nil {
 				t.Fatal(err)
@@ -312,27 +427,40 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 			}
 			mine(one, 1)
 			scan := bufio.NewScanner(stream.Body)
-			delivered := false
-			for scan.Scan() {
-				if payload, ok := strings.CutPrefix(scan.Text(), "data: "); ok {
-					var result store.Result
-					if err := json.Unmarshal([]byte(payload), &result); err != nil || len(result.Rows) != 2 || result.Rows[0]["chain"] != "one" || result.Rows[0]["n"] != "4" || result.Rows[1]["n"] != "3" {
-						t.Fatalf("stream payload %s", payload)
+			expectStream := func(one, two string) {
+				t.Helper()
+				for scan.Scan() {
+					if payload, ok := strings.CutPrefix(scan.Text(), "data: "); ok {
+						var result store.Result
+						if err := json.Unmarshal([]byte(payload), &result); err != nil || len(result.Rows) != 2 || result.Rows[0]["chain"] != "one" || result.Rows[0]["n"] != one || result.Rows[1]["n"] != two {
+							t.Fatalf("stream payload %s", payload)
+						}
+						return
 					}
-					delivered = true
-					break
 				}
+				t.Fatalf("no notification for %s/%s: %v", one, two, scan.Err())
 			}
-			closeStream()
-			if !delivered {
-				t.Fatalf("no notification for live block: %v", scan.Err())
+			expectStream("4", "3")
+			if readerAddr == "" {
+				closeStream()
 			}
 			checkRows(addr, 4, 3)
 			stop()
+			if readerAddr != "" {
+				checkRows(readerAddr, 4, 3)
+			}
 			mine(two, 1)
-			addr, stop = start("recovered")
+			addr, stop = launch("start", "recovered")
 			ready(addr)
 			checkRows(addr, 4, 4)
+			if readerAddr != "" {
+				// The writer catches up before reinstalling its notification triggers.
+				// This existing subscription must refresh without another live block.
+				expectStream("4", "4")
+				checkRows(readerAddr, 4, 4)
+				closeStream()
+				stopReader()
+			}
 			mine(two, 1)
 			checkRows(addr, 4, 5)
 			stop()
