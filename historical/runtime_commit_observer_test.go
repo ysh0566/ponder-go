@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/store"
 )
 
@@ -115,7 +117,8 @@ func TestRuntimeOmnichainCommitObserver(t *testing.T) {
 			for _, owner := range []string{"first", "resume", "finished"} {
 				o.OpenID = owner
 				r = runtimeOpen(t, backend, o)
-				result, err := r.Run(t.Context())
+				registry := metrics.New()
+				result, err := r.Run(metrics.WithHistorical(t.Context(), registry))
 				if owner == "first" {
 					if !errors.Is(err, groupStop) || !errors.Is(err, stops[1]) || !errors.Is(err, stops[2]) || result.Ready || result.Completed || events != len(calls) || events == len(want.Calls) || ticks.Load() <= 1 {
 						t.Fatalf("expected both committed groups before stopping: calls=%d events=%d result=%+v err=%v", len(calls), events, result, err)
@@ -125,6 +128,27 @@ func TestRuntimeOmnichainCommitObserver(t *testing.T) {
 				}
 				if owner == "resume" && (refreshed[1].Load() != 1 || refreshed[2].Load() != 1) {
 					t.Fatalf("clock advance produced head refresh counts %d and %d", refreshed[1].Load(), refreshed[2].Load())
+				}
+				text, err := registry.Collect(t.Context())
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, step := range []string{
+					`extract_duration{step="format"}`,
+					`extract_duration{step="build"}`,
+					`extract_duration{step="decode"}`,
+					`transform_duration{step="prefetch"}`,
+					`transform_duration{step="begin"}`,
+					`transform_duration{step="index"}`,
+					`transform_duration{step="load"}`,
+					`transform_duration{step="finalize"}`,
+					`transform_duration{step="commit"}`,
+				} {
+					if strings.HasPrefix(step, "transform_") || owner != "finished" {
+						if got, want := strings.Contains(text, step), owner != "finished"; got != want {
+							t.Fatalf("%s: %s present=%t, want %t\n%s", owner, step, got, want, text)
+						}
+					}
 				}
 				control, err := r.Control(t.Context())
 				if err != nil {

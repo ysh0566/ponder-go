@@ -8,6 +8,7 @@ import (
 
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/interval"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
@@ -131,7 +132,7 @@ func (r *orderedIndexer) sync(ctx context.Context) (bool, error) {
 			finalWatermark = min(finalWatermark, checkpoint.MustEncode(safe))
 		}
 	}
-	if err := processAvailable(ctx, chains, watermark); err != nil {
+	if err := processAvailable(ctx, chains, watermark, finalWatermark); err != nil {
 		return false, err
 	}
 	if r.sealed != finalWatermark {
@@ -149,12 +150,14 @@ func (r *orderedIndexer) sync(ctx context.Context) (bool, error) {
 				anchors = append(anchors, *anchor)
 			}
 		}
+		finalize := metrics.Historical(ctx).StartTransform("finalize")
 		if err := r.workers[0].Store.FinalizeOmnichainThrough(ctx, safe, anchors); err != nil {
 			if errors.Is(err, store.ErrIndexedBlockChanged) {
 				return false, errIndexingFork
 			}
 			return false, err
 		}
+		finalize()
 		r.sealed = finalWatermark
 	}
 	return allFinished, nil
@@ -194,7 +197,7 @@ func (r *orderedIndexer) syncMultichain(ctx context.Context) (bool, error) {
 		// not silently move its callbacks behind the new fork on restart.
 		return false, unavailable
 	}
-	if err := processAvailable(ctx, chains, checkpoint.MaxString); err != nil {
+	if err := processAvailable(ctx, chains, checkpoint.MaxString, checkpoint.MaxString); err != nil {
 		return false, err
 	}
 	if replay != "" {
@@ -220,7 +223,7 @@ func (r *orderedIndexer) syncMultichain(ctx context.Context) (bool, error) {
 	return done, unavailable
 }
 
-func processAvailable(ctx context.Context, chains []orderedChain, watermark string) error {
+func processAvailable(ctx context.Context, chains []orderedChain, watermark, finalWatermark string) error {
 	for i := range chains {
 		c := &chains[i]
 		start, err := c.engine.firstSourceBlock()
@@ -251,7 +254,11 @@ func processAvailable(ctx context.Context, chains []orderedChain, watermark stri
 		if picked == nil {
 			break
 		}
-		if err := picked.engine.process(ctx, picked.next); err != nil {
+		blockCtx := ctx
+		if picked.key > finalWatermark {
+			blockCtx = metrics.WithHistorical(ctx, nil)
+		}
+		if err := picked.engine.process(blockCtx, picked.next, picked.latest); err != nil {
 			return err
 		}
 		if err := picked.advance(ctx); err != nil {

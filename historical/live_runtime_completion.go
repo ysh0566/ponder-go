@@ -7,6 +7,7 @@ import (
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	source "github.com/ysh0566/ponder-go/runtime"
 	"github.com/ysh0566/ponder-go/schema"
@@ -114,7 +115,7 @@ func (r *RuntimeRunner) acquireRuntimeBlock(ctx context.Context, epoch *indexing
 			return nil, err
 		}
 		if !runtimeRPCCacheEnabled(chain) {
-			b.events, err = prepared.DecodeInMemory()
+			b.events, err = prepared.DecodeInMemoryContext(ctx)
 			return b, err
 		}
 		err = r.domains.WithRuntimeSync(ctx, func(io context.Context, s *store.SourceSyncStore) error {
@@ -467,7 +468,11 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		}
 		i, id := block.index, block.id
 		input := block.events
-		if e = epoch.Clients().Prefetch(epoch.Context(), input); e != nil {
+		prefetch := epoch.Clients().Prefetch
+		if block.history {
+			prefetch = epoch.PrefetchHistorical
+		}
+		if e = prefetch(epoch.Context(), input); e != nil {
 			return result, e
 		}
 		var receipt store.ManagedLiveBatchResult
@@ -512,7 +517,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 				number, _ := uintQuantity(block.raw["number"])
 				prepared, e = source.PrepareManagedSourceBlock(epoch.Context(), r.build.Chains[i], r.build.EventCallbacks[i], r.session, children[i], syncers[i], number, block.raw)
 				if e == nil {
-					input, e = prepared.DecodeInMemory()
+					input, e = prepared.DecodeInMemoryContext(epoch.Context())
 				}
 			}
 			if e != nil {
@@ -552,9 +557,11 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			if e != nil {
 				return result, e
 			}
+			finalize := metrics.Historical(run).StartTransform("finalize")
 			if _, e = r.domains.ApplyFinalize(run, f, a); e != nil {
 				return result, e
 			}
+			finalize()
 			control, e = r.domains.Control(run)
 			if e != nil {
 				return result, e

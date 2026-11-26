@@ -47,7 +47,7 @@ func TestSourceHistoryDecodeSessionCanonicalAndUnlocked(t *testing.T) {
 	var decoded []protocol.Object
 	var err error
 	go func() {
-		decoded, err = sourceHistoryDecodeSession(chain, []protocol.Object{cb}, session, decoder, raw)
+		decoded, err = sourceHistoryDecodeSession(nil, chain, []protocol.Object{cb}, session, decoder, raw)
 		close(done)
 	}()
 	select {
@@ -77,11 +77,11 @@ func TestSourceLocalBuildConcurrentFilterLearning(t *testing.T) {
 		}
 	}()
 	for i := 0; i < 1000; i++ {
-		built, err := sourceLocalBuild(o, data)
+		built, err := sourceLocalBuild(nil, o, data)
 		if err != nil || len(built) != 1 {
 			t.Fatal("actual BuildEvents changed under include learning", built, err)
 		}
-		decoded, err := sourceHistoryDecodeSession(protocol.Object{"id": 1}, o.EventCallbacks, s, &protocol.Decoder{}, built)
+		decoded, err := sourceHistoryDecodeSession(nil, protocol.Object{"id": 1}, o.EventCallbacks, s, &protocol.Decoder{}, built)
 		if err != nil || len(decoded) != 1 || reflect.ValueOf(decoded[0]["eventCallback"]).Pointer() != reflect.ValueOf(cb).Pointer() {
 			t.Fatal("actual decode identity changed", err)
 		}

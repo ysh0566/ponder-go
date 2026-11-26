@@ -5,6 +5,7 @@ import (
 	"fmt"
 	protocol "github.com/ysh0566/ponder-go/events"
 	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/store"
 	"strings"
@@ -112,17 +113,22 @@ func (p *PreparedManagedSourceBlock) PersistAndDecode(ctx context.Context, s *st
 			return nil, fmt.Errorf("projected source block differs from acquired identity")
 		}
 	}
-	raw, err := sourceLocalBuild(SourceLocalHistoricalOptions{ChainID: p.id, EventCallbacks: p.callbacks, FilterSession: p.session, Children: p.children}, data)
+	return p.decode(metrics.Historical(ctx), data)
+}
+
+func (p *PreparedManagedSourceBlock) decode(registry *metrics.Registry, data store.SourceEventData) ([]protocol.Object, error) {
+	raw, err := sourceLocalBuild(registry, SourceLocalHistoricalOptions{ChainID: p.id, EventCallbacks: p.callbacks, FilterSession: p.session, Children: p.children}, data)
 	if err != nil {
 		return nil, err
 	}
-	return sourceHistoryDecodeSession(p.chain, p.callbacks, p.session, &protocol.Decoder{}, raw)
+	return sourceHistoryDecodeSession(registry, p.chain, p.callbacks, p.session, &protocol.Decoder{}, raw)
 }
 
 func (p *PreparedManagedSourceBlock) DecodeInMemory() ([]protocol.Object, error) {
-	raw, err := sourceLocalBuild(SourceLocalHistoricalOptions{FilterSession: p.session, ChainID: p.id, EventCallbacks: p.callbacks, Children: p.children}, p.data.SourceEventData)
-	if err != nil {
-		return nil, err
-	}
-	return sourceHistoryDecodeSession(p.chain, p.callbacks, p.session, &protocol.Decoder{}, raw)
+	return p.decode(nil, p.data.SourceEventData)
+}
+
+// DecodeInMemoryContext attributes event building and decoding to a historical run.
+func (p *PreparedManagedSourceBlock) DecodeInMemoryContext(ctx context.Context) ([]protocol.Object, error) {
+	return p.decode(metrics.Historical(ctx), p.data.SourceEventData)
 }

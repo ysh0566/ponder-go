@@ -13,6 +13,7 @@ import (
 	protocol "github.com/ysh0566/ponder-go/events"
 	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/finality"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -173,9 +174,9 @@ func sourceHistoryLocal(o SourceHistoricalCoordinatorOptions, c SourceHistorical
 	local.Limit = int(math.Floor(float64(o.QuerySize)/float64(len(sourceHistoryBuild(o))+1)+0.5)) + 6
 	return local
 }
-func sourceHistoryDecode(c SourceHistoricalChain, raw []protocol.RawEvent) ([]protocol.Object, error) {
+func sourceHistoryDecode(ctx context.Context, c SourceHistoricalChain, raw []protocol.RawEvent) ([]protocol.Object, error) {
 	decoder := protocol.Decoder{}
-	return sourceHistoryDecodeSession(c.Chain, c.Local.EventCallbacks, c.Local.FilterSession, &decoder, raw)
+	return sourceHistoryDecodeSession(metrics.Historical(ctx), c.Chain, c.Local.EventCallbacks, c.Local.FilterSession, &decoder, raw)
 }
 func sourceHistoryRaw(ctx context.Context, c SourceHistoricalChain, local SourceLocalHistoricalOptions) iter.Seq2[*SourceRawEventBatch, error] {
 	if c.CacheRPCRequests {
@@ -494,7 +495,7 @@ func HistoricalSourceMultichain(ctx context.Context, o SourceHistoricalCoordinat
 							emit(nil, e)
 							return
 						}
-						events, e := sourceHistoryDecode(c, b.Events)
+						events, e := sourceHistoryDecode(ctx, c, b.Events)
 						if e != nil {
 							emit(nil, e)
 							return
@@ -606,7 +607,7 @@ func HistoricalSourceIsolated(ctx context.Context, o SourceHistoricalCoordinator
 					fail(e)
 					return
 				}
-				events, e := sourceHistoryDecode(c, b.Events)
+				events, e := sourceHistoryDecode(ctx, c, b.Events)
 				if e != nil {
 					fail(e)
 					return
@@ -750,7 +751,7 @@ func HistoricalSourceOmnichain(ctx context.Context, o SourceHistoricalCoordinato
 							emit(nil, e)
 							return
 						}
-						events, e := sourceHistoryDecode(c, b.Events)
+						events, e := sourceHistoryDecode(ctx, c, b.Events)
 						if e != nil {
 							emit(nil, e)
 							return

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/store"
 	"math/big"
@@ -128,6 +129,17 @@ func (e *RuntimeEpoch) Abort(ctx context.Context) error {
 	err := e.clients.Close(ctx)
 	return errors.Join(err, e.scope.Seal(ctx))
 }
+
+// PrefetchHistorical measures the client prefetch phase of a backfill group.
+func (e *RuntimeEpoch) PrefetchHistorical(ctx context.Context, events []Object) error {
+	finish := metrics.Historical(ctx).StartTransform("prefetch")
+	if err := e.clients.Prefetch(ctx, events); err != nil {
+		return err
+	}
+	finish()
+	return nil
+}
+
 func (e *RuntimeEpoch) Process(ctx context.Context, b store.ManagedLiveBatch, a *store.ManagedLiveAcquisition, events []Object, history bool) (result store.ManagedLiveBatchResult, err error) {
 	if len(b.Blocks) != 1 {
 		return store.ManagedLiveBatchResult{}, fmt.Errorf("runtime service dispatch requires exactly one block")
@@ -144,6 +156,9 @@ func (e *RuntimeEpoch) ProcessHistoricalBlocks(ctx context.Context, b store.Mana
 	return e.processBlocks(ctx, b, a, events, true)
 }
 func (e *RuntimeEpoch) processBlocks(ctx context.Context, b store.ManagedLiveBatch, a *store.ManagedLiveAcquisition, partitions [][]Object, history bool) (result store.ManagedLiveBatchResult, err error) {
+	if !history {
+		ctx = metrics.WithHistorical(ctx, nil)
+	}
 	for i, events := range partitions {
 		inputs := make([]store.RuntimeEventInput, len(events))
 		for j, event := range events {
@@ -190,7 +205,11 @@ func (e *RuntimeEpoch) processBlocks(ctx context.Context, b store.ManagedLiveBat
 		}
 		defer binding.Revoke()
 		if history {
+			finish := metrics.Historical(bound).StartTransform("index")
 			err = e.service.ProcessHistoricalEvents(bound, events, nil)
+			if err == nil {
+				finish()
+			}
 		} else {
 			err = e.service.ProcessRealtimeEvents(bound, events)
 		}

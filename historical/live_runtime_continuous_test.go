@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -69,7 +71,9 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 				return nil
 			}
 			r = runtimeOpen(t, backend, o)
-			out, err := r.Run(context.Background())
+			registry := metrics.New()
+			measurement := metrics.WithHistorical(t.Context(), registry)
+			out, err := r.Run(measurement)
 			if err != nil || !out.Completed || !out.Ready || out.LiveBlocks != 8 || out.HistoricalBlocks != 0 || commits != 8 || !advanced {
 				t.Fatalf("actual continuous runtime result=%+v commits=%d advanced=%v err=%v", out, commits, advanced, err)
 			}
@@ -110,7 +114,7 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 			if err != nil || !reflect.DeepEqual(actual, published) {
 				t.Fatalf("bounded reopen moved public projection: got=%v want=%v err=%v", actual, published, err)
 			}
-			out, err = r.Run(context.Background())
+			out, err = r.Run(measurement)
 			if err != nil || !out.Completed || !out.Ready || !out.Recovered {
 				t.Fatalf("bounded end did not replay/reactivate: %+v %v", out, err)
 			}
@@ -121,6 +125,10 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 				if count != 2 {
 					t.Fatalf("head %+v observed %d times", head, count)
 				}
+			}
+			body, err := registry.Collect(t.Context())
+			if err != nil || strings.Contains(body, "ponder_historical_") {
+				t.Fatalf("live indexing and cold replay reported historical work: %q, %v", body, err)
 			}
 			if err = r.Close(context.Background()); err != nil {
 				t.Fatal(err)

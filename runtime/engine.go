@@ -15,6 +15,7 @@ import (
 	selection "github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/finality"
 	"github.com/ysh0566/ponder-go/interval"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
@@ -290,7 +291,7 @@ func (e *Engine) syncToHead(ctx context.Context) (bool, error) {
 					return false, err
 				}
 			}
-			if err = e.process(ctx, b); err != nil {
+			if err = e.process(ctx, b, latest); err != nil {
 				return false, err
 			}
 		}
@@ -306,15 +307,22 @@ func (e *Engine) syncToHead(ctx context.Context) (bool, error) {
 
 var errIndexingFork = errors.New("chain changed during indexing")
 
-func (e *Engine) finalizeIndexed(ctx context.Context, latest Block, through uint64) (bool, error) {
+func (e *Engine) finalityCutoff(latest Block) (uint64, error) {
 	now, err := Number(latest.Timestamp)
 	if err != nil {
-		return false, err
+		return 0, err
 	}
 	window := uint64(e.chain.Window())
-	var cutoff uint64
-	if now >= window {
-		cutoff = now - window
+	if now < window {
+		return 0, nil
+	}
+	return now - window, nil
+}
+
+func (e *Engine) finalizeIndexed(ctx context.Context, latest Block, through uint64) (bool, error) {
+	cutoff, err := e.finalityCutoff(latest)
+	if err != nil {
+		return false, err
 	}
 	candidate, err := e.Store.IndexedFinalityCandidate(ctx, e.chain.ID, through, cutoff)
 	if err != nil || candidate == nil {
@@ -340,12 +348,14 @@ func (e *Engine) finalizeIndexed(ctx context.Context, latest Block, through uint
 	if canonical.Hash != latest.Hash {
 		return false, errIndexingFork
 	}
+	finalize := metrics.Historical(ctx).StartTransform("finalize")
 	if err := e.Store.FinalizeIndexedBlock(ctx, *candidate); err != nil {
 		if errors.Is(err, store.ErrIndexedBlockChanged) {
 			return false, errIndexingFork
 		}
 		return false, err
 	}
+	finalize()
 	e.finalizedHash = candidate.Hash
 	return done, nil
 }
@@ -518,7 +528,7 @@ type pending struct {
 	callback protocol.Object
 }
 
-func (e *Engine) process(ctx context.Context, b Block) error {
+func (e *Engine) process(ctx context.Context, b, latest Block) error {
 	number, err := Number(b.Number)
 	if err != nil {
 		return err
@@ -526,6 +536,18 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 	timestamp, err := Number(b.Timestamp)
 	if err != nil {
 		return err
+	}
+	registry := metrics.Historical(ctx)
+	if registry != nil {
+		cutoff, err := e.finalityCutoff(latest)
+		finalized := err == nil && timestamp <= cutoff
+		if e.staged != nil {
+			finalized = !e.staged.realtime.Load() && number <= e.staged.historyEnd
+		}
+		if !finalized {
+			registry = nil
+			ctx = metrics.WithHistorical(ctx, nil)
+		}
 	}
 	payload, err := json.Marshal(b)
 	if err != nil {
@@ -671,10 +693,12 @@ func (e *Engine) process(ctx context.Context, b Block) error {
 	sort.SliceStable(events, func(i, j int) bool {
 		return checkpoint.MustEncode(events[i].cursor) < checkpoint.MustEncode(events[j].cursor)
 	})
+	finishDecode := registry.StartExtract("decode")
 	events, err = e.decodePending(events)
 	if err != nil {
 		return err
 	}
+	finishDecode()
 	if e.staged != nil {
 		ordered := make([]OrderedEvent, len(events))
 		for i, event := range events {
@@ -781,6 +805,8 @@ func pollIndexer(ctx context.Context, interval time.Duration, ready func(bool), 
 				return nil
 			}
 			retry = min(interval, time.Second)
+			// Subsequent polls and reorg replay belong to the live run.
+			ctx = metrics.WithHistorical(ctx, nil)
 		}
 		timer := time.NewTimer(delay)
 		select {

@@ -28,7 +28,7 @@ Of the 883 upstream cases ported to Go, 866 passed and 17 provider RPC cases fai
 
 The two pinned end-to-end declarations run native Go handlers against ERC-20 mint and factory swap activity. Both applications passed on PostgreSQL and PGlite. The eight seeded simulation applications still need a Go harness and result comparison. The rETH and Uniswap benchmark workloads still need comparable upstream and Go measurements. [Application tests](../runtime/application_source_test.go) · [Native scope audit](../parity/runs/native-go-indexer-reaudit/RESULT.md)
 
-The default Go Prometheus registry exposes processed events, cache accesses, store operations and HTTP metrics. The pinned upstream registry also reports the duration of historical extraction and transformation steps. The Go registry does not yet expose those two metric families. [Go registry](../metrics/registry.go) · [Pinned registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts)
+The writer’s Prometheus registry reports cumulative historical extraction and transformation time in milliseconds by step. The atomic Go indexer measures finalized backfill through first catch-up. The dual-store runner measures its historical pipeline, including SQL row formatting on cached scans and raw event building on cached and in-memory scans. Live polls and live replays leave the historical durations unchanged. A separate query process has its own registry. [Metrics guide](USAGE.md#查看历史回填耗时) · [Verification](../parity/runs/native-historical-duration-metrics/RESULT.md)
 
 ## Callback RPC methods
 
