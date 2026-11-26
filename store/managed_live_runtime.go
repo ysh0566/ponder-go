@@ -48,7 +48,7 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 		return nil, fmt.Errorf("domain observer requires continuous-v6")
 	}
 	if o.Ordering == schema.Omnichain {
-		if in.Continuous || in.Setup || !in.SourceCheckpoints || in.FactorySources || in.ObserveDomain != nil {
+		if in.Continuous || !in.SourceCheckpoints || in.FactorySources || in.ObserveDomain != nil {
 			return nil, fmt.Errorf("omnichain requires the bounded finalized runtime format")
 		}
 		for _, chain := range in.Chains {
@@ -97,7 +97,7 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 	}
 	// Default-ordering deployments share authenticated recovery rules across
 	// fixed ranges and continuously polled execution.
-	opts.liveContinuous = in.Continuous || opts.runtimeSetup || opts.runtimeCachePolicy != nil || (opts.runtimeInitial && !opts.runtimeOmnichain)
+	opts.liveContinuous = !opts.runtimeOmnichain && (in.Continuous || opts.runtimeSetup || opts.runtimeCachePolicy != nil || opts.runtimeInitial)
 	if len(in.StartBlocks) != len(opts.Chains) {
 		return nil, fmt.Errorf("runtime requires exact start blocks")
 	}

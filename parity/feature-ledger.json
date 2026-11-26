@@ -424,7 +424,7 @@
         "parity/runs/m45-omnichain-events-v15-20261103/VALIDATION.md",
         "parity/runs/m45-omnichain-events-v15-20261103/SOURCE-CONTRACT.md"
       ],
-      "remaining": "Only bounded globally finalized cachetrue ranges with one interval1/offset0 closing block callback per chain covering static ABI log ranges, start>=1. Actual source SQL pages/overlap callbacks and complete Groups transactions, source logical positions, PG/PGlite failure/cold replay and selected PG application exits are covered. Live/pending/reorg, factory/log-only/account/trace, cachefalse/setup/start0, PGlite abrupt exits, engine failures and complete mapping remain outside this closure.",
+      "remaining": "Subsequent native Omnichain records cover log-only ranges, genesis, account and contract CALL callbacks, setup and application exits on both engines. Independent storage still requires cached finalized ranges, one closing block callback per chain or static logs on every chain. Live reorgs, factories, mixed modes and engine interruptions remain open.",
       "native_test_files": [
         "historical/live_runtime_omnichain_logonly_crash_test.go",
         "historical/live_runtime_omnichain_logonly_test.go",
@@ -2184,7 +2184,7 @@
       "evidence": [
         "parity/runs/native-omnichain-genesis/RESULT.md"
       ],
-      "remaining": "The independent Omnichain runner still requires finite cached ranges under global finality, either closing block sources on each chain or uniform static log-only sources. Live sources, factories and setup remain outside these modes."
+      "remaining": "The independent Omnichain runner still requires finite cached ranges under global finality, either closing block sources on each chain or uniform static log-only sources. Live sources and factories remain outside these modes."
     },
     {
       "id": "native-omnichain-account-events",
@@ -2205,7 +2205,7 @@
       "evidence": [
         "parity/runs/native-omnichain-account-events/RESULT.md"
       ],
-      "remaining": "The independent Omnichain runner requires finalized, bounded and cached ranges. Account and contract CALL callbacks require a covering closing block callback on every chain. Factory sources, setup, mixed closing-block and log-only chains, and live reorgs remain outside this mode."
+      "remaining": "The independent Omnichain runner requires finalized, bounded and cached ranges. Account and contract CALL callbacks require a covering closing block callback on every chain. Factory sources, mixed closing-block and log-only chains, and live reorgs remain outside this mode."
     },
     {
       "id": "native-custom-transport",
@@ -2253,6 +2253,29 @@
         "parity/runs/native-omnichain-app-recovery/RESULT.md"
       ],
       "remaining": "Application exits during finalized closing-block and static-log processing use the existing durable formats. Independent database-engine interruption, host power loss and other source combinations require separate evidence."
+    },
+    {
+      "id": "native-omnichain-setup",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "historical/live_runtime_omnichain.go",
+        "historical/live_runtime_completion.go",
+        "store/managed_live_runtime.go",
+        "store/managed_live_setup.go"
+      ],
+      "native_test_files": [
+        "historical/live_runtime_omnichain_setup_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/omnichain.ts",
+        "packages/core/src/indexing/index.ts",
+        "packages/core/src/indexing/index.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-setup/RESULT.md"
+      ],
+      "remaining": "Independent Omnichain setup covers bounded, finalized and cached deployments. Live indexing, factories and mixed event modes remain open."
     }
   ]
 }

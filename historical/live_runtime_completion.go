@@ -344,7 +344,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		if r.setup || r.options.SourceCheckpoints {
 			for i, c := range r.build.Chains {
 				id, _ := uintQuantity(c["id"])
-				if e := r.walkFinalizedLineage(epoch.Context(), epoch.Requester(i), id, baselines[id], nil); e != nil {
+				if e := r.walkFinalizedLineage(epoch.Context(), epoch.Requester(i), id, baselines[id], r.setupLineageCheck(i, id)); e != nil {
 					return result, e
 				}
 			}
