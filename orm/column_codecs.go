@@ -76,3 +76,15 @@ func decodeCoordinates(value any, out []float64) error {
 	copy(out, coords)
 	return nil
 }
+
+// EnumDecoder checks database labels against a generated enum declaration.
+func EnumDecoder[T any](parse func(string) (T, error)) func(any) (T, error) {
+	return func(value any) (T, error) {
+		label, err := DecodeString(value)
+		if err != nil {
+			var zero T
+			return zero, err
+		}
+		return parse(label)
+	}
+}
