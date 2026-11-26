@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/schema"
 )
 
@@ -211,6 +212,7 @@ func TestLogOnlyPagedScanBoundaries(t *testing.T) {
 func TestLogOnlyPagedFormatSelection(t *testing.T) {
 	m, _, _ := logOnlyScanFixture(t)
 	m.opts.Chains = []MigrationChain{{ID: 1}, {ID: 2}}
+	m.opts.runtimeLogFilters[2] = []filter.Object{{"type": "log", "chainId": 2, "fromBlock": 10}}
 	m.opts.runtimeStarts = map[uint64]uint64{1: 3, 2: 10}
 	limit := uint64(ManagedLiveOmnichainBlockLimit(2))
 	m.opts.EndBlocks = map[uint64]uint64{1: 2 + limit/2, 2: 9 + limit/2}

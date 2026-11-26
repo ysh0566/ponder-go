@@ -19,6 +19,7 @@ import (
 	"maps"
 	"math/big"
 	"reflect"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -38,7 +39,7 @@ type RuntimeOptions struct {
 	// Development marks this deployment as a development shadow in its metadata.
 	Development bool
 	// FactorySources discovers child addresses on the canonical branch.
-	// Set SourceCheckpoints as well. Finalized Omnichain accepts either all-log sources or a covering block callback on every chain.
+	// Set SourceCheckpoints as well. Each finalized Omnichain chain accepts either log callbacks or a covering block callback.
 	FactorySources bool
 	Live           *RuntimeLiveOptions
 	// Historical.QuerySize is the bounded omnichain SQL target (1..12000);
@@ -58,7 +59,7 @@ type RuntimeResult struct {
 type RuntimeRunner struct {
 	domains           *store.ManagedLiveDomains
 	setup             bool
-	logOnly           bool
+	logOnlyChains     map[uint64]bool
 	build             *config.ExecutableSourceIndexingBuild
 	session           *filter.Session
 	release           func()
@@ -127,9 +128,6 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		return nil, fmt.Errorf("omnichain currently requires bounded finalized runtime")
 	}
 	if b.Ordering == "omnichain" {
-		if err := validateOmnichainCallbackModes(b.EventCallbacks); err != nil {
-			return nil, err
-		}
 		if o.Historical.QuerySize < 0 || o.Historical.QuerySize > 12000 {
 			return nil, fmt.Errorf("omnichain query size must be between1 and12000, or0 for the source default")
 		}
@@ -145,6 +143,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	}
 	r := &RuntimeRunner{build: b, session: session, release: release, options: o, starts: map[uint64]uint64{}, latest: map[uint64]store.ManagedLiveHead{}, finalized: map[uint64]store.ManagedLiveHead{}, finalBlocks: make([]indexing.Object, len(b.Chains)), closeDone: make(chan struct{}), runDone: make(chan struct{})}
 	close(r.runDone)
+	r.logOnlyChains = make(map[uint64]bool)
 	for i, c := range b.Chains {
 		_, ok := c["cacheRpcRequests"].(bool)
 		if !ok {
@@ -167,6 +166,12 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		if b.Ordering == "omnichain" {
 			if err := validateOmnichainCallbacks(b.EventCallbacks[i]); err != nil {
 				return nil, err
+			}
+			hasBlock := slices.ContainsFunc(b.EventCallbacks[i], func(cb indexing.Object) bool {
+				return cb["type"] == "block"
+			})
+			if !hasBlock {
+				r.logOnlyChains[id] = true
 			}
 		}
 		first := uint64(^uint64(0))
@@ -217,16 +222,6 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		}
 	}
 	r.build = b
-	r.logOnly = b.Ordering == "omnichain"
-	if r.logOnly {
-		for _, group := range b.EventCallbacks {
-			for _, cb := range group {
-				if cb["filter"].(map[string]any)["type"] == "block" {
-					r.logOnly = false
-				}
-			}
-		}
-	}
 	plan, err := managedPlanWithUnbounded(b, o.Live != nil)
 	if err != nil {
 		return nil, err
@@ -330,7 +325,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	for _, chain := range r.build.Chains {
 		id := runtimeChainID(chain)
 		cachePolicy[id] = runtimeRPCCacheEnabled(chain)
-		if r.logOnly && !cachePolicy[id] {
+		if r.logOnlyChains[id] && !cachePolicy[id] {
 			openLogScanRPC = r.openLogScanRPC
 		}
 	}

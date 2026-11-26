@@ -189,7 +189,7 @@ func normalizeLiveBatch(opts ManagedLiveOptions, in ManagedLiveBatch) (ManagedLi
 		}
 		if block.RangeDigest != "" || block.RangeFirst != (ManagedLiveHead{}) {
 			first, at, e := normalizeLiveHead(block.RangeFirst)
-			if !logOnlyOptions(opts) || !liveDigest(block.RangeDigest) || e != nil || first != block.RangeFirst || at.ChainID != cp.ChainID || at.BlockNumber >= cp.BlockNumber || at.BlockTimestamp > cp.BlockTimestamp {
+			if opts.runtimeLogFilters[cp.ChainID] == nil || !liveDigest(block.RangeDigest) || e != nil || first != block.RangeFirst || at.ChainID != cp.ChainID || at.BlockNumber >= cp.BlockNumber || at.BlockTimestamp > cp.BlockTimestamp {
 				return out, ErrManagedLiveBatchConflict
 			}
 		}
@@ -329,6 +329,7 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 	segments := make([]ManagedLiveSegment, 0, len(batch.Blocks))
 	predecessor := c.Tail
 	lastOmnichain := ""
+	lastLog := c.LogOnlyLastEvent
 	watermark := ""
 	if opts.runtimeOmnichain {
 		for _, head := range opts.FinalizedHeads {
@@ -345,7 +346,7 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 				return nil, nil, c, err
 			}
 			// A bootstrap cursor authenticates a parent, not an executed event.
-			if !logOnlyOptions(opts) && cp.BlockNumber >= opts.runtimeStarts[id] && !liveDown(positions[id]) && head.Checkpoint > lastOmnichain {
+			if opts.runtimeLogFilters[id] == nil && cp.BlockNumber >= opts.runtimeStarts[id] && !liveDown(positions[id]) && head.Checkpoint > lastOmnichain {
 				lastOmnichain = head.Checkpoint
 			}
 		}
@@ -361,7 +362,7 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 		extends := cp.BlockNumber == previous.BlockNumber+1 && block.Head.ParentHash == prior.Hash
 		if block.RangeDigest != "" {
 			_, first, err := normalizeLiveHead(block.RangeFirst)
-			extends = logOnlyOptions(opts) && err == nil && !liveDown(beforePosition) && first.BlockNumber == previous.BlockNumber+1 && first.BlockTimestamp >= previous.BlockTimestamp && block.RangeFirst.ParentHash == prior.Hash
+			extends = opts.runtimeLogFilters[cp.ChainID] != nil && err == nil && !liveDown(beforePosition) && first.BlockNumber == previous.BlockNumber+1 && first.BlockTimestamp >= previous.BlockTimestamp && block.RangeFirst.ParentHash == prior.Hash
 		} else if opts.runtimeInitial && liveDown(beforePosition) {
 			extends = cp.BlockNumber == previous.BlockNumber && block.Head == prior
 		}
@@ -372,12 +373,13 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 			if block.Head.Checkpoint > watermark {
 				return nil, nil, c, fmt.Errorf("omnichain block exceeds finalized watermark")
 			}
-			if logOnlyOptions(opts) {
+			if opts.runtimeLogFilters[cp.ChainID] != nil {
 				if block.LogEventCount > 0 {
 					if block.LogFirstEvent <= lastOmnichain {
 						return nil, nil, c, fmt.Errorf("log-only events do not advance global source order")
 					}
 					lastOmnichain = block.LogLastEvent
+					lastLog = block.LogLastEvent
 				}
 			} else {
 				if block.Head.Checkpoint <= lastOmnichain {
@@ -404,7 +406,7 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 	}
 	next := c
 	if logOnlyOptions(opts) {
-		next.LogOnlyLastEvent = lastOmnichain
+		next.LogOnlyLastEvent = lastLog
 	}
 	next.Next += uint64(len(segments))
 	next.Tail = next.Next - 1

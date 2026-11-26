@@ -31,7 +31,8 @@ type ManagedLiveRuntimeOptions struct {
 	Continuous        bool
 	Setup             bool
 	SourceCheckpoints bool
-	LogOnlyFilters    map[uint64][]filter.Object
+	// When set, list every chain. A nil entry declares a chain with a covering block callback.
+	LogOnlyFilters map[uint64][]filter.Object
 	// Event ABI items in the same order as LogOnlyFilters, for proving ABI-skipped ranges.
 	LogOnlyEventABIs map[uint64][]any
 	// OpenLogScanRPC supplies fresh transports for uncached chains during a proof scan.
@@ -121,7 +122,10 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 			return nil, err
 		}
 	}
-	needsRPCScan := logOnlyOptions(opts) && opts.runtimeCachePolicy != nil
+	needsRPCScan := false
+	for id := range opts.runtimeLogFilters {
+		needsRPCScan = needsRPCScan || !runtimeRPCCacheEnabled(opts, id)
+	}
 	if needsRPCScan && in.OpenLogScanRPC == nil {
 		return nil, fmt.Errorf("uncached log-only mode requires its own scan RPC factory")
 	}

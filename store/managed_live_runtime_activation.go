@@ -43,7 +43,7 @@ func (m *ManagedLive) planRuntimeServe(before ManagedLiveControl, e managedRunti
 		for _, chain := range m.opts.Chains {
 			head, ok := e.Heads[chain.ID]
 			normalized, _, err := normalizeLiveHead(head)
-			if !ok || err != nil || head != normalized || head != before.Cursors[chain.ID] || (!logOnlyOptions(m.opts) && !ManagedLiveReachedBlock(before, chain.ID, before.HistoryCuts[chain.ID])) {
+			if !ok || err != nil || head != normalized || head != before.Cursors[chain.ID] || (m.opts.runtimeLogFilters[chain.ID] == nil && !ManagedLiveReachedBlock(before, chain.ID, before.HistoryCuts[chain.ID])) {
 				return after, ErrManagedLivePendingActions
 			}
 		}
@@ -183,7 +183,7 @@ func (d *ManagedLiveDomains) setRuntimeServingWithScan(ctx context.Context, id s
 		for _, chain := range m.opts.Chains {
 			h, ok := heads[chain.ID]
 			_, _, he := normalizeLiveHead(h)
-			if !ok || he != nil || h != before.Control.Cursors[chain.ID] || (!logOnlyOptions(m.opts) && !ManagedLiveReachedBlock(before.Control, chain.ID, before.Control.HistoryCuts[chain.ID])) {
+			if !ok || he != nil || h != before.Control.Cursors[chain.ID] || (m.opts.runtimeLogFilters[chain.ID] == nil && !ManagedLiveReachedBlock(before.Control, chain.ID, before.Control.HistoryCuts[chain.ID])) {
 				return ErrManagedLivePendingActions
 			}
 		}

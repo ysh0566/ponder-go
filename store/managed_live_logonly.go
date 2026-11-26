@@ -15,8 +15,10 @@ import (
 
 const managedLivePagedLogOnlyVersion = "managed-live-omnichain-logonly-v17"
 
+const managedLiveMixedVersion = "managed-live-omnichain-mixed-v1"
+
 func logOnlyVersion(version string) bool {
-	return version == managedLivePagedLogOnlyVersion
+	return version == managedLivePagedLogOnlyVersion || version == managedLiveMixedVersion
 }
 
 func logOnlyOptions(o ManagedLiveOptions) bool { return o.runtimeLogFilters != nil }
@@ -142,6 +144,9 @@ func normalizeLogOnlyFilters(in map[uint64][]filter.Object, o ManagedLiveOptions
 	out := map[uint64][]filter.Object{}
 	for _, c := range o.Chains {
 		rows, ok := in[c.ID]
+		if ok && rows == nil {
+			continue // This chain supplies a closing block callback.
+		}
 		if !ok || len(rows) == 0 {
 			return nil, ErrManagedLiveBatchConflict
 		}
@@ -184,6 +189,9 @@ func normalizeLogOnlyFilters(in map[uint64][]filter.Object, o ManagedLiveOptions
 			return nil, ErrManagedLiveBatchConflict
 		}
 	}
+	if len(out) == 0 {
+		return nil, ErrManagedLiveBatchConflict
+	}
 	return out, nil
 }
 func logOnlyPosition(raw string) (checkpoint.Checkpoint, bool) {
@@ -194,9 +202,15 @@ func logOnlyPosition(raw string) (checkpoint.Checkpoint, bool) {
 	if _, ok := liveCanonicalPosition(raw); ok {
 		return cp, true
 	}
-	return cp, cp.EventType == checkpoint.Logs
+	// Block callbacks share the log event type and use the maximum transaction index.
+	return cp, cp.EventType == checkpoint.Logs && cp.TransactionIndex != checkpoint.Max.TransactionIndex
 }
 func controlPosition(raw string, c ManagedLiveControl) (checkpoint.Checkpoint, bool) {
+	if c.Version == managedLiveMixedVersion {
+		if cp, ok := liveCanonicalPosition(raw, true); ok {
+			return cp, true
+		}
+	}
 	if logOnlyVersion(c.Version) {
 		return logOnlyPosition(raw)
 	}
@@ -204,7 +218,10 @@ func controlPosition(raw string, c ManagedLiveControl) (checkpoint.Checkpoint, b
 }
 func optsPosition(raw string, o ManagedLiveOptions) (checkpoint.Checkpoint, bool) {
 	if logOnlyOptions(o) {
-		return logOnlyPosition(raw)
+		cp, ok := logOnlyPosition(raw)
+		if o.runtimeLogFilters[cp.ChainID] != nil {
+			return cp, ok
+		}
 	}
 	return liveCanonicalPosition(raw, o.runtimeOmnichain)
 }
@@ -229,7 +246,11 @@ func positionReachedForControl(actual, target string, c ManagedLiveControl) bool
 	return ok && bok && a.ChainID == b.ChainID && (a.BlockNumber > b.BlockNumber || a.BlockNumber == b.BlockNumber && (!liveDown(actual) || liveDown(target)))
 }
 func validateLogOnlyBlock(o ManagedLiveOptions, b ManagedLiveBlock) error {
-	if !logOnlyOptions(o) {
+	head, err := checkpoint.Decode(b.Head.Checkpoint)
+	if err != nil {
+		return ErrManagedLiveBatchConflict
+	}
+	if o.runtimeLogFilters[head.ChainID] == nil {
 		if b.LogEventCount != 0 || b.LogFirstEvent != "" || b.LogLastEvent != "" {
 			return ErrManagedLiveBatchConflict
 		}
@@ -264,7 +285,11 @@ func (d *ManagedLiveDomains) ValidateRuntimeBlockInputs(b ManagedLiveBlock, even
 	if e := validateLogOnlyBlock(d.live().opts, b); e != nil {
 		return e
 	}
-	if !logOnlyOptions(d.live().opts) {
+	head, err := checkpoint.Decode(b.Head.Checkpoint)
+	if err != nil {
+		return ErrManagedLiveBatchConflict
+	}
+	if d.live().opts.runtimeLogFilters[head.ChainID] == nil {
 		return nil
 	}
 	if uint64(len(events)) != b.LogEventCount {
@@ -292,7 +317,7 @@ func validateLogOnlyControl(c ManagedLiveControl) error {
 		return nil
 	}
 	if len(c.LogOnlyScanHeads) > 0 {
-		if len(c.LogOnlyScanHeads) != len(c.Cursors) {
+		if c.Version == managedLivePagedLogOnlyVersion && len(c.LogOnlyScanHeads) != len(c.Cursors) || c.Version == managedLiveMixedVersion && len(c.LogOnlyScanHeads) >= len(c.Cursors) {
 			return ErrManagedLiveBatchConflict
 		}
 		for id, h := range c.LogOnlyScanHeads {
@@ -303,7 +328,7 @@ func validateLogOnlyControl(c ManagedLiveControl) error {
 			}
 		}
 	}
-	if c.Serving && len(c.LogOnlyScanHeads) != len(c.Cursors) {
+	if c.Serving && len(c.LogOnlyScanHeads) == 0 {
 		return ErrManagedLiveBatchConflict
 	}
 	if c.LogOnlyLastEvent != "" {

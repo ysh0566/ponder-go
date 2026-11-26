@@ -424,7 +424,7 @@
         "parity/runs/m45-omnichain-events-v15-20261103/VALIDATION.md",
         "parity/runs/m45-omnichain-events-v15-20261103/SOURCE-CONTRACT.md"
       ],
-      "remaining": "Subsequent native Omnichain records cover log-only ranges, genesis, account and contract CALL callbacks, setup and application exits on both engines. Independent storage still requires finalized ranges, one closing block callback per chain or contract logs on every chain. Live reorgs, mixed source modes and engine exits at other lifecycle stages remain open.",
+      "remaining": "Subsequent native Omnichain records cover log-only ranges, genesis, account and contract CALL callbacks, setup and application exits on both engines. Independent storage still requires finalized ranges, each chain using a covering block callback or contract logs. Live reorgs and engine exits at other lifecycle stages remain open.",
       "native_test_files": [
         "historical/live_runtime_omnichain_logonly_crash_test.go",
         "historical/live_runtime_omnichain_logonly_test.go",
@@ -2162,7 +2162,7 @@
       "evidence": [
         "parity/runs/native-bounded-factory/RESULT.md"
       ],
-      "remaining": "Independent Omnichain requires a closing block callback per chain for factory sources. Bounded default runs require source checkpoints for factory discovery and a known end on each chain."
+      "remaining": "Independent Omnichain requires a covering block callback on chains that consume factory account or CALL events. Bounded default runs require source checkpoints for factory discovery and a known end on each chain."
     },
     {
       "id": "native-omnichain-genesis",
@@ -2188,7 +2188,7 @@
       "evidence": [
         "parity/runs/native-omnichain-genesis/RESULT.md"
       ],
-      "remaining": "The independent Omnichain runner still requires finite ranges under global finality, either closing block sources on each chain or contract log sources on every chain. Live indexing remains open."
+      "remaining": "The independent Omnichain runner still requires finite ranges under global finality, with each chain choosing its own callback mode. Live indexing remains open."
     },
     {
       "id": "native-omnichain-account-events",
@@ -2209,7 +2209,7 @@
       "evidence": [
         "parity/runs/native-omnichain-account-events/RESULT.md"
       ],
-      "remaining": "The independent Omnichain runner requires finalized, bounded ranges. Account and contract CALL callbacks require a covering closing block callback on every chain. Mixed closing-block and log-only chains and live reorgs remain outside this mode."
+      "remaining": "The independent Omnichain runner requires finalized, bounded ranges. Account and contract CALL callbacks require a covering closing block callback on their own chain. Live reorgs remain open."
     },
     {
       "id": "native-custom-transport",
@@ -2279,7 +2279,7 @@
       "evidence": [
         "parity/runs/native-omnichain-setup/RESULT.md"
       ],
-      "remaining": "Independent Omnichain setup covers bounded, finalized deployments. Live indexing and mixed event modes remain open."
+      "remaining": "Independent Omnichain setup covers bounded, finalized deployments. Live indexing remains open. Mixed closing-block and log-only chains are covered by native-omnichain-mixed."
     },
     {
       "id": "native-omnichain-engine-recovery",
@@ -2349,7 +2349,7 @@
       "evidence": [
         "parity/runs/native-omnichain-abi-tail/RESULT.md"
       ],
-      "remaining": "Static-log-only deployments require global finality. Log callbacks may use different finite ranges on a chain. Mixed closing-block and log-only chains and live reorgs remain open. Factory log sources are covered by native-omnichain-log-factory."
+      "remaining": "Static-log-only deployments require global finality. Log callbacks may use different finite ranges on a chain. Live reorgs remain open. Factory log sources are covered by native-omnichain-log-factory."
     },
     {
       "id": "native-omnichain-log-ranges",
@@ -2371,7 +2371,7 @@
       "evidence": [
         "parity/runs/native-omnichain-log-ranges/RESULT.md"
       ],
-      "remaining": "Independent static-log-only Omnichain requires finite ranges under global finality. Mixed closing-block and log-only chains and live reorgs remain open. Factory log sources are covered by native-omnichain-log-factory."
+      "remaining": "Independent static-log-only Omnichain requires finite ranges under global finality. Live reorgs remain open. Factory log sources are covered by native-omnichain-log-factory."
     },
     {
       "id": "native-omnichain-factory",
@@ -2394,7 +2394,7 @@
       "evidence": [
         "parity/runs/native-omnichain-factory/RESULT.md"
       ],
-      "remaining": "Independent Omnichain factory sources require bounded global finality. Factory account and CALL callbacks require a covering block callback per chain. Live reorgs and mixed closing-block and log-only chains remain open."
+      "remaining": "Independent Omnichain factory sources require bounded global finality. Factory account and CALL callbacks require a covering block callback on their own chain. Live reorgs remain open."
     },
     {
       "id": "native-managed-cli-start",
@@ -2446,7 +2446,7 @@
       "evidence": [
         "parity/runs/native-omnichain-uncached-logs/RESULT.md"
       ],
-      "remaining": "Static and factory contract log sources support finite ranges under global finality. Mixed closing-block and log-only chains and live reorgs remain open."
+      "remaining": "Static and factory contract log sources support finite ranges under global finality. Live reorgs remain open."
     },
     {
       "id": "native-managed-cli-serve",
@@ -2550,7 +2550,32 @@
       "evidence": [
         "parity/runs/native-omnichain-log-factory/RESULT.md"
       ],
-      "remaining": "All participating chains use log callbacks and their finite ranges must be globally finalized. Mixed closing-block and log-only chains, live reorgs and independent Isolated ordering remain open."
+      "remaining": "Ranges must be finite and globally finalized. Other chains may have a covering block callback. Live reorgs and independent Isolated ordering remain open."
+    },
+    {
+      "id": "native-omnichain-mixed",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime_omnichain_history.go",
+        "historical/live_runtime_logonly.go",
+        "store/managed_live_segments.go",
+        "store/managed_live_runtime_activation.go",
+        "store/managed_live_logonly_scan.go"
+      ],
+      "native_test_files": [
+        "historical/omnichain_factory_test.go",
+        "historical/live_runtime_logonly_limits_test.go",
+        "store/managed_live_lineage_test.go",
+        "store/managed_live_mixed_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/events.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-mixed/RESULT.md"
+      ],
+      "remaining": "Independent Omnichain supports finalized bounded ranges. A chain consuming account or CALL callbacks needs a covering block callback. Live indexing, cross-chain reorgs and independent Isolated ordering remain open."
     }
   ]
 }

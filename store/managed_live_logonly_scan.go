@@ -53,12 +53,15 @@ func logOnlySpanCovered(spans []SourceInterval, start, end uint64) bool {
 }
 
 func (m *ManagedLive) validateLogOnlyScan(c ManagedLiveControl, scans map[uint64]managedLogOnlyScan) (map[uint64]ManagedLiveHead, error) {
-	if !logOnlyOptions(m.opts) || len(scans) != len(m.opts.Chains) {
+	if !logOnlyOptions(m.opts) || len(scans) != len(m.opts.runtimeLogFilters) {
 		return nil, ErrManagedLivePendingActions
 	}
 	ends := map[uint64]ManagedLiveHead{}
 	for _, chain := range m.opts.Chains {
 		id := chain.ID
+		if m.opts.runtimeLogFilters[id] == nil {
+			continue
+		}
 		scan, ok := scans[id]
 		filters := m.opts.runtimeLogFilters[id]
 		if !ok || !m.opts.validLogScanHash(id, scan.FiltersHash) || len(scan.Coverage) != len(filters) {
@@ -95,12 +98,15 @@ func (m *ManagedLive) validateLogOnlyScan(c ManagedLiveControl, scans map[uint64
 
 func (d *ManagedLiveDomains) logOnlyScan(ctx context.Context, c ManagedLiveControl, scans map[uint64]managedLogOnlyScan, get ManagedLiveHeaderReader) (map[uint64]managedLogOnlyScan, error) {
 	m := d.live()
-	if !logOnlyOptions(m.opts) || len(scans) != len(m.opts.Chains) {
+	if !logOnlyOptions(m.opts) || len(scans) != len(m.opts.runtimeLogFilters) {
 		return nil, ErrManagedLivePendingActions
 	}
 	var ranges []logScanRange
 	for _, chain := range m.opts.Chains {
 		id := chain.ID
+		if m.opts.runtimeLogFilters[id] == nil {
+			continue
+		}
 		r := logScanRange{chain: id, from: m.opts.runtimeStarts[id], to: m.opts.EndBlocks[id]}
 		if !ManagedLiveReachedBlock(c, id, r.to) {
 			from, err := ManagedLiveNextBlock(c, id)
