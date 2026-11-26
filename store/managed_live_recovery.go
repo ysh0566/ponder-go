@@ -15,7 +15,7 @@ const managedLiveRecoveryReceiptVersion = "managed-live-recovery-receipt-v2"
 
 func (m *ManagedLive) version() string {
 	if logOnlyOptions(m.opts) {
-		if m.opts.runtimeAccountScan {
+		if m.opts.runtimeBlockScan {
 			return managedLiveAccountScanVersion
 		}
 		if len(m.opts.runtimeLogFilters) < len(m.opts.Chains) {

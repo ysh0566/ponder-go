@@ -238,7 +238,7 @@ func TestRuntimeOmnichainSourceOracle(t *testing.T) {
 	}
 }
 func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
-	for _, name := range []string{"global-finality", "genesis-global-finality", "local-finality", "live", "inverted-range", "interval", "factory", "uncached-log-only-live", "uncached-contract-call", "ordering-mismatch"} {
+	for _, name := range []string{"global-finality", "genesis-global-finality", "local-finality", "live", "inverted-range", "interval", "factory", "uncached-log-only-live", "uncached-unbounded-contract-call", "ordering-mismatch"} {
 		t.Run(name, func(t *testing.T) {
 			g := loadOmnichainGolden(t)
 			latest := ""
@@ -278,13 +278,13 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 			case "factory":
 				o.FactorySources = true
 				expected = "factory sources require"
-			case "uncached-contract-call":
+			case "uncached-unbounded-contract-call":
 				chain := b.Executable().Chains[0]
 				chain["cacheRpcRequests"] = false
 				cb := b.Executable().EventCallbacks[0][0]
 				cb["type"] = "contract"
-				cb["filter"] = map[string]any{"type": "trace", "callType": "CALL", "chainId": runtimeChainID(chain), "fromBlock": 1, "toBlock": 2}
-				expected = "without a block callback requires finite log, transaction or transfer ranges"
+				cb["filter"] = map[string]any{"type": "trace", "callType": "CALL", "chainId": runtimeChainID(chain), "fromBlock": 1}
+				expected = "without a block callback requires finite event ranges"
 			case "uncached-log-only-live":
 				noop := indexing.Handler(func(context.Context, *indexing.HandlerArgs) error {
 					t.Fatal("log-only preflight invoked a callback")
@@ -301,7 +301,7 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 				opened = true
 				return nil, errors.New("storage must not open")
 			})
-			if (name == "uncached-log-only-live" || name == "uncached-contract-call") && len(epochs) != 0 {
+			if (name == "uncached-log-only-live" || name == "uncached-unbounded-contract-call") && len(epochs) != 0 {
 				t.Fatal("preflight opened RPC for an unsupported Omnichain configuration")
 			}
 			if r != nil || err == nil || !strings.Contains(err.Error(), expected) || opened || len(calls) != 0 {

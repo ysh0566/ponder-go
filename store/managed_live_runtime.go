@@ -31,8 +31,8 @@ type ManagedLiveRuntimeOptions struct {
 	Continuous        bool
 	Setup             bool
 	SourceCheckpoints bool
-	// Filters for chains without a covering block callback. Logs, account transactions
-	// and transfers are checked against the sync store or a fresh per-chain RPC reader.
+	// Filters for chains without a covering block callback. Logs, contract CALLs,
+	// account transactions and transfers are checked against the sync store or a fresh per-chain RPC reader.
 	// List each chain, using nil for a chain with a covering block callback.
 	LogOnlyFilters map[uint64][]filter.Object
 	// ABI entries follow filter order. Account entries have no ABI.
@@ -127,8 +127,11 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 	needsRPCScan := false
 	for id, filters := range opts.runtimeLogFilters {
 		for _, f := range filters {
-			if f["type"] == "transaction" || f["type"] == "transfer" {
-				opts.runtimeAccountScan = true
+			if f["type"] == "trace" && opts.runtimeLogCallbacks[id] == nil {
+				return nil, fmt.Errorf("sparse contract calls require their function ABIs")
+			}
+			if f["type"] != "log" {
+				opts.runtimeBlockScan = true
 			}
 		}
 		needsRPCScan = needsRPCScan || !runtimeRPCCacheEnabled(opts, id)

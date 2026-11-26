@@ -616,9 +616,11 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 在默认多链排序下使用工厂合约发现子地址时，将 `RuntimeOptions.FactorySources` 和 `SourceCheckpoints` 都设为 `true`。将 `Live` 留空即可在固定高度结束。工厂地址配置里的 `startBlock` 和 `endBlock` 决定扫描创建事件的范围，子合约或账户配置的区间决定向 Go 回调投递哪些事件。例如，工厂在区块 1 创建的子合约，即使其日志回调从区块 3 才开始，仍可在区块 3 收到事件。重开同一部署时，运行器按区块哈希恢复子地址，RPC 节点需能返回创建区间的区块和日志。未最终确认的区块被替换后，回放会使用新分支创建的子地址。[有限区间工厂测试](../parity/runs/native-bounded-factory/RESULT.md)
 
-独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并为每个来源声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
+独立存储的 Omnichain 会自动启用来源 checkpoint。可以注册逐块回调，也可以只订阅合约日志、合约 CALL 或账户事件。每个来源都需要声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
 
-在双库 Omnichain 中，只监听合约日志的链可以直接订阅工厂子合约。处理合约 CALL 的链需要注册一个逐块回调（`interval: 1`，`offset: 0`），其起止高度须覆盖工厂发现区间和子地址的事件区间。将下面的 `children` 赋给合约或账户声明的 `Address`，然后编译配置。示例用工厂的 `Created(address indexed child)` 事件发现子地址。
+在双库 Omnichain 中，可以只订阅静态或工厂子合约的 CALL。在来源配置中启用 `includeCallTraces` 并提供函数 ABI（使用 `config.SourceTypedContract` 时设为 `IncludeCallTraces: config.SourceSome(true)`），然后注册函数回调，例如 `config.SourceIndexingFunction{Name: "Child.record()", Fn: record}`。每条链可独立设置 `cacheRpcRequests`。关闭缓存的链需要能按已最终确认的区块哈希返回历史调用树、交易和回执。回调失败后，用相同的 `BuildID`、原数据库和新的 `OpenID` 重启即可从已提交位置继续。[双链与双后端验证](../parity/runs/native-omnichain-sparse-contract-calls/RESULT.md)
+
+要按工厂发现的地址订阅合约日志、CALL 或账户事件，请将下面的 `children` 赋给合约或账户声明的 `Address`，然后编译配置。示例用工厂的 `Created(address indexed child)` 事件发现子地址。
 
 ```go
 created := abi.Event{Type: "event", Name: "Created", Inputs: []abi.Parameter{
