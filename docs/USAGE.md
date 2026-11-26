@@ -439,6 +439,47 @@ base, err := config.BuildSourceConfig(sourceConfig, options)
 
 数据库在处理链重组时退出后，重新启动原 PostgreSQL 实例，或重新打开原 PGlite 数据目录。用相同的命名空间、模型、配置和处理函数重新创建 `store.Store` 和 `runtime.NewIndexer`。数据库会丢弃未提交的回调事务。索引器会重新处理受影响的区块，并按当前链上的区块哈希更新进度。普通多链和 Omnichain 均覆盖一条链被替换、另一条链保持不变时的恢复。[双后端恢复测试](../parity/runs/native-multichain-engine-recovery/RESULT.md)
 
+### 用 CLI 启动独立存储的多链索引器
+
+仓库中的 Go 示例监听两条链。每条链从区块 1 开始，每个区块向业务表 `indexed_block` 插入一行。同步缓存使用单独的存储。回调和 HTTP 服务在同一个 Go 进程中运行。[示例代码](../examples/managed-multichain/main.go) · [链配置](../examples/managed-multichain/ponder.json)
+
+在两个终端各启动一个本地节点，并保持运行。
+
+```sh
+# 终端 A
+anvil --chain-id 1 --port 8545 --no-mining
+# 终端 B
+anvil --chain-id 2 --port 8546 --no-mining
+```
+
+在仓库根目录用第三个终端给每条链各出两个区块，然后启动索引器。以下命令使用本地 PGlite。要使用 PostgreSQL，在启动前设置 `DATABASE_URL`，或设置优先级更高的 `DATABASE_PRIVATE_URL`。
+
+```sh
+for port in 8545 8546; do
+  curl -fsS "http://127.0.0.1:$port" -H 'Content-Type: application/json' \
+    -d '{"jsonrpc":"2.0","id":1,"method":"anvil_mine","params":["0x2"]}'
+done
+npm install --prefix examples/managed-multichain
+go build -o bin/ponder ./cmd/ponder
+./bin/ponder start --root examples/managed-multichain \
+  --schema ponder_go_blocks --hostname 127.0.0.1 --port 42069 --shutdown-timeout 30s
+```
+
+在第四个终端查询进度和已提交的区块数。若使用了其他监听端口，将 `base` 改成启动日志中的地址。
+
+```sh
+base=http://127.0.0.1:42069
+curl -sS -o /dev/null -w '%{http_code}\n' "$base/ready"
+curl -fsS "$base/status" | jq .
+sql='{"json":{"sql":"SELECT chain, count(*)::text AS n FROM indexed_block GROUP BY chain ORDER BY chain","params":[]}}'
+curl -fsSG "$base/sql/db" --data-urlencode "sql=$sql" | jq .rows
+curl -NsSG "$base/sql/live" --data-urlencode "sql=$sql"
+```
+
+在全新的节点上，回填期间 `/health` 返回 200，`/ready` 和实时订阅返回 503。就绪后，`/status` 显示 `one` 和 `two` 的高度均为 2，SQL 显示每条链各两行。保持订阅打开，向任一节点再发一次 `anvil_mine`，该链的计数随提交更新。
+
+用 Ctrl-C 停止索引器，保留两个节点。`start` 默认给子进程 5 秒完成退出，示例用 `--shutdown-timeout 30s` 为两个 PGlite 引擎完成事务和关闭留出时间。停机期间出块后，重新执行同一条 `ponder start` 即可补块。PGlite 将两个目录保存在示例的 `.ponder/ponder_go_blocks/` 下。PostgreSQL 使用 `ponder_go_blocks` 和 `ponder_go_blocks_cache` 两个命名空间。自己的 Go 应用可以调用 `runner.QueryServer(ctx)` 创建查询服务，再将 `runner` 和该服务传给 `runtime.LaunchApplication`。修改处理函数逻辑后，用新的 `BuildID` 和命名空间启动新部署。退出时等待应用停止，依次关闭查询服务和运行器。[端到端测试](../cmd/ponder/managed_start_test.go)
+
 ### 独立存储的有限区间索引
 
 Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 管理独立的业务数据与同步数据时，可以在默认多链排序下将 `RuntimeOptions.Live` 留空，并给每个事件来源设置 `endBlock`。打开时各链都必须已经到达配置的结束高度。要包含创世区块，请为来源设置 `startBlock: 0` 并将 `RuntimeOptions.SourceCheckpoints` 设为 `true`。此时初始 checkpoint 标记区块的起点，回调会收到区块 0。只需索引创世区块时可设置 `endBlock: 0`。新建部署时选择 checkpoint 模式，重开原存储时沿用相同设置。不启用该选项时，有限区间从区块 1 或更高处开始。调用 `Run` 后，索引器处理到各链的结束高度并返回 `Completed`。[来源 checkpoint 验证](../parity/runs/native-bounded-source-checkpoints/RESULT.md)

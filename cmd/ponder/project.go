@@ -23,6 +23,7 @@ type nativeProject struct {
 	out, diagnostics           io.Writer
 	log                        *logging.Logger
 	dashboard                  *devDashboard
+	shutdownTimeout            time.Duration
 }
 
 func launchProject(ctx context.Context, mode string, args []string, out, diagnostics io.Writer, log *logging.Logger) error {
@@ -34,12 +35,19 @@ func launchProject(ctx context.Context, mode string, args []string, out, diagnos
 	views := flags.String("views-schema", os.Getenv("DATABASE_VIEWS_SCHEMA"), "Published views schema")
 	host := flags.String("hostname", os.Getenv("PONDER_HOSTNAME"), "HTTP listener hostname")
 	port := flags.String("port", os.Getenv("PONDER_PORT"), "HTTP listener port (0 selects an available port)")
+	shutdownTimeout := 5 * time.Second
+	if mode == "start" {
+		flags.DurationVar(&shutdownTimeout, "shutdown-timeout", shutdownTimeout, "Grace period for the indexer to finish after a stop signal")
+	}
 	var disableUI bool
 	if mode == "dev" {
 		flags.BoolVar(&disableUI, "disable-ui", false, "Disable the terminal progress display")
 	}
 	if err := flags.Parse(args); err != nil {
 		return err
+	}
+	if shutdownTimeout <= 0 {
+		return fmt.Errorf("shutdown timeout must be positive")
 	}
 	if flags.NArg() != 0 {
 		return fmt.Errorf("unexpected arguments")
@@ -57,7 +65,7 @@ func launchProject(ctx context.Context, mode string, args []string, out, diagnos
 	if err != nil {
 		return err
 	}
-	project := nativeProject{root: dir, pkg: *pkg, mode: mode, namespace: *index, out: out, diagnostics: diagnostics, log: log, env: append(os.Environ(), "PONDER_COMMAND="+mode, "PONDER_LOG_LEVEL="+log.Settings().Level, "PONDER_LOG_FORMAT="+log.Settings().Format)}
+	project := nativeProject{shutdownTimeout: shutdownTimeout, root: dir, pkg: *pkg, mode: mode, namespace: *index, out: out, diagnostics: diagnostics, log: log, env: append(os.Environ(), "PONDER_COMMAND="+mode, "PONDER_LOG_LEVEL="+log.Settings().Level, "PONDER_LOG_FORMAT="+log.Settings().Format)}
 	flags.Visit(func(f *flag.Flag) {
 		switch f.Name {
 		case "schema":
@@ -115,7 +123,7 @@ func (p *nativeProject) build(ctx context.Context, binary string) error {
 func (p *nativeProject) command(ctx context.Context, binary, namespace string) *exec.Cmd {
 	command := exec.CommandContext(ctx, binary)
 	command.Cancel = func() error { return command.Process.Signal(os.Interrupt) }
-	command.WaitDelay = 5 * time.Second
+	command.WaitDelay = p.shutdownTimeout
 	command.Dir = p.root
 	command.Env = append([]string(nil), p.env...)
 	if namespace != "" {

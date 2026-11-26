@@ -268,11 +268,14 @@ func (d *ManagedLiveDomains) business(ctx context.Context) (managedLiveDurable, 
 		return managedLiveDurable{}, "", ErrManagedLiveBusy
 	}
 	defer s.mu.Unlock()
-	tx, err := s.Backend.Begin(ctx)
+	tx, err := readBackend(s.Backend).Begin(ctx)
 	if err != nil {
 		return managedLiveDurable{}, "", err
 	}
 	defer tx.Rollback(context.Background())
+	if err = tx.Exec(ctx, "SET TRANSACTION READ ONLY"); err != nil {
+		return managedLiveDurable{}, "", err
+	}
 	if err = s.lock(ctx, tx); err != nil {
 		return managedLiveDurable{}, "", err
 	}

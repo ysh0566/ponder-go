@@ -127,7 +127,7 @@ func (d *ManagedLiveDomains) checkAck(intent liveDomainIntent, ack liveDomainAck
 }
 
 func (d *ManagedLiveDomains) audit(ctx context.Context) (liveDomainLedger, managedLiveDurable, string, error) {
-	l, err := d.readLedger(ctx, d.storage.syncBackend)
+	l, err := d.readLedger(ctx, readBackend(d.storage.syncBackend))
 	if err != nil {
 		return l, managedLiveDurable{}, "", err
 	}
@@ -200,7 +200,7 @@ func (d *ManagedLiveDomains) prepareIntent(ctx context.Context, in ManagedLiveDo
 	}
 	// A failed ACK is not rollback evidence. The immutable intent and prune share
 	// a native sync transaction, so an exact authenticated intent proves commit.
-	actual, e := d.readLedger(ctx, d.storage.syncBackend)
+	actual, e := d.readLedger(ctx, readBackend(d.storage.syncBackend))
 	if e == nil {
 		if got, ok := actual.Intents[in.Reorg.ID]; ok && managedHash(got) == managedHash(intent) {
 			return got, nil
@@ -228,7 +228,7 @@ func (d *ManagedLiveDomains) acknowledge(ctx context.Context, l liveDomainLedger
 	if err == nil {
 		return nil
 	}
-	actual, e := d.readLedger(ctx, d.storage.syncBackend)
+	actual, e := d.readLedger(ctx, readBackend(d.storage.syncBackend))
 	if e == nil {
 		if got, ok := actual.Acks[result.OperationID]; ok && managedHash(got) == managedHash(ack) {
 			return nil
@@ -354,7 +354,7 @@ func (d *ManagedLiveDomains) Resume(ctx context.Context) error {
 		if err = d.bindDomains(ctx, l, b); err != nil {
 			return err
 		}
-		l, err = d.readLedger(ctx, d.storage.syncBackend)
+		l, err = d.readLedger(ctx, readBackend(d.storage.syncBackend))
 		if err != nil {
 			return err
 		}

@@ -1,0 +1,112 @@
+// Command managed-multichain indexes one row per block in two independent storage domains.
+package main
+
+import (
+	"cmp"
+	"context"
+	"crypto/rand"
+	"errors"
+	"fmt"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"syscall"
+
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/historical"
+	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/rpc"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	if err := run(ctx); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func recordBlock(ctx context.Context, args *indexing.HandlerArgs) error {
+	chain, _, err := args.Context.ChainIdentity()
+	if err != nil {
+		return err
+	}
+	_, err = args.Context.DB.InsertOne(ctx, "indexed_block", store.Row{
+		"id": args.Event.Get("id"), "chain": chain,
+	}, store.Conflict{})
+	return err
+}
+
+func run(ctx context.Context) (err error) {
+	if mode := os.Getenv("PONDER_COMMAND"); mode != "" && mode != "start" {
+		return fmt.Errorf("this indexing example runs with ponder start")
+	}
+	raw, err := os.ReadFile("ponder.json")
+	if err != nil {
+		return err
+	}
+	src, err := config.ParseSourceConfiguration(raw)
+	if err != nil {
+		return err
+	}
+	buildOptions := config.SourceBuildOptions{RPCMaxConcurrency: 4}
+	base, err := config.BuildSourceConfig(src, buildOptions)
+	if err != nil {
+		return err
+	}
+	build, err := config.BuildSourceIndexing(ctx, src, base, []config.SourceIndexingFunction{
+		{Name: "Head:block", Fn: indexing.Handler(recordBlock)},
+	})
+	if err != nil {
+		return err
+	}
+	namespace := cmp.Or(os.Getenv("DATABASE_SCHEMA"), "ponder_go_blocks")
+	storage := store.IndependentStorageOptions{
+		BusinessNamespace: namespace, SyncNamespace: namespace + "_cache",
+		Schema: schema.Schema{Tables: []schema.Table{{Name: "indexed_block", Columns: []schema.Column{
+			{Name: "id", Type: "text", Primary: true}, {Name: "chain", Type: "text", NotNull: true},
+		}}}},
+		PostgresURL: cmp.Or(os.Getenv("DATABASE_PRIVATE_URL"), os.Getenv("DATABASE_URL")),
+	}
+	open := historical.OpenRuntimePostgres
+	if storage.PostgresURL == "" {
+		root := filepath.Join(cmp.Or(os.Getenv("PONDER_PGLITE_DIR"), ".ponder"), namespace)
+		storage.BusinessDirectory, storage.SyncDirectory = filepath.Join(root, "business"), filepath.Join(root, "sync")
+		open = historical.OpenRuntimePGlite
+	}
+	runner, err := open(ctx, historical.RuntimeOptions{
+		BuildID: "managed-blocks-v1", OpenID: rand.Text(), ViewsSchema: os.Getenv("DATABASE_VIEWS_SCHEMA"),
+		Live: &historical.RuntimeLiveOptions{}, SourceCheckpoints: true,
+		Historical: historical.Options{Build: build, Owned: indexing.OwnedOptions{Storage: storage, Service: indexing.Options{Errors: &indexing.ErrorState{}}}},
+		Requesters: func(context.Context, uint64) ([]rpc.Requester, error) {
+			fresh, err := config.BuildSourceConfig(src, buildOptions)
+			if err != nil {
+				return nil, err
+			}
+			var clients []rpc.Requester
+			for _, client := range fresh.RPCClients() {
+				clients = append(clients, client)
+			}
+			return clients, nil
+		},
+	})
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, runner.Close(context.Background())) }()
+	routes, err := runner.QueryServer(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, routes.Close()) }()
+	app, err := runtime.LaunchApplication(ctx, runner, routes, "127.0.0.1", 42069)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Listening on http://%s\n", app.Addr())
+	return app.Wait()
+}

@@ -33,7 +33,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 | 使用场景 | 当前能用什么 | 还缺什么 |
 | --- | --- | --- |
 | 用 Go 在同一个进程索引多链 | `runtime.NewIndexer` 支持默认、Isolated 和 Omnichain 三种排序。Omnichain 可持续追块并在重组时重放跨链回调。 | 多链节点切换和数据库中断的组合测试主要使用区块回调。跨链重组中同时处理工厂日志、交易和转账的故障覆盖仍需扩展。Isolated 模式也需补测多链组合使用合约、账户、工厂及 trace 的场景。[运行模式矩阵](docs/RUNTIME_SUPPORT.md) |
-| 双库默认多链与 Isolated | 默认多链支持实时追块、链重组、从创世区块开始、工厂来源和按链配置 RPC 缓存。可在多条链达到预设的结束高度后自动退出。[有限区间用法](docs/USAGE.md#独立存储的有限区间索引) | 双库运行器还不接受 Isolated 排序。双库默认多链与 CLI 启动、就绪和停止流程的集成仍待完善。 |
+| 双库默认多链与 Isolated | 默认多链支持实时追块、链重组、从创世区块开始、工厂来源和按链配置 RPC 缓存。可在各链达到结束高度后退出，也可用 `ponder start` 持续运行，通过 HTTP 查询已提交的进度与业务数据。停止后可以重启补块。[双库 CLI 示例](docs/USAGE.md#用-cli-启动独立存储的多链索引器) · [有限区间用法](docs/USAGE.md#独立存储的有限区间索引) | 双库运行器还不接受 Isolated 排序。双库示例仅验证了 `start`，其开发热重载和部署为独立查询进程的流程仍待验证。 |
 | 双库 Omnichain，每条链都注册逐块回调 | 支持已最终确认的有限区间。各链可独立开关缓存，处理静态或工厂发现的合约日志与 CALL、账户交易与转账。所有链的 `setup` 在首个事件前一起提交。[工厂发现与恢复](parity/runs/native-omnichain-factory/RESULT.md) · [初始化与重启](parity/runs/native-omnichain-setup/RESULT.md) | 还缺实时追块与跨链重组恢复，以及仅部分链注册逐块回调的组合。 |
 | 双库 Omnichain，所有链只监听日志 | 支持已最终确认的静态合约日志，各来源的区间可重叠或不相交。即使尾页没有可解码的事件，也能完成扫描、就绪并重启。[逐来源区间](parity/runs/native-omnichain-log-ranges/RESULT.md) · [纯日志扫描](parity/runs/native-omnichain-abi-tail/RESULT.md) | 还缺工厂子地址发现，以及关闭任一链 RPC 缓存后的完整扫描与恢复。 |
 | 在 RPC 故障或链重组时保持索引一致 | PostgreSQL 和 PGlite 均已验证同一条日志命中三个 Go 回调、同一笔 CALL 命中两个函数选择器相同的回调，以及回调失败后的重启和链重组重放。默认多链和 Omnichain 在同链节点切换、分支改变后均会重放受影响的跨链回调。 | 仍有 17 条依赖特定网关或历史链数据的上游 RPC 用例未通过。[节点切换测试](parity/runs/native-rpc-pool-reorg/RESULT.md) · [回调重放测试](parity/runs/native-callback-overlap/RESULT.md) |

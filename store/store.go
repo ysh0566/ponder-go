@@ -656,7 +656,11 @@ func (s *Store) Read(ctx context.Context, name string) (Result, error) {
 	return s.Backend.Query(ctx, "SELECT * FROM "+s.table(name))
 }
 func (s *Store) Progress(ctx context.Context) (map[string]string, error) {
-	r, e := s.Backend.Query(ctx, "SELECT chain_id::text AS chain_id, checkpoint FROM "+s.internal("_ponder_go_progress"))
+	return readProgress(ctx, s.Backend, s.internal("_ponder_go_progress"))
+}
+
+func readProgress(ctx context.Context, q Querier, table string) (map[string]string, error) {
+	r, e := q.Query(ctx, "SELECT chain_id::text AS chain_id, checkpoint FROM "+table)
 	if e != nil {
 		return nil, e
 	}

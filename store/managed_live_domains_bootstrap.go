@@ -186,7 +186,7 @@ func (d *ManagedLiveDomains) bindDomains(ctx context.Context, l liveDomainLedger
 	if err != nil {
 		return err
 	}
-	catalog, err := liveDomainSyncEnvelope(ctx, d.storage.syncBackend, d.storage.syncCache.s.Namespace)
+	catalog, err := liveDomainSyncEnvelope(ctx, readBackend(d.storage.syncBackend), d.storage.syncCache.s.Namespace)
 	if err != nil {
 		return err
 	}
@@ -204,7 +204,7 @@ func (d *ManagedLiveDomains) bindDomains(ctx context.Context, l liveDomainLedger
 	if err == nil {
 		return nil
 	}
-	actual, e := d.readLedger(ctx, d.storage.syncBackend)
+	actual, e := d.readLedger(ctx, readBackend(d.storage.syncBackend))
 	if e == nil && actual.Binding != nil && managedHash(actual.Binding) == managedHash(binding) {
 		return nil
 	}

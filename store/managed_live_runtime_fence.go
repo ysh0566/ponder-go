@@ -157,7 +157,7 @@ func (d *ManagedLiveDomains) ensureRuntimeFence(ctx context.Context) error {
 	if err == nil {
 		return nil
 	}
-	actual, e := d.readLedger(ctx, d.storage.syncBackend)
+	actual, e := d.readLedger(ctx, readBackend(d.storage.syncBackend))
 	if e == nil {
 		for _, r := range actual.Records {
 			if r.Kind == "generation" && r.ID == op.ID {
