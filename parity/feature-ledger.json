@@ -2933,6 +2933,39 @@
         "parity/runs/native-reference-erc20/RESULT.md"
       ],
       "remaining": "Public-chain historical replay depends on access to the corresponding archive data."
+    },
+    {
+      "id": "native-omnichain-block-intervals",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "historical/live_runtime_omnichain_callbacks.go",
+        "historical/live_runtime_logonly.go",
+        "indexing/managed_runtime_epoch.go",
+        "store/managed_live_logonly.go",
+        "store/managed_live_gap.go",
+        "store/managed_live_logonly_scan.go"
+      ],
+      "native_test_files": [
+        "historical/omnichain_block_intervals_test.go",
+        "store/managed_live_block_schedule_test.go",
+        "historical/live_runtime_omnichain_source_test.go",
+        "historical/omnichain_factory_test.go",
+        "historical/live_runtime_logonly_limits_test.go",
+        "historical/live_runtime_omnichain_logs_capabilities_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/build/config.ts",
+        "packages/core/src/runtime/omnichain.ts",
+        "packages/core/src/runtime/filter.ts",
+        "packages/core/src/runtime/filter.test.ts",
+        "packages/core/src/runtime/events.test.ts",
+        "packages/core/src/runtime/historical.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-block-intervals/RESULT.md"
+      ],
+      "remaining": "Independent-store live Omnichain and Isolated ordering remain open. The finalized runner requires bounded sources and positive block intervals."
     }
   ]
 }

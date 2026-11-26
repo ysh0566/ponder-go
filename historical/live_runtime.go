@@ -19,7 +19,6 @@ import (
 	"maps"
 	"math/big"
 	"reflect"
-	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -39,7 +38,7 @@ type RuntimeOptions struct {
 	// Development marks this deployment as a development shadow in its metadata.
 	Development bool
 	// FactorySources discovers child addresses on the canonical branch.
-	// Set SourceCheckpoints as well. Each finalized Omnichain chain accepts either log callbacks or a covering block callback.
+	// Set SourceCheckpoints as well. Finalized Omnichain supports finite block, log, account and contract CALL sources.
 	FactorySources bool
 	Live           *RuntimeLiveOptions
 	// Historical.QuerySize is the bounded omnichain SQL target (1..12000);
@@ -164,13 +163,11 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 			return nil, fmt.Errorf("runtime chain requires callbacks")
 		}
 		if b.Ordering == "omnichain" {
-			if err := validateOmnichainCallbacks(b.EventCallbacks[i]); err != nil {
+			dense, err := omnichainDenseCallbacks(b.EventCallbacks[i])
+			if err != nil {
 				return nil, err
 			}
-			hasBlock := slices.ContainsFunc(b.EventCallbacks[i], func(cb indexing.Object) bool {
-				return cb["type"] == "block"
-			})
-			if !hasBlock {
+			if !dense {
 				r.sparseChains[id] = true
 			}
 		}

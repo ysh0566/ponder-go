@@ -273,8 +273,8 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 				b.Executable().EventCallbacks[0][0]["filter"].(map[string]any)["fromBlock"] = float64(3)
 				expected = "startBlock <= endBlock"
 			case "interval":
-				b.Executable().EventCallbacks[0][0]["filter"].(map[string]any)["interval"] = float64(2)
-				expected = "interval1 block callback"
+				b.Executable().EventCallbacks[0][0]["filter"].(map[string]any)["interval"] = float64(0)
+				expected = "invalid omnichain block interval"
 			case "factory":
 				o.FactorySources = true
 				expected = "factory sources require"
@@ -284,7 +284,7 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 				cb := b.Executable().EventCallbacks[0][0]
 				cb["type"] = "contract"
 				cb["filter"] = map[string]any{"type": "trace", "callType": "CALL", "chainId": runtimeChainID(chain), "fromBlock": 1}
-				expected = "without a block callback requires finite event ranges"
+				expected = "requires finite event ranges"
 			case "uncached-log-only-live":
 				noop := indexing.Handler(func(context.Context, *indexing.HandlerArgs) error {
 					t.Fatal("log-only preflight invoked a callback")

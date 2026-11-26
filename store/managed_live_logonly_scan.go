@@ -88,6 +88,9 @@ func (m *ManagedLive) validateLogOnlyScan(c ManagedLiveControl, scans map[uint64
 			if err != nil || from > m.opts.EndBlocks[id] {
 				return nil, ErrManagedLiveBatchConflict
 			}
+			if err := checkEmptyBlockSchedules(filters, from, m.opts.EndBlocks[id]); err != nil {
+				return nil, err
+			}
 		}
 		if scan.EmptyFrom != from {
 			return nil, ErrManagedLiveBatchConflict
@@ -131,6 +134,31 @@ func (d *ManagedLiveDomains) logOnlyScan(ctx context.Context, c ManagedLiveContr
 	return scans, err
 }
 
+// An omitted scheduled height is detectable from the filter alone, even if
+// the cached block row is absent. All normalized periods are safe integers.
+func checkEmptyBlockSchedules(filters []filter.Object, from, to uint64) error {
+	for _, f := range filters {
+		if f["type"] != "block" {
+			continue
+		}
+		start, end, err := logSourceBounds(f)
+		if err != nil {
+			return err
+		}
+		start, end = max(start, from), min(end, to)
+		if start > end {
+			continue
+		}
+		period, _ := logOnlyQuantity(f["interval"])
+		offset, _ := logOnlyQuantity(f["offset"])
+		delta := (offset + period - start%period) % period
+		if delta <= end-start {
+			return fmt.Errorf("unprocessed block callback at %d: %w", start+delta, ErrManagedLivePendingActions)
+		}
+	}
+	return nil
+}
+
 // Trace scans always bind the ABI. A skipped raw log also binds all callback
 // ABIs. Both forms of evidence share the same coverage and lineage checks.
 func (o ManagedLiveOptions) scanFilterHash(id uint64, filters []filter.Object) string {
@@ -158,6 +186,10 @@ func logOnlyABICallbacks(filters map[uint64][]filter.Object, abis map[uint64][]a
 			return nil, ErrManagedLiveBatchConflict
 		}
 		for i, f := range group {
+			if f["type"] == "block" {
+				result[id] = append(result[id], filter.Object{"type": "block", "filter": f})
+				continue
+			}
 			if f["type"] == "transaction" || f["type"] == "transfer" {
 				result[id] = append(result[id], filter.Object{"type": "account", "filter": f})
 				continue

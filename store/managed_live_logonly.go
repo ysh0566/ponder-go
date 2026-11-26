@@ -154,12 +154,21 @@ func normalizeLogOnlyFilters(in map[uint64][]filter.Object, o ManagedLiveOptions
 		}
 		first, last := uint64(math.MaxUint64), uint64(0)
 		factories := map[string][]string{}
+		blockSources := map[string]bool{}
 		for _, f := range rows {
 			id, ie := logOnlyQuantity(f["chainId"])
 			from, fe := logOnlyQuantity(filter.FilterFromBlock(f))
 			to, te := logOnlyQuantity(filter.FilterToBlock(f))
 			kind := f["type"]
-			if kind != "log" && kind != "transaction" && kind != "transfer" && !(kind == "trace" && f["callType"] == "CALL") {
+			if kind == "block" {
+				interval, ie := logOnlyQuantity(f["interval"])
+				offset, oe := logOnlyQuantity(f["offset"])
+				name, _ := f["sourceId"].(string)
+				if !ie || !oe || interval == 0 || interval > 1<<53-1 || offset >= interval || name == "" || blockSources[name] {
+					return nil, ErrManagedLiveBatchConflict
+				}
+				blockSources[name] = true
+			} else if kind != "log" && kind != "transaction" && kind != "transfer" && !(kind == "trace" && f["callType"] == "CALL") {
 				return nil, ErrManagedLiveBatchConflict
 			}
 			if !ie || !fe || !te || id != c.ID || from > to || (!o.runtimeFactories && len(filter.GetFilterFactories(f)) != 0) {
@@ -201,12 +210,25 @@ func normalizeLogOnlyFilters(in map[uint64][]filter.Object, o ManagedLiveOptions
 	return out, nil
 }
 
-// A sparse chain has no closing block event. Its cursor can be a block
+func scheduledBlockSources(filters []filter.Object, height uint64) []string {
+	var names []string
+	for _, f := range filters {
+		if f["type"] == "block" && filter.IsBlockFilterMatched(f, filter.Object{"number": height}) {
+			names = append(names, f["sourceId"].(string))
+		}
+	}
+	return names
+}
+
+// A sparse chain can skip heights. Its cursor can be a block
 // boundary or an event from one of its configured source filters.
 func sparseEventAllowed(cp checkpoint.Checkpoint, filters []filter.Object, kind string) bool {
 	for _, f := range filters {
 		filterKind, _ := f["type"].(string)
 		if (kind == "" || kind == filterKind) && cp.MatchesEvent(filterKind) && filter.IsBlockInFilter(f, float64(cp.BlockNumber)) {
+			if filterKind == "block" && !filter.IsBlockFilterMatched(f, filter.Object{"number": cp.BlockNumber}) {
+				continue
+			}
 			return true
 		}
 	}
@@ -261,11 +283,16 @@ func validateLogOnlyBlock(o ManagedLiveOptions, b ManagedLiveBlock) error {
 	if err != nil {
 		return ErrManagedLiveBatchConflict
 	}
-	if o.runtimeLogFilters[head.ChainID] == nil {
+	filters := o.runtimeLogFilters[head.ChainID]
+	if filters == nil {
 		if b.LogEventCount != 0 || b.LogFirstEvent != "" || b.LogLastEvent != "" {
 			return ErrManagedLiveBatchConflict
 		}
 		return nil
+	}
+	due := uint64(len(scheduledBlockSources(filters, head.BlockNumber)))
+	if b.LogEventCount < due {
+		return ErrManagedLiveBatchConflict
 	}
 	if b.LogEventCount == 0 {
 		if b.LogFirstEvent != "" || b.LogLastEvent != "" || b.InputDigest != managedHash([]any{}) {
@@ -275,7 +302,9 @@ func validateLogOnlyBlock(o ManagedLiveOptions, b ManagedLiveBlock) error {
 		first, fe := checkpoint.Decode(b.LogFirstEvent)
 		last, le := checkpoint.Decode(b.LogLastEvent)
 		_, h, he := normalizeLiveHead(b.Head)
-		filters := o.runtimeLogFilters[head.ChainID]
+		if due > 0 && (!last.MatchesEvent("block") || first.MatchesEvent("block") != (b.LogEventCount == due)) {
+			return ErrManagedLiveBatchConflict
+		}
 		if fe != nil || le != nil || he != nil || !sparseEventAllowed(first, filters, "") || !sparseEventAllowed(last, filters, "") || b.LogFirstEvent > b.LogLastEvent || first.ChainID != h.ChainID || last.ChainID != h.ChainID || first.BlockNumber != h.BlockNumber || last.BlockNumber != h.BlockNumber || first.BlockTimestamp != h.BlockTimestamp || last.BlockTimestamp != h.BlockTimestamp || b.LogEventCount > math.MaxInt64 {
 			return ErrManagedLiveBatchConflict
 		}
@@ -291,7 +320,7 @@ func validateLogOnlyBlock(o ManagedLiveOptions, b ManagedLiveBlock) error {
 	return nil
 }
 
-type RuntimeEventInput struct{ Kind, Checkpoint string }
+type RuntimeEventInput struct{ Kind, Checkpoint, BlockSourceID string }
 
 func (d *ManagedLiveDomains) ValidateRuntimeBlockInputs(b ManagedLiveBlock, events []RuntimeEventInput) error {
 	if e := validateLogOnlyBlock(d.live().opts, b); e != nil {
@@ -307,11 +336,24 @@ func (d *ManagedLiveDomains) ValidateRuntimeBlockInputs(b ManagedLiveBlock, even
 	if uint64(len(events)) != b.LogEventCount {
 		return ErrManagedLiveBatchConflict
 	}
+	// All block callbacks at this height share a checkpoint. Verify their
+	// source IDs in registration order before dispatching any of the handlers.
+	due := scheduledBlockSources(d.live().opts.runtimeLogFilters[head.ChainID], head.BlockNumber)
+	start := len(events) - len(due) // The receipt already checked the event count.
+	for i, source := range due {
+		v := events[start+i]
+		if v.Kind != "block" || v.BlockSourceID != source {
+			return ErrManagedLiveBatchConflict
+		}
+	}
+	if start > 0 && events[start-1].Kind == "block" {
+		return ErrManagedLiveBatchConflict
+	}
 	previous := ""
 	for _, v := range events {
 		cp, decodeErr := checkpoint.Decode(v.Checkpoint)
 		_, h, e := normalizeLiveHead(b.Head)
-		if v.Kind == "block" || decodeErr != nil || e != nil || !cp.MatchesEvent(v.Kind) || !sparseEventAllowed(cp, d.live().opts.runtimeLogFilters[head.ChainID], v.Kind) || cp.ChainID != h.ChainID || cp.BlockNumber != h.BlockNumber || cp.BlockTimestamp != h.BlockTimestamp || v.Checkpoint < previous {
+		if decodeErr != nil || e != nil || !cp.MatchesEvent(v.Kind) || !sparseEventAllowed(cp, d.live().opts.runtimeLogFilters[head.ChainID], v.Kind) || cp.ChainID != h.ChainID || cp.BlockNumber != h.BlockNumber || cp.BlockTimestamp != h.BlockTimestamp || v.Checkpoint < previous {
 			return ErrManagedLiveBatchConflict
 		}
 		previous = v.Checkpoint
@@ -345,7 +387,7 @@ func validateLogOnlyControl(c ManagedLiveControl) error {
 	}
 	if c.LogOnlyLastEvent != "" {
 		cp, ok := controlPosition(c.LogOnlyLastEvent, c)
-		if !ok || !(cp.MatchesEvent("log") || cp.MatchesEvent("transaction") || cp.MatchesEvent("transfer")) || c.Batches == 0 {
+		if !ok || !(cp.MatchesEvent("log") || cp.MatchesEvent("transaction") || cp.MatchesEvent("transfer") || c.Version == managedLiveAccountScanVersion && cp.MatchesEvent("block")) || c.Batches == 0 {
 			return ErrManagedLiveBatchConflict
 		}
 		if _, ok = c.Cursors[cp.ChainID]; !ok {

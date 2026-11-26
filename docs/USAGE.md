@@ -626,7 +626,19 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 在默认多链排序下使用工厂合约发现子地址时，将 `RuntimeOptions.FactorySources` 和 `SourceCheckpoints` 都设为 `true`。将 `Live` 留空即可在固定高度结束。工厂地址配置里的 `startBlock` 和 `endBlock` 决定扫描创建事件的范围，子合约或账户配置的区间决定向 Go 回调投递哪些事件。例如，工厂在区块 1 创建的子合约，即使其日志回调从区块 3 才开始，仍可在区块 3 收到事件。重开同一部署时，运行器按区块哈希恢复子地址，RPC 节点需能返回创建区间的区块和日志。未最终确认的区块被替换后，回放会使用新分支创建的子地址。[有限区间工厂测试](../parity/runs/native-bounded-factory/RESULT.md)
 
-独立存储的 Omnichain 会自动启用来源 checkpoint。可以注册逐块回调，也可以只订阅合约日志、合约 CALL 或账户事件。每个来源都需要声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
+独立存储的 Omnichain 会自动启用来源 checkpoint。可以注册一个或多个区块回调，各自选择采样间隔，也可以只订阅合约日志、合约 CALL 或账户事件。每个来源都需要声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
+
+例如，在 Go 来源配置的 `blocks` 字段中加入以下两个来源，然后向 `config.BuildSourceIndexing` 注册 `Sample:block` 和 `Audit:block`。采样从各自的 `startBlock` 开始，两个端点都包含在内。
+
+```go
+blocks := map[string]any{
+    "Sample": map[string]any{"chain": "mainnet", "startBlock": 1, "endBlock": 8, "interval": 5},
+    "Audit":  map[string]any{"chain": "mainnet", "startBlock": 2, "endBlock": 7, "interval": 2},
+}
+```
+
+`Sample` 在第 1、6 块触发，`Audit` 在第 2、4、6 块触发。第 6 块按注册顺序执行两个回调。如果第二个回调失败，重启后会一起重放这个未提交的批次。第 7、8 块均无匹配时，运行器仍会验证扫描已到达结束高度。相同配置可配合每条链各自的 RPC 缓存设置。[双链采样与恢复测试](../historical/omnichain_block_intervals_test.go)
+
 
 在双库 Omnichain 中，可以只订阅静态或工厂子合约的 CALL。在来源配置中启用 `includeCallTraces` 并提供函数 ABI（使用 `config.SourceTypedContract` 时设为 `IncludeCallTraces: config.SourceSome(true)`），然后注册函数回调，例如 `config.SourceIndexingFunction{Name: "Child.record()", Fn: record}`。每条链可独立设置 `cacheRpcRequests`。关闭缓存的链需要能按已最终确认的区块哈希返回历史调用树、交易和回执。回调失败后，用相同的 `BuildID`、原数据库和新的 `OpenID` 重启即可从已提交位置继续。[双链与双后端验证](../parity/runs/native-omnichain-sparse-contract-calls/RESULT.md)
 
@@ -675,7 +687,7 @@ handlers := []config.SourceIndexingFunction{
 
 将某条链的 `cacheRpcRequests` 设为 `false` 时，运行器会直接向该链节点复核账户来源覆盖的每个区块，包括重启时需要重新核对的历史区间。节点须能按哈希返回完整区块和交易数（`eth_getBlockByHash`、`eth_getBlockTransactionCountByHash`），并提供整块或逐笔交易回执。订阅原生币转账还需要 `debug_traceBlockByHash` 的 `callTracer`。节点缺少数据时，本次扫描会返回错误，进度保留在已提交的回调组。[关闭缓存的双链验证](../parity/runs/native-omnichain-uncached-accounts/RESULT.md)
 
-例如，若要在 `mainnet` 同时索引账户交易和合约日志，在 `base` 只索引工厂子合约的日志，可将逐块来源（`interval: 1`、`offset: 0`）和账户来源的 `chain` 都设为 `mainnet`，在两条链上分别注册合约日志来源。逐块来源必须覆盖本链全部来源的起止高度。所有结束高度都须处于各链共同的最终确认范围内。
+例如，若要在 `mainnet` 同时索引账户交易和合约日志，在 `base` 只索引工厂子合约的日志，可将逐块来源（`interval: 1`、`offset: 0`）和账户来源的 `chain` 都设为 `mainnet`，在两条链上分别注册合约日志来源。每个来源可以指定自己的起止高度。所有结束高度都须处于各链共同的最终确认范围内。
 
 运行器按同一跨链顺序提交两类回调。逐块链执行到结束区块。纯日志链的最后一个事件可以早于结束区块，运行器会核对两者之间的扫描记录。使用相同的配置、数据库和 `BuildID` 重启后，已提交的回调不会重复执行。[可运行的 Go 配置和恢复测试](../historical/omnichain_factory_test.go) · [双后端验证](../parity/runs/native-omnichain-mixed/RESULT.md)
 
@@ -706,7 +718,7 @@ functions = append(functions, config.SourceIndexingFunction{
 
 对每条参与链，`setup` 使用该合约在链上配置的 `startBlock` 作为默认 RPC 读取高度，省略时为 0。只用于初始化的合约也可以选择晚于事件区间的高度，但该高度必须已经在本链及跨链的最终确认范围内。所有链的初始化写入和初始 checkpoint 一起提交。若任一回调失败，使用相同配置、存储和 `BuildID`，换一个新的 `OpenID` 重试，会重新执行整组初始化。若初始化已提交，重启会继续索引事件，已提交的初始化只执行一次。[PostgreSQL 与 PGlite 回滚和重启测试](../parity/runs/native-omnichain-setup/RESULT.md)
 
-要同时处理账户和合约调用，请在每条链上注册一个 `interval: 1`、`offset: 0` 的区块来源及其 `名称:block` 回调。让这个来源的区间覆盖该链上的其他来源。静态账户可注册 `Wallet:transaction:from`、`Wallet:transaction:to`、`Wallet:transfer:from` 和 `Wallet:transfer:to`。对静态合约启用 `includeCallTraces`，再按 ABI 注册函数回调，例如 `Worker.record()`。需要读取回执时，在相应来源配置中启用 `includeTransactionReceipts`。同一笔有金额的合约调用可同时触发交易、函数和转账回调，最后执行该块的区块回调。[两条 Anvil 链上的运行与重启用例](../historical/omnichain_account_events_test.go)
+要同时处理账户和合约调用，可在同一条链注册相应的账户与合约回调。如果还需要按区块更新业务表，可添加区块来源，并注册其 `名称:block` 回调。静态账户可注册 `Wallet:transaction:from`、`Wallet:transaction:to`、`Wallet:transfer:from` 和 `Wallet:transfer:to`。对静态合约启用 `includeCallTraces`，再按 ABI 注册函数回调，例如 `Worker.record()`。需要读取回执时，在相应来源配置中启用 `includeTransactionReceipts`。同一笔有金额的合约调用可同时触发交易、函数和转账回调，最后执行该块的区块回调。[两条 Anvil 链上的运行与重启用例](../historical/omnichain_account_events_test.go)
 
 若索引进程在已确认区间的区块或静态日志回调中突然退出，用原来的业务库和同步库、同一份来源配置和相同的 `BuildID` 重新打开，并为这次打开分配新的 `OpenID`。运行器从已提交的跨链回调组继续。若进程在运行器进入就绪状态后退出，已经完成的回调不会再次执行。PostgreSQL 使用原来的数据库及命名空间，PGlite 使用原来的两个目录。[应用进程退出验证](../parity/runs/native-omnichain-app-recovery/RESULT.md)
 
