@@ -32,6 +32,16 @@ type runtimeBlockQueue struct {
 	jobs   sync.WaitGroup
 }
 
+func (r *RuntimeRunner) historicalQueryLimit() int {
+	querySize, chains := r.options.Historical.QuerySize, len(r.build.Chains)
+	if r.build.Ordering == string(schema.Isolated) {
+		// Each isolated worker receives a share of the total budget and reads one chain.
+		querySize /= chains
+		chains = 1
+	}
+	return source.SourceHistoricalQueryLimit(querySize, chains)
+}
+
 func (q *runtimeBlockQueue) close() { q.cancel(); q.stop(); q.jobs.Wait() }
 func (r *RuntimeRunner) newBlockQueue(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl, ends map[uint64]uint64, proofs map[uint64]*runtimeLineage, headers map[uint64]indexing.Object, children []*source.SourceHistoricalChildren, syncers []*source.SourceHistoricalSync, realtime []*source.SourceRealtimeSync) *runtimeBlockQueue {
 	run, cancel := context.WithCancel(ctx)
@@ -126,7 +136,7 @@ func (r *RuntimeRunner) acquireRuntimeBlock(ctx context.Context, epoch *indexing
 		}
 		err = r.domains.WithRuntimeSync(ctx, func(io context.Context, s *store.SourceSyncStore) error {
 			var e error
-			b.events, e = prepared.PersistAndDecode(io, s)
+			b.events, e = prepared.PersistAndDecodeWithLimit(io, s, r.historicalQueryLimit())
 			return e
 		})
 		return b, err

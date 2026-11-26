@@ -47,8 +47,8 @@ type RuntimeOptions struct {
 	// OmnichainFinalityPollInterval lets Open wait for a bounded Omnichain range
 	// to become globally finalized. Zero checks once. Cancellation stops the wait.
 	OmnichainFinalityPollInterval time.Duration
-	// Historical.QuerySize is the bounded omnichain SQL target (1..12000);
-	// zero uses 12000. MaxQueryParameters controls batched sync writes in all orderings.
+	// Historical.QuerySize is the historical event query budget across chains (1..12000).
+	// Zero uses 12000. MaxQueryParameters controls batched sync writes in all orderings.
 	// Bounded Omnichain accepts Clock. Bounded Isolated and Omnichain accept
 	// OnCommitted after persisting each group and its safe checkpoint. RetryWait
 	// schedules PostgreSQL transaction-conflict retries during setup and backfill.
@@ -166,12 +166,12 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	if b.Ordering == "omnichain" && o.Live != nil {
 		return nil, fmt.Errorf("%s currently requires bounded finalized runtime", b.Ordering)
 	}
-	if b.Ordering == "omnichain" {
-		if o.Historical.QuerySize < 0 || o.Historical.QuerySize > 12000 {
-			return nil, fmt.Errorf("omnichain query size must be between1 and12000, or0 for the source default")
-		}
-	} else if o.Historical.QuerySize != 0 {
-		return nil, fmt.Errorf("this ordering does not support historical QuerySize")
+	const maxQuerySize = 12000
+	if o.Historical.QuerySize < 0 || o.Historical.QuerySize > maxQuerySize {
+		return nil, fmt.Errorf("historical QuerySize must be between 0 and %d", maxQuerySize)
+	}
+	if o.Historical.QuerySize == 0 {
+		o.Historical.QuerySize = maxQuerySize
 	}
 	if b.Ordering != "multichain" {
 		o.SourceCheckpoints = true

@@ -48,7 +48,7 @@ func TestRuntimeOmnichainStaticLogsCapabilities(t *testing.T) {
 		{name: "query_12000", query: 12000, valid: true},
 		{name: "negative_query", query: -1},
 		{name: "oversized_query", query: 12001},
-		{name: "multichain_query", query: 6, change: func(b *config.ExecutableSourceIndexingBuild) { b.Ordering = "multichain" }},
+		{name: "multichain_query", query: 6, valid: true, change: func(b *config.ExecutableSourceIndexingBuild) { b.Ordering = "multichain" }},
 		{name: "factory_option", factory: true},
 		{name: "block_interval", valid: true, change: blockChange("interval", uint64(2))},
 		{name: "block_offset", change: blockChange("offset", uint64(1))},

@@ -49,7 +49,9 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 双库索引器还支持以下回调和回填选项。
 
 - 双库 Go 索引器可通过 `RuntimeOptions.OnCommitted` 接收已提交事件组的进度，包括实时区块和分叉后的重放。通知带有事务编号、链、区块哈希和当前安全状态。默认多链和实时部署重启时可能再次处理尚未安全确认的组。[订阅提交通知](docs/USAGE.md#订阅双库索引器的事件组提交) · [回填、分叉与重启验证](parity/runs/native-runtime-commit-notifications/RESULT.md)
-- 双库 Omnichain 的有限区间可以调整历史分页大小 `QuerySize` 和调度时钟 `Clock`。三种排序都支持 `MaxQueryParameters`。PostgreSQL 的初始化和回填事务遇到冲突时，可以用 `RetryWait` 调整等待。[回填选项](docs/USAGE.md#独立存储的有限区间索引) · [事务重试](docs/USAGE.md#双库-postgresql-回填的事务重试)
+- 双库三种排序都可以用 `QuerySize` 调整历史事件 SQL 查询的初始行数，用 `MaxQueryParameters` 调整同步库批量写入大小。有限区间 Omnichain 还支持调度时钟 `Clock`。PostgreSQL 的初始化和回填事务遇到冲突时，可以用 `RetryWait` 调整等待。[回填选项](docs/USAGE.md#独立存储的有限区间索引) · [事务重试](docs/USAGE.md#双库-postgresql-回填的事务重试)
+
+普通 Go 索引器的区块采样间隔目前只接受正整数。来源配置校验允许非零负整数，但对应的构建会在转换为原生运行配置时返回错误。[来源校验](config/source_callbacks.go) · [Go 运行配置转换](config/source_native.go)
 
 ## 当前验证与计数
 
