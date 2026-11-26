@@ -75,8 +75,12 @@
         "packages/core/src/config/index.ts",
         "packages/core/src/build/config.ts"
       ],
-      "evidence": [],
-      "remaining": "M29 all39active config records/type obligations verified through real typed native constructor/consumers/generated chain-event references. Originalskip remains. Current convenience API is partial,not fullTS DSL: complete overrides/filter lists/types/publiccontext/RPC/transport/signedscheduler/history/multichain remain."
+      "evidence": [
+        "docs/TYPED_SOURCE_CONFIGURATION.md",
+        "parity/runs/native-compiled-indexer/RESULT.md",
+        "parity/runs/native-custom-transport/RESULT.md"
+      ],
+      "remaining": "The typed configuration cases cover all 39 active upstream records. Native Go builds accept named custom RPC transports and start every registered chain. The source configuration validator accepts a nonzero signed block interval. The conversion used by the ordinary Go indexer still requires a positive interval."
     },
     {
       "id": "schema",
@@ -794,9 +798,10 @@
       "evidence": [
         "parity/runs/orm-compile-fixtures.json",
         "orm/container_models_test.go",
-        "parity/runs/native-go-enum-models/RESULT.md"
+        "parity/runs/native-go-enum-models/RESULT.md",
+        "parity/runs/native-column-codecs/RESULT.md"
       ],
-      "remaining": "The generated Go models enforce distinct enum types for keys, inserts, updates, scalar and array fields. Hex columns still use strings and generation of custom column codecs remains open."
+      "remaining": "The plain, typed and callback Go model generators support application-defined codecs for existing storage types. Hex columns use strings by default. Distinct enum types also work for keys, inserts, updates and arrays."
     },
     {
       "id": "cli-db-list",
@@ -807,8 +812,10 @@
       "upstream_sources": [
         "packages/core/src/bin/commands/list.ts"
       ],
-      "evidence": [],
-      "remaining": "Explicit-URL task-owned schema listing implemented; complete deployment metadata/liveness compatibility remains."
+      "evidence": [
+        "parity/runs/native-local-pglite/RESULT.md"
+      ],
+      "remaining": "The CLI lists deployments in PostgreSQL and in an offline PGlite directory. The directory owner fences out other processes while PGlite is active."
     },
     {
       "id": "cli-dev",
@@ -841,9 +848,10 @@
         "packages/core/src/bin/commands/prune.ts"
       ],
       "evidence": [
-        "parity/runs/native-database-commands/RESULT.md"
+        "parity/runs/native-database-commands/RESULT.md",
+        "parity/runs/native-local-pglite/RESULT.md"
       ],
-      "remaining": "Current registered PostgreSQL deployments. Standalone administration of PGlite directories and independent domain layouts remains open."
+      "remaining": "The CLI prunes eligible deployments in PostgreSQL and offline PGlite directories. Separate-domain deployment cleanup has its own lifecycle."
     },
     {
       "id": "cli-db-create-views",
@@ -857,9 +865,10 @@
         "packages/core/src/bin/commands/createViews.ts"
       ],
       "evidence": [
-        "parity/runs/native-database-commands/RESULT.md"
+        "parity/runs/native-database-commands/RESULT.md",
+        "parity/runs/native-local-pglite/RESULT.md"
       ],
-      "remaining": "Current registered PostgreSQL deployments. Standalone administration of PGlite directories and independent domain layouts remains open."
+      "remaining": "The CLI publishes views in PostgreSQL and offline PGlite directories. Separate-domain deployments also publish through the writer's readiness transition."
     },
     {
       "id": "scaffolding-templates",
@@ -872,9 +881,10 @@
         "packages/create-ponder/templates"
       ],
       "evidence": [
-        "parity/runs/native-project-templates/RESULT.md"
+        "parity/runs/native-project-templates/RESULT.md",
+        "parity/runs/native-reference-erc20/RESULT.md"
       ],
-      "remaining": "The native CLI generates five Go starters. The upstream menu also contains additional feature-specific and protocol examples."
+      "remaining": "All 16 entries in the pinned creation menu have Go templates. Generated-project tests exercise local chains. Replaying each template over its original public deployment range still requires separate archive data and verification."
     },
     {
       "id": "development-reload",
@@ -918,7 +928,7 @@
       "evidence": [
         "parity/runs/native-historical-duration-metrics/RESULT.md"
       ],
-      "remaining": "Historical extraction and transformation time is exported per executed step by the writer. Further upstream metrics and production performance measurements remain open. The interactive Go development watcher separately reports chain progress and RPC rates.",
+      "remaining": "The writer exports historical extraction and transformation time by step. The dev display also reports chain progress and RPC rates. The Go Prometheus registry still lacks the upstream per-chain reorg count and per-chain/per-method RPC duration and error metrics.",
       "native_test_files": [
         "metrics/historical_test.go",
         "runtime/historical_metrics_test.go",
@@ -936,8 +946,12 @@
         "examples",
         "docs/pages/docs"
       ],
-      "evidence": [],
-      "remaining": "Local example builds; full examples and deployment docs remain. No deployment authorized or performed."
+      "evidence": [
+        "docs/USAGE.md",
+        "parity/runs/native-deployment-roles/RESULT.md",
+        "parity/runs/native-managed-cli-serve/RESULT.md"
+      ],
+      "remaining": "The usage guide covers writing Go handlers, generating typed models, running both database backends, serving SQL, and operating split business and sync stores. Host power loss and least-privilege writer and deployment-manager logins for the split stores still need acceptance."
     },
     {
       "id": "type-fixtures",
@@ -3155,9 +3169,10 @@
         "packages/core/src/database/actions.ts"
       ],
       "evidence": [
-        "parity/runs/native-isolated-live/RESULT.md"
+        "parity/runs/native-isolated-live/RESULT.md",
+        "runtime/isolated_indexer_test.go"
       ],
-      "remaining": "Mixed factory/account events during an engine interruption and prolonged individual RPC outages need independent-store coverage. A cold restart replays speculative callbacks after each chain’s own safe checkpoint."
+      "remaining": "A retryable fetch error pauses readiness and rebuilds the shared live queue. Independent progress of a healthy peer while another RPC returns HTTP 503 is verified on the atomic Isolated indexer. Mixed factory/account events during an engine interruption still need independent-store coverage."
     },
     {
       "id": "native-runtime-query-budget",
