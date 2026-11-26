@@ -17,6 +17,7 @@ type tableLabel struct{ table, operation string }
 type Registry struct {
 	mu                                  sync.Mutex
 	reg                                 *prometheus.Registry
+	extract, transform                  *prometheus.GaugeVec
 	completed                           *prometheus.GaugeVec
 	cache, queries                      *prometheus.CounterVec
 	pendingEvents                       map[string]uint64
@@ -28,6 +29,8 @@ type Registry struct {
 func New() *Registry {
 	r := &Registry{
 		reg:            prometheus.NewRegistry(),
+		extract:        prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: "ponder_historical_extract_duration", Help: "Duration of historical extract phase"}, []string{"step"}),
+		transform:      prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: "ponder_historical_transform_duration", Help: "Duration of historical transform phase"}, []string{"step"}),
 		completed:      prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: "ponder_indexing_completed_events", Help: "Number of events that have been processed"}, []string{"event"}),
 		cache:          prometheus.NewCounterVec(prometheus.CounterOpts{Name: "ponder_indexing_cache_requests_total", Help: "Number of cache accesses"}, []string{"table", "type"}),
 		queries:        prometheus.NewCounterVec(prometheus.CounterOpts{Name: "ponder_indexing_store_queries_total", Help: "Number of indexing store operations"}, []string{"table", "method"}),
@@ -43,7 +46,7 @@ func New() *Registry {
 	r.requestSize = histogram("ponder_http_server_request_size_bytes", "Size of HTTP requests received by the server", sizes)
 	r.responseSize = histogram("ponder_http_server_response_size_bytes", "Size of HTTP responses served by the server", sizes)
 	r.duration = histogram("ponder_http_server_request_duration_ms", "Duration of HTTP responses served by the server", []float64{1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000})
-	r.reg.MustRegister(r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
+	r.reg.MustRegister(r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
 	return r
 }
 

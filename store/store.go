@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/schema"
 	"sort"
 	"strconv"
@@ -347,10 +348,13 @@ func (s *Store) apply(ctx context.Context, event Event, handler func(*Writer) er
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	r := metrics.Historical(ctx)
+	begin := r.StartTransform("begin")
 	tx, e := s.Backend.Begin(ctx)
 	if e != nil {
 		return e
 	}
+	begin()
 	defer tx.Rollback(context.Background())
 	if e = s.lock(ctx, tx); e != nil {
 		return e
@@ -407,9 +411,11 @@ func (s *Store) apply(ctx context.Context, event Event, handler func(*Writer) er
 		return e
 	}
 	if orm := w.indexingSession(); orm != nil {
+		load := r.StartTransform("load")
 		if e = orm.Cache.flush(ctx, false); e != nil {
 			return e
 		}
+		load()
 	}
 	if w.err != nil {
 		return w.err
@@ -434,9 +440,11 @@ func (s *Store) apply(ctx context.Context, event Event, handler func(*Writer) er
 	if e = tx.Exec(ctx, "INSERT INTO "+s.internal("_ponder_go_progress")+" VALUES ($1,$2) ON CONFLICT(chain_id) DO UPDATE SET checkpoint=excluded.checkpoint", event.Checkpoint.ChainID, encoded); e != nil {
 		return e
 	}
+	commit := r.StartTransform("commit")
 	if e = tx.Commit(ctx); e != nil {
 		return e
 	}
+	commit()
 	tables := []string{}
 	for name := range w.changed {
 		tables = append(tables, name)

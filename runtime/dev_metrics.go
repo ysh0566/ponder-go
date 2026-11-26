@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ysh0566/ponder-go/internal/devstatus"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 )
 
@@ -92,14 +93,20 @@ func (m *devMonitor) completeBlock(id uint64) {
 
 func invokeHandler(ctx context.Context, handler Handler, c *Context) error {
 	m := devMonitorFrom(ctx)
-	if m == nil {
+	registry := metrics.Historical(ctx)
+	if m == nil && registry == nil {
 		return handler(ctx, c)
 	}
+	finish := registry.StartTransform("index")
 	start := time.Now()
 	if err := handler(ctx, c); err != nil {
 		return err
 	}
 	elapsed := time.Since(start)
+	finish()
+	if m == nil {
+		return nil
+	}
 	m.mu.Lock()
 	event := m.events[c.Event.Name]
 	event.count++

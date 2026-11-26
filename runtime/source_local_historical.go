@@ -13,6 +13,7 @@ import (
 	"github.com/ysh0566/ponder-go/checkpoint"
 	protocol "github.com/ysh0566/ponder-go/events"
 	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -144,12 +145,17 @@ func sourceLocalCheckpoint(chain uint64, block filter.Object) (string, error) {
 	}
 	return checkpoint.Encode(checkpoint.Block(t, chain, n, true))
 }
-func sourceLocalBuild(o SourceLocalHistoricalOptions, data store.SourceEventData) ([]protocol.RawEvent, error) {
+func sourceLocalBuild(registry *metrics.Registry, o SourceLocalHistoricalOptions, data store.SourceEventData) ([]protocol.RawEvent, error) {
+	done := registry.StartExtract("build")
 	children := map[string][]filter.ChildAddress{}
 	for _, entry := range o.Children.Snapshot() {
 		children[entry.ID] = entry.Entries
 	}
-	return protocol.BuildEvents(protocol.Batch{EventCallbacks: o.FilterSession.Callbacks(o.EventCallbacks), Blocks: data.Blocks, Transactions: data.Transactions, TransactionReceipts: data.TransactionReceipts, Logs: data.Logs, Traces: data.Traces, ChildAddresses: children, ChainID: o.ChainID})
+	result, err := protocol.BuildEvents(protocol.Batch{EventCallbacks: o.FilterSession.Callbacks(o.EventCallbacks), Blocks: data.Blocks, Transactions: data.Transactions, TransactionReceipts: data.TransactionReceipts, Logs: data.Logs, Traces: data.Traces, ChildAddresses: children, ChainID: o.ChainID})
+	if err == nil {
+		done()
+	}
+	return result, err
 }
 
 // sourceLocalQueue provides the source callback generator's unbounded progress
@@ -432,7 +438,7 @@ func LocalSourceEvents(ctx context.Context, o SourceLocalHistoricalOptions) iter
 					fail(e)
 					return
 				}
-				built, e := sourceLocalBuild(o, data)
+				built, e := sourceLocalBuild(metrics.Historical(ctx), o, data)
 				if e != nil {
 					fail(e)
 					return
@@ -526,7 +532,7 @@ func LocalSourceInMemoryEvents(ctx context.Context, o SourceLocalHistoricalOptio
 				fail(e)
 				return
 			}
-			built, e := sourceLocalBuild(o, data)
+			built, e := sourceLocalBuild(metrics.Historical(ctx), o, data)
 			if e != nil {
 				fail(e)
 				return

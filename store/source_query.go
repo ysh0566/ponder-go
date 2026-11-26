@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/schema"
 )
 
@@ -387,6 +388,7 @@ func (s *SourceSyncStore) GetEventData(ctx context.Context, args SourceEventData
 			}
 		}
 	}
+	finishFormat := metrics.Historical(ctx).StartExtract("format")
 	for i, set := range rows {
 		key := "blockNumber"
 		if i == 0 {
@@ -463,5 +465,6 @@ func (s *SourceSyncStore) GetEventData(ctx context.Context, args SourceEventData
 			}
 		}
 	}
+	finishFormat()
 	return SourceEventData{Blocks: rows[0], Transactions: rows[1], TransactionReceipts: rows[2], Logs: rows[3], Traces: rows[4], Cursor: cursor}, nil
 }

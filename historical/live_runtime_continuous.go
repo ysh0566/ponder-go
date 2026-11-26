@@ -7,6 +7,7 @@ import (
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	source "github.com/ysh0566/ponder-go/runtime"
 	"github.com/ysh0566/ponder-go/store"
@@ -355,6 +356,7 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 }
 
 func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl, headers map[uint64]indexing.Object, result RuntimeResult, ready func(bool)) (out RuntimeResult, runErr error) {
+	ctx = metrics.WithHistorical(ctx, nil)
 	out = result
 	var q *runtimeLiveQueue
 	defer func() {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -139,7 +140,7 @@ func (e *Engine) initializeStaged(ctx context.Context, head Block) error {
 					continue
 				}
 				event := Event{Name: name, SetupBlock: contract.StartBlock, Block: Block{Number: Hex(contract.StartBlock)}}
-				if err := invokeHandler(ctx, handler, &Context{Event: event, DB: w, Client: e.Client, Chain: e.chain}); err != nil {
+				if err := invokeHandler(metrics.WithHistorical(ctx, nil), handler, &Context{Event: event, DB: w, Client: e.Client, Chain: e.chain}); err != nil {
 					return fmt.Errorf("%s: %w", name, err)
 				}
 			}

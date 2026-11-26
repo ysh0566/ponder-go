@@ -5,6 +5,7 @@ import (
 	"fmt"
 	protocol "github.com/ysh0566/ponder-go/events"
 	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/store"
 )
 
@@ -55,11 +56,11 @@ func DecodeSourceRealtimeEvent(chain protocol.Object, callbacks []protocol.Objec
 	if err != nil {
 		return nil, err
 	}
-	raw, err := sourceLocalBuild(SourceLocalHistoricalOptions{ChainID: id, EventCallbacks: callbacks, FilterSession: session, Children: children}, data)
+	raw, err := sourceLocalBuild(nil, SourceLocalHistoricalOptions{ChainID: id, EventCallbacks: callbacks, FilterSession: session, Children: children}, data)
 	if err != nil {
 		return nil, err
 	}
-	return sourceHistoryDecodeSession(chain, callbacks, session, &protocol.Decoder{}, raw)
+	return sourceHistoryDecodeSession(nil, chain, callbacks, session, &protocol.Decoder{}, raw)
 }
 
 // AcquireManagedHistoricalBlock uses the actual persistent source acquisition
@@ -125,9 +126,9 @@ func AcquireManagedHistoricalBlock(ctx context.Context, chain protocol.Object, c
 		}
 	}
 
-	raw, err := sourceLocalBuild(SourceLocalHistoricalOptions{ChainID: id, EventCallbacks: callbacks, FilterSession: session, Children: children}, data)
+	raw, err := sourceLocalBuild(metrics.Historical(ctx), SourceLocalHistoricalOptions{ChainID: id, EventCallbacks: callbacks, FilterSession: session, Children: children}, data)
 	if err != nil {
 		return nil, err
 	}
-	return sourceHistoryDecodeSession(chain, callbacks, session, &protocol.Decoder{}, raw)
+	return sourceHistoryDecodeSession(metrics.Historical(ctx), chain, callbacks, session, &protocol.Decoder{}, raw)
 }

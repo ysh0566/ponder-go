@@ -5,6 +5,7 @@ import (
 
 	protocol "github.com/ysh0566/ponder-go/events"
 	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/store"
 )
 
@@ -31,9 +32,14 @@ func sourceLocalPlanning(o SourceLocalHistoricalOptions, filters []filter.Object
 // Decoding may call a user logger, so it runs outside the filter lock. Temporary
 // filter wrappers are used only for reads; emitted events retain the actual
 // canonical callback and chain objects from the executable build.
-func sourceHistoryDecodeSession(chain protocol.Object, callbacks []protocol.Object, session *filter.Session, decoder *protocol.Decoder, raw []protocol.RawEvent) ([]protocol.Object, error) {
+func sourceHistoryDecodeSession(registry *metrics.Registry, chain protocol.Object, callbacks []protocol.Object, session *filter.Session, decoder *protocol.Decoder, raw []protocol.RawEvent) ([]protocol.Object, error) {
+	done := registry.StartExtract("decode")
 	if session == nil {
-		return decoder.DecodeEvents(chain, callbacks, raw)
+		result, err := decoder.DecodeEvents(chain, callbacks, raw)
+		if err == nil {
+			done()
+		}
+		return result, err
 	}
 	snapshots := session.Callbacks(callbacks)
 	original := make(map[uintptr]protocol.Object, len(callbacks))
@@ -49,5 +55,6 @@ func sourceHistoryDecodeSession(chain protocol.Object, callbacks []protocol.Obje
 			event["eventCallback"] = original[reflect.ValueOf(callback).Pointer()]
 		}
 	}
+	done()
 	return result, nil
 }

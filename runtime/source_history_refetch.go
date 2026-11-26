@@ -9,6 +9,7 @@ import (
 	"github.com/ysh0566/ponder-go/checkpoint"
 	protocol "github.com/ysh0566/ponder-go/events"
 	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/store"
 )
 
@@ -88,7 +89,7 @@ func RefetchLocalSourceEvents(ctx context.Context, o SourceHistoryRefetchOptions
 		if math.IsNaN(data.Cursor) || math.IsInf(data.Cursor, 0) || data.Cursor < cursor {
 			return nil, fmt.Errorf("source historical refetch cursor did not advance")
 		}
-		raw, err := sourceLocalBuild(SourceLocalHistoricalOptions{FilterSession: o.FilterSession, ChainID: chainID, EventCallbacks: o.EventCallbacks, Children: o.Children}, data)
+		raw, err := sourceLocalBuild(metrics.Historical(ctx), SourceLocalHistoricalOptions{FilterSession: o.FilterSession, ChainID: chainID, EventCallbacks: o.EventCallbacks, Children: o.Children}, data)
 		if err != nil {
 			return nil, err
 		}
@@ -147,7 +148,7 @@ func RefetchHistoricalSourceEvents(ctx context.Context, chains []SourceHistorica
 			// undefined, and decodeEvents then rejects it as non-iterable.
 			return nil, fmt.Errorf("source historical refetch raw events are undefined")
 		}
-		decoded, err := sourceHistoryDecodeSession(chain.Chain, chain.Local.EventCallbacks, chain.Local.FilterSession, decoder, raw)
+		decoded, err := sourceHistoryDecodeSession(metrics.Historical(ctx), chain.Chain, chain.Local.EventCallbacks, chain.Local.FilterSession, decoder, raw)
 		if err != nil {
 			return nil, err
 		}

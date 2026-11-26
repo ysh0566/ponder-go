@@ -202,7 +202,7 @@ func (r *RuntimeRunner) refetchOmnichainBlock(ctx context.Context, chain source.
 	if err != nil {
 		return nil, err
 	}
-	events, err := prepared.DecodeInMemory()
+	events, err := prepared.DecodeInMemoryContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -267,7 +267,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 			partitions := make([][]indexing.Object, len(blocks))
 			for i, block := range blocks {
 				partitions[i] = block.events
-				if e = epoch.Clients().Prefetch(epoch.Context(), block.events); e != nil {
+				if e = epoch.PrefetchHistorical(epoch.Context(), block.events); e != nil {
 					return out, e
 				}
 				digest, e := runtimeInputsDigest(block.events)

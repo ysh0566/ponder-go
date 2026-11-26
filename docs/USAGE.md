@@ -111,6 +111,23 @@ curl -fsSG "$base/sql/db" \
 | `GET /sql/live` | 用同样的 `sql` 参数建立 SSE 订阅。先用 `/sql/db` 读取当前结果；订阅在相关表变动且结果改变时发送数据。 |
 | `GET /metrics` | 以 Prometheus 文本格式读取服务指标。 |
 
+### 查看历史回填耗时
+
+在运行索引器的进程上读取 Prometheus 指标。将端口换成应用实际监听的端口。
+
+```sh
+curl -fsS http://127.0.0.1:42069/metrics | grep '^ponder_historical_'
+```
+
+| 指标 | `step` 和含义 |
+| --- | --- |
+| `ponder_historical_extract_duration` | `format` 整理同步库查询返回的行，`build` 组装原始事件，`decode` 解码供 Go 回调使用的事件。 |
+| `ponder_historical_transform_duration` | `prefetch` 调度预取，`begin` 开启业务事务，`index` 执行索引回调，`load` 刷新写入缓存，`finalize` 推进最终确认位置，`commit` 提交业务事务。 |
+
+读数是当前进程内已完成步骤的累计**毫秒数**，按步骤聚合所有链。可用两次抓取之差观察这段时间内各步骤的耗时。并发链上的时间会分别累加。一笔事务后续回滚时，此前已完成步骤的耗时仍会保留。未执行的步骤没有样本，例如直接在内存中构建事件时不会产生同步库的 `format` 样本。
+
+`runtime.NewIndexer` 和 `runtime.NewIndexerFromSource` 在首次追平过程中计入已达到最终确认范围的区块。双库 `historical.RuntimeRunner` 按实际回填阶段计时。实时追块和实时分叉重放均沿用原有累计值。独立 `serve` 进程拥有自己的指标注册表，要看回填耗时应抓取写入进程。`runtime.LaunchApplication` 自动连接查询服务的注册表。直接调用 `Run` 时，可传入 `metrics.WithHistorical(ctx, registry)`，再用 `registry.Collect(ctx)` 读取。[运行时验证](../parity/runs/native-historical-duration-metrics/RESULT.md)
+
 ## 重开索引或只提供查询
 
 保留运行中的 `start`，在另一个终端配置同一个 `PONDER_LOCAL_DATABASE_URL`。使用相同的业务命名空间，选择另一个 HTTP 端口。查询进程只需要数据库连接，RPC 和合约地址由写入进程使用。

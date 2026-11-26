@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/ysh0566/ponder-go/internal/devstatus"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/query"
 )
 
@@ -95,7 +96,8 @@ func LaunchApplication(ctx context.Context, indexer ApplicationIndexer, routes *
 		setReady(true)
 	} else {
 		indexing = make(chan error, 1)
-		go func(out chan<- error) { out <- indexer.RunIndexing(run, setReady) }(indexing)
+		indexCtx := metrics.WithHistorical(run, routes.Metrics)
+		go func(out chan<- error) { out <- indexer.RunIndexing(indexCtx, setReady) }(indexing)
 	}
 	var reporters sync.WaitGroup
 	if monitor != nil {

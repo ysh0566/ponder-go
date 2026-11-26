@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/metrics"
 )
 
 func liveUint(row map[string]any, key string) (uint64, error) {
@@ -281,9 +282,11 @@ func (m *ManagedLive) runLiveBlock(ctx context.Context, tx Transaction, segment 
 	}
 	w.closed.Store(true)
 	if orm := w.indexingSession(); orm != nil {
+		load := metrics.Historical(ctx).StartTransform("load")
 		if err := orm.Cache.flush(ctx, false); err != nil {
 			return err
 		}
+		load()
 	}
 	if w.err != nil {
 		return w.err
@@ -350,10 +353,16 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 	if err := m.usable(ctx); err != nil {
 		return ManagedLiveBatchResult{}, err
 	}
+	registry := metrics.Historical(ctx)
+	if len(batch.Blocks) == 0 {
+		registry = nil
+	}
+	begin := registry.StartTransform("begin")
 	tx, err := s.Backend.Begin(ctx)
 	if err != nil {
 		return ManagedLiveBatchResult{}, err
 	}
+	begin()
 	defer tx.Rollback(context.Background())
 	if err := s.lock(ctx, tx); err != nil {
 		return ManagedLiveBatchResult{}, err
@@ -473,6 +482,7 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 		return ManagedLiveBatchResult{}, err
 	}
 	if m.opts.atomicFinality() && len(segments) > 0 {
+		finalize := registry.StartTransform("finalize")
 		current, err := m.readControl(ctx, tx)
 		if err != nil {
 			return ManagedLiveBatchResult{}, err
@@ -486,6 +496,7 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 		if _, err = m.applyFinalizeTransaction(ctx, tx, safe, m.finalizeHash(safe)); err != nil {
 			return ManagedLiveBatchResult{}, fmt.Errorf("atomic safe checkpoint: %w", err)
 		}
+		finalize()
 		ctx = pendingFinalizedBatchContext(ctx, "")
 		if _, _, err = m.readDurable(ctx, tx); err != nil {
 			return ManagedLiveBatchResult{}, err
@@ -502,6 +513,7 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 			}
 		}
 	}
+	commit := registry.StartTransform("commit")
 	commitErr := tx.Commit(ctx)
 	if commitErr != nil {
 		_ = tx.Rollback(context.Background())
@@ -512,6 +524,7 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 			return ManagedLiveBatchResult{}, reconcile
 		}
 	}
+	commit()
 	return ManagedLiveBatchResult{Applied: true, Reconciled: commitErr != nil, OperationID: batch.ID, Segments: append([]ManagedLiveSegment(nil), segments...)}, nil
 }
 

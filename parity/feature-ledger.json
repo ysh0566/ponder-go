@@ -898,13 +898,33 @@
       "implementation_files": [
         "query/http.go",
         "metrics/registry.go",
-        "runtime/dev_metrics.go"
+        "runtime/dev_metrics.go",
+        "metrics/historical.go",
+        "runtime/application.go",
+        "runtime/engine.go",
+        "runtime/source_local_historical.go",
+        "indexing/managed_runtime_epoch.go",
+        "store/managed_live_batch.go"
       ],
       "upstream_sources": [
-        "packages/core/src/internal/metrics.ts"
+        "packages/core/src/internal/metrics.ts",
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/multichain.ts",
+        "packages/core/src/runtime/omnichain.ts",
+        "packages/core/src/runtime/isolated.ts",
+        "packages/core/src/sync-store/index.ts",
+        "packages/core/src/utils/timer.ts"
       ],
-      "evidence": [],
-      "remaining": "The default registry covers processed events, cache requests, store operations and HTTP metrics. Upstream historical extract and transform duration series are missing. The interactive Go development watcher separately reports chain progress and RPC rates."
+      "evidence": [
+        "parity/runs/native-historical-duration-metrics/RESULT.md"
+      ],
+      "remaining": "Historical extraction and transformation time is exported per executed step by the writer. Further upstream metrics and production performance measurements remain open. The interactive Go development watcher separately reports chain progress and RPC rates.",
+      "native_test_files": [
+        "metrics/historical_test.go",
+        "runtime/historical_metrics_test.go",
+        "historical/runtime_commit_observer_test.go",
+        "historical/live_runtime_continuous_test.go"
+      ]
     },
     {
       "id": "deployment-guides-examples",
