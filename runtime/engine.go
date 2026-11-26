@@ -210,14 +210,14 @@ func (e *Engine) block(ctx context.Context, number any) (Block, error) {
 	return *b, nil
 }
 func (e *Engine) Sync(ctx context.Context) error {
-	_, err := e.syncToHead(ctx)
+	_, err := e.syncToHead(ctx, nil)
 	return err
 }
 
-func (e *Engine) syncToHead(ctx context.Context) (bool, error) {
+func (e *Engine) syncToHead(ctx context.Context, samples polledHeads) (bool, error) {
 	e.syncMu.Lock()
 	defer e.syncMu.Unlock()
-	latest, err := e.acquireHead(ctx)
+	latest, err := e.acquireHead(ctx, samples)
 	if err != nil {
 		return false, err
 	}
@@ -247,7 +247,7 @@ func (e *Engine) syncToHead(ctx context.Context) (bool, error) {
 	if e.endBlock != nil {
 		head = min(head, *e.endBlock)
 	}
-	missing, err := e.missingBlocks(ctx, start, head)
+	missing, err := e.missingBlocks(ctx, start, head, samples)
 	if err != nil {
 		return false, err
 	}
@@ -295,6 +295,7 @@ func (e *Engine) syncToHead(ctx context.Context) (bool, error) {
 			if err = e.process(ctx, b, latest); err != nil {
 				return false, err
 			}
+			samples.committed(e.chain.ID, b)
 		}
 	}
 	if e.staged != nil {
@@ -360,7 +361,7 @@ func (e *Engine) finalizeIndexed(ctx context.Context, latest Block, through uint
 	e.finalizedHash = candidate.Hash
 	return done, nil
 }
-func (e *Engine) acquireHead(ctx context.Context) (Block, error) {
+func (e *Engine) acquireHead(ctx context.Context, samples polledHeads) (Block, error) {
 	if m := devMonitorFrom(ctx); m != nil {
 		m.register(e)
 	}
@@ -380,10 +381,14 @@ func (e *Engine) acquireHead(ctx context.Context) (Block, error) {
 	if err != nil || id != e.chain.ID {
 		return Block{}, fmt.Errorf("RPC chain ID mismatch: expected %d got %s", e.chain.ID, chainID)
 	}
-	return e.block(ctx, "latest")
+	head, err := e.block(ctx, "latest")
+	if err == nil {
+		samples.receive(ctx, e, head)
+	}
+	return head, err
 }
 
-func (e *Engine) missingBlocks(ctx context.Context, start, head uint64) ([]interval.Interval, error) {
+func (e *Engine) missingBlocks(ctx context.Context, start, head uint64, samples polledHeads) ([]interval.Interval, error) {
 	var missing []interval.Interval
 	var total uint64
 	if start <= head {
@@ -397,6 +402,7 @@ func (e *Engine) missingBlocks(ctx context.Context, start, head uint64) ([]inter
 	if m := devMonitorFrom(ctx); m != nil {
 		m.setRange(e.chain.ID, total, total-uint64(interval.Sum(missing)))
 	}
+	samples.retainMissing(e.chain.ID, missing)
 	return missing, nil
 }
 
@@ -781,13 +787,17 @@ func (e *Engine) pollingInterval() time.Duration {
 	return interval
 }
 
-func pollIndexer(ctx context.Context, interval time.Duration, ready func(bool), sync func(context.Context) (bool, error), endpoints ...string) error {
+func pollIndexer(ctx context.Context, interval time.Duration, ready func(bool), sync func(context.Context, polledHeads) (bool, error), endpoints ...string) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	heads := headNotifications(ctx, endpoints...)
 	retry := min(interval, time.Second)
+	// Remember catch-up tips so a fork on the first live poll cannot
+	// turn a replay of an unchanged peer into a fresh head sample.
+	samples := make(polledHeads)
+	pollCtx := metrics.WithRealtime(ctx, nil)
 	for {
-		done, err := sync(ctx)
+		done, err := sync(pollCtx, samples)
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
@@ -809,6 +819,7 @@ func pollIndexer(ctx context.Context, interval time.Duration, ready func(bool), 
 			retry = min(interval, time.Second)
 			// Subsequent polls and reorg replay belong to the live run.
 			ctx = metrics.WithHistorical(ctx, nil)
+			pollCtx = ctx
 		}
 		timer := time.NewTimer(delay)
 		select {
