@@ -19,21 +19,13 @@ func (r *RuntimeRunner) omnichainWatermark() string {
 	return watermark
 }
 
-func (r *RuntimeRunner) lastOmnichainSetupBlock(i int) uint64 {
-	var height uint64
-	for _, cb := range r.build.SetupCallbacks[i] {
-		height = max(height, cb["block"].(uint64))
-	}
-	return height
-}
-
 // Authenticate the setup limit during the baseline walk, which may use a
 // different requester from preflight. Earlier reads are covered by ancestry.
 func (r *RuntimeRunner) setupLineageCheck(i int, id uint64) func(uint64, store.ManagedLiveHead) error {
 	if r.build.Ordering != "omnichain" || len(r.build.SetupCallbacks[i]) == 0 {
 		return nil
 	}
-	height := max(r.starts[id], r.lastOmnichainSetupBlock(i))
+	height := max(r.starts[id], r.lastSetupBlock(i))
 	watermark := r.omnichainWatermark()
 	return func(n uint64, head store.ManagedLiveHead) error {
 		if n == height && head.Checkpoint > watermark {
@@ -75,7 +67,7 @@ func (r *RuntimeRunner) validateOmnichainFinalizedRange(ctx context.Context, req
 			return err
 		}
 		// A setup-only contract can set its default RPC height past the last event.
-		if setupHeight := r.lastOmnichainSetupBlock(i); setupHeight > end {
+		if setupHeight := r.lastSetupBlock(i); setupHeight > end {
 			if err := checkHeight(setupHeight, "setup block"); err != nil {
 				return err
 			}

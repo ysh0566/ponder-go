@@ -258,7 +258,7 @@ func validateLiveControl(c ManagedLiveControl) error {
 	if err := validateLivePositions(c); err != nil {
 		return err
 	}
-	if c.Bootstraps != 0 && (!isLiveRuntimeVersion(c.Version) || c.Bootstraps != 1 || c.Bootstraps > c.Batches) {
+	if c.Bootstraps != 0 && (!isLiveRuntimeVersion(c.Version) || (c.Bootstraps != 1 && (c.Version != managedLiveIsolatedVersion || c.Bootstraps != uint64(len(c.Cursors)))) || c.Bootstraps > c.Batches) {
 		return ErrManagedLiveBatchConflict
 	}
 	if (c.Serving || c.Activations != 0) && (!isLiveRuntimeVersion(c.Version) || c.Serving && c.Activations == 0) {
@@ -289,7 +289,14 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 	if err := validateLiveControl(c); err != nil {
 		return nil, nil, c, err
 	}
-	if batch.Generation != c.Generation || batch.ExpectedLastOperation != c.LastOperation || batch.ExpectedTail != c.Tail || c.Batches == math.MaxUint64 || (len(batch.Blocks) == 0 && !(opts.liveRuntime && c.Batches == 0)) || uint64(len(batch.Blocks)) >= uint64(math.MaxInt64)-c.Next {
+	bootstrap := len(batch.Baselines) > 0
+	// Isolated setup appends one previously uninitialized chain per transaction.
+	// Event batches require all configured chains to have initial positions.
+	partial := opts.isolatedSetup() && bootstrap
+	if partial && (len(batch.Baselines) != 1 || len(batch.Blocks) != 0 || c.Tail != 0) {
+		return nil, nil, c, ErrManagedLiveBatchConflict
+	}
+	if batch.Generation != c.Generation || batch.ExpectedLastOperation != c.LastOperation || batch.ExpectedTail != c.Tail || c.Batches == math.MaxUint64 || (len(batch.Blocks) == 0 && !(opts.liveRuntime && (c.Batches == 0 || partial))) || uint64(len(batch.Blocks)) >= uint64(math.MaxInt64)-c.Next {
 		return nil, nil, c, ErrManagedLiveBatchConflict
 	}
 	if (opts.runtimeSetup || opts.runtimeInitial) && c.Batches == 0 && len(batch.Blocks) != 0 {
@@ -300,12 +307,18 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 	if opts.runtimeInitial && positions == nil {
 		positions = map[uint64]string{}
 	}
-	if c.Batches == 0 {
-		if len(batch.Baselines) != len(opts.Chains) {
+	if c.Batches == 0 || partial {
+		if !partial && len(batch.Baselines) != len(opts.Chains) {
 			return nil, nil, c, fmt.Errorf("first managed batch requires every explicit acquired baseline")
 		}
 		for _, chain := range opts.Chains {
 			head, ok := batch.Baselines[chain.ID]
+			if partial && !ok {
+				continue
+			}
+			if _, exists := cursors[chain.ID]; exists {
+				return nil, nil, c, ErrManagedLiveBatchConflict
+			}
 			_, cp, err := normalizeLiveHead(head)
 			fresh, fe := checkpoint.Decode(opts.FinalizedHeads[chain.ID].Checkpoint)
 			if !ok || err != nil || fe != nil || cp.ChainID != chain.ID || cp.BlockNumber > min(fresh.BlockNumber, opts.EndBlocks[chain.ID]) || cp.BlockTimestamp > fresh.BlockTimestamp || (cp.BlockNumber == fresh.BlockNumber && head != opts.FinalizedHeads[chain.ID]) {
@@ -317,7 +330,7 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 				if opts.runtimeStarts[chain.ID] <= fresh.BlockNumber {
 					expected = checkpoint.MustEncode(checkpoint.Block(cp.BlockTimestamp, chain.ID, cp.BlockNumber, false))
 				}
-				if cp.BlockNumber != expectedNumber || len(batch.InitialCheckpoints) != len(opts.Chains) || batch.InitialCheckpoints[chain.ID] != expected {
+				if cp.BlockNumber != expectedNumber || len(batch.InitialCheckpoints) != len(batch.Baselines) || batch.InitialCheckpoints[chain.ID] != expected {
 					return nil, nil, c, ErrManagedLiveBatchConflict
 				}
 				positions[chain.ID] = expected
@@ -428,7 +441,7 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 	next.Cursors = cursors
 	if opts.runtimeInitial {
 		next.LogicalCursors = positions
-		if c.Batches == 0 {
+		if bootstrap {
 			next.LogicalSafe = cloneLiveCheckpoints(positions)
 			next.LogicalFinality = cloneLiveCheckpoints(positions)
 		}

@@ -6,6 +6,8 @@ import (
 	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
+func (o ManagedLiveOptions) isolatedSetup() bool { return o.runtimeIsolated && o.runtimeSetup }
+
 type runtimeSetupKey struct{}
 type runtimeSetupCallback struct {
 	fn func(context.Context, *Writer, func(uint64) error) error
@@ -32,6 +34,11 @@ func (m *ManagedLive) runRuntimeSetup(ctx context.Context, tx Transaction, basel
 	}
 	s := m.owner.s
 	first := m.opts.Chains[0].ID
+	if m.opts.isolatedSetup() {
+		for id := range baselines {
+			first = id
+		}
+	}
 	if err := s.eventContext(ctx, tx, checkpoint.MaxString, first, false); err != nil {
 		return err
 	}
@@ -86,7 +93,13 @@ func (m *ManagedLive) runRuntimeSetup(ctx context.Context, tx Transaction, basel
 		return err
 	}
 	if previous == nil {
-		return fmt.Errorf("setup bootstrap executed no attributed callback")
+		if !m.opts.isolatedSetup() {
+			return fmt.Errorf("setup bootstrap executed no attributed callback")
+		}
+		// This chain has event sources but no setup handlers.
+		if err := attribute(first); err != nil {
+			return err
+		}
 	}
 	if err := w.flushAndSeal(ctx, *previous); err != nil {
 		return err

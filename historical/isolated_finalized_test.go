@@ -209,8 +209,8 @@ func TestRuntimeIsolatedPreflight(t *testing.T) {
 				o.Live = &RuntimeLiveOptions{}
 				reason = "bounded finalized"
 			case "setup":
-				x.SetupCallbacks[0] = []indexing.Object{{"name": "Token:setup", "fn": handler}}
-				reason = "per-chain bootstrap"
+				x.SetupCallbacks[0] = []indexing.Object{{"name": "Token:setup", "fn": handler, "chain": x.Chains[0], "block": uint64(15)}}
+				reason = "exceeds chain finality"
 			case "source-finality":
 				x.EventCallbacks[0][0]["filter"].(map[string]any)["toBlock"] = float64(5)
 				reason = "exceeds chain finality"
@@ -222,7 +222,7 @@ func TestRuntimeIsolatedPreflight(t *testing.T) {
 			if err == nil || !strings.Contains(err.Error(), reason) {
 				t.Fatalf("expected %q before opening storage, got %v", reason, err)
 			}
-			if (mode == "live" || mode == "setup") && len(epochs) != 0 {
+			if mode == "live" && len(epochs) != 0 {
 				t.Fatalf("requested RPC for unsupported %s", mode)
 			}
 		})

@@ -10,6 +10,7 @@ import (
 )
 
 func liveDurableBaselines(ops []managedLiveOperation) (map[uint64]ManagedLiveHead, error) {
+	baselines := map[uint64]ManagedLiveHead{}
 	for _, op := range ops {
 		if op.Kind != "batch" {
 			continue
@@ -18,11 +19,20 @@ func liveDurableBaselines(ops []managedLiveOperation) (map[uint64]ManagedLiveHea
 		if decodeLiveJSON(op.Payload, &e) != nil {
 			return nil, ErrManagedLiveBatchConflict
 		}
-		if len(e.Batch.Baselines) > 0 {
-			return cloneLiveHeads(e.Batch.Baselines), nil
+		for id, head := range e.Batch.Baselines {
+			if _, exists := baselines[id]; exists {
+				return nil, ErrManagedLiveBatchConflict
+			}
+			baselines[id] = head
+		}
+		if len(baselines) != 0 && len(baselines) == len(e.AfterControl.FinalizedHeads) {
+			return baselines, nil
 		}
 	}
-	return nil, ErrManagedLivePendingActions
+	if len(baselines) == 0 {
+		return nil, ErrManagedLivePendingActions
+	}
+	return baselines, nil
 }
 
 // undoJournal consumes rows in descending actual execution order across ALL

@@ -315,72 +315,11 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			return result, err
 		}
 	}
-	if control.Batches == 0 {
-		baselines := map[uint64]store.ManagedLiveHead{}
-		initial := map[uint64]string{}
-		for i, c := range r.build.Chains {
-			id, _ := uintQuantity(c["id"])
-			f, _ := checkpoint.Decode(r.finalized[id].Checkpoint)
-			n := uint64(0)
-			if r.options.SourceCheckpoints {
-				n = min(r.starts[id], f.BlockNumber)
-			} else {
-				n = min(r.starts[id]-1, f.BlockNumber, r.ends[id])
-			}
-			raw, e := rpc.NewActions(epoch.Requester(i)).GetSourceBlockByNumber(epoch.Context(), source.Hex(n), true)
-			if e != nil {
-				return result, e
-			}
-			baselines[id], e = runtimeHead(id, raw)
-			if e != nil {
-				return result, e
-			}
-			headers[id] = raw
-			if r.options.SourceCheckpoints {
-				initial[id] = baselines[id].Checkpoint
-				if r.starts[id] <= f.BlockNumber {
-					cp, _ := checkpoint.Decode(initial[id])
-					initial[id] = checkpoint.MustEncode(checkpoint.Block(cp.BlockTimestamp, id, cp.BlockNumber, false))
-				}
-			}
-		}
-		// Setup becomes an irreversible safe business basis. Authenticate every
-		// acquired baseline against the fixed finalized identity before user
-		// callbacks or any bootstrap transaction can persist their effects.
-		if r.setup || r.options.SourceCheckpoints {
-			for i, c := range r.build.Chains {
-				id, _ := uintQuantity(c["id"])
-				if e := r.walkFinalizedLineage(epoch.Context(), epoch.Requester(i), id, baselines[id], r.setupLineageCheck(i, id)); e != nil {
-					return result, e
-				}
-			}
-		}
-		b := store.ManagedLiveBatch{ID: r.nextID("bootstrap"), Generation: control.Generation, ExpectedLastOperation: control.LastOperation, ExpectedTail: control.Tail, Baselines: baselines}
-		if r.options.SourceCheckpoints {
-			b.InitialCheckpoints = initial
-		}
-		a, e := r.domains.RetainBatch(run, b)
-		if e != nil {
-			return result, e
-		}
-		if r.setup {
-			_, e = epoch.Bootstrap(epoch.Context(), b, a)
-		} else {
-			_, e = r.domains.ApplyRuntimeBatch(epoch.Context(), b, a, nil)
-		}
-		if e != nil {
-			return result, e
-		}
-		control, e = r.domains.Control(run)
-		if e != nil {
-			return result, e
-		}
-		if r.setup && r.options.OnSetupCommitted != nil {
-			if e = r.options.OnSetupCommitted(context.WithValue(run, runtimeRunnerCallbackKey{}, r)); e != nil {
-				return result, e
-			}
-		}
+	control, err = r.bootstrapRuntime(run, epoch, control)
+	if err != nil {
+		return result, err
 	}
+
 	for i, c := range r.build.Chains {
 		id, _ := uintQuantity(c["id"])
 		cursor := control.Cursors[id]

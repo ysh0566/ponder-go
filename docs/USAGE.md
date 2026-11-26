@@ -753,7 +753,23 @@ opts.Live = nil
 
 用 `config.BuildSourceIndexing` 注册 `indexing.Handler`，将编译结果赋给 `opts.Historical.Build`。准备好业务和同步存储、`Requesters`、`BuildID` 与 `OpenID` 后，用 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 打开并调用 `Run`。启动时需要连通所有参与链，各来源的结束区块必须已在本链最终确认。每条链可从区块 0 开始，无需对齐各链的区块高度或时间戳。
 
-回调通过 `a.Context.DB` 写入本链的 `chainId`。每个区块的业务变更与该链的安全进度一起提交。若回调失败，本次运行返回错误。关闭后沿用两个存储位置、配置和 `BuildID`，换一个新的 `OpenID` 即可继续。各链已成功提交的回调都会保留。需要逐链 `setup` 或持续追块时，见运行模式矩阵。[完整的双链 Go 示例和恢复断言](../historical/isolated_finalized_test.go) · [运行模式矩阵](RUNTIME_SUPPORT.md)
+回调通过 `a.Context.DB` 写入本链的 `chainId`。每个区块的业务变更与该链的安全进度一起提交。若回调失败，本次运行返回错误。关闭后沿用两个存储位置、配置和 `BuildID`，换一个新的 `OpenID` 即可继续。各链已成功提交的回调都会保留。持续追块的支持范围见运行模式矩阵。[完整的双链 Go 示例和恢复断言](../historical/isolated_finalized_test.go) · [运行模式矩阵](RUNTIME_SUPPORT.md)
+
+要在回填前为各链写入初始业务数据，请在 Go 配置里声明合约（例如 `Token`），并通过 `config.BuildSourceIndexing` 注册 `Token:setup`。合约的逐链 `startBlock` 决定该链初始化时的默认 RPC 读取高度，省略时从 0 读取。该高度必须已在本链最终确认。下面的回调适用于上方的 `seen` 表。
+
+```go
+initToken := config.SourceIndexingFunction{
+    Name: "Token:setup",
+    Fn: indexing.Handler(func(ctx context.Context, a *indexing.HandlerArgs) error {
+        _, err := a.Context.DB.InsertOne(ctx, "seen", store.Row{
+            "chainId": a.Context.Chain["id"], "height": 0,
+        }, store.Conflict{})
+        return err
+    }),
+}
+```
+
+每条链的全部初始化回调与该链的初始检查点在同一笔业务事务中提交。只订阅事件的链也会记录自己的初始检查点。某条链的初始化失败时，运行器仍会尝试其余链，然后返回错误。用原存储与 `BuildID`、新的 `OpenID` 重启，仅重试尚未提交的链。所有链完成初始化后才开始投递区块和事件。[三链初始化与重启测试](../historical/isolated_setup_test.go)
 
 ### 为同一条链配置多个 RPC 节点
 

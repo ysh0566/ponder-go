@@ -226,7 +226,10 @@ func (m *ManagedLive) insertLiveProof(ctx context.Context, tx Transaction, head 
 func (m *ManagedLive) initializeLiveBaselines(ctx context.Context, tx Transaction, baselines map[uint64]ManagedLiveHead, initial map[uint64]string) error {
 	s := m.owner.s
 	for _, chain := range m.opts.Chains {
-		head := baselines[chain.ID]
+		head, ok := baselines[chain.ID]
+		if !ok {
+			continue
+		}
 		position := head.Checkpoint
 		if m.opts.runtimeInitial {
 			position = initial[chain.ID]
@@ -398,7 +401,7 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 	if err := m.validateBatchFinality(d, after, segments); err != nil {
 		return ManagedLiveBatchResult{}, err
 	}
-	if m.opts.runtimeSetup && d.Control.Batches == 0 {
+	if m.opts.runtimeSetup && len(batch.Baselines) > 0 {
 		if cb, ok := ctx.Value(runtimeSetupKey{}).(*runtimeSetupCallback); !ok || cb == nil || cb.fn == nil {
 			return ManagedLiveBatchResult{}, ErrManagedLiveBatchConflict
 		}
@@ -411,7 +414,7 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 			return ManagedLiveBatchResult{}, err
 		}
 	}
-	if d.Control.Batches == 0 {
+	if len(batch.Baselines) > 0 {
 		if err := m.initializeLiveBaselines(ctx, tx, batch.Baselines, batch.InitialCheckpoints); err != nil {
 			return ManagedLiveBatchResult{}, err
 		}

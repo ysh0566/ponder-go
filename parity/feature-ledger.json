@@ -452,9 +452,10 @@
         "parity/runs/native-chain-scheduling/RESULT.md",
         "parity/runs/native-isolated-mixed-sources/RESULT.md",
         "parity/runs/native-mixed-source-reorg/RESULT.md",
-        "parity/runs/native-isolated-finalized/RESULT.md"
+        "parity/runs/native-isolated-finalized/RESULT.md",
+        "parity/runs/native-isolated-setup/RESULT.md"
       ],
-      "remaining": "The native atomic Store covers mixed-source live forks during provider failover, handler failure and cold reopen. A database engine exit during replacement mixed-source callbacks still needs coverage. The independent-store RuntimeRunner supports finalized ranges. Its per-chain setup, continuous tracking and unfinalized fork recovery remain open.",
+      "remaining": "The native atomic Store covers mixed-source live forks during provider failover, handler failure and cold reopen. A database engine exit during replacement mixed-source callbacks still needs coverage. The independent-store RuntimeRunner supports finalized ranges. It also commits setup per chain. Continuous tracking and unfinalized fork recovery remain open.",
       "native_test_files": [
         "runtime/isolated_indexer_test.go",
         "runtime/ordered_indexer_test.go"
@@ -2454,7 +2455,7 @@
       "evidence": [
         "parity/runs/native-managed-cli-start/RESULT.md"
       ],
-      "remaining": "The independent default multichain start flow covers two block sources with SQL, SSE and restart. PostgreSQL standalone serving is covered by native-managed-cli-serve. Development hot reload is covered by native-managed-cli-dev. Isolated per-chain setup and continuous indexing remain open for this runner."
+      "remaining": "The independent default multichain start flow covers two block sources with SQL, SSE and restart. PostgreSQL standalone serving is covered by native-managed-cli-serve. Development hot reload is covered by native-managed-cli-dev. Continuous Isolated indexing remains open for this runner."
     },
     {
       "id": "native-omnichain-uncached-logs",
@@ -3053,7 +3054,36 @@
       "evidence": [
         "parity/runs/native-isolated-finalized/RESULT.md"
       ],
-      "remaining": "Independent-store per-chain setup, continuous tracking, chain-local rollback on unfinalized forks and engine termination during callbacks remain open."
+      "remaining": "Independent-store continuous tracking, chain-local rollback on unfinalized forks and engine termination during callbacks remain open."
+    },
+    {
+      "id": "native-isolated-setup",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime_setup.go",
+        "historical/live_runtime.go",
+        "indexing/managed_runtime_setup.go",
+        "indexing/service.go",
+        "store/managed_live_batch.go",
+        "store/managed_live_segments.go",
+        "store/managed_live_setup.go",
+        "store/managed_live_evidence.go",
+        "store/managed_live_recovery.go"
+      ],
+      "native_test_files": [
+        "historical/isolated_setup_test.go",
+        "historical/isolated_finalized_test.go",
+        "historical/live_runtime_omnichain_logs_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/isolated.ts",
+        "packages/core/src/indexing/index.ts",
+        "packages/core/src/indexing/index.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-isolated-setup/RESULT.md"
+      ],
+      "remaining": "Independent-store Isolated continuous indexing and unfinalized fork recovery remain open."
     }
   ]
 }

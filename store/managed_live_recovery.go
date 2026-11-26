@@ -129,7 +129,7 @@ func liveReplayComplete(cursors map[uint64]ManagedLiveHead, targets map[uint64]s
 
 func planLiveRecovery(opts ManagedLiveOptions, c ManagedLiveControl, baseline map[uint64]ManagedLiveHead, active []ManagedLiveSegment, journal []managedLiveJournalEntry, states []managedLiveCursorState, owner string) (managedLiveRecoveryEvidence, error) {
 	var e managedLiveRecoveryEvidence
-	if !opts.recovery || c.Version != (&ManagedLive{opts: opts}).version() || validateLiveControl(c) != nil || c.Batches == 0 || c.Generation >= math.MaxInt64-1 || c.Recoveries == math.MaxUint64 || !liveID(opts.OpenID) || owner == "" || len(states) != len(opts.Chains) || len(opts.FinalizedHeads) != len(opts.Chains) {
+	if !opts.recovery || c.Version != (&ManagedLive{opts: opts}).version() || validateLiveControl(c) != nil || c.Batches == 0 || c.Generation >= math.MaxInt64-1 || c.Recoveries == math.MaxUint64 || !liveID(opts.OpenID) || owner == "" || len(states) != len(c.Cursors) || (!opts.isolatedSetup() && len(c.Cursors) != len(opts.Chains)) || len(opts.FinalizedHeads) != len(opts.Chains) {
 		return e, ErrManagedLivePendingActions
 	}
 	if err := liveActiveJournal(c, active, journal); err != nil {
@@ -166,6 +166,13 @@ func planLiveRecovery(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 	for _, chain := range opts.Chains {
 		state, ok := byChain[chain.ID]
 		head, fresh, err := normalizeLiveHead(opts.FinalizedHeads[chain.ID])
+		cuts[chain.ID] = min(fresh.BlockNumber, opts.EndBlocks[chain.ID])
+		if _, initialized := c.Cursors[chain.ID]; !initialized {
+			if ok || err != nil || fresh.ChainID != chain.ID {
+				return e, ErrManagedLiveBatchConflict
+			}
+			continue
+		}
 		_, prior, pe := normalizeLiveHead(finalized[chain.ID])
 		latest, le := checkpoint.Decode(state.Latest)
 		// Latest is the authenticated public projection, possibly stale across a
@@ -181,7 +188,6 @@ func planLiveRecovery(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 			return e, ErrManagedLiveBatchConflict
 		}
 		targets[chain.ID] = state.Latest
-		cuts[chain.ID] = min(fresh.BlockNumber, opts.EndBlocks[chain.ID])
 	}
 	after := c
 	after.Generation++
@@ -285,6 +291,9 @@ func (m *ManagedLive) recordRecovery(ctx context.Context, tx Transaction) error 
 		return err
 	}
 	for _, chain := range m.opts.Chains {
+		if _, ok := e.AfterControl.Cursors[chain.ID]; !ok {
+			continue
+		}
 		if err := s.eventContext(ctx, tx, liveCursorCheckpoint(e.AfterControl, chain.ID), chain.ID, true); err != nil {
 			return err
 		}
@@ -300,6 +309,9 @@ func (m *ManagedLive) recordRecovery(ctx context.Context, tx Transaction) error 
 		return err
 	}
 	for _, chain := range m.opts.Chains {
+		if _, ok := e.AfterControl.Cursors[chain.ID]; !ok {
+			continue
+		}
 		cp, err := checkpoint.Decode(liveCursorCheckpoint(e.AfterControl, chain.ID))
 		if err != nil {
 			return err
