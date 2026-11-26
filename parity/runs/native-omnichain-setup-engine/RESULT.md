@@ -36,3 +36,18 @@ node_modules/.bin/vitest run --maxWorkers=1 --hookTimeout=45000 src/database/ind
 ```
 
 An engine exit inside the readiness activation transaction and the dual-store live Omnichain handoff remain open.
+
+## Private PostgreSQL port selection
+
+During the module-wide run, a surrounding PostgreSQL server exported `PGPORT=53398`. The disposable socket server listened on port 5432, but its clients attempted the socket for port 53398. Its connection URL now specifies its own socket directory and port. The PostgreSQL crash recovery control sets a conflicting `PGPORT` before opening and reopening the cluster.
+
+With PostgreSQL 14.24, the engine recovery control, generated deployment roles, PostgreSQL CLI development, writer startup and standalone serving passed in both ordinary and race modes. The CLI tests used a disposable baseline database with an explicit port and a separate server for each managed subprocess fixture. The full module run is tracked separately.
+
+```sh
+for mode in ordinary race; do
+  flags=()
+  if [[ $mode == race ]]; then flags=(-race); fi
+  PGPORT=53398 go test "${flags[@]}" -p 1 -count=1 -run '^TestDatabaseEngineRecovery$/postgres' ./store
+  PGPORT=53398 go test "${flags[@]}" -p 1 -count=1 -timeout=20m -run '^(TestGeneratedDeploymentRoles|TestManagedMultichainCLIStart|TestManagedMultichainCLIDev)$/postgres' ./cmd/ponder
+done
+```

@@ -57,6 +57,7 @@ func (s *Server) startLocal(t *testing.T, bin string) {
 	}
 	query := s.endpoint.Query()
 	query.Set("host", cluster.data)
+	query.Set("port", "5432")
 	s.endpoint.RawQuery = query.Encode()
 	s.local = cluster
 	cluster.control(t, "start")
