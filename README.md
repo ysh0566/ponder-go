@@ -30,7 +30,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 
 用 Go 新写索引器，普通入口 `runtime.NewIndexer` 已支持默认多链、Isolated 和 Omnichain 的历史回填、持续追块和重组恢复。使用编译后的 Go 来源配置时可选 `runtime.NewIndexerFromSource`。两个入口都使用 `runtime.Handler`。[运行模式矩阵](docs/RUNTIME_SUPPORT.md) · [选择运行入口](docs/USAGE.md#选择-go-索引器的运行入口)
 
-如果要把业务数据和同步缓存分开管理，`historical.RuntimeRunner` 还有两项功能缺口。
+如果业务数据和同步缓存要独立管理，`historical.RuntimeRunner` 还有两项实时索引功能待实现。
 
 1. **双库 Isolated 实时索引**。已支持各链独立回填最终确认的有限区间。每条链也可用 `setup` 初始化本链数据。一条链初始化失败时，其他链已提交的初始化和进度会保留。还缺持续追块，以及只撤销分叉链的双库恢复流程。[初始化与重启](historical/isolated_setup_test.go) · [配置方法](docs/USAGE.md#双库-isolated-按链回填)
 2. **双库 Omnichain 实时索引**。已支持各链均最终确认的有限区间。还需要在追上历史后持续接收区块，遇到重组时按全局 checkpoint 撤销并重放受影响的跨链回调，重启后恢复该进度。[实时与最终性边界测试](historical/live_runtime_omnichain_source_test.go)
@@ -48,9 +48,11 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 
 ## 当前验证与计数
 
-上游的随机多链模拟、配套的端到端场景以及性能基准已登记。完整的 Go 模拟回归和同条件吞吐量对比仍待完成。[验证台账](parity/feature-ledger.json)
+ERC-20 转账和工厂创建交易对这两个上游端到端场景均已移植。Go 回调处理自建 Anvil 上的真实合约事件，测试通过 HTTP 核对 PostgreSQL 和 PGlite 上的结果。[端到端测试](runtime/application_source_test.go)
 
-固定上游共有 **905 条测试记录**。其中 **883 条已移植为 Go 用例并执行，866 条通过，17 条服务商 RPC 用例失败**。另有 5 条保留的 SDK 用例通过。17 条失败用例依赖特定网关的响应或真实链的历史日志，自建节点的实测结果已逐项记录。其余为上游跳过 10 条、TODO 2 条，以及已退出 Go 支持范围的旧缓存迁移 5 条。[逐例台账](parity/test-ledger.json) · [RPC 实测结果](parity/runs/provider-policy-assertions/RESULT.md)
+还有两项独立的验收工作。上游 8 个模拟应用需要用可复现的随机种子运行 Go 索引器，并将结果与预期数据逐项比较。性能方面，尚缺 rETH 和 Uniswap 在相同数据、数据库和 RPC 条件下的回填吞吐量对比。[核查记录](parity/runs/native-go-indexer-reaudit/RESULT.md) · [验证台账](parity/feature-ledger.json)
+
+固定上游共有 **905 条测试记录**。其中 **883 条已移植为 Go 用例并执行，866 条通过，17 条服务商 RPC 用例失败**。另有 5 条保留的 SDK 用例通过。其中 16 条断言服务商对区块范围或响应大小的限制，另 1 条要求查到 Swell 指定区间的 58 条历史日志。自建节点的实测结果已逐项记录。其余为上游跳过 10 条、TODO 2 条，以及已退出 Go 支持范围的旧缓存迁移 5 条。[逐例台账](parity/test-ledger.json) · [RPC 实测结果](parity/runs/provider-policy-assertions/RESULT.md)
 
 在已归档的全模块回归基线上，Go 普通和竞态运行各覆盖 30 个包，各通过 4,877 个叶子用例。此后新增功能的验证结果列在各功能的测试报告中。两种离线运行各跳过了上述 17 条在线用例，它们另行执行后仍失败。上游原版全量复验为 876 通过、17 失败、10 跳过、2 TODO。[Go 全模块回归](parity/runs/complete-module-regression/RESULT.md) · [固定上游复验](parity/runs/current-release-verification/RESULT.md)
 
