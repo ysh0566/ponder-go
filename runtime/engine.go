@@ -185,6 +185,7 @@ func NewWithOptions(c config.Config, s *store.Store, handlers map[string]Handler
 	engine.filter = fmt.Sprintf("runtime:%x", hash)
 	engine.Client = rpc.New(engine.chain.RPC...)
 	engine.Client.ChainID = engine.chain.ID
+	engine.Client.ChainName = engine.chain.Name
 	if c.SourcePlan != nil && c.SourcePlan.Client != nil {
 		engine.Client = c.SourcePlan.Client
 	}

@@ -914,7 +914,10 @@
         "runtime/engine.go",
         "runtime/source_local_historical.go",
         "indexing/managed_runtime_epoch.go",
-        "store/managed_live_batch.go"
+        "store/managed_live_batch.go",
+        "metrics/rpc.go",
+        "rpc/client.go",
+        "config/source_build.go"
       ],
       "upstream_sources": [
         "packages/core/src/internal/metrics.ts",
@@ -926,14 +929,18 @@
         "packages/core/src/utils/timer.ts"
       ],
       "evidence": [
-        "parity/runs/native-historical-duration-metrics/RESULT.md"
+        "parity/runs/native-historical-duration-metrics/RESULT.md",
+        "parity/runs/native-rpc-metrics/RESULT.md"
       ],
-      "remaining": "The writer exports historical extraction and transformation time by step. The dev display also reports chain progress and RPC rates. The Go Prometheus registry still lacks the upstream per-chain reorg count and per-chain/per-method RPC duration and error metrics.",
+      "remaining": "The writer exports RPC success durations and error counts per chain and method across history and realtime. The upstream per-chain realtime reorg counter and comparative production benchmarks remain open.",
       "native_test_files": [
         "metrics/historical_test.go",
         "runtime/historical_metrics_test.go",
         "historical/runtime_commit_observer_test.go",
-        "historical/live_runtime_continuous_test.go"
+        "historical/live_runtime_continuous_test.go",
+        "metrics/registry_test.go",
+        "rpc/custom_transport_test.go",
+        "cmd/ponder/managed_start_test.go"
       ]
     },
     {
