@@ -31,9 +31,11 @@ type ManagedLiveRuntimeOptions struct {
 	Continuous        bool
 	Setup             bool
 	SourceCheckpoints bool
-	// When set, list every chain. A nil entry declares a chain with a covering block callback.
+	// Filters for chains without a covering block callback. Logs can use the cache or RPC.
+	// Account transactions and transfers use cached rows and interval coverage.
+	// List each chain, using nil for a chain with a covering block callback.
 	LogOnlyFilters map[uint64][]filter.Object
-	// Event ABI items in the same order as LogOnlyFilters, for proving ABI-skipped ranges.
+	// ABI entries follow filter order. Account entries have no ABI.
 	LogOnlyEventABIs map[uint64][]any
 	// OpenLogScanRPC supplies fresh transports for uncached chains during a proof scan.
 	OpenLogScanRPC func(context.Context) (map[uint64]LogScanRPC, error)
@@ -123,7 +125,12 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 		}
 	}
 	needsRPCScan := false
-	for id := range opts.runtimeLogFilters {
+	for id, filters := range opts.runtimeLogFilters {
+		for _, f := range filters {
+			if f["type"] == "transaction" || f["type"] == "transfer" {
+				opts.runtimeAccountScan = true
+			}
+		}
 		needsRPCScan = needsRPCScan || !runtimeRPCCacheEnabled(opts, id)
 	}
 	if needsRPCScan && in.OpenLogScanRPC == nil {

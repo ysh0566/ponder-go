@@ -43,7 +43,18 @@ func validateOmnichainCallbacks(callbacks []indexing.Object) error {
 		}
 	}
 	if closing == nil {
-		return validateOmnichainLogOnlyCallbacks(callbacks)
+		for _, cb := range callbacks {
+			f := cb["filter"].(map[string]any)
+			from, fe := uintQuantity(filter.FilterFromBlock(f))
+			to, te := uintQuantity(filter.FilterToBlock(f))
+			if f["type"] == "trace" || fe != nil || te != nil || to < from {
+				return fmt.Errorf("omnichain without a block callback requires finite log, transaction or transfer ranges")
+			}
+		}
+		if len(callbacks) == 0 {
+			return fmt.Errorf("omnichain requires event callbacks")
+		}
+		return nil
 	}
 	start, se := uintQuantity(filter.FilterFromBlock(closing))
 	end, ee := uintQuantity(filter.FilterToBlock(closing))
@@ -85,45 +96,15 @@ func validateOmnichainBlockPartition(events []indexing.Object, head store.Manage
 		if kind != "block" && (cp.TransactionIndex == checkpoint.Max.TransactionIndex || raw >= closingKey) {
 			return fmt.Errorf("omnichain %s event lies outside its closing block", kind)
 		}
-		switch kind {
-		case "block":
-			if cp != closing {
-				return fmt.Errorf("omnichain block callback is not the canonical closing event")
-			}
+		if !cp.MatchesEvent(kind) {
+			return fmt.Errorf("invalid omnichain %s checkpoint", kind)
+		}
+		if kind == "block" {
 			blocks++
-		case "log":
-			if cp.EventType != checkpoint.Logs {
-				return fmt.Errorf("invalid omnichain log checkpoint")
-			}
-		case "transaction":
-			if cp.EventType != checkpoint.Transactions || cp.EventIndex != 0 {
-				return fmt.Errorf("invalid omnichain transaction checkpoint")
-			}
-		case "trace", "transfer":
-			if cp.EventType != checkpoint.Traces {
-				return fmt.Errorf("invalid omnichain trace checkpoint")
-			}
-		default:
-			return fmt.Errorf("unsupported event in finalized omnichain block partition")
 		}
 	}
 	if blocks != 1 || len(events) == 0 || previous != closingKey {
 		return fmt.Errorf("omnichain block partition requires exactly one final closing block callback")
-	}
-	return nil
-}
-
-func validateOmnichainLogOnlyCallbacks(callbacks []indexing.Object) error {
-	if len(callbacks) == 0 {
-		return fmt.Errorf("log-only omnichain requires ABI log callbacks")
-	}
-	for _, cb := range callbacks {
-		f := cb["filter"].(map[string]any)
-		from, fe := uintQuantity(filter.FilterFromBlock(f))
-		to, te := uintQuantity(filter.FilterToBlock(f))
-		if cb["type"] != "contract" || f["type"] != "log" || fe != nil || te != nil || to < from {
-			return fmt.Errorf("log-only omnichain requires finite ABI log ranges with startBlock <= endBlock")
-		}
 	}
 	return nil
 }

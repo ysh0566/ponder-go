@@ -238,7 +238,7 @@ func TestRuntimeOmnichainSourceOracle(t *testing.T) {
 	}
 }
 func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
-	for _, name := range []string{"global-finality", "genesis-global-finality", "local-finality", "live", "inverted-range", "interval", "factory", "uncached-log-only-live", "ordering-mismatch"} {
+	for _, name := range []string{"global-finality", "genesis-global-finality", "local-finality", "live", "inverted-range", "interval", "factory", "uncached-log-only-live", "uncached-account", "ordering-mismatch"} {
 		t.Run(name, func(t *testing.T) {
 			g := loadOmnichainGolden(t)
 			latest := ""
@@ -278,6 +278,13 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 			case "factory":
 				o.FactorySources = true
 				expected = "factory sources require"
+			case "uncached-account":
+				chain := b.Executable().Chains[0]
+				chain["cacheRpcRequests"] = false
+				cb := b.Executable().EventCallbacks[0][0]
+				cb["type"] = "account"
+				cb["filter"] = map[string]any{"type": "transaction", "chainId": runtimeChainID(chain), "fromBlock": 1, "toBlock": 2}
+				expected = "require the RPC cache or a covering block callback"
 			case "uncached-log-only-live":
 				noop := indexing.Handler(func(context.Context, *indexing.HandlerArgs) error {
 					t.Fatal("log-only preflight invoked a callback")
@@ -294,7 +301,7 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 				opened = true
 				return nil, errors.New("storage must not open")
 			})
-			if name == "uncached-log-only-live" && len(epochs) != 0 {
+			if (name == "uncached-log-only-live" || name == "uncached-account") && len(epochs) != 0 {
 				t.Fatal("preflight opened RPC for live log-only Omnichain")
 			}
 			if r != nil || err == nil || !strings.Contains(err.Error(), expected) || opened || len(calls) != 0 {

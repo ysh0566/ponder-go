@@ -11,15 +11,15 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 )
 
-func (r *RuntimeRunner) logOnlySources() (map[uint64][]filter.Object, map[uint64][]any) {
-	if len(r.logOnlyChains) == 0 {
+func (r *RuntimeRunner) sparseSources() (map[uint64][]filter.Object, map[uint64][]any) {
+	if len(r.sparseChains) == 0 {
 		return nil, nil
 	}
 	filters := map[uint64][]filter.Object{}
 	abis := map[uint64][]any{}
 	for i, c := range r.build.Chains {
 		id := runtimeChainID(c)
-		if !r.logOnlyChains[id] {
+		if !r.sparseChains[id] {
 			filters[id] = nil // Explicitly covered by a closing block callback.
 			continue
 		}
@@ -33,7 +33,7 @@ func (r *RuntimeRunner) logOnlySources() (map[uint64][]filter.Object, map[uint64
 
 // An uncached factory scan may rediscover births before the durable cursor.
 func (r *RuntimeRunner) logScanLineageStart(id, cursor uint64) uint64 {
-	if r.logOnlyChains[id] && r.options.FactorySources {
+	if r.sparseChains[id] && r.options.FactorySources {
 		for i, chain := range r.build.Chains {
 			if runtimeChainID(chain) != id || runtimeRPCCacheEnabled(chain) {
 				continue
@@ -62,7 +62,7 @@ func (r *RuntimeRunner) openLogScanRPC(ctx context.Context) (map[uint64]store.Lo
 	readers := make(map[uint64]store.LogScanRPC)
 	acquisition := r.options.Historical.Acquisition
 	for i, chain := range r.build.Chains {
-		if !r.logOnlyChains[runtimeChainID(chain)] || runtimeRPCCacheEnabled(chain) {
+		if !r.sparseChains[runtimeChainID(chain)] || runtimeRPCCacheEnabled(chain) {
 			continue
 		}
 		id := runtimeChainID(chain)
@@ -81,7 +81,7 @@ func (r *RuntimeRunner) openLogScanRPC(ctx context.Context) (map[uint64]store.Lo
 }
 
 func (r *RuntimeRunner) validateOmnichainPartition(id uint64, events []indexing.Object, head store.ManagedLiveHead) error {
-	if !r.logOnlyChains[id] {
+	if !r.sparseChains[id] {
 		return validateOmnichainBlockPartition(events, head)
 	}
 	h, e := checkpoint.Decode(head.Checkpoint)
@@ -92,8 +92,9 @@ func (r *RuntimeRunner) validateOmnichainPartition(id uint64, events []indexing.
 	for _, event := range events {
 		raw, ok := event["checkpoint"].(string)
 		cp, ce := checkpoint.Decode(raw)
-		if !ok || ce != nil || event["type"] != "log" || cp.EventType != checkpoint.Logs || cp.TransactionIndex == checkpoint.Max.TransactionIndex || cp.ChainID != h.ChainID || cp.BlockNumber != h.BlockNumber || cp.BlockTimestamp != h.BlockTimestamp || raw < previous {
-			return fmt.Errorf("log-only partition differs from acquired source identity/order")
+		kind, _ := event["type"].(string)
+		if !ok || ce != nil || (kind != "log" && kind != "transfer" && kind != "transaction") || !cp.MatchesEvent(kind) || cp.ChainID != h.ChainID || cp.BlockNumber != h.BlockNumber || cp.BlockTimestamp != h.BlockTimestamp || raw < previous {
+			return fmt.Errorf("sparse event partition differs from acquired source identity/order")
 		}
 		previous = raw
 	}

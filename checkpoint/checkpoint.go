@@ -24,6 +24,28 @@ type Checkpoint struct {
 	EventIndex       uint64 `json:"eventIndex"`
 }
 
+// MatchesEvent reports whether this position can identify the given source event kind.
+func (c Checkpoint) MatchesEvent(kind string) bool {
+	if kind == "block" {
+		closing := Block(c.BlockTimestamp, c.ChainID, c.BlockNumber, true)
+		closing.EventType, closing.EventIndex = Blocks, 0
+		return c == closing
+	}
+	if c.TransactionIndex == Max.TransactionIndex {
+		return false
+	}
+	switch kind {
+	case "log":
+		return c.EventType == Logs
+	case "transaction":
+		return c.EventType == Transactions && c.EventIndex == 0
+	case "transfer", "trace":
+		return c.EventType == Traces
+	default:
+		return false
+	}
+}
+
 var Zero = Checkpoint{}
 var Max = Checkpoint{9_999_999_999, 9_999_999_999_999_999, 9_999_999_999_999_999, 9_999_999_999_999_999, 9, 9_999_999_999_999_999}
 var ZeroString = strings.Repeat("0", Length)
