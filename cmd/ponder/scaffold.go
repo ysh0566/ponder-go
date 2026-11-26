@@ -26,17 +26,15 @@ var projectName = regexp.MustCompile(`^[a-z0-9-][a-z0-9._-]*$`)
 func createProject(ctx context.Context, template, dir string, out io.Writer) error {
 	var files fs.FS
 	var prefix string
-	var copyGoBootstrap, useGraphQL bool
+	var copyGoBootstrap bool
 	switch template {
 	case "go", "erc20":
 		files, prefix = examples.ERC20, "erc20"
 	case "empty":
 		files, prefix = scaffolds, "scaffold/go-empty"
 		copyGoBootstrap = true
-	case "multichain", "filter", "friendtech", "uniswap-v3-flash":
-		useGraphQL = true
-		fallthrough
-	case "blocks", "api-functions", "call-traces", "read-contract", "erc721", "erc1155", "erc4626", "factory", "accounts", "proxy":
+	case "multichain", "filter", "friendtech", "uniswap-v3-flash", "reference-erc20",
+		"blocks", "api-functions", "call-traces", "read-contract", "erc721", "erc1155", "erc4626", "factory", "accounts", "proxy":
 		files, prefix = scaffolds, "scaffold/"+template
 		copyGoBootstrap = true
 	case "typescript":
@@ -118,6 +116,14 @@ func createProject(ctx context.Context, template, dir string, out io.Writer) err
 		}
 		return copyFile(files, src, relative)
 	})
+	if err == nil && template == "reference-erc20" {
+		// Both mainnet ERC-20 examples index the same contract, events and tables.
+		for _, name := range []string{"abi.json", "network.json", "schema.json"} {
+			if err = copyFile(scaffolds, "scaffold/api-functions/"+name, name); err != nil {
+				break
+			}
+		}
+	}
 	if err == nil && copyGoBootstrap {
 		for _, name := range []string{"main.go", "indexer.go", "network.go", "api.go", "go.mod.tmpl", "package.json", "_dot_gitignore"} {
 			if _, err := fs.Stat(files, path.Join(prefix, name+".tmpl")); err == nil {
@@ -128,7 +134,7 @@ func createProject(ctx context.Context, template, dir string, out io.Writer) err
 				relative = ".gitignore"
 			}
 			source, from := fs.FS(examples.ERC20), "erc20/"+name
-			if name == "api.go" && useGraphQL {
+			if name == "api.go" {
 				source, from = scaffolds, "scaffold/graphql.go.tmpl"
 			}
 			if err = copyFile(source, from, relative); err != nil {

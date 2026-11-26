@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
@@ -113,6 +114,7 @@ func TestGoFilterAndAPITemplates(t *testing.T) {
 		last            any
 	}{
 		{"filter", "0x54522dA62a15225C95b01bD61fF58b866C50471f", 14438081, nil},
+		{"reference-erc20", "0x32353A6C91143bfd6C7d363B546e62a9A2489A20", 13142655, float64(13150000)},
 		{"api-functions", "0x32353A6C91143bfd6C7d363B546e62a9A2489A20", 13142655, float64(13150000)},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -176,7 +178,7 @@ func TestGoFilterAndAPITemplates(t *testing.T) {
 					chain.send(watched, input, true) // past the inclusive end
 					// A block's callbacks can commit one at a time. Wait for its last event.
 					collection, want := "swapEvents", 1
-					if tc.name == "api-functions" {
+					if tc.name != "filter" {
 						collection, want = "approvalEvents", 2
 					}
 					for {
@@ -197,9 +199,12 @@ func TestGoFilterAndAPITemplates(t *testing.T) {
 						case <-time.After(80 * time.Millisecond):
 						}
 					}
-					if tc.name == "filter" {
+					switch tc.name {
+					case "filter":
 						checkSwapFilter(t, ctx, q, base, requests())
-					} else {
+					case "reference-erc20":
+						checkReferenceERC20(t, ctx, q, base)
+					case "api-functions":
 						checkTokenAPI(t, ctx, base)
 					}
 				})
@@ -311,5 +316,67 @@ func checkTokenAPI(t *testing.T, ctx context.Context, base string) {
 			}
 		}
 		seen[key] = true
+	}
+}
+
+func checkReferenceERC20(t *testing.T, ctx context.Context, q query.Client, base string) {
+	t.Helper()
+	const a, b, c = filterAPIAccountA, filterAPIAccountB, filterAPIAccountC
+	checkTemplateRows(t, ctx, q, "SELECT address,balance,is_owner FROM account ORDER BY address",
+		a+" 4000000000000000001 false", b+" 998999999999999999955 false", c+" 45 false")
+	checkTemplateRows(t, ctx, q, "SELECT owner,spender,amount FROM allowance", a+" "+c+" 17")
+	checkTemplateRows(t, ctx, q, "SELECT owner,spender,amount FROM approval_event WHERE timestamp=1700000002 ORDER BY id",
+		a+" "+c+" 13", a+" "+c+" 17")
+
+	type transfer struct {
+		ID, From, To           string
+		FromAccount, ToAccount struct{ Address string }
+	}
+	type page struct {
+		TotalCount int
+		Items      []transfer
+	}
+	type account struct {
+		Address                              string
+		TransferFromEvents, TransferToEvents page
+	}
+	graph := `{ accounts(orderBy:"address") { items { address
+		transferFromEvents { totalCount items { ...event } }
+		transferToEvents { totalCount items { ...event } }
+	} } }
+	fragment event on transferEvent { id from to fromAccount { address } toAccount { address } }`
+	for _, path := range []string{"/", "/graphql"} {
+		body := templateRequest(t, ctx, base, path, graph, 200)
+		var result struct {
+			Data   struct{ Accounts struct{ Items []account } }
+			Errors []json.RawMessage
+		}
+		want := map[string][2]int{a: {2, 2}, b: {9, 1}, c: {1, 9}}
+		if err := json.Unmarshal([]byte(body), &result); err != nil || len(result.Errors) > 0 || len(result.Data.Accounts.Items) != len(want) {
+			t.Fatal(path, body, err)
+		}
+		fromIDs, toIDs := map[string]bool{}, map[string]bool{}
+		for _, account := range result.Data.Accounts.Items {
+			counts, ok := want[account.Address]
+			if !ok || account.TransferFromEvents.TotalCount != counts[0] || account.TransferToEvents.TotalCount != counts[1] ||
+				len(account.TransferFromEvents.Items) != counts[0] || len(account.TransferToEvents.Items) != counts[1] {
+				t.Fatal(path, account)
+			}
+			for _, event := range account.TransferFromEvents.Items {
+				if event.ID == "" || fromIDs[event.ID] || event.From != account.Address || event.FromAccount.Address != event.From || event.ToAccount.Address != event.To {
+					t.Fatal(path, account.Address, event)
+				}
+				fromIDs[event.ID] = true
+			}
+			for _, event := range account.TransferToEvents.Items {
+				if event.ID == "" || toIDs[event.ID] || event.To != account.Address || event.FromAccount.Address != event.From || event.ToAccount.Address != event.To {
+					t.Fatal(path, account.Address, event)
+				}
+				toIDs[event.ID] = true
+			}
+		}
+		if len(fromIDs) != 12 || !maps.Equal(fromIDs, toIDs) {
+			t.Fatal(path, fromIDs, toIDs)
+		}
 	}
 }

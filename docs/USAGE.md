@@ -305,13 +305,14 @@ head "$model_dir/model.go"
 | `friendtech` | Base，从 2,430,440 开始 | 索引 Friendtech Shares V1 的买卖事件、持仓和双方的累计统计。 |
 | `uniswap-v3-flash` | Ethereum 主网，从 12,369,621 开始 | 从 Uniswap V3 工厂发现池子，按代币汇总闪电贷事件。 |
 | `filter` | Ethereum 主网，从 14,438,081 开始 | 只请求 PrimitiveManager 的 `Swap` 事件，在 `"swapEvent"` 中保存事件 ID、付款方和接收方。 |
+| `reference-erc20` | Ethereum 主网，13,142,655 至 13,150,000（含） | 按地址维护余额，保存全部转账和授权事件。GraphQL 可从账户查询收付款记录，也可从转账查到双方账户。 |
 | `api-functions` | Ethereum 主网，13,142,655 至 13,150,000（含） | 索引 ERC-20 转账和授权，提供计数、转账排名和 GraphQL 接口。 |
 | `read-contract` | Ethereum 主网，从 15,963,553 开始 | 监听 FileStore 的文件创建和删除事件。`file` 保存文件内容、大小、创建时间及可选的元数据。 |
 | `call-traces` | Ethereum 主网，从 19,800,000 开始 | 跟踪 Multicall3 的 `aggregate3()` 调用。`multicall` 按实际调用者保存累计 gas、输入计数和子调用成功或失败次数。 |
 | `erc721` | Arbitrum One，3,163,146 至 3,200,000 | `token` 保存每个 NFT 的当前所有人，`transfer_event` 保留转手记录。 |
 | `erc1155` | Ethereum 主网，从 12,129,118 开始 | `token_balance` 按持有人和代币 ID 记录余额。批量转账的每一项都有独立的 `transfer_event`。 |
 | `erc4626` | Ethereum 主网，15,774,471 至 18,712,028 | `account` 和 `allowance` 保存份额余额与授权金额，另有转账、授权、存入和取出事件表。 |
-| `factory` | Sepolia，从 4,121,269 开始 | 从 Llama 工厂创建事件中分别发现 Core 和 Policy 地址，`llama_event` 保存对应子合约的 `ActionCreated` 和 `Initialized` 事件。 |
+| `factory` | Sepolia，从 4,121,269 开始 | 从 Llama 工厂创建事件中分别发现 Core 和 Policy 地址。运行日志与 `llama_event` 记录对应子合约的 `ActionCreated` 和 `Initialized` 事件。 |
 | `accounts` | Ethereum 主网，首次启动时的链头（含） | 按收款地址汇总 BeaverBuilder 发出交易的 wei 总额和最近一次交易的 calldata。转入 BeaverBuilder 的原生币转账会写入应用日志。 |
 | `proxy` | Ethereum 主网，从 17,942,156 开始 | 索引 Astaria Router 代理地址上的 `Liquidation` 和 `OwnershipTransferred`，分别记录清算人和新所有人。 |
 
@@ -319,7 +320,16 @@ head "$model_dir/model.go"
 
 用 `ponder init --template blocks my-prices` 生成区块采样项目。节点须能在来源区间按区块高度执行历史 `eth_call`。回调从起始高度开始每隔 5 块调用一次 `latestAnswer()`，将带符号的结果除以 10⁸。启动后可执行 `SELECT timestamp, price FROM chainlink_price ORDER BY timestamp` 查看报价。使用自己的预言机时，修改 `network.json` 中的 `address`，或设置 `PONDER_LOCAL_CONTRACT`。[本地双后端验证](../parity/runs/native-block-templates/RESULT.md)
 
-生成项目后，`filter`、`multichain`、`friendtech`、`uniswap-v3-flash` 在 `/` 和 `/graphql` 提供 GraphQL，`api-functions` 在 `/graphql` 提供 GraphQL。其他 Go 模板默认通过 `/sql` 查询数据。需要 GraphQL 时，可在生成项目的 `api.go` 中挂载同一个 Go 处理器。[GraphQL 路由示例](../cmd/ponder/scaffold/graphql.go.tmpl)
+上表中除 `api-functions` 外，各模板在 `/` 和 `/graphql` 提供 GraphQL，在 `/sql` 提供 SQL。`api-functions` 在 `/graphql` 提供 GraphQL，并自定义 HTTP 查询。本地余额入门模板（`go`、`erc20`）默认提供 SQL。[GraphQL 路由实现](../cmd/ponder/scaffold/graphql.go.tmpl)
+
+用 `ponder init --template reference-erc20 my-token` 创建主网 ERC-20 项目。按下文设置 Go 模块依赖，将 `PONDER_RPC_URL_1` 指向可读取该区间历史日志的 Ethereum 节点，在项目目录运行 `ponder start`。首次见到付款地址时，回调将其余额记为零；首次见到收款地址时，记入本次收款金额。后续转账按收付方向更新。结果反映该区间内的活动。每次授权都会新增一条 `approval_event`，而 `allowance` 保留每对所有者与被授权地址的最新金额。
+
+```sh
+curl -fsS http://127.0.0.1:42069/graphql -H 'Content-Type: application/graphql' \
+  --data '{ accounts(limit: 5) { items { address balance transferFromEvents { totalCount } transferToEvents { totalCount } } } }'
+```
+
+也可以查询 `{ transferEvents(limit: 5) { items { amount fromAccount { address } toAccount { address } } } }`，或用 SQL 执行 `SELECT owner, spender, amount FROM allowance`。[ERC-20 双后端验证](../parity/runs/native-reference-erc20/RESULT.md)
 
 用 `ponder init --template friendtech my-shares` 新建 Friendtech 索引器，设置 `PONDER_RPC_URL_8453`。有效交易写入 `trade_event`，并更新按 subject 和 trader 组成的主键记录的 `share.amount`。份额为零的事件会被跳过。买入时 `trader_amount` 为 ETH 金额加协议费和 subject 费用，卖出时减去这两项费用。上游示例在 subject 或 trader 首次出现时创建零值汇总行，从该地址的后续交易起更新统计。查询逐笔交易可用 `SELECT trade_type, share_amount, trader_amount FROM trade_event ORDER BY id`。
 

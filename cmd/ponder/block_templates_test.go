@@ -93,9 +93,11 @@ func TestGoEmptyAndBlocksTemplates(t *testing.T) {
 					ns := templateDatabase(t, ctx, backend)
 					q, _ := startTemplate(t, ctx, root, ns)
 					if tc.template == "empty" {
+						checkTemplateGraphPage(t, ctx, q, "examples", "id name", 0)
 						checkTemplateRows(t, ctx, q, "SELECT id,name FROM example")
 						return
 					}
+					checkTemplateGraphPage(t, ctx, q, "chainlinkPrices", "timestamp price", 3)
 					checkTemplateRows(t, ctx, q, "SELECT timestamp,price FROM chainlink_price ORDER BY timestamp",
 						"1700000002 -0.25", "1700000007 0.375", "1700000012 1")
 				})

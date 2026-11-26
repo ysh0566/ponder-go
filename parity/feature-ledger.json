@@ -2869,6 +2869,70 @@
         "parity/runs/native-omnichain-sparse-contract-calls/RESULT.md"
       ],
       "remaining": "Independent-store Isolated scheduling and live Omnichain reorgs remain open. Uncached historical proofs require node access to hash-addressed call traces."
+    },
+    {
+      "id": "native-reference-erc20",
+      "status": "verified_subset",
+      "implementation_files": [
+        "cmd/ponder/main.go",
+        "cmd/ponder/scaffold.go",
+        "cmd/ponder/scaffold/graphql.go.tmpl",
+        "cmd/ponder/scaffold/reference-erc20/api.go.tmpl",
+        "cmd/ponder/scaffold/reference-erc20/handlers.go.tmpl",
+        "cmd/ponder/scaffold/api-functions/abi.json",
+        "cmd/ponder/scaffold/api-functions/network.json",
+        "cmd/ponder/scaffold/api-functions/schema.json",
+        "cmd/ponder/scaffold/accounts/schema.json",
+        "cmd/ponder/scaffold/blocks/schema.json",
+        "cmd/ponder/scaffold/call-traces/schema.json",
+        "cmd/ponder/scaffold/erc1155/schema.json",
+        "cmd/ponder/scaffold/erc4626/schema.json",
+        "cmd/ponder/scaffold/erc721/schema.json",
+        "cmd/ponder/scaffold/factory/schema.json",
+        "cmd/ponder/scaffold/proxy/schema.json",
+        "cmd/ponder/scaffold/read-contract/schema.json",
+        "cmd/ponder/scaffold/factory/handlers.go.tmpl"
+      ],
+      "native_test_files": [
+        "cmd/ponder/filter_api_templates_test.go",
+        "cmd/ponder/block_templates_test.go",
+        "cmd/ponder/contract_templates_test.go",
+        "cmd/ponder/token_templates_test.go",
+        "cmd/ponder/testdata/templates/FilterAndAPI.sol",
+        "cmd/ponder/testdata/templates/filter-api.hex"
+      ],
+      "upstream_sources": [
+        "examples/reference-erc20/abis/erc20ABI.ts",
+        "examples/reference-erc20/ponder.config.ts",
+        "examples/reference-erc20/ponder.schema.ts",
+        "examples/reference-erc20/src/index.ts",
+        "examples/reference-erc20/src/api/index.ts",
+        "examples/feature-accounts/ponder.schema.ts",
+        "examples/feature-accounts/src/api/index.ts",
+        "examples/feature-blocks/ponder.schema.ts",
+        "examples/feature-blocks/src/api/index.ts",
+        "examples/feature-call-traces/ponder.schema.ts",
+        "examples/feature-call-traces/src/api/index.ts",
+        "examples/reference-erc1155/ponder.schema.ts",
+        "examples/reference-erc1155/src/api/index.ts",
+        "examples/reference-erc4626/ponder.schema.ts",
+        "examples/reference-erc4626/src/api/index.ts",
+        "examples/reference-erc721/ponder.schema.ts",
+        "examples/reference-erc721/src/api/index.ts",
+        "examples/feature-factory/ponder.schema.ts",
+        "examples/feature-factory/src/api/index.ts",
+        "examples/feature-proxy/ponder.schema.ts",
+        "examples/feature-proxy/src/api/index.ts",
+        "examples/feature-read-contract/ponder.schema.ts",
+        "examples/feature-read-contract/src/api/index.ts",
+        "packages/create-ponder/templates/empty/ponder.schema.ts",
+        "packages/create-ponder/templates/empty/src/api/index.ts",
+        "examples/feature-factory/src/LlamaCore.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-reference-erc20/RESULT.md"
+      ],
+      "remaining": "Public-chain historical replay depends on access to the corresponding archive data."
     }
   ]
 }
