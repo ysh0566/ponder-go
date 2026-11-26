@@ -149,6 +149,10 @@ func logOnlyABICallbacks(filters map[uint64][]filter.Object, abis map[uint64][]a
 			return nil, ErrManagedLiveBatchConflict
 		}
 		for i, f := range group {
+			if f["type"] == "transaction" || f["type"] == "transfer" {
+				result[id] = append(result[id], filter.Object{"type": "account", "filter": f})
+				continue
+			}
 			raw, err := json.Marshal(abis[id][i])
 			if err != nil {
 				return nil, err
@@ -169,6 +173,17 @@ func logOnlyABICallbacks(filters map[uint64][]filter.Object, abis map[uint64][]a
 func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEventDataArgs, children logFactoryChildren, read func(context.Context, SourceEventDataArgs) (SourceEventData, error)) (string, error) {
 	callbacks := o.runtimeLogCallbacks[args.ChainID]
 	skipped := false
+	var accounts, logCallbacks []filter.Object
+	for _, cb := range callbacks {
+		if cb["type"] == "contract" {
+			logCallbacks = append(logCallbacks, cb)
+		}
+	}
+	for _, f := range args.Filters {
+		if f["type"] == "transaction" || f["type"] == "transfer" {
+			accounts = append(accounts, filter.Object{"type": "account", "filter": f})
+		}
+	}
 	for {
 		if err := ctx.Err(); err != nil {
 			return "", err
@@ -193,8 +208,13 @@ func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEven
 		if err != nil {
 			return "", err
 		}
+		if len(accounts) > 0 {
+			if err := verifyEmptyAccountPage(args.ChainID, accounts, rows, children); err != nil {
+				return "", err
+			}
+		}
 		if len(rows.Logs) != 0 {
-			if err := verifyABISkippedPage(args.ChainID, callbacks, rows, children); err != nil {
+			if err := verifyABISkippedPage(args.ChainID, logCallbacks, rows, children); err != nil {
 				return "", err
 			}
 			skipped = true
@@ -210,6 +230,36 @@ func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEven
 		}
 		args.FromBlock = rows.Cursor + 1
 	}
+}
+
+// Account pages may contain unrelated transactions or traces and reverted
+// transactions. Apply the same address, factory birth, receipt and value
+// filters as the historical coordinator before certifying an empty range.
+func verifyEmptyAccountPage(chainID uint64, callbacks []filter.Object, rows SourceEventData, children logFactoryChildren) error {
+	heights := make(map[uint64]bool, len(rows.Blocks))
+	for _, b := range rows.Blocks {
+		height, ok := logOnlyQuantity(b["number"])
+		if !ok {
+			return ErrManagedLiveBatchConflict
+		}
+		heights[height] = true
+	}
+	for _, group := range [][]filter.Object{rows.Transactions, rows.Traces} {
+		for _, row := range group {
+			n, ok := logOnlyQuantity(row["blockNumber"])
+			if !ok || !heights[n] {
+				return ErrManagedLiveBatchConflict
+			}
+		}
+	}
+	raw, err := events.BuildEvents(events.Batch{ChainID: chainID, EventCallbacks: callbacks, ChildAddresses: children, Blocks: rows.Blocks, Transactions: rows.Transactions, TransactionReceipts: rows.TransactionReceipts, Traces: rows.Traces})
+	if err != nil {
+		return err
+	}
+	if len(raw) > 0 {
+		return fmt.Errorf("unprocessed account event in scanned range: %w", ErrManagedLivePendingActions)
+	}
+	return nil
 }
 
 func verifyABISkippedPage(chainID uint64, callbacks []filter.Object, rows SourceEventData, children logFactoryChildren) error {

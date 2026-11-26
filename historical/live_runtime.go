@@ -59,7 +59,7 @@ type RuntimeResult struct {
 type RuntimeRunner struct {
 	domains           *store.ManagedLiveDomains
 	setup             bool
-	logOnlyChains     map[uint64]bool
+	sparseChains      map[uint64]bool
 	build             *config.ExecutableSourceIndexingBuild
 	session           *filter.Session
 	release           func()
@@ -143,7 +143,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	}
 	r := &RuntimeRunner{build: b, session: session, release: release, options: o, starts: map[uint64]uint64{}, latest: map[uint64]store.ManagedLiveHead{}, finalized: map[uint64]store.ManagedLiveHead{}, finalBlocks: make([]indexing.Object, len(b.Chains)), closeDone: make(chan struct{}), runDone: make(chan struct{})}
 	close(r.runDone)
-	r.logOnlyChains = make(map[uint64]bool)
+	r.sparseChains = make(map[uint64]bool)
 	for i, c := range b.Chains {
 		_, ok := c["cacheRpcRequests"].(bool)
 		if !ok {
@@ -171,7 +171,12 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 				return cb["type"] == "block"
 			})
 			if !hasBlock {
-				r.logOnlyChains[id] = true
+				for _, cb := range b.EventCallbacks[i] {
+					if cb["type"] == "account" && !runtimeRPCCacheEnabled(c) {
+						return nil, fmt.Errorf("omnichain account callbacks on chain %d require the RPC cache or a covering block callback", id)
+					}
+				}
+				r.sparseChains[id] = true
 			}
 		}
 		first := uint64(^uint64(0))
@@ -325,11 +330,11 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	for _, chain := range r.build.Chains {
 		id := runtimeChainID(chain)
 		cachePolicy[id] = runtimeRPCCacheEnabled(chain)
-		if r.logOnlyChains[id] && !cachePolicy[id] {
+		if r.sparseChains[id] && !cachePolicy[id] {
 			openLogScanRPC = r.openLogScanRPC
 		}
 	}
-	logFilters, logABIs := r.logOnlySources()
+	logFilters, logABIs := r.sparseSources()
 	r.domains, err = opener(ctx, storage, store.ManagedLiveRuntimeOptions{OpenLogScanRPC: openLogScanRPC, LogOnlyFilters: logFilters, LogOnlyEventABIs: logABIs, FactorySources: o.FactorySources, SourceCheckpoints: o.SourceCheckpoints, Setup: r.setup, CacheRPCRequests: cachePolicy, ManagedLiveOptions: store.ManagedLiveOptions{ManagedFiniteOptions: plan, OpenID: o.OpenID, FinalizedHeads: r.finalized}, StartBlocks: r.starts, Continuous: o.Live != nil, ObserveDomain: runtimeDomainObserver(r)})
 	if err != nil {
 		return nil, err

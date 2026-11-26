@@ -126,12 +126,12 @@ func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *inde
 		previous := control.Cursors[g.ChainID]
 		actions := rpc.NewActions(epoch.Requester(i))
 		priorCP, _ := checkpoint.Decode(previous.Checkpoint)
-		for n := range omnichainGroupHeights(next, end.BlockNumber, next == priorCP.BlockNumber, r.logOnlyChains[g.ChainID], events) {
+		for n := range omnichainGroupHeights(next, end.BlockNumber, next == priorCP.BlockNumber, r.sparseChains[g.ChainID], events) {
 			input := events[n]
-			if len(input) == 0 && !r.logOnlyChains[g.ChainID] {
+			if len(input) == 0 && !r.sparseChains[g.ChainID] {
 				return nil, nil, fmt.Errorf("omnichain block partition lacks its closing callback")
 			}
-			// Empty log-only heights still need a fresh lineage check. Their
+			// Empty event ranges still need a fresh lineage check. Their
 			// partitions have no callback inputs that require transaction bodies.
 			raw, err := actions.GetSourceBlockByNumber(ctx, source.Hex(n), len(input) != 0)
 			if err != nil {
@@ -149,7 +149,7 @@ func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *inde
 			}
 			var first store.ManagedLiveHead
 			parent := head.ParentHash
-			if r.logOnlyChains[g.ChainID] && n > prior.BlockNumber+1 {
+			if r.sparseChains[g.ChainID] && n > prior.BlockNumber+1 {
 				first, err = proofs[g.ChainID].head(prior.BlockNumber + 1)
 				if err != nil {
 					return nil, nil, err
@@ -213,10 +213,10 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 		cp, _ := checkpoint.Decode(head.Checkpoint)
 		proven, err := proofs[id].head(cp.BlockNumber)
 		if err != nil {
-			return out, fmt.Errorf("log-only scanned endpoint: %w", err)
+			return out, fmt.Errorf("scanned endpoint: %w", err)
 		}
 		if proven != head {
-			return out, fmt.Errorf("log-only scanned endpoint differs from finalized lineage")
+			return out, fmt.Errorf("scanned endpoint differs from finalized lineage")
 		}
 	}
 	chains, err := r.omnichainHistoricalSources(epoch.Context(), epoch)
@@ -271,7 +271,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 						return out, err
 					}
 				}
-				if r.logOnlyChains[block.id] {
+				if r.sparseChains[block.id] {
 					entry.LogEventCount = uint64(len(block.events))
 					if len(block.events) > 0 {
 						entry.LogFirstEvent = block.events[0]["checkpoint"].(string)
@@ -286,7 +286,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 				b.Blocks = append(b.Blocks, entry)
 			}
 			var acquired *store.ManagedLiveAcquisition
-			if len(r.logOnlyChains) != 0 {
+			if len(r.sparseChains) != 0 {
 				acquired, e = r.domains.RetainPagedLogOnlyBatch(ctx, b, readHeader)
 			} else {
 				acquired, e = r.domains.RetainBatch(ctx, b)
@@ -326,7 +326,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 	}
 	for _, chain := range r.build.Chains {
 		id := runtimeChainID(chain)
-		if !r.logOnlyChains[id] && !store.ManagedLiveReachedBlock(control, id, r.ends[id]) {
+		if !r.sparseChains[id] && !store.ManagedLiveReachedBlock(control, id, r.ends[id]) {
 			return out, fmt.Errorf("omnichain historical coordinator ended before complete final range")
 		}
 	}
@@ -334,7 +334,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 		return out, err
 	}
 	epoch = nil
-	if len(r.logOnlyChains) != 0 {
+	if len(r.sparseChains) != 0 {
 		err = r.domains.ActivatePagedLogOnlyRuntime(ctx, r.nextID("omni-activate"), control.Cursors, func(chain, number uint64) (store.ManagedLiveHead, error) { return proofs[chain].head(number) })
 	} else {
 		err = r.domains.ActivateRuntime(ctx, r.nextID("omni-activate"), control.Cursors)

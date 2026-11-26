@@ -401,7 +401,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			return result, e
 		}
 		high := final.BlockNumber
-		if !r.logOnlyChains[id] {
+		if !r.sparseChains[id] {
 			high = min(high, r.ends[id])
 		}
 		lineage, e := newRuntimeLineage(id, high, r.logScanLineageStart(id, n.BlockNumber))

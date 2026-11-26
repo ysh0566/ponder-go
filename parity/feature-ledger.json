@@ -2602,6 +2602,33 @@
         "parity/runs/native-account-proxy-templates/RESULT.md"
       ],
       "remaining": "Public archive history and the remaining menu templates have separate scope. These starter projects use one Store."
+    },
+    {
+      "id": "native-omnichain-sparse-accounts",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "historical/live_runtime_logonly.go",
+        "historical/live_runtime_omnichain_callbacks.go",
+        "store/managed_live_logonly.go",
+        "store/managed_live_logonly_scan.go",
+        "store/managed_live_runtime.go",
+        "checkpoint/checkpoint.go"
+      ],
+      "native_test_files": [
+        "historical/omnichain_account_scan_test.go",
+        "historical/live_runtime_omnichain_source_test.go",
+        "store/managed_live_account_scan_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts",
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/sync-store/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-sparse-accounts/RESULT.md"
+      ],
+      "remaining": "Uncached account callbacks and contract CALLs require a covering block callback. Independent Isolated ordering, live Omnichain and cross-chain reorg recovery remain open."
     }
   ]
 }

@@ -566,7 +566,7 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并为每个来源声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
 
-在双库 Omnichain 中，只监听合约日志的链可以直接订阅工厂子合约。处理账户交易、转账或合约 CALL 的链还需要注册一个逐块回调（`interval: 1`，`offset: 0`），其起止高度须覆盖工厂发现区间和子地址的事件区间。将下面的 `children` 赋给合约或账户声明的 `Address`，然后编译配置。示例用工厂的 `Created(address indexed child)` 事件发现子地址。
+在双库 Omnichain 中，只监听合约日志的链可以直接订阅工厂子合约。处理合约 CALL 的链，以及关闭缓存后处理账户交易或转账的链，需要注册一个逐块回调（`interval: 1`，`offset: 0`），其起止高度须覆盖工厂发现区间和子地址的事件区间。将下面的 `children` 赋给合约或账户声明的 `Address`，然后编译配置。示例用工厂的 `Created(address indexed child)` 事件发现子地址。
 
 ```go
 created := abi.Event{Type: "event", Name: "Created", Inputs: []abi.Parameter{
@@ -597,6 +597,17 @@ contracts := map[string]config.ContractDeclaration[[]abi.Event, string, any]{
 纯静态日志索引会用每个匹配回调的 ABI 检查日志。例如，合约发出的日志缺少 `uint256` 参数时，无法解码它的回调会跳过。即使一条链的剩余日志全部被跳过，只要运行器能核对所有来源已扫描到各自的结束高度，索引器仍可就绪。扫描结束高度和最后提交的业务检查点可能不同。用同一配置重启后，已提交的回调不会重复执行。[区间末尾与重启测试](../parity/runs/native-omnichain-abi-tail/RESULT.md)
 
 #### 在不同链上使用不同的回调
+
+双库 Omnichain 支持直接回填账户事件。给账户来源设置有限的 `startBlock` 和 `endBlock`，在对应链保留默认的 `cacheRpcRequests: true`，再注册需要的 Go 回调。例如，一个收款账户可注册下面两项。
+
+```go
+handlers := []config.SourceIndexingFunction{
+    {Name: "Wallet:transaction:to", Fn: recordIncomingTransaction},
+    {Name: "Wallet:transfer:to", Fn: recordIncomingTransfer},
+}
+```
+
+`recordIncomingTransaction` 和 `recordIncomingTransfer` 是项目自己的 `indexing.Handler`。每条链的结束区块都必须处于全局已最终确认的范围内。运行器会在同步库中核对区间覆盖、交易回执和转账 trace。最后一次回调可能早于扫描结束高度。重启时沿用原来的配置、存储和 `BuildID`，并使用新的 `OpenID`。[两条本地链的恢复验证](../parity/runs/native-omnichain-sparse-accounts/RESULT.md)
 
 例如，若要在 `mainnet` 同时索引账户交易和合约日志，在 `base` 只索引工厂子合约的日志，可将逐块来源（`interval: 1`、`offset: 0`）和账户来源的 `chain` 都设为 `mainnet`，在两条链上分别注册合约日志来源。逐块来源必须覆盖本链全部来源的起止高度。所有结束高度都须处于各链共同的最终确认范围内。
 
