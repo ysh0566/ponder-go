@@ -429,6 +429,8 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并让同一条链上的日志来源使用相同区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。该运行器要求启用 RPC 缓存，且各链的结束位置都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
 
+要同时处理账户和合约调用，请在每条链上注册一个 `interval: 1`、`offset: 0` 的区块来源及其 `名称:block` 回调。让这个来源的区间覆盖该链上的其他来源。静态账户可注册 `Wallet:transaction:from`、`Wallet:transaction:to`、`Wallet:transfer:from` 和 `Wallet:transfer:to`。对静态合约启用 `includeCallTraces`，再按 ABI 注册函数回调，例如 `Worker.record()`。需要读取回执时，在相应来源配置中启用 `includeTransactionReceipts`。同一笔有金额的合约调用可同时触发交易、函数和转账回调，最后执行该块的区块回调。[两条 Anvil 链上的运行与重启用例](../historical/omnichain_account_events_test.go)
+
 ### 为同一条链配置多个 RPC 节点
 
 在 Go 配置中将同一条链的 RPC 地址放入 `config.Chain.RPC`。下面的 `firstURL` 和 `secondURL` 指向链 ID 均为 101、创世区块相同的两个节点。
