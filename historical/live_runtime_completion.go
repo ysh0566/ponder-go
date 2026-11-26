@@ -9,6 +9,7 @@ import (
 	"github.com/ysh0566/ponder-go/indexing"
 	"github.com/ysh0566/ponder-go/rpc"
 	source "github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 	"iter"
 	"sync"
@@ -588,7 +589,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		}
 		cp, _ := checkpoint.Decode(block.head.Checkpoint)
 		final, _ := checkpoint.Decode(r.finalized[id].Checkpoint)
-		if block.history && cp.BlockNumber == min(final.BlockNumber, r.ends[id]) {
+		if r.build.Ordering != string(schema.Isolated) && block.history && cp.BlockNumber == min(final.BlockNumber, r.ends[id]) {
 			f := store.ManagedLiveFinalize{ID: r.nextID("finalize"), Generation: control.Generation, ExpectedLastOperation: control.LastOperation, ExpectedTail: control.Tail, ExpectedSafeOrdinal: control.SafeOrdinal, Finalized: map[uint64]store.ManagedLiveHead{id: block.head}}
 			a, e := r.domains.RetainFinalize(run, f)
 			if e != nil {

@@ -9,6 +9,7 @@ import (
 )
 
 const managedLiveRuntimeVersion = "managed-live-runtime-v5"
+const managedLiveIsolatedVersion = "managed-live-isolated-finalized-v1"
 const managedLiveOmnichainVersion = "managed-live-omnichain-finalized-v11"
 const managedLiveContinuousVersion = "managed-live-continuous-v6"
 const managedLiveUncachedVersion = "managed-live-uncached-v7"
@@ -16,7 +17,7 @@ const managedLiveFactoryVersion = "managed-live-factory-v10"
 const managedLiveSetupVersion = "managed-live-setup-v8"
 
 func isLiveRuntimeVersion(v string) bool {
-	return v == managedLiveRuntimeVersion || v == managedLiveOmnichainVersion || logOnlyVersion(v) || isContinuousRuntimeVersion(v)
+	return v == managedLiveRuntimeVersion || v == managedLiveIsolatedVersion || v == managedLiveOmnichainVersion || logOnlyVersion(v) || isContinuousRuntimeVersion(v)
 }
 
 func isContinuousRuntimeVersion(v string) bool {
@@ -54,17 +55,21 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 	if in.ObserveDomain != nil && !in.Continuous {
 		return nil, fmt.Errorf("domain observer requires continuous-v6")
 	}
-	if o.Ordering == schema.Omnichain {
+	if o.Ordering == schema.Omnichain || o.Ordering == schema.Isolated {
 		if in.Continuous || !in.SourceCheckpoints || in.ObserveDomain != nil {
-			return nil, fmt.Errorf("omnichain requires the bounded finalized runtime format")
+			return nil, fmt.Errorf("%s requires the bounded finalized runtime format", o.Ordering)
 		}
 		for _, chain := range in.Chains {
 			cp, err := checkpoint.Decode(in.FinalizedHeads[chain.ID].Checkpoint)
 			if err != nil || cp.ChainID != chain.ID || cp.BlockNumber < in.EndBlocks[chain.ID] {
-				return nil, fmt.Errorf("omnichain runtime end exceeds acquired finality")
+				return nil, fmt.Errorf("%s runtime end exceeds acquired finality", o.Ordering)
 			}
 		}
-		in.ManagedLiveOptions.runtimeOmnichain = true
+		in.runtimeOmnichain = o.Ordering == schema.Omnichain
+		in.runtimeIsolated = o.Ordering == schema.Isolated
+		if in.runtimeIsolated && in.Setup {
+			return nil, fmt.Errorf("bounded isolated setup requires per-chain bootstrap")
+		}
 	}
 	opts, err := normalizeManagedLiveOptions(o, in.ManagedLiveOptions)
 	if err != nil {
@@ -99,7 +104,7 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 	}
 	// Default-ordering deployments share authenticated recovery rules across
 	// fixed ranges and continuously polled execution.
-	opts.liveContinuous = !opts.runtimeOmnichain && (in.Continuous || opts.runtimeSetup || opts.runtimeCachePolicy != nil || opts.runtimeInitial)
+	opts.liveContinuous = !opts.atomicFinality() && (in.Continuous || opts.runtimeSetup || opts.runtimeCachePolicy != nil || opts.runtimeInitial)
 	if len(in.StartBlocks) != len(opts.Chains) {
 		return nil, fmt.Errorf("runtime requires exact start blocks")
 	}

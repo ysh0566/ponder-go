@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | 用 Go 配置链和来源，在回调里写业务表 | `runtime.NewIndexer` | 默认多链、Isolated、Omnichain 均可回填并持续追块。 |
 | 已用 Go 编译来源配置，并注册了 `runtime.Handler` | `runtime.NewIndexerFromSource` | 沿用编译配置选定的排序，一次启动所有注册了来源的链。 |
-| 分开管理业务数据和同步缓存，使用 `indexing.Handler` | `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` | 默认多链可持续运行。Omnichain 需要指定结束高度，且区间须已最终确认。Isolated 尚待实现。 |
+| 分开管理业务数据和同步缓存，使用 `indexing.Handler` | `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` | 默认多链可持续运行。Isolated 与 Omnichain 均支持已最终确认的有限区间。Isolated 按各链自身的最终确认高度准入，Omnichain 要求所有来源落在共同的最终确认范围内。 |
 
 如果各链分别维护自己的余额，使用 Isolated，在业务表主键中包含 `chain_id`。如果多条链共同维护一个按事件先后计算的值，使用 Omnichain，运行器会按跨链 checkpoint 排序回调。PostgreSQL 双库存储使用同一数据库内的两个命名空间，PGlite 使用两个数据目录。[独立多链示例](#从同一个-go-项目索引多条链) · [跨链排序示例](#按全局顺序索引多条链) · [双库存储](#独立存储的有限区间索引)
 
@@ -712,7 +712,7 @@ chain := config.ChainDeclaration[uint64, string]{
 
 在纯静态日志模式下，关闭缓存的链需要 RPC 端点能够持续提供所配置区间的历史日志和区块头。处理事件之间的空区间时，运行器会再次分页调用 `eth_getLogs`，并在发布就绪状态前按来源复查完整区间。关闭缓存可省去持久化原始日志和缓存区间的空间，代价是额外的 RPC 请求。复查失败时本次运行无法就绪，已提交的回调可以在重启后接续。[无缓存扫描与重启测试](../parity/runs/native-omnichain-uncached-logs/RESULT.md)
 
-两种已确认区间模式都可以在 `config.BuildSourceIndexing` 的处理函数列表中注册初始化回调。例如，配置中已有名为 `Token` 的合约，下面这项会在收到首个来源事件前运行。示例中的 `account` 表需要文本列 `id`（主键）和 `value`。
+默认多链与 Omnichain 的已确认区间都可以在 `config.BuildSourceIndexing` 的处理函数列表中注册初始化回调。例如，配置中已有名为 `Token` 的合约，下面这项会在收到首个来源事件前运行。示例中的 `account` 表需要文本列 `id`（主键）和 `value`。
 
 ```go
 functions = append(functions, config.SourceIndexingFunction{
@@ -733,6 +733,27 @@ functions = append(functions, config.SourceIndexingFunction{
 若索引进程在已确认区间的区块或静态日志回调中突然退出，用原来的业务库和同步库、同一份来源配置和相同的 `BuildID` 重新打开，并为这次打开分配新的 `OpenID`。运行器从已提交的跨链回调组继续。若进程在运行器进入就绪状态后退出，已经完成的回调不会再次执行。PostgreSQL 使用原来的数据库及命名空间，PGlite 使用原来的两个目录。[应用进程退出验证](../parity/runs/native-omnichain-app-recovery/RESULT.md)
 
 若数据库引擎在静态日志回调里退出，先关闭失败的运行器。PostgreSQL 使用原有数据卷重启服务。PGlite 重新打开原有业务和同步目录。沿用同一来源配置与 `BuildID`，用新的 `OpenID` 启动。已提交的跨链事件组会保留，中断的事务会回滚，其回调在恢复时重新执行。带逐块回调和纯日志这两种已确认区间模式都覆盖了这个场景。[引擎中断与恢复测试](../parity/runs/native-omnichain-engine-recovery/RESULT.md)
+
+### 双库 Isolated 按链回填
+
+需要将业务数据与同步缓存分开保存，并让各链独立维护记录时，在 Go 来源配置里将 `ordering` 设为 `string(schema.Isolated)`（配置值为 `experimental_isolated`）。为每个来源指定有限的结束高度。每张链上业务表都要把整数列 `chain_id`（Go 属性 `chainId`）放入主键。例如，两个网络可各自保存同一高度的记录。
+
+```go
+seen := schema.Table{
+    Name: "seen", PrimaryKey: []string{"chain_id", "height"},
+    Columns: []schema.Column{
+        {Name: "chain_id", Property: "chainId", Type: "integer", NotNull: true},
+        {Name: "height", Type: "bigint", NotNull: true},
+    },
+}
+opts.Historical.Owned.Storage.Schema = schema.Schema{Tables: []schema.Table{seen}}
+opts.Historical.Owned.Storage.Ordering = schema.Isolated
+opts.Live = nil
+```
+
+用 `config.BuildSourceIndexing` 注册 `indexing.Handler`，将编译结果赋给 `opts.Historical.Build`。准备好业务和同步存储、`Requesters`、`BuildID` 与 `OpenID` 后，用 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 打开并调用 `Run`。启动时需要连通所有参与链，各来源的结束区块必须已在本链最终确认。每条链可从区块 0 开始，无需对齐各链的区块高度或时间戳。
+
+回调通过 `a.Context.DB` 写入本链的 `chainId`。每个区块的业务变更与该链的安全进度一起提交。若回调失败，本次运行返回错误。关闭后沿用两个存储位置、配置和 `BuildID`，换一个新的 `OpenID` 即可继续。各链已成功提交的回调都会保留。需要逐链 `setup` 或持续追块时，见运行模式矩阵。[完整的双链 Go 示例和恢复断言](../historical/isolated_finalized_test.go) · [运行模式矩阵](RUNTIME_SUPPORT.md)
 
 ### 为同一条链配置多个 RPC 节点
 

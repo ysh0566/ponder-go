@@ -8,11 +8,11 @@ import (
 	"strings"
 )
 
-type omnichainPendingBatchKey struct{}
+type pendingFinalizedBatchKey struct{}
 
 // Only the native writer may audit its not-yet-committed intermediate batch.
 // Public reads and commit reconciliation always require the paired safe receipt.
-func validateOmnichainBatchSafes(d managedLiveDurable, pending string) error {
+func validateAtomicBatchSafes(d managedLiveDurable, pending string) error {
 	byID := map[string]managedLiveOperation{}
 	for _, op := range d.Operations {
 		byID[op.ID] = op
@@ -28,32 +28,37 @@ func validateOmnichainBatchSafes(d managedLiveDurable, pending string) error {
 		if len(b.Batch.Blocks) == 0 {
 			continue
 		}
-		safe, ok := byID[omnichainSafeID(op.ID)]
+		safe, ok := byID[atomicSafeID(d.Control.Version, op.ID)]
 		if !ok {
 			if pending == op.ID && d.Control.LastOperation == op.ID {
 				continue
 			}
-			return fmt.Errorf("omnichain batch has no atomic safe receipt")
+			return fmt.Errorf("finalized batch has no atomic safe receipt")
 		}
 		var e managedLiveFinalizeEvidence
 		if err := decodeLiveJSON(safe.Payload, &e); err != nil {
 			return err
 		}
-		heads := map[uint64]ManagedLiveHead{}
-		positions := map[uint64]string{}
-		for _, block := range b.Batch.Blocks {
-			cp, _ := checkpoint.Decode(block.Head.Checkpoint)
-			heads[cp.ChainID] = block.Head
-			positions[cp.ChainID] = block.Head.Checkpoint
-			if block.SourceCheckpoint != "" {
-				positions[cp.ChainID] = block.SourceCheckpoint
-			}
-		}
+		heads, positions := finalizedBatchPositions(b.Batch.Blocks)
 		if safe.Kind != "finalize" || safe.PreviousOperation != op.ID || safe.OwnerToken != op.OwnerToken || safe.Generation != op.Generation || e.Request.ID != safe.ID || e.Request.ExpectedLastOperation != op.ID || e.Request.Generation != op.Generation || managedHash(e.Request.Finalized) != managedHash(heads) || managedHash(e.Request.SourceCheckpoints) != managedHash(positions) {
-			return fmt.Errorf("omnichain atomic safe receipt differs from exact batch")
+			return fmt.Errorf("atomic safe receipt differs from exact batch")
 		}
 	}
 	return nil
+}
+
+func finalizedBatchPositions(blocks []ManagedLiveBlock) (map[uint64]ManagedLiveHead, map[uint64]string) {
+	heads := map[uint64]ManagedLiveHead{}
+	positions := map[uint64]string{}
+	for _, block := range blocks {
+		cp, _ := checkpoint.Decode(block.Head.Checkpoint)
+		heads[cp.ChainID] = block.Head
+		positions[cp.ChainID] = block.Head.Checkpoint
+		if block.SourceCheckpoint != "" {
+			positions[cp.ChainID] = block.SourceCheckpoint
+		}
+	}
+	return heads, positions
 }
 
 // Optional v11 wire fields are not silently accepted by an older receipt format,
@@ -92,6 +97,6 @@ func validateLegacyLiveExtensions(ops []managedLiveOperation) error {
 	}
 	return nil
 }
-func omnichainPendingContext(ctx context.Context, id string) context.Context {
-	return context.WithValue(ctx, omnichainPendingBatchKey{}, id)
+func pendingFinalizedBatchContext(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, pendingFinalizedBatchKey{}, id)
 }

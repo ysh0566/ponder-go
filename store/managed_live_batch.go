@@ -144,9 +144,9 @@ func (m *ManagedLive) readDurableState(ctx context.Context, q Querier, prior boo
 			return d, "", err
 		}
 	}
-	if m.opts.runtimeOmnichain {
-		pending, _ := ctx.Value(omnichainPendingBatchKey{}).(string)
-		if err := validateOmnichainBatchSafes(d, pending); err != nil {
+	if m.opts.atomicFinality() {
+		pending, _ := ctx.Value(pendingFinalizedBatchKey{}).(string)
+		if err := validateAtomicBatchSafes(d, pending); err != nil {
 			return d, "", err
 		}
 	} else if err := validateLegacyLiveExtensions(d.Operations); err != nil {
@@ -460,8 +460,8 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 	if err := tx.Exec(ctx, "UPDATE "+s.internal("_ponder_go_live_operations")+" SET after_hash=$1 WHERE id=$2", afterHash, batch.ID); err != nil {
 		return ManagedLiveBatchResult{}, err
 	}
-	if m.opts.runtimeOmnichain && len(segments) > 0 {
-		ctx = omnichainPendingContext(ctx, batch.ID)
+	if m.opts.atomicFinality() && len(segments) > 0 {
+		ctx = pendingFinalizedBatchContext(ctx, batch.ID)
 	}
 	if _, _, err := m.readDurable(ctx, tx); err != nil {
 		if m.opts.liveRuntime {
@@ -469,30 +469,21 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 		}
 		return ManagedLiveBatchResult{}, err
 	}
-	if m.opts.runtimeOmnichain && len(segments) > 0 {
+	if m.opts.atomicFinality() && len(segments) > 0 {
 		current, err := m.readControl(ctx, tx)
 		if err != nil {
 			return ManagedLiveBatchResult{}, err
 		}
-		heads := map[uint64]ManagedLiveHead{}
-		positions := map[uint64]string{}
-		for _, segment := range segments {
-			cp, _ := checkpoint.Decode(segment.Block.Head.Checkpoint)
-			heads[cp.ChainID] = segment.Block.Head
-			positions[cp.ChainID] = segment.Block.Head.Checkpoint
-			if segment.Block.SourceCheckpoint != "" {
-				positions[cp.ChainID] = segment.Block.SourceCheckpoint
-			}
-		}
-		safe := ManagedLiveFinalize{ID: omnichainSafeID(batch.ID), Generation: current.Generation, ExpectedLastOperation: current.LastOperation, ExpectedTail: current.Tail, ExpectedSafeOrdinal: current.SafeOrdinal, Finalized: heads, SourceCheckpoints: positions}
+		heads, positions := finalizedBatchPositions(batch.Blocks)
+		safe := ManagedLiveFinalize{ID: atomicSafeID(current.Version, batch.ID), Generation: current.Generation, ExpectedLastOperation: current.LastOperation, ExpectedTail: current.Tail, ExpectedSafeOrdinal: current.SafeOrdinal, Finalized: heads, SourceCheckpoints: positions}
 		safe, err = normalizeLiveFinalize(m.opts, safe)
 		if err != nil {
 			return ManagedLiveBatchResult{}, err
 		}
 		if _, err = m.applyFinalizeTransaction(ctx, tx, safe, m.finalizeHash(safe)); err != nil {
-			return ManagedLiveBatchResult{}, fmt.Errorf("omnichain atomic safe checkpoint: %w", err)
+			return ManagedLiveBatchResult{}, fmt.Errorf("atomic safe checkpoint: %w", err)
 		}
-		ctx = omnichainPendingContext(ctx, "")
+		ctx = pendingFinalizedBatchContext(ctx, "")
 		if _, _, err = m.readDurable(ctx, tx); err != nil {
 			return ManagedLiveBatchResult{}, err
 		}

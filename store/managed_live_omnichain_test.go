@@ -7,6 +7,13 @@ import (
 )
 
 func TestOmnichainAtomicSafeReceiptBinding(t *testing.T) {
+	for _, version := range []string{managedLiveOmnichainVersion, managedLiveIsolatedVersion} {
+		t.Run(version, func(t *testing.T) { testAtomicSafeReceipts(t, version) })
+	}
+}
+
+func testAtomicSafeReceipts(t *testing.T, version string) {
+	t.Helper()
 	head := ManagedLiveHead{Checkpoint: checkpoint.MustEncode(checkpoint.Block(100, 1, 1, true)), Hash: "0x" + "1111111111111111111111111111111111111111111111111111111111111111", ParentHash: "0x" + "0000000000000000000000000000000000000000000000000000000000000000"}
 	event := checkpoint.Block(100, 1, 1, true)
 	event.EventType = checkpoint.Blocks
@@ -15,12 +22,12 @@ func TestOmnichainAtomicSafeReceiptBinding(t *testing.T) {
 	b := ManagedLiveBatch{ID: "batch", Generation: 1, Blocks: []ManagedLiveBlock{{Head: head, InputDigest: "digest", SourceCheckpoint: position}}}
 	raw, _ := json.Marshal(managedLiveBatchEvidence{Version: managedLiveBatchVersion, Batch: b})
 	batch := managedLiveOperation{ID: b.ID, Kind: "batch", Generation: 1, OwnerToken: "owner", Payload: json.RawMessage(raw)}
-	request := ManagedLiveFinalize{ID: omnichainSafeID(b.ID), Generation: 1, ExpectedLastOperation: b.ID, Finalized: map[uint64]ManagedLiveHead{1: head}, SourceCheckpoints: map[uint64]string{1: position}}
+	request := ManagedLiveFinalize{ID: atomicSafeID(version, b.ID), Generation: 1, ExpectedLastOperation: b.ID, Finalized: map[uint64]ManagedLiveHead{1: head}, SourceCheckpoints: map[uint64]string{1: position}}
 	raw, _ = json.Marshal(managedLiveFinalizeEvidence{Version: managedLiveFinalizeVersion, Request: request})
 	safe := managedLiveOperation{ID: request.ID, Kind: "finalize", Generation: 1, OwnerToken: "owner", PreviousOperation: b.ID, Payload: json.RawMessage(raw)}
-	for _, name := range []string{"valid", "missing", "wrong-predecessor", "wrong-owner", "wrong-generation", "wrong-source-checkpoint", "pending-public", "pending-writer"} {
+	for _, name := range []string{"valid", "missing", "wrong-predecessor", "wrong-owner", "wrong-generation", "wrong-mode", "wrong-source-checkpoint", "pending-public", "pending-writer"} {
 		t.Run(name, func(t *testing.T) {
-			d := managedLiveDurable{Control: ManagedLiveControl{LastOperation: safe.ID}, Operations: []managedLiveOperation{batch, safe}}
+			d := managedLiveDurable{Control: ManagedLiveControl{Version: version, LastOperation: safe.ID}, Operations: []managedLiveOperation{batch, safe}}
 			pending := ""
 			switch name {
 			case "missing":
@@ -31,6 +38,12 @@ func TestOmnichainAtomicSafeReceiptBinding(t *testing.T) {
 				d.Operations[1].OwnerToken = "different"
 			case "wrong-generation":
 				d.Operations[1].Generation = 2
+			case "wrong-mode":
+				if version == managedLiveIsolatedVersion {
+					d.Operations[1].ID = atomicSafeID(managedLiveOmnichainVersion, b.ID)
+				} else {
+					d.Operations[1].ID = atomicSafeID(managedLiveIsolatedVersion, b.ID)
+				}
 			case "wrong-source-checkpoint":
 				r := request
 				r.SourceCheckpoints = map[uint64]string{1: head.Checkpoint}
@@ -43,7 +56,7 @@ func TestOmnichainAtomicSafeReceiptBinding(t *testing.T) {
 					pending = batch.ID
 				}
 			}
-			err := validateOmnichainBatchSafes(d, pending)
+			err := validateAtomicBatchSafes(d, pending)
 			wantOK := name == "valid" || name == "pending-writer"
 			if (err == nil) != wantOK {
 				t.Fatalf("binding%s err%v", name, err)

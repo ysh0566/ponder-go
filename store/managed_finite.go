@@ -94,14 +94,22 @@ type ManagedFinite struct {
 }
 
 func normalizeManagedOptions(o IndependentStorageOptions, m ManagedFiniteOptions) (ManagedFiniteOptions, error) {
+	return normalizeManagedOrdering(o, m, schema.Multichain)
+}
+
+func normalizeManagedOrdering(o IndependentStorageOptions, m ManagedFiniteOptions, ordering schema.Ordering) (ManagedFiniteOptions, error) {
 	if err := schema.ValidateNamespaces(o.BusinessNamespace, m.ViewsSchema); err != nil {
 		return ManagedFiniteOptions{}, err
 	}
 	if err := independentNames(o); err != nil {
 		return m, err
 	}
-	if o.Ordering != "" && o.Ordering != schema.Multichain {
-		return m, fmt.Errorf("managed finite requires multichain ordering")
+	actual := o.Ordering
+	if actual == "" {
+		actual = schema.Multichain
+	}
+	if actual != ordering {
+		return m, fmt.Errorf("managed finite requires %s ordering", ordering)
 	}
 	if m.BuildID == "" || m.PlanID == "" || len(m.Chains) == 0 || len(m.EndBlocks) != len(m.Chains) {
 		return m, fmt.Errorf("managed finite requires build, plan and exact chain endpoints")
