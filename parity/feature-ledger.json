@@ -983,7 +983,7 @@
         "parity/discovery-audit.json",
         "parity/runs/native-go-indexer-reaudit/RESULT.md"
       ],
-      "remaining": "Both pinned E2E declarations (erc20 and factory) have passing Go and upstream executions. The separate eight-application simulation suite still needs a Go harness, reference datasets and seeded comparisons."
+      "remaining": "Both pinned E2E declarations passed. The three-chain WETH historical simulation has a seeded account-table comparison. Its fault schedule and the other seven simulation applications remain open."
     },
     {
       "id": "strict-ts-source-compatibility",
@@ -3379,6 +3379,28 @@
         "parity/runs/native-omnichain-handoff/RESULT.md"
       ],
       "remaining": "The source stream runs in memory. Dual-store live Omnichain business writes, recovery checkpoints and coordinated rollback remain open."
+    },
+    {
+      "id": "native-seeded-multichain",
+      "status": "verified_subset",
+      "implementation_files": [
+        "parity/simulation/feature-multichain/config.json",
+        "parity/simulation/feature-multichain/capture.py",
+        "parity/simulation/feature-multichain/oracle.cjs"
+      ],
+      "native_test_files": [
+        "runtime/simulation_multichain_test.go"
+      ],
+      "upstream_sources": [
+        "simulation-test/apps/feature-multichain/ponder.config.ts",
+        "simulation-test/apps/feature-multichain/ponder.schema.ts",
+        "simulation-test/apps/feature-multichain/src/index.ts",
+        "simulation-test/src/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-seeded-multichain/RESULT.md"
+      ],
+      "remaining": "Full seeded fault and restart simulation, the other seven application table comparisons, and the separate rETH and Uniswap benchmarks."
     }
   ]
 }

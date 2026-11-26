@@ -1124,3 +1124,13 @@ PONDER_LOCAL_DATABASE_URL="$WRITER_URL" PONDER_DATABASE_MODE=existing \
 | 启动时要求设置 `PONDER_LOCAL_…` | 索引时需要 RPC URL 和合约地址。使用 PostgreSQL 时再提供数据库 URL；本地 PGlite 需要先安装其驱动。独立 `serve` 使用 PostgreSQL URL 和已有部署。 |
 | SQL 返回空数组 | 对照 `deploy.json` 里的 `deployedTo`、当前 Anvil 地址和 `/status`。确认索引已读到部署区块，且请求的是启动日志中的 HTTP 地址。 |
 | 打开已有命名空间失败 | 检查是否复用了不同 schema 定义、旧存储格式或由其他应用创建的命名空间。保留原库，在新的命名空间重新索引。 |
+
+## 复现三链 WETH 历史对账
+
+`feature-multichain` 模拟应用用地址作为 `account` 表的主键，同一地址在不同链上的 WETH 存款会累加。固定的三段历史数据随仓库提供。将 `PONDER_TEST_POSTGRES` 指向专用测试库，并按本指南配置 PGlite 后，在仓库根目录运行以下命令。Go 的回放使用本地归档，不需要公网 RPC。
+
+```sh
+go test -tags simulation -count=1 -timeout=1h -v -run '^TestSimulationFeatureMultichain$' ./runtime
+```
+
+测试在 PostgreSQL 和 PGlite 上分别创建业务表，检查三条链交付的事件数、全局顺序和全部地址的余额。参考表由固定上游版本的 WETH 回调生成。种子、归档来源、复算参考表和更新历史数据的命令见[验收记录](../parity/runs/native-seeded-multichain/RESULT.md)。
