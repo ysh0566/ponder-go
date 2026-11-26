@@ -81,6 +81,7 @@ type Client struct {
 	requests          atomic.Uint64
 	mu                sync.Mutex
 	nextTime          time.Time
+	custom            TransportFunc
 	sourcePool        *sourceEndpointPool
 	transport         *Client
 	actions           *Actions
@@ -97,6 +98,14 @@ type Client struct {
 	// FixedLogBlockRange keeps numeric range rejections in the source transport's
 	// retry policy when the chain has an explicit ethGetLogsBlockRange.
 	FixedLogBlockRange bool
+}
+
+// HasCustomTransport reports whether this client or its cache owner uses a Go transport.
+func (c *Client) HasCustomTransport() bool {
+	for c.transport != nil {
+		c = c.transport
+	}
+	return c.custom != nil
 }
 
 // TransportRequests counts outbound RPC attempts, including retries. Cache-scoped
@@ -205,7 +214,7 @@ func (c *Client) callWithAdmission(ctx context.Context, cached bool, method stri
 	for base.transport != nil {
 		base = base.transport
 	}
-	if len(base.URLs) == 0 {
+	if len(base.URLs) == 0 && base.custom == nil {
 		return fmt.Errorf("RPC endpoint is required")
 	}
 	key, _ := json.Marshal([]any{base.ChainID, method, params})
@@ -256,7 +265,7 @@ func (c *Client) callWithAdmission(ctx context.Context, cached bool, method stri
 			return json.Unmarshal(result, out)
 		}
 		last = e
-		if len(base.URLs) == 1 && errors.Is(e, ErrHTTPResponseTooLarge) {
+		if len(base.URLs) <= 1 && errors.Is(e, ErrHTTPResponseTooLarge) {
 			return e
 		}
 		var rpcError *Error
@@ -290,6 +299,36 @@ func waitForRetry(ctx context.Context, delay time.Duration) error {
 var ErrBlockNotFound = errors.New("RPC block not found")
 
 func (c *Client) attemptResult(ctx context.Context, attempt rpcAttempt, method string, params any, options RequestOptions) (json.RawMessage, error) {
+	var result json.RawMessage
+	var err error
+	if c.custom != nil {
+		call, cancel := context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
+		c.requests.Add(1)
+		result, err = c.custom(call, method, params)
+		if err != nil {
+			return nil, markTransport(ctx, err)
+		}
+		if err := call.Err(); err != nil {
+			return nil, markTransport(ctx, err)
+		}
+		if !json.Valid(result) {
+			return nil, errors.New("custom RPC transport returned invalid JSON")
+		}
+		result = bytes.TrimSpace(result)
+	} else {
+		result, err = c.wireResult(ctx, attempt, method, params)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if options.RetryNullBlockRequest && string(result) == "null" && (method == "eth_getBlockByNumber" || method == "eth_getBlockByHash") {
+		return nil, ErrBlockNotFound
+	}
+	return result, nil
+}
+
+func (c *Client) wireResult(ctx context.Context, attempt rpcAttempt, method string, params any) (json.RawMessage, error) {
 	request := map[string]any{"jsonrpc": "2.0", "id": attempt.id, "method": method, "params": params}
 	data, err := json.Marshal(request)
 	if err != nil {
@@ -314,8 +353,6 @@ func (c *Client) attemptResult(ctx context.Context, attempt rpcAttempt, method s
 		return nil, response.Error
 	case len(response.Result) == 0:
 		return nil, fmt.Errorf("RPC response missing result")
-	case options.RetryNullBlockRequest && string(response.Result) == "null" && (method == "eth_getBlockByNumber" || method == "eth_getBlockByHash"):
-		return nil, ErrBlockNotFound
 	default:
 		return response.Result, nil
 	}

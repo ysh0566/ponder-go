@@ -60,7 +60,7 @@ func (c *Client) beginCall(ctx context.Context, method string, params, out any, 
 	for base.transport != nil {
 		base = base.transport
 	}
-	if len(base.URLs) == 0 {
+	if len(base.URLs) == 0 && base.custom == nil {
 		result <- fmt.Errorf("RPC endpoint is required")
 		close(result)
 		return result

@@ -33,7 +33,9 @@ M28 的完整模块验收通过：Go/race各1852、0失败/skip，PG198/PGlite19
 
 已保留新增测试的错误记录：native-runtime-race-01误用旧进度API，编译失败；live-race-01在结果收集器无锁读取时触发race，原版39断言和实际值比较虽通过，整轮仍判失败。修复收集同步后的live-race-02通过。没有更改原版输入、setup、断言或skip。
 
-当前边界仍包括9项原版类型义务、原版skip、完整静态DSL/字面量约束、transport函数适配、完整RPC订阅与自适应策略、全部事件/context/include公开形状、负数区块/interval到现有无符号调度器的支持、完整历史planner和多链调度。JSON动态适配器不是完整TypeScript类型等价证明。其余查询/API/CLI/dev/templates/SDK/simulation范围继续保留。
+Go 索引器可按链名向来源构建器传入 RPC 函数。[自定义传输](USAGE.md#为单条链配置-go-rpc-传输)
+
+当前边界仍包括9项原版类型义务、原版skip、完整静态DSL/字面量约束、完整RPC订阅与自适应策略、全部事件/context/include公开形状、负数区块/interval到现有无符号调度器的支持、完整历史planner和多链调度。JSON动态适配器不是完整TypeScript类型等价证明。其余查询/API/CLI/dev/templates/SDK/simulation范围继续保留。
 
 完整首轮在发现Hyperliquid对象身份断言缺口后主动停止，退出143；已完成1473个native叶用例、0失败/skip，normal未完整结束且race未启动。快照full-01-evidence保留原日志、原native测试和输入指纹；补上身份断言后须完整重跑，不能把该部分执行当作验收通过。
 

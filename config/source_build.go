@@ -1,8 +1,5 @@
 package config
 
-// Future source-shaped builder draft only. No public/static parity claim, no
-// runtime integration or test execution yet. Real chain catalog and live bridge
-// are required before these descriptors can become accepted implementation.
 import (
 	"fmt"
 	"math"
@@ -21,7 +18,8 @@ type sourceBuilder struct {
 	// Catalog must be generated from fixed source Object.values(viemChains), first
 	// matching id, with the source's explicit Hyperliquid999 override and canonical
 	// shared object identity. Source metadata/raw ABI must retain original fields.
-	Catalog map[string]*sourceObject
+	Catalog    map[string]*sourceObject
+	transports map[string]rpc.TransportFunc
 }
 
 func sourceRecord(pairs ...any) *sourceObject {
@@ -48,13 +46,16 @@ func sourceObjects(value any) (*sourceObject, error) {
 	}
 	return object, nil
 }
-func sourceStrings(value any) ([]string, error) {
+func sourceURLs(value any) ([]string, error) {
+	if _, ok := value.(rpc.TransportFunc); ok {
+		return nil, nil
+	}
 	if text, ok := value.(string); ok {
 		return []string{text}, nil
 	}
 	values, ok := value.([]any)
 	if !ok {
-		return nil, fmt.Errorf("native transport adaptation is not implemented")
+		return nil, fmt.Errorf("RPC configuration requires a URL or an array of URLs")
 	}
 	result := make([]string, len(values))
 	for i, value := range values {
@@ -83,6 +84,14 @@ func (builder *sourceBuilder) buildConfig(config *sourceObject, maxConcurrency i
 	if err != nil {
 		return nil, err
 	}
+	for name, transport := range builder.transports {
+		if _, exists := chains.values[name]; !exists {
+			return nil, fmt.Errorf("RPC transport supplied for unknown chain %q", name)
+		}
+		if transport == nil {
+			return nil, fmt.Errorf("nil RPC transport for chain %q", name)
+		}
+	}
 	result := &sourceConfigBuild{Chains: []*sourceObject{}, RPCs: []*rpc.Client{}, Logs: []*sourceObject{}}
 	for _, name := range chains.entries() {
 		raw, err := sourceObjects(chains.get(name))
@@ -96,18 +105,20 @@ func (builder *sourceBuilder) buildConfig(config *sourceObject, maxConcurrency i
 		}
 		matched := builder.Catalog[sourceString(id)]
 		urls := raw.get("rpc")
-		if filter.IsUndefined(urls) || urls == "" {
+		if custom := builder.transports[name]; custom != nil {
+			urls = custom
+		} else if filter.IsUndefined(urls) || urls == "" {
 			if matched == nil {
 				return nil, fmt.Errorf("Chain %q with id %s has no RPC defined and no default RPC URL was found in 'viem/chains'.", name, sourceString(id))
 			}
 			urls = sourceDefaultURLs(matched, "http")
 			raw.set("rpc", urls) // The original buildConfig intentionally mutates input.
 		}
-		endpoints, err := sourceStrings(urls)
+		endpoints, err := sourceURLs(urls)
 		if err != nil {
 			return nil, err
 		}
-		if len(endpoints) == 0 {
+		if len(endpoints) == 0 && builder.transports[name] == nil {
 			return nil, fmt.Errorf("Chain %q with id %s has no RPC URLs.", name, sourceString(id))
 		}
 		if matched != nil {
@@ -154,22 +165,7 @@ func (builder *sourceBuilder) buildConfig(config *sourceObject, maxConcurrency i
 	// Source currently creates all RPCs after validating every chain. Preserve
 	// error ordering. Native request slots are shared by cache-scoped clients.
 	for _, chain := range result.Chains {
-		urls, err := sourceStrings(chain.get("rpc"))
-		if err != nil {
-			return nil, err
-		}
-		for _, endpoint := range urls {
-			parsed, err := url.Parse(endpoint)
-			if err != nil {
-				return nil, err
-			}
-			switch parsed.Scheme {
-			case "http", "https", "ws", "wss":
-			default:
-				return nil, fmt.Errorf("Unsupported RPC URL protocol: %s:", parsed.Scheme)
-			}
-		}
-		client, err := rpc.NewSourceClient(maxConcurrency/len(result.Chains), urls...)
+		client, err := buildSourceRPC(chain.get("rpc"), maxConcurrency/len(result.Chains))
 		if err != nil {
 			return nil, err
 		}
@@ -180,4 +176,26 @@ func (builder *sourceBuilder) buildConfig(config *sourceObject, maxConcurrency i
 		result.RPCs = append(result.RPCs, client)
 	}
 	return result, nil
+}
+
+func buildSourceRPC(value any, concurrency int) (*rpc.Client, error) {
+	if custom, ok := value.(rpc.TransportFunc); ok {
+		return rpc.NewSourceTransportClient(concurrency, custom)
+	}
+	urls, err := sourceURLs(value)
+	if err != nil {
+		return nil, err
+	}
+	for _, endpoint := range urls {
+		parsed, err := url.Parse(endpoint)
+		if err != nil {
+			return nil, err
+		}
+		switch parsed.Scheme {
+		case "http", "https", "ws", "wss":
+		default:
+			return nil, fmt.Errorf("Unsupported RPC URL protocol: %s:", parsed.Scheme)
+		}
+	}
+	return rpc.NewSourceClient(concurrency, urls...)
 }
