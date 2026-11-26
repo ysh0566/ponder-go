@@ -1173,6 +1173,8 @@ PONDER_LOCAL_DATABASE_URL="$WRITER_URL" PONDER_DATABASE_MODE=existing \
 
 双库 Omnichain 完成已确认区块的回填后，运行器会在业务库的同一笔事务里建立查询索引并记录就绪状态。如果业务库在提交前停止，两条链已提交的数据和检查点仍然保留。若仅 PGlite 同步库停止，业务库可能已经提交就绪记录，但运行器的 `Ready()` 会返回 `false`。恢复两个存储后，保留原部署配置并使用新的 `OpenID` 重开。等新运行器的 `Ready()` 返回 `true` 后再对外报告就绪。[就绪事务中断实测](../parity/runs/native-omnichain-activation-engine/RESULT.md)
 
+仅监听日志时，最后一条日志和扫描终点可能相隔很多块。就绪事务会把扫描过的区块头分页、扫描终点和就绪记录一起写入业务库。业务库在写入第一页后或在提交前停止时，重启会从已提交的事件检查点复核剩余区间，再发布就绪状态。应用应使用运行器的 `Ready()` 判断能否提供服务。若仅 PGlite 同步库停止，即使业务库已经保存完整分页，也需恢复两个库才能就绪。[两条链的分页恢复实测](../parity/runs/native-omnichain-scan-activation/RESULT.md)
+
 尚未最终确认的区块可能再次触发回调。需要随重组撤销的业务状态应通过回调的数据库事务写入。重复投递到外部系统的处理由应用负责。
 
 ## 常见问题
