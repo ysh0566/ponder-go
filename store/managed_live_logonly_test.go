@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ysh0566/ponder-go/abi"
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/filter"
 )
@@ -39,7 +40,7 @@ func TestLogOnlyEmptyTailPagination(t *testing.T) {
 			if name == "cancelled" {
 				cancel()
 			}
-			err := logOnlyEmptyTail(ctx, SourceEventDataArgs{FromBlock: 1, ToBlock: 3, Limit: 1}, func(_ context.Context, a SourceEventDataArgs) (SourceEventData, error) {
+			_, err := (ManagedLiveOptions{}).logOnlyScanHash(ctx, SourceEventDataArgs{FromBlock: 1, ToBlock: 3, Limit: 1}, func(_ context.Context, a SourceEventDataArgs) (SourceEventData, error) {
 				calls = append(calls, a.FromBlock)
 				r := SourceEventData{Cursor: a.FromBlock}
 				switch name {
@@ -70,6 +71,75 @@ func TestLogOnlyEmptyTailPagination(t *testing.T) {
 			}
 			if name == "cancelled" && len(calls) != 0 {
 				t.Fatal("query admitted after cancellation")
+			}
+		})
+	}
+}
+
+func TestLogOnlyScanDecodedCoverage(t *testing.T) {
+	item := abi.Event{Name: "Value", Type: "event", Inputs: []abi.Parameter{{Name: "n", Type: "uint256"}}}
+	selector := abi.EventSelector(item)
+	f := filter.Object{"type": "log", "chainId": 1, "fromBlock": 1, "toBlock": 3, "topic0": selector}
+	filters := map[uint64][]filter.Object{1: {f, f}}
+	indexed := item
+	indexed.Inputs = []abi.Parameter{{Name: "n", Type: "uint256", Indexed: true}}
+	callbacks, err := logOnlyABICallbacks(filters, map[uint64][]any{1: {item, indexed}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	opts := ManagedLiveOptions{runtimeLogFilters: filters, runtimeLogCallbacks: callbacks}
+	t.Run("incomplete source rows", func(t *testing.T) {
+		log := filter.Object{"blockNumber": 2, "transactionIndex": 0, "logIndex": 1, "topics": []any{selector}, "data": "0x01"}
+		rows := SourceEventData{Blocks: []filter.Object{{"number": 3, "timestamp": 12}}, Logs: []filter.Object{log}}
+		if err := verifyABISkippedPage(1, callbacks[1], rows); !errors.Is(err, ErrManagedLiveBatchConflict) {
+			t.Fatalf("certified log under later header: %v", err)
+		}
+		rows.Blocks[0]["number"] = 2
+		delete(log, "data")
+		if err := verifyABISkippedPage(1, callbacks[1], rows); !errors.Is(err, ErrManagedLiveBatchConflict) {
+			t.Fatalf("certified log with missing data: %v", err)
+		}
+	})
+	word := "0x" + strings.Repeat("0", 63) + "1"
+	for _, tc := range []struct {
+		name    string
+		data    string
+		topic   string
+		pending bool
+	}{
+		{"both-skipped", "0x01", "0x02", false},
+		{"first-decodes", word, "0x02", true},
+		{"second-decodes", "0x01", word, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var pages int
+			digest, err := opts.logOnlyScanHash(context.Background(), SourceEventDataArgs{ChainID: 1, Filters: filters[1], FromBlock: 1, ToBlock: 3, Limit: 1}, func(_ context.Context, a SourceEventDataArgs) (SourceEventData, error) {
+				pages++
+				rows := SourceEventData{Cursor: a.FromBlock}
+				if a.FromBlock != 2 {
+					return rows, nil
+				}
+				rows.Blocks = []filter.Object{{"number": 2, "timestamp": 11}}
+				rows.Logs = []filter.Object{{"blockNumber": 2, "transactionIndex": 0, "logIndex": 1, "topics": []any{selector, tc.topic}, "data": tc.data}}
+				return rows, nil
+			})
+			if tc.pending {
+				if !errors.Is(err, ErrManagedLivePendingActions) || digest != "" || pages != 2 {
+					t.Fatalf("unprocessed callback: pages=%d digest=%s err=%v", pages, digest, err)
+				}
+				return
+			}
+			if err != nil || pages != 3 || digest == managedHash(filters[1]) || !opts.validLogScanHash(1, digest) {
+				t.Fatalf("skipped range: pages=%d digest=%s err=%v", pages, digest, err)
+			}
+			changed, err := logOnlyABICallbacks(filters, map[uint64][]any{1: {item, item}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			other := opts
+			other.runtimeLogCallbacks = changed
+			if other.validLogScanHash(1, digest) {
+				t.Fatal("skipped-log proof accepted after ABI change")
 			}
 		})
 	}

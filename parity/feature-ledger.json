@@ -2322,6 +2322,30 @@
         "parity/runs/native-omnichain-cache-policy/RESULT.md"
       ],
       "remaining": "Per-chain cache selection covers bounded, globally finalized ranges with a closing block callback on every chain. The log-only runner requires the persisted interval and raw log evidence for its scan receipts."
+    },
+    {
+      "id": "native-omnichain-abi-tail",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime_logonly.go",
+        "store/managed_live_logonly_scan.go",
+        "store/managed_live_gap.go",
+        "events/contract.go"
+      ],
+      "native_test_files": [
+        "historical/live_runtime_omnichain_logonly_test.go",
+        "store/managed_live_logonly_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts",
+        "packages/core/src/runtime/events.test.ts",
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/omnichain.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-abi-tail/RESULT.md"
+      ],
+      "remaining": "Uniform static-log-only ranges still require enabled caching, global finality, and a single range per chain. Mixed closing-block and log-only chains, factory sources and live reorgs remain open."
     }
   ]
 }

@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -46,8 +48,69 @@ func omniLogOnlyRangeBuild(t *testing.T, g omniLogsGolden, p *finiteRPC, handler
 	t.Helper()
 	return omniLogsBuildRange(t, g, p, handlers, 1, end, false)
 }
+
+// Add matching, malformed Value(uint256) logs to ranges whose pinned
+// snapshots contain no callbacks. The ABI decoder must omit only these logs.
+func abiSkippedLogOnlyCases(t *testing.T) []omniLogOnlyCase {
+	t.Helper()
+	cases := loadOmniLogOnlyGolden(t)
+	var result []omniLogOnlyCase
+	full := loadOmniLogsGolden(t)
+	for _, fixture := range cases {
+		if fixture.Name != "all_empty" && fixture.Name != "trailing_empty" && fixture.Name != "empty_chain_failure" && fixture.Name != "small" {
+			continue
+		}
+		for i := range fixture.Data.Chains {
+			chain := &fixture.Data.Chains[i]
+			included := make(map[any]bool)
+			for _, log := range chain.Logs {
+				included[log["blockNumber"]] = true
+			}
+			for _, original := range full.Chains[i].Logs {
+				if included[original["blockNumber"]] {
+					continue
+				}
+				log := maps.Clone(original)
+				height, err := uintQuantity(log["blockNumber"])
+				if err != nil {
+					t.Fatal(err)
+				}
+				block := chain.Blocks[height]
+				tx := block["transactions"].([]any)[0].(map[string]any)
+				log["blockHash"], log["transactionHash"], log["data"] = block["hash"], tx["hash"], "0x01"
+				chain.Logs = append(chain.Logs, log)
+			}
+			if fixture.Name == "small" {
+				// All valid callbacks remain at heights 1 and 3.
+				block := chain.Blocks[2]
+				log := maps.Clone(chain.Logs[0])
+				tx := block["transactions"].([]any)[0].(map[string]any)
+				log["blockNumber"], log["blockHash"], log["transactionHash"], log["data"] = block["number"], block["hash"], tx["hash"], "0x01"
+				chain.Logs = slices.Insert(chain.Logs, 4, log)
+			}
+		}
+		if fixture.Name == "trailing_empty" {
+			// With query size 6, the pinned source confirms block 1 when its
+			// final SQL page contains four matching, undecodable logs.
+			for _, snap := range fixture.Data.Cases[0].Snapshots {
+				for i := range snap.Checkpoints {
+					position := &snap.Checkpoints[i]
+					head, err := runtimeHead(position.ID, fixture.Data.Chains[i].Blocks[1])
+					if err != nil {
+						t.Fatal(err)
+					}
+					position.Safe, position.Latest, position.Finalized = head.Checkpoint, head.Checkpoint, head.Checkpoint
+				}
+			}
+		}
+		fixture.Name = "abi_skip_" + fixture.Name
+		result = append(result, fixture)
+	}
+	return result
+}
+
 func TestRuntimeOmnichainLogOnlySource(t *testing.T) {
-	fixtures := loadOmniLogOnlyGolden(t)
+	fixtures := append(loadOmniLogOnlyGolden(t), abiSkippedLogOnlyCases(t)...)
 	for _, backend := range []string{"postgres", "pglite"} {
 		t.Run(backend, func(t *testing.T) {
 			for _, fixture := range fixtures {
