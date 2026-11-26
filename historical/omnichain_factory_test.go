@@ -298,7 +298,7 @@ func testOmnichainFactory(t *testing.T, logChains map[uint64]bool) {
 }
 
 func TestRuntimeOmnichainFactoryPreflight(t *testing.T) {
-	for _, mode := range []string{"log-only-missing-opt-in", "missing-opt-in", "discovery-outside-closing-range"} {
+	for _, mode := range []string{"log-only-missing-opt-in", "missing-opt-in", "unbounded-discovery"} {
 		t.Run(mode, func(t *testing.T) {
 			p := newContinuousRPC(t, 5)
 			nodes := map[uint64]omniFactoryNode{101: {url: p.p.server.URL + "/1"}, 202: {url: p.p.server.URL + "/2"}}
@@ -313,17 +313,17 @@ func TestRuntimeOmnichainFactoryPreflight(t *testing.T) {
 					build.Executable().EventCallbacks[i] = slices.DeleteFunc(slices.Clone(group), func(cb indexing.Object) bool {
 						return cb["filter"].(map[string]any)["type"] != "log"
 					})
-				case "discovery-outside-closing-range":
+				case "unbounded-discovery":
 					for _, cb := range group {
 						f := cb["filter"].(map[string]any)
 						if f["type"] == "log" {
-							f["address"].(map[string]any)["toBlock"] = uint64(5)
+							delete(f["address"].(map[string]any), "toBlock")
 						}
 					}
-					expected = "must cover every event callback range"
+					expected = "requires finite event ranges"
 				}
 			}
-			opts := RuntimeOptions{Historical: Options{Build: build}, FactorySources: mode == "discovery-outside-closing-range", SourceCheckpoints: true, OpenID: "guard", BuildID: "guard"}
+			opts := RuntimeOptions{Historical: Options{Build: build}, FactorySources: mode == "unbounded-discovery", SourceCheckpoints: true, OpenID: "guard", BuildID: "guard"}
 			opts.Requesters = func(context.Context, uint64) ([]rpc.Requester, error) {
 				t.Fatal("preflight opened RPC")
 				return nil, nil

@@ -37,6 +37,9 @@ func validateGapScans(o ManagedLiveOptions, b ManagedLiveBatch, scans map[int]ma
 		if err != nil || o.runtimeLogFilters[id] == nil || !ok || !o.validLogScanHash(id, scan.FiltersHash) {
 			return ErrManagedLiveBatchConflict
 		}
+		if err := checkEmptyBlockSchedules(o.runtimeLogFilters[id], from, to); err != nil {
+			return err
+		}
 		if err := validateLogCoverage(o.runtimeLogFilters[id], scan.Coverage, from, to); err != nil {
 			return err
 		}

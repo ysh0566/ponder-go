@@ -50,12 +50,12 @@ func TestRuntimeOmnichainStaticLogsCapabilities(t *testing.T) {
 		{name: "oversized_query", query: 12001},
 		{name: "multichain_query", query: 6, change: func(b *config.ExecutableSourceIndexingBuild) { b.Ordering = "multichain" }},
 		{name: "factory_option", factory: true},
-		{name: "block_interval", change: blockChange("interval", uint64(2))},
+		{name: "block_interval", valid: true, change: blockChange("interval", uint64(2))},
 		{name: "block_offset", change: blockChange("offset", uint64(1))},
-		{name: "short_closing_range", change: blockChange("toBlock", uint64(2))},
-		{name: "late_closing_start", change: blockChange("fromBlock", uint64(2))},
-		{name: "log_before_closing_start", change: logChange("fromBlock", uint64(0))},
-		{name: "log_after_closing_end", change: logChange("toBlock", uint64(4))},
+		{name: "short_closing_range", valid: true, change: blockChange("toBlock", uint64(2))},
+		{name: "late_closing_start", valid: true, change: blockChange("fromBlock", uint64(2))},
+		{name: "log_before_closing_start", valid: true, change: logChange("fromBlock", uint64(0))},
+		{name: "log_after_closing_end", valid: true, change: logChange("toBlock", uint64(4))},
 		{name: "trace_without_call_type", change: logChange("type", "trace")},
 		{name: "transaction_without_account", change: logChange("type", "transaction")},
 		{name: "transfer_without_account", change: logChange("type", "transfer")},
@@ -68,7 +68,7 @@ func TestRuntimeOmnichainStaticLogsCapabilities(t *testing.T) {
 			}
 			b.EventCallbacks[0] = kept
 		}},
-		{name: "multiple_closing_callbacks", change: func(b *config.ExecutableSourceIndexingBuild) {
+		{name: "duplicate_block_source", change: func(b *config.ExecutableSourceIndexingBuild) {
 			for _, cb := range b.EventCallbacks[0] {
 				if cb["type"] == "block" {
 					b.EventCallbacks[0] = append(b.EventCallbacks[0], cb)

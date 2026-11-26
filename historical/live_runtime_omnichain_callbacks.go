@@ -9,67 +9,61 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 )
 
-// A closing block callback authenticates the whole block, including overlapping
-// callbacks for transactions, logs and traces on the same SQL page.
-func validateOmnichainCallbacks(callbacks []indexing.Object) error {
+// A single covering, every-block callback can use dense block receipts. Other
+// layouts prove their empty heights and commit only actual callback positions.
+func omnichainDenseCallbacks(callbacks []indexing.Object) (bool, error) {
+	if len(callbacks) == 0 {
+		return false, fmt.Errorf("omnichain requires event callbacks")
+	}
+	blockSources := map[string]bool{}
 	var closing filter.Object
-	for _, cb := range callbacks {
+	var first, last uint64
+	for i, cb := range callbacks {
 		f, ok := cb["filter"].(map[string]any)
 		if !ok {
-			return fmt.Errorf("omnichain callback filter missing")
+			return false, fmt.Errorf("omnichain callback filter missing")
 		}
+		from, fe := uintQuantity(filter.FilterFromBlock(f))
+		to, te := uintQuantity(filter.FilterToBlock(f))
+		if fe != nil || te != nil || to < from {
+			return false, fmt.Errorf("omnichain requires finite event ranges with startBlock <= endBlock")
+		}
+		if i == 0 || from < first {
+			first = from
+		}
+		last = max(last, to)
 		switch f["type"] {
 		case "block":
 			interval, ie := uintQuantity(f["interval"])
 			offset, oe := uintQuantity(f["offset"])
-			if closing != nil || cb["type"] != "block" || ie != nil || oe != nil || interval != 1 || offset != 0 {
-				return fmt.Errorf("omnichain requires exactly one interval1 block callback per chain with offset0")
+			if cb["type"] != "block" || ie != nil || oe != nil || interval == 0 || interval > 1<<53-1 || offset >= interval {
+				return false, fmt.Errorf("invalid omnichain block interval or offset")
 			}
-			closing = f
+			name, _ := f["sourceId"].(string)
+			if name == "" || blockSources[name] {
+				return false, fmt.Errorf("missing or duplicate omnichain block source %q", name)
+			}
+			blockSources[name] = true
+			if interval == 1 {
+				closing = f
+			}
 		case "log":
 			if cb["type"] != "contract" {
-				return fmt.Errorf("omnichain logs require contract ABI callbacks")
+				return false, fmt.Errorf("omnichain logs require contract ABI callbacks")
 			}
 		case "transaction", "transfer":
 			if cb["type"] != "account" {
-				return fmt.Errorf("omnichain transactions and transfers require account callbacks")
+				return false, fmt.Errorf("omnichain transactions and transfers require account callbacks")
 			}
 		case "trace":
 			if cb["type"] != "contract" || f["callType"] != "CALL" {
-				return fmt.Errorf("omnichain traces require a contract CALL callback")
+				return false, fmt.Errorf("omnichain traces require a contract CALL callback")
 			}
 		default:
-			return fmt.Errorf("unsupported finalized omnichain callback type %v", f["type"])
+			return false, fmt.Errorf("unsupported finalized omnichain callback type %v", f["type"])
 		}
 	}
-	if closing == nil {
-		for _, cb := range callbacks {
-			f := cb["filter"].(map[string]any)
-			from, fe := uintQuantity(filter.FilterFromBlock(f))
-			to, te := uintQuantity(filter.FilterToBlock(f))
-			if fe != nil || te != nil || to < from {
-				return fmt.Errorf("omnichain without a block callback requires finite event ranges")
-			}
-		}
-		if len(callbacks) == 0 {
-			return fmt.Errorf("omnichain requires event callbacks")
-		}
-		return nil
-	}
-	start, se := uintQuantity(filter.FilterFromBlock(closing))
-	end, ee := uintQuantity(filter.FilterToBlock(closing))
-	if se != nil || ee != nil || end < start {
-		return fmt.Errorf("omnichain block callback requires a finite range with startBlock <= endBlock")
-	}
-	for _, cb := range callbacks {
-		f := cb["filter"].(map[string]any)
-		from, fe := uintQuantity(filter.FilterFromBlock(f))
-		to, te := uintQuantity(filter.FilterToBlock(f))
-		if fe != nil || te != nil || from < start || to > end || to < from {
-			return fmt.Errorf("omnichain closing block callback must cover every event callback range")
-		}
-	}
-	return nil
+	return len(blockSources) == 1 && closing != nil && filter.FilterFromBlock(closing) == float64(first) && filter.FilterToBlock(closing) == float64(last), nil
 }
 
 // Each physical block remains complete. Its closing callback is the only

@@ -150,6 +150,11 @@ func (e *RuntimeEpoch) processBlocks(ctx context.Context, b store.ManagedLiveBat
 			kind, _ := event["type"].(string)
 			cp, _ := event["checkpoint"].(string)
 			inputs[j] = store.RuntimeEventInput{Kind: kind, Checkpoint: cp}
+			if kind == "block" {
+				cb, _ := event["eventCallback"].(Object)
+				f, _ := cb["filter"].(map[string]any)
+				inputs[j].BlockSourceID, _ = f["sourceId"].(string)
+			}
 		}
 		if err := e.domains.ValidateRuntimeBlockInputs(b.Blocks[i], inputs); err != nil {
 			return result, err

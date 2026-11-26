@@ -32,10 +32,10 @@ func TestRuntimeOmnichainLogOnlyPhysicalRange(t *testing.T) {
 				groups = append(groups, callbacks)
 			}
 			if name == "mixed" {
-				groups[1] = []indexing.Object{{"type": "block", "filter": map[string]any{"type": "block", "interval": 1, "offset": 0, "fromBlock": 1, "toBlock": ends[1]}}}
+				groups[1] = []indexing.Object{{"type": "block", "filter": map[string]any{"type": "block", "sourceId": "Blocks", "interval": 1, "offset": 0, "fromBlock": 1, "toBlock": ends[1]}}}
 			}
 			for _, callbacks := range groups {
-				if err := validateOmnichainCallbacks(callbacks); err != nil {
+				if _, err := omnichainDenseCallbacks(callbacks); err != nil {
 					t.Fatal(err)
 				}
 			}
