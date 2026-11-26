@@ -64,7 +64,8 @@ func managedHistoricalDirectory(t *testing.T, root string) string {
 		strings.HasPrefix(t.Name(), "TestRuntimeOmnichainLogOnlyApplicationExit/pglite/") ||
 		strings.HasPrefix(t.Name(), "TestRuntimeContinuousCrash/pglite/") ||
 		strings.HasPrefix(t.Name(), "TestCoordinatedEngineInterruption/pglite/") ||
-		strings.HasPrefix(t.Name(), "TestOmnichainEngineInterruption/pglite/") {
+		strings.HasPrefix(t.Name(), "TestOmnichainEngineInterruption/pglite/") ||
+		strings.HasPrefix(t.Name(), "TestOmnichainSetupEngineInterruption/pglite/") {
 		directory, err := os.MkdirTemp(root, "historical-managed-dedicated-")
 		if err != nil {
 			t.Fatal(err)

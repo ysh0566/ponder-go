@@ -966,6 +966,8 @@ functions = append(functions, config.SourceIndexingFunction{
 
 若数据库引擎在静态日志回调里退出，先关闭失败的运行器。PostgreSQL 使用原有数据卷重启服务。PGlite 重新打开原有业务和同步目录。沿用同一来源配置与 `BuildID`，用新的 `OpenID` 启动。已提交的跨链事件组会保留，中断的事务会回滚，其回调在恢复时重新执行。带逐块回调和纯日志这两种已确认区间模式都覆盖了这个场景。[引擎中断与恢复测试](../parity/runs/native-omnichain-engine-recovery/RESULT.md)
 
+双库 Omnichain 会把所有链的 `setup` 业务写入与初始检查点一起提交。若数据库引擎在初始化期间退出，先关闭失败的运行器。恢复原 PostgreSQL 数据目录，或重新打开原有的两个 PGlite 目录，保留相同的配置、业务命名空间与 `BuildID`，并使用新的 `OpenID`。事务提交前中断时，两条链的初始化回调会一起重跑。事务已提交时，回填从首个尚未处理的事件继续。[初始化事务与恢复测试](../parity/runs/native-omnichain-setup-engine/RESULT.md)
+
 ### 双库 Isolated 按链回填
 
 需要将业务数据与同步缓存分开保存，并让各链独立维护记录时，在 Go 来源配置里将 `ordering` 设为 `string(schema.Isolated)`（配置值为 `experimental_isolated`）。为每个来源指定有限的结束高度。每张链上业务表都要把整数列 `chain_id`（Go 属性 `chainId`）放入主键。例如，两个网络可各自保存同一高度的记录。
