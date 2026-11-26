@@ -3132,6 +3132,31 @@
         "parity/runs/native-isolated-live/RESULT.md"
       ],
       "remaining": "Mixed factory/account events during an engine interruption and prolonged individual RPC outages need independent-store coverage. A cold restart replays speculative callbacks after each chain’s own safe checkpoint."
+    },
+    {
+      "id": "native-runtime-query-budget",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "store/managed_live_runtime.go",
+        "store/managed_live_runtime_persistence.go",
+        "store/source_intervals.go",
+        "store/source_crud.go"
+      ],
+      "native_test_files": [
+        "historical/runtime_query_budget_test.go",
+        "historical/live_runtime_review_test.go",
+        "store/source_query_budget_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/internal/options.ts",
+        "packages/core/src/sync-store/index.ts",
+        "packages/core/src/sync-store/index.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-runtime-query-budget/RESULT.md"
+      ],
+      "remaining": "The dual-store runtime still supports configuring historical QuerySize only for finalized Omnichain. Custom historical retry waits and group commit observers remain open."
     }
   ]
 }

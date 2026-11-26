@@ -33,7 +33,7 @@ func (s *SourceSyncStore) insertSourceRows(ctx context.Context, table string, ch
 	}
 	budget := s.maxQueryParameters / len(columns)
 	if budget == 0 {
-		return fmt.Errorf("source sync parameter budget smaller than encoded row")
+		return fmt.Errorf("source sync parameter budget smaller than encoded row: %s needs %d parameters, configured %d", table, len(columns), s.maxQueryParameters)
 	}
 	conflict := map[string]string{"logs": "chain_id,block_number,log_index", "blocks": "chain_id,number", "transactions": "chain_id,block_number,transaction_index", "transaction_receipts": "chain_id,block_number,transaction_index", "traces": "chain_id,block_number,transaction_index,trace_address"}[table]
 	quoted := make([]string, len(columns))

@@ -80,7 +80,7 @@ func TestRuntimeTimestampFinality(t *testing.T) {
 	}
 }
 func TestRuntimeRejectsHistoricalOptions(t *testing.T) {
-	for _, kind := range []string{"query_size", "query_parameters", "clock", "retry_wait", "on_committed"} {
+	for _, kind := range []string{"query_size", "clock", "retry_wait", "on_committed"} {
 		t.Run(kind, func(t *testing.T) {
 			p := newFiniteRPC(t, 3)
 			b := runtimeBuild(t, p, 3, 1, indexing.Handler(func(context.Context, *indexing.HandlerArgs) error { return nil }))
@@ -88,8 +88,6 @@ func TestRuntimeRejectsHistoricalOptions(t *testing.T) {
 			switch kind {
 			case "query_size":
 				input.QuerySize = 1
-			case "query_parameters":
-				input.MaxQueryParameters = 100
 			case "clock":
 				input.Clock = time.Now
 			case "retry_wait":

@@ -44,7 +44,7 @@ type RuntimeOptions struct {
 	FactorySources bool
 	Live           *RuntimeLiveOptions
 	// Historical.QuerySize is the bounded omnichain SQL target (1..12000);
-	// zero uses12000. Other historical scheduling options remain unsupported.
+	// zero uses 12000. MaxQueryParameters controls batched sync writes in all orderings.
 	Historical                   Options
 	BuildID, OpenID, ViewsSchema string
 	// Requesters supplies fresh transports for preflight, fetch epochs and uncached source scans.
@@ -92,7 +92,10 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	if o.Historical.Build == nil || o.BuildID == "" || o.OpenID == "" || o.Requesters == nil {
 		return nil, fmt.Errorf("compiled build, BuildID, OpenID and fresh requester factory required")
 	}
-	if o.Historical.MaxQueryParameters != 0 || o.Historical.Clock != nil || o.Historical.RetryWait != nil || o.Historical.OnCommitted != nil {
+	if _, err := store.SourceQueryParameterBudget(o.Historical.MaxQueryParameters); err != nil {
+		return nil, err
+	}
+	if o.Historical.Clock != nil || o.Historical.RetryWait != nil || o.Historical.OnCommitted != nil {
 		return nil, fmt.Errorf("runtime-v5 does not support historical scheduling, query or observer options")
 	}
 	if len(o.Historical.Owned.Requesters) != 0 || !reflect.ValueOf(o.Historical.Owned.Cache).IsZero() {
@@ -340,7 +343,20 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		}
 	}
 	logFilters, logABIs := r.sparseSources()
-	r.domains, err = opener(ctx, storage, store.ManagedLiveRuntimeOptions{OpenLogScanRPC: openLogScanRPC, LogOnlyFilters: logFilters, LogOnlyEventABIs: logABIs, FactorySources: o.FactorySources, SourceCheckpoints: o.SourceCheckpoints, Setup: r.setup, CacheRPCRequests: cachePolicy, ManagedLiveOptions: store.ManagedLiveOptions{ManagedFiniteOptions: plan, OpenID: o.OpenID, FinalizedHeads: r.finalized}, StartBlocks: r.starts, Continuous: o.Live != nil, ObserveDomain: runtimeDomainObserver(r)})
+	r.domains, err = opener(ctx, storage, store.ManagedLiveRuntimeOptions{
+		ManagedLiveOptions: store.ManagedLiveOptions{ManagedFiniteOptions: plan, OpenID: o.OpenID, FinalizedHeads: r.finalized},
+		MaxQueryParameters: o.Historical.MaxQueryParameters,
+		OpenLogScanRPC:     openLogScanRPC,
+		LogOnlyFilters:     logFilters,
+		LogOnlyEventABIs:   logABIs,
+		FactorySources:     o.FactorySources,
+		SourceCheckpoints:  o.SourceCheckpoints,
+		Setup:              r.setup,
+		CacheRPCRequests:   cachePolicy,
+		StartBlocks:        r.starts,
+		Continuous:         o.Live != nil,
+		ObserveDomain:      runtimeDomainObserver(r),
+	})
 	if err != nil {
 		return nil, err
 	}

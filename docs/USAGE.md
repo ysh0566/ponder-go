@@ -634,6 +634,8 @@ GRANT SELECT ON ponder_go_blocks.indexed_block,
 
 Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 管理独立的业务数据与同步数据时，可以在默认多链排序下将 `RuntimeOptions.Live` 留空，并给每个事件来源设置 `endBlock`。打开时各链都必须已经到达配置的结束高度。要包含创世区块，请为来源设置 `startBlock: 0` 并将 `RuntimeOptions.SourceCheckpoints` 设为 `true`。此时初始 checkpoint 标记区块的起点，回调会收到区块 0。只需索引创世区块时可设置 `endBlock: 0`。新建部署时选择 checkpoint 模式，重开原存储时沿用相同设置。不启用该选项时，有限区间从区块 1 或更高处开始。调用 `Run` 后，索引器处理到各链的结束高度并返回 `Completed`。[来源 checkpoint 验证](../parity/runs/native-bounded-source-checkpoints/RESULT.md)
 
+`RuntimeOptions.Historical.MaxQueryParameters` 控制同步库单条批量 INSERT 可使用的绑定参数数量，适用于区块、日志、交易、回执、调用轨迹、同步区间和工厂子地址。默认值为 16000。运行器按每行需要的参数个数拆批。例如，每条日志需要 12 个参数，设置为 25 时，每条 INSERT 最多写入两条日志。预算容不下一行时，错误会指出数据表和所需的参数数量。可保留原 `BuildID` 和两个存储位置，使用新的 `OpenID` 和更大的预算重启，继续已提交的进度。该设置适用于两种后端和当前支持的排序模式。Omnichain 的 `Historical.QuerySize` 单独控制历史事件查询的分页。[配置与恢复测试](../parity/runs/native-runtime-query-budget/RESULT.md)
+
 要让默认多链等待尚未出现的结束区块，给每个来源设置有限的 `endBlock`，并设置 `RuntimeOptions.Live = &historical.RuntimeLiveOptions{}`。提前启动后，运行器先处理现有区块，再轮询各链，所有链都达到各自的结束高度时返回 `Completed`。到达结束高度时仍在重组窗口内的区块，重启后可能从安全检查点重新执行。[双链未来结束高度与重放测试](../historical/live_runtime_continuous_test.go)
 
 可在同一个构建中注册合约的 `合约名:setup` 回调，并逐链配置 `cacheRpcRequests`。setup 在首个事件前提交。第二条链的 setup 失败时，两条链的初始化写入会一起回滚。用相同的 `BuildID`、存储位置和新的 `OpenID` 重试后可重新执行初始化。对关闭缓存的链，回调通过 RPC 读取区块状态，已有的 RPC 缓存记录会保留。独立存储的 Omnichain 有自己的来源与最终确认要求。[双后端测试](../parity/runs/native-bounded-setup-cache/RESULT.md) · [运行模式矩阵](RUNTIME_SUPPORT.md)

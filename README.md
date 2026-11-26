@@ -47,7 +47,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 
 还有两处会影响 Go 项目的具体写法。
 
-- 双库运行器的历史回填只允许在 Omnichain 有限区间调整 `QuerySize`。它尚未开放历史调度的 `MaxQueryParameters`、`RetryWait` 和逐次提交的 `OnCommitted` 钩子。[配置校验](historical/live_runtime.go)
+- 双库运行器的历史回填只允许在 Omnichain 有限区间调整 `QuerySize`。三种排序都可以设置 `MaxQueryParameters` 来控制同步数据的 SQL 批量写入。历史重试等待 `RetryWait` 和提交后通知 `OnCommitted` 仍未开放。[设置批量写入大小](docs/USAGE.md#独立存储的有限区间索引) · [配置校验](historical/live_runtime.go)
 - Go 模型生成器把数据库枚举和 `hex` 列生成为 `string`。枚举取值的编译期约束和自定义列编解码器的生成仍待实现。JSON、字节串和数组已有生成及数据库读写测试。[生成器](orm/generate.go) · [模型测试](orm/container_models_test.go)
 
 ## 当前验证与计数

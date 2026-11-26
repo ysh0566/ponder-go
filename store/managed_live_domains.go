@@ -23,6 +23,7 @@ var ErrManagedLiveDomainsPending = errors.New("managed live cross-domain operati
 // This primitive does not activate a runtime or claim distributed atomicity.
 type ManagedLiveDomains struct {
 	storage            *IndependentStorage
+	maxQueryParameters int
 	mu                 sync.Mutex
 	spec               string
 	uncertain          bool
@@ -353,7 +354,7 @@ func (d *ManagedLiveDomains) WithSync(ctx context.Context, fn func(*SourceSyncSt
 	if err := d.gate(ctx); err != nil {
 		return err
 	}
-	source, err := d.storage.syncCache.SourceSyncStore(0)
+	source, err := d.storage.syncCache.SourceSyncStore(d.maxQueryParameters)
 	if err != nil {
 		return err
 	}
