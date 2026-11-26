@@ -279,10 +279,12 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 				o.FactorySources = true
 				expected = "factory sources require"
 			case "cache-false":
-				for _, c := range b.Executable().Chains {
-					c["cacheRpcRequests"] = false
-				}
-				expected = "cacheRpcRequests=true"
+				noop := indexing.Handler(func(context.Context, *indexing.HandlerArgs) error {
+					t.Fatal("log-only preflight invoked a callback")
+					return nil
+				})
+				o.Historical.Build = omniLogsBuildWithSetup(t, loadOmniLogsGolden(t), p, map[string]indexing.Handler{"A": noop, "B": noop}, 1, 3, false, nil, 2)
+				expected = "log-only omnichain requires cacheRpcRequests=true"
 			case "ordering-mismatch":
 				o.Historical.Owned.Storage.Ordering = schema.Multichain
 				expected = "unsupported runtime ordering"
@@ -292,6 +294,9 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 				opened = true
 				return nil, errors.New("storage must not open")
 			})
+			if name == "cache-false" && len(epochs) != 0 {
+				t.Fatal("log-only cache preflight opened RPC")
+			}
 			if r != nil || err == nil || !strings.Contains(err.Error(), expected) || opened || len(calls) != 0 {
 				t.Fatalf("unsafe preflight name%s runner%v opened%v calls%v err%v", name, r, opened, calls, err)
 			}

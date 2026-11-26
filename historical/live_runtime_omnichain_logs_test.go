@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -199,9 +200,9 @@ func omniLogsBuildRange(t *testing.T, g omniLogsGolden, p *finiteRPC, handlers m
 	return omniLogsBuildWithSetup(t, g, p, handlers, start, end, closing, nil)
 }
 
-func omniLogsBuildWithSetup(t *testing.T, g omniLogsGolden, p *finiteRPC, handlers map[string]indexing.Handler, start, end uint64, closing bool, setupChains map[string]any) *config.SourceIndexingBuild {
+func omniLogsBuildWithSetup(t *testing.T, g omniLogsGolden, p *finiteRPC, handlers map[string]indexing.Handler, start, end uint64, closing bool, setupChains map[string]any, disabled ...uint64) *config.SourceIndexingBuild {
 	t.Helper()
-	chainConfig := map[string]any{"one": map[string]any{"id": 1, "rpc": p.server.URL + "/1", "reorgWindow": 0, "cacheRpcRequests": true}, "two": map[string]any{"id": 2, "rpc": p.server.URL + "/2", "reorgWindow": 0, "cacheRpcRequests": true}}
+	chainConfig := map[string]any{"one": map[string]any{"id": 1, "rpc": p.server.URL + "/1", "reorgWindow": 0, "cacheRpcRequests": !slices.Contains(disabled, uint64(1))}, "two": map[string]any{"id": 2, "rpc": p.server.URL + "/2", "reorgWindow": 0, "cacheRpcRequests": !slices.Contains(disabled, uint64(2))}}
 	chainSelection := map[string]any{"one": map[string]any{}, "two": map[string]any{}}
 	contracts := map[string]any{}
 	for _, kind := range []string{"A", "B"} {
