@@ -56,7 +56,9 @@ func TestRuntimeOmnichainStaticLogsCapabilities(t *testing.T) {
 		{name: "late_closing_start", change: blockChange("fromBlock", uint64(2))},
 		{name: "log_before_closing_start", change: logChange("fromBlock", uint64(0))},
 		{name: "log_after_closing_end", change: logChange("toBlock", uint64(4))},
-		{name: "unsupported_trace", change: logChange("type", "trace")},
+		{name: "trace_without_call_type", change: logChange("type", "trace")},
+		{name: "transaction_without_account", change: logChange("type", "transaction")},
+		{name: "transfer_without_account", change: logChange("type", "transfer")},
 		{name: "log_only", change: func(b *config.ExecutableSourceIndexingBuild) {
 			kept := []indexing.Object{}
 			for _, cb := range b.EventCallbacks[0] {

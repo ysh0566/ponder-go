@@ -2184,7 +2184,28 @@
       "evidence": [
         "parity/runs/native-omnichain-genesis/RESULT.md"
       ],
-      "remaining": "The independent Omnichain runner still requires finite cached ranges under global finality, either closing block sources on each chain or uniform static log-only sources. Live sources, factories, account and trace sources, and setup remain outside these modes."
+      "remaining": "The independent Omnichain runner still requires finite cached ranges under global finality, either closing block sources on each chain or uniform static log-only sources. Live sources, factories and setup remain outside these modes."
+    },
+    {
+      "id": "native-omnichain-account-events",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime_omnichain_callbacks.go",
+        "historical/live_runtime_omnichain.go"
+      ],
+      "native_test_files": [
+        "historical/omnichain_account_events_test.go",
+        "historical/live_runtime_omnichain_logs_capabilities_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts",
+        "packages/core/src/runtime/events.test.ts",
+        "packages/core/src/sync-historical/in-memory.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-account-events/RESULT.md"
+      ],
+      "remaining": "The independent Omnichain runner requires finalized, bounded and cached ranges. Account and contract CALL callbacks require a covering closing block callback on every chain. Factory sources, setup, mixed closing-block and log-only chains, and live reorgs remain outside this mode."
     }
   ]
 }

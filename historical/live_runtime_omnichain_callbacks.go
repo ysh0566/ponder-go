@@ -2,14 +2,15 @@ package historical
 
 import (
 	"fmt"
+
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/indexing"
 	"github.com/ysh0566/ponder-go/store"
 )
 
-// A closing block callback authenticates a complete block boundary even when
-// static log callbacks overlap or SQL pages contain several events per block.
+// A closing block callback authenticates the whole block, including overlapping
+// callbacks for transactions, logs and traces on the same SQL page.
 func validateOmnichainCallbacks(callbacks []indexing.Object) error {
 	var closing filter.Object
 	for _, cb := range callbacks {
@@ -32,8 +33,16 @@ func validateOmnichainCallbacks(callbacks []indexing.Object) error {
 			if cb["type"] != "contract" {
 				return fmt.Errorf("omnichain logs require contract ABI callbacks")
 			}
+		case "transaction", "transfer":
+			if cb["type"] != "account" {
+				return fmt.Errorf("omnichain transactions and transfers require account callbacks")
+			}
+		case "trace":
+			if cb["type"] != "contract" || f["callType"] != "CALL" {
+				return fmt.Errorf("omnichain traces require a contract CALL callback")
+			}
 		default:
-			return fmt.Errorf("omnichain supports a closing block callback and static contract logs")
+			return fmt.Errorf("unsupported finalized omnichain callback type %v", f["type"])
 		}
 	}
 	if closing == nil {
@@ -49,7 +58,7 @@ func validateOmnichainCallbacks(callbacks []indexing.Object) error {
 		from, fe := uintQuantity(filter.FilterFromBlock(f))
 		to, te := uintQuantity(filter.FilterToBlock(f))
 		if fe != nil || te != nil || from < start || to > end || to < from {
-			return fmt.Errorf("omnichain closing block callback must cover every log callback range")
+			return fmt.Errorf("omnichain closing block callback must cover every event callback range")
 		}
 	}
 	return nil
@@ -65,6 +74,7 @@ func validateOmnichainBlockPartition(events []indexing.Object, head store.Manage
 	closing := checkpoint.Block(h.BlockTimestamp, h.ChainID, h.BlockNumber, true)
 	closing.EventType = checkpoint.Blocks
 	closing.EventIndex = 0
+	closingKey := checkpoint.MustEncode(closing)
 	blocks := 0
 	previous := ""
 	for _, event := range events {
@@ -75,6 +85,9 @@ func validateOmnichainBlockPartition(events []indexing.Object, head store.Manage
 		}
 		previous = raw
 		kind, _ := event["type"].(string)
+		if kind != "block" && (cp.TransactionIndex == checkpoint.Max.TransactionIndex || raw >= closingKey) {
+			return fmt.Errorf("omnichain %s event lies outside its closing block", kind)
+		}
 		switch kind {
 		case "block":
 			if cp != closing {
@@ -82,14 +95,22 @@ func validateOmnichainBlockPartition(events []indexing.Object, head store.Manage
 			}
 			blocks++
 		case "log":
-			if cp.EventType != checkpoint.Logs || raw >= checkpoint.MustEncode(closing) {
-				return fmt.Errorf("omnichain log event lies outside its closing block")
+			if cp.EventType != checkpoint.Logs {
+				return fmt.Errorf("invalid omnichain log checkpoint")
+			}
+		case "transaction":
+			if cp.EventType != checkpoint.Transactions || cp.EventIndex != 0 {
+				return fmt.Errorf("invalid omnichain transaction checkpoint")
+			}
+		case "trace", "transfer":
+			if cp.EventType != checkpoint.Traces {
+				return fmt.Errorf("invalid omnichain trace checkpoint")
 			}
 		default:
 			return fmt.Errorf("unsupported event in finalized omnichain block partition")
 		}
 	}
-	if blocks != 1 || len(events) == 0 || previous != checkpoint.MustEncode(closing) {
+	if blocks != 1 || len(events) == 0 || previous != closingKey {
 		return fmt.Errorf("omnichain block partition requires exactly one final closing block callback")
 	}
 	return nil
