@@ -43,7 +43,7 @@ func observe(ctx context.Context, history runtime.SourceHistoricalCoordinatorOpt
 
 `Events` 已按全局 checkpoint 排序。历史批次的 `Groups` 另外列出各链的进度，其中的事件与 `Events` 重复。实时批次可以包含其他链先前暂缓交付的事件。处理函数应只读访问事件映射，同一事件可能在分叉后再次交付。一条链分叉时，消费者收到 `reorg` 后应撤销全局检查点之后的业务写入。后续批次会重新交付仍在规范链上的事件。`finalize` 给出各链共同确认的位置。使用自定义事件源时，如有 `update.Source.BlockCallback`，在处理完该次交付后按实际结果应答。
 
-此接口在进程内协调事件顺序。消费方负责业务事务、检查点持久化和重启恢复。固定区间处理到结束高度后返回，持续索引可通过取消 `ctx` 或跳出循环来停止。节点错误会返回给调用方。[事件流实现](../runtime/source_omnichain_stream.go)
+此接口在进程内协调事件顺序。消费方负责业务事务、检查点持久化和重启恢复。内置 RPC 轮询在交付各链配置的结束块后即可返回，此时结束块可能仍处于重组窗口内。需要记录全局安全进度时，以各链已共同确认的位置为准。持续索引可通过取消 `ctx` 或跳出循环来停止。节点错误会返回给调用方。[轮询的退出条件](../runtime/source_omnichain_poll.go) · [双链交接测试](../runtime/source_omnichain_stream_test.go)
 
 ## 准备环境
 
@@ -661,7 +661,7 @@ if err != nil {
 
 将 `worker` 交给 `runtime.LaunchApplication`，或直接调用 `RunIndexing`。排序来自来源配置，每条参与链保留自己的 RPC 和缓存策略。只有注册了回调的来源决定索引范围。仅注册 `合约名:setup` 的合约在其起始区块执行一次。某条链还有持续事件来源时，该链会继续追块。[运行模式](RUNTIME_SUPPORT.md) · [双后端验收](../parity/runs/native-compiled-indexer/RESULT.md)
 
-区块来源的 `interval` 使用正整数。例如 `startBlock: 1, interval: 5` 会在第 1、6、11 块触发。Ponder 0.18.2 的配置校验接受非零整数。普通 Go 运行入口在转换配置时会拒绝负间隔。[Go 配置转换](../config/source_native.go) · [上游配置校验](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/build/config.ts#L875-L899)
+区块来源的 `interval` 可以是正整数或负整数。从起始块开始，按间隔的绝对值向前采样。例如 `startBlock: 2, interval: -3` 和 `interval: 3` 都会在第 2、5、8 块触发。直接构造 Go 的 `config.BlockSource` 时可写 `Interval: config.BlockPeriod(-3)`。[Go 配置转换](../config/source_native.go) · [实际出块和重启测试](../parity/runs/native-signed-block-intervals/RESULT.md)
 
 ### 为单条链配置 Go RPC 传输
 
