@@ -303,8 +303,12 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 			if e != nil {
 				return out, e
 			}
-			attempts++
-			receipt, e = epoch.ProcessHistoricalBlocks(epoch.Context(), b, acquired, partitions)
+			e = r.retryHistorical(epoch.Context(), func() error {
+				attempts++
+				var err error
+				receipt, err = epoch.ProcessHistoricalBlocks(epoch.Context(), b, acquired, partitions)
+				return err
+			})
 			if e == nil {
 				break
 			}

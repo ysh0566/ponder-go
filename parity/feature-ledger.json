@@ -3160,7 +3160,7 @@
       "evidence": [
         "parity/runs/native-runtime-query-budget/RESULT.md"
       ],
-      "remaining": "The dual-store runtime still supports configuring historical QuerySize only for finalized Omnichain. Custom historical retry waits and group commit observers remain open."
+      "remaining": "The dual-store runtime still supports configuring historical QuerySize only for finalized Omnichain. Group commit observers for default multichain and live dual-store ranges remain open."
     },
     {
       "id": "native-omnichain-finality-wait",
@@ -3208,7 +3208,7 @@
       "evidence": [
         "parity/runs/native-historical-commit-observers/RESULT.md"
       ],
-      "remaining": "Default multichain and live dual-store runs keep separate safe checkpoints. Group observers for those modes and custom historical retry waits remain open."
+      "remaining": "Default multichain and live dual-store runs keep separate safe checkpoints. Group observers for those modes remain open."
     },
     {
       "id": "native-go-enum-models",
@@ -3233,6 +3233,35 @@
         "parity/runs/native-go-enum-models/RESULT.md"
       ],
       "remaining": "User-defined column codecs and further schema combinations are outside this enum verification."
+    },
+    {
+      "id": "native-historical-retry-wait",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/runner.go",
+        "historical/live_runtime.go",
+        "historical/live_runtime_completion.go",
+        "historical/live_runtime_omnichain_history.go",
+        "historical/live_runtime_setup.go",
+        "indexing/database_binding.go",
+        "store/managed_live_batch.go",
+        "store/postgres_conflict.go",
+        "store/sql.go"
+      ],
+      "native_test_files": [
+        "historical/runtime_retry_wait_test.go",
+        "historical/live_runtime_review_test.go",
+        "historical/runner_test.go",
+        "store/managed_live_closure_database_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/database/queryBuilder.ts",
+        "packages/core/src/database/queryBuilder.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-historical-retry-wait/RESULT.md"
+      ],
+      "remaining": "This retry policy covers confirmed PostgreSQL transaction conflicts during dual-store setup and historical application. Lost ownership and unknown commit outcomes require reopening."
     }
   ]
 }

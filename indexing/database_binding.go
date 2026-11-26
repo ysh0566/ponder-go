@@ -157,7 +157,12 @@ func (db *Database) Prefetch(ctx context.Context, events []store.ProfileEvent) e
 // NewRuntimeDatabase binds only the native per-block Writer supplied by the
 // versioned managed runtime transaction. It has no legacy/raw write session.
 func NewRuntimeDatabase(handler RetryableErrorHandler) *Database {
-	db := NewDatabase(nil, handler)
+	db := NewDatabase(nil, handler, func(err error) error {
+		if store.IsPostgresTransactionConflict(err) {
+			return &DatabaseError{Name: "DbTransactionConflict", Cause: err, IsRetryable: true}
+		}
+		return ParseDatabaseError(err)
+	})
 	db.liveRuntime = true
 	return db
 }

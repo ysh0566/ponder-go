@@ -688,6 +688,27 @@ opts.Historical.OnCommitted = func(ctx context.Context, group historical.GroupRe
 
 Omnichain 的 `opts.Historical.Clock` 同时用于回填协调器的链头刷新计时与本地同步的区间大小估算。默认使用系统时间。传入自定义函数时，它需要支持多个链并发调用。链上区块时间和 checkpoint 仍由 RPC 区块头确定。[提交、报错与恢复测试](../parity/runs/native-historical-commit-observers/RESULT.md)
 
+#### 双库 PostgreSQL 回填的事务重试
+
+`historical.OpenRuntimePostgres` 在初始化和历史回填的业务事务遇到 PostgreSQL 死锁（`40P01`）或序列化冲突（`40001`）时重试。默认从 125 毫秒开始等待，每次翻倍，最多重试 9 次。若 PostgreSQL 在提交时报告冲突，运行器先重新核对所有权、操作记录和提交前的进度，再决定能否重跑同一批。重试可能再次调用同一个 Go 处理函数，业务结果应写入该回调的数据库事务。
+
+应用可设置 `opts.Historical.RetryWait` 记录等待，或在自己的时间预算用尽时返回错误。下面的例子将单次等待限制为两秒，关闭运行器或取消作业会中断等待。
+
+```go
+opts.Historical.RetryWait = func(ctx context.Context, delay time.Duration) error {
+    timer := time.NewTimer(min(delay, 2*time.Second))
+    defer timer.Stop()
+    select {
+    case <-ctx.Done():
+        return ctx.Err()
+    case <-timer.C:
+        return nil
+    }
+}
+```
+
+PGlite 对每笔事务执行一次。实时轮询、Go 处理函数的业务错误和失去数据库连接都有各自的退出或恢复流程。提交结果无法确认时，本次运行返回错误，应用应关闭运行器并使用同一部署、全新的 `OpenID` 重新打开。[事务冲突与重启验证](../parity/runs/native-historical-retry-wait/RESULT.md)
+
 #### 等待双库 Omnichain 的区间最终确认
 
 两个构造函数都支持 `RuntimeOptions.OmnichainFinalityPollInterval`。零值表示在打开时检查一次。正值表示按指定间隔重新读取各链的最新区块，再按各自的重组窗口计算最终确认位置。例如，链 A 已产生结束区块，链 B 的最终确认时间仍早于这个区块时，作业会继续等待。若某个 `setup` 回调读取的区块高于该链最后一个事件，也会等到该区块最终确认。

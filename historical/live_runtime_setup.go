@@ -173,12 +173,15 @@ func (r *RuntimeRunner) bootstrapRuntime(ctx context.Context, epoch *indexing.Ru
 		if err != nil {
 			return err
 		}
-		if r.setup {
-			_, err = epoch.Bootstrap(epoch.Context(), b, a)
-		} else {
-			_, err = r.domains.ApplyRuntimeBatch(epoch.Context(), b, a, nil)
-		}
-		return err
+		return r.retryHistorical(epoch.Context(), func() error {
+			var err error
+			if r.setup {
+				_, err = epoch.Bootstrap(epoch.Context(), b, a)
+			} else {
+				_, err = r.domains.ApplyRuntimeBatch(epoch.Context(), b, a, nil)
+			}
+			return err
+		})
 	}
 	heads := map[uint64]store.ManagedLiveHead{}
 	positions := map[uint64]string{}
