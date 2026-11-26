@@ -175,3 +175,18 @@ var Packet = orm.Define[PacketKey, PacketInsert, PacketUpdate, PacketRow]("packe
 		return out, nil
 	},
 )
+var PacketColumns = struct {
+	Id       orm.Column[PacketRow, string]
+	Payload  orm.Column[PacketRow, []byte]
+	Document orm.Column[PacketRow, json.RawMessage]
+	Numbers  orm.Column[PacketRow, []orm.Nullable[int64]]
+	Origin   orm.Column[PacketRow, [2]float64]
+	Axis     orm.Column[PacketRow, [3]float64]
+}{
+	Id:       orm.ColumnOf[string](Packet, "id"),
+	Payload:  orm.ColumnOf[[]byte](Packet, "payload"),
+	Document: orm.ColumnOf[json.RawMessage](Packet, "document"),
+	Numbers:  orm.ColumnOf[[]orm.Nullable[int64]](Packet, "numbers"),
+	Origin:   orm.ColumnOf[[2]float64](Packet, "origin"),
+	Axis:     orm.ColumnOf[[3]float64](Packet, "axis"),
+}

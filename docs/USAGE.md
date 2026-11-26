@@ -548,6 +548,28 @@ return err
 
 从配置或外部请求读取标签时，调用 `models.ParseTradeType(label)` 并检查错误。解析区分大小写，`String()` 和 JSON 保留数据库中的原始标签。`TradeType` 的零值是声明的第一个标签，这里为 `BUY`。可空列使用 `orm.Nullable[models.TradeType]`，数组元素各自保留 SQL NULL。普通结构体生成和 `--typed --callback-db` 也提供同一组枚举取值。[可编译示例与数据库读写测试](../orm/enum_models_test.go)
 
+### 在 Go 回调中连接两张表
+
+以 `erc721` 模板为例，`token.owner` 和 `account.address` 都保存地址。进入项目目录，运行下面两条命令生成带列名和 Go 类型的模型。[ERC-721 表定义](../cmd/ponder/scaffold/erc721/schema.json)
+
+```sh
+mkdir -p models
+ponder codegen --typed --schema schema.json --package models --out models/models.go
+```
+
+在回调所在文件中导入项目的 `models` 包，以及 `github.com/ysh0566/ponder-go/orm` 和 `github.com/ysh0566/ponder-go/runtime`。下面的函数返回每个有匹配账户的代币及其持有者。查询可以读到当前回调刚写入的两张表。
+
+```go
+func tokenOwners(ctx context.Context, c *runtime.Context) ([]orm.Joined[models.TokenRow, models.AccountRow], error) {
+    owner := orm.Equal(models.TokenColumns.Owner, models.AccountColumns.Address)
+    return orm.InnerJoin(ctx, c.DB.Indexing(), owner)
+}
+```
+
+使用 `orm.LeftJoin` 可以保留尚无匹配账户的代币，此时返回类型为 `[]orm.Joined[models.TokenRow, *models.AccountRow]`，可检查 `pair.Right == nil`。复合键可传入多个 `orm.Equal(...)`，每个条件都必须满足。在 Isolated 模式下，两侧的数据都限定到本次事件的链。
+
+在 `indexing.Handler` 中传入 `args.Context.DB`。使用 `--typed --callback-db` 的回调也可以传入已绑定的左表，如 `db.Token`。列使用相同的 Go 值类型，数据库还需支持两种存储类型之间的等值比较。查询会返回所有匹配的行。需要按事件参数筛选、排序或分页，可使用回调事务的参数化 SQL。[双后端与类型检查用例](../orm/join_test.go)
+
 ### 为数据库列绑定自定义 Go 类型
 
 例如，索引器可以在 Go 回调中使用 `time.Duration`，并在数据库中以 `text` 保存 `"1.5s"`。在 `schema.json` 的列上设置 `goCodec`。`type` 指定已有的存储类型，`goCodec.type` 和 `goCodec.name` 分别指向生成包中的 Go 类型和编解码器变量。两者均使用导出的 Go 标识符。

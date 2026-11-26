@@ -495,13 +495,9 @@ func (db *IndexingStore) Select(ctx context.Context, name string, key Row) ([]Ro
 	}
 	rows := make([]Row, 0, len(result.Rows))
 	for _, raw := range result.Rows {
-		physical, e := decodeSnapshot(table, fmt.Sprint(raw["row"]))
+		logical, e := decodeModelRow(table, raw["row"])
 		if e != nil {
 			return nil, e
-		}
-		logical := Row{}
-		for _, column := range table.Columns {
-			logical[property(column)] = physical[column.Name]
 		}
 		rows = append(rows, logical)
 	}

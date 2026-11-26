@@ -79,7 +79,11 @@ func (db *IndexingStore) SQLInsert(ctx context.Context, name string, row Row) (R
 	if len(result.Rows) != 1 {
 		return nil, fmt.Errorf("SQL insert returned %d rows", len(result.Rows))
 	}
-	physical, e := decodeSnapshot(table, fmt.Sprint(result.Rows[0]["row"]))
+	return decodeModelRow(table, result.Rows[0]["row"])
+}
+
+func decodeModelRow(table schema.Table, raw any) (Row, error) {
+	physical, e := decodeSnapshot(table, fmt.Sprint(raw))
 	if e != nil {
 		return nil, e
 	}

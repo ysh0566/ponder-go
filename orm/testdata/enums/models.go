@@ -204,3 +204,14 @@ var Trade = orm.Define[TradeKey, TradeInsert, TradeUpdate, TradeRow]("trade",
 		return out, nil
 	},
 )
+var TradeColumns = struct {
+	Kind     orm.Column[TradeRow, TradeType]
+	State    orm.Column[TradeRow, Status]
+	Previous orm.Column[TradeRow, TradeType]
+	History  orm.Column[TradeRow, []orm.Nullable[TradeType]]
+}{
+	Kind:     orm.ColumnOf[TradeType](Trade, "kind"),
+	State:    orm.ColumnOf[Status](Trade, "state"),
+	Previous: orm.ColumnOf[TradeType](Trade, "previous"),
+	History:  orm.ColumnOf[[]orm.Nullable[TradeType]](Trade, "history"),
+}

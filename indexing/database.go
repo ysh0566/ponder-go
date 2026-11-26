@@ -189,6 +189,18 @@ func (db *Database) Select(ctx context.Context, name string, key store.Row) ([]s
 	v, e := underlying.Select(ctx, name, key)
 	return v, db.capture(e)
 }
+
+// Join executes a model join under the same callback lease as Select.
+func (db *Database) Join(ctx context.Context, kind store.JoinKind, left, right string, on []store.JoinColumns) ([]store.JoinedRow, error) {
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return nil, db.capture(err)
+	}
+	defer release()
+	rows, err := underlying.Join(ctx, kind, left, right, on)
+	return rows, db.capture(err)
+}
+
 func (db *Database) SQL(ctx context.Context, query string, args ...any) (store.Result, error) {
 	underlying, release, err := db.acquire(ctx)
 	if err != nil {

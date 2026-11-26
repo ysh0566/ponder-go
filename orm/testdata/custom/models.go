@@ -138,6 +138,17 @@ var Holding = orm.Define[HoldingKey, HoldingInsert, HoldingUpdate, HoldingRow]("
 		return out, nil
 	},
 )
+var HoldingColumns = struct {
+	Id      orm.Column[HoldingRow, Units]
+	Payload orm.Column[HoldingRow, Payload]
+	Limit   orm.Column[HoldingRow, Units]
+	History orm.Column[HoldingRow, []orm.Nullable[Units]]
+}{
+	Id:      orm.ColumnOf[Units](Holding, "id"),
+	Payload: orm.ColumnOf[Payload](Holding, "payload"),
+	Limit:   orm.ColumnOf[Units](Holding, "limit"),
+	History: orm.ColumnOf[[]orm.Nullable[Units]](Holding, "history"),
+}
 
 type CallbackDatabase struct {
 	Holding orm.Table[HoldingKey, HoldingInsert, HoldingUpdate, HoldingRow]

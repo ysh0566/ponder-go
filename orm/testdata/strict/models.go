@@ -78,3 +78,10 @@ var Account = orm.Define[AccountKey, AccountInsert, AccountUpdate, AccountRow]("
 		return out, nil
 	},
 )
+var AccountColumns = struct {
+	Address orm.Column[AccountRow, string]
+	Balance orm.Column[AccountRow, big.Int]
+}{
+	Address: orm.ColumnOf[string](Account, "address"),
+	Balance: orm.ColumnOf[big.Int](Account, "balance"),
+}

@@ -94,3 +94,10 @@ var Table = orm.Define[TableKey, TableInsert, TableUpdate, TableRow]("table",
 		return out, nil
 	},
 )
+var TableColumns = struct {
+	Id    orm.Column[TableRow, string]
+	Other orm.Column[TableRow, int64]
+}{
+	Id:    orm.ColumnOf[string](Table, "id"),
+	Other: orm.ColumnOf[int64](Table, "other"),
+}
