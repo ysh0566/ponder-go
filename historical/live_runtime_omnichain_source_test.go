@@ -300,8 +300,8 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 }
 
 type omnichainCrashSpec struct {
-	RPC, Phase, Marker string
-	Storage            store.IndependentStorageOptions
+	Backend, RPC, Phase, Marker string
+	Storage                     store.IndependentStorageOptions
 }
 
 func omnichainCrashChild(t *testing.T, path string) {
@@ -317,7 +317,7 @@ func omnichainCrashChild(t *testing.T, path string) {
 	p := &finiteRPC{server: &httptest.Server{URL: s.RPC}}
 	calls := []string{}
 	exit := func() {
-		raw, _ := json.Marshal(map[string]any{"phase": s.Phase, "calls": calls, "pid": os.Getpid(), "exit": 83, "postgres_engine_stays_running": true})
+		raw, _ := json.Marshal(map[string]any{"phase": s.Phase, "calls": calls, "pid": os.Getpid(), "exit": 83, "backend": s.Backend, "postgres_engine_stays_running": s.Backend == "postgres"})
 		if os.WriteFile(s.Marker, raw, 0600) != nil {
 			os.Exit(87)
 		}
@@ -336,10 +336,7 @@ func omnichainCrashChild(t *testing.T, path string) {
 		}
 		return nil
 	}}
-	r, err := OpenRuntimePostgres(context.Background(), o)
-	if err != nil {
-		t.Fatal(err)
-	}
+	r := runtimeOpen(t, s.Backend, o)
 	_, err = r.Run(context.Background())
 	t.Fatalf("child did not exit: %v", err)
 }
@@ -348,18 +345,25 @@ func TestRuntimeOmnichainApplicationExit(t *testing.T) {
 		omnichainCrashChild(t, path)
 		return
 	}
+	for _, backend := range []string{"postgres", "pglite"} {
+		runOmnichainBlockExits(t, backend)
+	}
+}
+
+func runOmnichainBlockExits(t *testing.T, backend string) {
+	t.Helper()
 	for _, phase := range []string{"handler", "activated"} {
-		t.Run("postgres/"+phase, func(t *testing.T) {
+		t.Run(backend+"/"+phase, func(t *testing.T) {
 			continuousRoot(t)
 			g := loadOmnichainGolden(t)
 			p := omnichainGoldenRPC(t, g, "")
 			calls := []string{}
 			b := omnichainGoldenBuild(t, p, omnichainGoldenHandler(g, &calls, nil))
-			f := newManagedFiniteFixture(t, "postgres", b)
+			f := newManagedFiniteFixture(t, backend, b)
 			omnichainGoldenStorage(&f)
 			dir := newRuntimeExitDirectory(t, "omni-app-exit-"+phase+"-")
 			marker := filepath.Join(dir, "exit-marker.json")
-			spec := omnichainCrashSpec{RPC: p.server.URL, Phase: phase, Marker: marker, Storage: f.options.Owned.Storage}
+			spec := omnichainCrashSpec{Backend: backend, RPC: p.server.URL, Phase: phase, Marker: marker, Storage: f.options.Owned.Storage}
 			raw, err := json.Marshal(spec)
 			if err != nil {
 				t.Fatal(err)
@@ -389,11 +393,12 @@ func TestRuntimeOmnichainApplicationExit(t *testing.T) {
 				t.Fatal(err)
 			}
 			var proof struct {
-				Phase string
-				Calls []string
-				Exit  int
+				Backend, Phase string
+				PID            int
+				Calls          []string
+				Exit           int
 			}
-			if err = json.Unmarshal(raw, &proof); err != nil || proof.Phase != phase || proof.Exit != 83 {
+			if err = json.Unmarshal(raw, &proof); err != nil || proof.Phase != phase || proof.Exit != 83 || proof.PID != cmd.Process.Pid || proof.Backend != backend {
 				t.Fatalf("bad marker %s %v", raw, err)
 			}
 			if phase == "handler" {
@@ -409,7 +414,7 @@ func TestRuntimeOmnichainApplicationExit(t *testing.T) {
 			}
 			epochs := []uint64{}
 			o := RuntimeOptions{Historical: runtimeFixtureInput(f), BuildID: "omni-app-exit-v1", OpenID: "exit-parent-2", Requesters: runtimeFactory(p, &epochs)}
-			r := runtimeOpen(t, "postgres", o)
+			r := runtimeOpen(t, backend, o)
 			out, err := r.Run(context.Background())
 			if err != nil || !out.Completed || !out.Ready || !out.Recovered {
 				t.Fatalf("app exit recovery %+v %v", out, err)
@@ -428,6 +433,17 @@ func TestRuntimeOmnichainApplicationExit(t *testing.T) {
 				t.Fatal(err)
 			}
 			assertOmnichainGoldenResult(t, g, f, c)
+
+			calls = nil
+			o.OpenID = "completed-reopen"
+			r = runtimeOpen(t, backend, o)
+			out, err = r.Run(t.Context())
+			if err != nil || !out.Completed || !out.Ready || !out.Recovered || len(calls) != 0 {
+				t.Fatalf("completed reopen: result=%+v calls=%v err=%v", out, calls, err)
+			}
+			if err := r.Close(t.Context()); err != nil {
+				t.Fatal(err)
+			}
 		})
 	}
 }

@@ -443,6 +443,8 @@ base, err := config.BuildSourceConfig(sourceConfig, options)
 
 Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 管理独立的业务数据与同步数据时，可以在默认多链排序下将 `RuntimeOptions.Live` 留空，并给每个事件来源设置 `endBlock`。打开时各链都必须已经到达配置的结束高度。要包含创世区块，请为来源设置 `startBlock: 0` 并将 `RuntimeOptions.SourceCheckpoints` 设为 `true`。此时初始 checkpoint 标记区块的起点，回调会收到区块 0。只需索引创世区块时可设置 `endBlock: 0`。新建部署时选择 checkpoint 模式，重开原存储时沿用相同设置。不启用该选项时，有限区间从区块 1 或更高处开始。调用 `Run` 后，索引器处理到各链的结束高度并返回 `Completed`。[来源 checkpoint 验证](../parity/runs/native-bounded-source-checkpoints/RESULT.md)
 
+要让默认多链等待尚未出现的结束区块，给每个来源设置有限的 `endBlock`，并设置 `RuntimeOptions.Live = &historical.RuntimeLiveOptions{}`。提前启动后，运行器先处理现有区块，再轮询各链，所有链都达到各自的结束高度时返回 `Completed`。到达结束高度时仍在重组窗口内的区块，重启后可能从安全检查点重新执行。[双链未来结束高度与重放测试](../historical/live_runtime_continuous_test.go)
+
 可在同一个构建中注册合约的 `合约名:setup` 回调，并逐链配置 `cacheRpcRequests`。setup 在首个事件前提交。第二条链的 setup 失败时，两条链的初始化写入会一起回滚。用相同的 `BuildID`、存储位置和新的 `OpenID` 重试后可重新执行初始化。对关闭缓存的链，回调通过 RPC 读取区块状态，已有的 RPC 缓存记录会保留。独立存储的 Omnichain 有自己的来源与最终确认要求。[双后端测试](../parity/runs/native-bounded-setup-cache/RESULT.md) · [运行模式矩阵](RUNTIME_SUPPORT.md)
 
 使用工厂合约发现子地址时，将 `RuntimeOptions.FactorySources` 和 `SourceCheckpoints` 都设为 `true`。将 `Live` 留空即可在固定高度结束。工厂地址配置里的 `startBlock` 和 `endBlock` 决定扫描创建事件的范围，子合约或账户配置的区间决定向 Go 回调投递哪些事件。例如，工厂在区块 1 创建的子合约，即使其日志回调从区块 3 才开始，仍可在区块 3 收到事件。重开同一部署时，运行器按区块哈希恢复子地址，RPC 节点需能返回创建区间的区块和日志。未最终确认的区块被替换后，回放会使用新分支创建的子地址。[有限区间工厂测试](../parity/runs/native-bounded-factory/RESULT.md)
@@ -450,6 +452,8 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并让同一条链上的日志来源使用相同区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。该运行器要求启用 RPC 缓存，且各链的结束位置都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
 
 要同时处理账户和合约调用，请在每条链上注册一个 `interval: 1`、`offset: 0` 的区块来源及其 `名称:block` 回调。让这个来源的区间覆盖该链上的其他来源。静态账户可注册 `Wallet:transaction:from`、`Wallet:transaction:to`、`Wallet:transfer:from` 和 `Wallet:transfer:to`。对静态合约启用 `includeCallTraces`，再按 ABI 注册函数回调，例如 `Worker.record()`。需要读取回执时，在相应来源配置中启用 `includeTransactionReceipts`。同一笔有金额的合约调用可同时触发交易、函数和转账回调，最后执行该块的区块回调。[两条 Anvil 链上的运行与重启用例](../historical/omnichain_account_events_test.go)
+
+若索引进程在已确认区间的区块或静态日志回调中突然退出，用原来的业务库和同步库、同一份来源配置和相同的 `BuildID` 重新打开，并为这次打开分配新的 `OpenID`。运行器从已提交的跨链回调组继续。若进程在运行器进入就绪状态后退出，已经完成的回调不会再次执行。PostgreSQL 使用原来的数据库及命名空间，PGlite 使用原来的两个目录。[应用进程退出验证](../parity/runs/native-omnichain-app-recovery/RESULT.md)
 
 ### 为同一条链配置多个 RPC 节点
 
