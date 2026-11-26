@@ -2252,7 +2252,7 @@
       "evidence": [
         "parity/runs/native-multichain-engine-recovery/RESULT.md"
       ],
-      "remaining": "The native scenarios interrupt a block callback while replaying a replacement branch. Independent Omnichain engine exit during a finalized static-log callback is covered separately. Host power loss and engine exits during independent setup or activation need additional verification."
+      "remaining": "The native scenarios interrupt a block callback while replaying a replacement branch. The native-omnichain-engine-recovery cases cover database engine exits during a finalized static-log callback and on either side of the two-chain setup commit. Host power loss and engine loss during readiness activation remain open."
     },
     {
       "id": "native-bounded-factory",
@@ -2402,12 +2402,17 @@
       "implementation_files": [
         "historical/live_runtime_omnichain_history.go",
         "store/managed_live_runtime.go",
-        "store/managed_live_batch.go"
+        "store/managed_live_batch.go",
+        "historical/live_runtime_setup.go",
+        "store/managed_live_setup.go"
       ],
       "native_test_files": [
         "historical/omnichain_engine_test.go",
+        "internal/testpostgres/local.go",
+        "internal/testpostgres/server.go",
         "historical/live_runtime_omnichain_logs_test.go",
-        "historical/managed_test.go"
+        "historical/managed_test.go",
+        "historical/live_runtime_omnichain_setup_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/database/index.test.ts",
@@ -2415,9 +2420,10 @@
         "packages/core/src/runtime/omnichain.ts"
       ],
       "evidence": [
-        "parity/runs/native-omnichain-engine-recovery/RESULT.md"
+        "parity/runs/native-omnichain-engine-recovery/RESULT.md",
+        "parity/runs/native-omnichain-setup-engine/RESULT.md"
       ],
-      "remaining": "Scoped to engine exits during a finalized historical event transaction. Host power loss, engine interruption during setup and activation, and additional source combinations remain open."
+      "remaining": "Verified finalized historical event transactions and engine loss on either side of setup commit in a two-chain deployment with closing block and static-log callbacks. Readiness activation engine loss, host power loss and other source combinations remain open."
     },
     {
       "id": "native-omnichain-cache-policy",
