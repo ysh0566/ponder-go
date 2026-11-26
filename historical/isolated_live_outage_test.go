@@ -1,0 +1,165 @@
+package historical
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"slices"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/schema"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+func TestRuntimeIsolatedLiveOutage(t *testing.T) {
+	for _, backend := range []string{"postgres", "pglite"} {
+		t.Run(backend, func(t *testing.T) {
+			continuousRoot(t)
+			node := newContinuousRPC(t, 1)
+			var offline atomic.Bool
+			var failures atomic.Int32
+			gateway := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				if req.URL.Path == "/1" && offline.Load() {
+					failures.Add(1)
+					http.Error(w, "chain one unavailable", http.StatusServiceUnavailable)
+					return
+				}
+				node.p.server.Config.Handler.ServeHTTP(w, req)
+			}))
+			t.Cleanup(gateway.Close)
+			raw := fmt.Sprintf(`{"ordering":"experimental_isolated","chains":{"one":{"id":1,"rpc":%q,"reorgWindow":20},"two":{"id":2,"rpc":%q,"reorgWindow":20}},"blocks":{"Blocks":{"chain":{"one":{},"two":{}},"startBlock":1,"endBlock":5,"interval":1}}}`, gateway.URL+"/1", gateway.URL+"/2")
+			calls := map[uint64][]uint64{}
+			handler := indexing.Handler(func(ctx context.Context, a *indexing.HandlerArgs) error {
+				height, err := continuousNumber(a)
+				if err != nil {
+					return err
+				}
+				id := finiteChain(a)
+				calls[id] = append(calls[id], height)
+				_, err = a.Context.DB.InsertOne(ctx, "seen", store.Row{"chainId": int(id), "height": int(height), "hash": a.Event.Get("block").(map[string]any)["hash"]}, store.Conflict{})
+				return err
+			})
+			build := runtimeSourceBuild(t, raw, config.SourceIndexingFunction{Name: "Blocks:block", Fn: handler})
+			f := newManagedFiniteFixture(t, backend, build)
+			f.options.Owned.Storage.Schema = schema.Schema{Tables: []schema.Table{{Name: "seen", PrimaryKey: []string{"chain_id", "height"}, Columns: []schema.Column{
+				{Name: "chain_id", Property: "chainId", Type: "integer", NotNull: true}, {Name: "height", Type: "integer", NotNull: true}, {Name: "hash", Type: "text", NotNull: true},
+			}}}}
+			var epochs []uint64
+			var r *RuntimeRunner
+			var original store.ManagedLiveHead
+			var retryChains []uint64
+			var forks int
+			var recovered bool
+			peerAdvanced := make(chan struct{})
+			const retryInterval = 7 * time.Millisecond
+			var hold atomic.Bool
+			live := &RuntimeLiveOptions{PollingInterval: time.Millisecond, RetryInterval: retryInterval, HeaderCacheCapacity: 1}
+			live.Wait = func(ctx context.Context, d time.Duration) error {
+				if d == retryInterval && hold.Load() {
+					select {
+					case <-peerAdvanced:
+					case <-ctx.Done():
+						return ctx.Err()
+					case <-time.After(40 * time.Second):
+						return fmt.Errorf("healthy chain failed to commit while its peer waited to reconnect")
+					}
+				}
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case <-time.After(d):
+					return nil
+				}
+			}
+			live.OnProgress = func(ctx context.Context, p RuntimeLiveProgress) error {
+				switch p.Type {
+				case "ready":
+					if original.Hash == "" {
+						node.setLatest(2)
+					} else {
+						recovered = true
+					}
+				case "fetch-retry":
+					retryChains = append(retryChains, p.ChainID)
+					if len(retryChains) == 2 {
+						hold.Store(true)
+						node.mu.Lock()
+						node.latest[2] = 4
+						node.mu.Unlock()
+					}
+				case "reorg":
+					if p.ChainID != 1 {
+						return fmt.Errorf("unexpected peer reorg on %d", p.ChainID)
+					}
+					forks++
+				case "block":
+					cp, err := checkpoint.Decode(p.Head.Checkpoint)
+					if err != nil {
+						return err
+					}
+					if p.ChainID == 1 && cp.BlockNumber == 2 && original.Hash == "" {
+						original = p.Head
+						offline.Store(true)
+					}
+					if p.ChainID == 2 && cp.BlockNumber == 4 {
+						c, err := r.Control(ctx)
+						if err != nil {
+							return err
+						}
+						ready, err := r.Ready(ctx)
+						if err != nil {
+							return err
+						}
+						if ready || c.Serving || !offline.Load() || failures.Load() < 2 || c.Cursors[1] != original || c.Cursors[2] != p.Head {
+							return fmt.Errorf("unexpected state during outage: ready=%v serving=%v cursors=%v failures=%d", ready, c.Serving, c.Cursors, failures.Load())
+						}
+						node.fork(1, 2)
+						node.setLatest(5)
+						offline.Store(false)
+						close(peerAdvanced)
+					}
+				}
+				return nil
+			}
+			o := RuntimeOptions{BuildID: "isolated-live-outage", OpenID: "initial", Historical: runtimeFixtureInput(f), Requesters: runtimeFactory(&finiteRPC{server: gateway}, &epochs), Live: live}
+			r = runtimeOpen(t, backend, o)
+			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Minute)
+			defer cancel()
+			out, err := r.Run(ctx)
+			if err != nil || !out.Ready || !out.Completed || !recovered || len(retryChains) < 2 || forks != 1 {
+				t.Fatalf("run=%+v retry chains=%v forks=%d recovered=%t callbacks=%v: %v", out, retryChains, forks, recovered, calls, err)
+			}
+			for _, id := range retryChains {
+				if id != 1 {
+					t.Fatalf("retry marked healthy chain %d as disconnected", id)
+				}
+			}
+			if !slices.Equal(calls[1], []uint64{1, 2, 2, 3, 4, 5}) || !slices.Equal(calls[2], []uint64{1, 2, 3, 4, 5}) {
+				t.Fatalf("callback heights: %v", calls)
+			}
+			if err := r.Close(ctx); err != nil {
+				t.Fatal(err)
+			}
+			managedInspect(t, f, func(db store.Backend) {
+				rows := managedRows(t, db, "SELECT chain_id::text AS id,height::text AS height,hash FROM "+schema.Quote(f.options.Owned.Storage.BusinessNamespace)+".seen ORDER BY chain_id,height")
+				if len(rows) != 10 {
+					t.Fatalf("business rows after recovery: %v", rows)
+				}
+				node.mu.Lock()
+				defer node.mu.Unlock()
+				for i, row := range rows {
+					id, height := uint64(i/5+1), uint64(i%5+1)
+					if row["id"] != fmt.Sprint(id) || row["height"] != fmt.Sprint(height) || row["hash"] != node.canonical[id][height]["hash"] {
+						t.Fatalf("row differs from canonical chain %d height %d: %v", id, height, row)
+					}
+				}
+			})
+		})
+	}
+}

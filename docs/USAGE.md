@@ -12,7 +12,7 @@
 
 如果各链分别维护自己的余额，使用 Isolated，在业务表主键中包含 `chain_id`。如果多条链共同维护一个按事件先后计算的值，使用 Omnichain，运行器会按跨链 checkpoint 排序回调。PostgreSQL 双库存储使用同一数据库内的两个命名空间，PGlite 使用两个数据目录。[独立多链示例](#从同一个-go-项目索引多条链) · [跨链排序示例](#按全局顺序索引多条链) · [双库存储](#独立存储的有限区间索引)
 
-在双库 Isolated 中，设置 `RuntimeOptions.Live` 即可跟随链头。单链 RPC 长时间离线时，若要求健康链继续提交新区块，可选普通入口 `runtime.NewIndexer` 的 Isolated 模式。双库运行器在取块重试时会重建所有链的读取队列。[Isolated 实时配置](#双库-isolated-实时追块) · [健康链推进测试](../runtime/isolated_indexer_test.go)
+在双库 Isolated 中，设置 `RuntimeOptions.Live` 即可跟随链头。实时追块时，一条链的 RPC 离线会使部署暂时未就绪，健康链仍可提交新区块。[Isolated 实时配置](#双库-isolated-实时追块) · [双库故障恢复测试](../historical/isolated_live_outage_test.go)
 
 需要按全局顺序持续追块并自动保存业务数据时，使用普通入口的 Omnichain 模式。双库 Omnichain 应保留 `Live = nil`，并指定有限的结束高度。作业可以提前启动，等待区间最终确认。[跨链排序示例](#按全局顺序索引多条链) · [提前启动](#等待双库-omnichain-的区间最终确认) · [运行器检查](../historical/live_runtime.go)
 
@@ -1016,7 +1016,9 @@ return err
 
 PGlite 可使用 `historical.OpenRuntimePGlite`。双库 Isolated 实时部署的存储格式为 `managed-live-isolated-continuous-v1`。首次启用时，请选择新的业务和同步命名空间或两个新的数据目录。重启同一实时部署时，沿用其存储位置和 `BuildID`，并分配新的 `OpenID`。
 
-运行中若 A 链分叉，回滚和重放只涉及 A 链的孤块。B 链可以独立推进安全检查点。整个进程重启时，各链从自己的安全检查点恢复，其后的未确认回调可能再次执行。将需要随区块回滚的状态写入回调的业务事务。遇到可重试的取块错误时，双库运行器会重建所有链的读取队列。若业务要求一条链长期断线时其他链仍持续推进，普通入口 `runtime.NewIndexer` 的 Isolated 模式已有该场景的测试。[分叉与重启测试](../historical/isolated_live_test.go)
+运行中若 A 链分叉，回滚和重放只涉及 A 链的孤块。B 链可以独立推进安全检查点。整个进程重启时，各链从自己的安全检查点恢复，其后的未确认回调可能再次执行。将需要随区块回滚的状态写入回调的业务事务。[分叉与重启测试](../historical/isolated_live_test.go)
+
+进入实时阶段后，如果 A 链的节点持续返回 HTTP 503，整个部署的 `Ready` 变为 false，B 链仍会执行回调并提交业务数据和检查点。运行器按 `Live.RetryInterval` 查询 A 链的最新区块，默认间隔为一秒。使用 `Live.OnProgress` 时，`fetch-retry` 通知的 `ChainID` 标识故障链。A 链恢复响应后，运行器从已提交的检查点重新校验分支。如果节点换了分支，会撤销 A 链的孤块，再执行替换分支的回调。各链达到可服务条件后，整个部署恢复就绪。首次启动和冷重启仍需要取得各链的启动数据。[持续 503、健康链进度和恢复后的业务行](../parity/runs/native-isolated-rpc-outage/RESULT.md)
 
 ### 为同一条链配置多个 RPC 节点
 
