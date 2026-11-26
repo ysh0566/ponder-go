@@ -57,7 +57,7 @@ func (d *ManagedLiveDomains) readLogScans(ctx context.Context, ranges []logScanR
 	if len(cached) == 0 {
 		return out, nil
 	}
-	cache, err := d.storage.syncCache.SourceSyncStore(0)
+	cache, err := d.storage.syncCache.SourceSyncStore(d.maxQueryParameters)
 	if err != nil {
 		return nil, err
 	}

@@ -21,14 +21,24 @@ type SourceSyncStore struct {
 	bound              *sourceSyncTransaction
 }
 
+// SourceQueryParameterBudget returns the effective limit for batched sync writes.
+// Zero selects Ponder's default. PostgreSQL's Bind message permits 65,535 parameters.
+func SourceQueryParameterBudget(limit int) (int, error) {
+	if limit == 0 {
+		return 16000, nil
+	}
+	if limit < 4 {
+		return 0, fmt.Errorf("source sync query parameter budget must be at least 4")
+	}
+	return min(limit, 65535), nil
+}
+
 func (c *ProtocolCache) SourceSyncStore(maxQueryParameters int) (*SourceSyncStore, error) {
-	if maxQueryParameters == 0 {
-		maxQueryParameters = 16000
+	budget, err := SourceQueryParameterBudget(maxQueryParameters)
+	if err != nil {
+		return nil, err
 	}
-	if maxQueryParameters < 4 {
-		return nil, fmt.Errorf("source sync query parameter budget must be at least4")
-	}
-	return &SourceSyncStore{cache: c, maxQueryParameters: maxQueryParameters}, nil
+	return &SourceSyncStore{cache: c, maxQueryParameters: budget}, nil
 }
 
 type SourceInterval [2]float64

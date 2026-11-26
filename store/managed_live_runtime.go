@@ -28,6 +28,8 @@ func isContinuousRuntimeVersion(v string) bool {
 type ManagedLiveRuntimeOptions struct {
 	ManagedLiveOptions
 	StartBlocks map[uint64]uint64
+	// MaxQueryParameters bounds batched sync writes for this opening.
+	MaxQueryParameters int
 	// Nil means all chains cached. A complete mixed/disabled policy opts into v7.
 	CacheRPCRequests  map[uint64]bool
 	Continuous        bool
@@ -53,6 +55,10 @@ func OpenManagedLiveRuntimePGlite(ctx context.Context, o IndependentStorageOptio
 	return openManagedLiveRuntime(ctx, o, in, false)
 }
 func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in ManagedLiveRuntimeOptions, pg bool) (*ManagedLiveDomains, error) {
+	budget, err := SourceQueryParameterBudget(in.MaxQueryParameters)
+	if err != nil {
+		return nil, err
+	}
 	if in.ObserveDomain != nil && !in.Continuous {
 		return nil, fmt.Errorf("domain observer requires continuous indexing")
 	}
@@ -158,7 +164,12 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 	if err != nil {
 		return nil, fmt.Errorf("runtime native open: %w", err)
 	}
-	d := &ManagedLiveDomains{storage: s, spec: liveDomainSpec(o, opts), openLogScanRPC: in.OpenLogScanRPC}
+	d := &ManagedLiveDomains{
+		storage:            s,
+		spec:               liveDomainSpec(o, opts),
+		openLogScanRPC:     in.OpenLogScanRPC,
+		maxQueryParameters: budget,
+	}
 	if err = d.Resume(ctx); err != nil {
 		_ = s.Close(context.Background())
 		return nil, fmt.Errorf("runtime resume: %w", err)

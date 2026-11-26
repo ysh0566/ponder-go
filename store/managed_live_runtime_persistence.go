@@ -24,7 +24,7 @@ func (d *ManagedLiveDomains) runtimePersist(ctx context.Context, fn func(context
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	source, err := d.storage.syncCache.SourceSyncStore(0)
+	source, err := d.storage.syncCache.SourceSyncStore(d.maxQueryParameters)
 	if err != nil {
 		return err
 	}
