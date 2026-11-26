@@ -238,12 +238,14 @@ func TestRuntimeOmnichainSourceOracle(t *testing.T) {
 	}
 }
 func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
-	for _, name := range []string{"global-finality", "local-finality", "live", "start0", "interval", "factory", "cache-false", "ordering-mismatch"} {
+	for _, name := range []string{"global-finality", "genesis-global-finality", "local-finality", "live", "inverted-range", "interval", "factory", "cache-false", "ordering-mismatch"} {
 		t.Run(name, func(t *testing.T) {
 			g := loadOmnichainGolden(t)
 			latest := ""
 			if name == "global-finality" || name == "local-finality" {
 				latest = "0x2"
+			} else if name == "genesis-global-finality" {
+				latest = "0x0"
 			}
 			p := omnichainGoldenRPC(t, g, latest)
 			calls := []string{}
@@ -254,6 +256,12 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 			switch name {
 			case "global-finality":
 				expected = "global finalized watermark"
+			case "genesis-global-finality":
+				for _, group := range b.Executable().EventCallbacks {
+					f := group[0]["filter"].(map[string]any)
+					f["fromBlock"], f["toBlock"] = uint64(0), uint64(0)
+				}
+				expected = "global finalized watermark"
 			case "local-finality":
 				for _, c := range b.Executable().Chains {
 					c["reorgWindow"] = uint64(1)
@@ -261,9 +269,9 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 				expected = "chain finality"
 			case "live":
 				o.Live = &RuntimeLiveOptions{}
-			case "start0":
-				b.Executable().EventCallbacks[0][0]["filter"].(map[string]any)["fromBlock"] = float64(0)
-				expected = "startBlock>=1"
+			case "inverted-range":
+				b.Executable().EventCallbacks[0][0]["filter"].(map[string]any)["fromBlock"] = float64(3)
+				expected = "startBlock <= endBlock"
 			case "interval":
 				b.Executable().EventCallbacks[0][0]["filter"].(map[string]any)["interval"] = float64(2)
 				expected = "interval1 block callback"

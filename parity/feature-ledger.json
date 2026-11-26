@@ -2159,6 +2159,32 @@
         "parity/runs/native-bounded-factory/RESULT.md"
       ],
       "remaining": "Independent Omnichain still excludes factory sources. Bounded default runs require source checkpoints for factory discovery and a known end on each chain."
+    },
+    {
+      "id": "native-omnichain-genesis",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "historical/live_runtime_omnichain_callbacks.go",
+        "store/managed_live_runtime.go",
+        "store/managed_live_logonly.go"
+      ],
+      "native_test_files": [
+        "historical/omnichain_genesis_test.go",
+        "historical/live_runtime_omnichain_source_test.go",
+        "historical/live_runtime_omnichain_logs_test.go",
+        "historical/live_runtime_omnichain_logonly_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/index.ts",
+        "packages/core/src/runtime/index.test.ts",
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/historical.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-genesis/RESULT.md"
+      ],
+      "remaining": "The independent Omnichain runner still requires finite cached ranges under global finality, either closing block sources on each chain or uniform static log-only sources. Live sources, factories, account and trace sources, and setup remain outside these modes."
     }
   ]
 }
