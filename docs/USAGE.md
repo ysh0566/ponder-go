@@ -1157,6 +1157,8 @@ PONDER_LOCAL_DATABASE_URL="$WRITER_URL" PONDER_DATABASE_MODE=existing \
 
 使用 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 的默认多链持续索引器发生中断时，保留原业务库、同步库和 `BuildID`。PostgreSQL 恢复原数据库实例后使用原命名空间，PGlite 重新打开原来的两个目录。为新运行实例设置新的 `OpenID`，调用 `Run`，并用 `Ready` 检查是否已完成重放。业务库已经提交重组回滚、而同步库尚未确认时，运行器会核对并完成这次操作。[恢复测试](../parity/runs/native-coordinated-engine-recovery/RESULT.md)
 
+双库 Omnichain 完成已确认区块的回填后，运行器会在业务库的同一笔事务里建立查询索引并记录就绪状态。如果业务库在提交前停止，两条链已提交的数据和检查点仍然保留。若仅 PGlite 同步库停止，业务库可能已经提交就绪记录，但运行器的 `Ready()` 会返回 `false`。恢复两个存储后，保留原部署配置并使用新的 `OpenID` 重开。等新运行器的 `Ready()` 返回 `true` 后再对外报告就绪。[就绪事务中断实测](../parity/runs/native-omnichain-activation-engine/RESULT.md)
+
 尚未最终确认的区块可能再次触发回调。需要随重组撤销的业务状态应通过回调的数据库事务写入。重复投递到外部系统的处理由应用负责。
 
 ## 常见问题
