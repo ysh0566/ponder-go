@@ -261,11 +261,15 @@ func (s *Service) ProcessSetupEvents(ctx context.Context) error {
 // The owner uses before for transaction-local journal attribution, never to
 // dispatch a second service or reorder callbacks by chain.
 func (s *Service) processSetupEvents(ctx context.Context, before func(uint64) error) error {
+	return s.processSetupGroups(ctx, before, s.options.Build.SetupCallbacks)
+}
+
+func (s *Service) processSetupGroups(ctx context.Context, before func(uint64) error, groups [][]Object) error {
 	if e := s.begin(ctx); e != nil {
 		return e
 	}
 	defer s.active.Store(false)
-	for _, group := range s.options.Build.SetupCallbacks {
+	for _, group := range groups {
 		for _, cb := range group {
 			if e := ctx.Err(); e != nil {
 				return e

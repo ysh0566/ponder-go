@@ -139,7 +139,7 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 	var rolling ManagedLiveControl
 	var generation uint64
 	var token string
-	var baseline map[uint64]ManagedLiveHead
+	baseline := map[uint64]ManagedLiveHead{}
 	latest := map[uint64]string{}
 	active := []ManagedLiveSegment{}
 	activeJournal := []managedLiveJournalEntry{}
@@ -214,9 +214,9 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 			if err != nil || len(planned) != len(evidence.Segments) || managedHash(before) != managedHash(evidence.BeforeCursors) {
 				return nil, ErrManagedLiveBatchConflict
 			}
-			if rolling.Batches == 0 {
-				baseline = cloneLiveHeads(normalized.Baselines)
-				for id, head := range baseline {
+			if len(normalized.Baselines) > 0 {
+				for id, head := range normalized.Baselines {
+					baseline[id] = head
 					expectedProofs[liveProofKey(head)] = head
 					latest[id] = head.Checkpoint
 					if m.opts.runtimeInitial {
@@ -292,6 +292,9 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 			states := make([]managedLiveCursorState, 0, len(m.opts.Chains))
 
 			for _, chain := range m.opts.Chains {
+				if _, ok := rolling.Cursors[chain.ID]; !ok {
+					continue
+				}
 				states = append(states, managedLiveCursorState{ChainID: chain.ID, Name: chain.Name, Latest: latest[chain.ID], Finalized: liveFinalCheckpoint(rolling, baseline, chain.ID), Safe: liveSafeCheckpoint(rolling, baseline, chain.ID), Cursor: liveCursorCheckpoint(rolling, chain.ID)})
 			}
 			recoveryOpts := m.opts
@@ -418,7 +421,7 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 			return nil, ErrManagedLivePendingActions
 		}
 	} else {
-		if len(d.States) != len(m.opts.Chains) || len(d.Control.Cursors) != len(m.opts.Chains) {
+		if len(d.States) != len(d.Control.Cursors) || (!m.opts.isolatedSetup() && len(d.Control.Cursors) != len(m.opts.Chains)) {
 			return nil, ErrManagedLiveBatchConflict
 		}
 		states := map[uint64]managedLiveCursorState{}
@@ -429,6 +432,9 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 			states[state.ChainID] = state
 		}
 		for _, chain := range m.opts.Chains {
+			if _, initialized := d.Control.Cursors[chain.ID]; !initialized {
+				continue
+			}
 			state, ok := states[chain.ID]
 			finalized := liveFinalCheckpoint(d.Control, baseline, chain.ID)
 			safe := liveSafeCheckpoint(d.Control, baseline, chain.ID)

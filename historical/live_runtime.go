@@ -49,7 +49,7 @@ type RuntimeOptions struct {
 	// Requesters supplies fresh transports for preflight, fetch epochs and uncached source scans.
 	Requesters  func(context.Context, uint64) ([]rpc.Requester, error)
 	OnActivated func(context.Context) error
-	// OnSetupCommitted observes authenticated setup commit before source events.
+	// OnSetupCommitted runs after all initial setup transactions commit and before source events.
 	OnSetupCommitted func(context.Context) error
 }
 type RuntimeResult struct {
@@ -197,9 +197,6 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		}
 		r.starts[id] = first
 	}
-	if b.Ordering == string(schema.Isolated) && r.setup {
-		return nil, fmt.Errorf("bounded isolated setup requires per-chain bootstrap")
-	}
 	if o.OnSetupCommitted != nil && !r.setup {
 		return nil, fmt.Errorf("setup observer requires setup callbacks")
 	}
@@ -316,6 +313,9 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		}
 		if b.Ordering == string(schema.Isolated) {
 			f, _ := checkpoint.Decode(r.finalized[id].Checkpoint)
+			if r.lastSetupBlock(i) > f.BlockNumber {
+				return nil, fmt.Errorf("isolated setup block on chain %d exceeds chain finality", id)
+			}
 			if r.ends[id] > f.BlockNumber {
 				return nil, fmt.Errorf("isolated end on chain %d exceeds chain finality", id)
 			}

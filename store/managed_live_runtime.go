@@ -67,9 +67,6 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 		}
 		in.runtimeOmnichain = o.Ordering == schema.Omnichain
 		in.runtimeIsolated = o.Ordering == schema.Isolated
-		if in.runtimeIsolated && in.Setup {
-			return nil, fmt.Errorf("bounded isolated setup requires per-chain bootstrap")
-		}
 	}
 	opts, err := normalizeManagedLiveOptions(o, in.ManagedLiveOptions)
 	if err != nil {

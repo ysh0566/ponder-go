@@ -231,7 +231,7 @@ func compileOmniLogsConfig(t *testing.T, source map[string]any, functions []conf
 	if err != nil {
 		t.Fatal(err)
 	}
-	base, err := config.BuildSourceConfig(cfg, config.SourceBuildOptions{RPCMaxConcurrency: 2})
+	base, err := config.BuildSourceConfig(cfg, config.SourceBuildOptions{RPCMaxConcurrency: max(2, len(source["chains"].(map[string]any)))})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -32,7 +32,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 
 如果要把业务数据和同步缓存分开管理，`historical.RuntimeRunner` 还有两项功能缺口。
 
-1. **双库 Isolated 实时索引与按链初始化**。已支持各链独立回填最终确认的有限区间。一个回调失败后，重启会从该链上次提交的位置继续，其他链已提交的回调保留。还缺逐链 `setup`、持续追块，以及只撤销分叉链的双库恢复流程。[双链验证](historical/isolated_finalized_test.go) · [配置方法](docs/USAGE.md#双库-isolated-按链回填)
+1. **双库 Isolated 实时索引**。已支持各链独立回填最终确认的有限区间。每条链也可用 `setup` 初始化本链数据。一条链初始化失败时，其他链已提交的初始化和进度会保留。还缺持续追块，以及只撤销分叉链的双库恢复流程。[初始化与重启](historical/isolated_setup_test.go) · [配置方法](docs/USAGE.md#双库-isolated-按链回填)
 2. **双库 Omnichain 实时索引**。已支持各链均最终确认的有限区间。还需要在追上历史后持续接收区块，遇到重组时按全局 checkpoint 撤销并重放受影响的跨链回调，重启后恢复该进度。[实时与最终性边界测试](historical/live_runtime_omnichain_source_test.go)
 
 | 使用场景 | 当前能用什么 | 还缺什么 |
@@ -40,7 +40,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 | 从现成模板创建 Go 索引器 | 上游创建菜单的 16 个示例都有 Go 模板。默认 `erc20` 适合本地入门。`reference-erc20` 提供主网固定区间的余额、授权历史及账户转账关系。另有 NFT、金库、工厂、多链存款、Friendtech、Uniswap V3 闪电贷等模板。参考模板提供示例的 GraphQL 入口。[选择模板与启动](docs/USAGE.md#选择-go-项目模板) | 主网模板已在自建节点上重现事件并验证查询。实际公链历史回放仍需相应网络的归档数据。[模板验证](parity/runs/native-reference-erc20/RESULT.md) |
 | 用 Go 在同一个进程索引多链 | `runtime.NewIndexer` 支持默认、Isolated 和 Omnichain 三种排序。工厂发现、合约 CALL、日志、交易和转账都已有节点切换与分叉测试。Isolated 保留另一条链已提交的回调，默认多链和 Omnichain 会重新执行受影响的跨链回调。[混合来源重组与重启](parity/runs/native-mixed-source-reorg/RESULT.md) | 数据库引擎在替换分支的混合事件回调中退出时，恢复结果仍待验证。[运行模式矩阵](docs/RUNTIME_SUPPORT.md) |
 | 双库默认多链 | 默认多链支持实时追块、链重组、从创世区块开始、工厂来源和按链配置 RPC 缓存。可在各链达到结束高度后退出，也可用 `ponder start` 持续运行，通过 HTTP 查询已提交的进度与业务数据。停止后可以重启补块。PostgreSQL 部署也可通过 `ponder serve` 启动独立的只读 SQL/SSE 服务。`ponder dev` 支持修改 Go 处理函数后按修订重新索引，编译失败时仍可查询原进程。[热重载用法](docs/USAGE.md#双库-go-项目的热重载) · [独立查询进程](docs/USAGE.md#双库-postgresql-的独立查询进程) · [双库 CLI 示例](docs/USAGE.md#用-cli-启动独立存储的多链索引器) · [有限区间用法](docs/USAGE.md#独立存储的有限区间索引) | 更多来源组合和 RPC 故障场景仍待验证。[运行模式矩阵](docs/RUNTIME_SUPPORT.md) |
-| 双库 Isolated | 已支持各链独立回填最终确认的有限区间，包括从创世区块开始。逐块提交，回调失败后可从已提交位置继续。[配置方法](docs/USAGE.md#双库-isolated-按链回填) | 逐链初始化、持续追块和未最终确认区块的分叉恢复。[双链测试](historical/isolated_finalized_test.go) |
+| 双库 Isolated | 已支持各链独立回填最终确认的有限区间，包括从创世区块开始。各链可单独提交初始化数据与初始检查点，随后逐块提交。回调失败后从已提交位置继续。[配置方法](docs/USAGE.md#双库-isolated-按链回填) | 持续追块和未最终确认区块的分叉恢复。[双链测试](historical/isolated_finalized_test.go) |
 | 双库 Omnichain，使用账户、CALL 或区块回调 | 支持已最终确认的有限区间。各链可独立开关缓存，处理静态或工厂发现的合约日志与 CALL、账户交易与转账。账户交易、转账和合约 CALL 均可单独订阅。合约 CALL 支持静态地址、工厂子地址及逐链开关缓存。[合约 CALL 回填与重启](parity/runs/native-omnichain-sparse-contract-calls/RESULT.md) [关闭缓存的账户回填](parity/runs/native-omnichain-uncached-accounts/RESULT.md)其他链可以只监听日志，也可以注册区块回调。每条链支持不同的采样间隔和区间，同块命中的多个区块回调一同提交。[按间隔回填](parity/runs/native-omnichain-block-intervals/RESULT.md) 所有链的 `setup` 在首个事件前一起提交。[账户回填与重启](parity/runs/native-omnichain-sparse-accounts/RESULT.md) · [混合回调用法](docs/USAGE.md#在不同链上使用不同的回调) · [工厂发现与恢复](parity/runs/native-omnichain-factory/RESULT.md) · [初始化与重启](parity/runs/native-omnichain-setup/RESULT.md) | 还缺实时追块与跨链重组恢复。[配置校验](historical/live_runtime_omnichain_callbacks.go) |
 | 双库 Omnichain，所有链只监听日志 | 支持已最终确认的静态合约日志和工厂子合约日志，各来源的区间可重叠或不相交。可逐链关闭 RPC 缓存。即使区间中间或末尾没有可解码的事件，也能核对扫描进度、就绪并重启。[工厂发现与重启](parity/runs/native-omnichain-log-factory/RESULT.md) · [逐来源区间](parity/runs/native-omnichain-log-ranges/RESULT.md) · [关闭缓存与恢复](parity/runs/native-omnichain-uncached-logs/RESULT.md) | 实时追块与跨链重组仍待实现。 |
 | 在 RPC 故障或链重组时保持索引一致 | PostgreSQL 和 PGlite 均已验证同一条日志命中三个 Go 回调、同一笔 CALL 命中两个函数选择器相同的回调，以及回调失败后的重启和链重组重放。默认多链和 Omnichain 在同链节点切换、分支改变后均会重放受影响的跨链回调。 | 仍有 17 条依赖特定网关或历史链数据的上游 RPC 用例未通过。[节点切换测试](parity/runs/native-rpc-pool-reorg/RESULT.md) · [回调重放测试](parity/runs/native-callback-overlap/RESULT.md) |
