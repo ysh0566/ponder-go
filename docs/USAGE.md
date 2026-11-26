@@ -451,6 +451,8 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并让同一条链上的日志来源使用相同区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
 
+纯静态日志索引会用每个匹配回调的 ABI 检查日志。例如，合约发出的日志缺少 `uint256` 参数时，无法解码它的回调会跳过。即使一条链的剩余日志全部被跳过，只要同步库能证明已扫描到结束高度，索引器仍可就绪。扫描结束高度和最后提交的业务检查点可能不同。用同一配置重启后，已提交的回调不会重复执行。[区间末尾与重启测试](../parity/runs/native-omnichain-abi-tail/RESULT.md)
+
 每条链都注册了逐块回调时，可以在 Go 来源声明中逐链设置 RPC 缓存。例如，下面的链在内存中处理历史事件，回调直接从节点读取链上状态。其他链可以保留默认的缓存设置。关闭缓存的链仍然保存业务数据和检查点。重启时沿用原有缓存策略和存储位置。纯静态日志模式依靠同步库证明日志区间已完整扫描，所有链都需要开启缓存。[缓存与重启测试](../parity/runs/native-omnichain-cache-policy/RESULT.md)
 
 ```go

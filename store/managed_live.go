@@ -37,19 +37,20 @@ type ManagedLiveHead struct {
 // but bound to an exact, caller-named initialization/recovery receipt.
 type ManagedLiveOptions struct {
 	ManagedFiniteOptions
-	OpenID             string
-	FinalizedHeads     map[uint64]ManagedLiveHead
-	recovery           bool
-	coordinated        bool
-	liveRuntime        bool
-	liveContinuous     bool
-	runtimeStarts      map[uint64]uint64
-	runtimeCachePolicy map[uint64]bool
-	runtimeSetup       bool
-	runtimeInitial     bool
-	runtimeFactories   bool
-	runtimeOmnichain   bool
-	runtimeLogFilters  map[uint64][]filter.Object
+	OpenID              string
+	FinalizedHeads      map[uint64]ManagedLiveHead
+	recovery            bool
+	coordinated         bool
+	liveRuntime         bool
+	liveContinuous      bool
+	runtimeStarts       map[uint64]uint64
+	runtimeCachePolicy  map[uint64]bool
+	runtimeSetup        bool
+	runtimeInitial      bool
+	runtimeFactories    bool
+	runtimeOmnichain    bool
+	runtimeLogFilters   map[uint64][]filter.Object
+	runtimeLogCallbacks map[uint64][]filter.Object
 	// Populated on a local copy for planning after the page contents have been verified.
 	verifiedRangeParents map[ManagedLiveHead]ManagedLiveHead
 }

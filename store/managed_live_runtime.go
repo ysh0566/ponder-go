@@ -32,8 +32,10 @@ type ManagedLiveRuntimeOptions struct {
 	Setup             bool
 	SourceCheckpoints bool
 	LogOnlyFilters    map[uint64][]filter.Object
-	FactorySources    bool
-	ObserveDomain     func(context.Context, ManagedLiveDomainStage) error
+	// Event ABI items in the same order as LogOnlyFilters, for proving ABI-skipped ranges.
+	LogOnlyEventABIs map[uint64][]any
+	FactorySources   bool
+	ObserveDomain    func(context.Context, ManagedLiveDomainStage) error
 }
 
 // Runtime constructors isolate the active lifecycle format from domains-v4.
@@ -112,6 +114,12 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 
 	if in.LogOnlyFilters != nil {
 		opts.runtimeLogFilters, err = normalizeLogOnlyFilters(in.LogOnlyFilters, opts)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if in.LogOnlyEventABIs != nil {
+		opts.runtimeLogCallbacks, err = logOnlyABICallbacks(opts.runtimeLogFilters, in.LogOnlyEventABIs)
 		if err != nil {
 			return nil, err
 		}

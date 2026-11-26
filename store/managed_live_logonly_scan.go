@@ -2,10 +2,13 @@ package store
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
 	"sort"
 
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/events"
 	"github.com/ysh0566/ponder-go/filter"
 )
 
@@ -59,7 +62,7 @@ func (m *ManagedLive) validateLogOnlyScan(c ManagedLiveControl, scans map[uint64
 		id := chain.ID
 		scan, ok := scans[id]
 		filters := m.opts.runtimeLogFilters[id]
-		if !ok || scan.FiltersHash != managedHash(filters) || len(scan.Coverage) != len(filters) {
+		if !ok || !m.opts.validLogScanHash(id, scan.FiltersHash) || len(scan.Coverage) != len(filters) {
 			return nil, ErrManagedLiveBatchConflict
 		}
 		end, err := scan.pagedScanEnd(c, id)
@@ -117,9 +120,7 @@ func (d *ManagedLiveDomains) logOnlyScan(ctx context.Context, c ManagedLiveContr
 				if err != nil {
 					return err
 				}
-				// Only actual absence of remaining matched raw logs can close a chain
-				// omitted by the coordinator. ABI-skipped nonempty tails stay unsupported.
-				err = logOnlyEmptyTail(ctx, SourceEventDataArgs{Filters: filters, ChainID: id, FromBlock: float64(scan.EmptyFrom), ToBlock: float64(m.opts.EndBlocks[id]), Limit: 1}, s.GetEventData)
+				scan.FiltersHash, err = m.opts.logOnlyScanHash(ctx, SourceEventDataArgs{Filters: filters, ChainID: id, FromBlock: float64(scan.EmptyFrom), ToBlock: float64(m.opts.EndBlocks[id]), Limit: 1}, s.GetEventData)
 				if err != nil {
 					return err
 				}
@@ -132,27 +133,107 @@ func (d *ManagedLiveDomains) logOnlyScan(ctx context.Context, c ManagedLiveContr
 	return scans, err
 }
 
-func logOnlyEmptyTail(ctx context.Context, args SourceEventDataArgs, read func(context.Context, SourceEventDataArgs) (SourceEventData, error)) error {
+// The plain filter hash certifies a range without matching raw logs. If raw
+// logs were skipped, the receipt binds the ordered ABI/filter pairs used by
+// the real decoder. The two proofs share the same coverage and lineage checks.
+func (o ManagedLiveOptions) validLogScanHash(id uint64, digest string) bool {
+	callbacks := o.runtimeLogCallbacks[id]
+	return digest == managedHash(o.runtimeLogFilters[id]) || (len(callbacks) > 0 && digest == managedHash(callbacks))
+}
+
+func logOnlyABICallbacks(filters map[uint64][]filter.Object, abis map[uint64][]any) (map[uint64][]filter.Object, error) {
+	if len(abis) != len(filters) || len(filters) == 0 {
+		return nil, ErrManagedLiveBatchConflict
+	}
+	result := make(map[uint64][]filter.Object, len(filters))
+	for id, group := range filters {
+		if len(abis[id]) != len(group) {
+			return nil, ErrManagedLiveBatchConflict
+		}
+		for i, f := range group {
+			raw, err := json.Marshal(abis[id][i])
+			if err != nil {
+				return nil, err
+			}
+			var item abi.Event
+			if err := json.Unmarshal(raw, &item); err != nil {
+				return nil, err
+			}
+			if item.Type != "event" || item.Name == "" {
+				return nil, fmt.Errorf("invalid log-only event ABI for chain %d", id)
+			}
+			result[id] = append(result[id], filter.Object{"type": "contract", "filter": f, "abiItem": item})
+		}
+	}
+	return result, nil
+}
+
+func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEventDataArgs, read func(context.Context, SourceEventDataArgs) (SourceEventData, error)) (string, error) {
+	callbacks := o.runtimeLogCallbacks[args.ChainID]
+	skipped := false
 	for {
 		if err := ctx.Err(); err != nil {
-			return err
+			return "", err
 		}
 		rows, err := read(ctx, args)
 		if err != nil {
-			return err
+			return "", err
 		}
 		if len(rows.Logs) != 0 {
-			return fmt.Errorf("log-only scan has unprocessed source logs: %w", ErrManagedLivePendingActions)
+			if err := verifyABISkippedPage(args.ChainID, callbacks, rows); err != nil {
+				return "", err
+			}
+			skipped = true
 		}
 		if math.IsNaN(rows.Cursor) || math.IsInf(rows.Cursor, 0) || math.Trunc(rows.Cursor) != rows.Cursor || rows.Cursor < args.FromBlock || rows.Cursor > args.ToBlock {
-			return ErrManagedLiveBatchConflict
+			return "", ErrManagedLiveBatchConflict
 		}
 		if rows.Cursor == args.ToBlock {
-			return nil
+			if skipped {
+				return managedHash(callbacks), nil
+			}
+			return managedHash(args.Filters), nil
 		}
 		args.FromBlock = rows.Cursor + 1
 	}
 }
+
+func verifyABISkippedPage(chainID uint64, callbacks []filter.Object, rows SourceEventData) error {
+	if len(callbacks) == 0 {
+		return ErrManagedLivePendingActions
+	}
+	raw, err := events.BuildEvents(events.Batch{ChainID: chainID, EventCallbacks: callbacks, Blocks: rows.Blocks, Transactions: rows.Transactions, TransactionReceipts: rows.TransactionReceipts, Logs: rows.Logs})
+	if err != nil {
+		return err
+	}
+	// A single log may match several callbacks. Account for every log
+	// before allowing its range to close.
+	distinct := 0
+	for i, event := range raw {
+		height, ok := logOnlyQuantity(event.Log["blockNumber"])
+		block, hasBlock := logOnlyQuantity(event.Block["number"])
+		_, hasData := event.Log["data"].(string)
+		if !ok || !hasBlock || block != height || !hasData {
+			return ErrManagedLiveBatchConflict
+		}
+		if i == 0 || raw[i-1].Checkpoint != event.Checkpoint {
+			distinct++
+		}
+	}
+	if distinct != len(rows.Logs) {
+		return ErrManagedLiveBatchConflict
+	}
+	var decoder events.Decoder
+	decoded, err := decoder.DecodeEvents(nil, callbacks, raw)
+	if err != nil {
+		return err
+	}
+	if len(decoded) != 0 {
+		return fmt.Errorf("log-only scan has unprocessed source logs: %w", ErrManagedLivePendingActions)
+	}
+	return nil
+}
+
 func validateLogCoverage(filters []filter.Object, coverage [][]managedLogOnlyFragment, start, end uint64) error {
 	if len(coverage) != len(filters) {
 		return ErrManagedLiveBatchConflict

@@ -8,18 +8,20 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 )
 
-func (r *RuntimeRunner) logOnlyFilters() map[uint64][]filter.Object {
+func (r *RuntimeRunner) logOnlySources() (map[uint64][]filter.Object, map[uint64][]any) {
 	if !r.logOnly {
-		return nil
+		return nil, nil
 	}
-	out := map[uint64][]filter.Object{}
+	filters := map[uint64][]filter.Object{}
+	abis := map[uint64][]any{}
 	for i, c := range r.build.Chains {
 		id := runtimeChainID(c)
 		for _, cb := range r.build.EventCallbacks[i] {
-			out[id] = append(out[id], cb["filter"].(map[string]any))
+			filters[id] = append(filters[id], cb["filter"].(map[string]any))
+			abis[id] = append(abis[id], cb["abiItem"])
 		}
 	}
-	return out
+	return filters, abis
 }
 func (r *RuntimeRunner) validateOmnichainPartition(events []indexing.Object, head store.ManagedLiveHead) error {
 	if !r.logOnly {

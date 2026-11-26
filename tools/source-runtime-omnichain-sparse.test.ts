@@ -126,7 +126,14 @@ async function testDatabase(persistent: boolean): Promise<{
 	};
 }
 
-async function sparseRun(querySize: number, active: number[], fail: boolean) {
+async function sparseRun(
+	querySize: number,
+	active: number[],
+	fail: boolean,
+	skipTail = false,
+) {
+	const endBlock = skipTail ? 3 : end;
+	const laterBlock = skipTail ? 3 : distant;
 	const cliOptions = {
 		command: "start",
 		config: "",
@@ -151,7 +158,7 @@ async function sparseRun(querySize: number, active: number[], fail: boolean) {
 		statements: buildSchema({ schema, preBuild }).statements,
 	};
 	const calls: string[] = [];
-	const failAt = callbackKey(2, distant, 1, "A");
+	const failAt = callbackKey(2, laterBlock, 1, "A");
 	let injectFailure = fail;
 	const indexingFunctions = ["A", "B"].map((name) => ({
 		name: `Token${name}:Value`,
@@ -217,7 +224,7 @@ async function sparseRun(querySize: number, active: number[], fail: boolean) {
 					topic2: null,
 					topic3: null,
 					fromBlock: 1,
-					toBlock: end,
+					toBlock: endBlock,
 					hasTransactionReceipt: false,
 					include: defaultLogFilterInclude,
 				},
@@ -236,7 +243,8 @@ async function sparseRun(querySize: number, active: number[], fail: boolean) {
 			}) => {
 				expect(method).toBe("eth_getBlockByNumber");
 				expect(params[1]).toBe(false);
-				expect([1, end]).toContain(Number(params[0]));
+				if (skipTail) expect([1, 2, 3]).toContain(Number(params[0]));
+				else expect([1, endBlock]).toContain(Number(params[0]));
 				return {
 					...golden.chains[id - 1].blocks[0],
 					...header(id, Number(params[0])),
@@ -253,7 +261,7 @@ async function sparseRun(querySize: number, active: number[], fail: boolean) {
 		buildId: "deadbeef01",
 		chains,
 		rpcs,
-		finalizedBlocks: chains.map(({ id }) => header(id, end + 1)),
+		finalizedBlocks: chains.map(({ id }) => header(id, endBlock + 1)),
 		eventCallbacks,
 		setupCallbacks: [[], []],
 		indexingFunctions,
@@ -308,14 +316,14 @@ async function sparseRun(querySize: number, active: number[], fail: boolean) {
 		);
 		await syncStore.insertIntervals({
 			chainId: id,
-			intervals: filters.map((filter) => ({ interval: [1, end], filter })),
+			intervals: filters.map((filter) => ({ interval: [1, endBlock], filter })),
 			factoryIntervals: [],
 		});
 		if (!active.includes(id)) continue;
 		const template = golden.chains[id - 1];
 		for (const [original, number] of [
 			[1, 1],
-			[3, distant],
+			[3, laterBlock],
 		] as const) {
 			const block = {
 				...template.blocks[original],
@@ -332,6 +340,7 @@ async function sparseRun(querySize: number, active: number[], fail: boolean) {
 				.filter((log) => Number(log.blockNumber) === original)
 				.map((log) => ({
 					...log,
+					data: skipTail && original === 3 ? ("0x01" as Hex) : log.data,
 					transactionHash,
 					blockHash: block.hash,
 					blockNumber: block.number,
@@ -458,3 +467,21 @@ for (const querySize of [12_000, 6]) {
 		}
 	});
 }
+
+test("ABI-skipped final SQL page keeps the preceding source checkpoint", async () => {
+	const { calls, positions, stored } = await sparseRun(6, [1, 2], false, true);
+	const expected = expectedCalls([1, 2]).slice(0, 16);
+	expect(calls).toEqual(expected);
+	expect(stored).toEqual(expected.toSorted());
+	expect(positions).toHaveLength(2);
+	for (const position of positions) {
+		const cp = encodeCheckpoint(
+			blockToCheckpoint(header(position.chainId, 1), position.chainId, "up"),
+		);
+		expect([
+			position.safeCheckpoint,
+			position.latestCheckpoint,
+			position.finalizedCheckpoint,
+		]).toEqual([cp, cp, cp]);
+	}
+});

@@ -333,7 +333,8 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	for _, chain := range r.build.Chains {
 		cachePolicy[runtimeChainID(chain)] = runtimeRPCCacheEnabled(chain)
 	}
-	r.domains, err = opener(ctx, storage, store.ManagedLiveRuntimeOptions{LogOnlyFilters: r.logOnlyFilters(), FactorySources: o.FactorySources, SourceCheckpoints: o.SourceCheckpoints, Setup: r.setup, CacheRPCRequests: cachePolicy, ManagedLiveOptions: store.ManagedLiveOptions{ManagedFiniteOptions: plan, OpenID: o.OpenID, FinalizedHeads: r.finalized}, StartBlocks: r.starts, Continuous: o.Live != nil, ObserveDomain: runtimeDomainObserver(r)})
+	logFilters, logABIs := r.logOnlySources()
+	r.domains, err = opener(ctx, storage, store.ManagedLiveRuntimeOptions{LogOnlyFilters: logFilters, LogOnlyEventABIs: logABIs, FactorySources: o.FactorySources, SourceCheckpoints: o.SourceCheckpoints, Setup: r.setup, CacheRPCRequests: cachePolicy, ManagedLiveOptions: store.ManagedLiveOptions{ManagedFiniteOptions: plan, OpenID: o.OpenID, FinalizedHeads: r.finalized}, StartBlocks: r.starts, Continuous: o.Live != nil, ObserveDomain: runtimeDomainObserver(r)})
 	if err != nil {
 		return nil, err
 	}
