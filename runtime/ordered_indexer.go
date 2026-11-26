@@ -94,11 +94,11 @@ func (c *orderedChain) advance(ctx context.Context) error {
 	return nil
 }
 
-func (r *orderedIndexer) sync(ctx context.Context) (bool, error) {
+func (r *orderedIndexer) sync(ctx context.Context, samples polledHeads) (bool, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if r.workers[0].Store.Ordering == schema.Multichain {
-		return r.syncMultichain(ctx)
+		return r.syncMultichain(ctx, samples)
 	}
 	chains := make([]orderedChain, len(r.workers))
 	watermark, finalWatermark := checkpoint.MaxString, checkpoint.MaxString
@@ -106,7 +106,7 @@ func (r *orderedIndexer) sync(ctx context.Context) (bool, error) {
 	// Acquire and reconcile every fork before reading any completion intervals.
 	// Undo on one chain can make a suffix on a different chain eligible for replay.
 	for i, e := range r.workers {
-		latest, err := e.acquireHead(ctx)
+		latest, err := e.acquireHead(ctx, samples)
 		if err != nil {
 			return false, err
 		}
@@ -132,7 +132,7 @@ func (r *orderedIndexer) sync(ctx context.Context) (bool, error) {
 			finalWatermark = min(finalWatermark, checkpoint.MustEncode(safe))
 		}
 	}
-	if err := processAvailable(ctx, chains, watermark, finalWatermark); err != nil {
+	if err := processAvailable(ctx, samples, chains, watermark, finalWatermark); err != nil {
 		return false, err
 	}
 	if r.sealed != finalWatermark {
@@ -166,11 +166,11 @@ func (r *orderedIndexer) sync(ctx context.Context) (bool, error) {
 // syncMultichain reconciles all available heads before collecting missing ranges.
 // A peer rewind can invalidate gaps on any chain. Only omnichain waits for
 // the slowest head's checkpoint before applying a block.
-func (r *orderedIndexer) syncMultichain(ctx context.Context) (bool, error) {
+func (r *orderedIndexer) syncMultichain(ctx context.Context, samples polledHeads) (bool, error) {
 	var chains []orderedChain
 	var unavailable error
 	for _, e := range r.workers {
-		latest, err := e.acquireHead(ctx)
+		latest, err := e.acquireHead(ctx, samples)
 		var head checkpoint.Checkpoint
 		if err == nil {
 			head, err = e.blockCheckpoint(latest)
@@ -197,7 +197,7 @@ func (r *orderedIndexer) syncMultichain(ctx context.Context) (bool, error) {
 		// not silently move its callbacks behind the new fork on restart.
 		return false, unavailable
 	}
-	if err := processAvailable(ctx, chains, checkpoint.MaxString, checkpoint.MaxString); err != nil {
+	if err := processAvailable(ctx, samples, chains, checkpoint.MaxString, checkpoint.MaxString); err != nil {
 		return false, err
 	}
 	if replay != "" {
@@ -223,7 +223,7 @@ func (r *orderedIndexer) syncMultichain(ctx context.Context) (bool, error) {
 	return done, unavailable
 }
 
-func processAvailable(ctx context.Context, chains []orderedChain, watermark, finalWatermark string) error {
+func processAvailable(ctx context.Context, samples polledHeads, chains []orderedChain, watermark, finalWatermark string) error {
 	for i := range chains {
 		c := &chains[i]
 		start, err := c.engine.firstSourceBlock()
@@ -235,7 +235,7 @@ func processAvailable(ctx context.Context, chains []orderedChain, watermark, fin
 			through = min(through, *c.engine.endBlock)
 		}
 		c.start = start
-		c.gaps, err = c.engine.missingBlocks(ctx, start, through)
+		c.gaps, err = c.engine.missingBlocks(ctx, start, through, samples)
 		if err != nil {
 			return err
 		}
@@ -261,6 +261,7 @@ func processAvailable(ctx context.Context, chains []orderedChain, watermark, fin
 		if err := picked.engine.process(blockCtx, picked.next, picked.latest); err != nil {
 			return err
 		}
+		samples.committed(picked.engine.chain.ID, picked.next)
 		if err := picked.advance(ctx); err != nil {
 			return err
 		}

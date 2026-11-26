@@ -129,6 +129,9 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 					return strings.Join(lines, "\n")
 				}
 				firstScrape := scrape()
+				if strings.Contains(firstScrape, "ponder_realtime_latency_count") || strings.Contains(firstScrape, "ponder_realtime_block_arrival_latency_count") {
+					t.Fatal("initial catch-up published realtime head latency")
+				}
 				for _, chain := range cfg.Chains {
 					sample := fmt.Sprintf(`ponder_rpc_request_duration_count{chain="%s",method="eth_chainId"}`, chain.Name)
 					if !strings.Contains(firstScrape, sample) {
@@ -175,6 +178,25 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 				}
 				if live := historicalSamples(liveScrape); live != first {
 					t.Fatalf("live work changed historical timings:\n%s\n%s", first, live)
+				}
+				// Each tip must become eligible at the global watermark, including
+				// chain B, whose ID sorts after A at an equal timestamp.
+				for i, name := range []string{"b", "a"} {
+					mine(clients[i], 60+10*i)
+					for {
+						body := scrape()
+						label := fmt.Sprintf(`_count{chain=%q} `, name)
+						if strings.Contains(body, "ponder_realtime_latency"+label) && strings.Contains(body, "ponder_realtime_block_arrival_latency"+label) {
+							break
+						}
+						select {
+						case <-app.done:
+							t.Fatalf("waiting for chain %s live metrics: %v", name, app.Wait())
+						case <-ctx.Done():
+							t.Fatal(ctx.Err())
+						case <-time.After(25 * time.Millisecond):
+						}
+					}
 				}
 			})
 		}

@@ -341,7 +341,10 @@ func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend, 
 	replayed := []string{network.original.blockHash, network.replacement.blockHash}
 	after := check(network.replacement, replayed)
 	if fault == nil {
-		checkReorgScrape(t, app, `ponder_realtime_reorg_total{chain="A"} 1`)
+		checkReorgScrape(t, app,
+			`ponder_realtime_block_arrival_latency_count{chain="A"} 1`,
+			`ponder_realtime_latency_count{chain="A"} 1`,
+			`ponder_realtime_reorg_total{chain="A"} 1`)
 	}
 	if order == schema.Multichain && fault != nil {
 		replay, err := db.PendingMultichainReplay(ctx)
@@ -383,11 +386,11 @@ func checkReorgScrape(t *testing.T, app *Application, want ...string) {
 	}
 	var samples []string
 	for line := range strings.SplitSeq(string(body), "\n") {
-		if strings.HasPrefix(line, "ponder_realtime_reorg_total{") {
+		if strings.HasPrefix(line, "ponder_realtime_reorg_total{") || strings.HasPrefix(line, "ponder_realtime_latency_count{") || strings.HasPrefix(line, "ponder_realtime_block_arrival_latency_count{") {
 			samples = append(samples, line)
 		}
 	}
 	if !slices.Equal(samples, want) {
-		t.Fatalf("reorg samples: got %v, want %v", samples, want)
+		t.Fatalf("realtime samples: got %v, want %v", samples, want)
 	}
 }

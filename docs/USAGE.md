@@ -179,7 +179,9 @@ histogram_quantile(0.95, sum by (le, chain, method) (rate(ponder_rpc_request_dur
 
 ### 查看实时区块延迟
 
-双库默认多链和 Isolated 的持续索引作业会在写入进程的 `/metrics` 提供两个按链名分组的直方图，单位为毫秒。成功提交一个轮询收到的链头后，`ponder_realtime_block_arrival_latency` 记录区块时间戳到本机收到区块的耗时，`ponder_realtime_latency` 记录接收区块到业务事务提交的耗时。前者受节点和写入主机的时钟偏差影响。每个接受的链头各产生一个样本，轮询重复结果、历史回填和为追上该链头而补读的中间区块均不计数。
+普通 Go 索引器的三种排序，以及双库默认多链和 Isolated 的持续索引作业，都会在写入进程的 `/metrics` 提供两个按链名分组的直方图，单位为毫秒。成功提交一个轮询收到的链头后，`ponder_realtime_block_arrival_latency` 记录区块时间戳到本机收到区块的耗时，`ponder_realtime_latency` 记录接收区块到业务事务提交的耗时。前者受节点和写入主机的时钟偏差影响。每个接受的链头各产生一个样本，轮询重复结果、历史回填和为追上该链头而补读的中间区块均不计数。
+
+使用 `runtime.NewIndexer` 时，首次追平后对新出现的链头开始采样。Omnichain 等待其他链推进期间，重复轮询同一链头会保留第一次接收的时间。如果新的链头在等待期间取代旧链头，后续按高度补读旧区块时不会产生旧链头样本。分叉重放其他链已接受的同一链头也不会重复计数。[普通索引器实测](../parity/runs/native-atomic-head-latency/RESULT.md)
 
 以下 PromQL 查询给出各链过去五分钟从接收到提交的第 95 百分位耗时。
 
@@ -187,7 +189,7 @@ histogram_quantile(0.95, sum by (le, chain, method) (rate(ponder_rpc_request_dur
 histogram_quantile(0.95, sum by (chain, le) (rate(ponder_realtime_latency_bucket[5m])))
 ```
 
-用 `runtime.LaunchApplication` 启动双库写入进程时会自动接入指标。直接调用运行器时，将 `metrics.WithRealtime(ctx, registry)` 传给 `Run`。若直接消费 `runtime.StreamSourceOmnichain` 的内置轮询流，应用可在处理成功后对带有 `BlockCallback` 的实时事件调用 `BlockCallback(true)`。每个确认函数只处理第一次调用。[实时延迟测试](../parity/runs/native-realtime-head-latency/RESULT.md)
+用 `runtime.LaunchApplication` 启动写入进程时会自动接入指标。直接使用普通索引器时，可将 `metrics.WithRealtime(ctx, registry)` 传给 `RunIndexing`；双库运行器也可通过 `Run` 接收同一上下文。若直接消费 `runtime.StreamSourceOmnichain` 的内置轮询流，应用可在处理成功后对带有 `BlockCallback` 的实时事件调用 `BlockCallback(true)`。每个确认函数只处理第一次调用。[实时延迟测试](../parity/runs/native-realtime-head-latency/RESULT.md)
 
 ### 查看发生分叉的链
 
