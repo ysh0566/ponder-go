@@ -3357,6 +3357,28 @@
         "parity/runs/native-column-codecs/RESULT.md"
       ],
       "remaining": "The codec selects the Go representation of an existing storage type. PostgreSQL extension installation and DDL for additional physical types are outside this feature."
+    },
+    {
+      "id": "native-omnichain-handoff",
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/source_omnichain_stream.go",
+        "runtime/source_omnichain_poll.go",
+        "runtime/source_history_coordinator.go"
+      ],
+      "native_test_files": [
+        "runtime/source_omnichain_stream_test.go",
+        "runtime/source_runtime_multichain_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/realtime.ts",
+        "packages/core/src/runtime/omnichain.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-handoff/RESULT.md"
+      ],
+      "remaining": "The source stream runs in memory. Dual-store live Omnichain business writes, recovery checkpoints and coordinated rollback remain open."
     }
   ]
 }

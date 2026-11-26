@@ -14,6 +14,35 @@
 
 在双库 Isolated 中，设置 `RuntimeOptions.Live` 即可跟随链头。双库 Omnichain 应保留 `Live = nil`，并指定有限的结束高度。作业可以提前启动，等待区间最终确认。[提前启动](#等待双库-omnichain-的区间最终确认) 需要 Omnichain 持续追块时可选用普通 Go 入口。[Isolated 实时配置](#双库-isolated-实时追块) · [运行器检查](../historical/live_runtime.go)
 
+### 读取 Omnichain 历史和实时事件
+
+需要自己消费事件流时，可调用 `runtime.StreamSourceOmnichain(ctx, history, nil)`。传入与 `HistoricalSourceOmnichain` 相同的 `runtime.SourceHistoricalCoordinatorOptions`，其中包含各链的来源、RPC、已确认区块、同步进度及所使用的缓存。Go 事件流会先做历史提取，再使用每条链的 RPC 和轮询间隔追块。也可传入 `runtime.SourceRealtimeFeed` 接入已有的 Go 实时同步器。[双节点可运行用例](../runtime/source_omnichain_stream_test.go)
+
+例如，下面的函数可以观察交接期间各条链的事件和发生回滚的检查点。
+
+```go
+func observe(ctx context.Context, history runtime.SourceHistoricalCoordinatorOptions) error {
+    for update, err := range runtime.StreamSourceOmnichain(ctx, history, nil) {
+        if err != nil {
+            return err
+        }
+        switch update.Type {
+        case "events", "block":
+            for _, event := range update.Events {
+                log.Printf("event %v at %v", event["type"], event["checkpoint"])
+            }
+        case "reorg", "finalize":
+            log.Printf("%s through %s", update.Type, update.Checkpoint)
+        }
+    }
+    return nil
+}
+```
+
+`Events` 已按全局 checkpoint 排序。历史批次的 `Groups` 另外列出各链的进度，其中的事件与 `Events` 重复。实时批次可以包含其他链先前暂缓交付的事件。处理函数应只读访问事件映射，同一事件可能在分叉后再次交付。一条链分叉时，消费者收到 `reorg` 后应撤销全局检查点之后的业务写入。后续批次会重新交付仍在规范链上的事件。`finalize` 给出各链共同确认的位置。使用自定义事件源时，如有 `update.Source.BlockCallback`，在处理完该次交付后按实际结果应答。
+
+此接口在进程内协调事件顺序。消费方负责业务事务、检查点持久化和重启恢复。固定区间处理到结束高度后返回，持续索引可通过取消 `ctx` 或跳出循环来停止。节点错误会返回给调用方。[事件流实现](../runtime/source_omnichain_stream.go)
+
 ## 准备环境
 
 需要 Git、Go 1.25 或以上版本、启用 CGO 的 C 编译环境、Docker、Foundry 的 `anvil` 和 `forge`，以及 `curl`、`jq`。以下命令适用于 Bash。示例已用 Go 1.25.11、PostgreSQL 14.24 和 Foundry 1.8.5 验证。首次构建会下载 Go 依赖，Forge 首次编译会按合约声明获取 Solidity 0.8.37；本机已有该编译器时也可将 `FOUNDRY_SOLC` 设为其绝对路径。
