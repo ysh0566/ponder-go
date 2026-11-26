@@ -80,7 +80,8 @@ func liveDomainSpec(o IndependentStorageOptions, opts ManagedLiveOptions) string
 		Ordering                                    schema.Ordering
 		Chains                                      []MigrationChain
 		Ends                                        map[uint64]uint64
-	}{(&ManagedLive{opts: opts}).version(), o.BusinessNamespace, o.SyncNamespace, opts.BuildID, opts.PlanID, opts.ViewsSchema, o.Schema, o.Ordering, opts.Chains, opts.EndBlocks})
+		Development                                 bool `json:",omitempty"`
+	}{(&ManagedLive{opts: opts}).version(), o.BusinessNamespace, o.SyncNamespace, opts.BuildID, opts.PlanID, opts.ViewsSchema, o.Schema, o.Ordering, opts.Chains, opts.EndBlocks, opts.Development})
 	if opts.liveRuntime {
 		runtime := managedHash(struct {
 			Base   string

@@ -35,6 +35,8 @@ type RuntimeOptions struct {
 	// multichain runs, including a first event at block zero.
 	// The finalized omnichain format enables these positions automatically.
 	SourceCheckpoints bool
+	// Development marks this deployment as a development shadow in its metadata.
+	Development bool
 	// FactorySources discovers child addresses on the canonical branch.
 	// Set SourceCheckpoints as well. Omnichain also requires a closing block callback on every chain.
 	FactorySources bool
@@ -244,6 +246,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	}
 	r.ends = plan.EndBlocks
 	plan.BuildID = o.BuildID
+	plan.Development = o.Development
 	plan.ViewsSchema = o.ViewsSchema
 	// No persistent mutation precedes these capability/range checks.
 	reqs, err := o.Requesters(ctx, 0)

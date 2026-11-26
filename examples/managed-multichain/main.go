@@ -51,12 +51,23 @@ func run(ctx context.Context) (err error) {
 		}}}},
 		PostgresURL: cmp.Or(os.Getenv("DATABASE_PRIVATE_URL"), os.Getenv("DATABASE_URL")),
 	}
-	switch os.Getenv("PONDER_COMMAND") {
+	buildID := "managed-blocks-v1"
+	views := os.Getenv("DATABASE_VIEWS_SCHEMA")
+	mode := os.Getenv("PONDER_COMMAND")
+	switch mode {
 	case "serve":
 		return serveExisting(ctx, storage)
+	case "dev":
+		buildID = os.Getenv("PONDER_DEV_REVISION")
+		if buildID == "" {
+			return fmt.Errorf("launch the development indexer with ponder dev")
+		}
+		// The CLI shadow can already occupy all 45 namespace characters.
+		storage.SyncNamespace = fmt.Sprintf("ponder_go_%.20s_cache", buildID)
+		views = ""
 	case "", "start":
 	default:
-		return fmt.Errorf("use ponder start or ponder serve for this project")
+		return fmt.Errorf("use ponder dev, start or serve for this project")
 	}
 	raw, err := os.ReadFile("ponder.json")
 	if err != nil {
@@ -84,7 +95,7 @@ func run(ctx context.Context) (err error) {
 		open = historical.OpenRuntimePGlite
 	}
 	runner, err := open(ctx, historical.RuntimeOptions{
-		BuildID: "managed-blocks-v1", OpenID: rand.Text(), ViewsSchema: os.Getenv("DATABASE_VIEWS_SCHEMA"),
+		Development: mode == "dev", BuildID: buildID, OpenID: rand.Text(), ViewsSchema: views,
 		Live: &historical.RuntimeLiveOptions{}, SourceCheckpoints: true,
 		Historical: historical.Options{Build: build, Owned: indexing.OwnedOptions{Storage: storage, Service: indexing.Options{Errors: &indexing.ErrorState{}}}},
 		Requesters: func(context.Context, uint64) ([]rpc.Requester, error) {

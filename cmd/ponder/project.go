@@ -36,7 +36,7 @@ func launchProject(ctx context.Context, mode string, args []string, out, diagnos
 	host := flags.String("hostname", os.Getenv("PONDER_HOSTNAME"), "HTTP listener hostname")
 	port := flags.String("port", os.Getenv("PONDER_PORT"), "HTTP listener port (0 selects an available port)")
 	shutdownTimeout := 5 * time.Second
-	if mode == "start" {
+	if mode == "start" || mode == "dev" {
 		flags.DurationVar(&shutdownTimeout, "shutdown-timeout", shutdownTimeout, "Grace period for the indexer to finish after a stop signal")
 	}
 	var disableUI bool

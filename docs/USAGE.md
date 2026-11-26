@@ -480,6 +480,20 @@ curl -NsSG "$base/sql/live" --data-urlencode "sql=$sql"
 
 用 Ctrl-C 停止索引器，保留两个节点。`start` 默认给子进程 5 秒完成退出，示例用 `--shutdown-timeout 30s` 为两个 PGlite 引擎完成事务和关闭留出时间。停机期间出块后，重新执行同一条 `ponder start` 即可补块。PGlite 将两个目录保存在示例的 `.ponder/ponder_go_blocks/` 下。PostgreSQL 使用 `ponder_go_blocks` 和 `ponder_go_blocks_cache` 两个命名空间。自己的 Go 应用可以调用 `runner.QueryServer(ctx)` 创建查询服务，再将 `runner` 和该服务传给 `runtime.LaunchApplication`。修改处理函数逻辑后，用新的 `BuildID` 和命名空间启动新部署。退出时等待应用停止，依次关闭查询服务和运行器。[端到端测试](../cmd/ponder/managed_start_test.go)
 
+### 双库 Go 项目的热重载
+
+启动上一节的两条 Anvil 链，在仓库根目录运行以下命令。用 PostgreSQL 时设置 `DATABASE_PRIVATE_URL` 或 `DATABASE_URL`。用 PGlite 时按上一节安装驱动，并将这两个环境变量留空。
+
+```sh
+./bin/ponder dev --root examples/managed-multichain \
+  --schema ponder_go_blocks_dev --hostname 127.0.0.1 --port 42070 \
+  --shutdown-timeout 30s
+```
+
+编辑 `examples/managed-multichain/main.go` 中的 `recordBlock` 并保存。例如，将写入的 `"chain": chain` 改为 `"chain": chain + "-v2"`。编译成功后，CLI 关闭旧进程，用当前修订的业务库和同步缓存重新索引。在上节的查询命令中设 `base=http://127.0.0.1:42070`，即可看到已索引区块也带上新的链名后缀。编译失败时，原进程继续追块并响应查询。恢复原项目内容会重新打开该修订的存储并补齐缺少的区块。
+
+CLI 将完整修订哈希传给子进程的 `PONDER_DEV_REVISION`，将对应业务命名空间传给 `DATABASE_SCHEMA`。示例把修订号用作 `BuildID`，并设置 `RuntimeOptions.Development`。PostgreSQL 为每个修订使用各自的业务和缓存命名空间。PGlite 将每个修订的两个目录保存在 `.ponder/<业务命名空间>/`。开发模式的查询走当前进程的 HTTP 地址，生产部署的公共视图由 `start` 管理。[双后端热重载测试](../parity/runs/native-managed-cli-dev/RESULT.md)
+
 ### 双库 PostgreSQL 的独立查询进程
 
 用 PostgreSQL 运行上一节的 `ponder start`，等写入进程建立业务命名空间后，可以在另一终端运行以下命令。将 `READER_DATABASE_URL` 设为同一数据库的只读账号连接串，`--schema` 填写入进程的业务命名空间。查询进程从业务库读取链名、检查点和就绪标记，运行时只需项目的 Go 代码和数据库连接。[Go 示例入口](../examples/managed-multichain/main.go)
