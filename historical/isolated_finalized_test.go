@@ -191,7 +191,7 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 }
 
 func TestRuntimeIsolatedPreflight(t *testing.T) {
-	for _, mode := range []string{"live", "setup", "source-finality", "schema"} {
+	for _, mode := range []string{"live-schema", "setup", "source-finality", "schema"} {
 		t.Run(mode, func(t *testing.T) {
 			p := newFiniteRPC(t, 5)
 			handler := indexing.Handler(func(context.Context, *indexing.HandlerArgs) error { return nil })
@@ -205,25 +205,22 @@ func TestRuntimeIsolatedPreflight(t *testing.T) {
 				}}}}
 			var reason string
 			switch mode {
-			case "live":
+			case "live-schema":
 				o.Live = &RuntimeLiveOptions{}
-				reason = "bounded finalized"
+				fallthrough
+			case "schema":
+				o.Historical.Owned.Storage.Schema = schema.Schema{Tables: []schema.Table{{Name: "account", Columns: []schema.Column{{Name: "id", Type: "text", Primary: true}}}}}
+				reason = "required 'chainId' column"
 			case "setup":
 				x.SetupCallbacks[0] = []indexing.Object{{"name": "Token:setup", "fn": handler, "chain": x.Chains[0], "block": uint64(15)}}
 				reason = "exceeds chain finality"
 			case "source-finality":
 				x.EventCallbacks[0][0]["filter"].(map[string]any)["toBlock"] = float64(5)
 				reason = "exceeds chain finality"
-			case "schema":
-				o.Historical.Owned.Storage.Schema = schema.Schema{Tables: []schema.Table{{Name: "account", Columns: []schema.Column{{Name: "id", Type: "text", Primary: true}}}}}
-				reason = "required 'chainId' column"
 			}
 			_, err := OpenRuntimePostgres(t.Context(), o)
 			if err == nil || !strings.Contains(err.Error(), reason) {
 				t.Fatalf("expected %q before opening storage, got %v", reason, err)
-			}
-			if mode == "live" && len(epochs) != 0 {
-				t.Fatalf("requested RPC for unsupported %s", mode)
 			}
 		})
 	}

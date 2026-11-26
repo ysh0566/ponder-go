@@ -37,7 +37,13 @@ func liveHistoricalSegments(d managedLiveDurable, ordered []managedLiveOperation
 	history := map[uint64]managedLiveHistoricalSegment{}
 	rowIDs := map[int64]bool{}
 	add := func(segments []ManagedLiveSegment, rows []managedLiveJournalEntry, boundary int64) error {
-		partition, err := partitionLiveJournal(segments, rows, boundary)
+		var partition map[uint64][]managedLiveJournalEntry
+		var err error
+		if d.Control.Version == managedLiveIsolatedContinuousVersion {
+			partition, err = partitionIsolatedJournal(segments, rows)
+		} else {
+			partition, err = partitionLiveJournal(segments, rows, boundary)
+		}
 		if err != nil {
 			return err
 		}
@@ -230,7 +236,7 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 			}
 			boundary := rolling.SafeJournalBoundary
 			if len(activeJournal) > 0 {
-				boundary = activeJournal[len(activeJournal)-1].ID
+				boundary = max(boundary, activeJournal[len(activeJournal)-1].ID)
 			}
 			for i, segment := range evidence.Segments {
 				planned[i].Journal = segment.Journal
@@ -334,12 +340,16 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 			if err != nil || managedHash(expected) != managedHash(evidence) {
 				return nil, fmt.Errorf("managed exact reorg undo/cursor/receipt evidence differs")
 			}
-			active = active[:len(active)-len(plan.Removed)]
-			keepRows := 0
-			for keepRows < len(activeJournal) && activeJournal[keepRows].ID <= plan.JournalBoundary {
-				keepRows++
+			if m.opts.runtimeIsolated && m.opts.liveContinuous {
+				active, activeJournal = retainIsolatedHistory(active, activeJournal, plan.Removed)
+			} else {
+				active = active[:len(active)-len(plan.Removed)]
+				keepRows := 0
+				for keepRows < len(activeJournal) && activeJournal[keepRows].ID <= plan.JournalBoundary {
+					keepRows++
+				}
+				activeJournal = activeJournal[:keepRows]
 			}
-			activeJournal = activeJournal[:keepRows]
 			expectedProofs = map[string]ManagedLiveHead{}
 			for _, head := range plan.Proofs {
 				expectedProofs[liveProofKey(head)] = head
@@ -372,12 +382,16 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 			if err != nil || managedHash(expected) != managedHash(evidence) {
 				return nil, fmt.Errorf("managed exact finalized prefix/receipt evidence differs")
 			}
-			active = active[len(plan.Pruned):]
-			prunedRows := 0
-			for prunedRows < len(activeJournal) && activeJournal[prunedRows].ID <= plan.After.SafeJournalBoundary {
-				prunedRows++
+			if m.opts.runtimeIsolated && m.opts.liveContinuous {
+				active, activeJournal = retainIsolatedHistory(active, activeJournal, plan.Pruned)
+			} else {
+				active = active[len(plan.Pruned):]
+				prunedRows := 0
+				for prunedRows < len(activeJournal) && activeJournal[prunedRows].ID <= plan.After.SafeJournalBoundary {
+					prunedRows++
+				}
+				activeJournal = activeJournal[prunedRows:]
 			}
-			activeJournal = activeJournal[prunedRows:]
 			rolling = plan.After
 		default:
 			return nil, ErrManagedLivePendingActions

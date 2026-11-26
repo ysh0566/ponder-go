@@ -128,6 +128,15 @@ func livePublicFinality(c ManagedLiveControl, baseline map[uint64]ManagedLiveHea
 }
 
 func liveActiveJournal(c ManagedLiveControl, active []ManagedLiveSegment, journal []managedLiveJournalEntry) error {
+	if c.Version == managedLiveIsolatedContinuousVersion {
+		for _, s := range active {
+			if s.Ordinal > c.Tail || s.Ordinal >= c.Next {
+				return ErrManagedLiveBatchConflict
+			}
+		}
+		_, err := partitionIsolatedJournal(active, journal)
+		return err
+	}
 	if len(active) == 0 {
 		if c.Tail != c.SafeOrdinal {
 			return ErrManagedLiveBatchConflict
@@ -294,14 +303,16 @@ func planLiveFinalize(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 	if err := validateLiveFinalityBranch(opts, baseline, confirmed, safe, c.Cursors, active, proofs); err != nil {
 		return plan, err
 	}
-	count := 0
 	for _, segment := range active {
 		_, cp, _ := normalizeLiveHead(segment.Block.Head)
 		_, finalized, _ := normalizeLiveHead(confirmed[cp.ChainID])
 		if cp.BlockNumber > finalized.BlockNumber || (opts.runtimeInitial && !positionReachedForOptions(logicalFinal[cp.ChainID], segment.Block.Head.Checkpoint, opts)) {
+			if opts.runtimeIsolated && opts.liveContinuous {
+				continue
+			}
 			break
 		}
-		count++ // Including no-DML blocks, in actual global execution order.
+		plan.Pruned = append(plan.Pruned, segment)
 	}
 	plan.After = c
 	plan.After.Finalizations++
@@ -311,12 +322,12 @@ func planLiveFinalize(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 		plan.After.LogicalSafe = cloneLiveCheckpoints(c.LogicalSafe)
 	}
 	plan.After.LastOperation = r.ID
-	plan.Pruned = append([]ManagedLiveSegment(nil), active[:count]...)
-	if count > 0 {
-		last := plan.Pruned[count-1]
-		plan.After.SafeOrdinal = last.Ordinal
-		plan.After.SafeJournalBoundary = last.Journal.After
+	if len(plan.Pruned) > 0 {
+		last := plan.Pruned[len(plan.Pruned)-1]
+		plan.After.SafeOrdinal = max(c.SafeOrdinal, last.Ordinal)
+		// In Isolated ordering these high-water marks may pass active peer rows.
 		for _, segment := range plan.Pruned {
+			plan.After.SafeJournalBoundary = max(plan.After.SafeJournalBoundary, segment.Journal.After)
 			_, cp, _ := normalizeLiveHead(segment.Block.Head)
 			safe[cp.ChainID] = segment.Block.Head
 			if opts.runtimeInitial {
@@ -331,14 +342,18 @@ func planLiveFinalize(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 		for id, head := range safe {
 			plan.After.SafeAnchors[id] = head.Checkpoint
 		}
+		var pruned map[string]bool
+		if opts.runtimeIsolated && opts.liveContinuous {
+			pruned = segmentCheckpoints(plan.Pruned)
+		}
 		for _, row := range journal {
-			if row.ID <= last.Journal.After {
+			if pruned[row.Checkpoint] || (pruned == nil && row.ID <= last.Journal.After) {
 				plan.Journal = append(plan.Journal, row)
 			}
 		}
 		plan.Journal = copyLiveJournal(plan.Journal)
 	}
-	plan.Changed = count > 0 || managedHash(before) != managedHash(confirmed) || (opts.runtimeInitial && managedHash(beforeLogical) != managedHash(logicalFinal))
+	plan.Changed = len(plan.Pruned) > 0 || managedHash(before) != managedHash(confirmed) || (opts.runtimeInitial && managedHash(beforeLogical) != managedHash(logicalFinal))
 	return plan, nil
 }
 

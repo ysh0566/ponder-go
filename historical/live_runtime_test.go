@@ -19,6 +19,10 @@ import (
 func runtimeBuild(t *testing.T, p *finiteRPC, end, interval uint64, h indexing.Handler) *config.SourceIndexingBuild {
 	t.Helper()
 	raw := fmt.Sprintf(`{"ordering":"multichain","chains":{"one":{"id":1,"rpc":%q,"reorgWindow":1,"cacheRpcRequests":true},"two":{"id":2,"rpc":%q,"reorgWindow":1,"cacheRpcRequests":true}},"blocks":{"Blocks":{"chain":{"one":{},"two":{}},"startBlock":1,"endBlock":%d,"interval":%d}}}`, p.server.URL+"/1", p.server.URL+"/2", end, interval)
+	return runtimeSourceBuild(t, raw, config.SourceIndexingFunction{Name: "Blocks:block", Fn: h})
+}
+func runtimeSourceBuild(t *testing.T, raw string, callbacks ...config.SourceIndexingFunction) *config.SourceIndexingBuild {
+	t.Helper()
 	cfg, err := config.ParseSourceConfiguration([]byte(raw))
 	if err != nil {
 		t.Fatal(err)
@@ -31,7 +35,7 @@ func runtimeBuild(t *testing.T, p *finiteRPC, end, interval uint64, h indexing.H
 		r.RequestsPerSecond = 0
 		r.Retries = 0
 	}
-	b, err := config.BuildSourceIndexing(context.Background(), cfg, base, []config.SourceIndexingFunction{{Name: "Blocks:block", Fn: h}})
+	b, err := config.BuildSourceIndexing(context.Background(), cfg, base, callbacks)
 	if err != nil {
 		t.Fatal(err)
 	}

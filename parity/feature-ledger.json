@@ -2526,7 +2526,7 @@
       "evidence": [
         "parity/runs/native-managed-cli-serve/RESULT.md"
       ],
-      "remaining": "Independent PostgreSQL query serving uses a business namespace. The default multichain example targets continuous indexing. Independent-store Isolated supports bounded finalized deployments."
+      "remaining": "Independent PostgreSQL query serving uses a business namespace. The default multichain example targets continuous indexing. Independent-store Isolated supports finalized ranges and continuous deployments."
     },
     {
       "id": "native-managed-cli-dev",
@@ -3021,7 +3021,7 @@
       "evidence": [
         "parity/runs/native-omnichain-block-intervals/RESULT.md"
       ],
-      "remaining": "Independent-store live Omnichain and live Isolated ordering remain open. The finalized runner requires bounded sources and positive block intervals."
+      "remaining": "Independent-store live Omnichain remains open. The finalized runner requires bounded sources and positive block intervals."
     },
     {
       "id": "native-mixed-source-reorg",
@@ -3075,7 +3075,7 @@
       "evidence": [
         "parity/runs/native-isolated-finalized/RESULT.md"
       ],
-      "remaining": "Independent-store continuous tracking, chain-local rollback on unfinalized forks and engine termination during callbacks remain open."
+      "remaining": "Independent-store Isolated now handles continuous tracking and chain-local rollback. Engine termination during mixed callbacks remains open."
     },
     {
       "id": "native-isolated-setup",
@@ -3104,7 +3104,32 @@
       "evidence": [
         "parity/runs/native-isolated-setup/RESULT.md"
       ],
-      "remaining": "Independent-store Isolated continuous indexing and unfinalized fork recovery remain open."
+      "remaining": "Live Isolated indexing and unfinalized fork recovery are tracked in native-isolated-live."
+    },
+    {
+      "id": "native-isolated-live",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "store/managed_live_isolated.go",
+        "store/managed_live_reorg.go",
+        "store/managed_live_finalize.go",
+        "store/managed_live_recovery.go"
+      ],
+      "native_test_files": [
+        "historical/isolated_live_test.go",
+        "historical/live_runtime_test.go",
+        "store/managed_live_isolated_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/isolated.ts",
+        "packages/core/src/database/index.ts",
+        "packages/core/src/database/actions.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-isolated-live/RESULT.md"
+      ],
+      "remaining": "Mixed factory/account events during an engine interruption and prolonged individual RPC outages need independent-store coverage. A cold restart replays speculative callbacks after each chain’s own safe checkpoint."
     }
   ]
 }

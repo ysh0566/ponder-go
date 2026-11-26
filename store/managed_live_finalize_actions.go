@@ -140,7 +140,11 @@ func (m *ManagedLive) applyFinalizeTransaction(ctx context.Context, tx Transacti
 			return ManagedLiveFinalizeResult{}, err
 		}
 	}
-	if len(plan.Pruned) > 0 {
+	if m.opts.runtimeIsolated && m.opts.liveContinuous {
+		if err := s.deleteIsolatedSegments(ctx, tx, plan.Pruned); err != nil {
+			return ManagedLiveFinalizeResult{}, err
+		}
+	} else if len(plan.Pruned) > 0 {
 		if err := tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_journal")+" WHERE operation_id<=$1", plan.After.SafeJournalBoundary); err != nil {
 			return ManagedLiveFinalizeResult{}, err
 		}

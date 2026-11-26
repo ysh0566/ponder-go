@@ -14,6 +14,9 @@ const managedLiveRecoveryVersion = "managed-live-recovery-v3"
 const managedLiveRecoveryReceiptVersion = "managed-live-recovery-receipt-v2"
 
 func (m *ManagedLive) version() string {
+	if m.opts.runtimeIsolated && m.opts.liveContinuous {
+		return managedLiveIsolatedContinuousVersion
+	}
 	if m.opts.runtimeIsolated {
 		return managedLiveIsolatedVersion
 	}
@@ -302,11 +305,17 @@ func (m *ManagedLive) recordRecovery(ctx context.Context, tx Transaction) error 
 	if _, err := s.undoJournal(ctx, tx, liveReorgUndoRows(rows)); err != nil {
 		return err
 	}
-	if err := tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_journal")+" WHERE operation_id>$1", e.AfterControl.SafeJournalBoundary); err != nil {
-		return err
-	}
-	if err := tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_live_segments")+" WHERE ordinal>$1", e.AfterControl.SafeOrdinal); err != nil {
-		return err
+	if m.opts.runtimeIsolated && m.opts.liveContinuous {
+		if err := s.deleteIsolatedSegments(ctx, tx, e.Removed); err != nil {
+			return err
+		}
+	} else {
+		if err := tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_journal")+" WHERE operation_id>$1", e.AfterControl.SafeJournalBoundary); err != nil {
+			return err
+		}
+		if err := tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_live_segments")+" WHERE ordinal>$1", e.AfterControl.SafeOrdinal); err != nil {
+			return err
+		}
 	}
 	for _, chain := range m.opts.Chains {
 		if _, ok := e.AfterControl.Cursors[chain.ID]; !ok {

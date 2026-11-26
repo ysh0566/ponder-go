@@ -57,7 +57,8 @@ type ManagedLiveOptions struct {
 }
 
 // ManagedLiveControl binds numeric ordinals, durable finality and safe headers.
-// Nonempty history requires the separate v3 recovery constructors.
+// In continuous Isolated mode SafeOrdinal and SafeJournalBoundary track the highest
+// finalized values. Other chains may still have active segments below either value.
 type ManagedLiveControl struct {
 	Version             string                     `json:"version"`
 	Generation          uint64                     `json:"generation"`

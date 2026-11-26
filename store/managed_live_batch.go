@@ -426,7 +426,7 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 	}
 	boundary := d.Control.SafeJournalBoundary
 	if len(d.Journal) > 0 {
-		boundary = d.Journal[len(d.Journal)-1].ID
+		boundary = max(boundary, d.Journal[len(d.Journal)-1].ID)
 	}
 	for i := range segments {
 		if err := m.runLiveBlock(ctx, tx, &segments[i], boundary, d.Control.ReplayTargets, handler); err != nil {

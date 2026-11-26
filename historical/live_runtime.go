@@ -28,13 +28,14 @@ type runtimeRunnerCallbackKey struct{}
 
 // RuntimeOptions selects the owned RuntimeRunner lifecycle. A nil Live runs a
 // fixed range. Default multichain supports setup and per-chain RPC caching in
-// either mode. Isolated admits ranges finalized by each chain. Omnichain
-// requires the ranges to fit within the common finalized watermark.
+// either mode. Isolated supports finalized ranges or continuous per-chain
+// finality and reorgs. Omnichain ranges must fit within the common finalized
+// watermark.
 // BuildID identifies handler code. OpenID is unique to a single opening.
 type RuntimeOptions struct {
 	// SourceCheckpoints enables source initial positions for bounded or continuous
 	// multichain runs, including a first event at block zero.
-	// Finalized Isolated and Omnichain enable these positions automatically.
+	// Isolated and finalized Omnichain enable these positions automatically.
 	SourceCheckpoints bool
 	// Development marks this deployment as a development shadow in its metadata.
 	Development bool
@@ -122,9 +123,9 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		}
 	}()
 	if b == nil || (b.Ordering != "multichain" && b.Ordering != "omnichain" && b.Ordering != string(schema.Isolated)) || len(b.Chains) == 0 || len(b.Chains) != len(b.EventCallbacks) || len(b.Chains) != len(b.Contracts) || len(b.Chains) != len(b.SetupCallbacks) {
-		return nil, fmt.Errorf("runtime closure requires a complete multichain, finalized omnichain or finalized isolated executable build")
+		return nil, fmt.Errorf("runtime closure requires a complete multichain, finalized omnichain or isolated executable build")
 	}
-	if b.Ordering != "multichain" && o.Live != nil {
+	if b.Ordering == "omnichain" && o.Live != nil {
 		return nil, fmt.Errorf("%s currently requires bounded finalized runtime", b.Ordering)
 	}
 	if b.Ordering == "omnichain" {
@@ -316,7 +317,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 			if r.lastSetupBlock(i) > f.BlockNumber {
 				return nil, fmt.Errorf("isolated setup block on chain %d exceeds chain finality", id)
 			}
-			if r.ends[id] > f.BlockNumber {
+			if o.Live == nil && r.ends[id] > f.BlockNumber {
 				return nil, fmt.Errorf("isolated end on chain %d exceeds chain finality", id)
 			}
 		}

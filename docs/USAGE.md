@@ -8,11 +8,11 @@
 | --- | --- | --- |
 | 用 Go 配置链和来源，在回调里写业务表 | `runtime.NewIndexer` | 默认多链、Isolated、Omnichain 均可回填并持续追块。 |
 | 已用 Go 编译来源配置，并注册了 `runtime.Handler` | `runtime.NewIndexerFromSource` | 沿用编译配置选定的排序，一次启动所有注册了来源的链。 |
-| 分开管理业务数据和同步缓存，使用 `indexing.Handler` | `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` | 默认多链可持续运行。Isolated 与 Omnichain 均支持已最终确认的有限区间。Isolated 按各链自身的最终确认高度准入，Omnichain 要求所有来源落在共同的最终确认范围内。 |
+| 分开管理业务数据和同步缓存，使用 `indexing.Handler` | `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` | 默认多链与 Isolated 均可持续运行。Omnichain 的各链区间须在共同最终确认检查点以内。 |
 
 如果各链分别维护自己的余额，使用 Isolated，在业务表主键中包含 `chain_id`。如果多条链共同维护一个按事件先后计算的值，使用 Omnichain，运行器会按跨链 checkpoint 排序回调。PostgreSQL 双库存储使用同一数据库内的两个命名空间，PGlite 使用两个数据目录。[独立多链示例](#从同一个-go-项目索引多条链) · [跨链排序示例](#按全局顺序索引多条链) · [双库存储](#独立存储的有限区间索引)
 
-双库 Isolated 和 Omnichain 的配置应保留 `RuntimeOptions.Live = nil`，并为来源指定已最终确认的结束高度。设置 `Live` 会在打开数据库前返回 `currently requires bounded finalized runtime`。需要这两种排序持续追块时，选用上表中的 `runtime.NewIndexer` 或 `runtime.NewIndexerFromSource`。[运行器检查](../historical/live_runtime.go)
+在双库 Isolated 中，设置 `RuntimeOptions.Live` 即可跟随链头。双库 Omnichain 应保留 `Live = nil`，并指定已最终确认的结束高度。需要 Omnichain 持续追块时可选用普通 Go 入口。[Isolated 实时配置](#双库-isolated-实时追块) · [运行器检查](../historical/live_runtime.go)
 
 ## 准备环境
 
@@ -755,7 +755,7 @@ opts.Live = nil
 
 用 `config.BuildSourceIndexing` 注册 `indexing.Handler`，将编译结果赋给 `opts.Historical.Build`。准备好业务和同步存储、`Requesters`、`BuildID` 与 `OpenID` 后，用 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 打开并调用 `Run`。启动时需要连通所有参与链，各来源的结束区块必须已在本链最终确认。每条链可从区块 0 开始，无需对齐各链的区块高度或时间戳。
 
-回调通过 `a.Context.DB` 写入本链的 `chainId`。每个区块的业务变更与该链的安全进度一起提交。若回调失败，本次运行返回错误。关闭后沿用两个存储位置、配置和 `BuildID`，换一个新的 `OpenID` 即可继续。各链已成功提交的回调都会保留。持续追块的支持范围见运行模式矩阵。[完整的双链 Go 示例和恢复断言](../historical/isolated_finalized_test.go) · [运行模式矩阵](RUNTIME_SUPPORT.md)
+回调通过 `a.Context.DB` 写入本链的 `chainId`。每个区块的业务变更与该链的安全进度一起提交。若回调失败，本次运行返回错误。关闭后沿用两个存储位置、配置和 `BuildID`，换一个新的 `OpenID` 即可继续。各链已成功提交的回调都会保留。如需处理尚未最终确认的区块，可启用实时轮询。[双库 Isolated 实时追块](#双库-isolated-实时追块) · [完整的双链 Go 示例和恢复断言](../historical/isolated_finalized_test.go) · [运行模式矩阵](RUNTIME_SUPPORT.md)
 
 要在回填前为各链写入初始业务数据，请在 Go 配置里声明合约（例如 `Token`），并通过 `config.BuildSourceIndexing` 注册 `Token:setup`。合约的逐链 `startBlock` 决定该链初始化时的默认 RPC 读取高度，省略时从 0 读取。该高度必须已在本链最终确认。下面的回调适用于上方的 `seen` 表。
 
@@ -772,6 +772,25 @@ initToken := config.SourceIndexingFunction{
 ```
 
 每条链的全部初始化回调与该链的初始检查点在同一笔业务事务中提交。只订阅事件的链也会记录自己的初始检查点。某条链的初始化失败时，运行器仍会尝试其余链，然后返回错误。用原存储与 `BuildID`、新的 `OpenID` 重启，仅重试尚未提交的链。所有链完成初始化后才开始投递区块和事件。[三链初始化与重启测试](../historical/isolated_setup_test.go)
+
+### 双库 Isolated 实时追块
+
+来源配置使用 `"ordering": "experimental_isolated"`，业务表继续用 `chain_id` 作为主键的一部分。在上一节的 `historical.RuntimeOptions` 上启用轮询，再打开运行器。需要一直运行时省略来源的 `endBlock`。各链均设置了结束高度时，运行器可追到该高度后退出。
+
+```go
+opts.Live = &historical.RuntimeLiveOptions{PollingInterval: time.Second}
+runner, err := historical.OpenRuntimePostgres(ctx, opts)
+if err != nil {
+    return err
+}
+defer runner.Close(context.Background())
+_, err = runner.Run(ctx)
+return err
+```
+
+PGlite 可使用 `historical.OpenRuntimePGlite`。双库 Isolated 实时部署的存储格式为 `managed-live-isolated-continuous-v1`。首次启用时，请选择新的业务和同步命名空间或两个新的数据目录。重启同一实时部署时，沿用其存储位置和 `BuildID`，并分配新的 `OpenID`。
+
+运行中若 A 链分叉，回滚和重放只涉及 A 链的孤块。B 链可以独立推进安全检查点。整个进程重启时，各链从自己的安全检查点恢复，其后的未确认回调可能再次执行。将需要随区块回滚的状态写入回调的业务事务。遇到可重试的取块错误时，双库运行器会重建所有链的读取队列。若业务要求一条链长期断线时其他链仍持续推进，普通入口 `runtime.NewIndexer` 的 Isolated 模式已有该场景的测试。[分叉与重启测试](../historical/isolated_live_test.go)
 
 ### 为同一条链配置多个 RPC 节点
 
