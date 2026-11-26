@@ -447,9 +447,24 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 可在同一个构建中注册合约的 `合约名:setup` 回调，并逐链配置 `cacheRpcRequests`。setup 在首个事件前提交。第二条链的 setup 失败时，两条链的初始化写入会一起回滚。用相同的 `BuildID`、存储位置和新的 `OpenID` 重试后可重新执行初始化。对关闭缓存的链，回调通过 RPC 读取区块状态，已有的 RPC 缓存记录会保留。独立存储的 Omnichain 有自己的来源与最终确认要求。[双后端测试](../parity/runs/native-bounded-setup-cache/RESULT.md) · [运行模式矩阵](RUNTIME_SUPPORT.md)
 
-使用工厂合约发现子地址时，将 `RuntimeOptions.FactorySources` 和 `SourceCheckpoints` 都设为 `true`。将 `Live` 留空即可在固定高度结束。工厂地址配置里的 `startBlock` 和 `endBlock` 决定扫描创建事件的范围，子合约或账户配置的区间决定向 Go 回调投递哪些事件。例如，工厂在区块 1 创建的子合约，即使其日志回调从区块 3 才开始，仍可在区块 3 收到事件。重开同一部署时，运行器按区块哈希恢复子地址，RPC 节点需能返回创建区间的区块和日志。未最终确认的区块被替换后，回放会使用新分支创建的子地址。[有限区间工厂测试](../parity/runs/native-bounded-factory/RESULT.md)
+在默认多链排序下使用工厂合约发现子地址时，将 `RuntimeOptions.FactorySources` 和 `SourceCheckpoints` 都设为 `true`。将 `Live` 留空即可在固定高度结束。工厂地址配置里的 `startBlock` 和 `endBlock` 决定扫描创建事件的范围，子合约或账户配置的区间决定向 Go 回调投递哪些事件。例如，工厂在区块 1 创建的子合约，即使其日志回调从区块 3 才开始，仍可在区块 3 收到事件。重开同一部署时，运行器按区块哈希恢复子地址，RPC 节点需能返回创建区间的区块和日志。未最终确认的区块被替换后，回放会使用新分支创建的子地址。[有限区间工厂测试](../parity/runs/native-bounded-factory/RESULT.md)
 
 独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并为每个来源声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
+
+在双库 Omnichain 中使用工厂时，每条链都要有一个逐块回调（`interval: 1`，`offset: 0`），它的起止高度要覆盖工厂发现区间和子地址的事件区间。将下面的 `children` 赋给合约或账户声明的 `Address`，然后编译配置。示例用工厂的 `Created(address indexed child)` 事件发现子地址。
+
+```go
+created := abi.Event{Type: "event", Name: "Created", Inputs: []abi.Parameter{
+    {Name: "child", Type: "address", Indexed: true},
+}}
+children, err := config.FactoryByParameter(created, config.DynamicFactoryParameter("child"),
+    config.FactoryOptions{Address: factoryAddress, StartBlock: 100, EndBlock: 199})
+if err != nil {
+    return err
+}
+```
+
+打开运行器时同时设置 `RuntimeOptions.FactorySources = true` 和 `SourceCheckpoints = true`，并将 `Live` 留空。子地址从发现它的区块起生效，同一区块内的匹配事件也会投递。每条链独立记录发现结果。开启缓存的链会持久化子地址及其首次出现的高度。关闭缓存的链会在重启时重新读取工厂发现区间，所以节点需要保留该区间的历史日志。[发现、回滚与重启测试](../parity/runs/native-omnichain-factory/RESULT.md)
 
 同一条链上的两个静态日志来源可以有不同的起止区块，端点都包含在内。下面的 Go 配置将两个合约放在 `mainnet` 上。假设两者都声明了 `Transfer` 事件，区块 150 到 199 内两者的回调都可能收到事件，区块 200 到 299 内只有 `Late:Transfer` 能收到事件。`transferABI` 是包含该事件的 `[]abi.Event`，两个地址分别指向对应合约。
 
