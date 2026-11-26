@@ -158,9 +158,6 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		if _, duplicate := r.starts[id]; duplicate {
 			return nil, fmt.Errorf("duplicate runtime chain")
 		}
-		if len(b.SetupCallbacks[i]) != 0 && b.Ordering == "omnichain" {
-			return nil, fmt.Errorf("omnichain finalized runtime does not support setup callbacks")
-		}
 		r.setup = r.setup || len(b.SetupCallbacks[i]) != 0
 		if len(b.EventCallbacks[i]) == 0 {
 			if o.SourceCheckpoints {

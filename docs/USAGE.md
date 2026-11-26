@@ -451,6 +451,22 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并让同一条链上的日志来源使用相同区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。该运行器要求启用 RPC 缓存，且各链的结束位置都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
 
+两种已确认区间模式都可以在 `config.BuildSourceIndexing` 的处理函数列表中注册初始化回调。例如，配置中已有名为 `Token` 的合约，下面这项会在收到首个来源事件前运行。示例中的 `account` 表需要文本列 `id`（主键）和 `value`。
+
+```go
+functions = append(functions, config.SourceIndexingFunction{
+    Name: "Token:setup",
+    Fn: indexing.Handler(func(ctx context.Context, a *indexing.HandlerArgs) error {
+        _, err := a.Context.DB.InsertOne(ctx, "account", store.Row{
+            "id": fmt.Sprintf("initial-%v", a.Context.Chain["id"]), "value": "ready",
+        }, store.Conflict{})
+        return err
+    }),
+})
+```
+
+对每条参与链，`setup` 使用该合约在链上配置的 `startBlock` 作为默认 RPC 读取高度，省略时为 0。只用于初始化的合约也可以选择晚于事件区间的高度，但该高度必须已经在本链及跨链的最终确认范围内。所有链的初始化写入和初始 checkpoint 一起提交。若任一回调失败，使用相同配置、存储和 `BuildID`，换一个新的 `OpenID` 重试，会重新执行整组初始化。若初始化已提交，重启会继续索引事件，已提交的初始化只执行一次。[PostgreSQL 与 PGlite 回滚和重启测试](../parity/runs/native-omnichain-setup/RESULT.md)
+
 要同时处理账户和合约调用，请在每条链上注册一个 `interval: 1`、`offset: 0` 的区块来源及其 `名称:block` 回调。让这个来源的区间覆盖该链上的其他来源。静态账户可注册 `Wallet:transaction:from`、`Wallet:transaction:to`、`Wallet:transfer:from` 和 `Wallet:transfer:to`。对静态合约启用 `includeCallTraces`，再按 ABI 注册函数回调，例如 `Worker.record()`。需要读取回执时，在相应来源配置中启用 `includeTransactionReceipts`。同一笔有金额的合约调用可同时触发交易、函数和转账回调，最后执行该块的区块回调。[两条 Anvil 链上的运行与重启用例](../historical/omnichain_account_events_test.go)
 
 若索引进程在已确认区间的区块或静态日志回调中突然退出，用原来的业务库和同步库、同一份来源配置和相同的 `BuildID` 重新打开，并为这次打开分配新的 `OpenID`。运行器从已提交的跨链回调组继续。若进程在运行器进入就绪状态后退出，已经完成的回调不会再次执行。PostgreSQL 使用原来的数据库及命名空间，PGlite 使用原来的两个目录。[应用进程退出验证](../parity/runs/native-omnichain-app-recovery/RESULT.md)
