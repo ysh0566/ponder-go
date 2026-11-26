@@ -28,15 +28,12 @@ func (c *EventProtocolCache) active() error {
 	}
 	return c.c.active()
 }
-func (c *EventProtocolCache) request(key string) (uint64, string, error) {
-	chain, hash, e := protocolRequest(key)
-	if e != nil {
-		return 0, "", e
+func (c *EventProtocolCache) request(key string) (nativeRPCKey, error) {
+	request, err := parseNativeRPCKey(key)
+	if err == nil && request.chain != c.w.event.Checkpoint.ChainID {
+		return nativeRPCKey{}, fmt.Errorf("event RPC chain mismatch")
 	}
-	if chain != c.w.event.Checkpoint.ChainID {
-		return 0, "", fmt.Errorf("event RPC chain mismatch")
-	}
-	return chain, hash, nil
+	return request, err
 }
 func (c *EventProtocolCache) CacheGet(ctx context.Context, key string) (json.RawMessage, bool, error) {
 	c.mu.Lock()
@@ -44,15 +41,11 @@ func (c *EventProtocolCache) CacheGet(ctx context.Context, key string) (json.Raw
 	if e := c.active(); e != nil {
 		return nil, false, e
 	}
-	chain, hash, e := c.request(key)
+	request, e := c.request(key)
 	if e != nil {
 		return nil, false, e
 	}
-	r, e := c.w.tx.Query(ctx, "SELECT result FROM "+c.c.table("rpc_request_results")+" WHERE chain_id=$1 AND request_hash=$2", chain, hash)
-	if e != nil || len(r.Rows) == 0 {
-		return nil, false, e
-	}
-	return json.RawMessage(fmt.Sprint(r.Rows[0]["result"])), true, nil
+	return c.c.readNativeRPC(ctx, c.w.tx, request)
 }
 func (c *EventProtocolCache) CachePut(ctx context.Context, key string, value json.RawMessage) error {
 	c.mu.Lock()
@@ -60,14 +53,12 @@ func (c *EventProtocolCache) CachePut(ctx context.Context, key string, value jso
 	if e := c.active(); e != nil {
 		return e
 	}
-	chain, hash, e := c.request(key)
+	request, e := c.request(key)
 	if e != nil {
 		return e
 	}
 	if !json.Valid(value) {
 		return fmt.Errorf("RPC result must be JSON")
 	}
-	// The native key does not yet resolve the source request's block parameter.
-	// Keep it unknown and conservatively invalidate it on a chain rewind.
-	return c.w.tx.Exec(ctx, "INSERT INTO "+c.c.table("rpc_request_results")+"(chain_id,request_hash,block_number,result) VALUES($1,$2,NULL,$3) ON CONFLICT(chain_id,request_hash) DO UPDATE SET result=excluded.result,block_number=NULL", chain, hash, string(value))
+	return c.c.writeNativeRPC(ctx, c.w.tx, request, value)
 }

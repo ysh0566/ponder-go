@@ -344,43 +344,58 @@ func (s *Store) rewindProtocolCache(ctx context.Context, tx Transaction, chain u
 	return cache.rewind(ctx, tx, chain, number)
 }
 
-// Cache keys here are native JSON-RPC request keys, hashed with SHA256 and
-// scoped by chain. This is not the original request-hash algorithm or a claim
-// that already stored TS-client RPC cache entries are reusable.
-func protocolRequest(key string) (uint64, string, error) {
+// Native cache keys hash the exact JSON-RPC envelope, scoped to one chain.
+type nativeRPCKey struct {
+	chain          uint64
+	hash           string
+	method, params json.RawMessage
+}
+
+func parseNativeRPCKey(key string) (nativeRPCKey, error) {
 	var parts []json.RawMessage
-	if e := json.Unmarshal([]byte(key), &parts); e != nil || len(parts) != 3 {
-		return 0, "", fmt.Errorf("invalid native RPC request key")
+	if err := json.Unmarshal([]byte(key), &parts); err != nil || len(parts) != 3 {
+		return nativeRPCKey{}, fmt.Errorf("invalid native RPC request key")
 	}
 	var chain uint64
-	if e := json.Unmarshal(parts[0], &chain); e != nil || chain > math.MaxInt64 {
-		return 0, "", fmt.Errorf("invalid RPC chain ID")
+	if err := json.Unmarshal(parts[0], &chain); err != nil || chain > math.MaxInt64 {
+		return nativeRPCKey{}, fmt.Errorf("invalid RPC chain ID")
 	}
-	return chain, fmt.Sprintf("%x", sha256.Sum256([]byte(key))), nil
+	return nativeRPCKey{chain: chain, hash: fmt.Sprintf("%x", sha256.Sum256([]byte(key))), method: parts[1], params: parts[2]}, nil
 }
-func (c *ProtocolCache) CacheGet(ctx context.Context, key string) (json.RawMessage, bool, error) {
-	if e := c.active(); e != nil {
-		return nil, false, e
-	}
-	chain, hash, e := protocolRequest(key)
-	if e != nil {
-		return nil, false, e
-	}
-	r, e := c.s.Backend.Query(ctx, "SELECT result FROM "+c.table("rpc_request_results")+" WHERE chain_id=$1 AND request_hash=$2", chain, hash)
-	if e != nil || len(r.Rows) == 0 {
-		return nil, false, e
+
+func (c *ProtocolCache) readNativeRPC(ctx context.Context, q Querier, key nativeRPCKey) (json.RawMessage, bool, error) {
+	r, err := q.Query(ctx, "SELECT result FROM "+c.table("rpc_request_results")+" WHERE chain_id=$1 AND request_hash=$2", key.chain, key.hash)
+	if err != nil || len(r.Rows) == 0 {
+		return nil, false, err
 	}
 	return json.RawMessage(fmt.Sprint(r.Rows[0]["result"])), true, nil
 }
+
+func (c *ProtocolCache) writeNativeRPC(ctx context.Context, tx Transaction, key nativeRPCKey, value json.RawMessage) error {
+	return tx.Exec(ctx, "INSERT INTO "+c.table("rpc_request_results")+"(chain_id,request_hash,block_number,result) VALUES($1,$2,$3,$4) ON CONFLICT(chain_id,request_hash) DO UPDATE SET result=excluded.result,block_number=excluded.block_number",
+		key.chain, key.hash, key.blockNumber(), string(value))
+}
+
+func (c *ProtocolCache) CacheGet(ctx context.Context, key string) (json.RawMessage, bool, error) {
+	if err := c.active(); err != nil {
+		return nil, false, err
+	}
+	request, err := parseNativeRPCKey(key)
+	if err != nil {
+		return nil, false, err
+	}
+	return c.readNativeRPC(ctx, c.s.Backend, request)
+}
+
 func (c *ProtocolCache) CachePut(ctx context.Context, key string, value json.RawMessage) error {
-	chain, hash, e := protocolRequest(key)
-	if e != nil {
-		return e
+	request, err := parseNativeRPCKey(key)
+	if err != nil {
+		return err
 	}
 	if !json.Valid(value) {
 		return fmt.Errorf("RPC result must be JSON")
 	}
 	return c.transaction(ctx, func(tx Transaction) error {
-		return tx.Exec(ctx, "INSERT INTO "+c.table("rpc_request_results")+"(chain_id,request_hash,block_number,result) VALUES($1,$2,NULL,$3) ON CONFLICT(chain_id,request_hash) DO UPDATE SET result=excluded.result", chain, hash, string(value))
+		return c.writeNativeRPC(ctx, tx, request, value)
 	})
 }

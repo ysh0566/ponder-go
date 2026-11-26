@@ -52,10 +52,10 @@ A handler's cached RPC access uses its existing event transaction in the separat
 sync cache schema. Starting a nested cache transaction while holding the store or
 PGlite transaction lock would deadlock. `Client.WithCache` shares the original
 transport's request IDs, retries and rate limiter while changing cache scope.
-Per-block hash-addressed RPC cache misses are tested inside handlers; rollback
-also rolls back those cache writes. Unknown request block metadata remains NULL
-and is conservatively invalidated on reorg; full source request-hash/parameter
-resolution remains pending. Scoped cache access rejects use after the handler.
+Failed handler transactions roll back their RPC cache writes. A chain rewind keeps
+numeric block reads through the common ancestor and removes later reads and
+unknown-height results, including hash-only requests. Scoped cache access rejects
+use after the handler. [Rewind coverage](../parity/runs/native-rpc-rewind-heights/RESULT.md)
 
 ## Verification and limits
 

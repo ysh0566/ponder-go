@@ -1176,9 +1176,15 @@
       "status": "verified_subset",
       "implementation_files": [
         "store/protocol_cache.go",
+        "store/event_rpc_cache.go",
+        "store/native_rpc_height.go",
         "runtime/engine.go",
         "runtime/factory.go",
         "store/sync.go"
+      ],
+      "native_test_files": [
+        "store/native_rpc_height_test.go",
+        "store/protocol_cache_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/sync-store/encode.ts",
@@ -1188,6 +1194,7 @@
         "parity/runs/batch-15.json",
         "testdata/protocol/encoding.json",
         "docs/PROTOCOL_CACHE.md",
+        "parity/runs/native-rpc-rewind-heights/RESULT.md",
         "parity/runs/batch-16.json"
       ],
       "remaining": "Selected source-shaped cache/actions/store helpers and actual default multichain RuntimeRunner cache policies are verified by later M32–M45 records. Complete provider/archive behavior, all source combinations remain open; see docs/RUNTIME_SUPPORT.md."

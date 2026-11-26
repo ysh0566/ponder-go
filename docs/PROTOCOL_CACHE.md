@@ -24,8 +24,10 @@ not the full source filter/include/pagination planner.
 RevertAndRewind clears the attached cache's orphaned rows and clips intervals in
 the same transaction as native business undo and provenance rewind. A failure
 at a cache DELETE must roll back business undo too. Generic native RPC request
-cache entries use a chain-scoped SHA256 request key and nullable block metadata;
-rewind conservatively clears unknown-block results for the affected chain.
+cache entries use a chain-scoped SHA256 request key. Known heights through the
+rewind boundary survive, including genesis. Numeric log ranges use their upper
+endpoint. Unknown heights and orphaned results are cleared on the affected chain.
+[Rewind tests](../parity/runs/native-rpc-rewind-heights/RESULT.md)
 This differs from the source MD5/ordered-object request-key algorithm and does
 not promise reuse of existing TS client cache entries. Closed adapters reject
 reads/writes; backend lifecycle and lease fencing still govern writes. A cold or
