@@ -19,7 +19,10 @@ func GenerateStructs(packageName string, model schema.Schema) ([]byte, error) {
 		return nil, err
 	}
 	var body strings.Builder
-	enums := generateEnums(&body, model)
+	enums, err := generateEnums(&body, model)
+	if err != nil {
+		return nil, err
+	}
 	usesBigInt := false
 	for _, table := range model.Tables {
 		keys := table.Keys()
@@ -27,6 +30,9 @@ func GenerateStructs(packageName string, model schema.Schema) ([]byte, error) {
 		for _, c := range table.Columns {
 			base, array := strings.CutSuffix(c.Type, "[]")
 			typ := enums[base]
+			if c.GoCodec != nil {
+				typ = c.GoCodec.Type
+			}
 			if typ != "" {
 				if array || (!c.NotNull && !slices.Contains(keys, c.Name)) {
 					typ = "*" + typ

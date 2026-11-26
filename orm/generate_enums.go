@@ -2,6 +2,7 @@ package orm
 
 import (
 	"fmt"
+	"go/token"
 	"strings"
 	"unicode"
 
@@ -9,7 +10,7 @@ import (
 )
 
 // Reserve the table API first so adding an enum never renames a table binding.
-func generateEnums(body *strings.Builder, model schema.Schema) map[string]string {
+func generateEnums(body *strings.Builder, model schema.Schema) (map[string]string, error) {
 	used := map[string]bool{"CallbackDatabase": true, "BindCallbackDatabase": true}
 	for _, table := range model.Tables {
 		name := modelGoName(table.Name)
@@ -18,6 +19,26 @@ func generateEnums(body *strings.Builder, model schema.Schema) map[string]string
 		}
 		used["New"+name+"Key"] = true
 		used["New"+name+"Insert"] = true
+	}
+	// The application declares these names in the same package as the output.
+	// Keep them available when assigning generated enum types and constructors.
+	roles := map[string]string{}
+	for _, table := range model.Tables {
+		for _, column := range table.Columns {
+			codec := column.GoCodec
+			if codec == nil {
+				continue
+			}
+			for _, symbol := range []struct{ name, role string }{{codec.Type, "type"}, {codec.Name, "codec"}} {
+				if !token.IsIdentifier(symbol.name) || !token.IsExported(symbol.name) {
+					return nil, fmt.Errorf("%s.%s: Go %s must be an exported identifier", table.Name, column.Name, symbol.role)
+				}
+				if prior := roles[symbol.name]; used[symbol.name] && prior != symbol.role {
+					return nil, fmt.Errorf("%s.%s: Go %s %q conflicts with another declaration", table.Name, column.Name, symbol.role, symbol.name)
+				}
+				roles[symbol.name], used[symbol.name] = symbol.role, true
+			}
+		}
 	}
 	names := make(map[string]string, len(model.Enums))
 	for _, enum := range model.Enums {
@@ -45,7 +66,7 @@ func generateEnums(body *strings.Builder, model schema.Schema) map[string]string
 		}
 		writeEnum(body, name, enum, cases)
 	}
-	return names
+	return names, nil
 }
 
 func enumCaseName(label string) string {

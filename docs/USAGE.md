@@ -473,6 +473,46 @@ return err
 
 从配置或外部请求读取标签时，调用 `models.ParseTradeType(label)` 并检查错误。解析区分大小写，`String()` 和 JSON 保留数据库中的原始标签。`TradeType` 的零值是声明的第一个标签，这里为 `BUY`。可空列使用 `orm.Nullable[models.TradeType]`，数组元素各自保留 SQL NULL。普通结构体生成和 `--typed --callback-db` 也提供同一组枚举取值。[可编译示例与数据库读写测试](../orm/enum_models_test.go)
 
+### 为数据库列绑定自定义 Go 类型
+
+例如，索引器可以在 Go 回调中使用 `time.Duration`，并在数据库中以 `text` 保存 `"1.5s"`。在 `schema.json` 的列上设置 `goCodec`。`type` 指定已有的存储类型，`goCodec.type` 和 `goCodec.name` 分别指向生成包中的 Go 类型和编解码器变量。两者均使用导出的 Go 标识符。
+
+```json
+{"tables":[{"name":"job","columns":[
+  {"name":"id","type":"text","primary":true},
+  {"name":"elapsed","type":"text","notNull":true,"goCodec":{"type":"Duration","name":"DurationCodec"}}
+]}]}
+```
+
+在项目的 `models/duration.go` 中定义转换。解码函数接收存储层按列类型读出的 Go 值，例如 `text` 对应 `string`，`bytes` 对应 `[]byte`。可用类型别名引用其他包定义的类型。
+
+```go
+package models
+
+import (
+    "time"
+
+    "github.com/ysh0566/ponder-go/orm"
+)
+
+type Duration = time.Duration
+
+var DurationCodec = orm.ColumnCodec[Duration]{
+    Encode: func(v Duration) (any, error) { return v.String(), nil },
+    Decode: func(raw any) (Duration, error) {
+        text, err := orm.DecodeString(raw)
+        if err != nil {
+            return 0, err
+        }
+        return time.ParseDuration(text)
+    },
+}
+```
+
+运行 `ponder codegen --schema schema.json --typed --package models --out models/models.go`。在回调中调用 `models.NewJobInsert("job-1", 1500*time.Millisecond)` 即可创建写入参数，读回的 `JobRow.Elapsed` 为 `time.Duration`。普通结构体模式也会生成对应的 Go 字段。生成模型的 JSON 使用该 Go 类型的 JSON 表示。
+
+同一编解码器也可绑定到主键，或绑定到 `text[]` 以逐个转换非空元素。类型化数组使用 `[]orm.Nullable[T]`，可空列使用 `orm.Nullable[T]`。构建参数时会保存编码结果；执行写入时会先检查转换错误，批量写入中有一项编码失败，整批都不会提交。[可编译示例](../orm/testdata/custom/codec.go) · [双库读写测试](../orm/custom_codec_test.go)
+
 ### 网络类型与几何类型
 
 在 `schema.json` 的 `columns` 中可以声明 `{"name":"subnet","type":"cidr"}`。同样可用 `inet`、`interval`、`macaddr`、`macaddr8` 和 `time`，数组类型在名称后加 `[]`。生成的 Go 模型以字符串保存这六类标量。数据库校验输入并返回规范形式，例如写入 `2001:0db8:0:0::1` 后可读到 `2001:db8::1`。

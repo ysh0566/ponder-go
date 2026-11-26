@@ -22,7 +22,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 | 链上索引 | 单链支持历史同步、持续索引、重组撤销和重新索引。单链和独立多链可用 WebSocket 新区块通知追块，并按重组窗口清理撤销日志。可处理静态合约及 factory 发现的日志；账户、交易和合约调用 trace 的支持范围见矩阵。[运行模式](docs/RUNTIME_SUPPORT.md) |
 | 多链 | 默认多链可通过 `runtime.NewIndexer` 处理有限区间或持续追块。已编译的 Go 来源配置可以直接交给 `runtime.NewIndexerFromSource`，一次启动有注册回调的所有链。可按链名传入自定义 Go RPC 函数，其他链仍可使用节点 URL。[自定义传输](docs/USAGE.md#为单条链配置-go-rpc-传输) 默认排序下，较快的链可先提交回调，链重组时会重放受影响的跨链回调。原生 Omnichain 支持持续追块、历史回填和跨链重组重放；已验证区块、静态和工厂合约日志、账户交易与转账、合约调用 trace 的组合。Isolated 模式可让各链独立索引、重试和撤销重组。[编译配置用法](docs/USAGE.md#用编译后的-go-来源配置启动多链) · [多链边界](docs/RUNTIME_SUPPORT.md) |
 | 回调查链 | 类型化 Go 回调提供上游列出的 21 个高层方法，包括历史合约调用、gas 估算、ABI 模拟、交易及 ENS 地址、文本和头像查询。EIP-3668 支持网关取数、合约验证和 ENS 批量查询。原生脚手架的普通回调还可直接发送 JSON-RPC 请求。[方法清单](docs/RUNTIME_SUPPORT.md#callback-rpc-methods) · [链下读取](docs/USAGE.md#合约的-eip-3668-链下读取) |
-| 数据库 | 生成项目默认将 PGlite 数据存到 `.ponder/pglite`，设置数据库 URL 后使用 PostgreSQL。业务写入、撤销日志和 checkpoint 在事务中提交。各存储组件只支持自己的当前格式；旧库需使用新命名空间重新索引。[本地 PGlite 使用与管理](docs/USAGE.md#使用本地-pglite) · [存储格式](parity/runs/current-database-formats/RESULT.md) |
+| 数据库 | 生成项目默认将 PGlite 数据存到 `.ponder/pglite`，设置数据库 URL 后使用 PostgreSQL。业务写入、撤销日志和 checkpoint 在事务中提交。各存储组件只支持自己的当前格式；旧库需使用新命名空间重新索引。自定义 Go 类型可以通过列编解码器用于主键、普通列和数组。[自定义类型读写](docs/USAGE.md#为数据库列绑定自定义-go-类型) · [本地 PGlite 使用与管理](docs/USAGE.md#使用本地-pglite) · [存储格式](parity/runs/current-database-formats/RESULT.md) |
 | 查询 | 支持只读 SQL、SSE 订阅、状态与指标接口。Go 项目可用 `serve` 独立查询正在写入的 PostgreSQL 部署，只需数据库连接和部署命名空间。应用可另行挂载 GraphQL 处理器，支持实体、过滤、分页、关联及视图。网络地址、时间、间隔和几何列均可用于查询。[列类型与表示](docs/USAGE.md#列类型与-graphql-表示) · [HTTP 查询示例](docs/USAGE.md#查询索引结果) · [GraphQL](graphql) |
 | CLI 与应用 | `dev` 支持热重载，交互终端显示每链 RPC 速率、回填进度和 ETA，以及各回调的执行次数和平均耗时。`start` 和 `serve` 可启动索引或查询服务，均支持 `--hostname` 和 `--port`。全局 `--log-level` 和 `--log-format json` 同时控制 CLI 和生成的 Go 应用的诊断日志。生成的项目通过 `start --views-schema` 在追上链头后切换查询视图。另有代码生成和 checkpoint 编解码。PostgreSQL 和已停机的本地 PGlite 部署可用 `db list` 列出命名空间、`db create-views` 发布查询视图、`db prune` 清理已停用的部署。[数据库命令](docs/USAGE.md#发布查询视图与清理部署) · [日志选项](docs/USAGE.md#控制-cli-和-go-应用日志) · [CLI 使用](docs/USAGE.md#用于自己的项目) |
 
@@ -33,8 +33,6 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 业务数据和同步缓存分开管理时，`historical.RuntimeRunner` 已支持默认多链和 Isolated 持续追块。Isolated 遇到分叉时仅撤销该链的未确认写入。进程重启时，各链从自己的安全检查点继续。[双库 Isolated 用法](docs/USAGE.md#双库-isolated-实时追块) · [分叉与重启验证](parity/runs/native-isolated-live/RESULT.md)
 
 **双库 Omnichain 实时索引仍待实现。** 固定区间的作业可以提前启动，等每条链的结束区块和初始化区块都达到全局最终确认位置后再回填。默认在打开时检查一次，Go 应用也可配置轮询间隔。[提前启动的用法](docs/USAGE.md#等待双库-omnichain-的区间最终确认) 回填结束时，还需要把尚未最终确认的事件交给实时运行器。持续追块时需要按全局检查点排列各链事件。一条链分叉时，需要协调两个库撤销受影响的写入，并按顺序重放依赖这些写入的其他链回调。[最终性边界](historical/live_runtime_omnichain_source_test.go)
-
-**自定义数据库列的 Go 编解码器仍待实现。** 生成器已支持内置类型、数组、JSON 和类型化枚举。`hex` 列对应 Go 的 `string`。如果项目定义自己的列类型，生成器还不能为它生成 Go 模型与读写转换。[模型生成器](orm/generate.go) · [枚举用法](docs/USAGE.md#在-go-模型中使用数据库枚举)
 
 | 使用场景 | 当前能用什么 | 还缺什么 |
 | --- | --- | --- |

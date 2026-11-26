@@ -26,6 +26,13 @@ func modelGoName(value string) string {
 	return strings.Join(parts, "")
 }
 func typedColumn(column schema.Column, enums map[string]string) (typ, decoder, encoder string, e error) {
+	if codec := column.GoCodec; codec != nil {
+		typ, binding := codec.Type, codec.Name
+		if strings.HasSuffix(column.Type, "[]") {
+			typ, binding = "[]orm.Nullable["+typ+"]", "orm.ArrayColumnCodec("+binding+")"
+		}
+		return typ, binding + ".Read", binding + ".Snapshot(%s)", nil
+	}
 	if element, ok := strings.CutSuffix(column.Type, "[]"); ok {
 		column.Type = element
 		typ, decode, encode, err := typedColumn(column, enums)
@@ -101,7 +108,10 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 	}
 	var body strings.Builder
 	imports := map[string]bool{"encoding/json": true, "fmt": true, "github.com/ysh0566/ponder-go/orm": true, "github.com/ysh0566/ponder-go/store": true}
-	enumNames := generateEnums(&body, model)
+	enumNames, err := generateEnums(&body, model)
+	if err != nil {
+		return nil, err
+	}
 	names := map[string]bool{}
 	for _, table := range model.Tables {
 		name := modelGoName(table.Name)
@@ -114,8 +124,10 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 			keys[key] = true
 		}
 		columns := []generatedColumn{}
+		hasCodec := false
 		fields := map[string]bool{}
 		for _, column := range table.Columns {
+			hasCodec = hasCodec || column.GoCodec != nil
 			property := column.Property
 			if property == "" {
 				property = column.Name
@@ -144,7 +156,11 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 		body.WriteString("}\n")
 		fmt.Fprintf(&body, "func(row %sRow) MarshalJSON()([]byte,error){ return json.Marshal(store.Row{", name)
 		for _, column := range columns {
-			fmt.Fprintf(&body, "%q:%s,", column.property, column.encoded("row."+column.field))
+			value := "row." + column.field
+			if column.column.GoCodec == nil {
+				value = column.encoded(value)
+			}
+			fmt.Fprintf(&body, "%q:%s,", column.property, value)
 		}
 		body.WriteString("}) }\n")
 		fmt.Fprintf(&body, "type %sKey struct { values store.Row }\ntype %sInsert struct { values store.Row }\n", name, name)
@@ -179,7 +195,11 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 					fmt.Fprintf(&body, "if _,ok:=input.values[%q];!ok { return nil,fmt.Errorf(%q) };", column.property, "missing required "+table.Name+"."+column.property)
 				}
 			}
-			body.WriteString("return orm.CopyValues(input.values),nil },\n")
+			if hasCodec {
+				fmt.Fprintf(&body, "return orm.ResolveColumnValues(%q,input.values) },\n", table.Name)
+			} else {
+				body.WriteString("return orm.CopyValues(input.values),nil },\n")
+			}
 		}
 		fmt.Fprintf(&body, "func(input %sUpdate)(store.Row,error){ row:=store.Row{};", name)
 		for _, column := range columns {
@@ -187,7 +207,11 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 				fmt.Fprintf(&body, "if input.%s.Changed() { row[%q]=%s };", column.field, column.property, column.encoded("input."+column.field+".Value()"))
 			}
 		}
-		body.WriteString("return row,nil },\n")
+		if hasCodec {
+			fmt.Fprintf(&body, "return orm.ResolveColumnValues(%q,row) },\n", table.Name)
+		} else {
+			body.WriteString("return row,nil },\n")
+		}
 		fmt.Fprintf(&body, "func(row store.Row)(%sRow,error){ var out %sRow;", name, name)
 		for _, column := range columns {
 			if column.nullable {

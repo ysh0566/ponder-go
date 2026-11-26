@@ -16,11 +16,19 @@ const (
 	Isolated   Ordering = "experimental_isolated"
 )
 
+// GoColumnCodec names a domain type and its orm.ColumnCodec in the generated
+// model package. Column.Type continues to select the database storage type.
+type GoColumnCodec struct {
+	Type string `json:"type"`
+	Name string `json:"name"`
+}
+
 type Column struct {
 	Name                string                 `json:"name"`
 	Property            string                 `json:"property,omitempty"`
 	Type                string                 `json:"type"`
 	Mode                string                 `json:"mode,omitempty"`
+	GoCodec             *GoColumnCodec         `json:"goCodec,omitempty"`
 	Primary             bool                   `json:"primary,omitempty"`
 	NotNull             bool                   `json:"notNull,omitempty"`
 	Unique              bool                   `json:"unique,omitempty"`

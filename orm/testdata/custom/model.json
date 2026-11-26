@@ -1,0 +1,11 @@
+{
+  "tables": [{
+    "name": "holding",
+    "columns": [
+      {"name": "id", "type": "text", "primary": true, "goCodec": {"type": "Units", "name": "UnitsCodec"}},
+      {"name": "payload", "type": "bytes", "notNull": true, "goCodec": {"type": "Payload", "name": "PayloadCodec"}},
+      {"name": "limit", "type": "text", "goCodec": {"type": "Units", "name": "UnitsCodec"}},
+      {"name": "history", "type": "text[]", "goCodec": {"type": "Units", "name": "UnitsCodec"}}
+    ]
+  }]
+}
