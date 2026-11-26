@@ -2259,7 +2259,7 @@
       "evidence": [
         "parity/runs/native-multichain-engine-recovery/RESULT.md"
       ],
-      "remaining": "The native scenarios interrupt a block callback while replaying a replacement branch. The native-omnichain-engine-recovery cases cover database engine exits during a finalized static-log callback and on either side of the two-chain setup commit. Host power loss and engine loss during readiness activation remain open."
+      "remaining": "The native scenarios interrupt a block callback while replaying a replacement branch. The native-omnichain-engine-recovery cases cover database engine exits during a finalized static-log callback and on either side of the two-chain setup commit. Dense block activation covers engine loss before the readiness commit. Host power loss and log-only scan-page activation remain open."
     },
     {
       "id": "native-bounded-factory",
@@ -2411,7 +2411,8 @@
         "store/managed_live_runtime.go",
         "store/managed_live_batch.go",
         "historical/live_runtime_setup.go",
-        "store/managed_live_setup.go"
+        "store/managed_live_setup.go",
+        "store/managed_live_runtime_activation.go"
       ],
       "native_test_files": [
         "historical/omnichain_engine_test.go",
@@ -2419,7 +2420,8 @@
         "internal/testpostgres/server.go",
         "historical/live_runtime_omnichain_logs_test.go",
         "historical/managed_test.go",
-        "historical/live_runtime_omnichain_setup_test.go"
+        "historical/live_runtime_omnichain_setup_test.go",
+        "store/managed_live_omnichain_activation_engine_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/database/index.test.ts",
@@ -2428,9 +2430,10 @@
       ],
       "evidence": [
         "parity/runs/native-omnichain-engine-recovery/RESULT.md",
-        "parity/runs/native-omnichain-setup-engine/RESULT.md"
+        "parity/runs/native-omnichain-setup-engine/RESULT.md",
+        "parity/runs/native-omnichain-activation-engine/RESULT.md"
       ],
-      "remaining": "Verified finalized historical event transactions and engine loss on either side of setup commit in a two-chain deployment with closing block and static-log callbacks. Readiness activation engine loss, host power loss and other source combinations remain open."
+      "remaining": "Verified finalized historical event transactions and engine loss on either side of setup commit in a two-chain deployment with closing block and static-log callbacks. For finalized block sources, PostgreSQL and both PGlite engine roles are covered immediately before the readiness commit. Log-only scan-page activation, host power loss and other source combinations remain open."
     },
     {
       "id": "native-omnichain-cache-policy",
