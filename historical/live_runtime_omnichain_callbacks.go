@@ -147,14 +147,14 @@ func validateOmnichainCallbackModes(groups [][]indexing.Object) error {
 }
 func validateOmnichainLogOnlyCallbacks(callbacks []indexing.Object) error {
 	if len(callbacks) == 0 {
-		return fmt.Errorf("log-only omnichain requires static ABI callbacks")
+		return fmt.Errorf("log-only omnichain requires ABI log callbacks")
 	}
 	for _, cb := range callbacks {
 		f := cb["filter"].(map[string]any)
 		from, fe := uintQuantity(filter.FilterFromBlock(f))
 		to, te := uintQuantity(filter.FilterToBlock(f))
-		if cb["type"] != "contract" || f["type"] != "log" || len(filter.GetFilterFactories(f)) != 0 || fe != nil || te != nil || to < from {
-			return fmt.Errorf("log-only omnichain requires finite static ABI log ranges with startBlock <= endBlock")
+		if cb["type"] != "contract" || f["type"] != "log" || fe != nil || te != nil || to < from {
+			return fmt.Errorf("log-only omnichain requires finite ABI log ranges with startBlock <= endBlock")
 		}
 	}
 	return nil

@@ -23,7 +23,7 @@ type omniFactoryNode struct {
 	txs        map[int]string
 }
 
-func mineOmniFactory(t *testing.T, id uint64, birth int, child, decoy string, times []int) omniFactoryNode {
+func mineOmniFactory(t *testing.T, id uint64, birth int, child, decoy string, times []int, sparse bool) omniFactoryNode {
 	t.Helper()
 	node := omniFactoryNode{url: testanvil.StartChain(t, id, "--no-mining", "--timestamp", "1700000000"), child: child, txs: map[int]string{}}
 	client := rpc.New(node.url)
@@ -55,17 +55,19 @@ func mineOmniFactory(t *testing.T, id uint64, birth int, child, decoy string, ti
 		if n == birth {
 			send(factoryParent, "0x")
 		}
-		if n <= 4 {
+		if n <= 4 || (sparse && n == 5) {
 			data := selector + fmt.Sprintf("%064x", n)
 			send(decoy, data)
-			node.txs[n] = send(child, data)
+			if !sparse || (n != 3 && n != 5) {
+				node.txs[n] = send(child, data)
+			}
 		}
 		call("evm_mine")
 	}
 	return node
 }
 
-func omniFactoryBuild(t *testing.T, nodes map[uint64]omniFactoryNode, handler func(string) indexing.Handler) *config.SourceIndexingBuild {
+func omniFactoryBuild(t *testing.T, nodes map[uint64]omniFactoryNode, handler func(string) indexing.Handler, logOnly bool) *config.SourceIndexingBuild {
 	t.Helper()
 	both := map[string]any{"one": map[string]any{}, "two": map[string]any{}}
 	created := abi.Event{Type: "event", Name: "Created", Inputs: []abi.Parameter{
@@ -81,7 +83,7 @@ func omniFactoryBuild(t *testing.T, nodes map[uint64]omniFactoryNode, handler fu
 		abi.Event{Type: "event", Name: "Ping", Inputs: args},
 		abi.Function{Type: "function", Name: "record", Inputs: args, Outputs: args, StateMutability: "payable"},
 	}
-	return compileOmniLogsConfig(t, map[string]any{
+	cfg := map[string]any{
 		"ordering": "omnichain",
 		"chains": map[string]any{
 			"one": map[string]any{"id": 101, "rpc": nodes[101].url, "reorgWindow": 0},
@@ -93,7 +95,16 @@ func omniFactoryBuild(t *testing.T, nodes map[uint64]omniFactoryNode, handler fu
 			"chain": both, "address": children, "startBlock": 1, "endBlock": 4,
 			"abi": childABI, "includeCallTraces": true,
 		}},
-	}, []config.SourceIndexingFunction{
+	}
+	if logOnly {
+		delete(cfg, "blocks")
+		delete(cfg, "accounts")
+		contract := cfg["contracts"].(map[string]any)["Child"].(map[string]any)
+		contract["endBlock"] = 5
+		delete(contract, "includeCallTraces")
+		return compileOmniLogsConfig(t, cfg, []config.SourceIndexingFunction{{Name: "Child:Ping", Fn: handler("log")}})
+	}
+	return compileOmniLogsConfig(t, cfg, []config.SourceIndexingFunction{
 		{Name: "Head:block", Fn: handler("block")},
 		{Name: "Child:Ping", Fn: handler("log")},
 		{Name: "Child.record()", Fn: handler("call")},
@@ -102,16 +113,30 @@ func omniFactoryBuild(t *testing.T, nodes map[uint64]omniFactoryNode, handler fu
 	})
 }
 
-func TestRuntimeOmnichainFactory(t *testing.T) {
+func TestRuntimeOmnichainFactory(t *testing.T)    { testOmnichainFactory(t, false) }
+func TestRuntimeOmnichainLogFactory(t *testing.T) { testOmnichainFactory(t, true) }
+
+func testOmnichainFactory(t *testing.T, logOnly bool) {
+	one, two := []int{10, 40, 55, 70, 95}, []int{20, 30, 60, 75, 96}
+	if logOnly {
+		// Put the empty fifth block on both chains below the global finalized timestamp.
+		one, two = append(one, 110), append(two, 115)
+	}
 	nodes := map[uint64]omniFactoryNode{
-		101: mineOmniFactory(t, 101, 2, factoryChild, factoryOther, []int{10, 40, 55, 70, 95}),
-		202: mineOmniFactory(t, 202, 1, factoryOther, factoryChild, []int{20, 30, 60, 75, 96}),
+		101: mineOmniFactory(t, 101, 2, factoryChild, factoryOther, one, logOnly),
+		202: mineOmniFactory(t, 202, 1, factoryOther, factoryChild, two, logOnly),
 	}
 	var expected []string
 	for _, pos := range [][2]int{{101, 1}, {202, 1}, {202, 2}, {101, 2}, {101, 3}, {202, 3}, {101, 4}, {202, 4}} {
 		names := []string{"block"}
 		if pos != [2]int{101, 1} {
 			names = []string{"tx", "log", "call", "transfer", "block"}
+		}
+		if logOnly {
+			if pos == [2]int{101, 1} || pos[1] == 3 {
+				continue
+			}
+			names = []string{"log"}
 		}
 		for _, kind := range names {
 			expected = append(expected, fmt.Sprintf("%d/%d/%s", pos[0], pos[1], kind))
@@ -154,7 +179,7 @@ func TestRuntimeOmnichainFactory(t *testing.T) {
 					return nil
 				}
 			}
-			b := omniFactoryBuild(t, nodes, handler)
+			b := omniFactoryBuild(t, nodes, handler, logOnly)
 			fixture := newManagedFiniteFixture(t, backend, b)
 			omnichainGoldenStorage(&fixture)
 			opts := RuntimeOptions{FactorySources: true, SourceCheckpoints: true, Historical: runtimeFixtureInput(fixture), BuildID: "omni-factory"}
@@ -194,8 +219,12 @@ func TestRuntimeOmnichainFactory(t *testing.T) {
 						}
 						prefix := strings.Split(fmt.Sprint(rows[0]["value"]), "|")
 						committed = len(prefix)
-						if committed > failureIndex || !slices.Equal(prefix, expected[:committed]) ||
-							!strings.HasSuffix(prefix[committed-1], "/block") || !slices.Contains(prefix, "202/2/block") {
+						lastKind := "block"
+						if logOnly {
+							lastKind = "log"
+						}
+						if committed == 0 || committed > failureIndex || !slices.Equal(prefix, expected[:committed]) ||
+							!strings.HasSuffix(prefix[committed-1], "/"+lastKind) || !slices.Contains(prefix, "202/2/"+lastKind) {
 							t.Fatalf("invalid committed prefix %v", prefix)
 						}
 					})
@@ -220,22 +249,21 @@ func TestRuntimeOmnichainFactory(t *testing.T) {
 }
 
 func TestRuntimeOmnichainFactoryPreflight(t *testing.T) {
-	for _, mode := range []string{"log-only", "missing-opt-in", "discovery-outside-closing-range"} {
+	for _, mode := range []string{"log-only-missing-opt-in", "missing-opt-in", "discovery-outside-closing-range"} {
 		t.Run(mode, func(t *testing.T) {
 			p := newContinuousRPC(t, 5)
 			nodes := map[uint64]omniFactoryNode{101: {url: p.p.server.URL + "/1"}, 202: {url: p.p.server.URL + "/2"}}
 			handler := func(string) indexing.Handler {
 				return func(context.Context, *indexing.HandlerArgs) error { t.Fatal("preflight invoked handler"); return nil }
 			}
-			build := omniFactoryBuild(t, nodes, handler)
+			build := omniFactoryBuild(t, nodes, handler, false)
 			expected := "require opt-in"
 			for i, group := range build.Executable().EventCallbacks {
 				switch mode {
-				case "log-only":
+				case "log-only-missing-opt-in":
 					build.Executable().EventCallbacks[i] = slices.DeleteFunc(slices.Clone(group), func(cb indexing.Object) bool {
 						return cb["filter"].(map[string]any)["type"] != "log"
 					})
-					expected = "finite static ABI log ranges"
 				case "discovery-outside-closing-range":
 					for _, cb := range group {
 						f := cb["filter"].(map[string]any)
@@ -246,7 +274,7 @@ func TestRuntimeOmnichainFactoryPreflight(t *testing.T) {
 					expected = "must cover every event callback range"
 				}
 			}
-			opts := RuntimeOptions{Historical: Options{Build: build}, FactorySources: mode != "missing-opt-in", SourceCheckpoints: true, OpenID: "guard", BuildID: "guard"}
+			opts := RuntimeOptions{Historical: Options{Build: build}, FactorySources: mode == "discovery-outside-closing-range", SourceCheckpoints: true, OpenID: "guard", BuildID: "guard"}
 			opts.Requesters = func(context.Context, uint64) ([]rpc.Requester, error) {
 				t.Fatal("preflight opened RPC")
 				return nil, nil

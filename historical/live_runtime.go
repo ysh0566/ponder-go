@@ -38,7 +38,7 @@ type RuntimeOptions struct {
 	// Development marks this deployment as a development shadow in its metadata.
 	Development bool
 	// FactorySources discovers child addresses on the canonical branch.
-	// Set SourceCheckpoints as well. Omnichain also requires a closing block callback on every chain.
+	// Set SourceCheckpoints as well. Finalized Omnichain accepts either all-log sources or a covering block callback on every chain.
 	FactorySources bool
 	Live           *RuntimeLiveOptions
 	// Historical.QuerySize is the bounded omnichain SQL target (1..12000);
@@ -538,6 +538,7 @@ func (r *RuntimeRunner) walkFinalizedLineage(ctx context.Context, requester rpc.
 	if target.BlockNumber > cp.BlockNumber {
 		return fmt.Errorf("private safe cursor exceeds acquired finality")
 	}
+	low := r.logScanLineageStart(id, target.BlockNumber)
 	for {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -547,10 +548,10 @@ func (r *RuntimeRunner) walkFinalizedLineage(ctx context.Context, requester rpc.
 				return err
 			}
 		}
-		if cp.BlockNumber == target.BlockNumber {
-			if head != boundary {
-				return fmt.Errorf("safe boundary differs from authenticated finalized lineage")
-			}
+		if cp.BlockNumber == target.BlockNumber && head != boundary {
+			return fmt.Errorf("safe boundary differs from authenticated finalized lineage")
+		}
+		if cp.BlockNumber == low {
 			return nil
 		}
 		b, e := a.GetSourceBlockByNumber(ctx, source.Hex(cp.BlockNumber-1), false)

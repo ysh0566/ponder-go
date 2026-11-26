@@ -160,7 +160,7 @@ func logOnlyABICallbacks(filters map[uint64][]filter.Object, abis map[uint64][]a
 	return result, nil
 }
 
-func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEventDataArgs, read func(context.Context, SourceEventDataArgs) (SourceEventData, error)) (string, error) {
+func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEventDataArgs, children logFactoryChildren, read func(context.Context, SourceEventDataArgs) (SourceEventData, error)) (string, error) {
 	callbacks := o.runtimeLogCallbacks[args.ChainID]
 	skipped := false
 	for {
@@ -172,11 +172,15 @@ func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEven
 		// filter range cannot be mistaken for an unprocessed callback.
 		page := args
 		for _, f := range args.Filters {
-			if from := filter.FilterFromBlock(f); from > args.FromBlock {
-				page.ToBlock = min(page.ToBlock, from-1)
+			bounds, err := sourceRangeFromFilter(f)
+			if err != nil {
+				return "", err
 			}
-			if to := filter.FilterToBlock(f); to >= args.FromBlock {
-				page.ToBlock = min(page.ToBlock, to)
+			if from := bounds.FromBlock; from != nil && *from > args.FromBlock {
+				page.ToBlock = min(page.ToBlock, *from-1)
+			}
+			if to := bounds.ToBlock; to != nil && *to >= args.FromBlock {
+				page.ToBlock = min(page.ToBlock, *to)
 			}
 		}
 		rows, err := read(ctx, page)
@@ -184,7 +188,7 @@ func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEven
 			return "", err
 		}
 		if len(rows.Logs) != 0 {
-			if err := verifyABISkippedPage(args.ChainID, callbacks, rows); err != nil {
+			if err := verifyABISkippedPage(args.ChainID, callbacks, rows, children); err != nil {
 				return "", err
 			}
 			skipped = true
@@ -202,11 +206,39 @@ func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEven
 	}
 }
 
-func verifyABISkippedPage(chainID uint64, callbacks []filter.Object, rows SourceEventData) error {
+func verifyABISkippedPage(chainID uint64, callbacks []filter.Object, rows SourceEventData, children logFactoryChildren) error {
 	if len(callbacks) == 0 {
 		return ErrManagedLivePendingActions
 	}
-	raw, err := events.BuildEvents(events.Batch{ChainID: chainID, EventCallbacks: callbacks, Blocks: rows.Blocks, Transactions: rows.Transactions, TransactionReceipts: rows.TransactionReceipts, Logs: rows.Logs})
+	// SQL returns candidate logs for a factory without restricting the emitter.
+	// Discard a candidate only when every matching source excludes it by birth.
+	if len(children) != 0 {
+		eligible := make([]filter.Object, 0, len(rows.Logs))
+		for _, log := range rows.Logs {
+			n, ok := logOnlyQuantity(log["blockNumber"])
+			address, hasAddress := log["address"].(string)
+			if !ok || !hasAddress || address == "" {
+				return ErrManagedLiveBatchConflict
+			}
+			matched := false
+			for _, cb := range callbacks {
+				f := cb["filter"].(filter.Object)
+				if !filter.IsLogFilterMatched(f, log) {
+					continue
+				}
+				matched = true
+				if children.matches(f, log, n) {
+					eligible = append(eligible, log)
+					break
+				}
+			}
+			if !matched {
+				return ErrManagedLiveBatchConflict
+			}
+		}
+		rows.Logs = eligible
+	}
+	raw, err := events.BuildEvents(events.Batch{ChildAddresses: children, ChainID: chainID, EventCallbacks: callbacks, Blocks: rows.Blocks, Transactions: rows.Transactions, TransactionReceipts: rows.TransactionReceipts, Logs: rows.Logs})
 	if err != nil {
 		return err
 	}
@@ -243,18 +275,13 @@ func validateLogCoverage(filters []filter.Object, coverage [][]managedLogOnlyFra
 		return ErrManagedLiveBatchConflict
 	}
 	for i, f := range filters {
-		fragments, err := filter.GetFragments(f)
-		if err != nil || len(coverage[i]) != len(fragments) {
+		ranges, err := logFragmentRanges(f, start, end)
+		if err != nil || len(coverage[i]) != len(ranges) {
 			return ErrManagedLiveBatchConflict
 		}
-		from, okFrom := logOnlyQuantity(filter.FilterFromBlock(f))
-		to, okTo := logOnlyQuantity(filter.FilterToBlock(f))
-		if !okFrom || !okTo || from > to {
-			return ErrManagedLiveBatchConflict
-		}
-		for j, fragment := range fragments {
+		for j, part := range ranges {
 			p := coverage[i][j]
-			if p.ID != filter.EncodeFragment(fragment["fragment"].(filter.Object)) || !logOnlySpanCovered(p.Intervals, max(start, from), min(end, to)) {
+			if p.ID != part.id || !logOnlySpanCovered(p.Intervals, part.from, part.to) {
 				return ErrManagedLivePendingActions
 			}
 		}
@@ -270,15 +297,17 @@ func readLogCoverage(ctx context.Context, s *SourceSyncStore, filters []filter.O
 	}
 	var result [][]managedLogOnlyFragment
 	for _, f := range filters {
-		parts, ok := intervals.Get(f)
-		if !ok {
-			return nil, ErrManagedLivePendingActions
-		}
-		coverage := []managedLogOnlyFragment{}
-		for _, p := range parts {
-			spans := append([]SourceInterval{}, p.Intervals...)
-			sort.Slice(spans, func(i, j int) bool { return spans[i][0] < spans[j][0] })
-			coverage = append(coverage, managedLogOnlyFragment{ID: filter.EncodeFragment(p.Fragment), Intervals: spans})
+		var coverage []managedLogOnlyFragment
+		for _, source := range append([]filter.Object{f}, filter.GetFilterFactories(f)...) {
+			parts, ok := intervals.Get(source)
+			if !ok {
+				return nil, ErrManagedLivePendingActions
+			}
+			for _, p := range parts {
+				spans := append([]SourceInterval{}, p.Intervals...)
+				sort.Slice(spans, func(i, j int) bool { return spans[i][0] < spans[j][0] })
+				coverage = append(coverage, managedLogOnlyFragment{ID: filter.EncodeFragment(p.Fragment), Intervals: spans})
+			}
 		}
 		result = append(result, coverage)
 	}

@@ -404,7 +404,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		if !r.logOnly {
 			high = min(high, r.ends[id])
 		}
-		lineage, e := newRuntimeLineage(id, high, n.BlockNumber)
+		lineage, e := newRuntimeLineage(id, high, r.logScanLineageStart(id, n.BlockNumber))
 		if e != nil {
 			return result, e
 		}

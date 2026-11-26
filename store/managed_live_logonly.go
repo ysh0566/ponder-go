@@ -3,12 +3,14 @@ package store
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ysh0566/ponder-go/checkpoint"
-	"github.com/ysh0566/ponder-go/filter"
 	"math"
 	"math/big"
 	"reflect"
+	"slices"
 	"strings"
+
+	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/filter"
 )
 
 const managedLivePagedLogOnlyVersion = "managed-live-omnichain-logonly-v17"
@@ -144,15 +146,28 @@ func normalizeLogOnlyFilters(in map[uint64][]filter.Object, o ManagedLiveOptions
 			return nil, ErrManagedLiveBatchConflict
 		}
 		first, last := uint64(math.MaxUint64), uint64(0)
+		factories := map[string][]string{}
 		for _, f := range rows {
 			id, ie := logOnlyQuantity(f["chainId"])
 			from, fe := logOnlyQuantity(filter.FilterFromBlock(f))
 			to, te := logOnlyQuantity(filter.FilterToBlock(f))
-			if f["type"] != "log" || !ie || !fe || !te || id != c.ID || from > to || len(filter.GetFilterFactories(f)) != 0 {
+			if f["type"] != "log" || !ie || !fe || !te || id != c.ID || from > to || (!o.runtimeFactories && len(filter.GetFilterFactories(f)) != 0) {
 				return nil, ErrManagedLiveBatchConflict
 			}
 			first, last = min(first, from), max(last, to)
-			if _, e := filter.GetFragments(f); e != nil {
+			for _, factory := range filter.GetFilterFactories(f) {
+				fid, ok := logOnlyQuantity(factory["chainId"])
+				key, hasID := factory["id"].(string)
+				parts := filter.FactoryFragmentIDs(factory)
+				if prior, exists := factories[key]; exists && !slices.Equal(prior, parts) {
+					return nil, ErrManagedLiveBatchConflict
+				}
+				factories[key] = parts
+				if !ok || fid != id || !hasID || key == "" {
+					return nil, ErrManagedLiveBatchConflict
+				}
+			}
+			if _, e := logFragmentRanges(f, from, to); e != nil {
 				return nil, e
 			}
 			copy, e := cloneLogOnlyValue(reflect.ValueOf(f))
