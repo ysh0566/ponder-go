@@ -518,9 +518,9 @@ contracts := map[string]config.ContractDeclaration[[]abi.Event, string, any]{
 
 也可以为两个来源设置不相交的区间。重启时，运行器分别核对各来源在其有效区间里的扫描记录。同步库中即使已经存有其他高度的同签名日志，也只会派发声明范围内的事件。[区间、缓存与重放测试](../parity/runs/native-omnichain-log-ranges/RESULT.md)
 
-纯静态日志索引会用每个匹配回调的 ABI 检查日志。例如，合约发出的日志缺少 `uint256` 参数时，无法解码它的回调会跳过。即使一条链的剩余日志全部被跳过，只要同步库能证明已扫描到结束高度，索引器仍可就绪。扫描结束高度和最后提交的业务检查点可能不同。用同一配置重启后，已提交的回调不会重复执行。[区间末尾与重启测试](../parity/runs/native-omnichain-abi-tail/RESULT.md)
+纯静态日志索引会用每个匹配回调的 ABI 检查日志。例如，合约发出的日志缺少 `uint256` 参数时，无法解码它的回调会跳过。即使一条链的剩余日志全部被跳过，只要运行器能核对所有来源已扫描到各自的结束高度，索引器仍可就绪。扫描结束高度和最后提交的业务检查点可能不同。用同一配置重启后，已提交的回调不会重复执行。[区间末尾与重启测试](../parity/runs/native-omnichain-abi-tail/RESULT.md)
 
-每条链都注册了逐块回调时，可以在 Go 来源声明中逐链设置 RPC 缓存。例如，下面的链在内存中处理历史事件，回调直接从节点读取链上状态。其他链可以保留默认的缓存设置。关闭缓存的链仍然保存业务数据和检查点。重启时沿用原有缓存策略和存储位置。纯静态日志模式依靠同步库证明日志区间已完整扫描，所有链都需要开启缓存。[缓存与重启测试](../parity/runs/native-omnichain-cache-policy/RESULT.md)
+在已最终确认的有限区间里，无论各链都注册逐块回调，还是各链只监听静态合约日志，都可以逐链设置 RPC 缓存。下面的配置让该链在内存中处理历史事件，回调直接从节点读取链上状态。其他链可保留默认设置。关闭缓存的链仍然保存业务数据和检查点。重启时使用相同的缓存设置和存储位置。[逐块回调缓存测试](../parity/runs/native-omnichain-cache-policy/RESULT.md)
 
 ```go
 cache := false
@@ -528,6 +528,8 @@ chain := config.ChainDeclaration[uint64, string]{
     ID: 1, RPC: rpcURL, CacheRPCRequests: &cache,
 }
 ```
+
+在纯静态日志模式下，关闭缓存的链需要 RPC 端点能够持续提供所配置区间的历史日志和区块头。处理事件之间的空区间时，运行器会再次分页调用 `eth_getLogs`，并在发布就绪状态前按来源复查完整区间。关闭缓存可省去持久化原始日志和缓存区间的空间，代价是额外的 RPC 请求。复查失败时本次运行无法就绪，已提交的回调可以在重启后接续。[无缓存扫描与重启测试](../parity/runs/native-omnichain-uncached-logs/RESULT.md)
 
 两种已确认区间模式都可以在 `config.BuildSourceIndexing` 的处理函数列表中注册初始化回调。例如，配置中已有名为 `Token` 的合约，下面这项会在收到首个来源事件前运行。示例中的 `account` 表需要文本列 `id`（主键）和 `value`。
 

@@ -1,10 +1,13 @@
 package historical
 
 import (
+	"context"
 	"fmt"
+
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/store"
 )
 
@@ -23,6 +26,38 @@ func (r *RuntimeRunner) logOnlySources() (map[uint64][]filter.Object, map[uint64
 	}
 	return filters, abis
 }
+
+// Storage proofs never reuse the preflight transport or a sealed fetch epoch.
+func (r *RuntimeRunner) openLogScanRPC(ctx context.Context) (map[uint64]store.LogScanRPC, error) {
+	r.sequence++
+	requesters, err := r.options.Requesters(ctx, r.sequence)
+	if err != nil {
+		return nil, err
+	}
+	if len(requesters) != len(r.build.Chains) {
+		return nil, fmt.Errorf("log scan requester count mismatch")
+	}
+	readers := make(map[uint64]store.LogScanRPC)
+	acquisition := r.options.Historical.Acquisition
+	for i, chain := range r.build.Chains {
+		if runtimeRPCCacheEnabled(chain) {
+			continue
+		}
+		id := runtimeChainID(chain)
+		if requesters[i] == nil {
+			return nil, fmt.Errorf("missing log scan requester for chain %d", id)
+		}
+		readers[id] = store.LogScanRPC{
+			Actions: rpc.NewActions(requesters[i]),
+			Options: rpc.ActionOptions{
+				EthGetLogsBlockRange: acquisition.EthGetLogsBlockRange,
+				Logger:               acquisition.Logger,
+			},
+		}
+	}
+	return readers, nil
+}
+
 func (r *RuntimeRunner) validateOmnichainPartition(events []indexing.Object, head store.ManagedLiveHead) error {
 	if !r.logOnly {
 		return validateOmnichainBlockPartition(events, head)

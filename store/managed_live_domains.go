@@ -27,6 +27,7 @@ type ManagedLiveDomains struct {
 	spec               string
 	uncertain          bool
 	domainObserver     func(context.Context, ManagedLiveDomainStage) error
+	openLogScanRPC     func(context.Context) (map[uint64]LogScanRPC, error)
 	runtimeScopeMu     sync.Mutex
 	runtimeScope       *ManagedRuntimeScope
 	runtimeBatch       atomic.Bool

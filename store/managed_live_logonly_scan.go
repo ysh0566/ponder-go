@@ -93,42 +93,35 @@ func (m *ManagedLive) validateLogOnlyScan(c ManagedLiveControl, scans map[uint64
 	return ends, nil
 }
 
-// This reads the owned source cache after all admitted sync work has joined.
-// Callers supply RPC header lineage, never coverage or an "empty" boolean.
-func (d *ManagedLiveDomains) logOnlyScan(ctx context.Context, c ManagedLiveControl, scans map[uint64]managedLogOnlyScan) (map[uint64]managedLogOnlyScan, error) {
+func (d *ManagedLiveDomains) logOnlyScan(ctx context.Context, c ManagedLiveControl, scans map[uint64]managedLogOnlyScan, get ManagedLiveHeaderReader) (map[uint64]managedLogOnlyScan, error) {
 	m := d.live()
 	if !logOnlyOptions(m.opts) || len(scans) != len(m.opts.Chains) {
 		return nil, ErrManagedLivePendingActions
 	}
-	source, err := d.storage.syncCache.SourceSyncStore(0)
+	var ranges []logScanRange
+	for _, chain := range m.opts.Chains {
+		id := chain.ID
+		r := logScanRange{chain: id, from: m.opts.runtimeStarts[id], to: m.opts.EndBlocks[id]}
+		if !ManagedLiveReachedBlock(c, id, r.to) {
+			from, err := ManagedLiveNextBlock(c, id)
+			if err != nil {
+				return nil, err
+			}
+			r.checkEmpty, r.emptyFrom = true, from
+		}
+		ranges = append(ranges, r)
+	}
+	evidence, err := d.readLogScans(ctx, ranges, get)
 	if err != nil {
 		return nil, err
 	}
-	err = source.WithTransaction(ctx, func(s *SourceSyncStore) error {
-		for _, chain := range m.opts.Chains {
-			id := chain.ID
-			filters := m.opts.runtimeLogFilters[id]
-			scan := scans[id]
-			scan.FiltersHash = managedHash(filters)
-			scan.Coverage, err = readLogCoverage(ctx, s, filters)
-			if err != nil {
-				return err
-			}
-			if !ManagedLiveReachedBlock(c, id, m.opts.EndBlocks[id]) {
-				scan.EmptyFrom, err = ManagedLiveNextBlock(c, id)
-				if err != nil {
-					return err
-				}
-				scan.FiltersHash, err = m.opts.logOnlyScanHash(ctx, SourceEventDataArgs{Filters: filters, ChainID: id, FromBlock: float64(scan.EmptyFrom), ToBlock: float64(m.opts.EndBlocks[id]), Limit: 1}, s.GetEventData)
-				if err != nil {
-					return err
-				}
-			}
-			scans[id] = scan
-		}
-		_, err := m.validateLogOnlyScan(c, scans)
-		return err
-	})
+	for i, r := range ranges {
+		scan := scans[r.chain]
+		scan.Coverage, scan.FiltersHash = evidence[i].Coverage, evidence[i].FiltersHash
+		scan.EmptyFrom = r.emptyFrom
+		scans[r.chain] = scan
+	}
+	_, err = m.validateLogOnlyScan(c, scans)
 	return scans, err
 }
 

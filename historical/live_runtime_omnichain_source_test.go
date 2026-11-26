@@ -238,7 +238,7 @@ func TestRuntimeOmnichainSourceOracle(t *testing.T) {
 	}
 }
 func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
-	for _, name := range []string{"global-finality", "genesis-global-finality", "local-finality", "live", "inverted-range", "interval", "factory", "cache-false", "ordering-mismatch"} {
+	for _, name := range []string{"global-finality", "genesis-global-finality", "local-finality", "live", "inverted-range", "interval", "factory", "uncached-log-only-live", "ordering-mismatch"} {
 		t.Run(name, func(t *testing.T) {
 			g := loadOmnichainGolden(t)
 			latest := ""
@@ -278,13 +278,13 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 			case "factory":
 				o.FactorySources = true
 				expected = "factory sources require"
-			case "cache-false":
+			case "uncached-log-only-live":
 				noop := indexing.Handler(func(context.Context, *indexing.HandlerArgs) error {
 					t.Fatal("log-only preflight invoked a callback")
 					return nil
 				})
 				o.Historical.Build = omniLogsBuildWithSetup(t, loadOmniLogsGolden(t), p, map[string]indexing.Handler{"A": noop, "B": noop}, 1, 3, false, nil, 2)
-				expected = "log-only omnichain requires cacheRpcRequests=true"
+				o.Live = &RuntimeLiveOptions{}
 			case "ordering-mismatch":
 				o.Historical.Owned.Storage.Ordering = schema.Multichain
 				expected = "unsupported runtime ordering"
@@ -294,8 +294,8 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 				opened = true
 				return nil, errors.New("storage must not open")
 			})
-			if name == "cache-false" && len(epochs) != 0 {
-				t.Fatal("log-only cache preflight opened RPC")
+			if name == "uncached-log-only-live" && len(epochs) != 0 {
+				t.Fatal("preflight opened RPC for live log-only Omnichain")
 			}
 			if r != nil || err == nil || !strings.Contains(err.Error(), expected) || opened || len(calls) != 0 {
 				t.Fatalf("unsafe preflight name%s runner%v opened%v calls%v err%v", name, r, opened, calls, err)

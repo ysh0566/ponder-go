@@ -424,7 +424,7 @@
         "parity/runs/m45-omnichain-events-v15-20261103/VALIDATION.md",
         "parity/runs/m45-omnichain-events-v15-20261103/SOURCE-CONTRACT.md"
       ],
-      "remaining": "Subsequent native Omnichain records cover log-only ranges, genesis, account and contract CALL callbacks, setup and application exits on both engines. Independent storage still requires finalized ranges, one closing block callback per chain or static logs on every chain. Live reorgs, log-only factories, mixed source modes and engine exits at other lifecycle stages remain open. Static-log-only deployments require caching on all chains.",
+      "remaining": "Subsequent native Omnichain records cover log-only ranges, genesis, account and contract CALL callbacks, setup and application exits on both engines. Independent storage still requires finalized ranges, one closing block callback per chain or static logs on every chain. Live reorgs, log-only factories, mixed source modes and engine exits at other lifecycle stages remain open.",
       "native_test_files": [
         "historical/live_runtime_omnichain_logonly_crash_test.go",
         "historical/live_runtime_omnichain_logonly_test.go",
@@ -825,7 +825,7 @@
         "packages/create-ponder/templates"
       ],
       "evidence": [],
-      "remaining": "All templates/examples inventoried by hash; Go scaffolder and exact create-ponder cases remain."
+      "remaining": "The Go CLI now generates an ERC-20 project. Additional native project templates, including factory contracts, ERC-721, ERC-1155 and ERC-4626, remain open."
     },
     {
       "id": "development-reload",
@@ -2049,7 +2049,7 @@
       "evidence": [
         "parity/runs/native-bounded-setup-cache/RESULT.md"
       ],
-      "remaining": "The independent Omnichain runner supports setup in a finalized finite range. A covering block callback on every chain permits per-chain cache selection. Static-log-only plans require caching on every chain. Without live polling, a bounded default run requires acquired finite end blocks and event callbacks on each chain."
+      "remaining": "The independent Omnichain runner supports setup in a finalized finite range. Both closing-block and static-log-only modes now support per-chain cache selection. Without live polling, a bounded default run requires acquired finite end blocks and event callbacks on each chain."
     },
     {
       "id": "native-compiled-indexer",
@@ -2184,7 +2184,7 @@
       "evidence": [
         "parity/runs/native-omnichain-genesis/RESULT.md"
       ],
-      "remaining": "The independent Omnichain runner still requires finite ranges under global finality, either closing block sources on each chain or static log-only sources on every chain. Live indexing remains open. Factory sources require the closing-block mode. Static-log-only deployments require caching on all chains."
+      "remaining": "The independent Omnichain runner still requires finite ranges under global finality, either closing block sources on each chain or static log-only sources on every chain. Live indexing remains open. Factory sources require the closing-block mode."
     },
     {
       "id": "native-omnichain-account-events",
@@ -2205,7 +2205,7 @@
       "evidence": [
         "parity/runs/native-omnichain-account-events/RESULT.md"
       ],
-      "remaining": "The independent Omnichain runner requires finalized, bounded ranges. Account and contract CALL callbacks require a covering closing block callback on every chain. Factory sources on log-only chains, mixed closing-block and log-only chains, and live reorgs remain outside this mode. Static-log-only deployments require caching on all chains."
+      "remaining": "The independent Omnichain runner requires finalized, bounded ranges. Account and contract CALL callbacks require a covering closing block callback on every chain. Factory sources on log-only chains, mixed closing-block and log-only chains, and live reorgs remain outside this mode."
     },
     {
       "id": "native-custom-transport",
@@ -2275,7 +2275,7 @@
       "evidence": [
         "parity/runs/native-omnichain-setup/RESULT.md"
       ],
-      "remaining": "Independent Omnichain setup covers bounded, finalized deployments. Live indexing, log-only factories and mixed event modes remain open. Static-log-only deployments require caching on all chains."
+      "remaining": "Independent Omnichain setup covers bounded, finalized deployments. Live indexing, log-only factories and mixed event modes remain open."
     },
     {
       "id": "native-omnichain-engine-recovery",
@@ -2321,7 +2321,7 @@
       "evidence": [
         "parity/runs/native-omnichain-cache-policy/RESULT.md"
       ],
-      "remaining": "Per-chain cache selection covers bounded, globally finalized ranges with a closing block callback on every chain. The log-only runner requires the persisted interval and raw log evidence for its scan receipts."
+      "remaining": "Per-chain cache selection covers bounded, globally finalized ranges with a closing block callback on every chain. Static-log-only ranges with caching disabled are covered by native-omnichain-uncached-logs."
     },
     {
       "id": "native-omnichain-abi-tail",
@@ -2345,7 +2345,7 @@
       "evidence": [
         "parity/runs/native-omnichain-abi-tail/RESULT.md"
       ],
-      "remaining": "Static-log-only deployments require enabled caching and global finality. Log callbacks may use different finite ranges on a chain. Mixed closing-block and log-only chains, factory sources and live reorgs remain open."
+      "remaining": "Static-log-only deployments require global finality. Log callbacks may use different finite ranges on a chain. Mixed closing-block and log-only chains, factory sources and live reorgs remain open."
     },
     {
       "id": "native-omnichain-log-ranges",
@@ -2367,7 +2367,7 @@
       "evidence": [
         "parity/runs/native-omnichain-log-ranges/RESULT.md"
       ],
-      "remaining": "Independent static-log-only Omnichain requires cached finite ranges under global finality. Mixed closing-block and log-only chains, factory sources and live reorgs remain open."
+      "remaining": "Independent static-log-only Omnichain requires finite ranges under global finality. Mixed closing-block and log-only chains, factory sources and live reorgs remain open."
     },
     {
       "id": "native-omnichain-factory",
@@ -2417,6 +2417,32 @@
         "parity/runs/native-managed-cli-start/RESULT.md"
       ],
       "remaining": "The independent default multichain start flow covers two block sources with SQL, SSE and restart. Independent hot reload, standalone query deployment and Isolated ordering remain open."
+    },
+    {
+      "id": "native-omnichain-uncached-logs",
+      "status": "verified_subset",
+      "implementation_files": [
+        "store/managed_live_log_rpc.go",
+        "store/managed_live_gap.go",
+        "store/managed_live_logonly_scan.go",
+        "historical/live_runtime_logonly.go",
+        "filter/requests.go"
+      ],
+      "native_test_files": [
+        "historical/omnichain_uncached_logs_test.go",
+        "store/managed_live_log_rpc_test.go",
+        "historical/live_runtime_omnichain_source_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/historical.test.ts",
+        "packages/core/src/sync-historical/in-memory.ts",
+        "packages/core/src/sync-historical/in-memory.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-uncached-logs/RESULT.md"
+      ],
+      "remaining": "Static contract log sources only, with finite ranges under global finality. Pure-log factories, mixed closing-block and log-only chains and live reorgs remain open."
     }
   ]
 }
