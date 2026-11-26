@@ -2391,6 +2391,32 @@
         "parity/runs/native-omnichain-factory/RESULT.md"
       ],
       "remaining": "Independent Omnichain factory sources require bounded global finality and a covering block callback per chain. Log-only factories, live reorgs, and mixed closing-block and log-only chains remain open."
+    },
+    {
+      "id": "native-managed-cli-start",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/application.go",
+        "cmd/ponder/project.go",
+        "examples/managed-multichain/main.go",
+        "store/query_reader.go",
+        "store/managed_live_domains.go",
+        "query/http.go",
+        "runtime/application.go"
+      ],
+      "native_test_files": [
+        "cmd/ponder/managed_start_test.go",
+        "cmd/ponder/start_test.go",
+        "store/managed_reader_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/server/index.ts",
+        "packages/core/src/server/index.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-managed-cli-start/RESULT.md"
+      ],
+      "remaining": "The independent default multichain start flow covers two block sources with SQL, SSE and restart. Independent hot reload, standalone query deployment and Isolated ordering remain open."
     }
   ]
 }

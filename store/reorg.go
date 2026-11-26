@@ -428,10 +428,14 @@ func (s *Store) QueryReadOnly(ctx context.Context, sql string, args ...any) (Res
 // QueryReadOnlyInNamespace runs the statement with a transaction-local search
 // path. The caller selects a published schema without changing the writer.
 func (s *Store) QueryReadOnlyInNamespace(ctx context.Context, namespace, sql string, args ...any) (Result, error) {
+	return queryReadOnlyInNamespace(ctx, s.Backend, namespace, sql, args...)
+}
+
+func queryReadOnlyInNamespace(ctx context.Context, backend Backend, namespace, sql string, args ...any) (Result, error) {
 	if !schema.Identifier(namespace) || len(namespace) > 63 {
 		return Result{}, fmt.Errorf("invalid SQL namespace %q", namespace)
 	}
-	tx, e := s.Backend.Begin(ctx)
+	tx, e := backend.Begin(ctx)
 	if e != nil {
 		return Result{}, e
 	}

@@ -10,9 +10,9 @@ import (
 	"sync"
 )
 
-// All business SQL uses the same non-reconnecting connection that holds the
-// lifetime owner locks. Losing that connection cannot silently resume cached
-// bindings on another pool connection after a replacement owner is admitted.
+// Mutations use the non-reconnecting connection that holds the lifetime owner
+// locks. On connection loss the writer must reopen and acquire ownership again.
+// Cancellable read-only queries and audits can use the underlying pool.
 type independentPGBackend struct {
 	*pgBackend
 	connection *sql.Conn

@@ -21,6 +21,7 @@ import (
 )
 
 type Server struct {
+	reader         store.QueryReader
 	validatorOnce  sync.Once
 	validator      *sqlquery.Validator
 	results        resultCache
@@ -52,10 +53,10 @@ type ChainStatus struct {
 
 // Status reads the same committed checkpoints exposed by GET /status.
 func (s *Server) Status(ctx context.Context) (map[string]ChainStatus, error) {
-	if s.Store == nil {
+	if !s.HasDatabase() {
 		return nil, fmt.Errorf("database unavailable")
 	}
-	progress, err := s.Store.Progress(ctx)
+	progress, err := s.database().Progress(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -78,6 +79,26 @@ func New(s *store.Store) *Server {
 	return &Server{Store: s, Metrics: metrics.New(), MaxLive: 1000, ChainNames: map[uint64]string{}}
 }
 
+// NewReader serves a borrowed business database and subscribes to its commits.
+// Close the server after HTTP shutdown and before closing the database owner.
+func NewReader(ctx context.Context, reader store.QueryReader) (*Server, error) {
+	if !reader.Available() {
+		return nil, fmt.Errorf("database unavailable")
+	}
+	server := New(nil)
+	server.reader = reader
+	return server.listenForChanges(ctx)
+}
+
+func (s *Server) database() store.QueryReader {
+	if s.Store != nil {
+		return s.Store.QueryReader()
+	}
+	return s.reader
+}
+
+func (s *Server) HasDatabase() bool { return s.database().Available() }
+
 // NewAtNamespace serves SQL from an explicitly selected published schema and
 // listens on its writer's live-query channel. Close it when serving ends.
 func NewAtNamespace(ctx context.Context, s *store.Store, namespace string) (*Server, error) {
@@ -89,6 +110,10 @@ func NewAtNamespace(ctx context.Context, s *store.Store, namespace string) (*Ser
 	if namespace != s.Namespace {
 		server.published = &store.QueryChanges{}
 	}
+	return server.listenForChanges(ctx)
+}
+
+func (server *Server) listenForChanges(ctx context.Context) (*Server, error) {
 	watch, err := server.StartQueryNotifications(ctx)
 	if err != nil {
 		return nil, err
@@ -101,22 +126,22 @@ func (s *Server) changes() *store.QueryChanges {
 	if s.published != nil {
 		return s.published
 	}
-	return s.Store.QueryChanges()
+	return s.database().Changes()
 }
 
 // StartQueryNotifications subscribes to the writer's live-query channel.
 func (s *Server) StartQueryNotifications(ctx context.Context) (*store.QueryNotifications, error) {
-	if s.Store == nil {
+	if !s.HasDatabase() {
 		return nil, fmt.Errorf("database unavailable")
 	}
 	namespace := s.queryNamespace
 	if namespace == "" {
-		namespace = s.Store.Namespace
+		namespace = s.database().Namespace()
 	}
-	return s.changes().Listen(ctx, s.Store.Backend, namespace, s.Store.Schema.Tables)
+	return s.database().Listen(ctx, s.changes(), namespace)
 }
 
-// Close releases the database listener opened by NewAtNamespace.
+// Close releases the database listener opened by NewReader or NewAtNamespace.
 func (s *Server) Close() error {
 	if s.subscription != nil {
 		return s.subscription.Close()
@@ -127,10 +152,10 @@ func (s *Server) Close() error {
 func (s *Server) queryResult(ctx context.Context, key string, q request, relations []string, ready bool) (*store.Result, error) {
 	namespace := s.queryNamespace
 	if namespace == "" {
-		namespace = s.Store.Namespace
+		namespace = s.database().Namespace()
 	}
 	load := func(read context.Context) (store.Result, error) {
-		return s.Store.QueryReadOnlyInNamespace(read, namespace, q.SQL, q.Params...)
+		return s.database().QueryReadOnlyInNamespace(read, namespace, q.SQL, q.Params...)
 	}
 	if !ready {
 		result, err := load(ctx)
@@ -204,11 +229,8 @@ func (s *Server) validate(q request) ([]string, error) {
 		return nil, e
 	}
 	allowed := map[string]bool{}
-	for _, t := range s.Store.Schema.Tables {
-		allowed[t.Name] = true
-	}
-	for _, v := range s.Store.Schema.Views {
-		allowed[v.Name] = true
+	for name := range s.database().Relations() {
+		allowed[name] = true
 	}
 	for _, name := range ctes {
 		allowed[name] = true
@@ -218,7 +240,7 @@ func (s *Server) validate(q request) ([]string, error) {
 			return nil, fmt.Errorf("relation %q does not exist", r)
 		}
 	}
-	return s.Store.QueryDependencies(relations)
+	return s.database().QueryDependencies(relations)
 }
 func writeJSON(w http.ResponseWriter, status int, value any) {
 	w.Header().Set("Content-Type", "application/json")
@@ -266,7 +288,7 @@ func (s *Server) serveRoute(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%sponder_go_http_requests_total %d\nponder_go_live_queries %d\n", body, s.requests.Load(), s.live.Load())
 		return
 	case "/status":
-		if s.Store == nil {
+		if !s.HasDatabase() {
 			http.Error(w, "Database unavailable", 503)
 			return
 		}
@@ -300,7 +322,7 @@ func (s *Server) serveRoute(w http.ResponseWriter, r *http.Request) {
 		}
 		defer s.live.Add(-1)
 	}
-	if s.Store == nil {
+	if !s.HasDatabase() {
 		http.Error(w, "Database unavailable", 503)
 		return
 	}
@@ -386,7 +408,7 @@ func (s *Server) stream(w http.ResponseWriter, r *http.Request, queryKey string,
 				continue
 			}
 			result, e := s.queryResult(r.Context(), queryKey, q, relations, true)
-			for stopped != nil && s.Store.Backend.Dialect() == "postgres" && store.PostgresConnectionInterrupted(e) {
+			for stopped != nil && s.database().Dialect() == "postgres" && store.PostgresConnectionInterrupted(e) {
 				select {
 				case <-r.Context().Done():
 					return

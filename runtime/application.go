@@ -55,7 +55,7 @@ func StartApplication(ctx context.Context, engine *Engine, routes *query.Server,
 
 // LaunchApplication returns the bound address before historical indexing completes.
 func LaunchApplication(ctx context.Context, indexer ApplicationIndexer, routes *query.Server, host string, port int) (*Application, error) {
-	if routes == nil || routes.Store == nil {
+	if routes == nil || !routes.HasDatabase() {
 		return nil, errors.New("application requires a query server with a store")
 	}
 	if override, ok := os.LookupEnv("PONDER_HOSTNAME"); ok {

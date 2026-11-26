@@ -66,6 +66,15 @@ func writeApplication(t *testing.T, program string) string {
 	return root
 }
 
+func TestStartRejectsNonpositiveShutdownTimeout(t *testing.T) {
+	for _, timeout := range []string{"0s", "-1s"} {
+		err := run(t.Context(), []string{"start", "--root", t.TempDir(), "--shutdown-timeout", timeout}, io.Discard)
+		if err == nil || err.Error() != "shutdown timeout must be positive" {
+			t.Fatalf("shutdown timeout %s: %v", timeout, err)
+		}
+	}
+}
+
 func TestLaunchGracefulShutdown(t *testing.T) {
 	program := `package main
 import("os";"os/signal";"syscall")
