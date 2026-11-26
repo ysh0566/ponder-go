@@ -16,9 +16,9 @@ import (
 //go:embed abi.json
 var vaultABI []byte
 
-func project(network networkConfig, _ *logging.Logger) ([]config.Contract, map[string]runtime.Handler) {
+func project(network networkConfig, _ *logging.Logger) (config.Config, map[string]runtime.Handler) {
 	contract := network.contract("ERC4626", vaultABI)
-	return []config.Contract{contract}, map[string]runtime.Handler{
+	return config.Config{Contracts: []config.Contract{contract}}, map[string]runtime.Handler{
 		"ERC4626:Transfer": transfer,
 		"ERC4626:Approval": approve,
 		"ERC4626:Deposit":  deposit,

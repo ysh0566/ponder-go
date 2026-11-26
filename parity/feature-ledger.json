@@ -2576,6 +2576,32 @@
         "parity/runs/native-omnichain-mixed/RESULT.md"
       ],
       "remaining": "Independent Omnichain supports finalized bounded ranges. A chain consuming account or CALL callbacks needs a covering block callback. Live indexing, cross-chain reorgs and independent Isolated ordering remain open."
+    },
+    {
+      "id": "native-account-proxy-templates",
+      "status": "verified_subset",
+      "implementation_files": [
+        "cmd/ponder/scaffold.go",
+        "cmd/ponder/scaffold/accounts/handlers.go.tmpl",
+        "cmd/ponder/scaffold/proxy/handlers.go.tmpl",
+        "examples/erc20/main.go",
+        "store/sync.go"
+      ],
+      "native_test_files": [
+        "cmd/ponder/token_templates_test.go",
+        "store/start_block_test.go"
+      ],
+      "upstream_sources": [
+        "examples/feature-accounts/ponder.config.ts",
+        "examples/feature-accounts/src/index.ts",
+        "examples/feature-proxy/ponder.config.ts",
+        "examples/feature-proxy/src/index.ts",
+        "packages/create-ponder/src/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-account-proxy-templates/RESULT.md"
+      ],
+      "remaining": "Public archive history and the remaining menu templates have separate scope. These starter projects use one Store."
     }
   ]
 }

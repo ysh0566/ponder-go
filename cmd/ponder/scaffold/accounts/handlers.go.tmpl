@@ -1,0 +1,44 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"math/big"
+
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+func project(network networkConfig, logger *logging.Logger) (config.Config, map[string]runtime.Handler) {
+	account := config.AccountSource{Name: "BeaverBuilder", Chain: network.Name, Address: []string{network.Address}, StartBlock: network.StartBlock.height, EndBlock: network.EndBlock}
+	return config.Config{Accounts: []config.AccountSource{account}}, map[string]runtime.Handler{
+		"BeaverBuilder:transaction:from": recordTransaction,
+		"BeaverBuilder:transfer:to": func(_ context.Context, c *runtime.Context) error {
+			tr := c.Event.Transfer
+			logger.Info("Received transfer", "from", tr["from"], "to", tr["to"], "value", tr["value"])
+			return nil
+		},
+	}
+}
+
+func recordTransaction(ctx context.Context, c *runtime.Context) error {
+	tx := c.Event.Normalized.Transaction
+	if tx["to"] == nil {
+		return nil
+	}
+	key := store.Row{"to": tx["to"]}
+	row, err := c.DB.Find(ctx, "transaction_events", key)
+	if err != nil {
+		return err
+	}
+	total := new(big.Int)
+	if row != nil {
+		if _, ok := total.SetString(fmt.Sprint(row["value"]), 10); !ok {
+			return fmt.Errorf("invalid total for recipient %v", tx["to"])
+		}
+	}
+	total.Add(total, tx["value"].(*big.Int))
+	return c.DB.Write(ctx, "transaction_events", store.Row{"to": tx["to"], "value": total.String(), "data": tx["input"]}, store.Upsert)
+}

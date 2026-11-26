@@ -37,7 +37,7 @@ func TestGoProjectTemplates(t *testing.T) {
 	t.Setenv("DATABASE_PRIVATE_URL", "")
 	t.Setenv("DATABASE_VIEWS_SCHEMA", "")
 	t.Setenv("PONDER_DATABASE_MODE", "")
-	for _, template := range []string{"erc721", "erc1155", "erc4626", "factory"} {
+	for _, template := range []string{"erc721", "erc1155", "erc4626", "factory", "proxy"} {
 		t.Run(template, func(t *testing.T) {
 			root := generatedGoTemplate(t, t.Context(), template)
 			networkFile := filepath.Join(root, "network.json")
@@ -93,44 +93,11 @@ func TestGoProjectTemplates(t *testing.T) {
 				t.Run(backend, func(t *testing.T) {
 					ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
 					t.Cleanup(cancel)
-					ns := fmt.Sprintf("ponder_go_tpl_%x", time.Now().UnixNano())
-					t.Setenv("PONDER_LOCAL_DATABASE_URL", "")
-					t.Setenv("PONDER_PGLITE_DIR", filepath.Join(t.TempDir(), "db"))
-					if backend == "postgres" {
-						address := os.Getenv("PONDER_TEST_POSTGRES")
-						if address == "" {
-							t.Skip("requires a task PostgreSQL database")
-						}
-						t.Setenv("PONDER_LOCAL_DATABASE_URL", address)
-						db, err := store.OpenPostgres(ctx, address)
-						if err != nil {
-							t.Fatal(err)
-						}
-						t.Cleanup(func() {
-							defer db.Close()
-							if err := db.Exec(context.Background(), "DROP SCHEMA IF EXISTS "+schema.Quote(ns)+","+schema.Quote(ns+"_sync")+" CASCADE"); err != nil {
-								t.Error(err)
-							}
-						})
-					}
-					q := startTemplate(t, ctx, root, ns)
+					ns := templateDatabase(t, ctx, backend)
+					q, _ := startTemplate(t, ctx, root, ns)
 					check := func(sql string, want ...string) {
 						t.Helper()
-						result, err := q.Query(ctx, sql)
-						if err != nil {
-							t.Fatalf("%s: %v", sql, err)
-						}
-						var got []string
-						for _, row := range result.Rows {
-							var fields []string
-							for _, f := range result.Fields {
-								fields = append(fields, fmt.Sprint(row[fmt.Sprint(f["name"])]))
-							}
-							got = append(got, strings.Join(fields, " "))
-						}
-						if !slices.Equal(got, want) {
-							t.Fatalf("%s: got %v, want %v", sql, got, want)
-						}
+						checkTemplateRows(t, ctx, q, sql, want...)
 					}
 					const bigID = "340282366920938463463374607431768211456"
 					zero, one, two, three := fmt.Sprintf("0x%040x", 0), fmt.Sprintf("0x%040x", 1), fmt.Sprintf("0x%040x", 2), fmt.Sprintf("0x%040x", 3)
@@ -154,6 +121,12 @@ func TestGoProjectTemplates(t *testing.T) {
 						check("SELECT amount FROM transfer_event WHERE timestamp > 0 ORDER BY id", bigID, "25")
 						check("SELECT sender,receiver,assets,shares FROM deposit_event", three+" "+one+" 150 100")
 						check("SELECT sender,receiver,owner,assets,shares FROM withdrawal_event", three+" "+two+" "+one+" 12 8")
+					case "proxy":
+						if len(receipt.Logs) != 4 || receipt.Logs[0].Address == receipt.ContractAddress || receipt.Logs[2].Address != receipt.ContractAddress {
+							t.Fatalf("expected direct and delegated router logs: %+v", receipt.Logs)
+						}
+						check("SELECT lower(liquidator) FROM liquidation_event", fmt.Sprintf("0x%040x", 42))
+						check("SELECT lower(new_owner) FROM ownership_transfer_event", fmt.Sprintf("0x%040x", 43))
 					case "factory":
 						if len(receipt.Logs) != 7 {
 							t.Fatalf("expected seven factory and child logs, got %d", len(receipt.Logs))
@@ -167,7 +140,51 @@ func TestGoProjectTemplates(t *testing.T) {
 	}
 }
 
-func startTemplate(t *testing.T, ctx context.Context, root, namespace string) query.Client {
+func templateDatabase(t *testing.T, ctx context.Context, backend string) string {
+	t.Helper()
+	ns := fmt.Sprintf("ponder_go_tpl_%x", time.Now().UnixNano())
+	t.Setenv("PONDER_LOCAL_DATABASE_URL", "")
+	t.Setenv("PONDER_PGLITE_DIR", filepath.Join(t.TempDir(), "db"))
+	if backend == "postgres" {
+		address := os.Getenv("PONDER_TEST_POSTGRES")
+		if address == "" {
+			t.Skip("requires a task PostgreSQL database")
+		}
+		t.Setenv("PONDER_LOCAL_DATABASE_URL", address)
+		db, err := store.OpenPostgres(ctx, address)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() {
+			defer db.Close()
+			if err := db.Exec(context.Background(), "DROP SCHEMA IF EXISTS "+schema.Quote(ns)+","+schema.Quote(ns+"_sync")+" CASCADE"); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+	return ns
+}
+
+func checkTemplateRows(t *testing.T, ctx context.Context, q query.Client, sql string, want ...string) {
+	t.Helper()
+	result, err := q.Query(ctx, sql)
+	if err != nil {
+		t.Fatalf("%s: %v", sql, err)
+	}
+	var got []string
+	for _, row := range result.Rows {
+		var fields []string
+		for _, f := range result.Fields {
+			fields = append(fields, fmt.Sprint(row[fmt.Sprint(f["name"])]))
+		}
+		got = append(got, strings.Join(fields, " "))
+	}
+	if !slices.Equal(got, want) {
+		t.Fatalf("%s: got %v, want %v", sql, got, want)
+	}
+}
+
+func startTemplate(t *testing.T, ctx context.Context, root, namespace string) (query.Client, string) {
 	t.Helper()
 	log, err := os.Create(filepath.Join(t.TempDir(), "indexer.log"))
 	if err != nil {
@@ -200,7 +217,7 @@ func startTemplate(t *testing.T, ctx context.Context, root, namespace string) qu
 				if err == nil {
 					res.Body.Close()
 					if res.StatusCode == 200 {
-						return query.Client{BaseURL: base + "/sql"}
+						return query.Client{BaseURL: base + "/sql"}, log.Name()
 					}
 				}
 			}
@@ -212,5 +229,73 @@ func startTemplate(t *testing.T, ctx context.Context, root, namespace string) qu
 			t.Fatalf("indexer startup: %v\n%s", ctx.Err(), body)
 		case <-time.After(50 * time.Millisecond):
 		}
+	}
+}
+
+func TestGoAccountsTemplate(t *testing.T) {
+	setProjectBuildFlags(t)
+	root := generatedGoTemplate(t, t.Context(), "accounts")
+	for _, key := range []string{"PONDER_LOCAL_RPC_URL", "DATABASE_URL", "DATABASE_PRIVATE_URL", "DATABASE_VIEWS_SCHEMA", "PONDER_DATABASE_MODE"} {
+		t.Setenv(key, "")
+	}
+	for _, backend := range []string{"postgres", "pglite"} {
+		t.Run(backend, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
+			t.Cleanup(cancel)
+			ns := templateDatabase(t, ctx, backend)
+			node := testanvil.StartChain(t, 1, "--no-mining")
+			t.Setenv("PONDER_RPC_URL_1", node)
+			client := rpc.New(node)
+			var accounts []string
+			if err := client.Call(ctx, "eth_accounts", []any{}, &accounts); err != nil || len(accounts) < 3 {
+				t.Fatal(accounts, err)
+			}
+			watched, recipient, sender := accounts[0], accounts[1], accounts[2]
+			t.Setenv("PONDER_LOCAL_CONTRACT", watched)
+			send := func(from, to, value, data string) {
+				t.Helper()
+				tx := map[string]string{"from": from, "value": value, "data": data, "gas": "0x20000"}
+				if to != "" {
+					tx["to"] = to
+				}
+				var hash string
+				if err := client.Call(ctx, "eth_sendTransaction", []any{tx}, &hash); err != nil {
+					t.Fatal(err)
+				}
+			}
+			mine := func() {
+				t.Helper()
+				var result string
+				if err := client.Call(ctx, "evm_mine", []any{}, &result); err != nil {
+					t.Fatal(err)
+				}
+			}
+			send(watched, recipient, "0x20", "0x10")
+			mine()
+			send(watched, recipient, "0x10000000000000000", "0xab")
+			send(watched, recipient, "0x2", "0xcd")
+			send(watched, "", "0x0", "0x60006000f3")
+			send(sender, watched, "0x7", "0x")
+			mine()
+			const sql = `SELECT lower("to"), value, data FROM transaction_events`
+			if !t.Run("first_head", func(t *testing.T) {
+				q, log := startTemplate(t, ctx, root, ns)
+				checkTemplateRows(t, ctx, q, sql, recipient+" 18446744073709551618 0xcd")
+				body, err := os.ReadFile(log)
+				if err != nil || !strings.Contains(string(body), "Received transfer") {
+					t.Fatalf("incoming transfer: %v\n%s", err, body)
+				}
+			}) {
+				return
+			}
+			send(watched, recipient, "0x3", "0xef")
+			mine()
+			send(watched, recipient, "0x5", "0x42")
+			mine()
+			t.Run("resume", func(t *testing.T) {
+				q, _ := startTemplate(t, ctx, root, ns)
+				checkTemplateRows(t, ctx, q, sql, recipient+" 18446744073709551626 0x42")
+			})
+		})
 	}
 }

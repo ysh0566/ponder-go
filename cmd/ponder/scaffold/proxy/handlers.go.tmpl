@@ -1,0 +1,28 @@
+package main
+
+import (
+	"context"
+	_ "embed"
+
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+//go:embed abi.json
+var routerABI []byte
+
+func project(network networkConfig, _ *logging.Logger) (config.Config, map[string]runtime.Handler) {
+	router := network.contract("AstariaRouter", routerABI)
+	return config.Config{Contracts: []config.Contract{router}}, map[string]runtime.Handler{
+		"AstariaRouter:Liquidation": func(ctx context.Context, c *runtime.Context) error {
+			args := c.Event.Args.(map[string]any)
+			return c.DB.Write(ctx, "liquidation_event", store.Row{"id": c.Event.ID, "liquidator": args["liquidator"]}, store.Insert)
+		},
+		"AstariaRouter:OwnershipTransferred": func(ctx context.Context, c *runtime.Context) error {
+			args := c.Event.Args.(map[string]any)
+			return c.DB.Write(ctx, "ownership_transfer_event", store.Row{"id": c.Event.ID, "new_owner": args["newOwner"]}, store.Insert)
+		},
+	}
+}
