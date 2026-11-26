@@ -46,7 +46,7 @@ type RuntimeOptions struct {
 	// zero uses12000. Other historical scheduling options remain unsupported.
 	Historical                   Options
 	BuildID, OpenID, ViewsSchema string
-	// Requesters supplies fresh transports for preflight, fetch epochs and uncached log scans.
+	// Requesters supplies fresh transports for preflight, fetch epochs and uncached source scans.
 	Requesters  func(context.Context, uint64) ([]rpc.Requester, error)
 	OnActivated func(context.Context) error
 	// OnSetupCommitted observes authenticated setup commit before source events.
@@ -171,11 +171,6 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 				return cb["type"] == "block"
 			})
 			if !hasBlock {
-				for _, cb := range b.EventCallbacks[i] {
-					if cb["type"] == "account" && !runtimeRPCCacheEnabled(c) {
-						return nil, fmt.Errorf("omnichain account callbacks on chain %d require the RPC cache or a covering block callback", id)
-					}
-				}
 				r.sparseChains[id] = true
 			}
 		}

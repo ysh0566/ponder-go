@@ -2629,6 +2629,32 @@
         "parity/runs/native-omnichain-sparse-accounts/RESULT.md"
       ],
       "remaining": "Uncached account callbacks and contract CALLs require a covering block callback. Independent Isolated ordering, live Omnichain and cross-chain reorg recovery remain open."
+    },
+    {
+      "id": "native-omnichain-uncached-accounts",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "historical/live_runtime_logonly.go",
+        "rpc/account_scan.go",
+        "rpc/source_call_traces.go",
+        "store/managed_live_account_rpc.go",
+        "store/managed_live_log_rpc.go",
+        "store/managed_live_logonly.go"
+      ],
+      "native_test_files": [
+        "historical/omnichain_account_scan_test.go",
+        "historical/live_runtime_omnichain_source_test.go",
+        "store/managed_live_account_rpc_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/events.ts",
+        "packages/core/src/runtime/historical.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-uncached-accounts/RESULT.md"
+      ],
+      "remaining": "Independent Isolated ordering, live Omnichain with cross-chain reorg recovery, and contract CALLs without a covering block callback remain open."
     }
   ]
 }

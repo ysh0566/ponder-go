@@ -31,8 +31,8 @@ type ManagedLiveRuntimeOptions struct {
 	Continuous        bool
 	Setup             bool
 	SourceCheckpoints bool
-	// Filters for chains without a covering block callback. Logs can use the cache or RPC.
-	// Account transactions and transfers use cached rows and interval coverage.
+	// Filters for chains without a covering block callback. Logs, account transactions
+	// and transfers are checked against the sync store or a fresh per-chain RPC reader.
 	// List each chain, using nil for a chain with a covering block callback.
 	LogOnlyFilters map[uint64][]filter.Object
 	// ABI entries follow filter order. Account entries have no ABI.
