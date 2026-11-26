@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/ysh0566/ponder-go/checkpoint"
+	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/indexing"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
@@ -87,7 +88,8 @@ func seedSparseSource(t *testing.T, r *RuntimeRunner, g omniLogsGolden) {
 		for i, c := range g.Chains {
 			var intervals []store.SourceFilterInterval
 			for _, cb := range r.build.EventCallbacks[i] {
-				intervals = append(intervals, store.SourceFilterInterval{Filter: cb["filter"].(map[string]any), Interval: store.SourceInterval{1, sparseEnd}})
+				f := cb["filter"].(map[string]any)
+				intervals = append(intervals, store.SourceFilterInterval{Filter: f, Interval: store.SourceInterval{filter.FilterFromBlock(f), filter.FilterToBlock(f)}})
 			}
 			if err := s.InsertIntervals(io, c.ID, intervals, nil); err != nil {
 				return err

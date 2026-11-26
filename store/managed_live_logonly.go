@@ -143,13 +143,15 @@ func normalizeLogOnlyFilters(in map[uint64][]filter.Object, o ManagedLiveOptions
 		if !ok || len(rows) == 0 {
 			return nil, ErrManagedLiveBatchConflict
 		}
+		first, last := uint64(math.MaxUint64), uint64(0)
 		for _, f := range rows {
 			id, ie := logOnlyQuantity(f["chainId"])
 			from, fe := logOnlyQuantity(filter.FilterFromBlock(f))
 			to, te := logOnlyQuantity(filter.FilterToBlock(f))
-			if f["type"] != "log" || !ie || !fe || !te || id != c.ID || from != o.runtimeStarts[id] || to != o.EndBlocks[id] || len(filter.GetFilterFactories(f)) != 0 {
+			if f["type"] != "log" || !ie || !fe || !te || id != c.ID || from > to || len(filter.GetFilterFactories(f)) != 0 {
 				return nil, ErrManagedLiveBatchConflict
 			}
+			first, last = min(first, from), max(last, to)
 			if _, e := filter.GetFragments(f); e != nil {
 				return nil, e
 			}
@@ -162,6 +164,9 @@ func normalizeLogOnlyFilters(in map[uint64][]filter.Object, o ManagedLiveOptions
 				return nil, e
 			}
 			out[id] = append(out[id], frozen)
+		}
+		if first != o.runtimeStarts[c.ID] || last != o.EndBlocks[c.ID] {
+			return nil, ErrManagedLiveBatchConflict
 		}
 	}
 	return out, nil

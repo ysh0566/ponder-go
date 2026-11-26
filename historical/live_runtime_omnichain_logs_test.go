@@ -218,6 +218,11 @@ func omniLogsBuildWithSetup(t *testing.T, g omniLogsGolden, p *finiteRPC, handle
 		source["blocks"] = map[string]any{"Blocks": map[string]any{"chain": chainSelection, "startBlock": start, "endBlock": end, "interval": 1}}
 		functions = append([]config.SourceIndexingFunction{{Name: "Blocks:block", Fn: handlers["block"]}}, functions...)
 	}
+	return compileOmniLogsConfig(t, source, functions)
+}
+
+func compileOmniLogsConfig(t *testing.T, source map[string]any, functions []config.SourceIndexingFunction) *config.SourceIndexingBuild {
+	t.Helper()
 	raw, err := json.Marshal(source)
 	if err != nil {
 		t.Fatal(err)

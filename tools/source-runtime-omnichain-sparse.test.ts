@@ -130,10 +130,12 @@ async function sparseRun(
 	querySize: number,
 	active: number[],
 	fail: boolean,
-	skipTail = false,
+	shortCase?: "skip-tail" | "different-ranges",
 ) {
-	const endBlock = skipTail ? 3 : end;
-	const laterBlock = skipTail ? 3 : distant;
+	const endBlock = shortCase ? 3 : end;
+	const laterBlock = shortCase ? 3 : distant;
+	const differentRanges = shortCase === "different-ranges";
+	const lateAddress = "0x7777777777777777777777777777777777777777";
 	const cliOptions = {
 		command: "start",
 		config: "",
@@ -231,6 +233,14 @@ async function sparseRun(
 			}),
 		),
 	);
+	if (differentRanges) {
+		const [early, late] = eventCallbacks[0]!;
+		(early!.filter as LogFilter).toBlock = 1;
+		const lateFilter = late!.filter as LogFilter;
+		lateFilter.fromBlock = 3;
+		lateFilter.address = lateAddress;
+		(eventCallbacks[1]![1]!.filter as LogFilter).fromBlock = 2;
+	}
 	const rpcs = chains.map(
 		({ id }): Rpc => ({
 			hostnames: [],
@@ -243,7 +253,7 @@ async function sparseRun(
 			}) => {
 				expect(method).toBe("eth_getBlockByNumber");
 				expect(params[1]).toBe(false);
-				if (skipTail) expect([1, 2, 3]).toContain(Number(params[0]));
+				if (shortCase) expect([1, 2, 3]).toContain(Number(params[0]));
 				else expect([1, endBlock]).toContain(Number(params[0]));
 				return {
 					...golden.chains[id - 1].blocks[0],
@@ -316,7 +326,10 @@ async function sparseRun(
 		);
 		await syncStore.insertIntervals({
 			chainId: id,
-			intervals: filters.map((filter) => ({ interval: [1, endBlock], filter })),
+			intervals: filters.map((filter) => ({
+				interval: [filter.fromBlock!, filter.toBlock!],
+				filter,
+			})),
 			factoryIntervals: [],
 		});
 		if (!active.includes(id)) continue;
@@ -340,7 +353,14 @@ async function sparseRun(
 				.filter((log) => Number(log.blockNumber) === original)
 				.map((log) => ({
 					...log,
-					data: skipTail && original === 3 ? ("0x01" as Hex) : log.data,
+					address:
+						differentRanges && id === 1 && original === 1
+							? lateAddress
+							: log.address,
+					data:
+						shortCase === "skip-tail" && original === 3
+							? ("0x01" as Hex)
+							: log.data,
 					transactionHash,
 					blockHash: block.hash,
 					blockNumber: block.number,
@@ -469,7 +489,12 @@ for (const querySize of [12_000, 6]) {
 }
 
 test("ABI-skipped final SQL page keeps the preceding source checkpoint", async () => {
-	const { calls, positions, stored } = await sparseRun(6, [1, 2], false, true);
+	const { calls, positions, stored } = await sparseRun(
+		6,
+		[1, 2],
+		false,
+		"skip-tail",
+	);
 	const expected = expectedCalls([1, 2]).slice(0, 16);
 	expect(calls).toEqual(expected);
 	expect(stored).toEqual(expected.toSorted());
@@ -477,6 +502,40 @@ test("ABI-skipped final SQL page keeps the preceding source checkpoint", async (
 	for (const position of positions) {
 		const cp = encodeCheckpoint(
 			blockToCheckpoint(header(position.chainId, 1), position.chainId, "up"),
+		);
+		expect([
+			position.safeCheckpoint,
+			position.latestCheckpoint,
+			position.finalizedCheckpoint,
+		]).toEqual([cp, cp, cp]);
+	}
+});
+
+test("log sources with disjoint and overlapping ranges ignore cached logs outside their own bounds", async () => {
+	const { calls, positions, stored } = await sparseRun(
+		6,
+		[1, 2],
+		false,
+		"different-ranges",
+	);
+	const expected = [1, 3].flatMap((height) =>
+		[0, 1, 2, 3].flatMap((index) =>
+			(height === 1 ? ["A"] : ["A", "B"]).map((name) =>
+				callbackKey(2, height, index, name),
+			),
+		),
+	);
+	expect(calls).toEqual(expected);
+	expect(stored).toEqual(expected.toSorted());
+	expect(positions).toHaveLength(2);
+	for (const position of positions) {
+		const empty = position.chainId === 1;
+		const cp = encodeCheckpoint(
+			blockToCheckpoint(
+				header(position.chainId, empty ? 1 : 3),
+				position.chainId,
+				empty ? "down" : "up",
+			),
 		);
 		expect([
 			position.safeCheckpoint,
