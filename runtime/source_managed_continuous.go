@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"iter"
 	"strings"
@@ -59,10 +60,14 @@ func (s *SourceRealtimeSync) SyncManaged(ctx context.Context, block filter.Objec
 		if duplicate {
 			return
 		}
+		var acknowledge func(bool)
+		if mined, err := sourceHistoricalNumber(block["timestamp"]); err == nil {
+			acknowledge = metrics.StartRealtimeBlock(ctx, s.chain.Name, mined)
+		}
 		data, err := s.fetchBlockEventData(ctx, block)
 		if err == nil {
 			s.reconcileMu.Lock()
-			_, err = s.reconcileBlock(ctx, data, nil, yield)
+			_, err = s.reconcileBlock(ctx, data, acknowledge, yield)
 			s.reconcileMu.Unlock()
 		}
 		if err != nil {

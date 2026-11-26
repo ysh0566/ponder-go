@@ -37,11 +37,12 @@ The writer’s Prometheus registry reports cumulative historical extraction and 
 
 The writer's RPC histogram records successful attempts in milliseconds, and its error counter includes individual failed attempts before a retry. Both use the configured chain name and JSON-RPC method. The Go writer counts each successfully handled canonical fork on its originating chain, including unfinalized blocks in a bounded run. A fresh registry starts empty. [Fork measurements](USAGE.md#查看发生分叉的链) · [RPC query examples](USAGE.md#查看-rpc-耗时与错误数) · [Transport coverage](../rpc/custom_transport_test.go)
 
-The Go writer registers 12 of the 39 explicitly named upstream metric families under matching names. The remaining 27 fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
+The dual-store continuous writer records two latency histograms per chain after it commits a polled head. The polling Omnichain source stream can also record a consumer’s explicit acknowledgement. Instrumentation of these two histograms in the atomic indexer remains open. [Live latency](USAGE.md#查看实时区块延迟) · [Verification](../parity/runs/native-realtime-head-latency/RESULT.md)
+
+The Go writer registers 14 of the 39 explicitly named upstream metric families under matching names. The remaining 25 fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
 
 | Area | Families without a matching Go metric | Measurement |
 | --- | ---: | --- |
-| Realtime | 2 | Time from mining to reception and from reception to processing completion |
 | Database | 3 | Method duration, method errors and PostgreSQL query count |
 | Historical sync | 9 | Concurrency group duration, start/end timestamps, total/cached/completed indexing seconds and block counts |
 | Indexing | 7 | Indexing timestamp, handler time, cache query and raw SQL duration, RPC action time, prefetch and request counts |

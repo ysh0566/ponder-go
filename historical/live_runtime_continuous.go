@@ -662,6 +662,9 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			if e != nil {
 				return out, e
 			}
+			if event.BlockCallback != nil {
+				event.BlockCallback(true)
+			}
 			epoch.Clients().Clear()
 			out.LiveBlocks++
 			c, e = r.domains.Control(ctx)

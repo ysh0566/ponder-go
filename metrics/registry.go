@@ -21,6 +21,7 @@ type Registry struct {
 	mu                                  sync.Mutex
 	reg                                 *prometheus.Registry
 	reorgs                              *prometheus.CounterVec
+	blockArrival, realtimeLatency       *prometheus.HistogramVec
 	rpcDuration                         *prometheus.HistogramVec
 	rpcErrors                           *prometheus.CounterVec
 	extract, transform                  *prometheus.GaugeVec
@@ -52,10 +53,16 @@ func New() *Registry {
 		return prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: name, Help: help, Buckets: buckets}, []string{"method", "path", "status"})
 	}
 	sizes := []float64{10, 100, 1000, 5000, 10000, 50000, 100000, 500000, 1000000, 5000000, 10000000}
+	realtimeBuckets := append(networkDurationBuckets, 1_000_000)
+	realtime := func(name, help string) *prometheus.HistogramVec {
+		return prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: name, Help: help, Buckets: realtimeBuckets}, []string{"chain"})
+	}
+	r.blockArrival = realtime("ponder_realtime_block_arrival_latency", "Time elapsed between mining a block and being received by the realtime sync")
+	r.realtimeLatency = realtime("ponder_realtime_latency", "Time elapsed between receiving a block and fully processing it")
 	r.requestSize = histogram("ponder_http_server_request_size_bytes", "Size of HTTP requests received by the server", sizes)
 	r.responseSize = histogram("ponder_http_server_response_size_bytes", "Size of HTTP responses served by the server", sizes)
 	r.duration = histogram("ponder_http_server_request_duration_ms", "Duration of HTTP responses served by the server", networkDurationBuckets)
-	r.reg.MustRegister(r.reorgs, r.rpcDuration, r.rpcErrors, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
+	r.reg.MustRegister(r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
 	return r
 }
 

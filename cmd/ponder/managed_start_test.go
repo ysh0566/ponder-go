@@ -467,6 +467,27 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 				closeStream()
 			}
 			checkRows(addr, 4, 3)
+			for {
+				code, body := get(addr + "/metrics")
+				if code != http.StatusOK {
+					t.Fatalf("writer metrics after live commit: %d", code)
+				}
+				if bytes.Contains(body, []byte(`ponder_realtime_latency_count{chain="one"}`)) &&
+					bytes.Contains(body, []byte(`ponder_realtime_block_arrival_latency_count{chain="one"}`)) {
+					break
+				}
+				select {
+				case <-ctx.Done():
+					t.Fatal("missing live head latency after commit", ctx.Err())
+				case <-time.After(50 * time.Millisecond):
+				}
+			}
+			if readerAddr != "" {
+				code, body := get(readerAddr + "/metrics")
+				if code != http.StatusOK || bytes.Contains(body, []byte("ponder_realtime_latency_count")) {
+					t.Fatalf("unexpected standalone reader metrics: %d %s", code, body)
+				}
+			}
 			stop()
 			if readerAddr != "" {
 				checkRows(readerAddr, 4, 3)
