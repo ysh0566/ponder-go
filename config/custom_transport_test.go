@@ -38,6 +38,9 @@ func TestSourceConfigTransport(t *testing.T) {
 			if len(clients) != 2 || !clients[0].HasCustomTransport() || clients[1].HasCustomTransport() || len(clients[0].URLs) != 0 {
 				t.Fatal("incorrect chain transports", clients)
 			}
+			if clients[0].ChainName != "custom" || clients[1].ChainName != "http" {
+				t.Fatal("compiled transports lost their chain names")
+			}
 			want := []any{map[string]any{"$rpc": map[string]any{"hostnames": []string{"custom_transport"}}}, map[string]any{"$rpc": map[string]any{"hostnames": []string{"127.0.0.1"}}}}
 			if !reflect.DeepEqual(built.Value()["rpcs"], want) {
 				t.Fatal("RPC metadata", built.Value()["rpcs"])

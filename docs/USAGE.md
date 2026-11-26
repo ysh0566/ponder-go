@@ -159,6 +159,18 @@ curl -fsS http://127.0.0.1:42069/metrics | grep '^ponder_historical_'
 
 `runtime.NewIndexer` 和 `runtime.NewIndexerFromSource` 在首次追平过程中计入已达到最终确认范围的区块。双库 `historical.RuntimeRunner` 按实际回填阶段计时。实时追块和实时分叉重放均沿用原有累计值。独立 `serve` 进程拥有自己的指标注册表，要看回填耗时应抓取写入进程。`runtime.LaunchApplication` 自动连接查询服务的注册表。直接调用 `Run` 时，可传入 `metrics.WithHistorical(ctx, registry)`，再用 `registry.Collect(ctx)` 读取。[运行时验证](../parity/runs/native-historical-duration-metrics/RESULT.md)
 
+### 查看 RPC 耗时与错误数
+
+从写入进程读取 `/metrics`，用 `chain` 和 `method` 标签筛选链名与 JSON-RPC 方法。下面的 PromQL 查询给出过去 5 分钟内各链、各方法成功请求的 P95 耗时，单位为毫秒。
+
+```promql
+histogram_quantile(0.95, sum by (le, chain, method) (rate(ponder_rpc_request_duration_bucket[5m])))
+```
+
+`increase(ponder_rpc_request_error_total[5m])` 给出同一时间窗口内失败尝试次数的估算值。例如一次区块请求先失败两次、第三次成功，会增加两个错误和一个耗时样本。耗时从取得请求槽位及端点后开始计算。缓存直接返回结果时没有 RPC 尝试。
+
+`runtime.LaunchApplication` 自动为写入进程接入统计，覆盖历史回填和实时追块。自行启动运行器时，可将 `metrics.WithRPC(ctx, registry)` 传入 `Run` 或 `RunIndexing`。通过来源配置创建的客户端使用配置中的链名。手动创建 `rpc.Client` 时，在发起请求前设置 `ChainName`。[请求与缓存测试](../rpc/custom_transport_test.go) · [运行中采集指标](../runtime/historical_metrics_test.go)
+
 ## 重开索引或只提供查询
 
 保留运行中的 `start`，在另一个终端配置同一个 `PONDER_LOCAL_DATABASE_URL`。使用相同的业务命名空间，选择另一个 HTTP 端口。查询进程只需要数据库连接，RPC 和合约地址由写入进程使用。

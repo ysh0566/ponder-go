@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/ysh0566/ponder-go/metrics"
 )
 
 // ErrHTTPResponseTooLarge reports that the decoded HTTP body exceeded the client's limit.
@@ -71,6 +72,8 @@ type AsyncCache interface {
 }
 
 type Client struct {
+	// ChainName labels transport measurements. Configure it before making calls.
+	ChainName         string
 	URLs              []string
 	HTTP              *http.Client
 	Retries           int
@@ -158,7 +161,7 @@ func (c *Client) WithCache(cache Cache) *Client {
 	for base.transport != nil {
 		base = base.transport
 	}
-	return &Client{URLs: base.URLs, HTTP: base.HTTP, Retries: base.Retries, RequestsPerSecond: base.RequestsPerSecond, ChainID: base.ChainID, Cache: cache, transport: base}
+	return &Client{URLs: base.URLs, HTTP: base.HTTP, Retries: base.Retries, RequestsPerSecond: base.RequestsPerSecond, ChainName: c.ChainName, ChainID: base.ChainID, Cache: cache, transport: base}
 }
 
 func New(urls ...string) *Client {
@@ -249,9 +252,11 @@ func (c *Client) callWithAdmission(ctx context.Context, cached bool, method stri
 		}
 		start := time.Now()
 		result, e := base.attemptResult(ctx, current, method, params, options)
+		elapsed := time.Since(start)
+		metrics.ObserveRPCAttempt(ctx, c.ChainName, method, elapsed, e)
 		if current.endpoint != nil {
 			rangeRejected := e != nil && method == "eth_getLogs" && !base.FixedLogBlockRange && sourceLogRangeRejection(params, e)
-			base.sourcePool.finish(current.endpoint, time.Since(start), e, rangeRejected || ctx.Err() != nil)
+			base.sourcePool.finish(current.endpoint, elapsed, e, rangeRejected || ctx.Err() != nil)
 			if rangeRejected || sourcePermanentError(e) {
 				return e
 			}

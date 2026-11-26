@@ -406,6 +406,16 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 			}
 			release()
 			ready(addr)
+			code, body := get(addr + "/metrics")
+			if code != http.StatusOK {
+				t.Fatalf("metrics: %d", code)
+			}
+			for _, name := range []string{"one", "two"} {
+				sample := fmt.Sprintf(`ponder_rpc_request_duration_count{chain="%s",method="eth_getBlockByNumber"}`, name)
+				if !bytes.Contains(body, []byte(sample)) {
+					t.Fatalf("missing writer RPC sample %s", sample)
+				}
+			}
 			checkRows(addr, 3, 3)
 			streamAddr := addr
 			if readerAddr != "" {

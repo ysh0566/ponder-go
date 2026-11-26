@@ -169,6 +169,7 @@ func (builder *sourceBuilder) buildConfig(config *sourceObject, maxConcurrency i
 		if err != nil {
 			return nil, err
 		}
+		client.ChainName = sourceString(chain.get("name"))
 		client.FixedLogBlockRange = !filter.IsUndefined(chain.get("ethGetLogsBlockRange"))
 		if id, ok := sourceNumber(chain.get("id")); ok && id >= 0 && math.Trunc(id) == id && id <= 9007199254740991 {
 			client.ChainID = uint64(id)

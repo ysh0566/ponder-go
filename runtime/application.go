@@ -96,7 +96,8 @@ func LaunchApplication(ctx context.Context, indexer ApplicationIndexer, routes *
 		setReady(true)
 	} else {
 		indexing = make(chan error, 1)
-		indexCtx := metrics.WithHistorical(run, routes.Metrics)
+		indexCtx := metrics.WithRPC(run, routes.Metrics)
+		indexCtx = metrics.WithHistorical(indexCtx, routes.Metrics)
 		go func(out chan<- error) { out <- indexer.RunIndexing(indexCtx, setReady) }(indexing)
 	}
 	var reporters sync.WaitGroup

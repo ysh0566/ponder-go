@@ -1,11 +1,13 @@
 package metrics
 
 import (
+	"errors"
 	"reflect"
 	"sort"
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
 
 type sample struct {
@@ -115,5 +117,36 @@ func TestConcurrentCollect(t *testing.T) {
 	out, err := r.Collect(t.Context())
 	if err != nil || !strings.Contains(out, "ponder_indexing_completed_events{event=\"a\"} 400\n") {
 		t.Fatal(out, err)
+	}
+}
+
+func TestRPCDurationBuckets(t *testing.T) {
+	r := New()
+	ctx := WithRPC(t.Context(), r)
+	ObserveRPCAttempt(ctx, "one", "eth_call", 4500*time.Microsecond, nil)
+	ObserveRPCAttempt(ctx, "one", "eth_call", time.Hour, errors.New("failed attempt"))
+	ObserveRPCAttempt(t.Context(), "other", "eth_call", time.Second, nil)
+	text, err := r.Collect(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(text, `chain="other"`) {
+		t.Fatal("an unattached context recorded an RPC measurement")
+	}
+	for _, sample := range []string{
+		`ponder_rpc_request_duration_bucket{chain="one",method="eth_call",le="1"} 0`,
+		`ponder_rpc_request_duration_bucket{chain="one",method="eth_call",le="5"} 1`,
+		`ponder_rpc_request_duration_sum{chain="one",method="eth_call"} 4.5`,
+		`ponder_rpc_request_duration_count{chain="one",method="eth_call"} 1`,
+		`ponder_rpc_request_error_total{chain="one",method="eth_call"} 1`,
+	} {
+		if !strings.Contains(text, sample+"\n") {
+			t.Errorf("missing measurement %s", sample)
+		}
+	}
+	r.ResetIndexing()
+	text, err = r.Collect(ctx)
+	if err != nil || strings.Contains(text, "ponder_rpc_request_") {
+		t.Fatalf("reset left RPC measurements: %v %s", err, text)
 	}
 }

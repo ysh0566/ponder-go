@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"strings"
+
+	"github.com/ysh0566/ponder-go/metrics"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -29,15 +32,22 @@ func TestSourceTransport(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		registry := metrics.New()
+		ctx := metrics.WithRPC(t.Context(), registry)
+		client.ChainName = "main"
 		client.Retries = 2
 		var block map[string]string
-		done, owned := client.WithCache(nil).BeginSourceCall(t.Context(), "eth_getBlockByNumber", []any{"0x1", false}, &block, RequestOptions{RetryNullBlockRequest: true})
+		done, owned := client.WithCache(nil).BeginSourceCall(ctx, "eth_getBlockByNumber", []any{"0x1", false}, &block, RequestOptions{RetryNullBlockRequest: true})
 		if !owned {
 			t.Fatal("request not admitted by source client")
 		}
 		if err := <-done; err != nil || block["number"] != "0x1" || calls.Load() != 3 || client.TransportRequests() != 3 {
 			t.Fatalf("result=%v attempts=%d count=%d error=%v", block, calls.Load(), client.TransportRequests(), err)
 		}
+		checkRPCMeasurements(t, registry,
+			`ponder_rpc_request_error_total{chain="main",method="eth_getBlockByNumber"} 2`,
+			`ponder_rpc_request_duration_count{chain="main",method="eth_getBlockByNumber"} 1`,
+		)
 	})
 	t.Run("errors_and_cache", func(t *testing.T) {
 		denied := &Error{Code: -32601, Message: "unknown method"}
@@ -57,24 +67,33 @@ func TestSourceTransport(t *testing.T) {
 			t.Fatal(err)
 		}
 		cache := &memoryCache{values: map[string]json.RawMessage{}}
+		registry := metrics.New()
+		ctx := metrics.WithRPC(t.Context(), registry)
+		client.ChainName = "rollup"
 		client.ChainID = 202
 		view := client.WithCache(cache)
 		var out any
-		if err := view.Call(t.Context(), "unknown", nil, &out); !errors.Is(err, denied) || view.TransportRequests() != 1 {
+		if err := view.Call(ctx, "unknown", nil, &out); !errors.Is(err, denied) || view.TransportRequests() != 1 {
 			t.Fatalf("permanent error: %v, attempts=%d", err, view.TransportRequests())
 		}
 		client.Retries = 0
-		if err := view.CallCached(t.Context(), "bad", nil, &out); err == nil {
+		if err := view.CallCached(ctx, "bad", nil, &out); err == nil {
 			t.Fatal("invalid result accepted")
 		}
 		for _, name := range []string{"absent", "absent", "ok", "ok"} {
-			if err := view.CallCached(t.Context(), name, nil, &out); err != nil {
+			if err := view.CallCached(ctx, name, nil, &out); err != nil {
 				t.Fatal(err)
 			}
 		}
 		if len(cache.values) != 1 || string(cache.values[`[202,"ok",null]`]) != `"0x2"` || out != "0x2" || client.TransportRequests() != 5 {
 			t.Fatal("cache or attempt count", cache.values, out, client.TransportRequests())
 		}
+		checkRPCMeasurements(t, registry,
+			`ponder_rpc_request_error_total{chain="rollup",method="unknown"} 1`,
+			`ponder_rpc_request_error_total{chain="rollup",method="bad"} 1`,
+			`ponder_rpc_request_duration_count{chain="rollup",method="absent"} 2`,
+			`ponder_rpc_request_duration_count{chain="rollup",method="ok"} 1`,
+		)
 	})
 	t.Run("transport_timeout", func(t *testing.T) {
 		client, err := NewSourceTransportClient(1, func(context.Context, string, any) (json.RawMessage, error) {
@@ -122,4 +141,17 @@ func TestSourceTransport(t *testing.T) {
 			t.Fatal("second call reached transport")
 		}
 	})
+}
+
+func checkRPCMeasurements(t *testing.T, registry *metrics.Registry, samples ...string) {
+	t.Helper()
+	exposition, err := registry.Collect(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, sample := range samples {
+		if !strings.Contains(exposition, sample+"\n") {
+			t.Errorf("missing sample %s in %s", sample, exposition)
+		}
+	}
 }

@@ -72,6 +72,15 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 					if (metrics.Historical(ctx) != nil) != want {
 						return fmt.Errorf("unexpected timing context for chain %d block %d", c.Chain.ID, n)
 					}
+					if n == 4 {
+						var version string
+						if err := c.Client.Call(ctx, "web3_clientVersion", []any{}, &version); err != nil {
+							return err
+						}
+						if err := c.Client.Call(ctx, "ponder_missingMethod", []any{}, &version); err == nil {
+							return fmt.Errorf("node accepted an unknown RPC method")
+						}
+					}
 					_, err = c.DB.Indexing().InsertOne(ctx, "entry", store.Row{"chainId": int64(c.Chain.ID), "id": c.Event.Block.Number}, store.Conflict{})
 					if err == nil && n == 4 {
 						applied <- c.Chain.ID
@@ -108,15 +117,25 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 					if err != nil || resp.StatusCode != http.StatusOK {
 						t.Fatalf("scrape: %d, %v", resp.StatusCode, err)
 					}
+					return string(body)
+				}
+				historicalSamples := func(body string) string {
 					var lines []string
-					for _, line := range strings.Split(string(body), "\n") {
+					for _, line := range strings.Split(body, "\n") {
 						if strings.HasPrefix(line, "ponder_historical_") {
 							lines = append(lines, line)
 						}
 					}
 					return strings.Join(lines, "\n")
 				}
-				first := scrape()
+				firstScrape := scrape()
+				for _, chain := range cfg.Chains {
+					sample := fmt.Sprintf(`ponder_rpc_request_duration_count{chain="%s",method="eth_chainId"}`, chain.Name)
+					if !strings.Contains(firstScrape, sample) {
+						t.Fatalf("missing chain RPC sample %s", sample)
+					}
+				}
+				first := historicalSamples(firstScrape)
 				for _, series := range []string{
 					`extract_duration{step="decode"}`,
 					`transform_duration{step="begin"}`,
@@ -143,7 +162,18 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 						t.Fatal(ctx.Err())
 					}
 				}
-				if live := scrape(); live != first {
+				liveScrape := scrape()
+				for _, chain := range cfg.Chains {
+					for _, sample := range []string{
+						fmt.Sprintf(`ponder_rpc_request_duration_count{chain="%s",method="web3_clientVersion"} 1`, chain.Name),
+						fmt.Sprintf(`ponder_rpc_request_error_total{chain="%s",method="ponder_missingMethod"} 1`, chain.Name),
+					} {
+						if !strings.Contains(liveScrape, sample+"\n") {
+							t.Fatalf("missing live callback sample %s", sample)
+						}
+					}
+				}
+				if live := historicalSamples(liveScrape); live != first {
 					t.Fatalf("live work changed historical timings:\n%s\n%s", first, live)
 				}
 			})
