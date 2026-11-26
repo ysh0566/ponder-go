@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"reflect"
@@ -18,7 +19,8 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 )
 
-func TestCompiledMultichainIndexer(t *testing.T) {
+func compiledAnvilChains(t *testing.T) []string {
+	t.Helper()
 	endpoints := make([]string, 3)
 	for i, id := range []uint64{101, 303, 202} {
 		url := testanvil.StartChain(t, id, "--no-mining", "--timestamp", "1700000000")
@@ -34,23 +36,56 @@ func TestCompiledMultichainIndexer(t *testing.T) {
 			}
 		}
 	}
+	return endpoints
+}
+
+func TestCompiledMultichainIndexer(t *testing.T) {
+	endpoints := compiledAnvilChains(t)
 	for _, order := range []schema.Ordering{schema.Multichain, schema.Omnichain, schema.Isolated} {
 		for _, dialect := range []string{"postgres", "pglite"} {
 			t.Run(string(order)+"/"+dialect, func(t *testing.T) {
-				testCompiledIndexer(t, endpoints, order, dialect)
+				testCompiledIndexer(t, endpoints, order, dialect, config.SourceBuildOptions{})
 			})
 		}
 	}
 }
 
-func testCompiledIndexer(t *testing.T, urls []string, order schema.Ordering, dialect string) {
+func TestCompiledCustomTransport(t *testing.T) {
+	endpoints := compiledAnvilChains(t)
+	client := rpc.New(endpoints[2])
+	client.Retries = 0
+	client.RequestsPerSecond = 0
+	for _, dialect := range []string{"postgres", "pglite"} {
+		t.Run(dialect, func(t *testing.T) {
+			var mu sync.Mutex
+			counts := map[string]int{}
+			transport := func(ctx context.Context, method string, params any) (json.RawMessage, error) {
+				mu.Lock()
+				counts[method]++
+				mu.Unlock()
+				var result json.RawMessage
+				err := client.Call(ctx, method, params, &result)
+				return result, err
+			}
+			urls := slices.Clone(endpoints)
+			urls[2] = ""
+			options := config.SourceBuildOptions{RPCTransports: map[string]rpc.TransportFunc{"second": transport}}
+			testCompiledIndexer(t, urls, schema.Omnichain, dialect, options)
+			if counts["eth_chainId"] == 0 || counts["eth_getBlockByNumber"] == 0 {
+				t.Fatal("missing acquisition or callback requests", counts)
+			}
+		})
+	}
+}
+
+func testCompiledIndexer(t *testing.T, urls []string, order schema.Ordering, dialect string, options config.SourceBuildOptions) {
 	ctx := t.Context()
 	raw := fmt.Sprintf(`{"ordering":%q,"chains":{"first":{"id":101,"rpc":%q,"cacheRpcRequests":false,"reorgWindow":0},"unused":{"id":303,"rpc":%q},"second":{"id":202,"rpc":%q,"reorgWindow":0}},"blocks":{"Head":{"chain":{"first":{},"second":{}},"startBlock":1,"endBlock":2,"interval":1},"Unregistered":{"chain":"first","startBlock":0,"interval":1}},"contracts":{"Init":{"abi":[],"chain":"second","startBlock":1}}}`, order, urls[0], urls[1], urls[2])
 	input, err := config.ParseSourceConfiguration([]byte(raw))
 	if err != nil {
 		t.Fatal(err)
 	}
-	base, err := config.BuildSourceConfig(input, config.SourceBuildOptions{})
+	base, err := config.BuildSourceConfig(input, options)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -93,7 +93,10 @@ func (c Config) Validate() error {
 			}
 		}
 		if len(chain.RPC) == 0 {
-			return fmt.Errorf("chain %s needs an RPC endpoint", chain.Name)
+			plan := c.SourcePlan
+			if len(c.Chains) != 1 || plan == nil || plan.Client == nil || plan.Client.ChainID != chain.ID || !plan.Client.HasCustomTransport() {
+				return fmt.Errorf("chain %s needs an RPC endpoint", chain.Name)
+			}
 		}
 		for _, endpoint := range chain.RPC {
 			u, e := url.Parse(endpoint)

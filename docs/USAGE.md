@@ -415,6 +415,26 @@ if err != nil {
 
 将 `worker` 交给 `runtime.LaunchApplication`，或直接调用 `RunIndexing`。排序来自来源配置，每条参与链保留自己的 RPC 和缓存策略。只有注册了回调的来源决定索引范围。仅注册 `合约名:setup` 的合约在其起始区块执行一次。某条链还有持续事件来源时，该链会继续追块。[运行模式](RUNTIME_SUPPORT.md) · [双后端验收](../parity/runs/native-compiled-indexer/RESULT.md)
 
+### 为单条链配置 Go RPC 传输
+
+在 `config.SourceBuildOptions.RPCTransports` 中使用来源配置的链名作为键。该链可以省略 `rpc` 地址。如果同时配置了地址，编译后的客户端使用传入的函数。其他链各自使用配置的节点池。下例将 `archive` 链的请求交给项目自己的客户端，适用于需要请求签名或使用非 HTTP 通道的索引器。
+
+```go
+// backend 实现 rpc.Requester 的 Call 方法。
+options := config.SourceBuildOptions{
+    RPCTransports: map[string]rpc.TransportFunc{
+        "archive": func(ctx context.Context, method string, params any) (json.RawMessage, error) {
+            var result json.RawMessage
+            err := backend.Call(ctx, method, params, &result)
+            return result, err
+        },
+    },
+}
+base, err := config.BuildSourceConfig(sourceConfig, options)
+```
+
+函数返回 JSON-RPC 响应中 `result` 的完整 JSON 值。例如，区块高度应编码为 `"0x10"`，空结果应编码为 `null`。协议错误可返回 `*rpc.Error`。函数需要支持并发调用并遵守传入的 `ctx`。每次调用执行一次请求，来源客户端负责排队和重试，每次尝试的超时上限是 10 秒。在 `runtime.NewIndexerFromSource` 中，历史取数与回调读取会使用同一条链的传输；缓存命中可直接返回持久化的结果。订阅新区块仍可单独配置 `ws` 地址。[传输与双后端验证](../parity/runs/native-custom-transport/RESULT.md)
+
 ### 原生多链索引器在数据库中断后恢复
 
 数据库在处理链重组时退出后，重新启动原 PostgreSQL 实例，或重新打开原 PGlite 数据目录。用相同的命名空间、模型、配置和处理函数重新创建 `store.Store` 和 `runtime.NewIndexer`。数据库会丢弃未提交的回调事务。索引器会重新处理受影响的区块，并按当前链上的区块哈希更新进度。普通多链和 Omnichain 均覆盖一条链被替换、另一条链保持不变时的恢复。[双后端恢复测试](../parity/runs/native-multichain-engine-recovery/RESULT.md)

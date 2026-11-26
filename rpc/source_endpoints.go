@@ -12,6 +12,28 @@ import (
 	"time"
 )
 
+// TransportFunc performs one JSON-RPC request and returns the encoded result.
+// It must honor ctx, allow concurrent calls and leave retry decisions to the client.
+type TransportFunc func(ctx context.Context, method string, params any) (json.RawMessage, error)
+
+// NewSourceTransportClient applies the source queue and retry policy to one Go transport.
+func NewSourceTransportClient(concurrency int, transport TransportFunc) (*Client, error) {
+	if transport == nil {
+		return nil, errors.New("nil source RPC transport")
+	}
+	client, err := NewSourceClient(concurrency)
+	if err != nil {
+		return nil, err
+	}
+	client.custom = transport
+	client.sourcePool.endpoints = []*sourceEndpoint{newSourceEndpoint("")}
+	return client, nil
+}
+
+func newSourceEndpoint(url string) *sourceEndpoint {
+	return &sourceEndpoint{url: url, limit: 20, latency: 200 * float64(time.Millisecond), delay: 100 * time.Millisecond}
+}
+
 // NewSourceClient configures the per-provider admission and retry policy used
 // by the source chain configuration. Transport slots are shared by cache views.
 func NewSourceClient(concurrency int, urls ...string) (*Client, error) {
@@ -24,9 +46,7 @@ func NewSourceClient(concurrency int, urls ...string) (*Client, error) {
 	client.HTTP.Timeout = 10 * time.Second
 	pool := &sourceEndpointPool{rpsNow: time.Now}
 	for _, url := range urls {
-		pool.endpoints = append(pool.endpoints, &sourceEndpoint{
-			url: url, limit: 20, latency: 200 * float64(time.Millisecond), delay: 100 * time.Millisecond,
-		})
+		pool.endpoints = append(pool.endpoints, newSourceEndpoint(url))
 	}
 	client.sourcePool = pool
 	return client, nil

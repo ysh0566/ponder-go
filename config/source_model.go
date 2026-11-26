@@ -21,6 +21,8 @@ type SourceConfiguration struct{ value *sourceObject }
 
 // SourceBuildOptions controls native clients created by the source builder.
 type SourceBuildOptions struct {
+	// RPCTransports replaces URL-based RPC for the named chains.
+	RPCTransports     map[string]rpc.TransportFunc
 	RPCMaxConcurrency int
 	PonderDir         string
 }
@@ -160,7 +162,7 @@ func BuildSourceConfig(config *SourceConfiguration, options SourceBuildOptions) 
 	if err != nil {
 		return nil, err
 	}
-	builder := sourceBuilder{Catalog: catalog}
+	builder := sourceBuilder{Catalog: catalog, transports: options.RPCTransports}
 	result, err := builder.buildConfig(config.value, options.RPCMaxConcurrency)
 	if err != nil {
 		return nil, err
@@ -208,6 +210,9 @@ func sourcePlain(value any) any {
 		out := make([]any, len(v))
 		for i, client := range v {
 			hostnames := []string{}
+			if client.HasCustomTransport() {
+				hostnames = append(hostnames, "custom_transport")
+			}
 			for _, endpoint := range client.URLs {
 				parsed, _ := url.Parse(endpoint)
 				hostnames = append(hostnames, parsed.Hostname())

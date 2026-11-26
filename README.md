@@ -20,7 +20,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 | 功能 | 可以使用的范围 |
 | --- | --- |
 | 链上索引 | 单链支持历史同步、持续索引、重组撤销和重新索引。单链和独立多链可用 WebSocket 新区块通知追块，并按重组窗口清理撤销日志。可处理静态合约及 factory 发现的日志；账户、交易和合约调用 trace 的支持范围见矩阵。[运行模式](docs/RUNTIME_SUPPORT.md) |
-| 多链 | 默认多链可通过 `runtime.NewIndexer` 处理有限区间或持续追块。已编译的 Go 来源配置可以直接交给 `runtime.NewIndexerFromSource`，一次启动有注册回调的所有链。默认排序下，较快的链可先提交回调，链重组时会重放受影响的跨链回调。原生 Omnichain 支持持续追块、历史回填和跨链重组重放；已验证区块、静态和工厂合约日志、账户交易与转账、合约调用 trace 的组合。Isolated 模式可让各链独立索引、重试和撤销重组。[编译配置用法](docs/USAGE.md#用编译后的-go-来源配置启动多链) · [多链边界](docs/RUNTIME_SUPPORT.md) |
+| 多链 | 默认多链可通过 `runtime.NewIndexer` 处理有限区间或持续追块。已编译的 Go 来源配置可以直接交给 `runtime.NewIndexerFromSource`，一次启动有注册回调的所有链。可按链名传入自定义 Go RPC 函数，其他链仍可使用节点 URL。[自定义传输](docs/USAGE.md#为单条链配置-go-rpc-传输)默认排序下，较快的链可先提交回调，链重组时会重放受影响的跨链回调。原生 Omnichain 支持持续追块、历史回填和跨链重组重放；已验证区块、静态和工厂合约日志、账户交易与转账、合约调用 trace 的组合。Isolated 模式可让各链独立索引、重试和撤销重组。[编译配置用法](docs/USAGE.md#用编译后的-go-来源配置启动多链) · [多链边界](docs/RUNTIME_SUPPORT.md) |
 | 回调查链 | 类型化 Go 回调提供上游列出的 21 个高层方法，包括历史合约调用、gas 估算、ABI 模拟、交易及 ENS 地址、文本和头像查询。EIP-3668 支持网关取数、合约验证和 ENS 批量查询。原生脚手架的普通回调还可直接发送 JSON-RPC 请求。[方法清单](docs/RUNTIME_SUPPORT.md#callback-rpc-methods) · [链下读取](docs/USAGE.md#合约的-eip-3668-链下读取) |
 | 数据库 | 生成项目默认将 PGlite 数据存到 `.ponder/pglite`，设置数据库 URL 后使用 PostgreSQL。业务写入、撤销日志和 checkpoint 在事务中提交。各存储组件只支持自己的当前格式；旧库需使用新命名空间重新索引。[本地 PGlite 使用与管理](docs/USAGE.md#使用本地-pglite) · [存储格式](parity/runs/current-database-formats/RESULT.md) |
 | 查询 | 支持只读 SQL、SSE 订阅、状态与指标接口。Go 项目可用 `serve` 独立查询正在写入的 PostgreSQL 部署，只需数据库连接和部署命名空间。应用可另行挂载 GraphQL 处理器，支持实体、过滤、分页、关联及视图。网络地址、时间、间隔和几何列均可用于查询。[列类型与表示](docs/USAGE.md#列类型与-graphql-表示) · [HTTP 查询示例](docs/USAGE.md#查询索引结果) · [GraphQL](graphql) |
@@ -32,7 +32,6 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 | --- | --- | --- |
 | 用 Go 在同一个进程索引多链 | `runtime.NewIndexer` 支持默认、Isolated 和 Omnichain 三种排序。Omnichain 可持续追块并在重组时重放跨链回调。 | 多链节点切换和数据库中断的组合测试主要使用区块回调。跨链重组中同时处理工厂日志、交易和转账的故障覆盖仍需扩展。[运行模式矩阵](docs/RUNTIME_SUPPORT.md) |
 | 分开存储业务数据和同步数据 | `historical.RuntimeRunner` 的默认多链模式支持持续追块，也支持有结束高度的 setup、逐链配置缓存、从创世区块开始、发现工厂子合约和账户。Omnichain 支持已最终确认的有限区间。每条链都有逐块回调时，可同时处理静态日志、账户交易与转账和合约 CALL。也可让所有链只处理静态日志。[有限区间用法](docs/USAGE.md#独立存储的有限区间索引) · [账户与合约测试](parity/runs/native-omnichain-account-events/RESULT.md) | 双库 Omnichain 还缺实时追块与重组、工厂来源、setup、关闭 RPC 缓存，以及部分链仅监听日志、其他链逐块回调的组合。双库运行器还不接受 Isolated 排序。默认多链的有限区间要求启动时已能读取结束区块。[运行模式矩阵](docs/RUNTIME_SUPPORT.md) |
-| 为编译后的来源配置自定义 RPC | 配置支持一个或多个节点 URL，可用节点池重试和切换。 | `config.BuildSourceConfig` 还没有直接传入自定义 Go RPC 传输实现的入口。[来源构建](config/source_build.go) |
 | 在 RPC 故障或链重组时保持索引一致 | PostgreSQL 和 PGlite 均已验证同一条日志命中三个 Go 回调、同一笔 CALL 命中两个函数选择器相同的回调，以及回调失败后的重启和链重组重放。默认多链和 Omnichain 在同链节点切换、分支改变后均会重放受影响的跨链回调。 | 仍有 17 条依赖特定网关或历史链数据的上游 RPC 用例未通过。[节点切换测试](parity/runs/native-rpc-pool-reorg/RESULT.md) · [回调重放测试](parity/runs/native-callback-overlap/RESULT.md) |
 | 验收生产部署 | 已验证只读查询、受限写入账号处理事件与重组、部署管理账号发布和清理原生部署，也验证了单库写事务中强杀数据库引擎。原生默认多链和 Omnichain 还验证了在替换分支的回调中强杀数据库后重启。独立双库默认多链的恢复测试覆盖重组意图写入、业务回滚提交、同步确认三个时点。[原生多链恢复](parity/runs/native-multichain-engine-recovery/RESULT.md) · [PostgreSQL 账号配置](docs/USAGE.md#postgresql-写入与部署管理账号) | 主机掉电、独立双库 Omnichain 运行中强杀数据库引擎、其他 PGlite 运行模式的异常退出，以及独立双库的最小数据库权限仍待验收。[双库恢复测试](parity/runs/native-coordinated-engine-recovery/RESULT.md) · [读角色测试](parity/runs/native-standalone-serve/RESULT.md) |
 

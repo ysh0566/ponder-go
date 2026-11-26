@@ -2206,6 +2206,33 @@
         "parity/runs/native-omnichain-account-events/RESULT.md"
       ],
       "remaining": "The independent Omnichain runner requires finalized, bounded and cached ranges. Account and contract CALL callbacks require a covering closing block callback on every chain. Factory sources, setup, mixed closing-block and log-only chains, and live reorgs remain outside this mode."
+    },
+    {
+      "id": "native-custom-transport",
+      "status": "verified_subset",
+      "implementation_files": [
+        "config/source_model.go",
+        "config/source_build.go",
+        "config/source_native.go",
+        "config/config.go",
+        "rpc/client.go",
+        "rpc/async.go",
+        "rpc/source_endpoints.go"
+      ],
+      "native_test_files": [
+        "config/custom_transport_test.go",
+        "rpc/custom_transport_test.go",
+        "runtime/compiled_indexer_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/rpc/index.ts",
+        "packages/core/src/rpc/index.test.ts",
+        "packages/core/src/build/config.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-custom-transport/RESULT.md"
+      ],
+      "remaining": "The native function supplies a single request attempt. Subscriptions use the independently configured WebSocket endpoint. Provider-specific acceptance cases are tracked separately."
     }
   ]
 }

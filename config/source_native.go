@@ -205,7 +205,7 @@ func (build *SourceIndexingBuild) nativeConfig(selected int, ordering schema.Ord
 	if err != nil {
 		return Config{}, err
 	}
-	urls, err := sourceStrings(rawChain.get("rpc"))
+	urls, err := sourceURLs(rawChain.get("rpc"))
 	if err != nil {
 		return Config{}, err
 	}
