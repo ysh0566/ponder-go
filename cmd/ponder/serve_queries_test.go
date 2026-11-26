@@ -25,8 +25,13 @@ import (
 
 func generatedGoProject(t *testing.T, ctx context.Context) string {
 	t.Helper()
+	return generatedGoTemplate(t, ctx, "go")
+}
+
+func generatedGoTemplate(t *testing.T, ctx context.Context, template string) string {
+	t.Helper()
 	root := filepath.Join(t.TempDir(), "reader")
-	if err := run(ctx, []string{"init", root}, io.Discard); err != nil {
+	if err := run(ctx, []string{"init", "--template", template, root}, io.Discard); err != nil {
 		t.Fatal(err)
 	}
 	repo, err := filepath.Abs("../..")

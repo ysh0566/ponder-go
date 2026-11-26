@@ -6,17 +6,29 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/logging"
 	"github.com/ysh0566/ponder-go/query"
 	indexer "github.com/ysh0566/ponder-go/runtime"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
-	"math/big"
-	"os"
-	"os/signal"
-	"syscall"
 )
+
+type networkConfig struct {
+	Name       string  `json:"name"`
+	ID         uint64  `json:"id"`
+	Address    string  `json:"address"`
+	StartBlock uint64  `json:"startBlock"`
+	EndBlock   *uint64 `json:"endBlock"`
+}
+
+func (n networkConfig) contract(name string, eventABI []byte) config.Contract {
+	return config.Contract{Name: name, Chain: n.Name, Address: []string{n.Address}, ABI: eventABI, StartBlock: n.StartBlock, EndBlock: n.EndBlock}
+}
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -33,16 +45,31 @@ func main() {
 }
 func run(ctx context.Context, logger *logging.Logger) error {
 	mode := os.Getenv("PONDER_COMMAND")
-	rpcURL, address := os.Getenv("PONDER_LOCAL_RPC_URL"), os.Getenv("PONDER_LOCAL_CONTRACT")
-	if mode != "serve" && (rpcURL == "" || address == "") {
-		return fmt.Errorf("set PONDER_LOCAL_RPC_URL and PONDER_LOCAL_CONTRACT to index events")
+	rawNetwork, e := os.ReadFile("network.json")
+	if e != nil {
+		return e
+	}
+	var network networkConfig
+	if e = json.Unmarshal(rawNetwork, &network); e != nil {
+		return fmt.Errorf("network.json: %w", e)
+	}
+	if network.Name == "" || network.ID == 0 {
+		return fmt.Errorf("set a chain name and a positive chain id in network.json")
+	}
+	rpcEnv := fmt.Sprintf("PONDER_RPC_URL_%d", network.ID)
+	rpcURL := cmp.Or(os.Getenv("PONDER_LOCAL_RPC_URL"), os.Getenv(rpcEnv))
+	network.Address = cmp.Or(os.Getenv("PONDER_LOCAL_CONTRACT"), network.Address)
+	if mode != "serve" && rpcURL == "" {
+		return fmt.Errorf("set %s or PONDER_LOCAL_RPC_URL to index events", rpcEnv)
+	}
+	if mode != "serve" && network.Address == "" {
+		return fmt.Errorf("set the contract address in network.json or PONDER_LOCAL_CONTRACT")
 	}
 	url, directory := os.Getenv("PONDER_LOCAL_DATABASE_URL"), os.Getenv("PONDER_PGLITE_DIR")
 	if url == "" && directory == "" {
 		url = cmp.Or(os.Getenv("DATABASE_PRIVATE_URL"), os.Getenv("DATABASE_URL"))
 	}
 	var backend store.Backend
-	var e error
 	switch {
 	case url != "":
 		backend, e = store.OpenPostgres(ctx, url)
@@ -74,7 +101,7 @@ func run(ctx context.Context, logger *logging.Logger) error {
 			return err
 		}
 		defer server.Close()
-		return serve(ctx, nil, server, logger)
+		return serve(ctx, nil, server, logger, network)
 	}
 	open := store.New
 	switch os.Getenv("PONDER_DATABASE_MODE") {
@@ -93,32 +120,9 @@ func run(ctx context.Context, logger *logging.Logger) error {
 			return e
 		}
 	}
-	abi := `[{"type":"event","name":"Transfer","inputs":[{"name":"from","type":"address","indexed":true},{"name":"to","type":"address","indexed":true},{"name":"value","type":"uint256","indexed":false}]}]`
-	chain := config.Chain{Name: "local", ID: 1, RPC: []string{rpcURL}}
-	worker, e := indexer.NewIndexerWithOptions(config.Config{Chains: []config.Chain{chain}, Contracts: []config.Contract{{Name: "Token", Chain: "local", ABI: []byte(abi), Address: []string{address}, IncludeTransactionReceipts: true}}}, s, map[string]indexer.Handler{"Token:Transfer": func(ctx context.Context, c *indexer.Context) error {
-		logger.Trace("Processing Token:Transfer", "chain_id", c.Chain.ID)
-		args := c.Event.Args.(map[string]any)
-		value := args["value"].(*big.Int)
-		for _, leg := range []struct {
-			address string
-			sign    int
-		}{{args["from"].(string), -1}, {args["to"].(string), 1}} {
-			row, e := c.DB.Find(ctx, "account", store.Row{"id": leg.address})
-			if e != nil {
-				return e
-			}
-			balance := new(big.Int)
-			if row != nil {
-				balance.SetString(fmt.Sprint(row["balance"]), 10)
-			}
-			delta := new(big.Int).Mul(value, big.NewInt(int64(leg.sign)))
-			balance.Add(balance, delta)
-			if e = c.DB.Write(ctx, "account", store.Row{"id": leg.address, "balance": balance.String()}, store.Upsert); e != nil {
-				return e
-			}
-		}
-		return nil
-	}}, indexer.Options{Logger: logger})
+	chain := config.Chain{Name: network.Name, ID: network.ID, RPC: []string{rpcURL}}
+	contracts, handlers := project(network, logger)
+	worker, e := indexer.NewIndexerWithOptions(config.Config{Chains: []config.Chain{chain}, Contracts: contracts}, s, handlers, indexer.Options{Logger: logger})
 	if e != nil {
 		return e
 	}
@@ -128,11 +132,11 @@ func run(ctx context.Context, logger *logging.Logger) error {
 			return e
 		}
 	}
-	return serve(ctx, worker, query.New(s), logger)
+	return serve(ctx, worker, query.New(s), logger, network)
 }
 
-func serve(ctx context.Context, worker indexer.ApplicationIndexer, server *query.Server, logger *logging.Logger) error {
-	server.ChainNames[1] = "local"
+func serve(ctx context.Context, worker indexer.ApplicationIndexer, server *query.Server, logger *logging.Logger, network networkConfig) error {
+	server.ChainNames[network.ID] = network.Name
 	app, err := indexer.LaunchApplication(ctx, worker, server, "127.0.0.1", 42069)
 	if err != nil {
 		return err

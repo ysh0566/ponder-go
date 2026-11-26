@@ -1,0 +1,59 @@
+{
+  "tables": [
+    {
+      "name": "account",
+      "columns": [
+        {
+          "name": "address",
+          "type": "hex",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "name": "token",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "primary": true
+        },
+        {
+          "name": "owner",
+          "type": "hex",
+          "notNull": true
+        }
+      ]
+    },
+    {
+      "name": "transfer_event",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "primary": true
+        },
+        {
+          "name": "timestamp",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "from",
+          "type": "hex",
+          "notNull": true
+        },
+        {
+          "name": "to",
+          "type": "hex",
+          "notNull": true
+        },
+        {
+          "name": "token",
+          "type": "bigint",
+          "notNull": true
+        }
+      ]
+    }
+  ]
+}

@@ -818,14 +818,18 @@
     },
     {
       "id": "scaffolding-templates",
-      "status": "unimplemented",
-      "implementation_files": [],
+      "status": "verified_subset",
+      "implementation_files": [
+        "cmd/ponder/scaffold.go"
+      ],
       "upstream_sources": [
         "packages/create-ponder/src/index.ts",
         "packages/create-ponder/templates"
       ],
-      "evidence": [],
-      "remaining": "The Go CLI now generates an ERC-20 project. Additional native project templates, including factory contracts, ERC-721, ERC-1155 and ERC-4626, remain open."
+      "evidence": [
+        "parity/runs/native-project-templates/RESULT.md"
+      ],
+      "remaining": "The native CLI generates five Go starters. The upstream menu also contains additional feature-specific and protocol examples."
     },
     {
       "id": "development-reload",
@@ -2494,6 +2498,35 @@
         "parity/runs/native-managed-cli-dev/RESULT.md"
       ],
       "remaining": "Supports the default two-chain Go example with revision-scoped business and sync storage. The independent runner still requires additional ordering and source combinations."
+    },
+    {
+      "id": "native-project-templates",
+      "status": "verified_subset",
+      "implementation_files": [
+        "cmd/ponder/scaffold.go",
+        "examples/erc20/main.go",
+        "examples/erc20/handlers.go",
+        "cmd/ponder/scaffold/erc721/handlers.go.tmpl",
+        "cmd/ponder/scaffold/erc1155/handlers.go.tmpl",
+        "cmd/ponder/scaffold/erc4626/handlers.go.tmpl",
+        "cmd/ponder/scaffold/factory/handlers.go.tmpl"
+      ],
+      "native_test_files": [
+        "cmd/ponder/token_templates_test.go",
+        "cmd/ponder/scaffold_test.go"
+      ],
+      "upstream_sources": [
+        "packages/create-ponder/src/index.ts",
+        "examples/reference-erc721/src/index.ts",
+        "examples/reference-erc1155/src/index.ts",
+        "examples/reference-erc4626/src/index.ts",
+        "examples/feature-factory/ponder.config.ts",
+        "examples/feature-factory/src/LlamaCore.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-project-templates/RESULT.md"
+      ],
+      "remaining": "Four reference templates and the default ERC-20 starter. Public archive runs and further entries from the upstream starter menu are outside this selection."
     }
   ]
 }

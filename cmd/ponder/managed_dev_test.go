@@ -24,7 +24,7 @@ func TestManagedMultichainCLIDev(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	setManagedBuildFlags(t)
+	setProjectBuildFlags(t)
 	for _, backend := range []string{"postgres", "pglite"} {
 		t.Run(backend, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(t.Context(), 7*time.Minute)

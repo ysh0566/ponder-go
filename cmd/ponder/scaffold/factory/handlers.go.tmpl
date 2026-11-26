@@ -1,0 +1,41 @@
+package main
+
+import (
+	"context"
+	_ "embed"
+
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/factory"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+//go:embed core.json
+var coreABI []byte
+
+//go:embed policy.json
+var policyABI []byte
+
+func project(network networkConfig, _ *logging.Logger) ([]config.Contract, map[string]runtime.Handler) {
+	created := abi.Event{Name: "LlamaInstanceCreated", Type: "event", Inputs: []abi.Parameter{
+		{Name: "deployer", Type: "address", Indexed: true}, {Name: "name", Type: "string", Indexed: true},
+		{Name: "llamaCore", Type: "address"}, {Name: "llamaExecutor", Type: "address"},
+		{Name: "llamaPolicy", Type: "address"}, {Name: "chainId", Type: "uint256"},
+	}}
+	child := func(name, parameter string, eventABI []byte) config.Contract {
+		contract := network.contract(name, eventABI)
+		contract.Address = nil
+		contract.Factory = &factory.Config{Address: network.Address, Event: created, Parameter: &parameter}
+		return contract
+	}
+	return []config.Contract{child("LlamaCore", "llamaCore", coreABI), child("LlamaPolicy", "llamaPolicy", policyABI)},
+		map[string]runtime.Handler{"LlamaCore:ActionCreated": record, "LlamaPolicy:Initialized": record}
+}
+
+func record(ctx context.Context, c *runtime.Context) error {
+	return c.DB.Write(ctx, "llama_event", store.Row{
+		"id": c.Event.ID, "contract": c.Event.Log.Address, "event": c.Event.Name,
+	}, store.Insert)
+}

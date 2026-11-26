@@ -1,0 +1,77 @@
+package main
+
+import (
+	"context"
+	_ "embed"
+	"fmt"
+	"math/big"
+	"strconv"
+
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+//go:embed abi.json
+var tokenABI []byte
+
+func project(network networkConfig, _ *logging.Logger) ([]config.Contract, map[string]runtime.Handler) {
+	contract := network.contract("ERC1155", tokenABI)
+	return []config.Contract{contract}, map[string]runtime.Handler{
+		"ERC1155:TransferSingle": transfer,
+		"ERC1155:TransferBatch":  transfer,
+	}
+}
+
+func transfer(ctx context.Context, c *runtime.Context) error {
+	args := c.Event.Args.(map[string]any)
+	from, to := args["from"].(string), args["to"].(string)
+	for _, owner := range []string{from, to} {
+		if err := c.DB.Write(ctx, "account", store.Row{"address": owner}, store.Upsert); err != nil {
+			return err
+		}
+	}
+	ts, err := strconv.ParseInt(c.Event.Block.Timestamp, 0, 64)
+	if err != nil {
+		return err
+	}
+	record := func(eventID string, token, amount *big.Int) error {
+		if err := changeBalance(ctx, c, from, token, new(big.Int).Neg(amount)); err != nil {
+			return err
+		}
+		if err := changeBalance(ctx, c, to, token, amount); err != nil {
+			return err
+		}
+		return c.DB.Write(ctx, "transfer_event", store.Row{"id": eventID, "from": from, "to": to, "token": token.String(), "timestamp": ts}, store.Insert)
+	}
+	if amount, single := args["amount"].(*big.Int); single {
+		return record(c.Event.ID, args["id"].(*big.Int), amount)
+	}
+	ids, amounts := args["ids"].([]any), args["amounts"].([]any)
+	if len(ids) != len(amounts) {
+		return fmt.Errorf("TransferBatch has %d ids and %d amounts", len(ids), len(amounts))
+	}
+	for i, id := range ids {
+		if err := record(fmt.Sprintf("%s-%d", c.Event.ID, i), id.(*big.Int), amounts[i].(*big.Int)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func changeBalance(ctx context.Context, c *runtime.Context, owner string, token, delta *big.Int) error {
+	key := store.Row{"owner": owner, "token_id": token.String()}
+	row, err := c.DB.Find(ctx, "token_balance", key)
+	if err != nil {
+		return err
+	}
+	balance := new(big.Int)
+	if row != nil {
+		if _, ok := balance.SetString(fmt.Sprint(row["balance"]), 10); !ok {
+			return fmt.Errorf("invalid stored token balance %v", row["balance"])
+		}
+	}
+	key["balance"] = balance.Add(balance, delta).String()
+	return c.DB.Write(ctx, "token_balance", key, store.Upsert)
+}
