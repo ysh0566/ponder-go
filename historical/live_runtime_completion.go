@@ -482,8 +482,17 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			if e != nil {
 				return result, e
 			}
-			attempts++
-			receipt, e = epoch.Process(epoch.Context(), b, a, input, block.history)
+			apply := func() error {
+				attempts++
+				var err error
+				receipt, err = epoch.Process(epoch.Context(), b, a, input, block.history)
+				return err
+			}
+			if block.history {
+				e = r.retryHistorical(epoch.Context(), apply)
+			} else {
+				e = apply()
+			}
 			var invalid *indexing.InvalidEventAccessError
 			if e == nil {
 				break

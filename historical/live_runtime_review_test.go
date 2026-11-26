@@ -80,7 +80,7 @@ func TestRuntimeTimestampFinality(t *testing.T) {
 	}
 }
 func TestRuntimeRejectsHistoricalOptions(t *testing.T) {
-	for _, kind := range []string{"query_size", "clock", "isolated_clock", "retry_wait", "on_committed", "live_isolated_observer"} {
+	for _, kind := range []string{"query_size", "clock", "isolated_clock", "on_committed", "live_isolated_observer"} {
 		t.Run(kind, func(t *testing.T) {
 			p := newFiniteRPC(t, 3)
 			b := runtimeBuild(t, p, 3, 1, indexing.Handler(func(context.Context, *indexing.HandlerArgs) error { return nil }))
@@ -94,8 +94,6 @@ func TestRuntimeRejectsHistoricalOptions(t *testing.T) {
 				if kind == "isolated_clock" {
 					b.Executable().Ordering = string(schema.Isolated)
 				}
-			case "retry_wait":
-				input.RetryWait = func(context.Context, time.Duration) error { return nil }
 			case "on_committed", "live_isolated_observer":
 				if kind == "live_isolated_observer" {
 					b.Executable().Ordering = string(schema.Isolated)

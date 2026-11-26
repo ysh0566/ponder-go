@@ -579,30 +579,35 @@ func (r *Runner) initialize(ctx context.Context, initial []indexing.InitialChain
 	})
 }
 func (r *Runner) retry(ctx context.Context, fn func() error) error {
+	return retryTransaction(ctx, r.options.RetryWait, func(e error) bool {
+		return r.owner.Dialect() == "postgres" && !nonRetryable(e)
+	}, func() error { return indexing.ParseDatabaseError(fn()) })
+}
+
+// Both historical runners use the upstream retry budget and backoff. Each
+// runner classifies errors according to its storage ownership contract.
+func retryTransaction(ctx context.Context, wait func(context.Context, time.Duration) error, retryable func(error) bool, fn func() error) error {
 	var first error
 	for attempt := 0; ; attempt++ {
-		if e := ctx.Err(); e != nil {
-			return e
+		if err := ctx.Err(); err != nil {
+			return err
 		}
-		e := fn()
-		if e == nil {
-			return nil
+		err := fn()
+		if err == nil || wait == nil || !retryable(err) {
+			return err
 		}
-		e = indexing.ParseDatabaseError(e)
-		if first == nil {
-			first = e
-		}
-		if r.owner.Dialect() != "postgres" || nonRetryable(e) {
-			return e
+		if attempt == 0 {
+			first = err
 		}
 		if attempt == 9 {
 			return first
 		}
-		if e = r.options.RetryWait(ctx, (125*time.Millisecond)<<attempt); e != nil {
-			return e
+		if err := wait(ctx, (125*time.Millisecond)<<attempt); err != nil {
+			return err
 		}
 	}
 }
+
 func nonRetryable(err error) bool {
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) || errors.Is(err, sql.ErrConnDone) || errors.Is(err, driver.ErrBadConn) {
 		return true

@@ -506,7 +506,9 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 	if commitErr != nil {
 		_ = tx.Rollback(context.Background())
 		if reconcile := m.reconcileBatch(ctx, batch, acquired, commitErr); reconcile != nil {
-			m.uncertain.Store(true)
+			if !IsPostgresTransactionConflict(reconcile) {
+				m.uncertain.Store(true)
+			}
 			return ManagedLiveBatchResult{}, reconcile
 		}
 	}
@@ -545,6 +547,12 @@ func (m *ManagedLive) reconcileBatch(ctx context.Context, batch ManagedLiveBatch
 			}
 			return nil
 		}
+	}
+	// PostgreSQL can abort at COMMIT. Only replay after checking the lease,
+	// the missing receipt and the original durable predecessor.
+	if m.opts.liveRuntime && IsPostgresTransactionConflict(commitErr) &&
+		d.Control.Generation == batch.Generation && d.Control.LastOperation == batch.ExpectedLastOperation && d.Control.Tail == batch.ExpectedTail {
+		return commitErr
 	}
 	return unknown(fmt.Errorf("exact batch receipt not confirmed"))
 }

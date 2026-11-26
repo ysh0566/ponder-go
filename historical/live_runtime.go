@@ -50,7 +50,8 @@ type RuntimeOptions struct {
 	// Historical.QuerySize is the bounded omnichain SQL target (1..12000);
 	// zero uses 12000. MaxQueryParameters controls batched sync writes in all orderings.
 	// Bounded Omnichain accepts Clock. Bounded Isolated and Omnichain accept
-	// OnCommitted after persisting each group and its safe checkpoint.
+	// OnCommitted after persisting each group and its safe checkpoint. RetryWait
+	// schedules PostgreSQL transaction-conflict retries during setup and backfill.
 	Historical                   Options
 	BuildID, OpenID, ViewsSchema string
 	// Requesters supplies fresh transports for preflight, fetch epochs and uncached source scans.
@@ -95,14 +96,14 @@ func OpenRuntimePGlite(ctx context.Context, o RuntimeOptions) (*RuntimeRunner, e
 	return openRuntime(ctx, o, store.OpenManagedLiveRuntimePGlite)
 }
 func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Context, store.IndependentStorageOptions, store.ManagedLiveRuntimeOptions) (*store.ManagedLiveDomains, error)) (*RuntimeRunner, error) {
+	if o.Historical.RetryWait == nil {
+		o.Historical.RetryWait = waitRetry
+	}
 	if o.Historical.Build == nil || o.BuildID == "" || o.OpenID == "" || o.Requesters == nil {
 		return nil, fmt.Errorf("compiled build, BuildID, OpenID and fresh requester factory required")
 	}
 	if _, err := store.SourceQueryParameterBudget(o.Historical.MaxQueryParameters); err != nil {
 		return nil, err
-	}
-	if o.Historical.RetryWait != nil {
-		return nil, fmt.Errorf("runtime does not support historical RetryWait")
 	}
 	if len(o.Historical.Owned.Requesters) != 0 || !reflect.ValueOf(o.Historical.Owned.Cache).IsZero() {
 		return nil, fmt.Errorf("runtime-v5 requires its requester factory and per-block cache defaults")
@@ -305,6 +306,13 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	}
 	opened = true
 	return r, nil
+}
+
+func (r *RuntimeRunner) retryHistorical(ctx context.Context, apply func() error) error {
+	ctx = context.WithValue(ctx, runtimeRunnerCallbackKey{}, r)
+	return retryTransaction(ctx, r.options.Historical.RetryWait, func(err error) bool {
+		return r.domains.BusinessReader().Dialect() == "postgres" && store.IsPostgresTransactionConflict(err) && !nonRetryable(err)
+	}, apply)
 }
 
 func (r *RuntimeRunner) acquireOpeningHeads(ctx context.Context, reqs []rpc.Requester) error {

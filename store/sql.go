@@ -68,10 +68,11 @@ func (w *Writer) SQL(ctx context.Context, query string, args ...any) (Result, er
 		// PGlite marks a failed statement; recovering to a savepoint clears it.
 		if rollback := w.tx.Exec(context.Background(), "ROLLBACK TO SAVEPOINT ponder_go_sql"); rollback != nil {
 			w.err = rollback
-			return Result{}, &RawSQLError{fmt.Errorf("%w; rollback failed: %v", e, rollback)}
+			return Result{}, &RawSQLError{fmt.Errorf("%w; rollback failed: %w", e, rollback)}
 		}
 		if release := w.tx.Exec(context.Background(), "RELEASE SAVEPOINT ponder_go_sql"); release != nil {
 			w.err = release
+			return Result{}, &RawSQLError{fmt.Errorf("%w; release failed: %w", e, release)}
 		}
 		return Result{}, &RawSQLError{e}
 	}
