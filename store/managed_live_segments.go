@@ -81,6 +81,8 @@ type ManagedLiveSegment struct {
 }
 
 type ManagedLiveBatchResult struct {
+	// Reconciled records a lost COMMIT acknowledgement confirmed by its durable receipt.
+	Reconciled  bool                 `json:"reconciled,omitempty"`
 	Applied     bool                 `json:"applied"`
 	OperationID string               `json:"operationId"`
 	Segments    []ManagedLiveSegment `json:"segments"`

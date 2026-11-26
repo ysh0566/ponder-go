@@ -49,6 +49,8 @@ type RuntimeOptions struct {
 	OmnichainFinalityPollInterval time.Duration
 	// Historical.QuerySize is the bounded omnichain SQL target (1..12000);
 	// zero uses 12000. MaxQueryParameters controls batched sync writes in all orderings.
+	// Bounded Omnichain accepts Clock. Bounded Isolated and Omnichain accept
+	// OnCommitted after persisting each group and its safe checkpoint.
 	Historical                   Options
 	BuildID, OpenID, ViewsSchema string
 	// Requesters supplies fresh transports for preflight, fetch epochs and uncached source scans.
@@ -99,8 +101,8 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	if _, err := store.SourceQueryParameterBudget(o.Historical.MaxQueryParameters); err != nil {
 		return nil, err
 	}
-	if o.Historical.Clock != nil || o.Historical.RetryWait != nil || o.Historical.OnCommitted != nil {
-		return nil, fmt.Errorf("runtime-v5 does not support historical scheduling, query or observer options")
+	if o.Historical.RetryWait != nil {
+		return nil, fmt.Errorf("runtime does not support historical RetryWait")
 	}
 	if len(o.Historical.Owned.Requesters) != 0 || !reflect.ValueOf(o.Historical.Owned.Cache).IsZero() {
 		return nil, fmt.Errorf("runtime-v5 requires its requester factory and per-block cache defaults")
@@ -132,6 +134,13 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	if b == nil || (b.Ordering != "multichain" && b.Ordering != "omnichain" && b.Ordering != string(schema.Isolated)) || len(b.Chains) == 0 || len(b.Chains) != len(b.EventCallbacks) || len(b.Chains) != len(b.Contracts) || len(b.Chains) != len(b.SetupCallbacks) {
 		return nil, fmt.Errorf("runtime closure requires a complete multichain, finalized omnichain or isolated executable build")
 	}
+	if o.Historical.Clock != nil && b.Ordering != "omnichain" {
+		return nil, fmt.Errorf("this ordering does not support historical Clock")
+	}
+	// These modes commit the safe checkpoint in the same transaction as the batch.
+	if o.Historical.OnCommitted != nil && (o.Live != nil || (b.Ordering != "omnichain" && b.Ordering != string(schema.Isolated))) {
+		return nil, fmt.Errorf("this mode does not support historical OnCommitted: bounded Isolated or Omnichain required")
+	}
 	if o.OmnichainFinalityPollInterval < 0 || (o.OmnichainFinalityPollInterval > 0 && b.Ordering != "omnichain") {
 		return nil, fmt.Errorf("OmnichainFinalityPollInterval requires a nonnegative interval and Omnichain ordering")
 	}
@@ -143,7 +152,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 			return nil, fmt.Errorf("omnichain query size must be between1 and12000, or0 for the source default")
 		}
 	} else if o.Historical.QuerySize != 0 {
-		return nil, fmt.Errorf("runtime-v5 does not support historical scheduling, query or observer options")
+		return nil, fmt.Errorf("this ordering does not support historical QuerySize")
 	}
 	if b.Ordering != "multichain" {
 		o.SourceCheckpoints = true

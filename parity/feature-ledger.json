@@ -3178,6 +3178,33 @@
         "parity/runs/native-omnichain-finality-wait/RESULT.md"
       ],
       "remaining": "Continuous dual-store Omnichain requires unfinalized event handoff, global live ordering and cross-chain reorg recovery."
+    },
+    {
+      "id": "native-historical-commit-observers",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "historical/live_runtime_completion.go",
+        "historical/live_runtime_omnichain_history.go",
+        "store/managed_live_batch.go",
+        "store/managed_live_segments.go"
+      ],
+      "native_test_files": [
+        "historical/runtime_commit_observer_test.go",
+        "historical/isolated_finalized_test.go",
+        "historical/live_runtime_review_test.go",
+        "store/managed_live_closure_database_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/historical.test.ts",
+        "packages/core/src/runtime/omnichain.ts",
+        "packages/core/src/runtime/isolated.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-historical-commit-observers/RESULT.md"
+      ],
+      "remaining": "Default multichain and live dual-store runs keep separate safe checkpoints. Group observers for those modes and custom historical retry waits remain open."
     }
   ]
 }

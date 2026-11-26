@@ -42,7 +42,14 @@ func (r *RuntimeRunner) omnichainHistoricalSources(ctx context.Context, epoch *i
 		if err != nil {
 			return nil, err
 		}
-		sources[i] = source.SourceHistoricalChain{Chain: chain, CacheRPCRequests: cache, ReorgWindow: int(window), RefreshRequests: requests, Local: source.SourceLocalHistoricalOptions{ChainID: id, Requester: requester, EventCallbacks: r.build.EventCallbacks[i], Children: children, Progress: progress, CachedIntervals: cached, Store: facade, FilterSession: r.session, Acquisition: r.options.Historical.Acquisition}}
+		sources[i] = source.SourceHistoricalChain{
+			Chain: chain, CacheRPCRequests: cache, ReorgWindow: int(window), RefreshRequests: requests,
+			Local: source.SourceLocalHistoricalOptions{
+				ChainID: id, Requester: requester, EventCallbacks: r.build.EventCallbacks[i],
+				Children: children, Progress: progress, CachedIntervals: cached, Store: facade,
+				FilterSession: r.session, Clock: r.options.Historical.Clock, Acquisition: r.options.Historical.Acquisition,
+			},
+		}
 		if viem, ok := chain["viemChain"].(map[string]any); ok {
 			if ms, ok := viem["blockTime"].(float64); ok {
 				sources[i].BlockTimeMS = &ms
@@ -231,7 +238,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 	if querySize == 0 {
 		querySize = 12000
 	}
-	options := source.SourceHistoricalCoordinatorOptions{Chains: chains, BuildChains: chains, CrashRecovery: crash, QuerySize: querySize}
+	options := source.SourceHistoricalCoordinatorOptions{Chains: chains, BuildChains: chains, CrashRecovery: crash, QuerySize: querySize, Clock: r.options.Historical.Clock}
 	for output, e := range source.HistoricalSourceOmnichain(epoch.Context(), options) {
 		if e != nil {
 			return out, e
@@ -253,6 +260,8 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 			continue
 		}
 		readHeader := func(chain, number uint64) (store.ManagedLiveHead, error) { return proofs[chain].head(number) }
+		var receipt store.ManagedLiveBatchResult
+		attempts := 0
 		for {
 			b := store.ManagedLiveBatch{ID: r.nextID("omni-history"), Generation: control.Generation, ExpectedLastOperation: control.LastOperation, ExpectedTail: control.Tail}
 			partitions := make([][]indexing.Object, len(blocks))
@@ -294,7 +303,8 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 			if e != nil {
 				return out, e
 			}
-			_, e = epoch.ProcessHistoricalBlocks(epoch.Context(), b, acquired, partitions)
+			attempts++
+			receipt, e = epoch.ProcessHistoricalBlocks(epoch.Context(), b, acquired, partitions)
 			if e == nil {
 				break
 			}
@@ -323,6 +333,19 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 			return out, e
 		}
 		epoch.Clients().Clear()
+		if r.options.Historical.OnCommitted != nil {
+			counts := make(map[uint64]int, len(output.Groups))
+			for _, block := range blocks {
+				counts[block.id] += len(block.events)
+			}
+			groups := make([]GroupResult, 0, len(output.Groups))
+			for _, g := range output.Groups {
+				groups = append(groups, GroupResult{ChainID: g.ChainID, Checkpoint: g.Checkpoint, BlockRange: g.BlockRange, Events: counts[g.ChainID]})
+			}
+			if err := r.notifyHistoricalCommit(ctx, groups, receipt, attempts); err != nil {
+				return out, err
+			}
+		}
 	}
 	for _, chain := range r.build.Chains {
 		id := runtimeChainID(chain)

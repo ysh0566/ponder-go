@@ -644,6 +644,24 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 独立存储的 Omnichain 会自动启用来源 checkpoint。可以注册一个或多个区块回调，各自选择采样间隔，也可以只订阅合约日志、合约 CALL 或账户事件。每个来源都需要声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
 
+#### 接收双库回填的提交通知
+
+使用有限区间的 Isolated 或 Omnichain 索引器时，把下面的函数设置在传给 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 的选项上。每个 `GroupResult` 对应一条链，包含已提交的来源 checkpoint、区块范围和事件数。Isolated 每次提交一个区块。Omnichain 的一笔事务可以同时提交多条链的事件组。
+
+```go
+opts.Historical.OnCommitted = func(ctx context.Context, group historical.GroupResult) error {
+    log.Printf("chain=%d checkpoint=%s range=%v events=%d attempts=%d",
+        group.ChainID, group.Checkpoint, group.BlockRange, group.Events, group.Attempts)
+    return nil
+}
+```
+
+收到通知时，业务数据与安全检查点已经提交，函数中可以调用运行器的 `Control(ctx)` 读取进度。`Attempts` 是该批次尝试执行的次数，包括补取事件输入后的重试。若数据库提交应答丢失、运行器通过数据库中的提交记录确认成功，`Reconciled` 为真。
+
+通知函数返回错误时，运行器会发完同一笔事务内其他链的通知，随后从 `Run` 返回错误。重新打开同一部署会从安全检查点继续。若进程在提交后、调用通知函数前退出，重启会跳过已经提交的事件组。初始化和就绪分别使用 `OnSetupCommitted` 和 `OnActivated`。
+
+Omnichain 的 `opts.Historical.Clock` 同时用于回填协调器的链头刷新计时与本地同步的区间大小估算。默认使用系统时间。传入自定义函数时，它需要支持多个链并发调用。链上区块时间和 checkpoint 仍由 RPC 区块头确定。[提交、报错与恢复测试](../parity/runs/native-historical-commit-observers/RESULT.md)
+
 #### 等待双库 Omnichain 的区间最终确认
 
 两个构造函数都支持 `RuntimeOptions.OmnichainFinalityPollInterval`。零值表示在打开时检查一次。正值表示按指定间隔重新读取各链的最新区块，再按各自的重组窗口计算最终确认位置。例如，链 A 已产生结束区块，链 B 的最终确认时间仍早于这个区块时，作业会继续等待。若某个 `setup` 回调读取的区块高于该链最后一个事件，也会等到该区块最终确认。

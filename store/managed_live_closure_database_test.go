@@ -168,10 +168,10 @@ func TestManagedLiveDatabaseClosure(t *testing.T) {
 						t.Fatalf("fault not reached: calls=%d err=%v", calls, err)
 					}
 					if mode == "after_commit" {
-						if err != nil || !result.Applied || m.uncertain.Load() {
+						if err != nil || !result.Applied || !result.Reconciled || m.uncertain.Load() {
 							t.Fatalf("exact committed receipt not reconciled: %+v %v", result, err)
 						}
-						if retry, err := m.ApplyBatch(ctx, batch, acq, func(*Writer, ManagedLiveBlock) error { t.Fatal("reconciled retry reran handler"); return nil }); err != nil || retry.Applied {
+						if retry, err := m.ApplyBatch(ctx, batch, acq, func(*Writer, ManagedLiveBlock) error { t.Fatal("reconciled retry reran handler"); return nil }); err != nil || retry.Applied || retry.Reconciled {
 							t.Fatalf("retry=%+v %v", retry, err)
 						}
 					} else {
