@@ -144,12 +144,9 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	r := &RuntimeRunner{build: b, session: session, release: release, options: o, starts: map[uint64]uint64{}, latest: map[uint64]store.ManagedLiveHead{}, finalized: map[uint64]store.ManagedLiveHead{}, finalBlocks: make([]indexing.Object, len(b.Chains)), closeDone: make(chan struct{}), runDone: make(chan struct{})}
 	close(r.runDone)
 	for i, c := range b.Chains {
-		cache, ok := c["cacheRpcRequests"].(bool)
+		_, ok := c["cacheRpcRequests"].(bool)
 		if !ok {
 			return nil, fmt.Errorf("runtime requires boolean cacheRpcRequests for each chain")
-		}
-		if !cache && b.Ordering == "omnichain" {
-			return nil, fmt.Errorf("omnichain finalized runtime requires cacheRpcRequests=true")
 		}
 		id, e := uintQuantity(c["id"])
 		if e != nil {
@@ -225,6 +222,13 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 				if cb["filter"].(map[string]any)["type"] == "block" {
 					r.logOnly = false
 				}
+			}
+		}
+	}
+	if r.logOnly {
+		for _, chain := range b.Chains {
+			if !runtimeRPCCacheEnabled(chain) {
+				return nil, fmt.Errorf("log-only omnichain requires cacheRpcRequests=true for interval and empty-tail evidence")
 			}
 		}
 	}

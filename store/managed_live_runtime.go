@@ -58,8 +58,8 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 			}
 		}
 		for _, enabled := range in.CacheRPCRequests {
-			if !enabled {
-				return nil, fmt.Errorf("omnichain finalized runtime requires RPC cache")
+			if in.LogOnlyFilters != nil && !enabled {
+				return nil, fmt.Errorf("log-only omnichain runtime requires RPC cache")
 			}
 		}
 		in.ManagedLiveOptions.runtimeOmnichain = true

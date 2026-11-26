@@ -449,7 +449,16 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 使用工厂合约发现子地址时，将 `RuntimeOptions.FactorySources` 和 `SourceCheckpoints` 都设为 `true`。将 `Live` 留空即可在固定高度结束。工厂地址配置里的 `startBlock` 和 `endBlock` 决定扫描创建事件的范围，子合约或账户配置的区间决定向 Go 回调投递哪些事件。例如，工厂在区块 1 创建的子合约，即使其日志回调从区块 3 才开始，仍可在区块 3 收到事件。重开同一部署时，运行器按区块哈希恢复子地址，RPC 节点需能返回创建区间的区块和日志。未最终确认的区块被替换后，回放会使用新分支创建的子地址。[有限区间工厂测试](../parity/runs/native-bounded-factory/RESULT.md)
 
-独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并让同一条链上的日志来源使用相同区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。该运行器要求启用 RPC 缓存，且各链的结束位置都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
+独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并让同一条链上的日志来源使用相同区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
+
+每条链都注册了逐块回调时，可以在 Go 来源声明中逐链设置 RPC 缓存。例如，下面的链在内存中处理历史事件，回调直接从节点读取链上状态。其他链可以保留默认的缓存设置。关闭缓存的链仍然保存业务数据和检查点。重启时沿用原有缓存策略和存储位置。纯静态日志模式依靠同步库证明日志区间已完整扫描，所有链都需要开启缓存。[缓存与重启测试](../parity/runs/native-omnichain-cache-policy/RESULT.md)
+
+```go
+cache := false
+chain := config.ChainDeclaration[uint64, string]{
+    ID: 1, RPC: rpcURL, CacheRPCRequests: &cache,
+}
+```
 
 两种已确认区间模式都可以在 `config.BuildSourceIndexing` 的处理函数列表中注册初始化回调。例如，配置中已有名为 `Token` 的合约，下面这项会在收到首个来源事件前运行。示例中的 `account` 表需要文本列 `id`（主键）和 `value`。
 

@@ -23,7 +23,8 @@ func (r *RuntimeRunner) omnichainHistoricalSources(ctx context.Context, epoch *i
 		for j, cb := range r.build.EventCallbacks[i] {
 			filters[j] = cb["filter"].(map[string]any)
 		}
-		cached, err := source.GetSourceCachedIntervals(ctx, true, filters, facade)
+		cache := runtimeRPCCacheEnabled(chain)
+		cached, err := source.GetSourceCachedIntervals(ctx, cache, filters, facade)
 		if err != nil {
 			return nil, err
 		}
@@ -33,7 +34,7 @@ func (r *RuntimeRunner) omnichainHistoricalSources(ctx context.Context, epoch *i
 		if err != nil {
 			return nil, err
 		}
-		children, err := source.GetSourceChildAddresses(ctx, true, filters, facade)
+		children, err := source.GetSourceChildAddresses(ctx, cache, filters, facade)
 		if err != nil {
 			return nil, err
 		}
@@ -41,7 +42,7 @@ func (r *RuntimeRunner) omnichainHistoricalSources(ctx context.Context, epoch *i
 		if err != nil {
 			return nil, err
 		}
-		sources[i] = source.SourceHistoricalChain{Chain: chain, CacheRPCRequests: true, ReorgWindow: int(window), RefreshRequests: requests, Local: source.SourceLocalHistoricalOptions{ChainID: id, Requester: requester, EventCallbacks: r.build.EventCallbacks[i], Children: children, Progress: progress, CachedIntervals: cached, Store: facade, FilterSession: r.session, Acquisition: r.options.Historical.Acquisition}}
+		sources[i] = source.SourceHistoricalChain{Chain: chain, CacheRPCRequests: cache, ReorgWindow: int(window), RefreshRequests: requests, Local: source.SourceLocalHistoricalOptions{ChainID: id, Requester: requester, EventCallbacks: r.build.EventCallbacks[i], Children: children, Progress: progress, CachedIntervals: cached, Store: facade, FilterSession: r.session, Acquisition: r.options.Historical.Acquisition}}
 		if viem, ok := chain["viemChain"].(map[string]any); ok {
 			if ms, ok := viem["blockTime"].(float64); ok {
 				sources[i].BlockTimeMS = &ms
@@ -168,6 +169,39 @@ func (r *RuntimeRunner) omnichainAcquiredGroups(ctx context.Context, epoch *inde
 	sort.Slice(blocks, func(i, j int) bool { return blocks[i].head.Checkpoint < blocks[j].head.Checkpoint })
 	return blocks, positions, nil
 }
+func (r *RuntimeRunner) refetchOmnichainBlock(ctx context.Context, chain source.SourceHistoricalChain, block *runtimeAcquiredBlock) ([]indexing.Object, error) {
+	if chain.CacheRPCRequests {
+		var events []indexing.Object
+		err := r.domains.WithRuntimeSync(ctx, func(io context.Context, s *store.SourceSyncStore) error {
+			var err error
+			events, err = source.RefetchHistoricalSourceEvents(io, []source.SourceHistoricalChain{chain}, block.events, s, nil)
+			return err
+		})
+		return events, err
+	}
+	// The source store has no rows for a disabled chain. Bind the fresh
+	// acquisition to the header already authenticated for this transaction.
+	cp, err := checkpoint.Decode(block.head.Checkpoint)
+	if err != nil {
+		return nil, err
+	}
+	local := chain.Local
+	syncer, err := source.NewSourceHistoricalSync(block.id, local.Requester, local.Actions, local.Children, local.Acquisition)
+	if err != nil {
+		return nil, err
+	}
+	header := indexing.Object{"number": source.Hex(cp.BlockNumber), "timestamp": source.Hex(cp.BlockTimestamp), "hash": block.head.Hash, "parentHash": block.head.ParentHash}
+	prepared, err := source.PrepareManagedSourceBlock(ctx, chain.Chain, local.EventCallbacks, local.FilterSession, local.Children, syncer, cp.BlockNumber, header)
+	if err != nil {
+		return nil, err
+	}
+	events, err := prepared.DecodeInMemory()
+	if err != nil {
+		return nil, err
+	}
+	return events, r.validateOmnichainPartition(events, block.head)
+}
+
 func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexing.RuntimeEpoch, control store.ManagedLiveControl, proofs map[uint64]*runtimeLineage, result RuntimeResult) (out RuntimeResult, err error) {
 	out = result
 	defer func() {
@@ -269,11 +303,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 				return out, e
 			}
 			for _, block := range blocks {
-				e = r.domains.WithRuntimeSync(epoch.Context(), func(io context.Context, s *store.SourceSyncStore) error {
-					var err error
-					block.events, err = source.RefetchHistoricalSourceEvents(io, []source.SourceHistoricalChain{chains[block.index]}, block.events, s, nil)
-					return err
-				})
+				block.events, e = r.refetchOmnichainBlock(epoch.Context(), chains[block.index], block)
 				if e != nil {
 					return out, e
 				}
