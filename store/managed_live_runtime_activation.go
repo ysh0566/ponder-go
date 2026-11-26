@@ -140,7 +140,7 @@ func (d *ManagedLiveDomains) setRuntimeServingWithScan(ctx context.Context, id s
 			if err != nil {
 				return err
 			}
-			e.LogOnlyScan, err = d.logOnlyScan(ctx, b.Control, ranges)
+			e.LogOnlyScan, err = d.logOnlyScan(ctx, b.Control, ranges, get)
 			if err != nil {
 				return err
 			}

@@ -43,7 +43,7 @@ type RuntimeOptions struct {
 	// zero uses12000. Other historical scheduling options remain unsupported.
 	Historical                   Options
 	BuildID, OpenID, ViewsSchema string
-	// Requesters must construct fresh transport owners for every fetch epoch.
+	// Requesters supplies fresh transports for preflight, fetch epochs and uncached log scans.
 	Requesters  func(context.Context, uint64) ([]rpc.Requester, error)
 	OnActivated func(context.Context) error
 	// OnSetupCommitted observes authenticated setup commit before source events.
@@ -225,13 +225,6 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 			}
 		}
 	}
-	if r.logOnly {
-		for _, chain := range b.Chains {
-			if !runtimeRPCCacheEnabled(chain) {
-				return nil, fmt.Errorf("log-only omnichain requires cacheRpcRequests=true for interval and empty-tail evidence")
-			}
-		}
-	}
 	plan, err := managedPlanWithUnbounded(b, o.Live != nil)
 	if err != nil {
 		return nil, err
@@ -330,11 +323,16 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		}
 	}
 	cachePolicy := map[uint64]bool{}
+	var openLogScanRPC func(context.Context) (map[uint64]store.LogScanRPC, error)
 	for _, chain := range r.build.Chains {
-		cachePolicy[runtimeChainID(chain)] = runtimeRPCCacheEnabled(chain)
+		id := runtimeChainID(chain)
+		cachePolicy[id] = runtimeRPCCacheEnabled(chain)
+		if r.logOnly && !cachePolicy[id] {
+			openLogScanRPC = r.openLogScanRPC
+		}
 	}
 	logFilters, logABIs := r.logOnlySources()
-	r.domains, err = opener(ctx, storage, store.ManagedLiveRuntimeOptions{LogOnlyFilters: logFilters, LogOnlyEventABIs: logABIs, FactorySources: o.FactorySources, SourceCheckpoints: o.SourceCheckpoints, Setup: r.setup, CacheRPCRequests: cachePolicy, ManagedLiveOptions: store.ManagedLiveOptions{ManagedFiniteOptions: plan, OpenID: o.OpenID, FinalizedHeads: r.finalized}, StartBlocks: r.starts, Continuous: o.Live != nil, ObserveDomain: runtimeDomainObserver(r)})
+	r.domains, err = opener(ctx, storage, store.ManagedLiveRuntimeOptions{OpenLogScanRPC: openLogScanRPC, LogOnlyFilters: logFilters, LogOnlyEventABIs: logABIs, FactorySources: o.FactorySources, SourceCheckpoints: o.SourceCheckpoints, Setup: r.setup, CacheRPCRequests: cachePolicy, ManagedLiveOptions: store.ManagedLiveOptions{ManagedFiniteOptions: plan, OpenID: o.OpenID, FinalizedHeads: r.finalized}, StartBlocks: r.starts, Continuous: o.Live != nil, ObserveDomain: runtimeDomainObserver(r)})
 	if err != nil {
 		return nil, err
 	}

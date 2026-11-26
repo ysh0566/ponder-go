@@ -322,16 +322,8 @@ func (s *SourceInMemoryHistoricalSync) SyncBlockData(ctx context.Context, requir
 								address = addresses
 							}
 						}
-						topics := []any{sourceHistoricalProperty(item.Filter, "topic0")}
-						for _, key := range []string{"topic1", "topic2", "topic3"} {
-							value := sourceHistoricalProperty(item.Filter, key)
-							if filter.IsUndefined(value) {
-								value = nil
-							}
-							topics = append(topics, value)
-						}
-						query := filter.Object{"address": address, "topics": filter.SanitizeLogTopics(topics), "fromBlock": Hex(uint64(span[0])), "toBlock": Hex(uint64(span[1]))}
-						for page, err := range s.actions.GetLogsWithPagination(ctx, filter.RPCValue(query).(filter.Object), options) {
+						query := filter.LogRangeRequest(item.Filter, address, uint64(span[0]), uint64(span[1]))
+						for page, err := range s.actions.GetLogsWithPagination(ctx, query, options) {
 							if err != nil {
 								yield(store.SourceInterval{}, err)
 								return

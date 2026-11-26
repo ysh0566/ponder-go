@@ -64,34 +64,28 @@ func (d *ManagedLiveDomains) RetainPagedLogOnlyBatch(ctx context.Context, b Mana
 	if err != nil {
 		return nil, err
 	}
-	cache, err := d.storage.syncCache.SourceSyncStore(0)
+	var indexes []int
+	var ranges []logScanRange
+	for i, block := range b.Blocks {
+		if block.RangeDigest == "" {
+			continue
+		}
+		id, from, to, err := gapBounds(block)
+		if err != nil {
+			return nil, err
+		}
+		indexes = append(indexes, i)
+		ranges = append(ranges, logScanRange{chain: id, from: from, to: to, checkEmpty: true, emptyFrom: from})
+	}
+	evidence, err := d.readLogScans(ctx, ranges, get)
 	if err != nil {
 		return nil, err
 	}
-	scans := map[int]managedGapScan{}
-	err = cache.WithTransaction(ctx, func(source *SourceSyncStore) error {
-		for i, block := range b.Blocks {
-			if block.RangeDigest == "" {
-				continue
-			}
-			id, from, to, err := gapBounds(block)
-			if err != nil {
-				return err
-			}
-			filters := m.opts.runtimeLogFilters[id]
-			coverage, err := readLogCoverage(ctx, source, filters)
-			if err != nil {
-				return err
-			}
-			digest, err := m.opts.logOnlyScanHash(ctx, SourceEventDataArgs{Filters: filters, ChainID: id, FromBlock: float64(from), ToBlock: float64(to), Limit: 1}, source.GetEventData)
-			if err != nil {
-				return err
-			}
-			scans[i] = managedGapScan{FiltersHash: digest, Coverage: coverage}
-		}
-		return validateGapScans(m.opts, b, scans)
-	})
-	if err != nil {
+	scans := make(map[int]managedGapScan, len(indexes))
+	for j, i := range indexes {
+		scans[i] = evidence[j]
+	}
+	if err := validateGapScans(m.opts, b, scans); err != nil {
 		return nil, err
 	}
 	acquired.readHeaders, acquired.gapScans = get, scans

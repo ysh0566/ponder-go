@@ -43,6 +43,20 @@ func SanitizeLogTopics(topics []any) []any {
 	return result
 }
 
+// LogRangeRequest builds eth_getLogs parameters for one source filter.
+// The caller supplies the resolved address, including the children of a factory.
+func LogRangeRequest(f Object, address any, from, to uint64) Object {
+	topics := []any{get(f, "topic0")}
+	for _, key := range []string{"topic1", "topic2", "topic3"} {
+		value := get(f, key)
+		if IsUndefined(value) {
+			value = nil
+		}
+		topics = append(topics, value)
+	}
+	return RPCValue(Object{"address": address, "topics": SanitizeLogTopics(topics), "fromBlock": fmt.Sprintf("0x%x", from), "toBlock": fmt.Sprintf("0x%x", to)}).(Object)
+}
+
 func MergeLogFiltersToBlockRequest(logFilters, factories []Object) any {
 	address := []any{}
 	topics := [][]any{{}, {}, {}, {}}

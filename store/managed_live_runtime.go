@@ -34,8 +34,10 @@ type ManagedLiveRuntimeOptions struct {
 	LogOnlyFilters    map[uint64][]filter.Object
 	// Event ABI items in the same order as LogOnlyFilters, for proving ABI-skipped ranges.
 	LogOnlyEventABIs map[uint64][]any
-	FactorySources   bool
-	ObserveDomain    func(context.Context, ManagedLiveDomainStage) error
+	// OpenLogScanRPC supplies fresh transports for uncached chains during a proof scan.
+	OpenLogScanRPC func(context.Context) (map[uint64]LogScanRPC, error)
+	FactorySources bool
+	ObserveDomain  func(context.Context, ManagedLiveDomainStage) error
 }
 
 // Runtime constructors isolate the active lifecycle format from domains-v4.
@@ -57,11 +59,6 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 			cp, err := checkpoint.Decode(in.FinalizedHeads[chain.ID].Checkpoint)
 			if err != nil || cp.ChainID != chain.ID || cp.BlockNumber < in.EndBlocks[chain.ID] {
 				return nil, fmt.Errorf("omnichain runtime end exceeds acquired finality")
-			}
-		}
-		for _, enabled := range in.CacheRPCRequests {
-			if in.LogOnlyFilters != nil && !enabled {
-				return nil, fmt.Errorf("log-only omnichain runtime requires RPC cache")
 			}
 		}
 		in.ManagedLiveOptions.runtimeOmnichain = true
@@ -124,6 +121,10 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 			return nil, err
 		}
 	}
+	needsRPCScan := logOnlyOptions(opts) && opts.runtimeCachePolicy != nil
+	if needsRPCScan && in.OpenLogScanRPC == nil {
+		return nil, fmt.Errorf("uncached log-only mode requires its own scan RPC factory")
+	}
 	if !pg && (o.BusinessDirectory == "" || o.SyncDirectory == "" || o.BusinessDirectory == "memory://" || o.SyncDirectory == "memory://") {
 		return nil, fmt.Errorf("managed runtime requires persistent directories")
 	}
@@ -137,7 +138,7 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 	if err != nil {
 		return nil, fmt.Errorf("runtime native open: %w", err)
 	}
-	d := &ManagedLiveDomains{storage: s, spec: liveDomainSpec(o, opts)}
+	d := &ManagedLiveDomains{storage: s, spec: liveDomainSpec(o, opts), openLogScanRPC: in.OpenLogScanRPC}
 	if err = d.Resume(ctx); err != nil {
 		_ = s.Close(context.Background())
 		return nil, fmt.Errorf("runtime resume: %w", err)
