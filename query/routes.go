@@ -53,6 +53,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *Server) route(r *http.Request) (string, http.Handler) {
 	switch r.URL.Path {
 	case "/sql/db", "/sql/live":
+		if s.DisableSQL {
+			break
+		}
 		if r.Method != http.MethodGet {
 			return "", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

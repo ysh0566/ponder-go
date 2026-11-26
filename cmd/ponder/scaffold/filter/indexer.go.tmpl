@@ -1,0 +1,47 @@
+package main
+
+import (
+	"context"
+	_ "embed"
+	"encoding/json"
+
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+//go:embed abi.json
+var managerABI json.RawMessage
+
+func newProjectIndexer(ctx context.Context, db *store.Store, network networkConfig, chain config.Chain, logger *logging.Logger) (runtime.ApplicationIndexer, error) {
+	contract := map[string]any{
+		"abi": managerABI, "chain": chain.Name, "address": network.Address,
+		"startBlock": network.StartBlock.height, "filter": map[string]any{"event": "Swap"},
+	}
+	if network.EndBlock != nil {
+		contract["endBlock"] = *network.EndBlock
+	}
+	raw, err := json.Marshal(map[string]any{
+		"chains":    map[string]any{chain.Name: map[string]any{"id": chain.ID, "rpc": chain.RPC}},
+		"contracts": map[string]any{"PrimitiveManager": contract},
+	})
+	if err != nil {
+		return nil, err
+	}
+	source, err := config.ParseSourceConfiguration(raw)
+	if err != nil {
+		return nil, err
+	}
+	base, err := config.BuildSourceConfig(source, config.SourceBuildOptions{})
+	if err != nil {
+		return nil, err
+	}
+	build, err := config.BuildSourceIndexing(ctx, source, base, []config.SourceIndexingFunction{
+		{Name: "PrimitiveManager:Swap", Fn: runtime.Handler(recordSwap)},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return runtime.NewIndexerFromSource(build, db, runtime.Options{Logger: logger})
+}

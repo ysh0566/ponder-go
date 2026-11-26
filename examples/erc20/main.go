@@ -165,9 +165,7 @@ func run(ctx context.Context, logger *logging.Logger) error {
 			return fmt.Errorf("resolve latest start block: %w", e)
 		}
 	}
-	cfg, handlers := project(network, logger)
-	cfg.Chains = []config.Chain{chain}
-	worker, e := indexer.NewIndexerWithOptions(cfg, s, handlers, indexer.Options{Logger: logger})
+	worker, e := newProjectIndexer(ctx, s, network, chain, logger)
 	if e != nil {
 		return e
 	}
@@ -182,6 +180,9 @@ func run(ctx context.Context, logger *logging.Logger) error {
 
 func serve(ctx context.Context, worker indexer.ApplicationIndexer, server *query.Server, logger *logging.Logger, network networkConfig) error {
 	server.ChainNames[network.ID] = network.Name
+	if err := configureAPI(server); err != nil {
+		return err
+	}
 	app, err := indexer.LaunchApplication(ctx, worker, server, "127.0.0.1", 42069)
 	if err != nil {
 		return err

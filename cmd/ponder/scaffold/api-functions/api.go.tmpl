@@ -1,0 +1,65 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ysh0566/ponder-go/graphql"
+	"github.com/ysh0566/ponder-go/query"
+)
+
+func configureAPI(server *query.Server) error {
+	db := server.Store
+	graph, err := graphql.New(db, graphql.Options{})
+	if err != nil {
+		return err
+	}
+	mux := http.NewServeMux()
+	mux.Handle("/graphql", graph)
+	count := func(w http.ResponseWriter, r *http.Request) {
+		sql := "SELECT count(*) AS count FROM transfer_event"
+		var params []any
+		if address := r.PathValue("address"); address != "" {
+			if !strings.HasPrefix(address, "0x") || !common.IsHexAddress(address) {
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			sql += ` WHERE "from" = $1 OR "to" = $1`
+			params = append(params, strings.ToLower(address))
+		}
+		result, err := db.QueryReadOnly(r.Context(), sql, params...)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprint(w, result.Rows[0]["count"])
+	}
+	mux.HandleFunc("GET /count", count)
+	mux.HandleFunc("GET /count/{address}", count)
+	mux.HandleFunc("GET /whale-transfers", func(w http.ResponseWriter, r *http.Request) {
+		// One wei is exactly 10^-18 ether. Keep the calculation in decimal arithmetic.
+		result, err := db.QueryReadOnly(r.Context(), `
+			SELECT a.address AS sender,
+			       trim_scale(a.balance * 0.000000000000000001)::text AS "senderBalance",
+			       trim_scale(t.amount * 0.000000000000000001)::text AS amount
+			FROM transfer_event t JOIN account a ON t."from" = a.address
+			ORDER BY a.balance DESC LIMIT 10`)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		if len(result.Rows) == 0 {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, "Not found")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(result.Rows)
+	})
+	server.DisableSQL = true
+	server.API = mux
+	return nil
+}
