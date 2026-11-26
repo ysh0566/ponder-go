@@ -743,14 +743,26 @@
     },
     {
       "id": "other-utils",
-      "status": "unimplemented",
-      "implementation_files": [],
+      "status": "verified_subset",
+      "implementation_files": [
+        "abi/merge.go",
+        "values/bigint.go",
+        "rpc/transport_queue.go",
+        "rpc/retry_logs.go"
+      ],
       "upstream_sources": [
         "packages/utils/src/index.ts",
         "packages/core/src/utils"
       ],
-      "evidence": [],
-      "remaining": "All remaining public utility functions and exact tests remain."
+      "evidence": [
+        "values/source_test.go",
+        "rpc/transport_queue_test.go",
+        "rpc/provider_archives_test.go",
+        "rpc/provider_errors_test.go",
+        "rpc/provider_policy_test.go",
+        "parity/test-ledger.json"
+      ],
+      "remaining": "Go implements all five runtime exports from packages/utils. The loadBalance, mergeAbis, rateLimit and replaceBigInts test files have 12 passing declarations. The provider fixtures have 42 passing, 17 failing and four upstream skips. The 17 failures are included in the test-parity total."
     },
     {
       "id": "cli-start-serve",
@@ -777,9 +789,10 @@
         "packages/core/src/bin/commands/codegen.ts"
       ],
       "evidence": [
-        "parity/runs/orm-compile-fixtures.json"
+        "parity/runs/orm-compile-fixtures.json",
+        "orm/container_models_test.go"
       ],
-      "remaining": "Native scalar typed key/insert/update/row generator exposed via codegen --typed, with required constructors, nullable values and JSON roundtrip; simple legacy model generator retained. Typed JSON/bytes/array/custom codec generation, strict enum/Hex compile domains and full source CLI parity remain."
+      "remaining": "Generated keys, inserts, updates and rows support JSON, bytes and arrays. Enum and hex columns use string fields. Compile-time value restrictions and custom codec generation remain outside the verified typed model surface."
     },
     {
       "id": "cli-db-list",
@@ -929,14 +942,22 @@
     },
     {
       "id": "simulation-e2e",
-      "status": "inventoried_unimplemented",
-      "implementation_files": [],
+      "status": "verified_subset",
+      "implementation_files": [
+        "runtime/application_source_test.go",
+        "runtime/testdata/application.cjs"
+      ],
       "upstream_sources": [
         "simulation-test",
         "packages/core/src/_test/e2e"
       ],
-      "evidence": [],
-      "remaining": "8 simulation apps, unbounded seeds and 2 E2E tests retained; full Go harness/datasets and exact E2E ports remain."
+      "evidence": [
+        "parity/mappings.json",
+        "parity/test-ledger.json",
+        "parity/discovery-audit.json",
+        "parity/runs/native-go-indexer-reaudit/RESULT.md"
+      ],
+      "remaining": "Both pinned E2E declarations (erc20 and factory) have passing Go and upstream executions. The separate eight-application simulation suite still needs a Go harness, reference datasets and seeded comparisons."
     },
     {
       "id": "strict-ts-source-compatibility",
@@ -976,7 +997,7 @@
         "benchmark",
         "packages/core/src/utils/checkpoint.bench.ts"
       ],
-      "remaining": "Preserve benchmark definitions separately from functional test counts; no performance parity claim."
+      "remaining": "The pinned benchmark includes the rETH and Uniswap indexing apps and separate utility microbenchmarks. Comparable upstream and Go measurements on the same inputs remain open."
     },
     {
       "id": "indexing-cache",

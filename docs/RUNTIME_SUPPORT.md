@@ -24,6 +24,8 @@ This matrix lists verified native Go features and the product capabilities still
 
 Of the 883 upstream cases ported to Go, 866 passed and 17 provider RPC cases failed in separate live runs. Five retained SDK cases also passed. The last recorded full Go ordinary and race suites each covered 30 packages. [Source inventory](../parity/test-ledger.json) · [Full module regression](../parity/runs/complete-module-regression/RESULT.md)
 
+The two pinned end-to-end declarations run native Go handlers against ERC-20 mint and factory swap activity. Both applications passed on PostgreSQL and PGlite. The eight seeded simulation applications still need a Go harness and result comparison. The rETH and Uniswap benchmark workloads still need comparable upstream and Go measurements. [Application tests](../runtime/application_source_test.go) · [Native scope audit](../parity/runs/native-go-indexer-reaudit/RESULT.md)
+
 ## Callback RPC methods
 
 The Go starter passes an `*rpc.Client` to `runtime.Handler`. Generated callback registries expose an `*indexing.Client` with event-aware reads. The pinned Ponder callback API lists 21 named actions. All 21 have high-level methods on `indexing.Client`. [Go callback context](../indexing/types.go) · [Upstream action list](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/indexing/client.ts#L122-L152)

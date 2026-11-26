@@ -12,6 +12,8 @@
 
 如果各链分别维护自己的余额，使用 Isolated，在业务表主键中包含 `chain_id`。如果多条链共同维护一个按事件先后计算的值，使用 Omnichain，运行器会按跨链 checkpoint 排序回调。PostgreSQL 双库存储使用同一数据库内的两个命名空间，PGlite 使用两个数据目录。[独立多链示例](#从同一个-go-项目索引多条链) · [跨链排序示例](#按全局顺序索引多条链) · [双库存储](#独立存储的有限区间索引)
 
+双库 Isolated 和 Omnichain 的配置应保留 `RuntimeOptions.Live = nil`，并为来源指定已最终确认的结束高度。设置 `Live` 会在打开数据库前返回 `currently requires bounded finalized runtime`。需要这两种排序持续追块时，选用上表中的 `runtime.NewIndexer` 或 `runtime.NewIndexerFromSource`。[运行器检查](../historical/live_runtime.go)
+
 ## 准备环境
 
 需要 Git、Go 1.25 或以上版本、启用 CGO 的 C 编译环境、Docker、Foundry 的 `anvil` 和 `forge`，以及 `curl`、`jq`。以下命令适用于 Bash。示例已用 Go 1.25.11、PostgreSQL 14.24 和 Foundry 1.8.5 验证。首次构建会下载 Go 依赖，Forge 首次编译会按合约声明获取 Solidity 0.8.37；本机已有该编译器时也可将 `FOUNDRY_SOLC` 设为其绝对路径。
