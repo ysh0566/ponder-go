@@ -141,9 +141,17 @@ func TestGeneratedDeploymentRoles(t *testing.T) {
 	}
 	prune := func(name, status string) {
 		t.Helper()
-		out, err := cli(managerURL, "prune", "--schema", name)
-		if err != nil || !strings.Contains(out, `"status":"`+status+`"`) {
-			t.Fatalf("prune %s: %s, %v", name, out, err)
+		deadline := time.Now().Add(10 * time.Second)
+		for {
+			out, err := cli(managerURL, "prune", "--schema", name)
+			if err == nil && strings.Contains(out, `"status":"`+status+`"`) {
+				return
+			}
+			// The writer can hold the transaction lock while prune checks the live lease.
+			if err != nil || status != "active" || !strings.Contains(out, `"status":"busy"`) || time.Now().After(deadline) {
+				t.Fatalf("prune %s: %s, %v", name, out, err)
+			}
+			time.Sleep(50 * time.Millisecond)
 		}
 	}
 	publish := func(roleURL, source string) error {

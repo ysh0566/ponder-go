@@ -12,12 +12,12 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime/debug"
+	"strings"
 
 	"github.com/ysh0566/ponder-go/examples"
-	"strings"
 )
 
-//go:embed all:scaffold/empty
+//go:embed all:scaffold
 var scaffolds embed.FS
 
 var goProjectName = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
@@ -26,9 +26,13 @@ var projectName = regexp.MustCompile(`^[a-z0-9-][a-z0-9._-]*$`)
 func createProject(ctx context.Context, template, dir string, out io.Writer) error {
 	var files fs.FS
 	var prefix string
+	var copyGoBootstrap bool
 	switch template {
-	case "go":
+	case "go", "erc20":
 		files, prefix = examples.ERC20, "erc20"
+	case "erc721", "erc1155", "erc4626", "factory":
+		files, prefix = scaffolds, "scaffold/"+template
+		copyGoBootstrap = true
 	case "typescript":
 		files, prefix = scaffolds, "scaffold/empty"
 	default:
@@ -56,29 +60,11 @@ func createProject(ctx context.Context, template, dir string, out io.Writer) err
 		return err
 	}
 	created := []string{target}
-	err = fs.WalkDir(files, prefix, func(src string, entry fs.DirEntry, err error) error {
-		if err != nil || src == prefix {
-			return err
-		}
+	copyFile := func(source fs.FS, file, relative string) error {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		relative := strings.TrimPrefix(src, prefix+"/")
-		if key, ok := strings.CutPrefix(entry.Name(), "_dot_"); ok {
-			relative = path.Join(path.Dir(relative), "."+key)
-		}
-		if relative == "go.mod.tmpl" {
-			relative = "go.mod"
-		}
-		to := filepath.Join(target, filepath.FromSlash(relative))
-		if entry.IsDir() {
-			if err := os.Mkdir(to, 0755); err != nil {
-				return err
-			}
-			created = append(created, to)
-			return nil
-		}
-		data, err := fs.ReadFile(files, src)
+		data, err := fs.ReadFile(source, file)
 		if err != nil {
 			return err
 		}
@@ -91,6 +77,7 @@ func createProject(ctx context.Context, template, dir string, out io.Writer) err
 				data = append(data, []byte("\nrequire github.com/ysh0566/ponder-go "+version+"\n")...)
 			}
 		}
+		to := filepath.Join(target, filepath.FromSlash(relative))
 		f, err := os.OpenFile(to, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
@@ -102,7 +89,40 @@ func createProject(ctx context.Context, template, dir string, out io.Writer) err
 			return writeErr
 		}
 		return closeErr
+	}
+	err = fs.WalkDir(files, prefix, func(src string, entry fs.DirEntry, err error) error {
+		if err != nil || src == prefix {
+			return err
+		}
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		relative := strings.TrimPrefix(src, prefix+"/")
+		if key, ok := strings.CutPrefix(entry.Name(), "_dot_"); ok {
+			relative = path.Join(path.Dir(relative), "."+key)
+		}
+		relative = strings.TrimSuffix(relative, ".tmpl")
+		to := filepath.Join(target, filepath.FromSlash(relative))
+		if entry.IsDir() {
+			if err := os.Mkdir(to, 0755); err != nil {
+				return err
+			}
+			created = append(created, to)
+			return nil
+		}
+		return copyFile(files, src, relative)
 	})
+	if err == nil && copyGoBootstrap {
+		for _, name := range []string{"main.go", "go.mod.tmpl", "package.json", "_dot_gitignore"} {
+			relative := strings.TrimSuffix(name, ".tmpl")
+			if name == "_dot_gitignore" {
+				relative = ".gitignore"
+			}
+			if err = copyFile(examples.ERC20, "erc20/"+name, relative); err != nil {
+				break
+			}
+		}
+	}
 	if err != nil {
 		// Only remove entries this invocation created. Concurrent unrelated
 		// files keep their parent directories.

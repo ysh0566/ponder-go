@@ -74,7 +74,7 @@ func gateManagedHistory(t *testing.T, endpoint string) (string, <-chan struct{},
 	return server.URL, entered, release
 }
 
-func setManagedBuildFlags(t *testing.T) {
+func setProjectBuildFlags(t *testing.T) {
 	t.Helper()
 	flags := os.Getenv("GOFLAGS")
 	if info, ok := debug.ReadBuildInfo(); ok {
@@ -117,7 +117,7 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 	}
 	root := t.TempDir()
 	cli := filepath.Join(root, "ponder")
-	setManagedBuildFlags(t)
+	setProjectBuildFlags(t)
 	build := exec.CommandContext(t.Context(), "go", "build", "-o", cli, "./cmd/ponder")
 	build.Dir = repo
 	if out, err := build.CombinedOutput(); err != nil {

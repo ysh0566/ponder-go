@@ -1,0 +1,93 @@
+package main
+
+import (
+	"context"
+	_ "embed"
+	"fmt"
+	"math/big"
+	"strconv"
+
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+//go:embed abi.json
+var vaultABI []byte
+
+func project(network networkConfig, _ *logging.Logger) ([]config.Contract, map[string]runtime.Handler) {
+	contract := network.contract("ERC4626", vaultABI)
+	return []config.Contract{contract}, map[string]runtime.Handler{
+		"ERC4626:Transfer": transfer,
+		"ERC4626:Approval": approve,
+		"ERC4626:Deposit":  deposit,
+		"ERC4626:Withdraw": withdraw,
+	}
+}
+
+func transfer(ctx context.Context, c *runtime.Context) error {
+	args := c.Event.Args.(map[string]any)
+	from, to := args["from"].(string), args["to"].(string)
+	amount := args["amount"].(*big.Int)
+	// The reference initializes a first-seen sender at zero and debits known senders.
+	if err := updateShares(ctx, c, from, new(big.Int), new(big.Int).Neg(amount)); err != nil {
+		return err
+	}
+	if err := updateShares(ctx, c, to, amount, amount); err != nil {
+		return err
+	}
+	ts, err := strconv.ParseInt(c.Event.Block.Timestamp, 0, 64)
+	if err != nil {
+		return err
+	}
+	return c.DB.Write(ctx, "transfer_event", store.Row{"id": c.Event.ID, "from": from, "to": to, "amount": amount.String(), "timestamp": ts}, store.Insert)
+}
+
+func updateShares(ctx context.Context, c *runtime.Context, owner string, initial, delta *big.Int) error {
+	row, err := c.DB.Find(ctx, "account", store.Row{"address": owner})
+	if err != nil {
+		return err
+	}
+	balance := initial
+	if row != nil {
+		var ok bool
+		balance, ok = new(big.Int).SetString(fmt.Sprint(row["balance"]), 10)
+		if !ok {
+			return fmt.Errorf("invalid stored share balance %v", row["balance"])
+		}
+		balance.Add(balance, delta)
+	}
+	return c.DB.Write(ctx, "account", store.Row{"address": owner, "balance": balance.String()}, store.Upsert)
+}
+
+func approve(ctx context.Context, c *runtime.Context) error {
+	args := c.Event.Args.(map[string]any)
+	allowance := store.Row{"owner": args["owner"], "spender": args["spender"], "amount": args["amount"].(*big.Int).String()}
+	if err := c.DB.Write(ctx, "allowance", allowance, store.Upsert); err != nil {
+		return err
+	}
+	ts, err := strconv.ParseInt(c.Event.Block.Timestamp, 0, 64)
+	if err != nil {
+		return err
+	}
+	allowance["id"] = c.Event.ID
+	allowance["timestamp"] = ts
+	return c.DB.Write(ctx, "approval_event", allowance, store.Insert)
+}
+
+func deposit(ctx context.Context, c *runtime.Context) error {
+	args := c.Event.Args.(map[string]any)
+	return c.DB.Write(ctx, "deposit_event", store.Row{
+		"id": c.Event.ID, "sender": args["caller"], "receiver": args["owner"],
+		"assets": args["assets"].(*big.Int).String(), "shares": args["shares"].(*big.Int).String(),
+	}, store.Insert)
+}
+
+func withdraw(ctx context.Context, c *runtime.Context) error {
+	args := c.Event.Args.(map[string]any)
+	return c.DB.Write(ctx, "withdrawal_event", store.Row{
+		"id": c.Event.ID, "sender": args["caller"], "receiver": args["receiver"], "owner": args["owner"],
+		"assets": args["assets"].(*big.Int).String(), "shares": args["shares"].(*big.Int).String(),
+	}, store.Insert)
+}

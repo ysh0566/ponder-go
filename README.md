@@ -13,7 +13,7 @@ go build -o bin/ponder ./cmd/ponder
 ./bin/ponder --version
 ```
 
-CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go 索引器，进入项目执行 `go mod tidy` 后即可构建。本地使用 PGlite 时在生成目录执行 `npm install` 安装固定版本驱动。也可直接运行仓库内的 `examples/erc20`。[示例源代码](examples/erc20/main.go) · [从零启动并查询示例](docs/USAGE.md)
+CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索引器，或用 `ponder init --template erc721 my-nfts` 选择其他 Go 模板。进入项目执行 `go mod tidy` 后即可构建。本地使用 PGlite 时在生成目录执行 `npm install` 安装固定版本驱动。也可直接运行仓库内的 `examples/erc20`。[示例源代码](examples/erc20/main.go) · [从零启动并查询示例](docs/USAGE.md)
 
 ## 功能状态
 
@@ -28,11 +28,13 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建独立 Go �
 
 ## 原生 Go 索引器还缺什么
 
+按使用场景看，主要功能缺口集中在双库运行器的排序、实时重组和来源组合。常规 Go 索引器的主要待办是补充故障场景验证。账户、代理等专题模板属于项目脚手架，可以在已有 Go 项目中直接配置相应来源。
+
 常规 Go 项目可以用 `runtime.NewIndexer` 实时索引多条链。下面提到的“双库”指另一个入口 `historical.RuntimeRunner`，它将业务数据与同步缓存分开管理。PostgreSQL 使用同一个数据库 URL 下的两个命名空间和连接池，PGlite 使用两个目录和引擎进程。[存储构造](store/independent_storage.go) · [运行模式矩阵](docs/RUNTIME_SUPPORT.md)
 
 | 使用场景 | 当前能用什么 | 还缺什么 |
 | --- | --- | --- |
-| 从现成模板创建 Go 索引器 | `ponder init` 默认生成可运行的 ERC-20 项目，其他合约可自行提供 ABI 并注册 Go 回调。 | 若需要像上游一样按用途选模板，目前还不能一键生成 ERC-721、ERC-1155、ERC-4626 或工厂索引器的 Go 项目。[Go 脚手架](cmd/ponder/scaffold.go) · [上游模板目录](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/create-ponder/src/index.ts#L60-L133) |
+| 从现成模板创建 Go 索引器 | `ponder init` 默认生成 ERC-20 项目。也可直接选择 `erc721`、`erc1155`、`erc4626` 或 `factory`，生成包含 Go 回调、表定义和参考链配置的项目。[选择模板与启动](docs/USAGE.md#选择-go-项目模板) | 上游菜单还有账户、代理合约等专题示例，目前可在生成的项目中自行配置这些来源。[上游模板目录](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/create-ponder/src/index.ts#L60-L133) |
 | 用 Go 在同一个进程索引多链 | `runtime.NewIndexer` 支持默认、Isolated 和 Omnichain 三种排序。Omnichain 可持续追块并在重组时重放跨链回调。 | 多链节点切换和数据库中断的组合测试主要使用区块回调。跨链重组中同时处理工厂日志、交易和转账的故障覆盖仍需扩展。Isolated 模式也需补测多链组合使用合约、账户、工厂及 trace 的场景。[运行模式矩阵](docs/RUNTIME_SUPPORT.md) |
 | 双库默认多链与 Isolated | 默认多链支持实时追块、链重组、从创世区块开始、工厂来源和按链配置 RPC 缓存。可在各链达到结束高度后退出，也可用 `ponder start` 持续运行，通过 HTTP 查询已提交的进度与业务数据。停止后可以重启补块。PostgreSQL 部署也可通过 `ponder serve` 启动独立的只读 SQL/SSE 服务。`ponder dev` 支持修改 Go 处理函数后按修订重新索引，编译失败时仍可查询原进程。[热重载用法](docs/USAGE.md#双库-go-项目的热重载) · [独立查询进程](docs/USAGE.md#双库-postgresql-的独立查询进程) · [双库 CLI 示例](docs/USAGE.md#用-cli-启动独立存储的多链索引器) · [有限区间用法](docs/USAGE.md#独立存储的有限区间索引) | 双库运行器还不接受 Isolated 排序。[示例入口](examples/managed-multichain/main.go) |
 | 双库 Omnichain，每条链都注册逐块回调 | 支持已最终确认的有限区间。各链可独立开关缓存，处理静态或工厂发现的合约日志与 CALL、账户交易与转账。所有链的 `setup` 在首个事件前一起提交。[工厂发现与恢复](parity/runs/native-omnichain-factory/RESULT.md) · [初始化与重启](parity/runs/native-omnichain-setup/RESULT.md) | 还缺实时追块与跨链重组恢复，以及部分链逐块处理、其余链只监听日志的组合。仅监听账户交易、转账或合约 CALL 的链也需要有覆盖区间的逐块回调。[配置校验](historical/live_runtime_omnichain_callbacks.go) |

@@ -181,7 +181,7 @@ go build .
 
 如果设置了 `GOBIN`，CLI 位于该目录。要使用自己的仓库地址，可在项目中执行 `go mod edit -module 你的模块路径`。生成的项目包含自己的 `go.mod`、Go 事件处理函数和表定义。沿用上文的数据库、RPC 和合约地址，在项目目录执行 `ponder start --schema ponder_go_my_indexer`，其中 `ponder` 取安装后的实际路径。
 
-- **从 Go 示例开始。** 在生成的项目中修改 `schema.json` 定义表和主键，在 `main.go` 配置链 ID、RPC、合约地址、ABI 和起始区块。示例从区块 0 开始，使用已有合约时可将 `config.Contract.StartBlock` 设为部署高度。[配置](SOURCE_CONFIGURATION.md) · [示例入口](../examples/erc20/main.go)
+- **从 Go 示例开始。** 在生成的项目中修改 `schema.json` 定义表和主键，在 `network.json` 设置链 ID、合约地址和起止区块，在 `handlers.go` 注册事件回调。默认 ERC-20 示例从区块 0 开始，使用已有合约时可将 `startBlock` 设为部署高度。[配置](SOURCE_CONFIGURATION.md) · [示例入口](../examples/erc20/main.go)
 - **编写处理函数。** 示例在 `Token:Transfer` 中解码参数，通过事件上下文的 `c.DB` 更新两行。将写入放在回调事务中，以便索引器一起提交业务数据和 checkpoint，并在重组时撤销。[存储操作](DATABASE_ACTIONS.md)
 - **生成模型。** 使用 `codegen --schema … --typed` 生成类型化模型。对自己的应用，将 `--out` 指向目标 Go 包目录，并用 `--package` 指定包名。`codegen --abi` 可生成事件和函数类型，`--app-config` 可生成回调名称与链类型。[类型化配置](TYPED_SOURCE_CONFIGURATION.md)
 - **提供查询。** 示例用 `query.New` 创建 SQL 服务，通过 `runtime.LaunchApplication` 启动索引和 HTTP 监听，在查询模式下传入 `nil`。需要 GraphQL 时可用 `graphql.New` 创建处理器，通过 `http.ServeMux` 挂到 `/graphql` 并把 mux 赋给 `query.Server.API`。示例默认提供上表中的接口。[示例入口](../examples/erc20/main.go) · [GraphQL 实现](../graphql)
@@ -292,6 +292,30 @@ head "$model_dir/model.go"
 ```
 
 生成的模型用 `[]byte` 表示二进制，`json.RawMessage` 表示 JSON，`[2]float64` 和 `[3]float64` 表示点和线。SQL 数组使用 `[]orm.Nullable[T]`，可通过 `orm.Some(value)` 和 `orm.Null[T]()` 分别写入值和空元素。生成的 ABI 回调保留 tuple 的原始组件名，两个组件转换成相同 Go 名字时会得到不同的字段名。
+
+### 选择 Go 项目模板
+
+`ponder init --template <名称> <新目录>` 会把处理函数、ABI 和表定义放入自己的 Go 项目。省略 `--template` 或选择 `go`、`erc20` 时生成本地 ERC-20 余额示例。下面四个模板的 `network.json` 预填了 Ponder 0.18.2 对应示例的链、合约地址和区块范围。
+
+| 模板 | 参考网络与区块 | 可查询的数据 |
+| --- | --- | --- |
+| `erc721` | Arbitrum One，3,163,146 至 3,200,000 | `token` 保存每个 NFT 的当前所有人，`transfer_event` 保留转手记录。 |
+| `erc1155` | Ethereum 主网，从 12,129,118 开始 | `token_balance` 按持有人和代币 ID 记录余额。批量转账的每一项都有独立的 `transfer_event`。 |
+| `erc4626` | Ethereum 主网，15,774,471 至 18,712,028 | `account` 和 `allowance` 保存份额余额与授权金额，另有转账、授权、存入和取出事件表。 |
+| `factory` | Sepolia，从 4,121,269 开始 | 从 Llama 工厂创建事件中分别发现 Core 和 Policy 地址，`llama_event` 保存对应子合约的 `ActionCreated` 和 `Initialized` 事件。 |
+
+下面的命令使用可读取上述历史区间的 Arbitrum RPC 和 PostgreSQL 启动 ERC-721 项目。
+
+```sh
+ponder init --template erc721 my-nfts
+cd my-nfts
+go mod tidy
+export PONDER_RPC_URL_42161="$ARBITRUM_RPC_URL"
+export DATABASE_URL="$INDEXER_DATABASE_URL"
+ponder start --schema ponder_go_nfts
+```
+
+`PONDER_RPC_URL_<链ID>` 指向节点。`PONDER_LOCAL_RPC_URL` 和 `PONDER_LOCAL_CONTRACT` 可以分别覆盖节点和合约地址。切换到自建链时，同时将 `network.json` 中的 `name`、`id`、`startBlock` 和可选的 `endBlock` 改为该链及部署区间。工厂模板的 `address` 填工厂地址。Go 回调在 `handlers.go` 中，启动和查询服务在 `main.go` 中。使用 PGlite 时执行 `npm install` 安装驱动，再按本地 PGlite 一节启动。[链上事件验证](../parity/runs/native-project-templates/RESULT.md)
 
 ### 同一条链上记录匹配多个回调
 
