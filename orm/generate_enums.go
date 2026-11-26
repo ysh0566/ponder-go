@@ -10,8 +10,8 @@ import (
 )
 
 // Reserve the table API first so adding an enum never renames a table binding.
-func generateEnums(body *strings.Builder, model schema.Schema) (map[string]string, error) {
-	used := map[string]bool{"CallbackDatabase": true, "BindCallbackDatabase": true}
+func generateEnums(body *strings.Builder, model schema.Schema, used map[string]bool) (map[string]string, error) {
+	used["CallbackDatabase"], used["BindCallbackDatabase"] = true, true
 	for _, table := range model.Tables {
 		name := modelGoName(table.Name)
 		for _, suffix := range []string{"", "Row", "Key", "Insert", "Update"} {

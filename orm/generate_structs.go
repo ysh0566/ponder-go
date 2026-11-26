@@ -19,7 +19,7 @@ func GenerateStructs(packageName string, model schema.Schema) ([]byte, error) {
 		return nil, err
 	}
 	var body strings.Builder
-	enums, err := generateEnums(&body, model)
+	enums, err := generateEnums(&body, model, map[string]bool{})
 	if err != nil {
 		return nil, err
 	}

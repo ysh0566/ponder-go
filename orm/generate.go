@@ -108,7 +108,8 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 	}
 	var body strings.Builder
 	imports := map[string]bool{"encoding/json": true, "fmt": true, "github.com/ysh0566/ponder-go/orm": true, "github.com/ysh0566/ponder-go/store": true}
-	enumNames, err := generateEnums(&body, model)
+	used := map[string]bool{}
+	enumNames, err := generateEnums(&body, model, used)
 	if err != nil {
 		return nil, err
 	}
@@ -228,6 +229,7 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 			}
 		}
 		body.WriteString("return out,nil },\n)\n")
+		writeJoinColumns(&body, name, columns, used)
 	}
 	if len(model.Tables) == 0 {
 		return nil, fmt.Errorf("typed model codegen requires an onchain table")
@@ -259,4 +261,23 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 	source.WriteString(")\n")
 	source.WriteString(body.String())
 	return format.Source([]byte(source.String()))
+}
+
+// Allocate column bindings after the existing table, enum and application codec
+// symbols so regenerating an existing project preserves those public names.
+func writeJoinColumns(body *strings.Builder, model string, columns []generatedColumn, used map[string]bool) {
+	name := model + "Columns"
+	for n := 2; used[name]; n++ {
+		name = fmt.Sprintf("%sColumns%d", model, n)
+	}
+	used[name] = true
+	fmt.Fprintf(body, "var %s = struct {\n", name)
+	for _, c := range columns {
+		fmt.Fprintf(body, "%s orm.Column[%sRow,%s]\n", c.field, model, c.typ)
+	}
+	body.WriteString("}{\n")
+	for _, c := range columns {
+		fmt.Fprintf(body, "%s: orm.ColumnOf[%s](%s,%q),\n", c.field, c.typ, model, c.column.Name)
+	}
+	body.WriteString("}\n")
 }
