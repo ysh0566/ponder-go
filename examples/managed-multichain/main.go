@@ -15,6 +15,7 @@ import (
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/historical"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/query"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/runtime"
 	"github.com/ysh0566/ponder-go/schema"
@@ -42,8 +43,20 @@ func recordBlock(ctx context.Context, args *indexing.HandlerArgs) error {
 }
 
 func run(ctx context.Context) (err error) {
-	if mode := os.Getenv("PONDER_COMMAND"); mode != "" && mode != "start" {
-		return fmt.Errorf("this indexing example runs with ponder start")
+	namespace := cmp.Or(os.Getenv("DATABASE_SCHEMA"), "ponder_go_blocks")
+	storage := store.IndependentStorageOptions{
+		BusinessNamespace: namespace, SyncNamespace: namespace + "_cache",
+		Schema: schema.Schema{Tables: []schema.Table{{Name: "indexed_block", Columns: []schema.Column{
+			{Name: "id", Type: "text", Primary: true}, {Name: "chain", Type: "text", NotNull: true},
+		}}}},
+		PostgresURL: cmp.Or(os.Getenv("DATABASE_PRIVATE_URL"), os.Getenv("DATABASE_URL")),
+	}
+	switch os.Getenv("PONDER_COMMAND") {
+	case "serve":
+		return serveExisting(ctx, storage)
+	case "", "start":
+	default:
+		return fmt.Errorf("use ponder start or ponder serve for this project")
 	}
 	raw, err := os.ReadFile("ponder.json")
 	if err != nil {
@@ -63,14 +76,6 @@ func run(ctx context.Context) (err error) {
 	})
 	if err != nil {
 		return err
-	}
-	namespace := cmp.Or(os.Getenv("DATABASE_SCHEMA"), "ponder_go_blocks")
-	storage := store.IndependentStorageOptions{
-		BusinessNamespace: namespace, SyncNamespace: namespace + "_cache",
-		Schema: schema.Schema{Tables: []schema.Table{{Name: "indexed_block", Columns: []schema.Column{
-			{Name: "id", Type: "text", Primary: true}, {Name: "chain", Type: "text", NotNull: true},
-		}}}},
-		PostgresURL: cmp.Or(os.Getenv("DATABASE_PRIVATE_URL"), os.Getenv("DATABASE_URL")),
 	}
 	open := historical.OpenRuntimePostgres
 	if storage.PostgresURL == "" {
@@ -103,7 +108,28 @@ func run(ctx context.Context) (err error) {
 		return err
 	}
 	defer func() { err = errors.Join(err, routes.Close()) }()
-	app, err := runtime.LaunchApplication(ctx, runner, routes, "127.0.0.1", 42069)
+	return serve(ctx, runner, routes)
+}
+
+func serveExisting(ctx context.Context, storage store.IndependentStorageOptions) (err error) {
+	if storage.PostgresURL == "" {
+		return fmt.Errorf("set DATABASE_URL or DATABASE_PRIVATE_URL to a PostgreSQL connection for ponder serve")
+	}
+	db, err := store.OpenPostgres(ctx, storage.PostgresURL)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, db.Close()) }()
+	routes, err := query.OpenManaged(ctx, db, storage.Schema, storage.BusinessNamespace, schema.Multichain)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, routes.Close()) }()
+	return serve(ctx, nil, routes)
+}
+
+func serve(ctx context.Context, indexer runtime.ApplicationIndexer, routes *query.Server) error {
+	app, err := runtime.LaunchApplication(ctx, indexer, routes, "127.0.0.1", 42069)
 	if err != nil {
 		return err
 	}

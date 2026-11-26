@@ -8,7 +8,8 @@ import (
 // QueryReader borrows a store's read operations and change notifications.
 // Its lifetime is bounded by the owner of the store.
 type QueryReader struct {
-	store *Store
+	store         *Store
+	namedProgress bool
 }
 
 func (s *Store) QueryReader() QueryReader { return QueryReader{store: s} }
@@ -29,8 +30,11 @@ func readBackend(backend Backend) Backend {
 func (r QueryReader) Available() bool   { return r.store != nil }
 func (r QueryReader) Namespace() string { return r.store.Namespace }
 func (r QueryReader) Dialect() string   { return r.store.Backend.Dialect() }
+
+// Progress keys standalone managed checkpoints by their committed chain names.
+// Readers borrowed from an indexing process use chain IDs.
 func (r QueryReader) Progress(ctx context.Context) (map[string]string, error) {
-	return readProgress(ctx, readBackend(r.store.Backend), r.store.internal("_ponder_go_progress"))
+	return r.store.readProgress(ctx, readBackend(r.store.Backend), r.namedProgress)
 }
 
 func (r QueryReader) Relations() iter.Seq[string] {

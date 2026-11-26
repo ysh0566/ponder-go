@@ -352,7 +352,11 @@ func (d *Lifecycle) Metadata(ctx context.Context) ([]AppMetadataRow, error) {
 
 // Ready reads the committed readiness flag from the indexing namespace.
 func (d *Lifecycle) Ready(ctx context.Context) (bool, error) {
-	rows, err := d.s.Backend.Query(ctx, "SELECT (value->'is_ready') = '1'::jsonb AS ready FROM "+d.s.internal("_ponder_go_app")+" WHERE key='app'")
+	return d.s.readAppReady(ctx)
+}
+
+func (s *Store) readAppReady(ctx context.Context) (bool, error) {
+	rows, err := s.Backend.Query(ctx, "SELECT (value->'is_ready') = '1'::jsonb AS ready FROM "+s.internal("_ponder_go_app")+" WHERE key='app'")
 	if err != nil || len(rows.Rows) == 0 {
 		return false, err
 	}
