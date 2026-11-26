@@ -69,7 +69,7 @@ func (r *RuntimeRunner) acceptContinuousFinality(ctx context.Context, epoch *ind
 	for old.BlockNumber > at.BlockNumber {
 		raw := known.get(current.Hash)
 		if raw == nil {
-			raw, err = runtimeHashBlock(ctx, epoch.Requester(i), current.Hash)
+			raw, err = runtimeHashBlock(ctx, epoch.Requester(i), id, current.Hash)
 			if err != nil {
 				return false, err
 			}
@@ -81,7 +81,7 @@ func (r *RuntimeRunner) acceptContinuousFinality(ctx context.Context, epoch *ind
 		}
 		parent := known.get(current.ParentHash)
 		if parent == nil {
-			parent, err = runtimeHashBlock(ctx, epoch.Requester(i), current.ParentHash)
+			parent, err = runtimeHashBlock(ctx, epoch.Requester(i), id, current.ParentHash)
 			if err != nil {
 				return false, err
 			}

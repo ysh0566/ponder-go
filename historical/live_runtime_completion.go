@@ -264,7 +264,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			}
 			if r.options.FactorySources {
 				if cursor, exists := control.Cursors[id]; exists {
-					raw, e := runtimeHashBlock(epoch.Context(), epoch.Requester(i), cursor.Hash)
+					raw, e := runtimeHashBlock(epoch.Context(), epoch.Requester(i), id, cursor.Hash)
 					if e != nil {
 						return e
 					}
@@ -283,7 +283,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 						} else {
 							expectedParent := raw["parentHash"]
 							beforeTime, _ := uintQuantity(raw["timestamp"])
-							raw, e = runtimeHashBlock(epoch.Context(), epoch.Requester(i), raw["parentHash"].(string))
+							raw, e = runtimeHashBlock(epoch.Context(), epoch.Requester(i), id, raw["parentHash"].(string))
 							if e == nil {
 								pn, pe := uintQuantity(raw["number"])
 								pt, te := uintQuantity(raw["timestamp"])

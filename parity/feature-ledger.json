@@ -3167,6 +3167,7 @@
       "status": "verified_subset",
       "implementation_files": [
         "historical/live_runtime.go",
+        "historical/live_runtime_continuous.go",
         "store/managed_live_isolated.go",
         "store/managed_live_reorg.go",
         "store/managed_live_finalize.go",
@@ -3174,6 +3175,7 @@
       ],
       "native_test_files": [
         "historical/isolated_live_test.go",
+        "historical/isolated_live_outage_test.go",
         "historical/live_runtime_test.go",
         "store/managed_live_isolated_test.go"
       ],
@@ -3184,9 +3186,10 @@
       ],
       "evidence": [
         "parity/runs/native-isolated-live/RESULT.md",
+        "parity/runs/native-isolated-rpc-outage/RESULT.md",
         "runtime/isolated_indexer_test.go"
       ],
-      "remaining": "A retryable fetch error pauses readiness and rebuilds the shared live queue. Independent progress of a healthy peer while another RPC returns HTTP 503 is verified on the atomic Isolated indexer. Mixed factory/account events during an engine interruption still need independent-store coverage."
+      "remaining": "During a sustained live RPC outage healthy peers commit independently. Initial startup and cold reopen still need all configured chains. Selective RPC method failures and engine interruption with mixed factory/account sources require further coverage."
     },
     {
       "id": "native-runtime-query-budget",

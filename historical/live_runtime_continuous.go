@@ -10,12 +10,13 @@ import (
 	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	source "github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 	"iter"
 	"time"
 )
 
-// RuntimeLiveOptions opts into the isolated continuous-v6 runtime protocol.
+// RuntimeLiveOptions enables live polling for default multichain and Isolated deployments.
 // Wait is a cancellable scheduling boundary; OnProgress observes completed
 // native transitions and cannot supply fetched blocks or database receipts.
 type RuntimeLiveOptions struct {
@@ -55,7 +56,10 @@ type runtimeLiveItem struct {
 	// global undo restores an inclusive Down cursor. It is not a header receipt.
 	replay *runtimeAcquiredBlock
 }
-type runtimeLiveFetchError struct{ err error }
+type runtimeLiveFetchError struct {
+	chainID uint64
+	err     error
+}
 
 func (e *runtimeLiveFetchError) Error() string { return e.err.Error() }
 func (e *runtimeLiveFetchError) Unwrap() error { return e.err }
@@ -111,11 +115,11 @@ func (r *RuntimeRunner) liveNotify(ctx context.Context, kind string, id uint64, 
 	}
 	return r.options.Live.OnProgress(context.WithValue(ctx, runtimeRunnerCallbackKey{}, r), RuntimeLiveProgress{Type: kind, ChainID: id, Head: head})
 }
-func runtimeHashBlock(ctx context.Context, requester rpc.Requester, hash string) (indexing.Object, error) {
+func runtimeHashBlock(ctx context.Context, requester rpc.Requester, id uint64, hash string) (indexing.Object, error) {
 	var raw indexing.Object
 	params := []any{hash, false}
 	if err := requester.Call(ctx, "eth_getBlockByHash", params, &raw); err != nil {
-		return nil, &runtimeLiveFetchError{err}
+		return nil, &runtimeLiveFetchError{id, err}
 	}
 	if raw == nil {
 		return nil, fmt.Errorf("retained runtime block %s unavailable", hash)
@@ -140,7 +144,7 @@ func (r *RuntimeRunner) liveBranch(ctx context.Context, requester rpc.Requester,
 		raw := known.get(head.Hash)
 		if raw == nil {
 			var err error
-			raw, err = runtimeHashBlock(ctx, requester, head.Hash)
+			raw, err = runtimeHashBlock(ctx, requester, id, head.Hash)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -166,7 +170,7 @@ func (r *RuntimeRunner) liveBranch(ctx context.Context, requester rpc.Requester,
 		retained = append(retained, runtimeLight(raw))
 		parent := known.get(head.ParentHash)
 		if parent == nil {
-			parent, err = runtimeHashBlock(ctx, requester, head.ParentHash)
+			parent, err = runtimeHashBlock(ctx, requester, id, head.ParentHash)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -178,7 +182,34 @@ func (r *RuntimeRunner) liveBranch(ctx context.Context, requester rpc.Requester,
 		}
 	}
 }
-func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl, known *runtimeLiveHeaders) (q *runtimeLiveQueue, err error) {
+
+// Probe a disconnected Isolated chain without holding up other generators.
+// A successful read only admits reconstruction from the durable cursor.
+func (r *RuntimeRunner) waitForIsolatedRPC(ctx context.Context, i int, requester rpc.Requester) iter.Seq2[*source.SourceEventBatch, error] {
+	return func(yield func(*source.SourceEventBatch, error) bool) {
+		actions := rpc.NewActions(requester)
+		for {
+			if err := r.liveWait(ctx, true); err != nil {
+				yield(nil, err)
+				return
+			}
+			_, err := actions.GetSourceBlockByNumber(ctx, "latest", false)
+			if canceled := ctx.Err(); canceled != nil {
+				yield(nil, canceled)
+				return
+			}
+			kind := "fetch-retry"
+			if err == nil {
+				kind = "rpc-recovered"
+			}
+			item := &runtimeLiveItem{index: i, event: source.SourceRealtimeEvent{Type: kind}}
+			if !yield(&source.SourceEventBatch{Events: []indexing.Object{{"runtimeLive": item}}}, nil) || err == nil {
+				return
+			}
+		}
+	}
+}
+func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl, known *runtimeLiveHeaders, offline map[uint64]bool) (q *runtimeLiveQueue, err error) {
 	run, cancel := context.WithCancel(ctx)
 	q = &runtimeLiveQueue{cancel: cancel, stop: func() {}, children: make([]*source.SourceHistoricalChildren, len(r.build.Chains))}
 	owned := q
@@ -192,6 +223,20 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 	for i, chain := range r.build.Chains {
 		i, chain := i, chain
 		id := runtimeChainID(chain)
+		work, release, e := r.domains.BeginRuntimeIO(run)
+		if e != nil {
+			return nil, e
+		}
+		q.releases = append(q.releases, release)
+		add := func(seq iter.Seq2[*source.SourceEventBatch, error]) {
+			gen, join := source.ManagedSourceEventGenerator(work, seq)
+			gens = append(gens, gen)
+			q.joins = append(q.joins, join)
+		}
+		if offline[id] {
+			add(r.waitForIsolatedRPC(work, i, epoch.Requester(i)))
+			continue
+		}
 		filters := []filter.Object{}
 		for _, cb := range r.session.Callbacks(r.build.EventCallbacks[i]) {
 			filters = append(filters, cb["filter"].(map[string]any))
@@ -222,18 +267,13 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 		if e == nil && r.options.FactorySources {
 			syncer, e = source.RestoreManagedFactoryBranch(run, epoch.Requester(i), child, final, retained, filters, source.SourceRealtimeChain{ID: id, Name: fmt.Sprint(chain["name"]), ReorgWindow: window, PollingInterval: 1000})
 			if errors.Is(e, source.ErrManagedFactoryAcquisition) {
-				e = &runtimeLiveFetchError{e}
+				e = &runtimeLiveFetchError{id, e}
 			}
 
 		}
 		if e != nil {
 			return nil, e
 		}
-		work, release, e := r.domains.BeginRuntimeIO(run)
-		if e != nil {
-			return nil, e
-		}
-		q.releases = append(q.releases, release)
 		cursor, _ := checkpoint.Decode(c.Cursors[id].Checkpoint)
 		seq := func(yield func(*source.SourceEventBatch, error) bool) {
 			emit := func(event source.SourceRealtimeEvent, head bool) bool {
@@ -244,7 +284,7 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 			if r.options.SourceCheckpoints && !store.ManagedLiveReachedBlock(c, id, n) {
 				raw, e := rpc.NewActions(epoch.Requester(i)).GetSourceBlockByNumber(work, source.Hex(n), true)
 				if e != nil {
-					yield(nil, &runtimeLiveFetchError{e})
+					yield(nil, &runtimeLiveFetchError{id, e})
 					return
 				}
 				actual, e := runtimeHead(id, raw)
@@ -259,7 +299,7 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 				}
 				prepared, e := source.PrepareManagedSourceBlock(work, chain, r.build.EventCallbacks[i], r.session, child, historical, n, raw)
 				if e != nil {
-					yield(nil, &runtimeLiveFetchError{e})
+					yield(nil, &runtimeLiveFetchError{id, e})
 					return
 				}
 				input, e := prepared.DecodeInMemory()
@@ -301,7 +341,7 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 					return
 				}
 				if result.Err != nil {
-					yield(nil, &runtimeLiveFetchError{result.Err})
+					yield(nil, &runtimeLiveFetchError{id, result.Err})
 					return
 				}
 				raw := result.Block
@@ -313,7 +353,7 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 				if number > r.ends[id] {
 					raw, e = rpc.NewActions(epoch.Requester(i)).GetSourceBlockByNumber(work, source.Hex(r.ends[id]), true)
 					if e != nil {
-						yield(nil, &runtimeLiveFetchError{e})
+						yield(nil, &runtimeLiveFetchError{id, e})
 						return
 					}
 				}
@@ -323,7 +363,7 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 						if errors.Is(e, source.ErrManagedRealtimeFinality) {
 							yield(nil, errors.Join(store.ErrManagedLiveDeepReorg, e))
 						} else {
-							yield(nil, &runtimeLiveFetchError{e})
+							yield(nil, &runtimeLiveFetchError{id, e})
 						}
 						failed = true
 						break
@@ -346,9 +386,7 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 				}
 			}
 		}
-		gen, join := source.ManagedSourceEventGenerator(work, iter.Seq2[*source.SourceEventBatch, error](seq))
-		gens = append(gens, gen)
-		q.joins = append(q.joins, join)
+		add(seq)
 	}
 	q.next, q.stop = iter.Pull2(source.MergeSourceEventsByCompletion(run, gens))
 	ok = true
@@ -413,6 +451,30 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			return out, err
 		}
 	}
+	var offline map[uint64]bool
+	if r.build.Ordering == string(schema.Isolated) {
+		offline = make(map[uint64]bool)
+	}
+	waitForRetry := func(fetch *runtimeLiveFetchError) error {
+		if offline != nil {
+			offline[fetch.chainID] = true
+			return r.liveNotify(ctx, "fetch-retry", fetch.chainID, store.ManagedLiveHead{})
+		}
+		if err := r.liveNotify(ctx, "fetch-retry", 0, store.ManagedLiveHead{}); err != nil {
+			return err
+		}
+		return r.liveWait(ctx, true)
+	}
+	sealQueue := func() error {
+		q.close()
+		q = nil
+		var err error
+		learned, err = epoch.Seal(ctx)
+		if err == nil {
+			epoch = nil
+		}
+		return err
+	}
 	restart := func() error {
 		for {
 			var e error
@@ -420,7 +482,7 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			if e != nil {
 				return e
 			}
-			q, e = r.newLiveQueue(epoch.Context(), epoch, c, known)
+			q, e = r.newLiveQueue(epoch.Context(), epoch, c, known, offline)
 			if e == nil {
 				seen = map[uint64]bool{}
 				return nil
@@ -448,10 +510,7 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 					return e
 				}
 			}
-			if e = r.liveNotify(ctx, "fetch-retry", 0, store.ManagedLiveHead{}); e != nil {
-				return e
-			}
-			if e = r.liveWait(ctx, true); e != nil {
+			if e = waitForRetry(fetch); e != nil {
 				return e
 			}
 			c, e = r.domains.Control(ctx)
@@ -471,13 +530,9 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 		r.transitioning.Store(true)
 		ready(false)
 		out.Ready = false
-		q.close()
-		q = nil
-		learned, e = epoch.Seal(ctx)
-		if e != nil {
+		if e = sealQueue(); e != nil {
 			return e
 		}
-		epoch = nil
 		c, e = r.domains.Control(ctx)
 		if e != nil {
 			return e
@@ -487,10 +542,7 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 				return e
 			}
 		}
-		if e = r.liveNotify(ctx, "fetch-retry", 0, store.ManagedLiveHead{}); e != nil {
-			return e
-		}
-		if e = r.liveWait(ctx, true); e != nil {
+		if e = waitForRetry(fetch); e != nil {
 			return e
 		}
 		c, e = r.domains.Control(ctx)
@@ -543,16 +595,28 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 		i := item.index
 		id := runtimeChainID(r.build.Chains[i])
 		event := item.event
+		switch event.Type {
+		case "fetch-retry":
+			if e = r.liveNotify(ctx, "fetch-retry", id, store.ManagedLiveHead{}); e != nil {
+				return out, e
+			}
+			continue
+		case "rpc-recovered":
+			delete(offline, id)
+			if e = sealQueue(); e != nil {
+				return out, e
+			}
+			if e = restart(); e != nil {
+				return out, e
+			}
+			continue
+		}
 		if item.head {
 			seen[id] = true
 			if !c.Serving && len(seen) == len(r.build.Chains) && runtimeCanActivate(c) {
-				q.close()
-				q = nil
-				learned, e = epoch.Seal(ctx)
-				if e != nil {
+				if e = sealQueue(); e != nil {
 					return out, e
 				}
-				epoch = nil
 				if e = activate(); e != nil {
 					return out, e
 				}
@@ -647,13 +711,9 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			r.transitioning.Store(true)
 			ready(false)
 			out.Ready = false
-			q.close()
-			q = nil
-			learned, e = epoch.Seal(ctx)
-			if e != nil {
+			if e = sealQueue(); e != nil {
 				return out, e
 			}
-			epoch = nil
 			if c.Serving {
 				if e = r.domains.PauseRuntime(ctx, r.nextID("reorg-pause")); e != nil {
 					return out, e
