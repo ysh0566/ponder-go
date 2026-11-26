@@ -3,7 +3,9 @@ package store
 import "github.com/ysh0566/ponder-go/schema"
 
 // These finalized modes commit each batch and its safe receipt together.
-func (o ManagedLiveOptions) atomicFinality() bool { return o.runtimeOmnichain || o.runtimeIsolated }
+func (o ManagedLiveOptions) atomicFinality() bool {
+	return o.runtimeOmnichain || (o.runtimeIsolated && !o.liveContinuous)
+}
 
 // Only the RuntimeRunner constructor enables this separate on-disk format.
 // Legacy finite, recovery and live-domain APIs continue to require multichain.

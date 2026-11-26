@@ -258,7 +258,7 @@ func validateLiveControl(c ManagedLiveControl) error {
 	if err := validateLivePositions(c); err != nil {
 		return err
 	}
-	if c.Bootstraps != 0 && (!isLiveRuntimeVersion(c.Version) || (c.Bootstraps != 1 && (c.Version != managedLiveIsolatedVersion || c.Bootstraps != uint64(len(c.Cursors)))) || c.Bootstraps > c.Batches) {
+	if c.Bootstraps != 0 && (!isLiveRuntimeVersion(c.Version) || (c.Bootstraps != 1 && ((c.Version != managedLiveIsolatedVersion && c.Version != managedLiveIsolatedContinuousVersion) || c.Bootstraps != uint64(len(c.Cursors)))) || c.Bootstraps > c.Batches) {
 		return ErrManagedLiveBatchConflict
 	}
 	if (c.Serving || c.Activations != 0) && (!isLiveRuntimeVersion(c.Version) || c.Serving && c.Activations == 0) {
@@ -386,7 +386,7 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 		if err != nil || pe != nil || !ok || !extends || cp.BlockTimestamp < previous.BlockTimestamp || cp.BlockNumber > opts.EndBlocks[cp.ChainID] {
 			return nil, nil, c, fmt.Errorf("managed block must extend its exact acquired cursor without gaps")
 		}
-		if opts.runtimeIsolated {
+		if opts.runtimeIsolated && !opts.liveContinuous {
 			final := opts.FinalizedHeads[cp.ChainID]
 			_, limit, err := normalizeLiveHead(final)
 			if err != nil || cp.BlockNumber > limit.BlockNumber || cp.BlockTimestamp > limit.BlockTimestamp || (cp.BlockNumber == limit.BlockNumber && block.Head != final) {

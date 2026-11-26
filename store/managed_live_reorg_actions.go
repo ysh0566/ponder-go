@@ -35,8 +35,8 @@ func liveDurableBaselines(ops []managedLiveOperation) (map[uint64]ManagedLiveHea
 	return baselines, nil
 }
 
-// undoJournal consumes rows in descending actual execution order across ALL
-// chains. SQL NULL means an original insert: undo deletes without reinserting.
+// Undo visits the selected rows in reverse execution order. SQL NULL represents
+// an original insert, which undo deletes without reinserting a prior value.
 func liveReorgUndoRows(rows []managedLiveJournalEntry) Result {
 	result := Result{Rows: make([]map[string]any, 0, len(rows))}
 	for i := len(rows) - 1; i >= 0; i-- {
@@ -50,10 +50,9 @@ func liveReorgUndoRows(rows []managedLiveJournalEntry) Result {
 	return result
 }
 
-// ApplyReorg atomically undoes the global business suffix and every affected
+// ApplyReorg atomically undoes the affected business segments and every affected
 // private cursor, archives its journal evidence, and records an exact receipt.
 // Public latest/finalized stay untouched. No sync-domain transaction is opened.
-// The v3 constructors separately handle nonempty recovery; this is not runtime.
 func (m *ManagedLive) ApplyReorg(ctx context.Context, in ManagedLiveReorg, acquired *ManagedLiveReorgAcquisition) (ManagedLiveReorgResult, error) {
 	if err := m.usable(ctx); err != nil {
 		return ManagedLiveReorgResult{}, err
@@ -125,11 +124,17 @@ func (m *ManagedLive) ApplyReorg(ctx context.Context, in ManagedLiveReorg, acqui
 	if _, err := s.undoJournal(ctx, tx, liveReorgUndoRows(plan.Undo)); err != nil {
 		return ManagedLiveReorgResult{}, err
 	}
-	if err := tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_journal")+" WHERE operation_id>$1", plan.JournalBoundary); err != nil {
-		return ManagedLiveReorgResult{}, err
-	}
-	if err := tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_live_segments")+" WHERE ordinal>$1", plan.After.Tail); err != nil {
-		return ManagedLiveReorgResult{}, err
+	if m.opts.runtimeIsolated && m.opts.liveContinuous {
+		if err := s.deleteIsolatedSegments(ctx, tx, plan.Removed); err != nil {
+			return ManagedLiveReorgResult{}, err
+		}
+	} else {
+		if err := tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_journal")+" WHERE operation_id>$1", plan.JournalBoundary); err != nil {
+			return ManagedLiveReorgResult{}, err
+		}
+		if err := tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_live_segments")+" WHERE ordinal>$1", plan.After.Tail); err != nil {
+			return ManagedLiveReorgResult{}, err
+		}
 	}
 	for _, chain := range m.opts.Chains {
 		cp, err := checkpoint.Decode(liveCursorCheckpoint(plan.After, chain.ID))

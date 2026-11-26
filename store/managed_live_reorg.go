@@ -67,7 +67,7 @@ type managedLiveReorgEvidence struct {
 }
 
 func normalizeLiveReorg(opts ManagedLiveOptions, in ManagedLiveReorg) (ManagedLiveReorg, error) {
-	if opts.runtimeIsolated {
+	if opts.runtimeIsolated && !opts.liveContinuous {
 		return in, fmt.Errorf("bounded finalized isolated has no live reorg transition")
 	}
 	if !liveID(in.ID) || !liveID(in.ExpectedLastOperation) || in.ID == in.ExpectedLastOperation || in.Generation == 0 || in.Generation >= math.MaxInt64 || in.ExpectedTail >= math.MaxInt64-1 {
@@ -233,10 +233,20 @@ func planLiveReorg(opts ManagedLiveOptions, c ManagedLiveControl, baselines map[
 		keep = active[cut-1].Ordinal
 		plan.JournalBoundary = active[cut-1].Journal.After
 	}
+	if opts.runtimeIsolated {
+		// The highest allocated ordinal can belong to a surviving or already
+		// finalized peer. A chain-local rollback never rewinds that watermark.
+		keep = c.Tail
+	}
 	if keep < c.SafeOrdinal {
 		return plan, ErrManagedLiveDeepReorg
 	}
-	plan.Removed = append([]ManagedLiveSegment(nil), active[cut:]...)
+	for _, segment := range active[cut:] {
+		block, _ := checkpoint.Decode(segment.Block.Head.Checkpoint)
+		if !opts.runtimeIsolated || block.ChainID == cp.ChainID {
+			plan.Removed = append(plan.Removed, segment)
+		}
+	}
 	cursors := cloneLiveHeads(c.Cursors)
 	positions := cloneLiveCheckpoints(c.LogicalCursors)
 	for i := len(plan.Removed) - 1; i >= 0; i-- {
@@ -253,8 +263,12 @@ func planLiveReorg(opts ManagedLiveOptions, c ManagedLiveControl, baselines map[
 	if cursors[cp.ChainID] != ancestor {
 		return plan, ErrManagedLiveBatchConflict
 	}
+	var removed map[string]bool
+	if opts.runtimeIsolated {
+		removed = segmentCheckpoints(plan.Removed)
+	}
 	for _, row := range journal {
-		if row.ID > plan.JournalBoundary {
+		if removed[row.Checkpoint] || (removed == nil && row.ID > plan.JournalBoundary) {
 			plan.Undo = append(plan.Undo, row)
 		}
 	}
