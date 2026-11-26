@@ -189,7 +189,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 				}
 			}
 			from, e := uintQuantity(filter.FilterFromBlock(f))
-			if e != nil || ((!o.SourceCheckpoints || b.Ordering == "omnichain") && from == 0) {
+			if e != nil || (!o.SourceCheckpoints && from == 0) {
 				return nil, fmt.Errorf("runtime-v5 requires startBlock>=1")
 			}
 			first = min(first, from)

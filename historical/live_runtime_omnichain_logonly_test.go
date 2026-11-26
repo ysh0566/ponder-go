@@ -44,33 +44,7 @@ func omniLogOnlyBuild(t *testing.T, g omniLogsGolden, p *finiteRPC, handlers map
 }
 func omniLogOnlyRangeBuild(t *testing.T, g omniLogsGolden, p *finiteRPC, handlers map[string]indexing.Handler, end uint64) *config.SourceIndexingBuild {
 	t.Helper()
-	chains := map[string]any{"one": map[string]any{"id": 1, "rpc": p.server.URL + "/1", "reorgWindow": 0, "cacheRpcRequests": true}, "two": map[string]any{"id": 2, "rpc": p.server.URL + "/2", "reorgWindow": 0, "cacheRpcRequests": true}}
-	selected := map[string]any{"one": map[string]any{}, "two": map[string]any{}}
-	contracts := map[string]any{}
-	for _, kind := range []string{"A", "B"} {
-		contracts["Token"+kind] = map[string]any{"abi": []any{g.ABIItem}, "address": g.Address, "chain": selected, "startBlock": 1, "endBlock": end}
-	}
-	raw, err := json.Marshal(map[string]any{"ordering": "omnichain", "chains": chains, "contracts": contracts})
-	if err != nil {
-		t.Fatal(err)
-	}
-	cfg, err := config.ParseSourceConfiguration(raw)
-	if err != nil {
-		t.Fatal(err)
-	}
-	base, err := config.BuildSourceConfig(cfg, config.SourceBuildOptions{RPCMaxConcurrency: 2})
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, r := range base.RPCClients() {
-		r.RequestsPerSecond = 0
-		r.Retries = 0
-	}
-	build, err := config.BuildSourceIndexing(context.Background(), cfg, base, []config.SourceIndexingFunction{{Name: "TokenA:Value", Fn: handlers["A"]}, {Name: "TokenB:Value", Fn: handlers["B"]}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	return build
+	return omniLogsBuildRange(t, g, p, handlers, 1, end, false)
 }
 func TestRuntimeOmnichainLogOnlySource(t *testing.T) {
 	fixtures := loadOmniLogOnlyGolden(t)

@@ -188,13 +188,24 @@ func omniLogsRPCWithHeaders(t *testing.T, g omniLogsGolden, header func(uint64, 
 }
 func omniLogsBuild(t *testing.T, g omniLogsGolden, p *finiteRPC, handlers map[string]indexing.Handler) *config.SourceIndexingBuild {
 	t.Helper()
+	return omniLogsBuildRange(t, g, p, handlers, 1, 3, true)
+}
+
+func omniLogsBuildRange(t *testing.T, g omniLogsGolden, p *finiteRPC, handlers map[string]indexing.Handler, start, end uint64, closing bool) *config.SourceIndexingBuild {
+	t.Helper()
 	chainConfig := map[string]any{"one": map[string]any{"id": 1, "rpc": p.server.URL + "/1", "reorgWindow": 0, "cacheRpcRequests": true}, "two": map[string]any{"id": 2, "rpc": p.server.URL + "/2", "reorgWindow": 0, "cacheRpcRequests": true}}
 	chainSelection := map[string]any{"one": map[string]any{}, "two": map[string]any{}}
 	contracts := map[string]any{}
 	for _, kind := range []string{"A", "B"} {
-		contracts["Token"+kind] = map[string]any{"abi": []any{g.ABIItem}, "address": g.Address, "chain": chainSelection, "startBlock": 1, "endBlock": 3}
+		contracts["Token"+kind] = map[string]any{"abi": []any{g.ABIItem}, "address": g.Address, "chain": chainSelection, "startBlock": start, "endBlock": end}
 	}
-	raw, err := json.Marshal(map[string]any{"ordering": "omnichain", "chains": chainConfig, "contracts": contracts, "blocks": map[string]any{"Blocks": map[string]any{"chain": chainSelection, "startBlock": 1, "endBlock": 3, "interval": 1}}})
+	source := map[string]any{"ordering": "omnichain", "chains": chainConfig, "contracts": contracts}
+	functions := []config.SourceIndexingFunction{{Name: "TokenA:Value", Fn: handlers["A"]}, {Name: "TokenB:Value", Fn: handlers["B"]}}
+	if closing {
+		source["blocks"] = map[string]any{"Blocks": map[string]any{"chain": chainSelection, "startBlock": start, "endBlock": end, "interval": 1}}
+		functions = append([]config.SourceIndexingFunction{{Name: "Blocks:block", Fn: handlers["block"]}}, functions...)
+	}
+	raw, err := json.Marshal(source)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -210,7 +221,7 @@ func omniLogsBuild(t *testing.T, g omniLogsGolden, p *finiteRPC, handlers map[st
 		r.RequestsPerSecond = 0
 		r.Retries = 0
 	}
-	b, err := config.BuildSourceIndexing(context.Background(), cfg, base, []config.SourceIndexingFunction{{Name: "Blocks:block", Fn: handlers["block"]}, {Name: "TokenA:Value", Fn: handlers["A"]}, {Name: "TokenB:Value", Fn: handlers["B"]}})
+	b, err := config.BuildSourceIndexing(context.Background(), cfg, base, functions)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -105,7 +105,7 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 	for _, chain := range opts.Chains {
 		start, ok := in.StartBlocks[chain.ID]
 		if !ok || (!opts.runtimeInitial && start == 0) || start > opts.EndBlocks[chain.ID] {
-			return nil, fmt.Errorf("first runtime closure requires start>=1 and start<=finite end")
+			return nil, fmt.Errorf("invalid start block for chain %d: require a start at or before the configured end and source checkpoints for block zero", chain.ID)
 		}
 		opts.runtimeStarts[chain.ID] = start
 	}

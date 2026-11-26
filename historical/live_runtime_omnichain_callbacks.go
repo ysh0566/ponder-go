@@ -41,8 +41,8 @@ func validateOmnichainCallbacks(callbacks []indexing.Object) error {
 	}
 	start, se := uintQuantity(filter.FilterFromBlock(closing))
 	end, ee := uintQuantity(filter.FilterToBlock(closing))
-	if se != nil || ee != nil || start == 0 || end < start {
-		return fmt.Errorf("omnichain block callback requires a finite startBlock>=1 range")
+	if se != nil || ee != nil || end < start {
+		return fmt.Errorf("omnichain block callback requires a finite range with startBlock <= endBlock")
 	}
 	for _, cb := range callbacks {
 		f := cb["filter"].(map[string]any)
@@ -136,8 +136,8 @@ func validateOmnichainLogOnlyCallbacks(callbacks []indexing.Object) error {
 		f := cb["filter"].(map[string]any)
 		from, fe := uintQuantity(filter.FilterFromBlock(f))
 		to, te := uintQuantity(filter.FilterToBlock(f))
-		if cb["type"] != "contract" || f["type"] != "log" || fe != nil || te != nil || from == 0 || to < from {
-			return fmt.Errorf("log-only omnichain requires finite static ABI log ranges with startBlock>=1")
+		if cb["type"] != "contract" || f["type"] != "log" || fe != nil || te != nil || to < from {
+			return fmt.Errorf("log-only omnichain requires finite static ABI log ranges with startBlock <= endBlock")
 		}
 		if i == 0 {
 			start, end = from, to
