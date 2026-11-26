@@ -55,7 +55,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 
 ERC-20 转账和工厂创建交易对这两个上游端到端场景均已移植。Go 回调处理自建 Anvil 上的真实合约事件，测试通过 HTTP 核对 PostgreSQL 和 PGlite 上的结果。[端到端测试](runtime/application_source_test.go)
 
-8 个上游模拟应用中，`feature-multichain` 已完成固定种子的历史余额对账。Go 索引器回放 Ethereum、Optimism 和 Base 的 11,756 条 WETH 存款记录，逐行核对 332 个地址的合并余额，其中 8 个地址在多条链上出现。该应用仍缺随机故障与重启验收，其余 7 个应用仍缺参考表对账。rETH 和 Uniswap 也还没有在相同数据、数据库和 RPC 条件下的回填性能对比。[复现三链对账](docs/USAGE.md#复现三链-weth-历史对账) · [应用清单](docs/RUNTIME_SUPPORT.md#application-verification)
+8 个上游模拟应用中，已有两个完成固定历史区间对账。`feature-multichain` 回放三条链的 11,756 条 WETH 存款，核对 332 个地址的合并余额。`reference-erc20` 回放 Ethereum 上的 4,970 条 Adventure Gold 事件，校验余额、授权额度和两张事件历史表，共 6,925 行。该用例还按上游种子在 39 个高度首次读取区块时注入故障，验证重试后的数据。其余 6 个应用仍待逐表对账，这两个应用的完整故障与重启场景也待验收。rETH 和 Uniswap 的同条件回填性能对比仍待完成。[三链余额对账](docs/USAGE.md#复现三链-weth-历史对账) · [ERC-20 四表对账](docs/USAGE.md#复现-erc-20-历史对账) · [应用清单](docs/RUNTIME_SUPPORT.md#application-verification)
 
 固定上游共有 **905 条测试记录**。其中 **883 条已移植为 Go 用例并执行，866 条通过，17 条服务商 RPC 用例失败**。17 条失败中，16 条断言服务商对区块范围或响应大小的限制，1 条要求查到 Swell 指定区间的 58 条历史日志。另有 5 条保留的 SDK 用例通过。自建节点的实测结果已逐项记录。其余为上游跳过 10 条、TODO 2 条，以及已退出 Go 支持范围的旧缓存迁移 5 条。[逐例台账](parity/test-ledger.json) · [RPC 实测结果](parity/runs/provider-policy-assertions/RESULT.md)
 

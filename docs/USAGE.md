@@ -1134,3 +1134,13 @@ go test -tags simulation -count=1 -timeout=1h -v -run '^TestSimulationFeatureMul
 ```
 
 测试在 PostgreSQL 和 PGlite 上分别创建业务表，检查三条链交付的事件数、全局顺序和全部地址的余额。参考表由固定上游版本的 WETH 回调生成。种子、归档来源、复算参考表和更新历史数据的命令见[验收记录](../parity/runs/native-seeded-multichain/RESULT.md)。
+
+## 复现 ERC-20 历史对账
+
+`reference-erc20` 模拟应用索引 Adventure Gold 在 Ethereum 主网第 13,145,000 至 13,147,000 块的转账和授权事件。运行前配置测试专用的 `PONDER_TEST_POSTGRES` 和 PGlite。Go 回放读取随仓库提供的区块和日志。
+
+```sh
+go test -tags simulation -count=1 -timeout=1h -v -run '^TestSimulationReferenceERC20$' ./runtime
+```
+
+测试按种子在 39 个区块高度首次读取时返回错误。索引器完成重试和回填后，测试按主键比较每个账户余额、每个地址组合的授权额度，以及每条事件的 ID、金额、时间和参与地址。该模拟应用按上游回调规则将新账户的首笔余额写为零，后续转账再增减。参考数据的生成命令和四张表的行数见[验收记录](../parity/runs/native-seeded-erc20/RESULT.md)。
