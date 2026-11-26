@@ -27,9 +27,11 @@ This matrix lists verified native Go features and the product capabilities still
 
 Of the 883 upstream cases ported to Go, 866 passed and 17 provider RPC cases failed in separate live runs. Five retained SDK cases also passed. The last recorded full Go ordinary and race suites each covered 30 packages. [Source inventory](../parity/test-ledger.json) · [Full module regression](../parity/runs/complete-module-regression/RESULT.md)
 
-The two pinned end-to-end declarations run native Go handlers against ERC-20 mint and factory swap activity. Both applications passed on PostgreSQL and PGlite. The eight seeded simulation applications still need a Go harness and comparison with the reference tables. They are `assessment`, `super-assessment`, `basepaint`, `feature-multichain`, `project-uniswap-v3-flash`, `reference-erc20`, `the-compact` and `uniswap-v4`. The rETH and Uniswap benchmark workloads still need comparable upstream and Go measurements using the same data, database and RPC conditions. [Application tests](../runtime/application_source_test.go) · [Native scope audit](../parity/runs/native-go-indexer-reaudit/RESULT.md)
-
 The writer’s Prometheus registry reports cumulative historical extraction and transformation time in milliseconds by step. The atomic Go indexer measures finalized backfill through first catch-up. The dual-store runner measures its historical pipeline, including SQL row formatting on cached scans and raw event building on cached and in-memory scans. Live polls and live replays leave the historical durations unchanged. A separate query process has its own registry. [Metrics guide](USAGE.md#查看历史回填耗时) · [Verification](../parity/runs/native-historical-duration-metrics/RESULT.md)
+
+## Application verification
+
+The ERC-20 mint and factory swap end-to-end cases exercise native handlers on Anvil with PostgreSQL and PGlite. The first historical simulation comparison replays all three `feature-multichain` ranges with the Omnichain ordering and cache policy selected by a pinned seed. The Go account table is compared with the original handler's PostgreSQL results for all 332 addresses. Random faults and restarts for this application remain open. Reference-table comparisons remain open for `assessment`, `super-assessment`, `basepaint`, `project-uniswap-v3-flash`, `reference-erc20`, `the-compact`, and `uniswap-v4`. The rETH and Uniswap benchmarks still need measurements under equivalent data, database and RPC conditions. [End-to-end cases](../runtime/application_source_test.go) · [Simulation evidence](../parity/runs/native-seeded-multichain/RESULT.md)
 
 ## Callback RPC methods
 
