@@ -295,7 +295,7 @@ head "$model_dir/model.go"
 
 ### 选择 Go 项目模板
 
-`ponder init --template <名称> <新目录>` 会把处理函数、ABI 和表定义放入自己的 Go 项目。省略 `--template` 或选择 `go`、`erc20` 时生成本地 ERC-20 余额示例。下面四个模板的 `network.json` 预填了 Ponder 0.18.2 对应示例的链、合约地址和区块范围。
+`ponder init --template <名称> <新目录>` 会生成 Go 处理函数、表定义及所选示例用到的 ABI。省略 `--template` 或选择 `go`、`erc20` 时生成本地 ERC-20 余额示例。下列模板的 `network.json` 预填了 Ponder 0.18.2 对应示例的链、监听地址和起始区块。
 
 | 模板 | 参考网络与区块 | 可查询的数据 |
 | --- | --- | --- |
@@ -303,6 +303,8 @@ head "$model_dir/model.go"
 | `erc1155` | Ethereum 主网，从 12,129,118 开始 | `token_balance` 按持有人和代币 ID 记录余额。批量转账的每一项都有独立的 `transfer_event`。 |
 | `erc4626` | Ethereum 主网，15,774,471 至 18,712,028 | `account` 和 `allowance` 保存份额余额与授权金额，另有转账、授权、存入和取出事件表。 |
 | `factory` | Sepolia，从 4,121,269 开始 | 从 Llama 工厂创建事件中分别发现 Core 和 Policy 地址，`llama_event` 保存对应子合约的 `ActionCreated` 和 `Initialized` 事件。 |
+| `accounts` | Ethereum 主网，首次启动时的链头（含） | 按收款地址汇总 BeaverBuilder 发出交易的 wei 总额和最近一次交易的 calldata。转入 BeaverBuilder 的原生币转账会写入应用日志。 |
+| `proxy` | Ethereum 主网，从 17,942,156 开始 | 索引 Astaria Router 代理地址上的 `Liquidation` 和 `OwnershipTransferred`，分别记录清算人和新所有人。 |
 
 下面的命令使用可读取上述历史区间的 Arbitrum RPC 和 PostgreSQL 启动 ERC-721 项目。
 
@@ -315,7 +317,15 @@ export DATABASE_URL="$INDEXER_DATABASE_URL"
 ponder start --schema ponder_go_nfts
 ```
 
-`PONDER_RPC_URL_<链ID>` 指向节点。`PONDER_LOCAL_RPC_URL` 和 `PONDER_LOCAL_CONTRACT` 可以分别覆盖节点和合约地址。切换到自建链时，同时将 `network.json` 中的 `name`、`id`、`startBlock` 和可选的 `endBlock` 改为该链及部署区间。工厂模板的 `address` 填工厂地址。Go 回调在 `handlers.go` 中，启动和查询服务在 `main.go` 中。使用 PGlite 时执行 `npm install` 安装驱动，再按本地 PGlite 一节启动。[链上事件验证](../parity/runs/native-project-templates/RESULT.md)
+`PONDER_RPC_URL_<链ID>` 指向节点。`PONDER_LOCAL_RPC_URL` 和 `PONDER_LOCAL_CONTRACT` 可以分别覆盖节点和监听地址。切换到自建链时，同时将 `network.json` 中的 `name`、`id`、`startBlock` 和可选的 `endBlock` 改为该链及部署区间。工厂模板的 `address` 填工厂地址，账户模板填被观察的账户，代理模板填代理地址。Go 回调在 `handlers.go` 中，启动和查询服务在 `main.go` 中。使用 PGlite 时执行 `npm install` 安装驱动，再按本地 PGlite 一节启动。[链上事件验证](../parity/runs/native-project-templates/RESULT.md)
+
+账户项目使用支持 `callTracer` 的节点来识别转入的原生币。首次用部署命名空间启动时，`"startBlock": "latest"` 将节点当前高度保存到数据库；同一部署重启时会补齐停机期间的区块。需要从指定高度回填时，在新部署的 `network.json` 填入该高度的整数。可以通过以下 SQL 核对累计金额和最后一次调用数据。
+
+```sql
+SELECT "to", value, data FROM transaction_events ORDER BY value DESC;
+```
+
+代理模板使用代理和实现合约的事件声明解码代理地址上的日志。查询 `liquidation_event.liquidator` 或 `ownership_transfer_event.new_owner` 可取得事件参数。实现合约被直接调用时从自身地址发出的日志会被地址过滤器排除。[账户和代理验证](../parity/runs/native-account-proxy-templates/RESULT.md)
 
 ### 同一条链上记录匹配多个回调
 

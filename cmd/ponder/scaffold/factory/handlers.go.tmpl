@@ -18,7 +18,7 @@ var coreABI []byte
 //go:embed policy.json
 var policyABI []byte
 
-func project(network networkConfig, _ *logging.Logger) ([]config.Contract, map[string]runtime.Handler) {
+func project(network networkConfig, _ *logging.Logger) (config.Config, map[string]runtime.Handler) {
 	created := abi.Event{Name: "LlamaInstanceCreated", Type: "event", Inputs: []abi.Parameter{
 		{Name: "deployer", Type: "address", Indexed: true}, {Name: "name", Type: "string", Indexed: true},
 		{Name: "llamaCore", Type: "address"}, {Name: "llamaExecutor", Type: "address"},
@@ -30,7 +30,7 @@ func project(network networkConfig, _ *logging.Logger) ([]config.Contract, map[s
 		contract.Factory = &factory.Config{Address: network.Address, Event: created, Parameter: &parameter}
 		return contract
 	}
-	return []config.Contract{child("LlamaCore", "llamaCore", coreABI), child("LlamaPolicy", "llamaPolicy", policyABI)},
+	return config.Config{Contracts: []config.Contract{child("LlamaCore", "llamaCore", coreABI), child("LlamaPolicy", "llamaPolicy", policyABI)}},
 		map[string]runtime.Handler{"LlamaCore:ActionCreated": record, "LlamaPolicy:Initialized": record}
 }
 

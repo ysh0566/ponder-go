@@ -13,21 +13,57 @@ import (
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/logging"
 	"github.com/ysh0566/ponder-go/query"
+	"github.com/ysh0566/ponder-go/rpc"
 	indexer "github.com/ysh0566/ponder-go/runtime"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
 
 type networkConfig struct {
-	Name       string  `json:"name"`
-	ID         uint64  `json:"id"`
-	Address    string  `json:"address"`
-	StartBlock uint64  `json:"startBlock"`
-	EndBlock   *uint64 `json:"endBlock"`
+	Name       string     `json:"name"`
+	ID         uint64     `json:"id"`
+	Address    string     `json:"address"`
+	StartBlock blockStart `json:"startBlock"`
+	EndBlock   *uint64    `json:"endBlock"`
+}
+
+type blockStart struct {
+	height uint64
+	latest bool
+}
+
+func (b *blockStart) UnmarshalJSON(raw []byte) error {
+	var tag string
+	if json.Unmarshal(raw, &tag) == nil && tag == "latest" {
+		*b = blockStart{latest: true}
+		return nil
+	}
+	var height *uint64
+	if err := json.Unmarshal(raw, &height); err != nil || height == nil {
+		return fmt.Errorf("startBlock must be a nonnegative integer or %q", "latest")
+	}
+	*b = blockStart{height: *height}
+	return nil
+}
+
+func (n networkConfig) head(ctx context.Context, rpcURL string) (uint64, error) {
+	client := rpc.New(rpcURL)
+	var id, head string
+	if err := client.Call(ctx, "eth_chainId", []any{}, &id); err != nil {
+		return 0, err
+	}
+	chainID, err := indexer.Number(id)
+	if err != nil || chainID != n.ID {
+		return 0, fmt.Errorf("expected chain %d, RPC returned %q", n.ID, id)
+	}
+	if err := client.Call(ctx, "eth_blockNumber", []any{}, &head); err != nil {
+		return 0, err
+	}
+	return indexer.Number(head)
 }
 
 func (n networkConfig) contract(name string, eventABI []byte) config.Contract {
-	return config.Contract{Name: name, Chain: n.Name, Address: []string{n.Address}, ABI: eventABI, StartBlock: n.StartBlock, EndBlock: n.EndBlock}
+	return config.Contract{Name: name, Chain: n.Name, Address: []string{n.Address}, ABI: eventABI, StartBlock: n.StartBlock.height, EndBlock: n.EndBlock}
 }
 
 func main() {
@@ -63,7 +99,7 @@ func run(ctx context.Context, logger *logging.Logger) error {
 		return fmt.Errorf("set %s or PONDER_LOCAL_RPC_URL to index events", rpcEnv)
 	}
 	if mode != "serve" && network.Address == "" {
-		return fmt.Errorf("set the contract address in network.json or PONDER_LOCAL_CONTRACT")
+		return fmt.Errorf("set the source address in network.json or PONDER_LOCAL_CONTRACT")
 	}
 	url, directory := os.Getenv("PONDER_LOCAL_DATABASE_URL"), os.Getenv("PONDER_PGLITE_DIR")
 	if url == "" && directory == "" {
@@ -121,8 +157,17 @@ func run(ctx context.Context, logger *logging.Logger) error {
 		}
 	}
 	chain := config.Chain{Name: network.Name, ID: network.ID, RPC: []string{rpcURL}}
-	contracts, handlers := project(network, logger)
-	worker, e := indexer.NewIndexerWithOptions(config.Config{Chains: []config.Chain{chain}, Contracts: contracts}, s, handlers, indexer.Options{Logger: logger})
+	if network.StartBlock.latest {
+		network.StartBlock.height, e = s.ResolveStartBlock(ctx, network.ID, func(ctx context.Context) (uint64, error) {
+			return network.head(ctx, rpcURL)
+		})
+		if e != nil {
+			return fmt.Errorf("resolve latest start block: %w", e)
+		}
+	}
+	cfg, handlers := project(network, logger)
+	cfg.Chains = []config.Chain{chain}
+	worker, e := indexer.NewIndexerWithOptions(cfg, s, handlers, indexer.Options{Logger: logger})
 	if e != nil {
 		return e
 	}

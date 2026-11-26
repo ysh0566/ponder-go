@@ -4,9 +4,43 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ysh0566/ponder-go/interval"
 	"strconv"
+
+	"github.com/ysh0566/ponder-go/interval"
 )
+
+// ResolveStartBlock pins the first observed head for a chain in this deployment.
+// A restart uses that same inclusive start even if the node has advanced.
+func (s *Store) ResolveStartBlock(ctx context.Context, chainID uint64, head func(context.Context) (uint64, error)) (uint64, error) {
+	if s.managedLive != nil {
+		return 0, s.managedLive.rejectLegacy(ctx)
+	}
+	table := s.internal("_ponder_go_meta")
+	key := fmt.Sprintf("start_block:%d", chainID)
+	read := "SELECT value FROM " + table + " WHERE key=$1"
+	rows, err := s.Backend.Query(ctx, read, key)
+	if err != nil {
+		return 0, err
+	}
+	if len(rows.Rows) == 0 {
+		height, err := head(ctx)
+		if err != nil {
+			return 0, err
+		}
+		if err := s.Backend.Exec(ctx, "INSERT INTO "+table+" (key,value) VALUES ($1,$2) ON CONFLICT (key) DO NOTHING", key, strconv.FormatUint(height, 10)); err != nil {
+			return 0, err
+		}
+		// Another process may have pinned a different head while the RPC was in flight.
+		rows, err = s.Backend.Query(ctx, read, key)
+		if err != nil {
+			return 0, err
+		}
+		if len(rows.Rows) == 0 {
+			return 0, fmt.Errorf("missing start block for chain %d", chainID)
+		}
+	}
+	return strconv.ParseUint(fmt.Sprint(rows.Rows[0]["value"]), 10, 64)
+}
 
 type SyncBlock struct {
 	ChainID    uint64          `json:"chainId"`

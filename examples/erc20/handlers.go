@@ -11,11 +11,11 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 )
 
-func project(network networkConfig, logger *logging.Logger) ([]config.Contract, map[string]indexer.Handler) {
+func project(network networkConfig, logger *logging.Logger) (config.Config, map[string]indexer.Handler) {
 	abi := `[{"type":"event","name":"Transfer","inputs":[{"name":"from","type":"address","indexed":true},{"name":"to","type":"address","indexed":true},{"name":"value","type":"uint256","indexed":false}]}]`
 	contract := network.contract("Token", []byte(abi))
 	contract.IncludeTransactionReceipts = true
-	return []config.Contract{contract}, map[string]indexer.Handler{"Token:Transfer": func(ctx context.Context, c *indexer.Context) error {
+	return config.Config{Contracts: []config.Contract{contract}}, map[string]indexer.Handler{"Token:Transfer": func(ctx context.Context, c *indexer.Context) error {
 		logger.Trace("Processing Token:Transfer", "chain_id", c.Chain.ID)
 		args := c.Event.Args.(map[string]any)
 		value := args["value"].(*big.Int)

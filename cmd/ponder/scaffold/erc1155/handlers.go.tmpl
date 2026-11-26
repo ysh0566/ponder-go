@@ -16,9 +16,9 @@ import (
 //go:embed abi.json
 var tokenABI []byte
 
-func project(network networkConfig, _ *logging.Logger) ([]config.Contract, map[string]runtime.Handler) {
+func project(network networkConfig, _ *logging.Logger) (config.Config, map[string]runtime.Handler) {
 	contract := network.contract("ERC1155", tokenABI)
-	return []config.Contract{contract}, map[string]runtime.Handler{
+	return config.Config{Contracts: []config.Contract{contract}}, map[string]runtime.Handler{
 		"ERC1155:TransferSingle": transfer,
 		"ERC1155:TransferBatch":  transfer,
 	}
