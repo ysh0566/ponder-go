@@ -177,6 +177,18 @@ histogram_quantile(0.95, sum by (le, chain, method) (rate(ponder_rpc_request_dur
 
 `runtime.LaunchApplication` 自动为写入进程接入统计，覆盖历史回填和实时追块。自行启动运行器时，可将 `metrics.WithRPC(ctx, registry)` 传入 `Run` 或 `RunIndexing`。通过来源配置创建的客户端使用配置中的链名。手动创建 `rpc.Client` 时，在发起请求前设置 `ChainName`。[请求与缓存测试](../rpc/custom_transport_test.go) · [运行中采集指标](../runtime/historical_metrics_test.go)
 
+### 查看实时区块延迟
+
+双库默认多链和 Isolated 的持续索引作业会在写入进程的 `/metrics` 提供两个按链名分组的直方图，单位为毫秒。成功提交一个轮询收到的链头后，`ponder_realtime_block_arrival_latency` 记录区块时间戳到本机收到区块的耗时，`ponder_realtime_latency` 记录接收区块到业务事务提交的耗时。前者受节点和写入主机的时钟偏差影响。每个接受的链头各产生一个样本，轮询重复结果、历史回填和为追上该链头而补读的中间区块均不计数。
+
+以下 PromQL 查询给出各链过去五分钟从接收到提交的第 95 百分位耗时。
+
+```promql
+histogram_quantile(0.95, sum by (chain, le) (rate(ponder_realtime_latency_bucket[5m])))
+```
+
+用 `runtime.LaunchApplication` 启动双库写入进程时会自动接入指标。直接调用运行器时，将 `metrics.WithRealtime(ctx, registry)` 传给 `Run`。若直接消费 `runtime.StreamSourceOmnichain` 的内置轮询流，应用可在处理成功后对带有 `BlockCallback` 的实时事件调用 `BlockCallback(true)`。每个确认函数只处理第一次调用。[实时延迟测试](../parity/runs/native-realtime-head-latency/RESULT.md)
+
 ### 查看发生分叉的链
 
 在写入进程的 `/metrics` 中，`ponder_realtime_reorg_total{chain="mainnet"}` 表示这个进程观测到并成功处理的 mainnet 分叉次数。一次分叉即使替换多个区块，或引起其他链的回调重放，也只给发生分叉的链加一。下面的 PromQL 查询估算每条链在过去一小时新增的次数。

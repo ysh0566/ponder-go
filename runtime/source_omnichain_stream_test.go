@@ -11,12 +11,14 @@ import (
 	"maps"
 	"os"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/ysh0566/ponder-go/checkpoint"
 	protocol "github.com/ysh0566/ponder-go/events"
 	"github.com/ysh0566/ponder-go/internal/testanvil"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
@@ -289,10 +291,17 @@ func TestSourceOmnichainStreamPolling(t *testing.T) {
 					Local: SourceLocalHistoricalOptions{ChainID: id, Requester: clients[id], Progress: progress, Children: NewSourceHistoricalChildren(nil), EventCallbacks: []protocol.Object{callback}, Store: source, CachedIntervals: cached},
 				})
 			}
+			registry := metrics.New()
+			ctx = metrics.WithRealtime(ctx, registry)
 			seen := []string{}
+			acks := map[uint64]int{}
 			for update, err := range StreamSourceOmnichain(ctx, history, nil) {
 				if err != nil {
 					t.Fatal(err)
+				}
+				if update.Source != nil && update.Source.BlockCallback != nil {
+					acks[update.ChainID]++
+					update.Source.BlockCallback(update.ChainID == 1)
 				}
 				for _, event := range update.Events {
 					cp, err := checkpoint.Decode(event["checkpoint"].(string))
@@ -300,6 +309,18 @@ func TestSourceOmnichainStreamPolling(t *testing.T) {
 						t.Fatal(err)
 					}
 					seen = append(seen, fmt.Sprintf("%s %d/%d", update.Type, cp.ChainID, cp.BlockNumber))
+				}
+			}
+			if !maps.Equal(acks, map[uint64]int{1: 1, 2: 1}) {
+				t.Fatalf("acknowledgements on polled heads: %v", acks)
+			}
+			body, err := registry.Collect(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, name := range []string{"ponder_realtime_latency", "ponder_realtime_block_arrival_latency"} {
+				if !strings.Contains(body, name+`_count{chain="chain1"} 1`+"\n") || strings.Contains(body, name+`_count{chain="chain2"}`) {
+					t.Fatalf("unexpected head acknowledgements in %s", body)
 				}
 			}
 			want := []string{"events 1/1", "block 2/1", "block 1/2", "block 2/2", "block 1/3", "block 2/3"}

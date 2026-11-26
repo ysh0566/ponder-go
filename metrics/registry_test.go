@@ -161,3 +161,57 @@ func TestReorgCounter(t *testing.T) {
 	r.ResetIndexing()
 	expectSamples(t, r, "ponder_realtime_reorg_total")
 }
+
+func TestRealtimeBlockLatency(t *testing.T) {
+	r := New()
+	ctx := WithRealtime(t.Context(), r)
+	mined := uint64(time.Now().Unix() + 10)
+	rejected := StartRealtimeBlock(ctx, "rejected", mined)
+	rejected(false)
+	rejected(true)
+	if StartRealtimeBlock(t.Context(), "one", mined) != nil {
+		t.Fatal("unexpected acknowledgement without a registry")
+	}
+	before := time.Now()
+	accept := StartRealtimeBlock(ctx, "one", mined)
+	afterArrival := time.Now()
+	time.Sleep(2 * time.Millisecond)
+	accept(true)
+	afterCommit := time.Now()
+	accept(true)
+	r.ResetIndexing()
+	families, err := r.Gather()
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := 0
+	for _, f := range families {
+		if f.GetName() != "ponder_realtime_block_arrival_latency" && f.GetName() != "ponder_realtime_latency" {
+			continue
+		}
+		seen++
+		if len(f.Metric) != 1 || len(f.Metric[0].Label) != 1 || f.Metric[0].Label[0].GetName() != "chain" || f.Metric[0].Label[0].GetValue() != "one" {
+			t.Fatalf("unexpected head series %v", f)
+		}
+		h := f.Metric[0].GetHistogram()
+		wantBounds := []float64{1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000}
+		got := make([]float64, 0, len(h.Bucket))
+		for _, bucket := range h.Bucket {
+			got = append(got, bucket.GetUpperBound())
+		}
+		if h.GetSampleCount() != 1 || !reflect.DeepEqual(got, wantBounds) {
+			t.Fatalf("count=%d bounds=%v", h.GetSampleCount(), got)
+		}
+		low, high := 2.0, float64(afterCommit.Sub(before))/float64(time.Millisecond)
+		if f.GetName() == "ponder_realtime_block_arrival_latency" {
+			low = float64(before.UnixMilli()) - float64(mined)*1000
+			high = float64(afterArrival.UnixMilli()) - float64(mined)*1000
+		}
+		if sum := h.GetSampleSum(); sum < low || sum > high {
+			t.Fatalf("%s sum=%f outside [%f,%f]", f.GetName(), sum, low, high)
+		}
+	}
+	if seen != 2 {
+		t.Fatalf("found %d realtime histograms", seen)
+	}
+}

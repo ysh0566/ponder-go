@@ -2,6 +2,7 @@ package historical
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/indexing"
@@ -72,11 +73,27 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 			}
 			r = runtimeOpen(t, backend, o)
 			registry := metrics.New()
-			measurement := metrics.WithHistorical(t.Context(), registry)
+			measurement := metrics.WithHistorical(metrics.WithRealtime(t.Context(), registry), registry)
 			out, err := r.Run(measurement)
 			if err != nil || !out.Completed || !out.Ready || out.LiveBlocks != 8 || out.HistoricalBlocks != 0 || commits != 8 || !advanced {
 				t.Fatalf("actual continuous runtime result=%+v commits=%d advanced=%v err=%v", out, commits, advanced, err)
 			}
+			checkAcceptedHeads := func(count int) {
+				t.Helper()
+				body, err := registry.Collect(t.Context())
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, chain := range []string{"one", "two"} {
+					for _, name := range []string{"ponder_realtime_latency", "ponder_realtime_block_arrival_latency"} {
+						want := fmt.Sprintf("%s_count{chain=%q} %d\n", name, chain, count)
+						if !strings.Contains(body, want) {
+							t.Fatalf("missing %q in metrics:\n%s", want, body)
+						}
+					}
+				}
+			}
+			checkAcceptedHeads(2) // Only the polled heads 2 and 4, excluding gap blocks 1 and 3.
 			c, err := r.Control(context.Background())
 			if err != nil || c.Version != "managed-live-continuous-v6" || c.Tail != 8 || c.SafeOrdinal != 0 {
 				t.Fatalf("continuous control=%+v err=%v", c, err)
@@ -118,6 +135,7 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 			if err != nil || !out.Completed || !out.Ready || !out.Recovered {
 				t.Fatalf("bounded end did not replay/reactivate: %+v %v", out, err)
 			}
+			checkAcceptedHeads(3) // Cold replay polls head 4 once more.
 			if len(visits) != 8 || len(ids) != 16 {
 				t.Fatalf("continuous replay: heads=%d operations=%d", len(visits), len(ids))
 			}
@@ -140,6 +158,44 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 				}
 			})
 
+		})
+	}
+}
+
+func TestRuntimeFailedHeadLatency(t *testing.T) {
+	for _, backend := range []string{"postgres", "pglite"} {
+		t.Run(backend, func(t *testing.T) {
+			continuousRoot(t)
+			state := &runtimeRPCState{latest: map[uint64]uint64{1: 1, 2: 1}}
+			p := controlledRuntimeRPC(t, state)
+			stop := errors.New("reject live head in handler")
+			b := runtimeBuild(t, p, 1, 1, func(ctx context.Context, a *indexing.HandlerArgs) error {
+				if err := finiteIncrement(ctx, a); err != nil {
+					return err
+				}
+				return stop
+			})
+			for _, chain := range b.Executable().Chains {
+				chain["reorgWindow"] = uint64(100)
+			}
+			f := newManagedFiniteFixture(t, backend, b)
+			var epochs []uint64
+			o := RuntimeOptions{Historical: runtimeFixtureInput(f), BuildID: "rejected-live-head", OpenID: "first", Requesters: runtimeFactory(p, &epochs), Live: &RuntimeLiveOptions{PollingInterval: time.Millisecond}}
+			r := runtimeOpen(t, backend, o)
+			defer func() {
+				if err := r.Close(context.Background()); err != nil {
+					t.Error(err)
+				}
+			}()
+			registry := metrics.New()
+			ctx := metrics.WithRealtime(t.Context(), registry)
+			if _, err := r.Run(ctx); err == nil || !strings.Contains(err.Error(), stop.Error()) {
+				t.Fatalf("failed live callback: %v", err)
+			}
+			body, err := registry.Collect(ctx)
+			if err != nil || strings.Contains(body, "ponder_realtime_") {
+				t.Fatalf("uncommitted head metrics=%q err=%v", body, err)
+			}
 		})
 	}
 }
