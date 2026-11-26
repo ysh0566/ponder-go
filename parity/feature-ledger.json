@@ -455,7 +455,7 @@
         "parity/runs/native-isolated-finalized/RESULT.md",
         "parity/runs/native-isolated-setup/RESULT.md"
       ],
-      "remaining": "The native atomic Store covers mixed-source live forks during provider failover, handler failure and cold reopen. A database engine exit during replacement mixed-source callbacks still needs coverage. The independent-store RuntimeRunner supports finalized ranges. It also commits setup per chain. Continuous tracking and unfinalized fork recovery remain open.",
+      "remaining": "Mixed-source engine recovery for the native atomic Store is covered by native-mixed-source-reorg. The separate business and sync stores follow native-isolated-live, which still needs mixed-source engine-interruption and prolonged outage coverage.",
       "native_test_files": [
         "runtime/isolated_indexer_test.go",
         "runtime/ordered_indexer_test.go"
@@ -1992,7 +1992,7 @@
         "parity/runs/native-default-multichain/RESULT.md",
         "parity/runs/native-mixed-source-reorg/RESULT.md"
       ],
-      "remaining": "A two-provider fork during mixed-source callbacks and its dependent peer replay are verified. Further overlapping callbacks, database engine exits during mixed events and separate-domain engine failures need coverage."
+      "remaining": "Mixed-source engine recovery during replacement CALL and dependent peer log transactions is covered by native-mixed-source-reorg. Further overlapping callbacks and separate-domain engine failures need coverage."
     },
     {
       "id": "native-dev-metrics",
@@ -3036,6 +3036,7 @@
       ],
       "native_test_files": [
         "runtime/mixed_source_reorg_test.go",
+        "runtime/mixed_source_engine_recovery_test.go",
         "runtime/provider_reorg_test.go"
       ],
       "upstream_sources": [
@@ -3044,9 +3045,10 @@
         "packages/core/src/rpc/index.ts"
       ],
       "evidence": [
-        "parity/runs/native-mixed-source-reorg/RESULT.md"
+        "parity/runs/native-mixed-source-reorg/RESULT.md",
+        "parity/runs/native-mixed-engine-recovery/RESULT.md"
       ],
-      "remaining": "The three native schedulers cover real pooled RPC failure and branch replacement with mixed factory, contract and account events. Database engine interruption during these callbacks and managed dual-store live Isolated or live Omnichain remain open."
+      "remaining": "The native engine interruption cases cover a replacement contract CALL in all three modes and the dependent peer log in the two global modes. Independent-store mixed-source engine failures and continuous dual-store Omnichain remain open."
     },
     {
       "id": "native-isolated-finalized",

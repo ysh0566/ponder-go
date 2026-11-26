@@ -547,6 +547,8 @@ base, err := config.BuildSourceConfig(sourceConfig, options)
 
 数据库在处理链重组时退出后，重新启动原 PostgreSQL 实例，或重新打开原 PGlite 数据目录。用相同的命名空间、模型、配置和处理函数重新创建 `store.Store` 和 `runtime.NewIndexer`。数据库会丢弃未提交的回调事务。索引器会重新处理受影响的区块，并按当前链上的区块哈希更新进度。普通多链和 Omnichain 均覆盖一条链被替换、另一条链保持不变时的恢复。[双后端恢复测试](../parity/runs/native-multichain-engine-recovery/RESULT.md)
 
+普通 Go 索引器按事件提交回调。一笔交易同时触发账户交易、合约日志、合约 CALL 和转账时，如果数据库在 CALL 回调写入后、提交前退出，重启会保留已提交的交易和日志，从 CALL 继续。在默认多链和 Omnichain 下，另一条链的日志回调若读取了旧分支的数据，也会用新分支的数据重新执行。Isolated 会保留另一条链的结果。[双链混合来源的中断位置与恢复结果](../parity/runs/native-mixed-engine-recovery/RESULT.md)
+
 ### 用 CLI 启动独立存储的多链索引器
 
 仓库中的 Go 示例监听两条链。每条链从区块 1 开始，每个区块向业务表 `indexed_block` 插入一行。同步缓存使用单独的存储。回调和 HTTP 服务在同一个 Go 进程中运行。[示例代码](../examples/managed-multichain/main.go) · [链配置](../examples/managed-multichain/ponder.json)
