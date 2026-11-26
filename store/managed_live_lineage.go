@@ -184,12 +184,15 @@ func (scan managedLogOnlyScan) pagedScanEnd(c ManagedLiveControl, id uint64) (Ma
 }
 
 func (m *ManagedLive) acquiredScanRanges(ctx context.Context, c ManagedLiveControl, get ManagedLiveHeaderReader) (map[uint64]managedLogOnlyScan, error) {
-	scans := make(map[uint64]managedLogOnlyScan, len(m.opts.Chains))
+	scans := make(map[uint64]managedLogOnlyScan, len(m.opts.runtimeLogFilters))
 	if get == nil {
 		return nil, ErrManagedLiveBatchConflict
 	}
 	for _, chain := range m.opts.Chains {
 		id := chain.ID
+		if m.opts.runtimeLogFilters[id] == nil {
+			continue
+		}
 		cut := c.HistoryCuts[id]
 		end, err := get(id, cut)
 		if err != nil {

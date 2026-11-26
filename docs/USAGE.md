@@ -556,7 +556,7 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并为每个来源声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
 
-在双库 Omnichain 中，如果所有链都只监听合约日志，可以直接订阅工厂子合约，无需注册区块回调。如果还要处理账户交易、转账或合约 CALL，则每条链都要注册一个逐块回调（`interval: 1`，`offset: 0`），其起止高度须覆盖工厂发现区间和子地址的事件区间。将下面的 `children` 赋给合约或账户声明的 `Address`，然后编译配置。示例用工厂的 `Created(address indexed child)` 事件发现子地址。
+在双库 Omnichain 中，只监听合约日志的链可以直接订阅工厂子合约。处理账户交易、转账或合约 CALL 的链还需要注册一个逐块回调（`interval: 1`，`offset: 0`），其起止高度须覆盖工厂发现区间和子地址的事件区间。将下面的 `children` 赋给合约或账户声明的 `Address`，然后编译配置。示例用工厂的 `Created(address indexed child)` 事件发现子地址。
 
 ```go
 created := abi.Event{Type: "event", Name: "Created", Inputs: []abi.Parameter{
@@ -586,7 +586,13 @@ contracts := map[string]config.ContractDeclaration[[]abi.Event, string, any]{
 
 纯静态日志索引会用每个匹配回调的 ABI 检查日志。例如，合约发出的日志缺少 `uint256` 参数时，无法解码它的回调会跳过。即使一条链的剩余日志全部被跳过，只要运行器能核对所有来源已扫描到各自的结束高度，索引器仍可就绪。扫描结束高度和最后提交的业务检查点可能不同。用同一配置重启后，已提交的回调不会重复执行。[区间末尾与重启测试](../parity/runs/native-omnichain-abi-tail/RESULT.md)
 
-在已最终确认的有限区间里，无论各链都注册逐块回调，还是各链只监听静态或工厂子合约的日志，都可以逐链设置 RPC 缓存。下面的配置让该链在内存中处理历史事件，回调直接从节点读取链上状态。其他链可保留默认设置。关闭缓存的链仍然保存业务数据和检查点。重启时使用相同的缓存设置和存储位置。[逐块回调缓存测试](../parity/runs/native-omnichain-cache-policy/RESULT.md)
+#### 在不同链上使用不同的回调
+
+例如，若要在 `mainnet` 同时索引账户交易和合约日志，在 `base` 只索引工厂子合约的日志，可将逐块来源（`interval: 1`、`offset: 0`）和账户来源的 `chain` 都设为 `mainnet`，在两条链上分别注册合约日志来源。逐块来源必须覆盖本链全部来源的起止高度。所有结束高度都须处于各链共同的最终确认范围内。
+
+运行器按同一跨链顺序提交两类回调。逐块链执行到结束区块。纯日志链的最后一个事件可以早于结束区块，运行器会核对两者之间的扫描记录。使用相同的配置、数据库和 `BuildID` 重启后，已提交的回调不会重复执行。[可运行的 Go 配置和恢复测试](../historical/omnichain_factory_test.go) · [双后端验证](../parity/runs/native-omnichain-mixed/RESULT.md)
+
+可以逐链设置 RPC 缓存。下面的配置让该链在内存中处理历史事件，回调直接从节点读取链上状态。其他链可保留默认设置。关闭缓存的链仍然保存业务数据和检查点。重启时使用相同的缓存设置和存储位置。[逐块回调缓存测试](../parity/runs/native-omnichain-cache-policy/RESULT.md)
 
 ```go
 cache := false

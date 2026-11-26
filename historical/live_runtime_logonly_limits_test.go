@@ -4,13 +4,12 @@ import (
 	"github.com/ysh0566/ponder-go/indexing"
 	"github.com/ysh0566/ponder-go/store"
 	"slices"
-	"strings"
 	"testing"
 )
 
 func TestRuntimeOmnichainLogOnlyPhysicalRange(t *testing.T) {
 	limit := uint64(store.ManagedLiveOmnichainBlockLimit(2))
-	for _, name := range []string{"boundary", "over", "sum-over", "overlap-counts-once", "huge", "mixed-preserved"} {
+	for _, name := range []string{"boundary", "over", "sum-over", "overlap-counts-once", "huge", "mixed"} {
 		t.Run(name, func(t *testing.T) {
 			ends := []uint64{limit / 2, limit - limit/2}
 			repeat := 1
@@ -32,16 +31,13 @@ func TestRuntimeOmnichainLogOnlyPhysicalRange(t *testing.T) {
 				}
 				groups = append(groups, callbacks)
 			}
-			if name == "mixed-preserved" {
-				groups[1] = []indexing.Object{{"type": "block", "filter": map[string]any{"type": "block"}}}
+			if name == "mixed" {
+				groups[1] = []indexing.Object{{"type": "block", "filter": map[string]any{"type": "block", "interval": 1, "offset": 0, "fromBlock": 1, "toBlock": ends[1]}}}
 			}
-			err := validateOmnichainCallbackModes(groups)
-			want := name != "mixed-preserved"
-			if (err == nil) != want {
-				t.Fatalf("physical budget %s err=%v", name, err)
-			}
-			if name == "mixed-preserved" && (err == nil || !strings.Contains(err.Error(), "mixed")) {
-				t.Fatalf("mixed rejection changed %v", err)
+			for _, callbacks := range groups {
+				if err := validateOmnichainCallbacks(callbacks); err != nil {
+					t.Fatal(err)
+				}
 			}
 		})
 	}

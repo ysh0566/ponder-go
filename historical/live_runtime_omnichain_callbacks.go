@@ -113,38 +113,6 @@ func validateOmnichainBlockPartition(events []indexing.Object, head store.Manage
 	return nil
 }
 
-// A source build chooses one persistence grammar for all configured chains.
-// Mixed closing-block and log-only chains are outside the log-only closure.
-func validateOmnichainCallbackModes(groups [][]indexing.Object) error {
-	closing, logOnly := false, false
-	for _, callbacks := range groups {
-		if len(callbacks) == 0 {
-			return nil
-		} // The caller retains the pinned empty-filter error.
-		block := false
-		for _, cb := range callbacks {
-			f, ok := cb["filter"].(map[string]any)
-			if !ok {
-				return nil
-			} // The per-chain validator reports the malformed filter.
-			block = block || f["type"] == "block"
-		}
-		closing = closing || block
-		logOnly = logOnly || !block
-	}
-	if closing && logOnly {
-		return fmt.Errorf("mixed closing-block and log-only omnichain chains are not supported")
-	}
-	if logOnly {
-		for _, callbacks := range groups {
-			if err := validateOmnichainLogOnlyCallbacks(callbacks); err != nil {
-				return err
-			}
-
-		}
-	}
-	return nil
-}
 func validateOmnichainLogOnlyCallbacks(callbacks []indexing.Object) error {
 	if len(callbacks) == 0 {
 		return fmt.Errorf("log-only omnichain requires ABI log callbacks")

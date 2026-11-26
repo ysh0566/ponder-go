@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/indexing"
 	"github.com/ysh0566/ponder-go/internal/testanvil"
@@ -67,7 +69,7 @@ func mineOmniFactory(t *testing.T, id uint64, birth int, child, decoy string, ti
 	return node
 }
 
-func omniFactoryBuild(t *testing.T, nodes map[uint64]omniFactoryNode, handler func(string) indexing.Handler, logOnly bool) *config.SourceIndexingBuild {
+func omniFactoryBuild(t *testing.T, nodes map[uint64]omniFactoryNode, handler func(string) indexing.Handler, logChains map[uint64]bool) *config.SourceIndexingBuild {
 	t.Helper()
 	both := map[string]any{"one": map[string]any{}, "two": map[string]any{}}
 	created := abi.Event{Type: "event", Name: "Created", Inputs: []abi.Parameter{
@@ -96,35 +98,64 @@ func omniFactoryBuild(t *testing.T, nodes map[uint64]omniFactoryNode, handler fu
 			"abi": childABI, "includeCallTraces": true,
 		}},
 	}
-	if logOnly {
-		delete(cfg, "blocks")
-		delete(cfg, "accounts")
-		contract := cfg["contracts"].(map[string]any)["Child"].(map[string]any)
-		contract["endBlock"] = 5
-		delete(contract, "includeCallTraces")
-		return compileOmniLogsConfig(t, cfg, []config.SourceIndexingFunction{{Name: "Child:Ping", Fn: handler("log")}})
+	callName := "Child.record()"
+	if len(logChains) > 0 {
+		contracts := cfg["contracts"].(map[string]any)
+		child := contracts["Child"].(map[string]any)
+		delete(child, "includeCallTraces")
+		if len(logChains) == 2 {
+			delete(cfg, "blocks")
+			delete(cfg, "accounts")
+			child["endBlock"] = 5
+			return compileOmniLogsConfig(t, cfg, []config.SourceIndexingFunction{{Name: "Child:Ping", Fn: handler("log")}})
+		}
+		closing, sparse := "one", "two"
+		if logChains[101] {
+			closing, sparse = sparse, closing
+		}
+		child["chain"] = map[string]any{closing: map[string]any{}, sparse: map[string]any{"endBlock": 5}}
+		cfg["blocks"].(map[string]any)["Head"].(map[string]any)["chain"] = closing
+		cfg["accounts"].(map[string]any)["Account"].(map[string]any)["chain"] = closing
+		trace := maps.Clone(child)
+		trace["chain"], trace["includeCallTraces"] = closing, true
+		contracts["ChildCalls"] = trace
+		callName = "ChildCalls.record()"
 	}
 	return compileOmniLogsConfig(t, cfg, []config.SourceIndexingFunction{
 		{Name: "Head:block", Fn: handler("block")},
 		{Name: "Child:Ping", Fn: handler("log")},
-		{Name: "Child.record()", Fn: handler("call")},
+		{Name: callName, Fn: handler("call")},
 		{Name: "Account:transaction:to", Fn: handler("tx")},
 		{Name: "Account:transfer:to", Fn: handler("transfer")},
 	})
 }
 
-func TestRuntimeOmnichainFactory(t *testing.T)    { testOmnichainFactory(t, false) }
-func TestRuntimeOmnichainLogFactory(t *testing.T) { testOmnichainFactory(t, true) }
+func TestRuntimeOmnichainFactory(t *testing.T) { testOmnichainFactory(t, nil) }
+func TestRuntimeOmnichainLogFactory(t *testing.T) {
+	testOmnichainFactory(t, map[uint64]bool{101: true, 202: true})
+}
 
-func testOmnichainFactory(t *testing.T, logOnly bool) {
+func TestRuntimeOmnichainMixedCallbacks(t *testing.T) {
+	for _, id := range []uint64{101, 202} {
+		t.Run(fmt.Sprintf("logs_on_%d", id), func(t *testing.T) {
+			testOmnichainFactory(t, map[uint64]bool{id: true})
+		})
+	}
+}
+
+func testOmnichainFactory(t *testing.T, logChains map[uint64]bool) {
 	one, two := []int{10, 40, 55, 70, 95}, []int{20, 30, 60, 75, 96}
-	if logOnly {
+	if len(logChains) == 1 {
+		// The last two event blocks tie on timestamp. Chain 101 must commit first.
+		two[3] = one[3]
+	}
+	if len(logChains) != 0 {
 		// Put the empty fifth block on both chains below the global finalized timestamp.
 		one, two = append(one, 110), append(two, 115)
 	}
 	nodes := map[uint64]omniFactoryNode{
-		101: mineOmniFactory(t, 101, 2, factoryChild, factoryOther, one, logOnly),
-		202: mineOmniFactory(t, 202, 1, factoryOther, factoryChild, two, logOnly),
+		101: mineOmniFactory(t, 101, 2, factoryChild, factoryOther, one, logChains[101]),
+		202: mineOmniFactory(t, 202, 1, factoryOther, factoryChild, two, logChains[202]),
 	}
 	var expected []string
 	for _, pos := range [][2]int{{101, 1}, {202, 1}, {202, 2}, {101, 2}, {101, 3}, {202, 3}, {101, 4}, {202, 4}} {
@@ -132,7 +163,7 @@ func testOmnichainFactory(t *testing.T, logOnly bool) {
 		if pos != [2]int{101, 1} {
 			names = []string{"tx", "log", "call", "transfer", "block"}
 		}
-		if logOnly {
+		if logChains[uint64(pos[0])] {
 			if pos == [2]int{101, 1} || pos[1] == 3 {
 				continue
 			}
@@ -179,7 +210,7 @@ func testOmnichainFactory(t *testing.T, logOnly bool) {
 					return nil
 				}
 			}
-			b := omniFactoryBuild(t, nodes, handler, logOnly)
+			b := omniFactoryBuild(t, nodes, handler, logChains)
 			fixture := newManagedFiniteFixture(t, backend, b)
 			omnichainGoldenStorage(&fixture)
 			opts := RuntimeOptions{FactorySources: true, SourceCheckpoints: true, Historical: runtimeFixtureInput(fixture), BuildID: "omni-factory"}
@@ -208,6 +239,25 @@ func testOmnichainFactory(t *testing.T, logOnly bool) {
 				} else if err != nil || !out.Ready || !out.Recovered || !out.Completed || !slices.Equal(calls, expected[committed:]) {
 					t.Fatalf("reopen %d result %+v, calls %v want %v, error %v", pass, out, calls, expected[committed:], err)
 				}
+				if len(logChains) == 1 && pass > 0 {
+					control, err := r.Control(t.Context())
+					if err != nil {
+						t.Fatal(err)
+					}
+					if !control.Serving || len(control.LogOnlyScanHeads) != 1 {
+						t.Fatalf("unexpected mixed completion %+v", control)
+					}
+					for id := range nodes {
+						if logChains[id] {
+							cut, err := checkpoint.Decode(control.LogOnlyScanHeads[id].Checkpoint)
+							if err != nil || cut.ChainID != id || cut.BlockNumber != 5 {
+								t.Fatalf("chain %d missing end-of-range proof: %+v, %v", id, cut, err)
+							}
+						} else if !store.ManagedLiveReachedBlock(control, id, 4) {
+							t.Fatalf("chain %d did not run its last closing callback", id)
+						}
+					}
+				}
 				if err := r.Close(t.Context()); err != nil {
 					t.Fatal(err)
 				}
@@ -219,12 +269,11 @@ func testOmnichainFactory(t *testing.T, logOnly bool) {
 						}
 						prefix := strings.Split(fmt.Sprint(rows[0]["value"]), "|")
 						committed = len(prefix)
-						lastKind := "block"
-						if logOnly {
-							lastKind = "log"
+						lastOnTwo := "202/2/block"
+						if logChains[202] {
+							lastOnTwo = "202/2/log"
 						}
-						if committed == 0 || committed > failureIndex || !slices.Equal(prefix, expected[:committed]) ||
-							!strings.HasSuffix(prefix[committed-1], "/"+lastKind) || !slices.Contains(prefix, "202/2/"+lastKind) {
+						if committed == 0 || committed > failureIndex || !slices.Equal(prefix, expected[:committed]) || !slices.Contains(prefix, lastOnTwo) {
 							t.Fatalf("invalid committed prefix %v", prefix)
 						}
 					})
@@ -256,7 +305,7 @@ func TestRuntimeOmnichainFactoryPreflight(t *testing.T) {
 			handler := func(string) indexing.Handler {
 				return func(context.Context, *indexing.HandlerArgs) error { t.Fatal("preflight invoked handler"); return nil }
 			}
-			build := omniFactoryBuild(t, nodes, handler, false)
+			build := omniFactoryBuild(t, nodes, handler, nil)
 			expected := "require opt-in"
 			for i, group := range build.Executable().EventCallbacks {
 				switch mode {

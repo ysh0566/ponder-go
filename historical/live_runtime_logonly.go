@@ -12,13 +12,17 @@ import (
 )
 
 func (r *RuntimeRunner) logOnlySources() (map[uint64][]filter.Object, map[uint64][]any) {
-	if !r.logOnly {
+	if len(r.logOnlyChains) == 0 {
 		return nil, nil
 	}
 	filters := map[uint64][]filter.Object{}
 	abis := map[uint64][]any{}
 	for i, c := range r.build.Chains {
 		id := runtimeChainID(c)
+		if !r.logOnlyChains[id] {
+			filters[id] = nil // Explicitly covered by a closing block callback.
+			continue
+		}
 		for _, cb := range r.build.EventCallbacks[i] {
 			filters[id] = append(filters[id], cb["filter"].(map[string]any))
 			abis[id] = append(abis[id], cb["abiItem"])
@@ -29,7 +33,7 @@ func (r *RuntimeRunner) logOnlySources() (map[uint64][]filter.Object, map[uint64
 
 // An uncached factory scan may rediscover births before the durable cursor.
 func (r *RuntimeRunner) logScanLineageStart(id, cursor uint64) uint64 {
-	if r.logOnly && r.options.FactorySources {
+	if r.logOnlyChains[id] && r.options.FactorySources {
 		for i, chain := range r.build.Chains {
 			if runtimeChainID(chain) != id || runtimeRPCCacheEnabled(chain) {
 				continue
@@ -58,7 +62,7 @@ func (r *RuntimeRunner) openLogScanRPC(ctx context.Context) (map[uint64]store.Lo
 	readers := make(map[uint64]store.LogScanRPC)
 	acquisition := r.options.Historical.Acquisition
 	for i, chain := range r.build.Chains {
-		if runtimeRPCCacheEnabled(chain) {
+		if !r.logOnlyChains[runtimeChainID(chain)] || runtimeRPCCacheEnabled(chain) {
 			continue
 		}
 		id := runtimeChainID(chain)
@@ -76,8 +80,8 @@ func (r *RuntimeRunner) openLogScanRPC(ctx context.Context) (map[uint64]store.Lo
 	return readers, nil
 }
 
-func (r *RuntimeRunner) validateOmnichainPartition(events []indexing.Object, head store.ManagedLiveHead) error {
-	if !r.logOnly {
+func (r *RuntimeRunner) validateOmnichainPartition(id uint64, events []indexing.Object, head store.ManagedLiveHead) error {
+	if !r.logOnlyChains[id] {
 		return validateOmnichainBlockPartition(events, head)
 	}
 	h, e := checkpoint.Decode(head.Checkpoint)
@@ -88,7 +92,7 @@ func (r *RuntimeRunner) validateOmnichainPartition(events []indexing.Object, hea
 	for _, event := range events {
 		raw, ok := event["checkpoint"].(string)
 		cp, ce := checkpoint.Decode(raw)
-		if !ok || ce != nil || event["type"] != "log" || cp.EventType != checkpoint.Logs || cp.ChainID != h.ChainID || cp.BlockNumber != h.BlockNumber || cp.BlockTimestamp != h.BlockTimestamp || raw < previous {
+		if !ok || ce != nil || event["type"] != "log" || cp.EventType != checkpoint.Logs || cp.TransactionIndex == checkpoint.Max.TransactionIndex || cp.ChainID != h.ChainID || cp.BlockNumber != h.BlockNumber || cp.BlockTimestamp != h.BlockTimestamp || raw < previous {
 			return fmt.Errorf("log-only partition differs from acquired source identity/order")
 		}
 		previous = raw
