@@ -94,7 +94,7 @@ func TestGoProjectTemplates(t *testing.T) {
 					ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
 					t.Cleanup(cancel)
 					ns := templateDatabase(t, ctx, backend)
-					q, _ := startTemplate(t, ctx, root, ns)
+					q, log := startTemplate(t, ctx, root, ns)
 					check := func(sql string, want ...string) {
 						t.Helper()
 						checkTemplateRows(t, ctx, q, sql, want...)
@@ -103,10 +103,13 @@ func TestGoProjectTemplates(t *testing.T) {
 					zero, one, two, three := fmt.Sprintf("0x%040x", 0), fmt.Sprintf("0x%040x", 1), fmt.Sprintf("0x%040x", 2), fmt.Sprintf("0x%040x", 3)
 					switch template {
 					case "erc721":
+						checkTemplateGraphPage(t, ctx, q, "transferEvents", "token from to", 2)
 						check("SELECT id,owner FROM token", bigID+" "+two)
 						check("SELECT address FROM account ORDER BY address", zero, one, two)
 						check(`SELECT "from","to",token FROM transfer_event WHERE timestamp > 0 ORDER BY id`, zero+" "+one+" "+bigID, one+" "+two+" "+bigID)
 					case "erc1155":
+						checkTemplateGraphPage(t, ctx, q, "tokenBalances", "tokenId owner balance", 5)
+						checkTemplateGraphPage(t, ctx, q, "transferEvents", "id token", 4)
 						check("SELECT owner,token_id,balance FROM token_balance ORDER BY owner,token_id",
 							zero+" "+bigID+" -100", one+" 3 -8", one+" "+bigID+" 91", two+" 3 8", two+" "+bigID+" 9")
 						check("SELECT address FROM account ORDER BY address", zero, one, two)
@@ -115,6 +118,10 @@ func TestGoProjectTemplates(t *testing.T) {
 						}
 						check("SELECT count(*) FROM transfer_event WHERE timestamp > 0", "4")
 					case "erc4626":
+						checkTemplateGraphPage(t, ctx, q, "depositEvents", "assets shares", 1)
+						checkTemplateGraphPage(t, ctx, q, "withdrawalEvents", "assets shares", 1)
+						checkTemplateGraphPage(t, ctx, q, "approvalEvents", "owner spender", 2)
+						checkTemplateGraphPage(t, ctx, q, "transferEvents", "amount", 2)
 						check("SELECT address,balance FROM account ORDER BY address", zero+" 0", one+" 340282366920938463463374607431768211431", two+" 25")
 						check("SELECT owner,spender,amount FROM allowance", one+" "+two+" 13")
 						check("SELECT amount FROM approval_event WHERE timestamp > 0 ORDER BY id", "70", "13")
@@ -122,17 +129,26 @@ func TestGoProjectTemplates(t *testing.T) {
 						check("SELECT sender,receiver,assets,shares FROM deposit_event", three+" "+one+" 150 100")
 						check("SELECT sender,receiver,owner,assets,shares FROM withdrawal_event", three+" "+two+" "+one+" 12 8")
 					case "proxy":
+						checkTemplateGraphPage(t, ctx, q, "liquidationEvents", "liquidator", 1)
+						checkTemplateGraphPage(t, ctx, q, "ownershipTransferEvents", "newOwner", 1)
 						if len(receipt.Logs) != 4 || receipt.Logs[0].Address == receipt.ContractAddress || receipt.Logs[2].Address != receipt.ContractAddress {
 							t.Fatalf("expected direct and delegated router logs: %+v", receipt.Logs)
 						}
 						check("SELECT lower(liquidator) FROM liquidation_event", fmt.Sprintf("0x%040x", 42))
 						check("SELECT lower(new_owner) FROM ownership_transfer_event", fmt.Sprintf("0x%040x", 43))
 					case "factory":
+						checkTemplateGraphPage(t, ctx, q, "llamas", "id", 0)
+						checkTemplateGraphPage(t, ctx, q, "llamaEvents", "id contract event", 2)
 						if len(receipt.Logs) != 7 {
 							t.Fatalf("expected seven factory and child logs, got %d", len(receipt.Logs))
 						}
 						check("SELECT event,lower(contract) AS address FROM llama_event ORDER BY event",
 							"LlamaCore:ActionCreated "+receipt.Logs[1].Address, "LlamaPolicy:Initialized "+receipt.Logs[4].Address)
+						body, err := os.ReadFile(log)
+						if err != nil || !strings.Contains(string(body), "Handling ActionCreated event from LlamaCore @ "+receipt.Logs[1].Address) ||
+							!strings.Contains(string(body), "Handling Initialized event from LlamaPolicy @ "+receipt.Logs[4].Address) {
+							t.Fatalf("factory event logs: %v\n%s", err, body)
+						}
 					}
 				})
 			}
@@ -289,6 +305,7 @@ func TestGoAccountsTemplate(t *testing.T) {
 			const sql = `SELECT lower("to"), value, data FROM transaction_events`
 			if !t.Run("first_head", func(t *testing.T) {
 				q, log := startTemplate(t, ctx, root, ns)
+				checkTemplateGraphPage(t, ctx, q, "transactionEventss", "to value data", 1)
 				checkTemplateRows(t, ctx, q, sql, recipient+" 18446744073709551618 0xcd")
 				body, err := os.ReadFile(log)
 				if err != nil || !strings.Contains(string(body), "Received transfer") {
@@ -306,5 +323,34 @@ func TestGoAccountsTemplate(t *testing.T) {
 				checkTemplateRows(t, ctx, q, sql, recipient+" 18446744073709551626 0x42")
 			})
 		})
+	}
+}
+
+func checkTemplateGraphPage(t *testing.T, ctx context.Context, q query.Client, collection, fields string, count int) {
+	t.Helper()
+	graph := fmt.Sprintf("{ rows: %s { totalCount items { %s } } }", collection, fields)
+	base := strings.TrimSuffix(q.BaseURL, "/sql")
+	for _, path := range []string{"/", "/graphql"} {
+		body := templateRequest(t, ctx, base, path, graph, 200)
+		var result struct {
+			Data struct {
+				Rows *struct {
+					TotalCount int
+					Items      []map[string]any
+				}
+			}
+			Errors []json.RawMessage
+		}
+		if err := json.Unmarshal([]byte(body), &result); err != nil || len(result.Errors) > 0 || result.Data.Rows == nil ||
+			result.Data.Rows.TotalCount != count || len(result.Data.Rows.Items) != count {
+			t.Fatal(path, graph, body, err)
+		}
+		for _, row := range result.Data.Rows.Items {
+			for _, field := range strings.Fields(fields) {
+				if row[field] == nil {
+					t.Fatal(path, graph, row)
+				}
+			}
+		}
 	}
 }

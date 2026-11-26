@@ -3,10 +3,10 @@
     "name": "multicall",
     "columns": [
       {"name": "from", "type": "hex", "primary": true},
-      {"name": "gas_used", "type": "bigint", "notNull": true},
+      {"name": "gas_used", "property": "gasUsed", "type": "bigint", "notNull": true},
       {"name": "bytes", "type": "integer", "notNull": true},
-      {"name": "successful_calls", "type": "integer", "notNull": true},
-      {"name": "failed_calls", "type": "integer", "notNull": true}
+      {"name": "successful_calls", "property": "successfulCalls", "type": "integer", "notNull": true},
+      {"name": "failed_calls", "property": "failedCalls", "type": "integer", "notNull": true}
     ]
   }]
 }

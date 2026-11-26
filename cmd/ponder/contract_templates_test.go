@@ -113,6 +113,7 @@ func (c *contractTemplateChain) prepareFiles() func(*testing.T, context.Context,
 	// comes from the route, so only the historical lookup can return its body.
 	c.send(localRoute, c.input(localRoute, "remove", "route"), true)
 	return func(t *testing.T, ctx context.Context, q query.Client) {
+		checkTemplateGraphPage(t, ctx, q, "files", "name createdAt", 2)
 		checkTemplateRows(t, ctx, q, `SELECT name,size,contents,created_at,type,encoding,compression FROM file ORDER BY created_at`,
 			"é.txt 4 雪! 1700000002 text/plain utf-8 gzip", "route 3 via route: abc 1700000005 <nil> <nil> <nil>")
 	}
@@ -152,6 +153,7 @@ func (c *contractTemplateChain) prepareTraces() func(*testing.T, context.Context
 		c.t.Fatalf("unexpected call tracer output %+v", children)
 	}
 	return func(t *testing.T, ctx context.Context, q query.Client) {
+		checkTemplateGraphPage(t, ctx, q, "multicalls", "gasUsed successfulCalls failedCalls", 2)
 		checkTemplateRows(t, ctx, q, `SELECT lower("from") AS caller,gas_used,bytes,successful_calls,failed_calls FROM multicall ORDER BY successful_calls DESC`,
 			fmt.Sprintf("%s %d 4 3 1", strings.ToLower(c.accounts[0]), directGas), fmt.Sprintf("%s %d 3 1 1", localRoute, children[0].GasUsed))
 	}
