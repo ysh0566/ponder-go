@@ -301,6 +301,8 @@ head "$model_dir/model.go"
 | --- | --- | --- |
 | `empty` | Ethereum 主网，占位起始区块 1,234,567 | 提供 `example(id, name)` 空表和空 ABI，供项目自行定义事件及 Go 回调。 |
 | `blocks` | Ethereum 主网，从 19,750,000 开始，每 5 个区块一次 | 读取 Chainlink 的 `latestAnswer()`，以区块时间戳为主键将报价记录到 `chainlink_price`。 |
+| `filter` | Ethereum 主网，从 14,438,081 开始 | 只请求 PrimitiveManager 的 `Swap` 事件，在 `"swapEvent"` 中保存事件 ID、付款方和接收方。 |
+| `api-functions` | Ethereum 主网，13,142,655 至 13,150,000（含） | 索引 ERC-20 转账和授权，提供计数、转账排名和 GraphQL 接口。 |
 | `read-contract` | Ethereum 主网，从 15,963,553 开始 | 监听 FileStore 的文件创建和删除事件。`file` 保存文件内容、大小、创建时间及可选的元数据。 |
 | `call-traces` | Ethereum 主网，从 19,800,000 开始 | 跟踪 Multicall3 的 `aggregate3()` 调用。`multicall` 按实际调用者保存累计 gas、输入计数和子调用成功或失败次数。 |
 | `erc721` | Arbitrum One，3,163,146 至 3,200,000 | `token` 保存每个 NFT 的当前所有人，`transfer_event` 保留转手记录。 |
@@ -313,6 +315,20 @@ head "$model_dir/model.go"
 用 `ponder init --template empty my-indexer` 新建自己的索引器。将 `network.json` 中的零地址和起始高度改为目标合约及部署高度，把事件 ABI 写入 `abi.json`，再在 `handlers.go` 的 `handlers` 中以 `ExampleContract:事件名` 注册回调。`schema.json` 定义回调写入的业务表。
 
 用 `ponder init --template blocks my-prices` 生成区块采样项目。节点须能在来源区间按区块高度执行历史 `eth_call`。回调从起始高度开始每隔 5 块调用一次 `latestAnswer()`，将带符号的结果除以 10⁸。启动后可执行 `SELECT timestamp, price FROM chainlink_price ORDER BY timestamp` 查看报价。使用自己的预言机时，修改 `network.json` 中的 `address`，或设置 `PONDER_LOCAL_CONTRACT`。[本地双后端验证](../parity/runs/native-block-templates/RESULT.md)
+
+用 `ponder init --template filter my-swaps` 创建事件过滤项目。`indexer.go` 在合约配置中选定 `Swap`，生成的日志请求携带对应的主题。用 `SELECT id, payer, recipient FROM "swapEvent"` 查询结果。HTTP 服务也在 `/` 和 `/graphql` 提供 GraphQL，可以查询 `{ swapEvents { items { id payer recipient } } }`。
+
+用 `ponder init --template api-functions my-api` 创建带自定义 HTTP 路由的项目。路由定义在 `api.go`，通过只读事务查询当前部署。项目公开三个自定义 GET 接口和 `/graphql`，并保留服务状态接口。此模板通过 `server.DisableSQL = true` 关闭内置 SQL 和 SQL 订阅接口。新地址首次出现时余额从零开始，同一地址再次参与转账时才按收付方向增减。该示例只统计配置区间内的活动。启动项目后，将下面的地址和端口改为应用日志中的实际值。
+
+```sh
+base=http://127.0.0.1:42069
+curl -fsS "$base/count"
+curl -fsS "$base/count/0x0000000000000000000000000000000000000000"
+curl -sS "$base/whale-transfers"
+curl -fsS "$base/graphql" -H 'Content-Type: application/graphql' --data '{ transferEvents { totalCount } }'
+```
+
+两个计数接口分别返回全部转账数和指定地址参与的转账数。自转账计一次。`/whale-transfers` 按发送方当前索引余额降序取最多十笔转账，每条含 `sender`、`senderBalance` 和 `amount`，金额按 18 位小数换算为字符串。空结果沿用上游的 HTTP 500 和 `Not found`。[本地验证](../parity/runs/native-filter-api-templates/RESULT.md)
 
 用 `ponder init --template read-contract my-files` 索引 FileStore。创建事件触发后，Go 回调以交易接收方和文件名为参数，在事件区块调用 FileStoreFrontend 的 `readFile(address,string)`。节点需要能执行该区间的历史 `eth_call`。文件删除后，对应的业务行会一并删除。换用自己的部署时，将 `network.json` 的 `address` 改为事件合约地址，并更新 `handlers.go` 的 `frontendAddress`。查询示例为 `SELECT name, size, contents FROM file ORDER BY name`。
 

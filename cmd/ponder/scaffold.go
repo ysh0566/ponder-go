@@ -33,7 +33,7 @@ func createProject(ctx context.Context, template, dir string, out io.Writer) err
 	case "empty":
 		files, prefix = scaffolds, "scaffold/go-empty"
 		copyGoBootstrap = true
-	case "blocks", "call-traces", "read-contract", "erc721", "erc1155", "erc4626", "factory", "accounts", "proxy":
+	case "blocks", "filter", "api-functions", "call-traces", "read-contract", "erc721", "erc1155", "erc4626", "factory", "accounts", "proxy":
 		files, prefix = scaffolds, "scaffold/"+template
 		copyGoBootstrap = true
 	case "typescript":
@@ -116,7 +116,10 @@ func createProject(ctx context.Context, template, dir string, out io.Writer) err
 		return copyFile(files, src, relative)
 	})
 	if err == nil && copyGoBootstrap {
-		for _, name := range []string{"main.go", "go.mod.tmpl", "package.json", "_dot_gitignore"} {
+		for _, name := range []string{"main.go", "indexer.go", "api.go", "go.mod.tmpl", "package.json", "_dot_gitignore"} {
+			if _, err := fs.Stat(files, path.Join(prefix, name+".tmpl")); err == nil {
+				continue // This project supplies its own implementation.
+			}
 			relative := strings.TrimSuffix(name, ".tmpl")
 			if name == "_dot_gitignore" {
 				relative = ".gitignore"

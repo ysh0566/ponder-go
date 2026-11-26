@@ -1,0 +1,62 @@
+package main
+
+import (
+	"context"
+	_ "embed"
+	"math/big"
+
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+//go:embed abi.json
+var tokenABI []byte
+
+func project(network networkConfig, _ *logging.Logger) (config.Config, map[string]runtime.Handler) {
+	token := network.contract("ERC20", tokenABI)
+	return config.Config{Contracts: []config.Contract{token}}, map[string]runtime.Handler{
+		"ERC20:Transfer": transfer, "ERC20:Approval": approve,
+	}
+}
+
+func transfer(ctx context.Context, c *runtime.Context) error {
+	args := c.Event.Args.(map[string]any)
+	amount := args["amount"].(*big.Int)
+	for _, leg := range []struct {
+		address string
+		delta   *big.Int
+	}{{args["from"].(string), new(big.Int).Neg(amount)}, {args["to"].(string), amount}} {
+		// The reference starts each first-seen account at zero and applies deltas on conflict.
+		_, err := c.DB.Indexing().InsertOne(ctx, "account", store.Row{
+			"address": leg.address, "balance": big.NewInt(0), "isOwner": false,
+		}, store.Conflict{Action: store.ConflictUpdate, Update: func(row store.Row) (store.Row, error) {
+			return store.Row{"balance": new(big.Int).Add(row["balance"].(*big.Int), leg.delta)}, nil
+		}})
+		if err != nil {
+			return err
+		}
+	}
+	ts, err := runtime.Number(c.Event.Block.Timestamp)
+	if err != nil {
+		return err
+	}
+	return c.DB.Write(ctx, "transfer_event", store.Row{
+		"id": c.Event.ID, "amount": amount, "timestamp": ts, "from": args["from"], "to": args["to"],
+	}, store.Insert)
+}
+
+func approve(ctx context.Context, c *runtime.Context) error {
+	args := c.Event.Args.(map[string]any)
+	row := store.Row{"owner": args["owner"], "spender": args["spender"], "amount": args["amount"]}
+	if err := c.DB.Write(ctx, "allowance", row, store.Upsert); err != nil {
+		return err
+	}
+	ts, err := runtime.Number(c.Event.Block.Timestamp)
+	if err != nil {
+		return err
+	}
+	row["timestamp"], row["id"] = ts, c.Event.ID
+	return c.DB.Write(ctx, "approval_event", row, store.Insert)
+}

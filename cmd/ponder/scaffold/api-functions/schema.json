@@ -1,0 +1,119 @@
+{
+  "tables": [
+    {
+      "name": "account",
+      "columns": [
+        {
+          "name": "address",
+          "type": "hex",
+          "primary": true
+        },
+        {
+          "name": "balance",
+          "type": "bigint",
+          "notNull": true
+        },
+        {
+          "name": "is_owner",
+          "property": "isOwner",
+          "type": "boolean",
+          "notNull": true
+        }
+      ]
+    },
+    {
+      "name": "allowance",
+      "columns": [
+        {
+          "name": "owner",
+          "type": "hex",
+          "notNull": true
+        },
+        {
+          "name": "spender",
+          "type": "hex",
+          "notNull": true
+        },
+        {
+          "name": "amount",
+          "type": "bigint",
+          "notNull": true
+        }
+      ],
+      "primaryKey": [
+        "owner",
+        "spender"
+      ]
+    },
+    {
+      "name": "transfer_event",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "primary": true
+        },
+        {
+          "name": "timestamp",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "from",
+          "type": "hex",
+          "notNull": true
+        },
+        {
+          "name": "to",
+          "type": "hex",
+          "notNull": true
+        },
+        {
+          "name": "amount",
+          "type": "bigint",
+          "notNull": true
+        }
+      ],
+      "exportName": "transferEvent",
+      "indexes": [
+        {
+          "name": "from_index",
+          "columns": [
+            "from"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "approval_event",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "primary": true
+        },
+        {
+          "name": "timestamp",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "owner",
+          "type": "hex",
+          "notNull": true
+        },
+        {
+          "name": "spender",
+          "type": "hex",
+          "notNull": true
+        },
+        {
+          "name": "amount",
+          "type": "bigint",
+          "notNull": true
+        }
+      ],
+      "exportName": "approvalEvent"
+    }
+  ]
+}

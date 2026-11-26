@@ -1,0 +1,15 @@
+package main
+
+import (
+	"context"
+
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+func recordSwap(ctx context.Context, c *runtime.Context) error {
+	args := c.Event.Args.(map[string]any)
+	return c.DB.Write(ctx, "swapEvent", store.Row{
+		"id": c.Event.ID, "payer": args["payer"], "recipient": args["recipient"],
+	}, store.Insert)
+}

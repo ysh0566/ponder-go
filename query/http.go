@@ -38,6 +38,8 @@ type Server struct {
 	requests       atomic.Uint64
 	ChainNames     map[uint64]string
 	API            http.Handler
+	// DisableSQL leaves the built-in /sql/db and /sql/live routes unmounted.
+	DisableSQL bool
 }
 
 // BlockStatus is the latest indexed block recorded for a chain.
