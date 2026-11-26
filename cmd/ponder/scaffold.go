@@ -30,7 +30,10 @@ func createProject(ctx context.Context, template, dir string, out io.Writer) err
 	switch template {
 	case "go", "erc20":
 		files, prefix = examples.ERC20, "erc20"
-	case "erc721", "erc1155", "erc4626", "factory", "accounts", "proxy":
+	case "empty":
+		files, prefix = scaffolds, "scaffold/go-empty"
+		copyGoBootstrap = true
+	case "blocks", "erc721", "erc1155", "erc4626", "factory", "accounts", "proxy":
 		files, prefix = scaffolds, "scaffold/"+template
 		copyGoBootstrap = true
 	case "typescript":

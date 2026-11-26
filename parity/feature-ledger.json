@@ -2655,6 +2655,36 @@
         "parity/runs/native-omnichain-uncached-accounts/RESULT.md"
       ],
       "remaining": "Independent Isolated ordering, live Omnichain with cross-chain reorg recovery, and contract CALLs without a covering block callback remain open."
+    },
+    {
+      "id": "native-block-templates",
+      "status": "verified_subset",
+      "implementation_files": [
+        "cmd/ponder/main.go",
+        "cmd/ponder/scaffold.go",
+        "cmd/ponder/scaffold/go-empty/handlers.go.tmpl",
+        "cmd/ponder/scaffold/go-empty/abi.json",
+        "cmd/ponder/scaffold/go-empty/network.json",
+        "cmd/ponder/scaffold/go-empty/schema.json",
+        "cmd/ponder/scaffold/blocks/handlers.go.tmpl",
+        "cmd/ponder/scaffold/blocks/network.json",
+        "cmd/ponder/scaffold/blocks/schema.json"
+      ],
+      "native_test_files": [
+        "cmd/ponder/block_templates_test.go"
+      ],
+      "upstream_sources": [
+        "packages/create-ponder/templates/empty/ponder.config.ts",
+        "packages/create-ponder/templates/empty/ponder.schema.ts",
+        "packages/create-ponder/templates/empty/src/index.ts",
+        "examples/feature-blocks/ponder.config.ts",
+        "examples/feature-blocks/ponder.schema.ts",
+        "examples/feature-blocks/src/index.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-block-templates/RESULT.md"
+      ],
+      "remaining": "Public historical Chainlink replay and seven other dedicated Go templates remain open."
     }
   ]
 }
