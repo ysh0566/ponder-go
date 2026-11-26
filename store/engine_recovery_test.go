@@ -116,6 +116,8 @@ func TestDatabaseEngineRecovery(t *testing.T) {
 
 func disposablePostgresEngine(t *testing.T) (func() (Backend, error), func(Backend), func()) {
 	t.Helper()
+	// The fixture must connect to its own server even when another port is configured.
+	t.Setenv("PGPORT", "15432")
 	server := testpostgres.Start(t)
 	open := func() (Backend, error) { return OpenPostgres(t.Context(), server.URL()) }
 	var previous string
