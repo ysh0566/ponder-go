@@ -3254,7 +3254,7 @@
       "evidence": [
         "parity/runs/native-go-enum-models/RESULT.md"
       ],
-      "remaining": "User-defined column codecs and further schema combinations are outside this enum verification."
+      "remaining": "Hex columns use strings by default. The native-column-codecs entry covers project-specific Go types for these and other supported storage types."
     },
     {
       "id": "native-historical-retry-wait",
@@ -3333,6 +3333,30 @@
         "parity/runs/native-bounded-reorg/RESULT.md"
       ],
       "remaining": "Bounded default ranges require available end heights. Source coverage for faults and continuous dual-store Omnichain remain open."
+    },
+    {
+      "id": "native-column-codecs",
+      "status": "verified_subset",
+      "implementation_files": [
+        "schema/schema.go",
+        "orm/custom_codec.go",
+        "orm/generate.go",
+        "orm/generate_enums.go",
+        "orm/generate_structs.go"
+      ],
+      "native_test_files": [
+        "orm/custom_codec_test.go",
+        "orm/container_models_test.go",
+        "orm/enum_models_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/indexing-store/utils.ts",
+        "packages/core/src/indexing-store/utils.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-column-codecs/RESULT.md"
+      ],
+      "remaining": "The codec selects the Go representation of an existing storage type. PostgreSQL extension installation and DDL for additional physical types are outside this feature."
     }
   ]
 }
