@@ -40,7 +40,7 @@ func TestLogOnlyEmptyTailPagination(t *testing.T) {
 			if name == "cancelled" {
 				cancel()
 			}
-			_, err := (ManagedLiveOptions{}).logOnlyScanHash(ctx, SourceEventDataArgs{FromBlock: 1, ToBlock: 3, Limit: 1}, func(_ context.Context, a SourceEventDataArgs) (SourceEventData, error) {
+			_, err := (ManagedLiveOptions{}).logOnlyScanHash(ctx, SourceEventDataArgs{FromBlock: 1, ToBlock: 3, Limit: 1}, nil, func(_ context.Context, a SourceEventDataArgs) (SourceEventData, error) {
 				calls = append(calls, a.FromBlock)
 				r := SourceEventData{Cursor: a.FromBlock}
 				switch name {
@@ -91,12 +91,12 @@ func TestLogOnlyScanDecodedCoverage(t *testing.T) {
 	t.Run("incomplete source rows", func(t *testing.T) {
 		log := filter.Object{"blockNumber": 2, "transactionIndex": 0, "logIndex": 1, "topics": []any{selector}, "data": "0x01"}
 		rows := SourceEventData{Blocks: []filter.Object{{"number": 3, "timestamp": 12}}, Logs: []filter.Object{log}}
-		if err := verifyABISkippedPage(1, callbacks[1], rows); !errors.Is(err, ErrManagedLiveBatchConflict) {
+		if err := verifyABISkippedPage(1, callbacks[1], rows, nil); !errors.Is(err, ErrManagedLiveBatchConflict) {
 			t.Fatalf("certified log under later header: %v", err)
 		}
 		rows.Blocks[0]["number"] = 2
 		delete(log, "data")
-		if err := verifyABISkippedPage(1, callbacks[1], rows); !errors.Is(err, ErrManagedLiveBatchConflict) {
+		if err := verifyABISkippedPage(1, callbacks[1], rows, nil); !errors.Is(err, ErrManagedLiveBatchConflict) {
 			t.Fatalf("certified log with missing data: %v", err)
 		}
 	})
@@ -113,7 +113,7 @@ func TestLogOnlyScanDecodedCoverage(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var pages int
-			digest, err := opts.logOnlyScanHash(context.Background(), SourceEventDataArgs{ChainID: 1, Filters: filters[1], FromBlock: 1, ToBlock: 3, Limit: 1}, func(_ context.Context, a SourceEventDataArgs) (SourceEventData, error) {
+			digest, err := opts.logOnlyScanHash(context.Background(), SourceEventDataArgs{ChainID: 1, Filters: filters[1], FromBlock: 1, ToBlock: 3, Limit: 1}, nil, func(_ context.Context, a SourceEventDataArgs) (SourceEventData, error) {
 				pages++
 				rows := SourceEventData{Cursor: a.FromBlock}
 				if a.FromBlock != 2 {

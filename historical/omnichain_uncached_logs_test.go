@@ -146,8 +146,8 @@ func (c unavailableLogArchive) Call(ctx context.Context, method string, params, 
 
 func TestOmnichainUncachedArchiveRetry(t *testing.T) {
 	nodes := map[uint64]omniFactoryNode{
-		101: mineOmniFactory(t, 101, 2, factoryChild, factoryOther, []int{10, 40, 55, 70, 95, 115}),
-		202: mineOmniFactory(t, 202, 1, factoryOther, factoryChild, []int{20, 30, 60, 75, 96, 116}),
+		101: mineOmniFactory(t, 101, 2, factoryChild, factoryOther, []int{10, 40, 55, 70, 95, 115}, false),
+		202: mineOmniFactory(t, 202, 1, factoryOther, factoryChild, []int{20, 30, 60, 75, 96, 116}, false),
 	}
 	order := []string{"101/1", "202/1", "202/2", "101/2", "101/3", "202/3", "101/4", "202/4"}
 	for _, backend := range []string{"postgres", "pglite"} {

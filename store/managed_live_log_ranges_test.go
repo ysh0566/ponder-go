@@ -81,14 +81,14 @@ func TestLogOnlyRangeScanPages(t *testing.T) {
 	o := ManagedLiveOptions{runtimeLogFilters: map[uint64][]filter.Object{1: filters}}
 	args := SourceEventDataArgs{ChainID: 1, Filters: filters, FromBlock: 0, ToBlock: 5, Limit: 1}
 	var pages []SourceInterval
-	digest, err := o.logOnlyScanHash(context.Background(), args, func(_ context.Context, page SourceEventDataArgs) (SourceEventData, error) {
+	digest, err := o.logOnlyScanHash(context.Background(), args, nil, func(_ context.Context, page SourceEventDataArgs) (SourceEventData, error) {
 		pages = append(pages, SourceInterval{page.FromBlock, page.ToBlock})
 		return SourceEventData{Cursor: page.ToBlock}, nil
 	})
 	if err != nil || !o.validLogScanHash(1, digest) || !slices.Equal(pages, []SourceInterval{{0, 0}, {1, 1}, {2, 2}, {3, 4}, {5, 5}}) {
 		t.Fatalf("pages=%v hash=%s err=%v", pages, digest, err)
 	}
-	_, err = o.logOnlyScanHash(context.Background(), args, func(context.Context, SourceEventDataArgs) (SourceEventData, error) {
+	_, err = o.logOnlyScanHash(context.Background(), args, nil, func(context.Context, SourceEventDataArgs) (SourceEventData, error) {
 		return SourceEventData{Cursor: args.ToBlock}, nil
 	})
 	if !errors.Is(err, ErrManagedLiveBatchConflict) {

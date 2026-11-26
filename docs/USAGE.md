@@ -556,7 +556,7 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并为每个来源声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
 
-在双库 Omnichain 中使用工厂时，每条链都要有一个逐块回调（`interval: 1`，`offset: 0`），它的起止高度要覆盖工厂发现区间和子地址的事件区间。将下面的 `children` 赋给合约或账户声明的 `Address`，然后编译配置。示例用工厂的 `Created(address indexed child)` 事件发现子地址。
+在双库 Omnichain 中，如果所有链都只监听合约日志，可以直接订阅工厂子合约，无需注册区块回调。如果还要处理账户交易、转账或合约 CALL，则每条链都要注册一个逐块回调（`interval: 1`，`offset: 0`），其起止高度须覆盖工厂发现区间和子地址的事件区间。将下面的 `children` 赋给合约或账户声明的 `Address`，然后编译配置。示例用工厂的 `Created(address indexed child)` 事件发现子地址。
 
 ```go
 created := abi.Event{Type: "event", Name: "Created", Inputs: []abi.Parameter{
@@ -571,6 +571,8 @@ if err != nil {
 
 打开运行器时同时设置 `RuntimeOptions.FactorySources = true` 和 `SourceCheckpoints = true`，并将 `Live` 留空。子地址从发现它的区块起生效，同一区块内的匹配事件也会投递。每条链独立记录发现结果。开启缓存的链会持久化子地址及其首次出现的高度。关闭缓存的链会在重启时重新读取工厂发现区间，所以节点需要保留该区间的历史日志。[发现、回滚与重启测试](../parity/runs/native-omnichain-factory/RESULT.md)
 
+例如，工厂在区块 100 至 199 登记子合约，子合约可以监听到区块 250。在一个没有业务事件的区间恢复时，关闭缓存的链还会读取此前的创建日志，以确定哪些地址当时已登记。合约在登记高度之前发出的日志会被排除。[两条链上的纯日志工厂示例和恢复验证](../parity/runs/native-omnichain-log-factory/RESULT.md)
+
 同一条链上的两个静态日志来源可以有不同的起止区块，端点都包含在内。下面的 Go 配置将两个合约放在 `mainnet` 上。假设两者都声明了 `Transfer` 事件，区块 150 到 199 内两者的回调都可能收到事件，区块 200 到 299 内只有 `Late:Transfer` 能收到事件。`transferABI` 是包含该事件的 `[]abi.Event`，两个地址分别指向对应合约。
 
 ```go
@@ -584,7 +586,7 @@ contracts := map[string]config.ContractDeclaration[[]abi.Event, string, any]{
 
 纯静态日志索引会用每个匹配回调的 ABI 检查日志。例如，合约发出的日志缺少 `uint256` 参数时，无法解码它的回调会跳过。即使一条链的剩余日志全部被跳过，只要运行器能核对所有来源已扫描到各自的结束高度，索引器仍可就绪。扫描结束高度和最后提交的业务检查点可能不同。用同一配置重启后，已提交的回调不会重复执行。[区间末尾与重启测试](../parity/runs/native-omnichain-abi-tail/RESULT.md)
 
-在已最终确认的有限区间里，无论各链都注册逐块回调，还是各链只监听静态合约日志，都可以逐链设置 RPC 缓存。下面的配置让该链在内存中处理历史事件，回调直接从节点读取链上状态。其他链可保留默认设置。关闭缓存的链仍然保存业务数据和检查点。重启时使用相同的缓存设置和存储位置。[逐块回调缓存测试](../parity/runs/native-omnichain-cache-policy/RESULT.md)
+在已最终确认的有限区间里，无论各链都注册逐块回调，还是各链只监听静态或工厂子合约的日志，都可以逐链设置 RPC 缓存。下面的配置让该链在内存中处理历史事件，回调直接从节点读取链上状态。其他链可保留默认设置。关闭缓存的链仍然保存业务数据和检查点。重启时使用相同的缓存设置和存储位置。[逐块回调缓存测试](../parity/runs/native-omnichain-cache-policy/RESULT.md)
 
 ```go
 cache := false
