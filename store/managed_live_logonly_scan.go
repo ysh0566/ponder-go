@@ -149,7 +149,10 @@ func checkEmptyBlockSchedules(filters []filter.Object, from, to uint64) error {
 		if start > end {
 			continue
 		}
-		period, _ := logOnlyQuantity(f["interval"])
+		period, valid := RuntimeBlockPeriod(f["interval"])
+		if !valid {
+			return ErrManagedLiveBatchConflict
+		}
 		offset, _ := logOnlyQuantity(f["offset"])
 		delta := (offset + period - start%period) % period
 		if delta <= end-start {

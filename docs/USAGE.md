@@ -877,6 +877,8 @@ blocks := map[string]any{
 }
 ```
 
+区块采样以间隔的绝对值为步长。`interval: -5` 和 `interval: 5` 在同一起始高度会匹配相同的区块。来源回调描述保留配置中的符号。用 `runtime.NewIndexer` 直接构造区块来源时，字段保存步长，例如 `config.BlockSource{Name: "Sample", Chain: "mainnet", StartBlock: 1, Interval: config.BlockPeriod(-5)}`。显式配置为零会在启动前报错。双库 Omnichain 要求步长不超过 `2^53 - 1`，并且来源结束区块已最终确认。[采样和冷重启验证](../parity/runs/native-signed-block-intervals/RESULT.md)
+
 `Sample` 在第 1、6 块触发，`Audit` 在第 2、4、6 块触发。第 6 块按注册顺序执行两个回调。如果第二个回调失败，重启后会一起重放这个未提交的批次。第 7、8 块均无匹配时，运行器仍会验证扫描已到达结束高度。相同配置可配合每条链各自的 RPC 缓存设置。[双链采样与恢复测试](../historical/omnichain_block_intervals_test.go)
 
 

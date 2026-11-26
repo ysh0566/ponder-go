@@ -47,6 +47,15 @@ type BlockSource struct {
 	Interval   uint64  `json:"interval"`
 }
 
+// BlockPeriod converts a signed sampling interval into the spacing used by
+// BlockSource. Zero is rejected by Config.Validate.
+func BlockPeriod(interval int64) uint64 {
+	if interval < 0 {
+		return -uint64(interval)
+	}
+	return uint64(interval)
+}
+
 // AccountSource is a native single-chain static, wildcard or factory account source.
 // Complete source configuration DSL compatibility remains separate.
 type AccountSource struct {
