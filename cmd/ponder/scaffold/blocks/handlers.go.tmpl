@@ -1,0 +1,43 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"math/big"
+
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+var latestAnswer = abi.Function{
+	Type: "function", Name: "latestAnswer", StateMutability: "view",
+	Outputs: []abi.Parameter{{Type: "int256"}},
+}
+
+func project(network networkConfig, _ *logging.Logger) (config.Config, map[string]runtime.Handler) {
+	source := config.BlockSource{Name: "ChainlinkPriceOracle", Chain: network.Name,
+		StartBlock: network.StartBlock.height, EndBlock: network.EndBlock, Interval: 5}
+	return config.Config{Blocks: []config.BlockSource{source}}, map[string]runtime.Handler{
+		"ChainlinkPriceOracle:block": func(ctx context.Context, c *runtime.Context) error {
+			var result string
+			call := map[string]any{"to": network.Address, "data": abi.FunctionSelector(latestAnswer)}
+			// Read the oracle at the indexed block, including during historical backfill.
+			if err := c.Client.CallCached(ctx, "eth_call", []any{call, c.Event.Block.Number}, &result); err != nil {
+				return fmt.Errorf("read latestAnswer at block %s: %w", c.Event.Block.Number, err)
+			}
+			output, err := abi.DecodeParameters(latestAnswer.Outputs, result)
+			if err != nil {
+				return err
+			}
+			answer, _ := output[0].(*big.Int).Float64()
+			timestamp, err := runtime.Number(c.Event.Block.Timestamp)
+			if err != nil {
+				return err
+			}
+			return c.DB.Write(ctx, "chainlink_price", store.Row{"timestamp": fmt.Sprint(timestamp), "price": answer / 1e8}, store.Insert)
+		},
+	}
+}

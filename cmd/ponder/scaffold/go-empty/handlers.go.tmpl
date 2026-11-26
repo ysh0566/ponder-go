@@ -1,0 +1,19 @@
+package main
+
+import (
+	_ "embed"
+
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+)
+
+//go:embed abi.json
+var exampleABI []byte
+
+func project(network networkConfig, _ *logging.Logger) (config.Config, map[string]runtime.Handler) {
+	contract := network.contract("ExampleContract", exampleABI)
+	// Add an event to abi.json, then register its Go handler by name here.
+	handlers := map[string]runtime.Handler{}
+	return config.Config{Contracts: []config.Contract{contract}}, handlers
+}
