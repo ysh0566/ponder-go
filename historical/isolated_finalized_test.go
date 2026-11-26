@@ -89,6 +89,13 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 				if err != nil {
 					return err
 				}
+				if id == 101 && n == 0 {
+					if block, ok := a.Event.Property("block"); ok {
+						if _, err := block.Get("gasUsed"); err != nil {
+							return err
+						}
+					}
+				}
 				calls[id] = append(calls[id], n)
 				key := store.Row{"chainId": int(id), "height": int(n), "kind": "block"}
 				_, err = a.Context.DB.Find(ctx, "seen", store.Row{"chainId": 303, "height": int(n), "kind": "block"})
@@ -126,6 +133,14 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			for _, chain := range build.Executable().EventCallbacks {
+				for _, cb := range chain {
+					// Cached block rows contain the union of all sources' columns.
+					f := cb["filter"].(map[string]any)
+					receipts, _ := f["hasTransactionReceipt"].(bool)
+					f["include"] = indexing.RequiredFilterInclude(f["type"].(string), receipts)
+				}
+			}
 			f := newManagedFiniteFixture(t, backend, build)
 			f.options.Owned.Storage.Schema = schema.Schema{Tables: []schema.Table{{Name: "seen", PrimaryKey: []string{"chain_id", "height", "kind"}, Columns: []schema.Column{
 				{Name: "chain_id", Property: "chainId", Type: "integer", NotNull: true}, {Name: "height", Type: "integer", NotNull: true}, {Name: "kind", Type: "text", NotNull: true},
@@ -134,9 +149,26 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 			opts := RuntimeOptions{BuildID: "isolated-finalized", Historical: runtimeFixtureInput(f), Requesters: func(context.Context, uint64) ([]rpc.Requester, error) {
 				return []rpc.Requester{rpc.New(firstURL), rpc.New(nodes[202].url)}, nil
 			}}
+			var r *RuntimeRunner
+			observed := map[uint64][]uint64{}
+			opts.Historical.OnCommitted = func(ctx context.Context, group GroupResult) error {
+				state, err := r.Control(ctx)
+				if err != nil {
+					return err
+				}
+				cp, err := checkpoint.Decode(group.Checkpoint)
+				if err != nil || cp.ChainID != group.ChainID || group.BlockRange != [2]float64{float64(cp.BlockNumber), float64(cp.BlockNumber)} || state.LogicalSafe[group.ChainID] != group.Checkpoint || !group.Applied || group.Reconciled || group.Attempts < 1 || group.Events < 1 {
+					return fmt.Errorf("isolated commit %+v, safe %v", group, state.LogicalSafe)
+				}
+				if group.ChainID == 101 && cp.BlockNumber == 0 && group.Attempts != 2 {
+					return fmt.Errorf("expected one refetch for block.gasUsed, got %+v", group)
+				}
+				observed[group.ChainID] = append(observed[group.ChainID], cp.BlockNumber)
+				return nil
+			}
 			for _, owner := range []string{"first", "resume", "complete"} {
 				opts.OpenID = owner
-				r := runtimeOpen(t, backend, opts)
+				r = runtimeOpen(t, backend, opts)
 				result, err := r.Run(ctx)
 				if reject {
 					if err == nil || !strings.Contains(err.Error(), "interrupted isolated callback") || result.Ready {
@@ -144,6 +176,9 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 					}
 				} else if err != nil || !result.Ready || !result.Completed {
 					t.Fatalf("reopen: %+v, %v", result, err)
+				}
+				if (reject && slices.Contains(observed[101], uint64(2))) || (!reject && (!slices.Equal(observed[101], []uint64{0, 1, 2, 3}) || !slices.Equal(observed[202], []uint64{1, 2}))) {
+					t.Fatalf("%s reported duplicate, rolled back or missing blocks: %v", owner, observed)
 				}
 				if owner == "complete" && result.HistoricalBlocks != 0 {
 					t.Fatalf("completed range was replayed: %+v", result)

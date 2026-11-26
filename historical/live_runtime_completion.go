@@ -470,6 +470,8 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		if e = epoch.Clients().Prefetch(epoch.Context(), input); e != nil {
 			return result, e
 		}
+		var receipt store.ManagedLiveBatchResult
+		attempts := 0
 		for {
 			digest, e := runtimeInputsDigest(input)
 			if e != nil {
@@ -480,7 +482,8 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			if e != nil {
 				return result, e
 			}
-			_, e = epoch.Process(epoch.Context(), b, a, input, block.history)
+			attempts++
+			receipt, e = epoch.Process(epoch.Context(), b, a, input, block.history)
 			var invalid *indexing.InvalidEventAccessError
 			if e == nil {
 				break
@@ -519,6 +522,12 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			result.LiveBlocks++
 		}
 		epoch.Clients().Clear()
+		if block.history && r.options.Historical.OnCommitted != nil {
+			group := GroupResult{ChainID: id, Events: len(input), Checkpoint: batch.Checkpoint, BlockRange: batch.BlockRange}
+			if e := r.notifyHistoricalCommit(run, []GroupResult{group}, receipt, attempts); e != nil {
+				return result, e
+			}
+		}
 		if r.options.SourceCheckpoints && r.options.Live != nil {
 			// Observe the real business receipt before finality. This is also a
 			// cancellable boundary for a crash between execution and safe pruning.
@@ -544,4 +553,25 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		}
 	}
 }
+
+// An Omnichain transaction can commit a group for each participating chain.
+// Deliver all groups in that transaction before stopping on observer errors.
+func (r *RuntimeRunner) notifyHistoricalCommit(ctx context.Context, groups []GroupResult, receipt store.ManagedLiveBatchResult, attempts int) error {
+	observe := r.options.Historical.OnCommitted
+	if observe == nil || !receipt.Applied {
+		return nil
+	}
+	ctx = context.WithValue(ctx, runtimeRunnerCallbackKey{}, r)
+	var errs []error
+	for _, group := range groups {
+		group.Applied = receipt.Applied
+		group.Reconciled = receipt.Reconciled
+		group.Attempts = attempts
+		if err := observe(ctx, group); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errors.Join(errs...)
+}
+
 func runtimeChainID(c indexing.Object) uint64 { id, _ := uintQuantity(c["id"]); return id }

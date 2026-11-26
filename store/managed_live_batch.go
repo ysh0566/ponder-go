@@ -502,14 +502,15 @@ func (m *ManagedLive) ApplyBatch(ctx context.Context, in ManagedLiveBatch, acqui
 			}
 		}
 	}
-	if err := tx.Commit(ctx); err != nil {
+	commitErr := tx.Commit(ctx)
+	if commitErr != nil {
 		_ = tx.Rollback(context.Background())
-		if reconcile := m.reconcileBatch(ctx, batch, acquired, err); reconcile != nil {
+		if reconcile := m.reconcileBatch(ctx, batch, acquired, commitErr); reconcile != nil {
 			m.uncertain.Store(true)
 			return ManagedLiveBatchResult{}, reconcile
 		}
 	}
-	return ManagedLiveBatchResult{Applied: true, OperationID: batch.ID, Segments: append([]ManagedLiveSegment(nil), segments...)}, nil
+	return ManagedLiveBatchResult{Applied: true, Reconciled: commitErr != nil, OperationID: batch.ID, Segments: append([]ManagedLiveSegment(nil), segments...)}, nil
 }
 
 func (m *ManagedLive) reconcileBatch(ctx context.Context, batch ManagedLiveBatch, acquired *ManagedLiveAcquisition, commitErr error) error {

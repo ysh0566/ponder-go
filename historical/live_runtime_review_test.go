@@ -80,24 +80,32 @@ func TestRuntimeTimestampFinality(t *testing.T) {
 	}
 }
 func TestRuntimeRejectsHistoricalOptions(t *testing.T) {
-	for _, kind := range []string{"query_size", "clock", "retry_wait", "on_committed"} {
+	for _, kind := range []string{"query_size", "clock", "isolated_clock", "retry_wait", "on_committed", "live_isolated_observer"} {
 		t.Run(kind, func(t *testing.T) {
 			p := newFiniteRPC(t, 3)
 			b := runtimeBuild(t, p, 3, 1, indexing.Handler(func(context.Context, *indexing.HandlerArgs) error { return nil }))
+			var live *RuntimeLiveOptions
 			input := Options{Build: b}
 			switch kind {
 			case "query_size":
 				input.QuerySize = 1
-			case "clock":
+			case "clock", "isolated_clock":
 				input.Clock = time.Now
+				if kind == "isolated_clock" {
+					b.Executable().Ordering = string(schema.Isolated)
+				}
 			case "retry_wait":
 				input.RetryWait = func(context.Context, time.Duration) error { return nil }
-			case "on_committed":
+			case "on_committed", "live_isolated_observer":
+				if kind == "live_isolated_observer" {
+					b.Executable().Ordering = string(schema.Isolated)
+					live = &RuntimeLiveOptions{}
+				}
 				input.OnCommitted = func(context.Context, GroupResult) error { return fmt.Errorf("must not be ignored") }
 			}
 			epochs := []uint64{}
-			_, err := OpenRuntimePostgres(context.Background(), RuntimeOptions{Historical: input, BuildID: "reject-options", OpenID: "reject-options", Requesters: runtimeFactory(p, &epochs)})
-			if err == nil || !strings.Contains(err.Error(), "does not support historical") {
+			_, err := OpenRuntimePostgres(context.Background(), RuntimeOptions{Historical: input, Live: live, BuildID: "reject-options", OpenID: "reject-options", Requesters: runtimeFactory(p, &epochs)})
+			if err == nil || !strings.Contains(err.Error(), "does not support historical") || len(epochs) != 0 {
 				t.Fatalf("accepted ignored %s: %v", kind, err)
 			}
 		})
