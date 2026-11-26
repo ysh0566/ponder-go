@@ -2,12 +2,49 @@ package historical
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
+
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/rpc"
 	source "github.com/ysh0566/ponder-go/runtime"
 	"github.com/ysh0566/ponder-go/store"
 )
+
+// Only a well-formed chain observation that has not reached the requested
+// range is eligible for another poll. RPC and proof errors go to the caller.
+type pendingOmnichainRange string
+
+func (p pendingOmnichainRange) Error() string { return string(p) }
+
+func (r *RuntimeRunner) checkOpeningRange(ctx context.Context, reqs []rpc.Requester) error {
+	for {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		if err := r.acquireOpeningHeads(ctx, reqs); err != nil {
+			return err
+		}
+		if r.build.Ordering != "omnichain" {
+			return ctx.Err()
+		}
+
+		err := r.validateOmnichainFinalizedRange(ctx, reqs)
+		if err == nil {
+			return ctx.Err()
+		}
+		var pending pendingOmnichainRange
+		if r.options.OmnichainFinalityPollInterval == 0 || !errors.As(err, &pending) {
+			return err
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(r.options.OmnichainFinalityPollInterval):
+		}
+	}
+}
 
 func (r *RuntimeRunner) omnichainWatermark() string {
 	watermark := ""
@@ -46,7 +83,7 @@ func (r *RuntimeRunner) validateOmnichainFinalizedRange(ctx context.Context, req
 		}
 		checkHeight := func(height uint64, field string) error {
 			if height > final.BlockNumber {
-				return fmt.Errorf("omnichain %s exceeds chain finality", field)
+				return pendingOmnichainRange("omnichain " + field + " exceeds chain finality")
 			}
 			raw, err := rpc.NewActions(requesters[i]).GetSourceBlockByNumber(ctx, source.Hex(height), false)
 			if err != nil {
@@ -57,8 +94,11 @@ func (r *RuntimeRunner) validateOmnichainFinalizedRange(ctx context.Context, req
 				return err
 			}
 			cp, err := checkpoint.Decode(head.Checkpoint)
-			if err != nil || cp.BlockNumber != height || head.Checkpoint > watermark {
-				return fmt.Errorf("omnichain %s exceeds global finalized watermark", field)
+			if err != nil || cp.BlockNumber != height {
+				return fmt.Errorf("invalid omnichain %s header at requested height %d", field, height)
+			}
+			if head.Checkpoint > watermark {
+				return pendingOmnichainRange("omnichain " + field + " exceeds global finalized watermark")
 			}
 			return nil
 		}

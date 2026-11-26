@@ -3157,6 +3157,27 @@
         "parity/runs/native-runtime-query-budget/RESULT.md"
       ],
       "remaining": "The dual-store runtime still supports configuring historical QuerySize only for finalized Omnichain. Custom historical retry waits and group commit observers remain open."
+    },
+    {
+      "id": "native-omnichain-finality-wait",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime.go",
+        "historical/live_runtime_omnichain.go"
+      ],
+      "native_test_files": [
+        "historical/omnichain_finality_wait_test.go",
+        "historical/live_runtime_omnichain_logs_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/runtime/historical.ts",
+        "packages/core/src/runtime/historical.test.ts",
+        "packages/core/src/runtime/omnichain.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-omnichain-finality-wait/RESULT.md"
+      ],
+      "remaining": "Continuous dual-store Omnichain requires unfinalized event handoff, global live ordering and cross-chain reorg recovery."
     }
   ]
 }

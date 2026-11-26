@@ -22,6 +22,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 type runtimeRunnerCallbackKey struct{}
@@ -43,6 +44,9 @@ type RuntimeOptions struct {
 	// Set SourceCheckpoints as well. Finalized Omnichain supports finite block, log, account and contract CALL sources.
 	FactorySources bool
 	Live           *RuntimeLiveOptions
+	// OmnichainFinalityPollInterval lets Open wait for a bounded Omnichain range
+	// to become globally finalized. Zero checks once. Cancellation stops the wait.
+	OmnichainFinalityPollInterval time.Duration
 	// Historical.QuerySize is the bounded omnichain SQL target (1..12000);
 	// zero uses 12000. MaxQueryParameters controls batched sync writes in all orderings.
 	Historical                   Options
@@ -127,6 +131,9 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	}()
 	if b == nil || (b.Ordering != "multichain" && b.Ordering != "omnichain" && b.Ordering != string(schema.Isolated)) || len(b.Chains) == 0 || len(b.Chains) != len(b.EventCallbacks) || len(b.Chains) != len(b.Contracts) || len(b.Chains) != len(b.SetupCallbacks) {
 		return nil, fmt.Errorf("runtime closure requires a complete multichain, finalized omnichain or isolated executable build")
+	}
+	if o.OmnichainFinalityPollInterval < 0 || (o.OmnichainFinalityPollInterval > 0 && b.Ordering != "omnichain") {
+		return nil, fmt.Errorf("OmnichainFinalityPollInterval requires a nonnegative interval and Omnichain ordering")
 	}
 	if b.Ordering == "omnichain" && o.Live != nil {
 		return nil, fmt.Errorf("%s currently requires bounded finalized runtime", b.Ordering)
@@ -255,84 +262,11 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	if len(reqs) != len(b.Chains) {
 		return nil, fmt.Errorf("runtime requester count mismatch")
 	}
-	for i, c := range b.Chains {
-		if reqs[i] == nil {
-			return nil, fmt.Errorf("nil runtime requester")
-		}
-		if _, ok := reqs[i].(rpc.AsyncRequester); !ok {
-			return nil, fmt.Errorf("async runtime requester required")
-		}
-		id, _ := uintQuantity(c["id"])
-		progress := source.NewSourceSyncProgressRPC(reqs[i].(rpc.AsyncRequester))
-		latestResult := <-progress.BeginBlockByNumber(ctx, "latest", false, source.SourceSyncProgressRequestOptions{RetryNullBlockRequest: true})
-		latest, e := latestResult.Block, latestResult.Err
-		if e != nil {
-			return nil, e
-		}
-		n, e := uintQuantity(latest["number"])
-		if e != nil {
-			return nil, e
-		}
-		window, e := uintQuantity(c["reorgWindow"])
-		if e != nil {
-			return nil, e
-		}
-		if o.Live == nil && r.ends[id] > n {
-			return nil, fmt.Errorf("bounded runtime end exceeds acquired latest block")
-		}
-		latestFinal := runtimeFinalityHeader(latest)
-		acquired := map[*finality.Block]indexing.Object{latestFinal: latest}
-		var blockTime *float64
-		if viem, ok := c["viemChain"].(map[string]any); ok {
-			if ms, ok := viem["blockTime"].(float64); ok {
-				copy := ms
-				blockTime = &copy
-			}
-		}
-		finalHead, e := finality.GetFinalizedBlock(ctx, finality.Chain{ReorgWindow: int(window), BlockTimeMS: blockTime}, func(ctx context.Context, request finality.Request) (*finality.Block, error) {
-			result := <-progress.BeginBlockByNumber(ctx, source.Hex(request.Number), request.IncludeTransactions, source.SourceSyncProgressRequestOptions{RetryNullBlockRequest: request.RetryNullBlockRequest})
-			if result.Err != nil {
-				return nil, result.Err
-			}
-			block := result.Block
-			head := runtimeFinalityHeader(block)
-			acquired[head] = block
-			return head, nil
-		}, latestFinal, nil)
-		if e != nil {
-			return nil, e
-		}
-		final, ok := acquired[finalHead]
-		if !ok {
-			return nil, fmt.Errorf("finality search returned an unacquired header")
-		}
-
-		r.latest[id], e = runtimeHead(id, latest)
-		if e != nil {
-			return nil, e
-		}
-		r.finalized[id], e = runtimeHead(id, final)
-		if e != nil {
-			return nil, e
-		}
-		if b.Ordering == string(schema.Isolated) {
-			f, _ := checkpoint.Decode(r.finalized[id].Checkpoint)
-			if r.lastSetupBlock(i) > f.BlockNumber {
-				return nil, fmt.Errorf("isolated setup block on chain %d exceeds chain finality", id)
-			}
-			if o.Live == nil && r.ends[id] > f.BlockNumber {
-				return nil, fmt.Errorf("isolated end on chain %d exceeds chain finality", id)
-			}
-		}
-		r.finalBlocks[i] = final
+	if err := r.checkOpeningRange(ctx, reqs); err != nil {
+		return nil, err
 	}
 	storage := o.Historical.Owned.Storage
 	storage.Ordering = schema.Ordering(b.Ordering.(string))
-	if b.Ordering == "omnichain" {
-		if err = r.validateOmnichainFinalizedRange(ctx, reqs); err != nil {
-			return nil, err
-		}
-	}
 	cachePolicy := map[uint64]bool{}
 	var openLogScanRPC func(context.Context) (map[uint64]store.LogScanRPC, error)
 	for _, chain := range r.build.Chains {
@@ -363,6 +297,86 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	opened = true
 	return r, nil
 }
+
+func (r *RuntimeRunner) acquireOpeningHeads(ctx context.Context, reqs []rpc.Requester) error {
+	for i, c := range r.build.Chains {
+		if reqs[i] == nil {
+			return fmt.Errorf("nil runtime requester")
+		}
+		if _, ok := reqs[i].(rpc.AsyncRequester); !ok {
+			return fmt.Errorf("async runtime requester required")
+		}
+		id, _ := uintQuantity(c["id"])
+		progress := source.NewSourceSyncProgressRPC(reqs[i].(rpc.AsyncRequester))
+		latestResult := <-progress.BeginBlockByNumber(ctx, "latest", false, source.SourceSyncProgressRequestOptions{RetryNullBlockRequest: true})
+		latest, e := latestResult.Block, latestResult.Err
+		if e != nil {
+			return e
+		}
+		n, e := uintQuantity(latest["number"])
+		if e != nil {
+			return e
+		}
+		window, e := uintQuantity(c["reorgWindow"])
+		if e != nil {
+			return e
+		}
+		if r.options.Live == nil && r.options.OmnichainFinalityPollInterval == 0 && r.ends[id] > n {
+			return fmt.Errorf("bounded runtime end exceeds acquired latest block")
+		}
+		latestFinal := runtimeFinalityHeader(latest)
+		acquired := map[*finality.Block]indexing.Object{latestFinal: latest}
+		var blockTime *float64
+		if viem, ok := c["viemChain"].(map[string]any); ok {
+			if ms, ok := viem["blockTime"].(float64); ok {
+				copy := ms
+				blockTime = &copy
+			}
+		}
+		finalHead, e := finality.GetFinalizedBlock(ctx, finality.Chain{ReorgWindow: int(window), BlockTimeMS: blockTime}, func(ctx context.Context, request finality.Request) (*finality.Block, error) {
+			result := <-progress.BeginBlockByNumber(ctx, source.Hex(request.Number), request.IncludeTransactions, source.SourceSyncProgressRequestOptions{RetryNullBlockRequest: request.RetryNullBlockRequest})
+			if result.Err != nil {
+				return nil, result.Err
+			}
+			block := result.Block
+			got, err := uintQuantity(block["number"])
+			if err != nil || got != request.Number {
+				return nil, fmt.Errorf("invalid finality header at requested height %d", request.Number)
+			}
+			head := runtimeFinalityHeader(block)
+			acquired[head] = block
+			return head, nil
+		}, latestFinal, nil)
+		if e != nil {
+			return e
+		}
+		final, ok := acquired[finalHead]
+		if !ok {
+			return fmt.Errorf("finality search returned an unacquired header")
+		}
+
+		r.latest[id], e = runtimeHead(id, latest)
+		if e != nil {
+			return e
+		}
+		r.finalized[id], e = runtimeHead(id, final)
+		if e != nil {
+			return e
+		}
+		if r.build.Ordering == string(schema.Isolated) {
+			f, _ := checkpoint.Decode(r.finalized[id].Checkpoint)
+			if r.lastSetupBlock(i) > f.BlockNumber {
+				return fmt.Errorf("isolated setup block on chain %d exceeds chain finality", id)
+			}
+			if r.options.Live == nil && r.ends[id] > f.BlockNumber {
+				return fmt.Errorf("isolated end on chain %d exceeds chain finality", id)
+			}
+		}
+		r.finalBlocks[i] = final
+	}
+	return nil
+}
+
 func runtimeHead(id uint64, b indexing.Object) (store.ManagedLiveHead, error) {
 	n, e := uintQuantity(b["number"])
 	if e != nil {
