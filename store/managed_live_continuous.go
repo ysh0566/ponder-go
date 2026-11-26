@@ -90,3 +90,31 @@ func (d *ManagedLiveDomains) RuntimeFinalizeHeaders(ctx context.Context, request
 	}
 	return out, nil
 }
+
+// RuntimeUnfinalizedLineage returns committed headers down to the opening
+// finalized block. This lets a bounded runner identify orphaned blocks even
+// when its node no longer serves the old branch by hash.
+func (d *ManagedLiveDomains) RuntimeUnfinalizedLineage(ctx context.Context, id uint64) (map[uint64]ManagedLiveHead, error) {
+	if !d.mu.TryLock() {
+		return nil, ErrManagedLiveBusy
+	}
+	defer d.mu.Unlock()
+	if !d.live().opts.liveRuntime || d.live().opts.runtimeOmnichain || d.live().opts.runtimeIsolated {
+		return nil, ErrManagedLiveLegacyMutation
+	}
+	if d.uncertain {
+		return nil, ErrManagedLiveDomainsPending
+	}
+	ledger, b, _, err := d.audit(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if ledger.Pending != "" {
+		return nil, ErrManagedLiveDomainsPending
+	}
+	proofs, err := liveProofMap(b.Proofs)
+	if err != nil {
+		return nil, err
+	}
+	return liveHeadLineage(b.Control.Cursors[id], b.Control.FinalizedHeads[id], proofs, nil)
+}

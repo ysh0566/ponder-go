@@ -22,6 +22,9 @@ type ManagedLiveReorg struct {
 	ExpectedLastOperation string          `json:"expectedLastOperation"`
 	ExpectedTail          uint64          `json:"expectedTail"`
 	Ancestor              ManagedLiveHead `json:"ancestor"`
+	// ReplayBeforeServing preserves the per-chain high-water marks while a
+	// bounded default runtime replays the removed global suffix.
+	ReplayBeforeServing bool `json:"replayBeforeServing,omitempty"`
 }
 
 type ManagedLiveReorgAcquisition struct {
@@ -67,6 +70,9 @@ type managedLiveReorgEvidence struct {
 }
 
 func normalizeLiveReorg(opts ManagedLiveOptions, in ManagedLiveReorg) (ManagedLiveReorg, error) {
+	if in.ReplayBeforeServing && (!opts.liveRuntime || opts.runtimeIsolated || opts.runtimeOmnichain) {
+		return in, ErrManagedLiveBatchConflict
+	}
 	if opts.runtimeIsolated && !opts.liveContinuous {
 		return in, fmt.Errorf("bounded finalized isolated has no live reorg transition")
 	}
@@ -306,7 +312,7 @@ func planLiveReorg(opts ManagedLiveOptions, c ManagedLiveControl, baselines map[
 		plan.After.LogicalCursors = positions
 	}
 	plan.After.Reorgs++ // Next is a high-water mark and never rewinds.
-	if opts.liveContinuous {
+	if opts.liveContinuous || r.ReplayBeforeServing {
 		targets := map[uint64]string{}
 		for id := range c.Cursors {
 			targets[id] = liveCursorCheckpoint(c, id)

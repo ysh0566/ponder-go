@@ -278,7 +278,8 @@ func validateLiveControl(c ManagedLiveControl) error {
 			return ErrManagedLivePendingActions
 		}
 	}
-	if (c.Version == managedLiveVersion && (c.Recoveries != 0 || len(c.ReplayTargets) != 0)) || (c.Recoveries == 0 && len(c.ReplayTargets) != 0 && !(isContinuousRuntimeVersion(c.Version) && c.Reorgs > 0)) {
+	runtimeReplayed := c.Reorgs > 0 && (isContinuousRuntimeVersion(c.Version) || c.Version == managedLiveRuntimeVersion)
+	if (c.Version == managedLiveVersion && (c.Recoveries != 0 || len(c.ReplayTargets) != 0)) || (c.Recoveries == 0 && len(c.ReplayTargets) != 0 && !runtimeReplayed) {
 		return ErrManagedLivePendingActions
 	}
 	if (c.Reorgs == 0 && c.Recoveries == 0 && (c.Next != c.Tail+1 || c.Batches-c.Bootstraps > c.Tail)) || (c.Reorgs > 0 && c.Batches == 0) || (c.Batches == 0 && (c.Tail != 0 || len(c.Cursors) != 0)) || (c.Batches > 0 && len(c.Cursors) == 0) {

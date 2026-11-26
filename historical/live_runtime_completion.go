@@ -32,7 +32,7 @@ type runtimeBlockQueue struct {
 	jobs   sync.WaitGroup
 }
 
-func (q *runtimeBlockQueue) close() { q.stop(); q.cancel(); q.jobs.Wait() }
+func (q *runtimeBlockQueue) close() { q.cancel(); q.stop(); q.jobs.Wait() }
 func (r *RuntimeRunner) newBlockQueue(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl, ends map[uint64]uint64, proofs map[uint64]*runtimeLineage, headers map[uint64]indexing.Object, children []*source.SourceHistoricalChildren, syncers []*source.SourceHistoricalSync, realtime []*source.SourceRealtimeSync) *runtimeBlockQueue {
 	run, cancel := context.WithCancel(ctx)
 	q := &runtimeBlockQueue{cancel: cancel}
@@ -91,12 +91,18 @@ func (r *RuntimeRunner) acquireRuntimeBlock(ctx context.Context, epoch *indexing
 	if err != nil {
 		return nil, err
 	}
+	if actual, _ := uintQuantity(raw["number"]); actual != number {
+		return nil, fmt.Errorf("RPC returned a different height for chain %d block %d", id, number)
+	}
 	previousCP, _ := checkpoint.Decode(previous.Checkpoint)
 	sameInitial := r.options.SourceCheckpoints && number == previousCP.BlockNumber && head == previous
-	if !sameInitial && head.ParentHash != previous.Hash {
-		return nil, fmt.Errorf("live branch changed: close/reopen recovery is required; in-place reorg driver is pending")
-	}
 	final, _ := checkpoint.Decode(r.finalized[id].Checkpoint)
+	if !sameInitial && head.ParentHash != previous.Hash {
+		if number <= final.BlockNumber {
+			return nil, store.ErrManagedLiveDeepReorg
+		}
+		return nil, &runtimeBoundedFork{i, head}
+	}
 	history := number <= final.BlockNumber
 	b := &runtimeAcquiredBlock{index: i, id: id, head: head, raw: raw, history: history}
 	if history {
@@ -145,7 +151,7 @@ func (r *RuntimeRunner) acquireRuntimeBlock(ctx context.Context, epoch *indexing
 			continue
 		}
 		if event.Type != "block" {
-			return nil, fmt.Errorf("in-place realtime reorg is not implemented; reopen for durable recovery")
+			return nil, fmt.Errorf("unexpected realtime source event %q after checking parent hash", event.Type)
 		}
 		b.events, e = source.DecodeSourceRealtimeEvent(chain, r.build.EventCallbacks[i], r.session, children[i], event)
 		if e != nil {
@@ -369,6 +375,8 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		return r.runOmnichainFinalized(run, owned, control, proofs, result)
 	}
 	activated := false
+	boundedDefault := r.options.Live == nil && r.build.Ordering == "multichain"
+	var fork *runtimeBoundedFork
 	for {
 		if err = run.Err(); err != nil {
 			return result, err
@@ -380,6 +388,42 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 				return r.runContinuous(run, owned, control, headers, result, ready)
 			}
 
+			if boundedDefault && fork == nil {
+				e := r.checkBoundedTips(epoch.Context(), epoch, control)
+				if e != nil && !errors.As(e, &fork) {
+					return result, e
+				}
+			}
+			if fork != nil {
+				r.transitioning.Store(true)
+				ready(false)
+				result.Ready = false
+				request, e := r.boundedReorgBranch(epoch.Context(), epoch, control, fork)
+				if e != nil {
+					return result, e
+				}
+				learned, e := epoch.Seal(run)
+				if e != nil {
+					return result, e
+				}
+				epoch = nil
+				control, e = r.applyBoundedReorg(run, control, request)
+				if e != nil {
+					return result, e
+				}
+				for id, cursor := range control.Cursors {
+					headers[id] = runtimeCursorHeader(cursor)
+				}
+				epoch, e = r.newEpoch(run, learned)
+				if e != nil {
+					return result, e
+				}
+				if e = makeSources(); e != nil {
+					return result, e
+				}
+				fork, activated = nil, false
+				continue
+			}
 			if !activated && runtimeCanActivate(control) {
 				learned, e := epoch.Seal(run)
 				if e != nil {
@@ -393,6 +437,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 				if e != nil || !result.Ready {
 					return result, errors.Join(fmt.Errorf("runtime activation failed"), e)
 				}
+				r.transitioning.Store(false)
 				ready(true)
 				if r.options.OnActivated != nil {
 					if e = r.options.OnActivated(context.WithValue(run, runtimeRunnerCallbackKey{}, r)); e != nil {
@@ -451,6 +496,12 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			queue = r.newBlockQueue(epoch.Context(), epoch, control, ends, proofs, headers, children, syncers, realtime)
 		}
 		batch, e, ok := queue.next()
+		if boundedDefault && e != nil && errors.As(e, &fork) {
+			r.transitioning.Store(true)
+			queue.close()
+			queue = nil
+			continue
+		}
 		if e != nil {
 			return result, e
 		}

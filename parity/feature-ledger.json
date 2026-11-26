@@ -3308,6 +3308,31 @@
         "parity/runs/native-runtime-commit-notifications/RESULT.md"
       ],
       "remaining": "Notifications are in-process observations. Continuous dual-store Omnichain still requires unfinalized handoff and coordinated cross-chain fork recovery."
+    },
+    {
+      "id": "native-bounded-reorg",
+      "status": "verified_subset",
+      "implementation_files": [
+        "historical/live_runtime_bounded_reorg.go",
+        "historical/live_runtime_completion.go",
+        "historical/live_runtime_continuous.go",
+        "store/managed_live_continuous.go",
+        "store/managed_live_reorg.go",
+        "store/managed_live_segments.go"
+      ],
+      "native_test_files": [
+        "historical/live_runtime_bounded_reorg_test.go",
+        "historical/live_runtime_test.go",
+        "historical/live_runtime_reorg_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/sync-realtime/index.test.ts",
+        "packages/core/src/runtime/multichain.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-bounded-reorg/RESULT.md"
+      ],
+      "remaining": "Bounded default ranges require available end heights. Source coverage for faults and continuous dual-store Omnichain remain open."
     }
   ]
 }
