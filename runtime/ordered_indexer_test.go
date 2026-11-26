@@ -6,8 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"reflect"
+	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -184,6 +185,8 @@ func TestOrderedMixedSources(t *testing.T) { testMixedSources(t, schema.Omnichai
 
 func TestDefaultMixedSources(t *testing.T) { testMixedSources(t, schema.Multichain) }
 
+func TestIsolatedMixedSources(t *testing.T) { testMixedSources(t, schema.Isolated) }
+
 func testMixedSources(t *testing.T, ordering schema.Ordering) {
 	for _, dialect := range []string{"postgres", "pglite"} {
 		t.Run(dialect, func(t *testing.T) {
@@ -248,7 +251,13 @@ func testMixedSources(t *testing.T, ordering schema.Ordering) {
 				Accounts: []config.AccountSource{{Name: "Wallet", Chain: "A", Factory: discovery, EndBlock: &firstEnd}},
 				Blocks:   []config.BlockSource{{Name: "Head", Chain: "A", StartBlock: 1, EndBlock: &firstEnd, Interval: 1}},
 			}
-			model := schema.Schema{Tables: []schema.Table{{Name: "calls", Columns: []schema.Column{{Name: "id", Type: "text", Primary: true}}}}}
+			callsTable := schema.Table{Name: "calls", Columns: []schema.Column{{Name: "id", Type: "text", Primary: true}}}
+			if ordering == schema.Isolated {
+				callsTable.Columns[0].Primary = false
+				callsTable.Columns = append(callsTable.Columns, schema.Column{Name: "chain_id", Property: "chainId", Type: "integer", NotNull: true})
+				callsTable.PrimaryKey = []string{"chain_id", "id"}
+			}
+			model := schema.Schema{Tables: []schema.Table{callsTable}}
 			ns := fmt.Sprintf("ponder_go_ordmix_%x", time.Now().UnixNano())
 			path := filepath.Join(t.TempDir(), "data")
 			backend := stagedBackend(t, ctx, dialect, path)
@@ -258,6 +267,32 @@ func testMixedSources(t *testing.T, ordering schema.Ordering) {
 				t.Fatal(err)
 			}
 			var calls []string
+			var callsMu sync.Mutex
+			checkCalls := func(want []string) {
+				t.Helper()
+				got := slices.Clone(calls)
+				if ordering == schema.Isolated {
+					// Workers on different chains may interleave. Preserve each chain's exact callback order.
+					byChain := func(a, b string) int {
+						first, _, _ := strings.Cut(a, "/")
+						second, _, _ := strings.Cut(b, "/")
+						return strings.Compare(first, second)
+					}
+					want = slices.Clone(want)
+					slices.SortStableFunc(got, byChain)
+					slices.SortStableFunc(want, byChain)
+				}
+				if !slices.Equal(got, want) {
+					t.Fatalf("mixed source order %v, want %v", got, want)
+				}
+			}
+			write := func(ctx context.Context, c *Context, id string) error {
+				row := store.Row{"id": id}
+				if ordering == schema.Isolated {
+					row["chain_id"] = c.Chain.ID
+				}
+				return c.DB.Write(ctx, "calls", row, store.Insert)
+			}
 			injected := errors.New("stop inside the first contract call")
 			failCall := true
 			handlers := map[string]Handler{}
@@ -277,7 +312,7 @@ func testMixedSources(t *testing.T, ordering schema.Ordering) {
 						if failCall {
 							failCall = false
 							// The transaction must roll this back before retrying the same receipt.
-							if err := c.DB.Write(ctx, "calls", store.Row{"id": "interrupted"}, store.Insert); err != nil {
+							if err := write(ctx, c, "interrupted"); err != nil {
 								return err
 							}
 							return injected
@@ -294,8 +329,10 @@ func testMixedSources(t *testing.T, ordering schema.Ordering) {
 							return fmt.Errorf("unexpected child transaction %v", c.Event.Transaction)
 						}
 					}
+					callsMu.Lock()
 					calls = append(calls, key)
-					return c.DB.Write(ctx, "calls", store.Row{"id": key}, store.Insert)
+					callsMu.Unlock()
+					return write(ctx, c, key)
 				}
 			}
 			worker, err := NewIndexerWithOptions(cfg, db, handlers, Options{DisableCache: dialect == "pglite"})
@@ -310,12 +347,13 @@ func testMixedSources(t *testing.T, ordering schema.Ordering) {
 				}
 			})
 			firstCalls := []string{"A/0x0/Child:setup", "A/0x1/Head:block"}
-			if ordering == schema.Multichain {
+			if ordering != schema.Omnichain {
 				firstCalls = append(firstCalls, "B/0x1/Fixed:Ping")
 			}
-			if !errors.Is(err, context.Canceled) || !reflect.DeepEqual(calls, firstCalls) {
-				t.Fatalf("first scan: %v, %v", calls, err)
+			if !errors.Is(err, context.Canceled) {
+				t.Fatalf("first scan: %v", err)
 			}
+			checkCalls(firstCalls)
 			send(first, child, abi.FunctionSelector(run), 7)
 			mine(first, 30)
 			finish, stop := context.WithTimeout(ctx, 20*time.Second)
@@ -343,20 +381,37 @@ func testMixedSources(t *testing.T, ordering schema.Ordering) {
 				want = append(want, "B/0x1/Fixed:Ping")
 			}
 			want = append(want, "A/0x2/Wallet:transaction:to", "A/0x2/Child:Ping", "A/0x2/Child.run()", "A/0x2/Wallet:transfer:to", "A/0x2/Head:block")
-			if !reflect.DeepEqual(calls, want) {
-				t.Fatalf("mixed source order %v, want %v", calls, want)
-			}
+			checkCalls(want)
 			rows, err := db.Read(ctx, "calls")
 			if err != nil || len(rows.Rows) != len(want) {
 				t.Fatal(rows, err)
+			}
+			persisted := make([]string, 0, len(rows.Rows))
+			chainIDs := map[string]string{"A": "101", "B": "202"}
+			for _, row := range rows.Rows {
+				id := fmt.Sprint(row["id"])
+				if ordering == schema.Isolated {
+					chain, _, _ := strings.Cut(id, "/")
+					if fmt.Sprint(row["chain_id"]) != chainIDs[chain] {
+						t.Fatalf("callback stored under the wrong chain: %v", row)
+					}
+				}
+				persisted = append(persisted, id)
+			}
+			expected := slices.Clone(want)
+			slices.Sort(expected)
+			slices.Sort(persisted)
+			if !slices.Equal(persisted, expected) {
+				t.Fatalf("committed callbacks %v, want %v", persisted, expected)
 			}
 			journal, err := backend.Query(ctx, "SELECT count(*)::text AS count FROM "+schema.Quote(ns)+"._ponder_go_journal")
 			if err != nil || fmt.Sprint(journal.Rows[0]["count"]) != "0" {
 				t.Fatal(journal, err)
 			}
-			if err := worker.RunIndexing(finish, func(bool) {}); err != nil || !reflect.DeepEqual(calls, want) {
-				t.Fatal("bounded replay", calls, err)
+			if err := worker.RunIndexing(finish, func(bool) {}); err != nil {
+				t.Fatal("bounded replay", err)
 			}
+			checkCalls(want)
 		})
 	}
 }

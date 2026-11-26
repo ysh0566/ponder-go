@@ -2,6 +2,16 @@
 
 这份教程使用仓库里的 ERC-20 示例、一个临时 PostgreSQL 数据库和一条本地 Anvil 链。你将部署一个只在构造时发出标准 `Transfer` 事件的演示合约，启动索引器，再通过 HTTP 查到这笔事件产生的两条余额记录。[索引器](../examples/erc20/main.go) · [表定义](../examples/erc20/schema.json)
 
+## 选择 Go 索引器的运行入口
+
+| 业务需要 | 运行入口 | 可用的多链模式 |
+| --- | --- | --- |
+| 用 Go 配置链和来源，在回调里写业务表 | `runtime.NewIndexer` | 默认多链、Isolated、Omnichain 均可回填并持续追块。 |
+| 已用 Go 编译来源配置，并注册了 `runtime.Handler` | `runtime.NewIndexerFromSource` | 沿用编译配置选定的排序，一次启动所有注册了来源的链。 |
+| 分开管理业务数据和同步缓存，使用 `indexing.Handler` | `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` | 默认多链可持续运行。Omnichain 需要指定结束高度，且区间须已最终确认。Isolated 尚待实现。 |
+
+如果各链分别维护自己的余额，使用 Isolated，在业务表主键中包含 `chain_id`。如果多条链共同维护一个按事件先后计算的值，使用 Omnichain，运行器会按跨链 checkpoint 排序回调。PostgreSQL 双库存储使用同一数据库内的两个命名空间，PGlite 使用两个数据目录。[独立多链示例](#从同一个-go-项目索引多条链) · [跨链排序示例](#按全局顺序索引多条链) · [双库存储](#独立存储的有限区间索引)
+
 ## 准备环境
 
 需要 Git、Go 1.25 或以上版本、启用 CGO 的 C 编译环境、Docker、Foundry 的 `anvil` 和 `forge`，以及 `curl`、`jq`。以下命令适用于 Bash。示例已用 Go 1.25.11、PostgreSQL 14.24 和 Foundry 1.8.5 验证。首次构建会下载 Go 依赖，Forge 首次编译会按合约声明获取 Solidity 0.8.37；本机已有该编译器时也可将 `FOUNDRY_SOLC` 设为其绝对路径。
