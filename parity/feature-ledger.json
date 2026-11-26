@@ -449,11 +449,13 @@
       ],
       "evidence": [
         "parity/runs/batch-11.json",
-        "parity/runs/native-chain-scheduling/RESULT.md"
+        "parity/runs/native-chain-scheduling/RESULT.md",
+        "parity/runs/native-isolated-mixed-sources/RESULT.md"
       ],
-      "remaining": "Native isolated chain scheduling, readiness, scoped reorg, finalized bounded completion and restart are exercised. Additional source and failure combinations need broader coverage.",
+      "remaining": "The atomic Store supports independent chain progress and rollback. Static and factory logs, account transfers and transactions, and contract CALLs have a bounded mixed-source retry and reopen case. Mixed-source live fork and engine-interruption coverage remain open. The independent-store RuntimeRunner rejects Isolated.",
       "native_test_files": [
-        "runtime/isolated_indexer_test.go"
+        "runtime/isolated_indexer_test.go",
+        "runtime/ordered_indexer_test.go"
       ]
     },
     {
@@ -512,13 +514,18 @@
     },
     {
       "id": "relations",
-      "status": "unimplemented",
-      "implementation_files": [],
+      "status": "verified_subset",
+      "implementation_files": [
+        "graphql/relations.go",
+        "graphql/loader.go"
+      ],
       "upstream_sources": [
         "packages/core/src/drizzle/index.ts"
       ],
-      "evidence": [],
-      "remaining": "Native API, rollback integration, queries and all exact source tests remain."
+      "evidence": [
+        "parity/runs/graphql-relations-views/RESULT.md"
+      ],
+      "remaining": "Go applications declare query relationships using graphql.Relation. Read coverage includes batched loading and composite joins. These declarations describe query fields independently of SQL foreign keys."
     },
     {
       "id": "enums-views",
@@ -621,13 +628,24 @@
     },
     {
       "id": "graphql",
-      "status": "unimplemented",
-      "implementation_files": [],
+      "status": "verified_subset",
+      "implementation_files": [
+        "graphql/http.go",
+        "graphql/schema.go",
+        "graphql/filter.go",
+        "graphql/page.go",
+        "graphql/relations.go"
+      ],
       "upstream_sources": [
         "packages/core/src/graphql/index.ts"
       ],
-      "evidence": [],
-      "remaining": "Schema generation, filters, pagination, relationships, limits and exact test mapping required."
+      "evidence": [
+        "parity/runs/graphql-entities-http/RESULT.md",
+        "parity/runs/graphql-table-pages/RESULT.md",
+        "parity/runs/graphql-relations-views/RESULT.md",
+        "parity/runs/native-postgres-columns/RESULT.md"
+      ],
+      "remaining": "All 37 pinned query declarations and seven HTTP declarations have Go mappings. The evidence covers their selected schemas and requests on PostgreSQL and PGlite."
     },
     {
       "id": "sql-http",
@@ -774,15 +792,22 @@
     },
     {
       "id": "cli-dev",
-      "status": "unimplemented",
+      "status": "verified_subset",
       "implementation_files": [
-        "cmd/ponder/main.go"
+        "cmd/ponder/main.go",
+        "cmd/ponder/dev.go",
+        "cmd/ponder/dev_progress.go"
       ],
       "upstream_sources": [
         "packages/core/src/bin/commands/dev.ts"
       ],
-      "evidence": [],
-      "remaining": "CLI currently returns an explicit unimplemented error. Native implementation and exact cases remain."
+      "evidence": [
+        "parity/runs/native-dev-cli/RESULT.md",
+        "parity/runs/native-dev-progress/RESULT.md",
+        "parity/runs/native-dev-metrics/RESULT.md",
+        "parity/runs/native-managed-cli-dev/RESULT.md"
+      ],
+      "remaining": "Native Go projects have a file watcher, a child process per successful rebuild, and a terminal progress display. The separate-domain example uses the default multichain runner."
     },
     {
       "id": "cli-db-prune",
@@ -833,13 +858,19 @@
     },
     {
       "id": "development-reload",
-      "status": "unimplemented",
-      "implementation_files": [],
+      "status": "verified_subset",
+      "implementation_files": [
+        "cmd/ponder/dev.go",
+        "cmd/ponder/project.go"
+      ],
       "upstream_sources": [
         "packages/core/src/build/index.ts"
       ],
-      "evidence": [],
-      "remaining": "Go watcher, process lifecycle, config/handler hash, shadow rebuild and dev UI remain."
+      "evidence": [
+        "parity/runs/native-dev-cli/RESULT.md",
+        "parity/runs/native-managed-cli-dev/RESULT.md"
+      ],
+      "remaining": "Go project reload covers a build error, per-revision shadow namespaces, and the managed dual-store example with default multichain ordering."
     },
     {
       "id": "observability",
