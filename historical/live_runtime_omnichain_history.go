@@ -337,7 +337,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 			return out, e
 		}
 		epoch.Clients().Clear()
-		if r.options.Historical.OnCommitted != nil {
+		if r.options.Historical.OnCommitted != nil || r.options.OnCommitted != nil {
 			counts := make(map[uint64]int, len(output.Groups))
 			for _, block := range blocks {
 				counts[block.id] += len(block.events)
@@ -346,7 +346,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 			for _, g := range output.Groups {
 				groups = append(groups, GroupResult{ChainID: g.ChainID, Checkpoint: g.Checkpoint, BlockRange: g.BlockRange, Events: counts[g.ChainID]})
 			}
-			if err := r.notifyHistoricalCommit(ctx, groups, receipt, attempts); err != nil {
+			if err := r.notifyCommitted(ctx, groups, receipt, control, attempts, true); err != nil {
 				return out, err
 			}
 		}

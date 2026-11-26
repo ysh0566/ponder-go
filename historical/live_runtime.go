@@ -57,9 +57,27 @@ type RuntimeOptions struct {
 	// Requesters supplies fresh transports for preflight, fetch epochs and uncached source scans.
 	Requesters  func(context.Context, uint64) ([]rpc.Requester, error)
 	OnActivated func(context.Context) error
+	// OnCommitted runs after each newly applied business event group, including
+	// empty blocks and replay. An error stops Run after the current batch's
+	// notifications. A crash may interrupt delivery after a durable commit.
+	OnCommitted func(context.Context, RuntimeCommit) error
 	// OnSetupCommitted runs after all initial setup transactions commit and before source events.
 	OnSetupCommitted func(context.Context) error
 }
+
+// RuntimeCommit describes one chain's group within a business transaction.
+type RuntimeCommit struct {
+	GroupResult
+	OperationID string
+	// Head is the physical block cursor for this chain after the commit.
+	Head store.ManagedLiveHead
+	// Historical identifies input processed by the historical indexing service.
+	Historical bool
+	// Safe reports whether the durable recovery checkpoint already covers the
+	// group. A later fork or cold reopen may replay a group while Safe is false.
+	Safe bool
+}
+
 type RuntimeResult struct {
 	Recovered, Ready, Completed             bool
 	HistoricalBlocks, LiveBlocks, Refetches int

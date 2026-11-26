@@ -75,6 +75,20 @@ func testIsolatedLiveReorg(t *testing.T, backend string, interrupt bool) {
 	var epochs []uint64
 	var forked, rolledBack bool
 	o := RuntimeOptions{BuildID: "isolated-live", OpenID: "initial", Historical: runtimeFixtureInput(f), Requesters: runtimeFactory(node.p, &epochs), Live: &RuntimeLiveOptions{PollingInterval: time.Millisecond}}
+	var forkCommits []RuntimeCommit
+	o.OnCommitted = func(ctx context.Context, g RuntimeCommit) error {
+		c, err := r.Control(ctx)
+		if err != nil {
+			return err
+		}
+		if g.Head != c.Cursors[g.ChainID] || g.Checkpoint != c.LogicalCursors[g.ChainID] || g.Safe != (g.Checkpoint <= c.LogicalSafe[g.ChainID]) {
+			return fmt.Errorf("group %+v differs from isolated checkpoint or safe position", g)
+		}
+		if g.ChainID == 1 && height(g.Head) == 3 {
+			forkCommits = append(forkCommits, g)
+		}
+		return nil
+	}
 	o.Live.OnProgress = func(ctx context.Context, p RuntimeLiveProgress) error {
 		c, err := r.Control(ctx)
 		if err != nil {
@@ -125,6 +139,13 @@ func testIsolatedLiveReorg(t *testing.T, backend string, interrupt bool) {
 	}
 	if !forked || rolledBack == interrupt || !slices.Equal(calls[1], wantCalls) || !slices.Equal(calls[2], []uint64{1, 2, 3, 4}) {
 		t.Fatalf("callbacks before cold restart: %v, rolled back %t", calls, rolledBack)
+	}
+	if interrupt {
+		if len(forkCommits) != 1 {
+			t.Fatalf("orphan notifications: %+v", forkCommits)
+		}
+	} else if len(forkCommits) != 2 || forkCommits[0].Head.Hash == forkCommits[1].Head.Hash || forkCommits[0].OperationID == forkCommits[1].OperationID || forkCommits[0].Safe || forkCommits[1].Safe {
+		t.Fatalf("original and replacement notifications: %+v", forkCommits)
 	}
 	checkIsolatedLiveRows(t, f, 3, 4, forkHeight)
 	// The node replaces another, earlier block while the runner is offline.

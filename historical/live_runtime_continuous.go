@@ -592,7 +592,8 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			if e != nil {
 				return out, e
 			}
-			if _, e = epoch.Process(epoch.Context(), b, a, input, false); e != nil {
+			receipt, e := epoch.Process(epoch.Context(), b, a, input, false)
+			if e != nil {
 				return out, e
 			}
 			epoch.Clients().Clear()
@@ -600,6 +601,13 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			c, e = r.domains.Control(ctx)
 			if e != nil {
 				return out, e
+			}
+			if r.options.OnCommitted != nil {
+				number, _ := uintQuantity(event.Block["number"]) // already checked by runtimeHead
+				group := GroupResult{ChainID: id, Checkpoint: head.Checkpoint, BlockRange: [2]float64{float64(number), float64(number)}, Events: len(input)}
+				if e = r.notifyCommitted(ctx, []GroupResult{group}, receipt, c, 1, false); e != nil {
+					return out, e
+				}
 			}
 			if e = r.liveNotify(ctx, "block", id, head); e != nil {
 				return out, e

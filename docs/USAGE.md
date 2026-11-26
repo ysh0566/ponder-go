@@ -660,6 +660,8 @@ GRANT SELECT ON ponder_go_blocks.indexed_block,
 
 Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 管理独立的业务数据与同步数据时，可以在默认多链排序下将 `RuntimeOptions.Live` 留空，并给每个事件来源设置 `endBlock`。打开时各链都必须已经到达配置的结束高度。要包含创世区块，请为来源设置 `startBlock: 0` 并将 `RuntimeOptions.SourceCheckpoints` 设为 `true`。此时初始 checkpoint 标记区块的起点，回调会收到区块 0。只需索引创世区块时可设置 `endBlock: 0`。新建部署时选择 checkpoint 模式，重开原存储时沿用相同设置。不启用该选项时，有限区间从区块 1 或更高处开始。调用 `Run` 后，索引器处理到各链的结束高度并返回 `Completed`。[来源 checkpoint 验证](../parity/runs/native-bounded-source-checkpoints/RESULT.md)
 
+默认多链将 `Live` 留空时，如果扫描尚未最终确认的区块途中发现分叉，本次 `Run` 会返回错误。关闭运行器，用同一部署重新打开即可从持久化进度恢复。需要运行中的作业自动撤销并重放分叉时，开启下文的实时轮询。[有限区间的分叉检查](../historical/live_runtime_completion.go)
+
 `RuntimeOptions.Historical.MaxQueryParameters` 控制同步库单条批量 INSERT 可使用的绑定参数数量，适用于区块、日志、交易、回执、调用轨迹、同步区间和工厂子地址。默认值为 16000。运行器按每行需要的参数个数拆批。例如，每条日志需要 12 个参数，设置为 25 时，每条 INSERT 最多写入两条日志。预算容不下一行时，错误会指出数据表和所需的参数数量。可保留原 `BuildID` 和两个存储位置，使用新的 `OpenID` 和更大的预算重启，继续已提交的进度。该设置适用于两种后端和当前支持的排序模式。Omnichain 的 `Historical.QuerySize` 单独控制历史事件查询的分页。[配置与恢复测试](../parity/runs/native-runtime-query-budget/RESULT.md)
 
 要让默认多链等待尚未出现的结束区块，给每个来源设置有限的 `endBlock`，并设置 `RuntimeOptions.Live = &historical.RuntimeLiveOptions{}`。提前启动后，运行器先处理现有区块，再轮询各链，所有链都达到各自的结束高度时返回 `Completed`。到达结束高度时仍在重组窗口内的区块，重启后可能从安全检查点重新执行。[双链未来结束高度与重放测试](../historical/live_runtime_continuous_test.go)
@@ -669,6 +671,24 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 在默认多链排序下使用工厂合约发现子地址时，将 `RuntimeOptions.FactorySources` 和 `SourceCheckpoints` 都设为 `true`。将 `Live` 留空即可在固定高度结束。工厂地址配置里的 `startBlock` 和 `endBlock` 决定扫描创建事件的范围，子合约或账户配置的区间决定向 Go 回调投递哪些事件。例如，工厂在区块 1 创建的子合约，即使其日志回调从区块 3 才开始，仍可在区块 3 收到事件。重开同一部署时，运行器按区块哈希恢复子地址，RPC 节点需能返回创建区间的区块和日志。未最终确认的区块被替换后，回放会使用新分支创建的子地址。[有限区间工厂测试](../parity/runs/native-bounded-factory/RESULT.md)
 
 独立存储的 Omnichain 会自动启用来源 checkpoint。可以注册一个或多个区块回调，各自选择采样间隔，也可以只订阅合约日志、合约 CALL 或账户事件。每个来源都需要声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
+
+#### 订阅双库索引器的事件组提交
+
+在 `historical.RuntimeOptions` 上设置 `OnCommitted`，可以在业务事务提交后收到每条链的事件组进度。默认多链和 Isolated 支持回填、实时追块和重放；Omnichain 支持已最终确认的有限区间。
+
+```go
+opts.OnCommitted = func(ctx context.Context, c historical.RuntimeCommit) error {
+    log.Printf("operation=%s chain=%d block=%s checkpoint=%s events=%d historical=%t safe=%t",
+        c.OperationID, c.ChainID, c.Head.Hash, c.Checkpoint, c.Events, c.Historical, c.Safe)
+    return nil
+}
+```
+
+`Checkpoint` 是本组的来源位置，`Head` 是提交后该链实际扫描到的区块头。一个区块没有匹配到事件时，提交仍能推进扫描位置，通知中的 `Events` 为 0。Omnichain 的一笔事务可以同时提交多条链的事件组，这些通知共享 `OperationID`。回调里可以通过运行器的 `Control(ctx)` 读取已提交的进度。
+
+`Historical` 表示该组使用了历史回填处理逻辑。`Safe` 表示**通知发生时**，持久化的安全检查点已覆盖本组。默认多链会单独推进安全检查点，因此已经写入业务库的历史组也可能收到 `Safe == false`。如果之后发生分叉或重启，同一高度的重放会有新的提交编号，替换分支还可能带来新的区块哈希。
+
+回调返回错误时，运行器会发完这笔事务中其余组的通知，随后从 `Run` 返回错误。进程若在提交后、回调前退出，应用可能收不到该次通知。只关注有限 Isolated 或 Omnichain 的安全回填进度时，还可以使用下面的历史回调。两者同时设置时，每组先调用历史回调，再调用运行器回调。[提交与重放测试](../parity/runs/native-runtime-commit-notifications/RESULT.md)
 
 #### 接收双库回填的提交通知
 
