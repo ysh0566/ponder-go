@@ -29,11 +29,10 @@ type managedLogOnlyScan struct {
 }
 
 func logOnlySpanCovered(spans []SourceInterval, start, end uint64) bool {
-	if start > end {
-		return false
-	}
 	next := float64(start)
-	covered := false
+	// A filter outside the scanned interval has no coverage obligation.
+	// Its stored interval records still have to be well formed.
+	covered := start > end
 	for _, span := range spans {
 		if math.IsNaN(span[0]) || math.IsNaN(span[1]) || math.IsInf(span[0], 0) || math.IsInf(span[1], 0) || math.Trunc(span[0]) != span[0] || math.Trunc(span[1]) != span[1] || span[0] < 0 || span[1] < span[0] {
 			return false
@@ -175,7 +174,19 @@ func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEven
 		if err := ctx.Err(); err != nil {
 			return "", err
 		}
-		rows, err := read(ctx, args)
+		// GetEventData may fetch a union of several source filters. Keep
+		// their active set constant so a cached log outside its own
+		// filter range cannot be mistaken for an unprocessed callback.
+		page := args
+		for _, f := range args.Filters {
+			if from := filter.FilterFromBlock(f); from > args.FromBlock {
+				page.ToBlock = min(page.ToBlock, from-1)
+			}
+			if to := filter.FilterToBlock(f); to >= args.FromBlock {
+				page.ToBlock = min(page.ToBlock, to)
+			}
+		}
+		rows, err := read(ctx, page)
 		if err != nil {
 			return "", err
 		}
@@ -185,7 +196,7 @@ func (o ManagedLiveOptions) logOnlyScanHash(ctx context.Context, args SourceEven
 			}
 			skipped = true
 		}
-		if math.IsNaN(rows.Cursor) || math.IsInf(rows.Cursor, 0) || math.Trunc(rows.Cursor) != rows.Cursor || rows.Cursor < args.FromBlock || rows.Cursor > args.ToBlock {
+		if math.IsNaN(rows.Cursor) || math.IsInf(rows.Cursor, 0) || math.Trunc(rows.Cursor) != rows.Cursor || rows.Cursor < args.FromBlock || rows.Cursor > page.ToBlock {
 			return "", ErrManagedLiveBatchConflict
 		}
 		if rows.Cursor == args.ToBlock {
@@ -235,7 +246,7 @@ func verifyABISkippedPage(chainID uint64, callbacks []filter.Object, rows Source
 }
 
 func validateLogCoverage(filters []filter.Object, coverage [][]managedLogOnlyFragment, start, end uint64) error {
-	if len(coverage) != len(filters) {
+	if start > end || len(coverage) != len(filters) {
 		return ErrManagedLiveBatchConflict
 	}
 	for i, f := range filters {
@@ -243,9 +254,14 @@ func validateLogCoverage(filters []filter.Object, coverage [][]managedLogOnlyFra
 		if err != nil || len(coverage[i]) != len(fragments) {
 			return ErrManagedLiveBatchConflict
 		}
+		from, okFrom := logOnlyQuantity(filter.FilterFromBlock(f))
+		to, okTo := logOnlyQuantity(filter.FilterToBlock(f))
+		if !okFrom || !okTo || from > to {
+			return ErrManagedLiveBatchConflict
+		}
 		for j, fragment := range fragments {
 			p := coverage[i][j]
-			if p.ID != filter.EncodeFragment(fragment["fragment"].(filter.Object)) || !logOnlySpanCovered(p.Intervals, start, end) {
+			if p.ID != filter.EncodeFragment(fragment["fragment"].(filter.Object)) || !logOnlySpanCovered(p.Intervals, max(start, from), min(end, to)) {
 				return ErrManagedLivePendingActions
 			}
 		}

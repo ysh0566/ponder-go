@@ -152,18 +152,12 @@ func validateOmnichainLogOnlyCallbacks(callbacks []indexing.Object) error {
 	if len(callbacks) == 0 {
 		return fmt.Errorf("log-only omnichain requires static ABI callbacks")
 	}
-	var start, end uint64
-	for i, cb := range callbacks {
+	for _, cb := range callbacks {
 		f := cb["filter"].(map[string]any)
 		from, fe := uintQuantity(filter.FilterFromBlock(f))
 		to, te := uintQuantity(filter.FilterToBlock(f))
 		if cb["type"] != "contract" || f["type"] != "log" || fe != nil || te != nil || to < from {
 			return fmt.Errorf("log-only omnichain requires finite static ABI log ranges with startBlock <= endBlock")
-		}
-		if i == 0 {
-			start, end = from, to
-		} else if from != start || to != end {
-			return fmt.Errorf("log-only omnichain callback ranges must match within each chain")
 		}
 	}
 	return nil

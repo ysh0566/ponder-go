@@ -449,7 +449,18 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 使用工厂合约发现子地址时，将 `RuntimeOptions.FactorySources` 和 `SourceCheckpoints` 都设为 `true`。将 `Live` 留空即可在固定高度结束。工厂地址配置里的 `startBlock` 和 `endBlock` 决定扫描创建事件的范围，子合约或账户配置的区间决定向 Go 回调投递哪些事件。例如，工厂在区块 1 创建的子合约，即使其日志回调从区块 3 才开始，仍可在区块 3 收到事件。重开同一部署时，运行器按区块哈希恢复子地址，RPC 节点需能返回创建区间的区块和日志。未最终确认的区块被替换后，回放会使用新分支创建的子地址。[有限区间工厂测试](../parity/runs/native-bounded-factory/RESULT.md)
 
-独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并让同一条链上的日志来源使用相同区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
+独立存储的 Omnichain 会自动启用来源 checkpoint。可在所有链上注册每块一次的区块回调，或只注册静态合约日志，并为每个来源声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
+
+同一条链上的两个静态日志来源可以有不同的起止区块，端点都包含在内。下面的 Go 配置将两个合约放在 `mainnet` 上。假设两者都声明了 `Transfer` 事件，区块 150 到 199 内两者的回调都可能收到事件，区块 200 到 299 内只有 `Late:Transfer` 能收到事件。`transferABI` 是包含该事件的 `[]abi.Event`，两个地址分别指向对应合约。
+
+```go
+contracts := map[string]config.ContractDeclaration[[]abi.Event, string, any]{
+    "Early": {ABI: transferABI, Chain: "mainnet", Address: earlyAddress, StartBlock: 100, EndBlock: 199},
+    "Late":  {ABI: transferABI, Chain: "mainnet", Address: lateAddress, StartBlock: 150, EndBlock: 299},
+}
+```
+
+也可以为两个来源设置不相交的区间。重启时，运行器分别核对各来源在其有效区间里的扫描记录。同步库中即使已经存有其他高度的同签名日志，也只会派发声明范围内的事件。[区间、缓存与重放测试](../parity/runs/native-omnichain-log-ranges/RESULT.md)
 
 纯静态日志索引会用每个匹配回调的 ABI 检查日志。例如，合约发出的日志缺少 `uint256` 参数时，无法解码它的回调会跳过。即使一条链的剩余日志全部被跳过，只要同步库能证明已扫描到结束高度，索引器仍可就绪。扫描结束高度和最后提交的业务检查点可能不同。用同一配置重启后，已提交的回调不会重复执行。[区间末尾与重启测试](../parity/runs/native-omnichain-abi-tail/RESULT.md)
 
