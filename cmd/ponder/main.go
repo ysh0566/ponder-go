@@ -46,12 +46,12 @@ func runCommand(ctx context.Context, args []string, out, diagnostics io.Writer, 
 	case "init":
 		flags := flag.NewFlagSet("init", flag.ContinueOnError)
 		flags.SetOutput(log.Diagnostics())
-		template := flags.String("template", "go", "Project template (go, empty, blocks, erc20, erc721, erc1155, erc4626, factory, accounts, proxy, or typescript)")
+		template := flags.String("template", "go", "Project template (go, empty, blocks, call-traces, read-contract, erc20, erc721, erc1155, erc4626, factory, accounts, proxy, or typescript)")
 		if err := flags.Parse(args[1:]); err != nil {
 			return err
 		}
 		if flags.NArg() != 1 {
-			return fmt.Errorf("usage: ponder init [--template go|empty|blocks|erc20|erc721|erc1155|erc4626|factory|accounts|proxy|typescript] <new-project-directory>")
+			return fmt.Errorf("usage: ponder init [--template go|empty|blocks|call-traces|read-contract|erc20|erc721|erc1155|erc4626|factory|accounts|proxy|typescript] <new-project-directory>")
 		}
 		return createProject(ctx, *template, flags.Arg(0), out)
 	case "checkpoint":

@@ -301,6 +301,8 @@ head "$model_dir/model.go"
 | --- | --- | --- |
 | `empty` | Ethereum 主网，占位起始区块 1,234,567 | 提供 `example(id, name)` 空表和空 ABI，供项目自行定义事件及 Go 回调。 |
 | `blocks` | Ethereum 主网，从 19,750,000 开始，每 5 个区块一次 | 读取 Chainlink 的 `latestAnswer()`，以区块时间戳为主键将报价记录到 `chainlink_price`。 |
+| `read-contract` | Ethereum 主网，从 15,963,553 开始 | 监听 FileStore 的文件创建和删除事件。`file` 保存文件内容、大小、创建时间及可选的元数据。 |
+| `call-traces` | Ethereum 主网，从 19,800,000 开始 | 跟踪 Multicall3 的 `aggregate3()` 调用。`multicall` 按实际调用者保存累计 gas、输入计数和子调用成功或失败次数。 |
 | `erc721` | Arbitrum One，3,163,146 至 3,200,000 | `token` 保存每个 NFT 的当前所有人，`transfer_event` 保留转手记录。 |
 | `erc1155` | Ethereum 主网，从 12,129,118 开始 | `token_balance` 按持有人和代币 ID 记录余额。批量转账的每一项都有独立的 `transfer_event`。 |
 | `erc4626` | Ethereum 主网，15,774,471 至 18,712,028 | `account` 和 `allowance` 保存份额余额与授权金额，另有转账、授权、存入和取出事件表。 |
@@ -311,6 +313,10 @@ head "$model_dir/model.go"
 用 `ponder init --template empty my-indexer` 新建自己的索引器。将 `network.json` 中的零地址和起始高度改为目标合约及部署高度，把事件 ABI 写入 `abi.json`，再在 `handlers.go` 的 `handlers` 中以 `ExampleContract:事件名` 注册回调。`schema.json` 定义回调写入的业务表。
 
 用 `ponder init --template blocks my-prices` 生成区块采样项目。节点须能在来源区间按区块高度执行历史 `eth_call`。回调从起始高度开始每隔 5 块调用一次 `latestAnswer()`，将带符号的结果除以 10⁸。启动后可执行 `SELECT timestamp, price FROM chainlink_price ORDER BY timestamp` 查看报价。使用自己的预言机时，修改 `network.json` 中的 `address`，或设置 `PONDER_LOCAL_CONTRACT`。[本地双后端验证](../parity/runs/native-block-templates/RESULT.md)
+
+用 `ponder init --template read-contract my-files` 索引 FileStore。创建事件触发后，Go 回调以交易接收方和文件名为参数，在事件区块调用 FileStoreFrontend 的 `readFile(address,string)`。节点需要能执行该区间的历史 `eth_call`。文件删除后，对应的业务行会一并删除。换用自己的部署时，将 `network.json` 的 `address` 改为事件合约地址，并更新 `handlers.go` 的 `frontendAddress`。查询示例为 `SELECT name, size, contents FROM file ORDER BY name`。
+
+用 `ponder init --template call-traces my-multicalls` 跟踪 Multicall3。节点需为历史区块提供 `callTracer`。运行器先调用 `debug_traceBlockByHash`。若节点返回“方法不存在”（`-32601`），则逐笔调用 `debug_traceTransaction`。通过中间合约调用时，结果归在该中间合约地址下。可用 `SELECT "from", gas_used, bytes, successful_calls, failed_calls FROM multicall` 查询。`bytes` 沿用上游计算方式，每个子调用的输入按 4 字节向上取整为一个计数单位，再累加。[两个模板的验证记录](../parity/runs/native-contract-templates/RESULT.md)
 
 下面的命令使用可读取上述历史区间的 Arbitrum RPC 和 PostgreSQL 启动 ERC-721 项目。
 

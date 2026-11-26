@@ -1,0 +1,53 @@
+package main
+
+import (
+	"context"
+	_ "embed"
+	"math/big"
+
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+//go:embed abi.json
+var multicallABI []byte
+
+func project(network networkConfig, _ *logging.Logger) (config.Config, map[string]runtime.Handler) {
+	source := network.contract("multicall3", multicallABI)
+	source.IncludeCallTraces = true
+	return config.Config{Contracts: []config.Contract{source}}, map[string]runtime.Handler{
+		"multicall3.aggregate3()": aggregate,
+	}
+}
+
+func aggregate(ctx context.Context, c *runtime.Context) error {
+	caller := c.Event.Trace["from"].(string)
+	gas := new(big.Int).Set(c.Event.Trace["gasUsed"].(*big.Int))
+	var units, succeeded, failed int64
+	calls := c.Event.Args.([]any)[0].([]any)
+	for _, call := range calls {
+		data := call.(map[string]any)["callData"].(string)
+		// The reference "bytes" column rounds each input up to four-byte units.
+		units += int64((len(data) - 2 + 7) / 8)
+	}
+	for _, result := range c.Event.Result.([]any) {
+		if result.(map[string]any)["success"].(bool) {
+			succeeded++
+		} else {
+			failed++
+		}
+	}
+	current, err := c.DB.Find(ctx, "multicall", store.Row{"from": caller})
+	if err != nil {
+		return err
+	}
+	if current != nil {
+		gas.Add(gas, current["gas_used"].(*big.Int))
+		units += current["bytes"].(int64)
+		succeeded += current["successful_calls"].(int64)
+		failed += current["failed_calls"].(int64)
+	}
+	return c.DB.Write(ctx, "multicall", store.Row{"from": caller, "gas_used": gas, "bytes": units, "successful_calls": succeeded, "failed_calls": failed}, store.Upsert)
+}

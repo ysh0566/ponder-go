@@ -1,0 +1,89 @@
+package main
+
+import (
+	"context"
+	_ "embed"
+	"encoding/json"
+	"fmt"
+	"sync"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/logging"
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+//go:embed abi.json
+var fileStoreABI []byte
+
+//go:embed frontend.json
+var frontendABI []byte
+
+const frontendAddress = "0xBc66C61BCF49Cc3fe4E321aeCEa307F61EC57C0b"
+
+var parseFrontend = sync.OnceValues(func() (abi.ABI, error) {
+	return abi.Parse(string(frontendABI))
+})
+
+func project(network networkConfig, _ *logging.Logger) (config.Config, map[string]runtime.Handler) {
+	source := network.contract("FileStore", fileStoreABI)
+	return config.Config{Contracts: []config.Contract{source}}, map[string]runtime.Handler{
+		"FileStore:FileCreated": fileCreated,
+		"FileStore:FileDeleted": func(ctx context.Context, c *runtime.Context) error {
+			args := c.Event.Args.(map[string]any)
+			_, err := c.DB.DeleteRow(ctx, "file", store.Row{"name": args["filename"]})
+			return err
+		},
+	}
+}
+
+func fileCreated(ctx context.Context, c *runtime.Context) error {
+	args := c.Event.Args.(map[string]any)
+	name := args["filename"].(string)
+	contents, err := readFile(ctx, c, name)
+	if err != nil {
+		return fmt.Errorf("read %q at block %s: %w", name, c.Event.Block.Number, err)
+	}
+	createdAt, err := runtime.Number(c.Event.Block.Timestamp)
+	if err != nil {
+		return err
+	}
+	raw, err := hexutil.Decode(args["metadata"].(string))
+	if err != nil {
+		return err
+	}
+	var metadata map[string]any
+	if err := json.Unmarshal(raw, &metadata); err != nil {
+		metadata = nil
+	}
+	return c.DB.Write(ctx, "file", store.Row{
+		"name": name, "size": args["size"], "created_at": createdAt, "contents": contents,
+		"type": metadata["type"], "compression": metadata["compression"], "encoding": metadata["encoding"],
+	}, store.Insert)
+}
+
+func readFile(ctx context.Context, c *runtime.Context, name string) (string, error) {
+	frontend, err := parseFrontend()
+	if err != nil {
+		return "", err
+	}
+	to, ok := c.Event.Transaction["to"].(string)
+	if !ok || !common.IsHexAddress(to) {
+		return "", fmt.Errorf("transaction has no valid file store recipient")
+	}
+	data, err := frontend.Pack("readFile", common.HexToAddress(to), name)
+	if err != nil {
+		return "", err
+	}
+	var raw hexutil.Bytes
+	call := map[string]any{"to": frontendAddress, "data": hexutil.Encode(data)}
+	if err := c.Client.CallCached(ctx, "eth_call", []any{call, c.Event.Block.Number}, &raw); err != nil {
+		return "", err
+	}
+	var contents string
+	err = frontend.UnpackIntoInterface(&contents, "readFile", raw)
+	return contents, err
+}

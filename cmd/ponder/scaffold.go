@@ -33,7 +33,7 @@ func createProject(ctx context.Context, template, dir string, out io.Writer) err
 	case "empty":
 		files, prefix = scaffolds, "scaffold/go-empty"
 		copyGoBootstrap = true
-	case "blocks", "erc721", "erc1155", "erc4626", "factory", "accounts", "proxy":
+	case "blocks", "call-traces", "read-contract", "erc721", "erc1155", "erc4626", "factory", "accounts", "proxy":
 		files, prefix = scaffolds, "scaffold/"+template
 		copyGoBootstrap = true
 	case "typescript":
