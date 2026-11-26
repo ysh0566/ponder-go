@@ -18,9 +18,6 @@ func validateOmnichainCallbacks(callbacks []indexing.Object) error {
 		if !ok {
 			return fmt.Errorf("omnichain callback filter missing")
 		}
-		if len(filter.GetFilterFactories(f)) != 0 {
-			return fmt.Errorf("omnichain factory sources are not supported")
-		}
 		switch f["type"] {
 		case "block":
 			interval, ie := uintQuantity(f["interval"])
@@ -156,7 +153,7 @@ func validateOmnichainLogOnlyCallbacks(callbacks []indexing.Object) error {
 		f := cb["filter"].(map[string]any)
 		from, fe := uintQuantity(filter.FilterFromBlock(f))
 		to, te := uintQuantity(filter.FilterToBlock(f))
-		if cb["type"] != "contract" || f["type"] != "log" || fe != nil || te != nil || to < from {
+		if cb["type"] != "contract" || f["type"] != "log" || len(filter.GetFilterFactories(f)) != 0 || fe != nil || te != nil || to < from {
 			return fmt.Errorf("log-only omnichain requires finite static ABI log ranges with startBlock <= endBlock")
 		}
 	}

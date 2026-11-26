@@ -306,8 +306,13 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		}
 		return nil
 	}
-	if err = makeSources(); err != nil {
-		return result, err
+	// The finalized Omnichain coordinator owns its historical child map. Its
+	// uncached generator scans the factory interval from the configured start,
+	// even when the business events resume at a later crash checkpoint.
+	if r.build.Ordering != "omnichain" {
+		if err = makeSources(); err != nil {
+			return result, err
+		}
 	}
 	if control.Batches == 0 {
 		baselines := map[uint64]store.ManagedLiveHead{}

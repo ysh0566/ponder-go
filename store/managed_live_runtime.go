@@ -50,7 +50,7 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 		return nil, fmt.Errorf("domain observer requires continuous-v6")
 	}
 	if o.Ordering == schema.Omnichain {
-		if in.Continuous || !in.SourceCheckpoints || in.FactorySources || in.ObserveDomain != nil {
+		if in.Continuous || !in.SourceCheckpoints || in.ObserveDomain != nil {
 			return nil, fmt.Errorf("omnichain requires the bounded finalized runtime format")
 		}
 		for _, chain := range in.Chains {

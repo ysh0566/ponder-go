@@ -28,7 +28,7 @@ type runtimeRunnerCallbackKey struct{}
 
 // RuntimeOptions selects the owned RuntimeRunner lifecycle. A nil Live runs a
 // fixed range. Default multichain supports setup and per-chain RPC caching in
-// either mode. Omnichain uses finalized cached ranges and source checkpoints.
+// either mode. Omnichain uses finalized ranges and source checkpoints.
 // BuildID identifies handler code. OpenID is unique to a single opening.
 type RuntimeOptions struct {
 	// SourceCheckpoints enables source initial positions for bounded or continuous
@@ -36,7 +36,7 @@ type RuntimeOptions struct {
 	// The finalized omnichain format enables these positions automatically.
 	SourceCheckpoints bool
 	// FactorySources discovers child addresses on the canonical branch.
-	// It requires source checkpoints and default multichain ordering.
+	// Set SourceCheckpoints as well. Omnichain also requires a closing block callback on every chain.
 	FactorySources bool
 	Live           *RuntimeLiveOptions
 	// Historical.QuerySize is the bounded omnichain SQL target (1..12000);
@@ -121,8 +121,8 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	if b == nil || (b.Ordering != "multichain" && b.Ordering != "omnichain") || len(b.Chains) == 0 || len(b.Chains) != len(b.EventCallbacks) || len(b.Chains) != len(b.Contracts) || len(b.Chains) != len(b.SetupCallbacks) {
 		return nil, fmt.Errorf("runtime closure requires complete default multichain or supported finalized omnichain executable build")
 	}
-	if b.Ordering == "omnichain" && (o.Live != nil || o.FactorySources) {
-		return nil, fmt.Errorf("omnichain currently requires bounded finalized non-factory runtime")
+	if b.Ordering == "omnichain" && o.Live != nil {
+		return nil, fmt.Errorf("omnichain currently requires bounded finalized runtime")
 	}
 	if b.Ordering == "omnichain" {
 		if err := validateOmnichainCallbackModes(b.EventCallbacks); err != nil {
