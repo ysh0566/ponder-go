@@ -12,7 +12,9 @@
 
 如果各链分别维护自己的余额，使用 Isolated，在业务表主键中包含 `chain_id`。如果多条链共同维护一个按事件先后计算的值，使用 Omnichain，运行器会按跨链 checkpoint 排序回调。PostgreSQL 双库存储使用同一数据库内的两个命名空间，PGlite 使用两个数据目录。[独立多链示例](#从同一个-go-项目索引多条链) · [跨链排序示例](#按全局顺序索引多条链) · [双库存储](#独立存储的有限区间索引)
 
-在双库 Isolated 中，设置 `RuntimeOptions.Live` 即可跟随链头。双库 Omnichain 应保留 `Live = nil`，并指定有限的结束高度。作业可以提前启动，等待区间最终确认。[提前启动](#等待双库-omnichain-的区间最终确认) 需要 Omnichain 持续追块时可选用普通 Go 入口。[Isolated 实时配置](#双库-isolated-实时追块) · [运行器检查](../historical/live_runtime.go)
+在双库 Isolated 中，设置 `RuntimeOptions.Live` 即可跟随链头。单链 RPC 长时间离线时，若要求健康链继续提交新区块，可选普通入口 `runtime.NewIndexer` 的 Isolated 模式。双库运行器在取块重试时会重建所有链的读取队列。[Isolated 实时配置](#双库-isolated-实时追块) · [健康链推进测试](../runtime/isolated_indexer_test.go)
+
+需要按全局顺序持续追块并自动保存业务数据时，使用普通入口的 Omnichain 模式。双库 Omnichain 应保留 `Live = nil`，并指定有限的结束高度。作业可以提前启动，等待区间最终确认。[跨链排序示例](#按全局顺序索引多条链) · [提前启动](#等待双库-omnichain-的区间最终确认) · [运行器检查](../historical/live_runtime.go)
 
 ### 读取 Omnichain 历史和实时事件
 
@@ -634,6 +636,8 @@ if err != nil {
 ```
 
 将 `worker` 交给 `runtime.LaunchApplication`，或直接调用 `RunIndexing`。排序来自来源配置，每条参与链保留自己的 RPC 和缓存策略。只有注册了回调的来源决定索引范围。仅注册 `合约名:setup` 的合约在其起始区块执行一次。某条链还有持续事件来源时，该链会继续追块。[运行模式](RUNTIME_SUPPORT.md) · [双后端验收](../parity/runs/native-compiled-indexer/RESULT.md)
+
+区块来源的 `interval` 使用正整数。例如 `startBlock: 1, interval: 5` 会在第 1、6、11 块触发。Ponder 0.18.2 的配置校验接受非零整数。普通 Go 运行入口在转换配置时会拒绝负间隔。[Go 配置转换](../config/source_native.go) · [上游配置校验](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/build/config.ts#L875-L899)
 
 ### 为单条链配置 Go RPC 传输
 
