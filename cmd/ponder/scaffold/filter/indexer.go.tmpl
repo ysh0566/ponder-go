@@ -14,7 +14,9 @@ import (
 //go:embed abi.json
 var managerABI json.RawMessage
 
-func newProjectIndexer(ctx context.Context, db *store.Store, network networkConfig, chain config.Chain, logger *logging.Logger) (runtime.ApplicationIndexer, error) {
+func newProjectIndexer(ctx context.Context, db *store.Store, networks []networkConfig, logger *logging.Logger) (runtime.ApplicationIndexer, error) {
+	network := networks[0]
+	chain := network.chain()
 	contract := map[string]any{
 		"abi": managerABI, "chain": chain.Name, "address": network.Address,
 		"startBlock": network.StartBlock.height, "filter": map[string]any{"event": "Swap"},

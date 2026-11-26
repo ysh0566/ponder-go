@@ -1,0 +1,20 @@
+package main
+
+import (
+	"context"
+	"math/big"
+
+	"github.com/ysh0566/ponder-go/runtime"
+	"github.com/ysh0566/ponder-go/store"
+)
+
+func recordDeposit(ctx context.Context, c *runtime.Context) error {
+	args := c.Event.Args.(map[string]any)
+	wad := args["wad"].(*big.Int)
+	_, err := c.DB.Indexing().InsertOne(ctx, "account", store.Row{
+		"chainId": c.Chain.ID, "address": args["dst"], "balance": wad,
+	}, store.Conflict{Action: store.ConflictUpdate, Update: func(row store.Row) (store.Row, error) {
+		return store.Row{"balance": new(big.Int).Add(row["balance"].(*big.Int), wad)}, nil
+	}})
+	return err
+}

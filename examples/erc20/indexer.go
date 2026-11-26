@@ -9,8 +9,9 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 )
 
-func newProjectIndexer(_ context.Context, db *store.Store, network networkConfig, chain config.Chain, logger *logging.Logger) (runtime.ApplicationIndexer, error) {
+func newProjectIndexer(_ context.Context, db *store.Store, networks []networkConfig, logger *logging.Logger) (runtime.ApplicationIndexer, error) {
+	network := networks[0]
 	cfg, handlers := project(network, logger)
-	cfg.Chains = []config.Chain{chain}
+	cfg.Chains = []config.Chain{network.chain()}
 	return runtime.NewIndexerWithOptions(cfg, db, handlers, runtime.Options{Logger: logger})
 }

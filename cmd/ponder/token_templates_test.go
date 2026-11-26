@@ -186,6 +186,11 @@ func checkTemplateRows(t *testing.T, ctx context.Context, q query.Client, sql st
 
 func startTemplate(t *testing.T, ctx context.Context, root, namespace string) (query.Client, string) {
 	t.Helper()
+	return launchTemplate(t, ctx, root, namespace, "start")
+}
+
+func launchTemplate(t *testing.T, ctx context.Context, root, namespace, command string) (query.Client, string) {
+	t.Helper()
 	log, err := os.Create(filepath.Join(t.TempDir(), "indexer.log"))
 	if err != nil {
 		t.Fatal(err)
@@ -195,14 +200,18 @@ func startTemplate(t *testing.T, ctx context.Context, root, namespace string) (q
 	var childErr error
 	go func() {
 		defer close(done)
-		childErr = runCLI(child, []string{"start", "--root", root, "--schema", namespace, "--hostname", "127.0.0.1", "--port", "0", "--shutdown-timeout", "30s"}, log, log)
+		args := []string{command, "--root", root, "--schema", namespace, "--hostname", "127.0.0.1", "--port", "0"}
+		if command == "start" {
+			args = append(args, "--shutdown-timeout", "30s")
+		}
+		childErr = runCLI(child, args, log, log)
 	}()
 	t.Cleanup(func() {
 		stop()
 		<-done
 		log.Close()
 		if childErr != nil {
-			t.Errorf("start: %v", childErr)
+			t.Errorf("%s: %v", command, childErr)
 		}
 	})
 	for {

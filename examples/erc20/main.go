@@ -25,6 +25,8 @@ type networkConfig struct {
 	Address    string     `json:"address"`
 	StartBlock blockStart `json:"startBlock"`
 	EndBlock   *uint64    `json:"endBlock"`
+	rpcURL     string
+	wsURL      string
 }
 
 type blockStart struct {
@@ -46,8 +48,8 @@ func (b *blockStart) UnmarshalJSON(raw []byte) error {
 	return nil
 }
 
-func (n networkConfig) head(ctx context.Context, rpcURL string) (uint64, error) {
-	client := rpc.New(rpcURL)
+func (n networkConfig) head(ctx context.Context) (uint64, error) {
+	client := rpc.New(n.rpcURL)
 	var id, head string
 	if err := client.Call(ctx, "eth_chainId", []any{}, &id); err != nil {
 		return 0, err
@@ -60,6 +62,10 @@ func (n networkConfig) head(ctx context.Context, rpcURL string) (uint64, error) 
 		return 0, err
 	}
 	return indexer.Number(head)
+}
+
+func (n networkConfig) chain() config.Chain {
+	return config.Chain{Name: n.Name, ID: n.ID, RPC: []string{n.rpcURL}, WS: n.wsURL}
 }
 
 func (n networkConfig) contract(name string, eventABI []byte) config.Contract {
@@ -85,21 +91,26 @@ func run(ctx context.Context, logger *logging.Logger) error {
 	if e != nil {
 		return e
 	}
-	var network networkConfig
-	if e = json.Unmarshal(rawNetwork, &network); e != nil {
+	networks, e := projectNetworks(rawNetwork)
+	if e != nil {
 		return fmt.Errorf("network.json: %w", e)
 	}
-	if network.Name == "" || network.ID == 0 {
-		return fmt.Errorf("set a chain name and a positive chain id in network.json")
+	if len(networks) == 0 {
+		return fmt.Errorf("network.json requires at least one chain")
 	}
-	rpcEnv := fmt.Sprintf("PONDER_RPC_URL_%d", network.ID)
-	rpcURL := cmp.Or(os.Getenv("PONDER_LOCAL_RPC_URL"), os.Getenv(rpcEnv))
-	network.Address = cmp.Or(os.Getenv("PONDER_LOCAL_CONTRACT"), network.Address)
-	if mode != "serve" && rpcURL == "" {
-		return fmt.Errorf("set %s or PONDER_LOCAL_RPC_URL to index events", rpcEnv)
-	}
-	if mode != "serve" && network.Address == "" {
-		return fmt.Errorf("set the source address in network.json or PONDER_LOCAL_CONTRACT")
+	for i := range networks {
+		n := &networks[i]
+		if n.Name == "" || n.ID == 0 {
+			return fmt.Errorf("set a chain name and a positive chain id in network.json")
+		}
+		rpcEnv := fmt.Sprintf("PONDER_RPC_URL_%d", n.ID)
+		n.rpcURL = cmp.Or(n.rpcURL, os.Getenv(rpcEnv))
+		if mode != "serve" && n.rpcURL == "" {
+			return fmt.Errorf("set %s to index events on %s", rpcEnv, n.Name)
+		}
+		if mode != "serve" && n.Address == "" {
+			return fmt.Errorf("set the source address for %s in network.json", n.Name)
+		}
 	}
 	url, directory := os.Getenv("PONDER_LOCAL_DATABASE_URL"), os.Getenv("PONDER_PGLITE_DIR")
 	if url == "" && directory == "" {
@@ -128,7 +139,7 @@ func run(ctx context.Context, logger *logging.Logger) error {
 	}
 	namespace := os.Getenv("PONDER_SHADOW_SCHEMA")
 	if mode == "serve" {
-		s, err := store.OpenExisting(ctx, backend, model, namespace, schema.Multichain)
+		s, err := store.OpenExisting(ctx, backend, model, namespace, projectOrdering)
 		if err != nil {
 			return err
 		}
@@ -137,7 +148,7 @@ func run(ctx context.Context, logger *logging.Logger) error {
 			return err
 		}
 		defer server.Close()
-		return serve(ctx, nil, server, logger, network)
+		return serve(ctx, nil, server, logger, networks)
 	}
 	open := store.New
 	switch os.Getenv("PONDER_DATABASE_MODE") {
@@ -147,7 +158,7 @@ func run(ctx context.Context, logger *logging.Logger) error {
 	default:
 		return fmt.Errorf("PONDER_DATABASE_MODE must be create or existing")
 	}
-	s, e := open(ctx, backend, model, namespace, schema.Multichain)
+	s, e := open(ctx, backend, model, namespace, projectOrdering)
 	if e != nil {
 		return e
 	}
@@ -156,16 +167,16 @@ func run(ctx context.Context, logger *logging.Logger) error {
 			return e
 		}
 	}
-	chain := config.Chain{Name: network.Name, ID: network.ID, RPC: []string{rpcURL}}
-	if network.StartBlock.latest {
-		network.StartBlock.height, e = s.ResolveStartBlock(ctx, network.ID, func(ctx context.Context) (uint64, error) {
-			return network.head(ctx, rpcURL)
-		})
-		if e != nil {
-			return fmt.Errorf("resolve latest start block: %w", e)
+	for i := range networks {
+		n := &networks[i]
+		if n.StartBlock.latest {
+			n.StartBlock.height, e = s.ResolveStartBlock(ctx, n.ID, n.head)
+			if e != nil {
+				return fmt.Errorf("resolve latest start block for %s: %w", n.Name, e)
+			}
 		}
 	}
-	worker, e := newProjectIndexer(ctx, s, network, chain, logger)
+	worker, e := newProjectIndexer(ctx, s, networks, logger)
 	if e != nil {
 		return e
 	}
@@ -175,11 +186,13 @@ func run(ctx context.Context, logger *logging.Logger) error {
 			return e
 		}
 	}
-	return serve(ctx, worker, query.New(s), logger, network)
+	return serve(ctx, worker, query.New(s), logger, networks)
 }
 
-func serve(ctx context.Context, worker indexer.ApplicationIndexer, server *query.Server, logger *logging.Logger, network networkConfig) error {
-	server.ChainNames[network.ID] = network.Name
+func serve(ctx context.Context, worker indexer.ApplicationIndexer, server *query.Server, logger *logging.Logger, networks []networkConfig) error {
+	for _, n := range networks {
+		server.ChainNames[n.ID] = n.Name
+	}
 	if err := configureAPI(server); err != nil {
 		return err
 	}
