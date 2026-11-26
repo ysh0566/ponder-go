@@ -74,13 +74,8 @@ func gateManagedHistory(t *testing.T, endpoint string) (string, <-chan struct{},
 	return server.URL, entered, release
 }
 
-func TestManagedMultichainCLIStart(t *testing.T) {
-	repo, err := filepath.Abs("../..")
-	if err != nil {
-		t.Fatal(err)
-	}
-	root := t.TempDir()
-	cli := filepath.Join(root, "ponder")
+func setManagedBuildFlags(t *testing.T) {
+	t.Helper()
 	flags := os.Getenv("GOFLAGS")
 	if info, ok := debug.ReadBuildInfo(); ok {
 		for _, setting := range info.Settings {
@@ -90,6 +85,39 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 		}
 	}
 	t.Setenv("GOFLAGS", strings.TrimSpace(flags))
+}
+
+func writeManagedFile(t *testing.T, project, name, body string) {
+	t.Helper()
+	if err := os.WriteFile(filepath.Join(project, name), []byte(body), 0600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func managedExampleProject(t *testing.T, repo string) string {
+	t.Helper()
+	project := t.TempDir()
+	writeManagedFile(t, project, "go.mod", "module managed.example\n\ngo 1.25.0\n")
+	writeManagedFile(t, project, "go.work", fmt.Sprintf("go 1.25.0\nuse (\n.\n%q\n)\n", repo))
+	t.Setenv("GOWORK", filepath.Join(project, "go.work"))
+	for _, name := range []string{"main.go", "ponder.json"} {
+		raw, err := os.ReadFile(filepath.Join(repo, "examples", "managed-multichain", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		writeManagedFile(t, project, name, string(raw))
+	}
+	return project
+}
+
+func TestManagedMultichainCLIStart(t *testing.T) {
+	repo, err := filepath.Abs("../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := t.TempDir()
+	cli := filepath.Join(root, "ponder")
+	setManagedBuildFlags(t)
 	build := exec.CommandContext(t.Context(), "go", "build", "-o", cli, "./cmd/ponder")
 	build.Dir = repo
 	if out, err := build.CombinedOutput(); err != nil {
@@ -99,23 +127,7 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 		t.Run(backend, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Minute)
 			defer cancel()
-			project := t.TempDir()
-			write := func(name, body string) {
-				t.Helper()
-				if err := os.WriteFile(filepath.Join(project, name), []byte(body), 0600); err != nil {
-					t.Fatal(err)
-				}
-			}
-			write("go.mod", "module managed.example\n\ngo 1.25.0\n")
-			write("go.work", fmt.Sprintf("go 1.25.0\nuse (\n.\n%q\n)\n", repo))
-			t.Setenv("GOWORK", filepath.Join(project, "go.work"))
-			for _, name := range []string{"main.go", "ponder.json"} {
-				raw, err := os.ReadFile(filepath.Join(repo, "examples", "managed-multichain", name))
-				if err != nil {
-					t.Fatal(err)
-				}
-				write(name, string(raw))
-			}
+			project := managedExampleProject(t, repo)
 			namespace := fmt.Sprintf("ponder_go_cli_%x", time.Now().UnixNano())
 			t.Setenv("DATABASE_PRIVATE_URL", "")
 			t.Setenv("DATABASE_URL", "")
@@ -197,7 +209,7 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 				// on reopen, before live-query triggers are reinstalled.
 				cfg = bytes.ReplaceAll(cfg, []byte(`"reorgWindow": 1`), []byte(`"reorgWindow": 0`))
 			}
-			write("ponder.json", strings.NewReplacer("http://127.0.0.1:8545", gated, "http://127.0.0.1:8546", two).Replace(string(cfg)))
+			writeManagedFile(t, project, "ponder.json", strings.NewReplacer("http://127.0.0.1:8545", gated, "http://127.0.0.1:8546", two).Replace(string(cfg)))
 			launch := func(mode, owner string) (string, func()) {
 				t.Helper()
 				log, err := os.Create(filepath.Join(project, owner+".log"))

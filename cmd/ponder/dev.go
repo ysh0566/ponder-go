@@ -145,6 +145,7 @@ func (p *nativeProject) watch(ctx context.Context, dir string) error {
 				run, cancel := context.WithCancel(ctx)
 				namespace := p.devNamespace(revision)
 				child := p.command(run, next, namespace)
+				child.Env = append(child.Env, "PONDER_DEV_REVISION="+revision)
 				if err = child.Start(); err != nil {
 					cancel()
 					os.Remove(next)

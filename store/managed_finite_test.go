@@ -33,6 +33,20 @@ func TestManagedFiniteOptionsAndSchemaSnapshot(t *testing.T) {
 	if got.EndBlocks[1] != 0 || got.Chains[0].Name != "mainnet" {
 		t.Fatal("identity aliases caller memory")
 	}
+	dev := got
+	dev.Development = true
+	productionIdentity, e := got.identityPayload(o, schema.Multichain)
+	if e != nil {
+		t.Fatal(e)
+	}
+	developmentIdentity, e := dev.identityPayload(o, schema.Multichain)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if string(productionIdentity) == string(developmentIdentity) ||
+		liveDomainSpec(o, ManagedLiveOptions{ManagedFiniteOptions: got}) == liveDomainSpec(o, ManagedLiveOptions{ManagedFiniteOptions: dev}) {
+		t.Fatal("development and production must have distinct business and sync identities")
+	}
 	for _, alias := range []string{"ponder_go_m44_sync", "ponder_go_m44cache", "foreign"} {
 		bad := got
 		bad.ViewsSchema = alias

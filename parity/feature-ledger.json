@@ -2416,7 +2416,7 @@
       "evidence": [
         "parity/runs/native-managed-cli-start/RESULT.md"
       ],
-      "remaining": "The independent default multichain start flow covers two block sources with SQL, SSE and restart. PostgreSQL standalone serving is covered by native-managed-cli-serve. Independent hot reload and Isolated ordering remain open."
+      "remaining": "The independent default multichain start flow covers two block sources with SQL, SSE and restart. PostgreSQL standalone serving is covered by native-managed-cli-serve. Development hot reload is covered by native-managed-cli-dev. Isolated ordering remains open."
     },
     {
       "id": "native-omnichain-uncached-logs",
@@ -2466,7 +2466,34 @@
       "evidence": [
         "parity/runs/native-managed-cli-serve/RESULT.md"
       ],
-      "remaining": "Independent PostgreSQL query serving on a business namespace. Development hot reload and Isolated ordering remain open for this runner."
+      "remaining": "Independent PostgreSQL query serving on a business namespace. Isolated ordering remains open for this runner."
+    },
+    {
+      "id": "native-managed-cli-dev",
+      "status": "verified_subset",
+      "implementation_files": [
+        "cmd/ponder/dev.go",
+        "cmd/ponder/project.go",
+        "examples/managed-multichain/main.go",
+        "historical/live_runtime.go",
+        "store/managed_finite.go",
+        "store/managed_live_domains.go",
+        "store/managed_live_domains_bootstrap.go"
+      ],
+      "native_test_files": [
+        "cmd/ponder/managed_dev_test.go",
+        "store/managed_finite_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/bin/commands/dev.ts",
+        "packages/core/src/database/index.ts",
+        "packages/core/src/build/index.test.ts",
+        "packages/core/src/server/index.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-managed-cli-dev/RESULT.md"
+      ],
+      "remaining": "Supports the default two-chain Go example with revision-scoped business and sync storage. The independent runner still requires additional ordering and source combinations."
     }
   ]
 }

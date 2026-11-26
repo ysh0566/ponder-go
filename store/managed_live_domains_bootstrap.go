@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -20,12 +19,7 @@ func domainPriorOwner(s *IndependentStorage, o IndependentStorageOptions, opts M
 		return nil, err
 	}
 	st.viewsSchema = opts.ViewsSchema
-	raw, err := json.Marshal(struct {
-		Build, Plan, Alias, Ordering, Sync string
-		Schema                             schema.Schema
-		Chains                             []MigrationChain
-		Ends                               map[uint64]uint64
-	}{opts.BuildID, opts.PlanID, opts.ViewsSchema, string(ordering), o.SyncNamespace, o.Schema, opts.Chains, opts.EndBlocks})
+	raw, err := opts.identityPayload(o, ordering)
 	if err != nil {
 		return nil, err
 	}

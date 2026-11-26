@@ -30,9 +30,20 @@ var ErrManagedFiniteBusy = errors.New("managed finite operation is busy")
 // application's handler implementation. Neither may be reused for a changed plan.
 type ManagedFiniteOptions struct {
 	BuildID, PlanID, ViewsSchema        string
+	Development                         bool
 	Chains                              []MigrationChain
 	EndBlocks                           map[uint64]uint64
 	HeartbeatInterval, HeartbeatTimeout time.Duration
+}
+
+func (opts ManagedFiniteOptions) identityPayload(o IndependentStorageOptions, ordering schema.Ordering) ([]byte, error) {
+	return json.Marshal(struct {
+		Build, Plan, Alias, Ordering, Sync string
+		Schema                             schema.Schema
+		Chains                             []MigrationChain
+		Ends                               map[uint64]uint64
+		Development                        bool `json:",omitempty"`
+	}{opts.BuildID, opts.PlanID, opts.ViewsSchema, string(ordering), o.SyncNamespace, o.Schema, opts.Chains, opts.EndBlocks, opts.Development})
 }
 
 // Constructor-only mode selection preserves M44's public options shape.
@@ -203,12 +214,7 @@ func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o Inde
 		version, identityTable = (&ManagedLive{opts: *opts.live}).version(), "_ponder_go_managed_live_identity"
 		st.managedLive = &ManagedLive{owner: m, opts: *opts.live}
 	}
-	raw, encodeErr := json.Marshal(struct {
-		Build, Plan, Alias, Ordering, Sync string
-		Schema                             schema.Schema
-		Chains                             []MigrationChain
-		Ends                               map[uint64]uint64
-	}{opts.BuildID, opts.PlanID, opts.ViewsSchema, string(ordering), o.SyncNamespace, o.Schema, opts.Chains, opts.EndBlocks})
+	raw, encodeErr := opts.identityPayload(o, ordering)
 	if encodeErr != nil {
 		return nil, fmt.Errorf("encode managed identity: %w", encodeErr)
 	}
@@ -342,6 +348,9 @@ func (s *IndependentStorage) initializeManagedFinite(ctx context.Context, o Inde
 		return nil, err
 	}
 	app := AppMetadata{Version: version, BuildID: opts.BuildID, TableNames: []string{}, ViewNames: []string{}, IsLocked: 1, HeartbeatAt: time.Now().UnixMilli(), ViewsSchema: opts.ViewsSchema}
+	if opts.Development {
+		app.IsDev = 1
+	}
 	for _, t := range st.Schema.Tables {
 		app.TableNames = append(app.TableNames, t.Name)
 	}
