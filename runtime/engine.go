@@ -501,6 +501,7 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 				err = e.Store.RevertAndRewind(ctx, target)
 			}
 			if err == nil {
+				metrics.ObserveReorg(ctx, e.chain.Name)
 				if m := devMonitorFrom(ctx); m != nil {
 					m.rewind(e.chain.ID, e.Store.Ordering != schema.Isolated)
 				}

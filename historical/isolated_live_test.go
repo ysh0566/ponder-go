@@ -12,6 +12,7 @@ import (
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -125,11 +126,17 @@ func testIsolatedLiveReorg(t *testing.T, backend string, interrupt bool) {
 		}
 	}
 	r = runtimeOpen(t, backend, o)
-	if _, err := r.Run(ctx); !errors.Is(err, stop) {
+	registry := metrics.New()
+	if _, err := r.Run(metrics.WithReorgs(ctx, registry)); !errors.Is(err, stop) {
 		t.Fatalf("fork and recovery: calls=%v: %v", calls, err)
 	}
 	if err := r.Close(ctx); err != nil {
 		t.Fatal(err)
+	}
+	if interrupt {
+		assertReorgCount(t, registry, 0)
+	} else {
+		assertReorgCount(t, registry, 1)
 	}
 	wantCalls := []uint64{1, 2, 3}
 	forkHeight := 0

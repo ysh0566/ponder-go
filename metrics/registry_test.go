@@ -150,3 +150,14 @@ func TestRPCDurationBuckets(t *testing.T) {
 		t.Fatalf("reset left RPC measurements: %v %s", err, text)
 	}
 }
+
+func TestReorgCounter(t *testing.T) {
+	r := New()
+	ctx := WithReorgs(t.Context(), r)
+	ObserveReorg(ctx, "first")
+	ObserveReorg(ctx, "first")
+	ObserveReorg(WithReorgs(ctx, nil), "unobserved")
+	expectSamples(t, r, "ponder_realtime_reorg_total", sample{map[string]string{"chain": "first"}, 2})
+	r.ResetIndexing()
+	expectSamples(t, r, "ponder_realtime_reorg_total")
+}

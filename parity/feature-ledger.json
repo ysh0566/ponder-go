@@ -917,7 +917,9 @@
         "store/managed_live_batch.go",
         "metrics/rpc.go",
         "rpc/client.go",
-        "config/source_build.go"
+        "config/source_build.go",
+        "metrics/reorg.go",
+        "historical/live_runtime_continuous.go"
       ],
       "upstream_sources": [
         "packages/core/src/internal/metrics.ts",
@@ -930,9 +932,10 @@
       ],
       "evidence": [
         "parity/runs/native-historical-duration-metrics/RESULT.md",
-        "parity/runs/native-rpc-metrics/RESULT.md"
+        "parity/runs/native-rpc-metrics/RESULT.md",
+        "parity/runs/native-reorg-metrics/RESULT.md"
       ],
-      "remaining": "The writer exports RPC success durations and error counts per chain and method across history and realtime. The upstream per-chain realtime reorg counter and comparative production benchmarks remain open.",
+      "remaining": "The writer counts successful canonical fork rollbacks by chain and records RPC outcomes by chain and method. Realtime block arrival and processing latency, database method duration and error metrics, and comparative production benchmarks remain open.",
       "native_test_files": [
         "metrics/historical_test.go",
         "runtime/historical_metrics_test.go",
@@ -940,7 +943,11 @@
         "historical/live_runtime_continuous_test.go",
         "metrics/registry_test.go",
         "rpc/custom_transport_test.go",
-        "cmd/ponder/managed_start_test.go"
+        "cmd/ponder/managed_start_test.go",
+        "runtime/mixed_source_reorg_test.go",
+        "historical/live_runtime_reorg_test.go",
+        "historical/live_runtime_bounded_reorg_test.go",
+        "historical/isolated_live_test.go"
       ]
     },
     {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"maps"
 	"net/http"
 	"path/filepath"
@@ -313,6 +314,7 @@ func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend, 
 
 	open(nil)
 	awaitReady(true)
+	checkReorgScrape(t, app)
 	initialBranch := []string{network.original.blockHash}
 	initial := check(network.original, initialBranch)
 	primaryRejections := network.primary.rejected.Load()
@@ -322,6 +324,7 @@ func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend, 
 	if after := check(network.original, initialBranch); !maps.Equal(initial, after) || network.primary.rejected.Load() == primaryRejections || network.standby.rejected.Load() == standbyRejections {
 		t.Fatal("pool outage or unchanged checkpoints not observed")
 	}
+	checkReorgScrape(t, app)
 	if fault != nil {
 		fault.armed.Store(true)
 	}
@@ -337,6 +340,9 @@ func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend, 
 	awaitReady(true)
 	replayed := []string{network.original.blockHash, network.replacement.blockHash}
 	after := check(network.replacement, replayed)
+	if fault == nil {
+		checkReorgScrape(t, app, `ponder_realtime_reorg_total{chain="A"} 1`)
+	}
 	if order == schema.Multichain && fault != nil {
 		replay, err := db.PendingMultichainReplay(ctx)
 		if err != nil || replay != "" {
@@ -354,7 +360,34 @@ func testMixedSourceProviderReorg(t *testing.T, order schema.Ordering, backend, 
 	}
 	open(nil)
 	awaitReady(true)
+	checkReorgScrape(t, app)
 	if final := check(network.replacement, replayed); !maps.Equal(after, final) {
 		t.Fatal("cold reopen changed checkpoints", after, final)
+	}
+}
+
+func checkReorgScrape(t *testing.T, app *Application, want ...string) {
+	t.Helper()
+	request, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://"+app.Addr().String()+"/metrics", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
+	if err != nil || response.StatusCode != http.StatusOK {
+		t.Fatalf("metrics response %d: %v", response.StatusCode, err)
+	}
+	var samples []string
+	for line := range strings.SplitSeq(string(body), "\n") {
+		if strings.HasPrefix(line, "ponder_realtime_reorg_total{") {
+			samples = append(samples, line)
+		}
+	}
+	if !slices.Equal(samples, want) {
+		t.Fatalf("reorg samples: got %v, want %v", samples, want)
 	}
 }
