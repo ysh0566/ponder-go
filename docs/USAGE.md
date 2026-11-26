@@ -432,6 +432,32 @@ result, err := client.ReadContract(ctx, call, indexing.ReadContractOptions{
 
 ## 列类型与 GraphQL 表示
 
+### 在 Go 模型中使用数据库枚举
+
+例如，在 `schema.json` 中声明 `trade_type`，让交易表的 `kind` 列使用它。
+
+```json
+{
+  "enums": [{"name": "trade_type", "values": ["BUY", "SELL"]}],
+  "tables": [{"name": "trade", "columns": [
+    {"name": "id", "type": "text", "primary": true},
+    {"name": "kind", "type": "trade_type", "notNull": true}
+  ]}]
+}
+```
+
+运行 `ponder codegen --typed --schema schema.json --package models --out models/models.go` 前，先创建 `models` 目录。在 Go 回调里，已知的标签可直接使用生成的函数。
+
+```go
+input := models.NewTradeInsert("tx-1", models.TradeTypeBuy())
+_, err := models.Trade.Bind(c.DB.Indexing()).Insert(ctx, input)
+return err
+```
+
+从配置或外部请求读取标签时，调用 `models.ParseTradeType(label)` 并检查错误。解析区分大小写，`String()` 和 JSON 保留数据库中的原始标签。`TradeType` 的零值是声明的第一个标签，这里为 `BUY`。可空列使用 `orm.Nullable[models.TradeType]`，数组元素各自保留 SQL NULL。普通结构体生成和 `--typed --callback-db` 也提供同一组枚举取值。[可编译示例与数据库读写测试](../orm/enum_models_test.go)
+
+### 网络类型与几何类型
+
 在 `schema.json` 的 `columns` 中可以声明 `{"name":"subnet","type":"cidr"}`。同样可用 `inet`、`interval`、`macaddr`、`macaddr8` 和 `time`，数组类型在名称后加 `[]`。生成的 Go 模型以字符串保存这六类标量。数据库校验输入并返回规范形式，例如写入 `2001:0db8:0:0::1` 后可读到 `2001:db8::1`。
 
 `point` 和 `line` 在 Go 模型中分别接受两个坐标和三个直线系数。GraphQL 以 PostgreSQL 文本表示这些值，例如点 `"(1,2)"` 和直线 `"{1,0,-1}"`。通过 `orderBy` 对几何列排序和翻页时，按规范文本的字典序排列。下面的查询适用于含有 `origin point` 和 `axis line` 两列的 `drawing` 表。[双后端读写与查询用例](../graphql/native_column_types_test.go)

@@ -1,0 +1,15 @@
+{
+  "enums": [
+    {"name": "trade_type", "values": ["BUY", "SELL", "", "pre-sale", "pre_sale", "二期"]},
+    {"name": "status", "values": ["BUY"]}
+  ],
+  "tables": [{
+    "name": "trade",
+    "columns": [
+      {"name": "kind", "type": "trade_type", "primary": true},
+      {"name": "state", "type": "status", "notNull": true},
+      {"name": "previous", "type": "trade_type"},
+      {"name": "history", "type": "trade_type[]"}
+    ]
+  }]
+}

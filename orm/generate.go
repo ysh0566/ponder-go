@@ -25,7 +25,7 @@ func modelGoName(value string) string {
 	}
 	return strings.Join(parts, "")
 }
-func typedColumn(column schema.Column, enums []schema.Enum) (typ, decoder, encoder string, e error) {
+func typedColumn(column schema.Column, enums map[string]string) (typ, decoder, encoder string, e error) {
 	if element, ok := strings.CutSuffix(column.Type, "[]"); ok {
 		column.Type = element
 		typ, decode, encode, err := typedColumn(column, enums)
@@ -33,6 +33,9 @@ func typedColumn(column schema.Column, enums []schema.Enum) (typ, decoder, encod
 			return "", "", "", err
 		}
 		return "[]orm.Nullable[" + typ + "]", "orm.ArrayDecoder(" + decode + ")", "orm.EncodeArray(%s, func(v " + typ + ") any { return " + fmt.Sprintf(encode, "v") + " })", nil
+	}
+	if name, ok := enums[column.Type]; ok {
+		return name, "orm.EnumDecoder(Parse" + name + ")", "%s.String()", nil
 	}
 	switch column.Type {
 	case "bigint":
@@ -60,11 +63,6 @@ func typedColumn(column schema.Column, enums []schema.Enum) (typ, decoder, encod
 		return "[3]float64", "orm.DecodeLine", "%s", nil
 	case "timestamp":
 		return "time.Time", "orm.DecodeTime", "orm.EncodeTime(%s)", nil
-	}
-	for _, enum := range enums {
-		if enum.Name == column.Type {
-			return "string", "orm.DecodeString", "%s", nil
-		}
 	}
 	return "", "", "", fmt.Errorf("typed model codegen for %s is not implemented", column.Type)
 }
@@ -103,6 +101,7 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 	}
 	var body strings.Builder
 	imports := map[string]bool{"encoding/json": true, "fmt": true, "github.com/ysh0566/ponder-go/orm": true, "github.com/ysh0566/ponder-go/store": true}
+	enumNames := generateEnums(&body, model)
 	names := map[string]bool{}
 	for _, table := range model.Tables {
 		name := modelGoName(table.Name)
@@ -126,7 +125,7 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 				return nil, fmt.Errorf("colliding or invalid generated field %s.%s", name, field)
 			}
 			fields[field] = true
-			typ, decoder, encoder, e := typedColumn(column, model.Enums)
+			typ, decoder, encoder, e := typedColumn(column, enumNames)
 			if e != nil {
 				return nil, e
 			}

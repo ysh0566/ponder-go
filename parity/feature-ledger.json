@@ -783,16 +783,20 @@
       "implementation_files": [
         "cmd/ponder/main.go",
         "examples/erc20/ponder_generated.go",
-        "orm/generate.go"
+        "orm/generate.go",
+        "orm/generate_structs.go",
+        "orm/generate_enums.go",
+        "orm/column_codecs.go"
       ],
       "upstream_sources": [
         "packages/core/src/bin/commands/codegen.ts"
       ],
       "evidence": [
         "parity/runs/orm-compile-fixtures.json",
-        "orm/container_models_test.go"
+        "orm/container_models_test.go",
+        "parity/runs/native-go-enum-models/RESULT.md"
       ],
-      "remaining": "Generated keys, inserts, updates and rows support JSON, bytes and arrays. Enum and hex columns use string fields. Compile-time value restrictions and custom codec generation remain outside the verified typed model surface."
+      "remaining": "The generated Go models enforce distinct enum types for keys, inserts, updates, scalar and array fields. Hex columns still use strings and generation of custom column codecs remains open."
     },
     {
       "id": "cli-db-list",
@@ -3205,6 +3209,30 @@
         "parity/runs/native-historical-commit-observers/RESULT.md"
       ],
       "remaining": "Default multichain and live dual-store runs keep separate safe checkpoints. Group observers for those modes and custom historical retry waits remain open."
+    },
+    {
+      "id": "native-go-enum-models",
+      "status": "verified_subset",
+      "implementation_files": [
+        "cmd/ponder/main.go",
+        "orm/generate.go",
+        "orm/generate_structs.go",
+        "orm/generate_enums.go",
+        "orm/column_codecs.go"
+      ],
+      "native_test_files": [
+        "orm/enum_models_test.go"
+      ],
+      "upstream_sources": [
+        "packages/core/src/build/schema.test.ts",
+        "packages/core/src/database/index.test.ts",
+        "packages/core/src/indexing-store/index.test.ts",
+        "packages/core/src/graphql/index.test.ts"
+      ],
+      "evidence": [
+        "parity/runs/native-go-enum-models/RESULT.md"
+      ],
+      "remaining": "User-defined column codecs and further schema combinations are outside this enum verification."
     }
   ]
 }
