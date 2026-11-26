@@ -95,12 +95,29 @@ func TestRuntimeOmnichainCommitObserver(t *testing.T) {
 				}
 				return nil
 			}
+			groupStop := errors.New("runtime observer stop")
+			var stoppingID string
+			notified := 0
+			o.OnCommitted = func(_ context.Context, commit RuntimeCommit) error {
+				if !commit.Historical || !commit.Safe || commit.Head.Hash == "" || commit.OperationID == "" || commit.Checkpoint != last[commit.ChainID] {
+					return fmt.Errorf("omnichain group after commit: %+v", commit)
+				}
+				notified += commit.Events
+				if o.OpenID == "first" && stopping {
+					if stoppingID != "" && stoppingID != commit.OperationID {
+						return fmt.Errorf("groups from distinct commits %s and %s", stoppingID, commit.OperationID)
+					}
+					stoppingID = commit.OperationID
+					return groupStop
+				}
+				return nil
+			}
 			for _, owner := range []string{"first", "resume", "finished"} {
 				o.OpenID = owner
 				r = runtimeOpen(t, backend, o)
 				result, err := r.Run(t.Context())
 				if owner == "first" {
-					if !errors.Is(err, stops[1]) || !errors.Is(err, stops[2]) || result.Ready || result.Completed || events != len(calls) || events == len(want.Calls) || ticks.Load() <= 1 {
+					if !errors.Is(err, groupStop) || !errors.Is(err, stops[1]) || !errors.Is(err, stops[2]) || result.Ready || result.Completed || events != len(calls) || events == len(want.Calls) || ticks.Load() <= 1 {
 						t.Fatalf("expected both committed groups before stopping: calls=%d events=%d result=%+v err=%v", len(calls), events, result, err)
 					}
 				} else if err != nil || !result.Ready || !result.Completed || !result.Recovered || (owner == "finished" && result.HistoricalBlocks != 0) {
@@ -120,7 +137,7 @@ func TestRuntimeOmnichainCommitObserver(t *testing.T) {
 					assertOmniLogsSnapshot(t, f, control, want)
 				}
 			}
-			if ticks.Load() <= 3 || events != len(want.Calls) || !slices.Equal(calls, omniLogsKeys(want.Calls)) {
+			if notified != events || ticks.Load() <= 3 || events != len(want.Calls) || !slices.Equal(calls, omniLogsKeys(want.Calls)) {
 				t.Fatalf("clock reads=%d, reported events=%d, callbacks=%v", ticks.Load(), events, calls)
 			}
 		})

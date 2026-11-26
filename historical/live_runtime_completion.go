@@ -531,9 +531,9 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			result.LiveBlocks++
 		}
 		epoch.Clients().Clear()
-		if block.history && r.options.Historical.OnCommitted != nil {
+		if r.options.OnCommitted != nil || (block.history && r.options.Historical.OnCommitted != nil) {
 			group := GroupResult{ChainID: id, Events: len(input), Checkpoint: batch.Checkpoint, BlockRange: batch.BlockRange}
-			if e := r.notifyHistoricalCommit(run, []GroupResult{group}, receipt, attempts); e != nil {
+			if e := r.notifyCommitted(run, []GroupResult{group}, receipt, control, attempts, block.history); e != nil {
 				return result, e
 			}
 		}
@@ -565,9 +565,8 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 
 // An Omnichain transaction can commit a group for each participating chain.
 // Deliver all groups in that transaction before stopping on observer errors.
-func (r *RuntimeRunner) notifyHistoricalCommit(ctx context.Context, groups []GroupResult, receipt store.ManagedLiveBatchResult, attempts int) error {
-	observe := r.options.Historical.OnCommitted
-	if observe == nil || !receipt.Applied {
+func (r *RuntimeRunner) notifyCommitted(ctx context.Context, groups []GroupResult, receipt store.ManagedLiveBatchResult, control store.ManagedLiveControl, attempts int, historical bool) error {
+	if !receipt.Applied {
 		return nil
 	}
 	ctx = context.WithValue(ctx, runtimeRunnerCallbackKey{}, r)
@@ -576,8 +575,28 @@ func (r *RuntimeRunner) notifyHistoricalCommit(ctx context.Context, groups []Gro
 		group.Applied = receipt.Applied
 		group.Reconciled = receipt.Reconciled
 		group.Attempts = attempts
-		if err := observe(ctx, group); err != nil {
-			errs = append(errs, err)
+		if observe := r.options.Historical.OnCommitted; historical && observe != nil {
+			if err := observe(ctx, group); err != nil {
+				errs = append(errs, err)
+			}
+		}
+		if observe := r.options.OnCommitted; observe != nil {
+			safe := control.LogicalSafe[group.ChainID]
+			if safe == "" {
+				// Block-only deployments populate SafeAnchors on the first
+				// prune. Their baseline always precedes the first indexed block.
+				safe = control.SafeAnchors[group.ChainID]
+			}
+			commit := RuntimeCommit{
+				GroupResult: group,
+				OperationID: receipt.OperationID,
+				Head:        control.Cursors[group.ChainID],
+				Historical:  historical,
+				Safe:        safe != "" && group.Checkpoint <= safe,
+			}
+			if err := observe(ctx, commit); err != nil {
+				errs = append(errs, err)
+			}
 		}
 	}
 	return errors.Join(errs...)

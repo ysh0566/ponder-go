@@ -58,6 +58,16 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 				}
 				return nil
 			}}}
+			ids := map[string]bool{}
+			visits := map[store.ManagedLiveHead]int{}
+			o.OnCommitted = func(_ context.Context, group RuntimeCommit) error {
+				if group.OperationID == "" || ids[group.OperationID] || group.Head.Hash == "" || group.Head.Checkpoint != group.Checkpoint || group.Safe || group.Historical || group.Events != 1 || !group.Applied {
+					return fmt.Errorf("unexpected continuous commit: %+v", group)
+				}
+				ids[group.OperationID] = true
+				visits[group.Head]++
+				return nil
+			}
 			r = runtimeOpen(t, backend, o)
 			out, err := r.Run(context.Background())
 			if err != nil || !out.Completed || !out.Ready || out.LiveBlocks != 8 || out.HistoricalBlocks != 0 || commits != 8 || !advanced {
@@ -103,6 +113,14 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 			out, err = r.Run(context.Background())
 			if err != nil || !out.Completed || !out.Ready || !out.Recovered {
 				t.Fatalf("bounded end did not replay/reactivate: %+v %v", out, err)
+			}
+			if len(visits) != 8 || len(ids) != 16 {
+				t.Fatalf("continuous replay: heads=%d operations=%d", len(visits), len(ids))
+			}
+			for head, count := range visits {
+				if count != 2 {
+					t.Fatalf("head %+v observed %d times", head, count)
+				}
 			}
 			if err = r.Close(context.Background()); err != nil {
 				t.Fatal(err)
