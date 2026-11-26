@@ -685,18 +685,8 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 				}
 			}
 			request := store.ManagedLiveDomainReorg{Reorg: store.ManagedLiveReorg{ID: r.nextID("live-reorg"), Generation: c.Generation, ExpectedLastOperation: c.LastOperation, ExpectedTail: c.Tail, Ancestor: head}, Orphaned: orphaned}
-			_, e = r.domains.CoordinateReorg(ctx, request)
-			if e != nil {
-				var stage *store.ManagedStageError
-				if errors.As(e, &stage) && stage.Outcome == "observer" {
-					return out, e
-				}
-				if resume := r.domains.Resume(ctx); resume != nil {
-					return out, fmt.Errorf("continuous reorg sealed; close/reopen required: %w", errors.Join(e, resume))
-				}
-				if _, e = r.domains.CoordinateReorg(ctx, request); e != nil {
-					return out, e
-				}
+			if e = r.coordinateRuntimeReorg(ctx, request); e != nil {
+				return out, e
 			}
 			c, e = r.domains.Control(ctx)
 			if e != nil {
@@ -765,4 +755,20 @@ func (r *RuntimeRunner) persistContinuousFinality(ctx context.Context, epoch *in
 		}
 	}
 	return nil
+}
+
+func (r *RuntimeRunner) coordinateRuntimeReorg(ctx context.Context, request store.ManagedLiveDomainReorg) error {
+	_, err := r.domains.CoordinateReorg(ctx, request)
+	if err == nil {
+		return nil
+	}
+	var stage *store.ManagedStageError
+	if errors.As(err, &stage) && stage.Outcome == "observer" {
+		return err
+	}
+	if resume := r.domains.Resume(ctx); resume != nil {
+		return fmt.Errorf("runtime reorg sealed; close/reopen required: %w", errors.Join(err, resume))
+	}
+	_, err = r.domains.CoordinateReorg(ctx, request)
+	return err
 }
