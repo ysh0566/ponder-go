@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"iter"
+
+	"github.com/ysh0566/ponder-go/schema"
 )
 
 // QueryReader borrows a store's read operations and change notifications.
@@ -27,9 +29,10 @@ func readBackend(backend Backend) Backend {
 	return backend
 }
 
-func (r QueryReader) Available() bool   { return r.store != nil }
-func (r QueryReader) Namespace() string { return r.store.Namespace }
-func (r QueryReader) Dialect() string   { return r.store.Backend.Dialect() }
+func (r QueryReader) Ordering() schema.Ordering { return r.store.Ordering }
+func (r QueryReader) Available() bool           { return r.store != nil }
+func (r QueryReader) Namespace() string         { return r.store.Namespace }
+func (r QueryReader) Dialect() string           { return r.store.Backend.Dialect() }
 
 // Progress keys standalone managed checkpoints by their committed chain names.
 // Readers borrowed from an indexing process use chain IDs.

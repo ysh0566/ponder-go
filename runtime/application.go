@@ -69,6 +69,16 @@ func LaunchApplication(ctx context.Context, indexer ApplicationIndexer, routes *
 		}
 		port = n
 	}
+	command := os.Getenv("PONDER_COMMAND")
+	switch command {
+	case "dev", "start", "serve":
+	default:
+		command = "start"
+		if indexer == nil {
+			command = "serve"
+		}
+	}
+	routes.SetApplicationMetrics(command)
 	run, cancel := context.WithCancel(ctx)
 	routes.Ready.Store(false)
 	listener, err := query.Listen(run, host, port, routes)

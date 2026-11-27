@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -189,6 +190,11 @@ func TestApplicationDevMetrics(t *testing.T) {
 					t.Fatal(err)
 				}
 				defer app.Shutdown(context.Background())
+				body, err := routes.Metrics.Collect(ctx)
+				settings := fmt.Sprintf(`ponder_settings_info{command="dev",database="%s",ordering="multichain"} 1`, dialect)
+				if err != nil || !strings.Contains(body, settings) {
+					t.Fatalf("dev metrics missing %s: %v", settings, err)
+				}
 				var report devstatus.Snapshot
 				for {
 					if ctx.Err() != nil {

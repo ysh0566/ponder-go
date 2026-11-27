@@ -20,6 +20,7 @@ var networkDurationBuckets = []float64{1, 5, 10, 50, 100, 500, 1000, 5000, 10000
 type Registry struct {
 	mu                                  sync.Mutex
 	reg                                 *prometheus.Registry
+	info                                applicationInfo
 	reorgs                              *prometheus.CounterVec
 	blockArrival, realtimeLatency       *prometheus.HistogramVec
 	rpcDuration, handlerDuration        *prometheus.HistogramVec
@@ -66,7 +67,7 @@ func New() *Registry {
 		Name: "ponder_indexing_function_duration", Help: "Duration of indexing function execution",
 		Buckets: []float64{0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000},
 	}, []string{"chain", "event"})
-	r.reg.MustRegister(r.handlerDuration, r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
+	r.reg.MustRegister(&r.info, r.handlerDuration, r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
 	return r
 }
 
@@ -107,12 +108,13 @@ func (r *Registry) FlushIndexing() {
 	r.flush()
 }
 
-// ResetIndexing clears callback durations, RPC measurements, reorg counts and event counts. Cache requests and
+// ResetIndexing clears application settings, callback durations, RPC measurements, reorg counts and event counts. Cache requests and
 // store operation counters are cumulative across indexing runs.
 func (r *Registry) ResetIndexing() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.flush()
+	r.info.settings = nil
 	r.completed.Reset()
 	r.handlerDuration.Reset()
 	r.reorgs.Reset()

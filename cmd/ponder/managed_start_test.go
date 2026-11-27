@@ -410,6 +410,12 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 			if code != http.StatusOK {
 				t.Fatalf("metrics: %d", code)
 			}
+			dialect := strings.TrimSuffix(backend, "-serve")
+			settings := fmt.Sprintf(`ponder_settings_info{command="start",database="%s",ordering="multichain"} 1`, dialect)
+			versionInfo := fmt.Sprintf(`ponder_version_info{major="0",minor="18",patch="2",version="%s"} 1`, version)
+			if !bytes.Contains(body, []byte(settings)) || !bytes.Contains(body, []byte(versionInfo)) {
+				t.Fatalf("writer metrics missing process information: %s", body)
+			}
 			for _, name := range []string{"one", "two"} {
 				sample := fmt.Sprintf(`ponder_rpc_request_duration_count{chain="%s",method="eth_getBlockByNumber"}`, name)
 				if !bytes.Contains(body, []byte(sample)) {
@@ -484,7 +490,9 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 			}
 			if readerAddr != "" {
 				code, body := get(readerAddr + "/metrics")
-				if code != http.StatusOK || bytes.Contains(body, []byte("ponder_realtime_latency_count")) {
+				if code != http.StatusOK || bytes.Contains(body, []byte("ponder_realtime_latency_count")) ||
+					!bytes.Contains(body, []byte(`ponder_settings_info{command="serve",database="postgres"} 1`)) ||
+					!bytes.Contains(body, []byte(versionInfo)) {
 					t.Fatalf("unexpected standalone reader metrics: %d %s", code, body)
 				}
 			}
