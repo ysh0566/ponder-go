@@ -45,6 +45,7 @@ type Client struct {
 	requester           rpc.Requester
 	cache               rpc.Cache
 	chainID             any
+	chainName           string
 	ensResolver         Object
 	ensTLDs             []string
 	multicallDeployment Object
@@ -77,7 +78,11 @@ func NewClientSet(chains []Object, requesters []rpc.Requester, caches ...rpc.Cac
 		if requesters[i] == nil {
 			return nil, fmt.Errorf("missing requester for chain %s", key)
 		}
-		c := &Client{set: s, requester: requesters[i], chainID: json.Number(key), prefetched: map[string]*prefetchValue{}}
+		name, _ := chain["name"].(string)
+		if name == "" {
+			name = key
+		}
+		c := &Client{set: s, requester: requesters[i], chainID: json.Number(key), chainName: name, prefetched: map[string]*prefetchValue{}}
 		metadata, _ := chain["viemChain"].(Object)
 		contracts, _ := metadata["contracts"].(Object)
 		c.ensResolver, _ = contracts["ensUniversalResolver"].(Object)

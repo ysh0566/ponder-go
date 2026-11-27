@@ -275,6 +275,16 @@ histogram_quantile(0.95, sum by (le, table, method) (rate(ponder_indexing_cache_
 
 `ponder_indexing_store_raw_sql_duration` 记录回调 SQL 进入保存点后执行和清理所用的时间，包括数据库报错后的恢复。SQL 校验和执行前的缓存刷盘另行处理。比如，`increase(ponder_indexing_store_raw_sql_duration_count[5m])` 可估算最近五分钟回调提交了多少条 SQL。两组数据都在进程内累计。自行启动运行器时，传入 `metrics.WithHandlers(ctx, registry)` 即可采集。[执行失败和事务恢复测试](../store/sql_test.go)
 
+### 查看 RPC 预取次数
+
+Go 索引客户端根据历史回调预测后续的合约读取。`ponder_indexing_rpc_prefetch_total` 按配置的链名、方法 `eth_call` 和预取类型计数。要比较各链最近五分钟的数据库查找量与提前发送给节点的请求量，可以使用下面的 PromQL。
+
+```promql
+sum by (chain, type) (increase(ponder_indexing_rpc_prefetch_total{method="eth_call"}[5m]))
+```
+
+`type="database"` 计入提交给持久缓存的预测条数，同一批的重复预测只算一次。缓存命中后可以直接使用结果。关闭这条链的缓存时，索引器仍可为更有把握的预测发送 RPC。每次发起请求时，`type="rpc"` 增加一次，包括之后返回错误的请求。普通回调查链或读取已预取的结果都不会增加这个计数。通过 `runtime.LaunchApplication` 启动的写入进程自动接入。直接使用 `indexing.ClientSet` 时，将 `metrics.WithRPC(ctx, registry)` 传给 `Prefetch`。[双后端示例](../indexing/source_prefetch_test.go)
+
 ### 查看 RPC 耗时与错误数
 
 从写入进程读取 `/metrics`，用 `chain` 和 `method` 标签筛选链名与 JSON-RPC 方法。下面的 PromQL 查询给出过去 5 分钟内各链、各方法成功请求的 P95 耗时，单位为毫秒。

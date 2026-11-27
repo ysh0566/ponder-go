@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"math"
 	"strings"
@@ -267,6 +268,10 @@ func (s *ClientSet) Prefetch(ctx context.Context, events []Object) error {
 	// adapters remain compatible but have weaker invocation-prefix guarantees.
 	for i := range admitted {
 		job := &admitted[i]
+		client := s.clients[s.chainOrder[i]]
+		if client.cacheEnabled && client.cache != nil {
+			metrics.CountRPCPrefetch(job.ctx, client.chainName, "database", len(job.calls))
+		}
 		job.futures = make([]<-chan rpc.CacheLookupResult, len(job.calls))
 		for j, p := range job.calls {
 			if p.client.cacheEnabled && p.client.cache != nil {
@@ -384,6 +389,7 @@ func (c *Client) admitPrefetch(ctx context.Context, key string, params any) erro
 	v := &prefetchValue{done: make(chan struct{}), future: true}
 	c.prefetched[key] = v
 	s.mu.Unlock()
+	metrics.CountRPCPrefetch(ctx, c.chainName, "rpc", 1)
 	var completion <-chan error
 	if a, ok := c.requester.(rpc.AsyncRequester); ok {
 		completion = a.BeginCall(child, "eth_call", params, &v.raw)

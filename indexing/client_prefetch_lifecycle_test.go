@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	ponderabi "github.com/ysh0566/ponder-go/abi"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
+	"maps"
 	"math/big"
 	"sync"
 	"testing"
@@ -58,6 +60,8 @@ func (ownedLookupRPC) Call(_ context.Context, _ string, _ any, out any) error {
 func TestClientPrefetchCloseOwnsFailedSibling(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+	registry := metrics.New()
+	ctx = metrics.WithRPC(ctx, registry)
 	chains := []Object{{"id": 1, "cacheRpcRequests": true}, {"id": 2, "cacheRpcRequests": true}}
 	held := &ownedLookupCache{chain: 2, entered: make(chan struct{})}
 	clients, err := NewStrictClientSet(chains, []rpc.Requester{ownedLookupRPC{}, ownedLookupRPC{}}, &ownedLookupCache{chain: 1}, held)
@@ -90,6 +94,7 @@ func TestClientPrefetchCloseOwnsFailedSibling(t *testing.T) {
 	if err = clients.Close(ctx); err != nil {
 		t.Fatal(err)
 	}
+	assertRPCPrefetchCounts(t, registry, map[string]float64{"1/database": 1, "2/database": 1})
 	clients.mu.RLock()
 	lookups, futures, writes := len(clients.lookupPending), len(clients.prefetchPending), len(clients.pending)
 	clients.mu.RUnlock()
@@ -120,11 +125,23 @@ func (singleSettlementCache) BeginCacheGet(context.Context, string) <-chan rpc.C
 func TestClientPrefetchReaderSingleSettlement(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+	registry := metrics.New()
+	ctx = metrics.WithRPC(ctx, registry)
 	chain := Object{"id": 1, "cacheRpcRequests": true}
-	clients, err := NewStrictClientSet([]Object{chain}, []rpc.Requester{ownedLookupRPC{}}, singleSettlementCache{})
+	provider := admissionRequester(func(ctx context.Context, method string, params any, out any) error {
+		if params.([]any)[1] == "0x9" {
+			return errors.New("speculative request failed")
+		}
+		return (ownedLookupRPC{}).Call(ctx, method, params, out)
+	})
+	clients, err := NewStrictClientSet([]Object{chain}, []rpc.Requester{provider}, singleSettlementCache{})
 	if err != nil {
 		t.Fatal(err)
 	}
+	if err = clients.Prefetch(ctx, nil); err != nil {
+		t.Fatal(err)
+	}
+	assertRPCPrefetchCounts(t, registry, map[string]float64{"1/database": 0})
 	abi, err := ponderabi.Parse(`[{"type":"function","name":"value","stateMutability":"view","inputs":[],"outputs":[{"type":"uint256"}]}]`)
 	if err != nil {
 		t.Fatal(err)
@@ -139,7 +156,7 @@ func TestClientPrefetchReaderSingleSettlement(t *testing.T) {
 	}
 	event["event"].(Object)["block"].(Object)["number"] = big.NewInt(8)
 	done := make(chan error, 1)
-	go func() { done <- clients.Prefetch(ctx, []Object{event}) }()
+	go func() { done <- clients.Prefetch(ctx, []Object{event, event}) }()
 	select {
 	case err = <-done:
 		if err != nil {
@@ -148,7 +165,44 @@ func TestClientPrefetchReaderSingleSettlement(t *testing.T) {
 	case <-ctx.Done():
 		t.Fatal("lookup result was read more than once")
 	}
+	assertRPCPrefetchCounts(t, registry, map[string]float64{"1/database": 1, "1/rpc": 1})
+	event["event"].(Object)["block"].(Object)["number"] = big.NewInt(9)
+	if err = clients.Prefetch(ctx, []Object{event}); err != nil {
+		t.Fatal(err)
+	}
+	if err = clients.WaitPrefetch(ctx); err != nil {
+		t.Fatal(err)
+	}
+	registry.ResetIndexing()
+	assertRPCPrefetchCounts(t, registry, map[string]float64{"1/database": 2, "1/rpc": 2})
 	if err = clients.Close(ctx); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func assertRPCPrefetchCounts(t *testing.T, registry *metrics.Registry, want map[string]float64) {
+	t.Helper()
+	families, err := registry.Gather()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]float64{}
+	for _, family := range families {
+		if family.GetName() != "ponder_indexing_rpc_prefetch_total" {
+			continue
+		}
+		for _, sample := range family.Metric {
+			labels := map[string]string{}
+			for _, label := range sample.Label {
+				labels[label.GetName()] = label.GetValue()
+			}
+			if len(labels) != 3 || labels["method"] != "eth_call" {
+				t.Fatalf("unexpected prefetch labels %v", labels)
+			}
+			got[labels["chain"]+"/"+labels["type"]] = sample.GetCounter().GetValue()
+		}
+	}
+	if !maps.Equal(got, want) {
+		t.Fatalf("RPC prefetch counts %v, want %v", got, want)
 	}
 }
