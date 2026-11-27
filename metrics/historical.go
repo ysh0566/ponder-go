@@ -117,3 +117,38 @@ func (r *Registry) ObserveHistoricalGroup(extract, transform time.Duration) {
 	r.groupDuration.WithLabelValues("extract").Add(float64(extract) / float64(time.Millisecond))
 	r.groupDuration.WithLabelValues("transform").Add(float64(transform) / float64(time.Millisecond))
 }
+
+// PlanHistoricalBlocks records the inclusive scan size and its cached coverage.
+// Catch-up generators extend the same run and preserve its completed sample.
+func (r *Registry) PlanHistoricalBlocks(chain string, total, cached float64, catchup bool) {
+	r.updateHistoricalBlocks(chain, total, cached, 0, catchup)
+}
+
+// SetHistoricalBlocks publishes one consistent snapshot of a completed scan.
+func (r *Registry) SetHistoricalBlocks(chain string, total, cached, completed float64) {
+	r.updateHistoricalBlocks(chain, total, cached, completed, false)
+}
+
+func (r *Registry) updateHistoricalBlocks(chain string, total, cached, completed float64, preserveCompleted bool) {
+	if r == nil || chain == "" {
+		return
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.historyTotal.WithLabelValues(chain).Set(total)
+	r.historyCached.WithLabelValues(chain).Set(cached)
+	sample := r.historyDone.WithLabelValues(chain)
+	if !preserveCompleted {
+		sample.Set(completed)
+	}
+}
+
+// AddHistoricalBlocks records blocks covered by successful acquisition.
+func (r *Registry) AddHistoricalBlocks(chain string, count float64) {
+	if r == nil || chain == "" || count <= 0 {
+		return
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.historyDone.WithLabelValues(chain).Add(count)
+}

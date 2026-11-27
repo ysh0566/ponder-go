@@ -86,6 +86,7 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 				if !group.Historical {
 					for _, chain := range b.Executable().Chains {
 						assertBackfillTimes(t, registry, fmt.Sprint(chain["name"]), true, true)
+						assertHistoricalBlockCounts(t, registry, fmt.Sprint(chain["name"]), 0, 0, 0)
 					}
 				}
 				ids[group.OperationID] = true
@@ -178,7 +179,18 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 			// events. Replaying live blocks must not create historical work samples.
 			for _, family := range families {
 				name := family.GetName()
-				if strings.HasPrefix(name, "ponder_historical_") && name != "ponder_historical_start_timestamp_seconds" && name != "ponder_historical_end_timestamp_seconds" {
+				switch name {
+				case "ponder_historical_total_blocks", "ponder_historical_cached_blocks", "ponder_historical_completed_blocks":
+					for _, value := range family.Metric {
+						if value.GetGauge().GetValue() != 0 {
+							t.Fatalf("live replay increased %s: %v", name, value)
+						}
+					}
+					continue
+				case "ponder_historical_start_timestamp_seconds", "ponder_historical_end_timestamp_seconds":
+					continue
+				}
+				if strings.HasPrefix(name, "ponder_historical_") {
 					t.Fatalf("live replay published historical work in %s", name)
 				}
 			}

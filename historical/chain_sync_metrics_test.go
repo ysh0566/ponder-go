@@ -67,3 +67,23 @@ func assertIndexingTime(t *testing.T, registry *metrics.Registry, chain string, 
 		t.Fatalf("missing %s in metrics: %v\n%s", sample, err, body)
 	}
 }
+
+func assertHistoricalBlockCounts(t *testing.T, registry *metrics.Registry, chain string, total, cached, completed int) {
+	t.Helper()
+	body, err := registry.Collect(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for kind, value := range map[string]int{"total": total, "cached": cached, "completed": completed} {
+		sample := fmt.Sprintf("ponder_historical_%s_blocks{chain=%q} %d\n", kind, chain, value)
+		if !strings.Contains(body, sample) {
+			var counts []string
+			for _, line := range strings.Split(body, "\n") {
+				if strings.HasPrefix(line, "ponder_historical_") && strings.Contains(line, "_blocks{") {
+					counts = append(counts, line)
+				}
+			}
+			t.Fatalf("expected %s in %v", sample, counts)
+		}
+	}
+}

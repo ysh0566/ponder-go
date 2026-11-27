@@ -166,6 +166,7 @@ func sourceHistoryNextCursor(cursor string) (string, error) {
 	}
 	return checkpoint.Encode(checkpoint.Checkpoint{BlockTimestamp: cp.BlockTimestamp, ChainID: cp.ChainID, BlockNumber: cp.BlockNumber + 1})
 }
+
 // SourceHistoricalQueryLimit returns the initial SQL row limit for a chain
 // sharing the local coordinator's query budget. Dense blocks can expand it.
 func SourceHistoricalQueryLimit(querySize, localChains int) int {
@@ -174,6 +175,9 @@ func SourceHistoricalQueryLimit(querySize, localChains int) int {
 
 func sourceHistoryLocal(o SourceHistoricalCoordinatorOptions, c SourceHistoricalChain, from, to string, catchup bool) SourceLocalHistoricalOptions {
 	local := c.Local
+	if name, ok := c.Chain["name"].(string); ok {
+		local.ChainName = name
+	}
 	local.From = from
 	local.To = to
 	local.IsCatchup = catchup

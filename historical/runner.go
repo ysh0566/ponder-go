@@ -353,7 +353,27 @@ func (r *Runner) Run(ctx context.Context) (result Result, err error) {
 			return indexedCursorTime(id, cursors[id])
 		})
 		coordinator := source.SourceHistoricalCoordinatorOptions{Chains: chains, BuildChains: buildChains, CrashRecovery: crash, QuerySize: r.options.QuerySize, Clock: r.options.Clock}
-		if !finiteEndsReached(cursors, end) {
+		if finiteEndsReached(cursors, end) {
+			// No extractor runs when the durable business cursors already cover
+			// the entire finite deployment.
+			if measurements := metrics.Historical(run); measurements != nil {
+				for _, chain := range initial {
+					first, e := checkpoint.Decode(chain.Start)
+					if e != nil {
+						return e
+					}
+					last, e := checkpoint.Decode(end[chain.ChainID])
+					if e != nil {
+						return e
+					}
+					total := float64(0)
+					if first.BlockNumber <= last.BlockNumber {
+						total = float64(last.BlockNumber - first.BlockNumber + 1)
+					}
+					measurements.SetHistoricalBlocks(names[chain.ChainID], total, total, 0)
+				}
+			}
+		} else {
 			extractStart := time.Now()
 			for group, e := range source.HistoricalSourceMultichain(run, coordinator) {
 				received := time.Now()

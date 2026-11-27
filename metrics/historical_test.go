@@ -96,3 +96,22 @@ func TestBackfillWindow(t *testing.T) {
 		Historical(t.Context()).NewBackfillWindow("disabled").Start()
 	})
 }
+
+func TestHistoricalBlockCounts(t *testing.T) {
+	r := New()
+	chain := map[string]string{"chain": "one"}
+	r.PlanHistoricalBlocks("one", 4, 1, false)
+	r.AddHistoricalBlocks("one", 2)
+	r.PlanHistoricalBlocks("one", 6, 1, true)
+	r.AddHistoricalBlocks("one", 3)
+	expectSamples(t, r, "ponder_historical_total_blocks", sample{chain, 6})
+	expectSamples(t, r, "ponder_historical_cached_blocks", sample{chain, 1})
+	expectSamples(t, r, "ponder_historical_completed_blocks", sample{chain, 5})
+	r.SetHistoricalBlocks("one", 4, 4, 0)
+	expectSamples(t, r, "ponder_historical_cached_blocks", sample{chain, 4})
+	expectSamples(t, r, "ponder_historical_completed_blocks", sample{chain, 0})
+	r.ResetIndexing()
+	for _, name := range []string{"total", "cached", "completed"} {
+		expectSamples(t, r, "ponder_historical_"+name+"_blocks")
+	}
+}

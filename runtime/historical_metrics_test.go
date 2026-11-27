@@ -12,6 +12,7 @@ import (
 
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/internal/testanvil"
+	"github.com/ysh0566/ponder-go/interval"
 	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/query"
 	"github.com/ysh0566/ponder-go/rpc"
@@ -175,6 +176,9 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 						height = 2 // The equal-timestamp tip sorts after the global watermark.
 					}
 					for _, sample := range []string{
+						fmt.Sprintf("ponder_historical_total_blocks{chain=%q} 1", chain.Name),
+						fmt.Sprintf("ponder_historical_cached_blocks{chain=%q} 0", chain.Name),
+						fmt.Sprintf("ponder_historical_completed_blocks{chain=%q} 1", chain.Name),
 						fmt.Sprintf("ponder_sync_block{chain=%q} %d", chain.Name, height),
 						fmt.Sprintf("ponder_sync_block_timestamp{chain=%q} %g", chain.Name, float64(genesis+10*height)),
 						fmt.Sprintf("ponder_sync_is_realtime{chain=%q} 1", chain.Name),
@@ -257,4 +261,32 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 			})
 		}
 	}
+}
+
+func TestAtomicHistoricalRetryCoverage(t *testing.T) {
+	registry := metrics.New()
+	ctx := metrics.WithHistorical(t.Context(), registry)
+	attempts := context.WithValue(ctx, atomicBackfillKey{}, map[uint64][]interval.Interval{})
+	engine := &Engine{chain: config.Chain{Name: "chain", ID: 1}}
+	// During the first attempt, heights 3 and 4 commit before the RPC fails.
+	engine.historicalScan(attempts, 1, []interval.Interval{{3, 5}})
+	second := engine.historicalScan(attempts, 1, []interval.Interval{{5, 6}})
+	second.finish(5)
+	check := func(total, cached, completed int) {
+		t.Helper()
+		body, err := registry.Collect(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for kind, want := range map[string]int{"total": total, "cached": cached, "completed": completed} {
+			line := fmt.Sprintf("ponder_historical_%s_blocks{chain=\"chain\"} %d\n", kind, want)
+			if !strings.Contains(body, line) {
+				t.Fatalf("missing %s in %s", line, body)
+			}
+		}
+	}
+	check(5, 2, 3)
+	// A later opening sees the durable prefix as cached.
+	engine.historicalScan(ctx, 1, nil).finish(5)
+	check(5, 5, 0)
 }

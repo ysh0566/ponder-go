@@ -11,6 +11,14 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 )
 
+func sourceIntervalSize(spans []store.SourceInterval) float64 {
+	var count float64
+	for _, span := range spans {
+		count += span[1] - span[0] + 1
+	}
+	return count
+}
+
 func sourceIntervalUnion(input []store.SourceInterval) []store.SourceInterval {
 	result := []store.SourceInterval{}
 	if len(input) == 0 {
