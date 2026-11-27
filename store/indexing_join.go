@@ -25,6 +25,12 @@ type JoinedRow struct{ Left, Right Row }
 // Join reads onchain tables inside the current event transaction. In Isolated
 // mode both sides belong to the event's chain, including unmatched left rows.
 func (db *IndexingStore) Join(ctx context.Context, kind JoinKind, leftTable, rightTable string, on []JoinColumns) ([]JoinedRow, error) {
+	return db.JoinRows(ctx, kind, leftTable, rightTable, on, SelectOptions{})
+}
+
+// JoinRows applies WHERE, ORDER BY, LIMIT and OFFSET to joined rows. Filter
+// and order column names use "left." or "right." followed by the physical name.
+func (db *IndexingStore) JoinRows(ctx context.Context, kind JoinKind, leftTable, rightTable string, on []JoinColumns, options SelectOptions) ([]JoinedRow, error) {
 	if err := db.active(); err != nil {
 		return nil, err
 	}
@@ -52,10 +58,22 @@ func (db *IndexingStore) Join(ctx context.Context, kind JoinKind, leftTable, rig
 	}
 	query := "SELECT row_to_json(l.*)::text AS left_row, row_to_json(r.*)::text AS right_row FROM " +
 		s.table(left.Name) + " AS l " + string(kind) + " JOIN " + s.table(right.Name) + " AS r ON " + strings.Join(predicates, " AND ")
-	var args []any
 	if s.Ordering == schema.Isolated {
-		query += " AND r.chain_id = l.chain_id WHERE l.chain_id = $1"
-		args = append(args, db.writer.event.Checkpoint.ChainID)
+		query += " AND r.chain_id = l.chain_id"
+	}
+	query, args, err := db.applySelectOptions(query, options, "l", func(name string) (schema.Column, string, error) {
+		side, column, _ := strings.Cut(name, ".")
+		switch side {
+		case "left":
+			return qualifiedSelectColumn(left, "l", column)
+		case "right":
+			return qualifiedSelectColumn(right, "r", column)
+		default:
+			return schema.Column{}, "", fmt.Errorf("join column %q must specify left or right", name)
+		}
+	})
+	if err != nil {
+		return nil, err
 	}
 	result, err := db.SQL(ctx, query, args...)
 	if err != nil {

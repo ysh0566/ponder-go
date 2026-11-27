@@ -203,12 +203,17 @@ func (db *Database) SelectRows(ctx context.Context, name string, options store.S
 
 // Join executes a model join under the same callback lease as Select.
 func (db *Database) Join(ctx context.Context, kind store.JoinKind, left, right string, on []store.JoinColumns) ([]store.JoinedRow, error) {
+	return db.JoinRows(ctx, kind, left, right, on, store.SelectOptions{})
+}
+
+// JoinRows holds the callback lease through a filtered or paginated join.
+func (db *Database) JoinRows(ctx context.Context, kind store.JoinKind, left, right string, on []store.JoinColumns, options store.SelectOptions) ([]store.JoinedRow, error) {
 	underlying, release, err := db.acquire(ctx)
 	if err != nil {
 		return nil, db.capture(err)
 	}
 	defer release()
-	rows, err := underlying.Join(ctx, kind, left, right, on)
+	rows, err := underlying.JoinRows(ctx, kind, left, right, on, options)
 	return rows, db.capture(err)
 }
 

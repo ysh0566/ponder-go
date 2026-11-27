@@ -568,11 +568,34 @@ func tokenOwners(ctx context.Context, c *runtime.Context) ([]orm.Joined[models.T
 
 使用 `orm.LeftJoin` 可以保留尚无匹配账户的代币，此时返回类型为 `[]orm.Joined[models.TokenRow, *models.AccountRow]`，可检查 `pair.Right == nil`。复合键可传入多个 `orm.Equal(...)`，每个条件都必须满足。在 Isolated 模式下，两侧的数据都限定到本次事件的链。
 
-在 `indexing.Handler` 中传入 `args.Context.DB`。使用 `--typed --callback-db` 的回调也可以传入已绑定的左表，如 `db.Token`。列使用相同的 Go 值类型，数据库还需支持两种存储类型之间的等值比较。连接查询会返回所有匹配行。需要对连接结果继续筛选、排序或分页时，可使用回调事务的参数化 SQL。[双后端与类型检查用例](../orm/join_test.go)
+在 `indexing.Handler` 中传入 `args.Context.DB`。使用 `--typed --callback-db` 的回调也可以传入已绑定的左表，如 `db.Token`。列使用相同的 Go 值类型，数据库还需支持两种存储类型之间的等值比较。这两个直接执行的函数返回匹配结果。需要对结果筛选、排序或分页时，使用下面的查询构造器。[双后端与类型检查用例](../orm/join_test.go)
+
+### 按发送方余额分页查询转账
+
+`api-functions` 模板包含账户余额和转账事件。在该项目中运行上一节的 `ponder codegen --typed` 命令。下面的 Go 回调查询从 `since` 开始发生的转账，按发送方余额降序排列。余额相同时，用转账 ID 保持分页顺序稳定。
+
+```go
+func rankedTransfers(ctx context.Context, c *runtime.Context, since int64, offset int) ([]orm.Joined[models.TransferEventRow, models.AccountRow], error) {
+    transfers, accounts := models.TransferEventColumns, models.AccountColumns
+    sender := orm.Equal(transfers.From, accounts.Address)
+    q := orm.QueryInnerJoin(c.DB.Indexing(), sender)
+    at := orm.JoinColumn(q.Left, transfers.Timestamp)
+    id := orm.JoinColumn(q.Left, transfers.Id)
+    balance := orm.JoinColumn(q.Right, accounts.Balance)
+    return q.Where(at.Gte(since)).
+        OrderBy(balance.Desc(), id.Asc()).
+        Limit(10).Offset(offset).
+        All(ctx)
+}
+```
+
+`orm.JoinColumn` 把生成的列绑定到连接的一侧。自连接时，同一列分别绑定到 `q.Left` 和 `q.Right` 即可区分两侧。使用 `orm.And` 和 `orm.Or` 可以组合来自两侧的条件。所有 `Where` 条件都作用于连接后的行。
+
+需要保留找不到账户的转账时，使用 `orm.QueryLeftJoin`，结果的 `Right` 为可空指针。对绑定到右侧的账户主键调用 `IsNull()` 可以只选出这些转账。Isolated 会在筛选和分页之前限定两侧的链。[连接与分页测试](../orm/join_test.go)
 
 ### 在 Go 回调中过滤和分页
 
-在上一节的 ERC-721 项目中，用当前版本的 `ponder codegen --typed` 重新生成模型，以便比较值使用列的编码器。查询某个地址持有的代币时，可以按代币 ID 排序并只读取当前页。
+在上面的 ERC-721 项目中，用当前版本的 `ponder codegen --typed` 重新生成模型，以便比较值使用列的编码器。查询某个地址持有的代币时，可以按代币 ID 排序并只读取当前页。
 
 ```go
 func tokensByOwner(ctx context.Context, c *runtime.Context, address string, offset int) ([]models.TokenRow, error) {
