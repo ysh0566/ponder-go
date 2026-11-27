@@ -35,7 +35,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 **双库 Omnichain 从回填切换到实时。** 双库作业目前可以等各链的有限区间全部最终确认后回填。剩下的是按全局顺序持续写入新区块，在一条链分叉时协调两库撤销和重放受影响的跨链回调，并支持在此期间中断后恢复。需要立即上线的项目可使用单库 Omnichain。自行管理持久化的应用也可消费 Go 实时事件流。[双库最终性检查](historical/live_runtime_omnichain_source_test.go) · [单库 Omnichain](docs/USAGE.md#按全局顺序索引多条链) · [Go 事件流](docs/USAGE.md#读取-omnichain-历史和实时事件)
 双库 Isolated 已支持部分链离线时首次启动。固定或省略区块边界并启用持续索引后，健康链可以先提交，离线链首次恢复时会核验节点、运行本链的初始化并从配置的起点追块。仅执行已确认区间回填的作业仍需各参与链在线。[节点离线时首启与恢复](docs/USAGE.md#双库-isolated-实时追块)
 
-PGlite 暂时无法通过 Go 的 `context` 立即取消已经发出的 SQL。监控方面，Go 写入进程还缺 11 个 Prometheus 指标族。[PGlite 使用说明](docs/USAGE.md#使用本地-pglite) · [指标明细](docs/RUNTIME_SUPPORT.md#prometheus-coverage)
+PGlite 的查询、写入、开启事务和订阅通知在等待连接时支持 Go `context` 取消。同一事务内的排队语句也可取消。已经发给引擎的 SQL 仍需等待数据库返回。监控方面，Go 写入进程还缺 11 个 Prometheus 指标族。[PGlite 使用说明](docs/USAGE.md#使用本地-pglite) · [指标明细](docs/RUNTIME_SUPPORT.md#prometheus-coverage)
 
 验收工作包括双库故障恢复、6 个参考应用的历史数据对账、2 项同条件性能基准和 17 条仍失败的服务商 RPC 用例。[应用与性能验证](docs/RUNTIME_SUPPORT.md#application-verification) · [RPC 实测记录](parity/runs/provider-policy-assertions/RESULT.md)
 

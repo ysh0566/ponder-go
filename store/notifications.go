@@ -250,8 +250,10 @@ type pgliteNotifications struct {
 }
 
 func (p *pgliteBackend) listen(ctx context.Context, channel string) (NotificationListener, error) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	if err := p.session.lockContext(ctx); err != nil {
+		return nil, err
+	}
+	defer p.session.unlock()
 	if p.closed {
 		return nil, ErrNotificationsClosed
 	}
@@ -289,8 +291,8 @@ func (l *pgliteNotifications) Close() error {
 	l.once.Do(func() {
 		l.finish(ErrNotificationsClosed)
 		p := l.p
-		p.mu.Lock()
-		defer p.mu.Unlock()
+		p.session.lock()
+		defer p.session.unlock()
 		p.notifyMu.Lock()
 		delete(p.listeners[l.channel], l.notificationQueue)
 		last := len(p.listeners[l.channel]) == 0

@@ -516,13 +516,24 @@
       "status": "verified_subset",
       "implementation_files": [
         "bridge/pglite.mjs",
-        "store/backend.go"
+        "store/backend.go",
+        "store/notifications.go"
       ],
       "upstream_sources": [
         "packages/core/src/utils/pglite.ts"
       ],
-      "evidence": [],
-      "remaining": "Actual PGlite 0.2.13 bridge; no SQLite. Immediate cancellation of running SQL and all adapter semantics remain."
+      "evidence": [
+        "parity/runs/native-pglite-queued-cancel/RESULT.md"
+      ],
+      "remaining": "Go contexts cancel waits for a PGlite connection or transaction statement and are checked after argument encoding. Immediate interruption after SQL submission remains open on PGlite 0.2.13.",
+      "native_test_files": [
+        "store/pglite_context_test.go",
+        "store/store_test.go",
+        "store/notifications_test.go",
+        "store/notify_upstream_test.go",
+        "store/engine_recovery_test.go",
+        "store/pglite_startup_test.go"
+      ]
     },
     {
       "id": "business-raw-sql-journal",
