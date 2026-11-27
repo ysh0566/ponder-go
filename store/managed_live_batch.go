@@ -129,7 +129,7 @@ func (m *ManagedLive) readDurableState(ctx context.Context, q Querier, prior boo
 			return d, "", err
 		}
 	}
-	ordered, err := m.validateDurableOwner(d, token, generation, heads)
+	ordered, err := m.validateDurableOwner(d, token, generation, heads, prior)
 	if err != nil {
 		return d, "", err
 	}

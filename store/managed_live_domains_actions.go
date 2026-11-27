@@ -150,7 +150,7 @@ func (d *ManagedLiveDomains) audit(ctx context.Context) (liveDomainLedger, manag
 }
 
 func (d *ManagedLiveDomains) validateIntentRequest(in ManagedLiveDomainReorg, b managedLiveDurable) error {
-	baselines, err := liveDurableBaselines(b.Operations)
+	baselines, err := liveDurableBaselines(b)
 	if err != nil {
 		return err
 	}

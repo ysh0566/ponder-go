@@ -175,7 +175,7 @@ func planLiveReorg(opts ManagedLiveOptions, c ManagedLiveControl, baselines map[
 	baseline, ok := safeHeads[cp.ChainID]
 	base, be := checkpoint.Decode(baseline.Checkpoint)
 	current, ce := checkpoint.Decode(c.Cursors[cp.ChainID].Checkpoint)
-	if err != nil || ancestor != r.Ancestor || !ok || be != nil || ce != nil || len(baselines) != len(opts.Chains) {
+	if err != nil || ancestor != r.Ancestor || !ok || be != nil || ce != nil || len(baselines) != len(c.Cursors) || (!opts.isolatedContinuous() && len(c.Cursors) != len(opts.Chains)) {
 		return plan, ErrManagedLiveBatchConflict
 	}
 	if cp.BlockNumber < base.BlockNumber || cp.BlockTimestamp < base.BlockTimestamp {

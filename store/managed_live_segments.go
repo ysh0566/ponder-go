@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"math"
 	"strings"
 
@@ -293,10 +294,9 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 		return nil, nil, c, err
 	}
 	bootstrap := len(batch.Baselines) > 0
-	// Isolated setup appends one previously uninitialized chain per transaction.
-	// Event batches require all configured chains to have initial positions.
-	partial := opts.isolatedSetup() && bootstrap
-	if partial && (len(batch.Baselines) != 1 || len(batch.Blocks) != 0 || c.Tail != 0) {
+	// Isolated bootstrap may enroll a single chain while its peers continue.
+	partial := bootstrap && (opts.isolatedSetup() || opts.isolatedContinuous() && len(batch.Baselines) == 1)
+	if partial && (len(batch.Baselines) != 1 || len(batch.Blocks) != 0 || (c.Tail != 0 && !opts.isolatedContinuous())) {
 		return nil, nil, c, ErrManagedLiveBatchConflict
 	}
 	if batch.Generation != c.Generation || batch.ExpectedLastOperation != c.LastOperation || batch.ExpectedTail != c.Tail || c.Batches == math.MaxUint64 || (len(batch.Blocks) == 0 && !(opts.liveRuntime && (c.Batches == 0 || partial))) || uint64(len(batch.Blocks)) >= uint64(math.MaxInt64)-c.Next {
@@ -323,8 +323,24 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 				return nil, nil, c, ErrManagedLiveBatchConflict
 			}
 			_, cp, err := normalizeLiveHead(head)
-			fresh, fe := checkpoint.Decode(opts.FinalizedHeads[chain.ID].Checkpoint)
-			if !ok || err != nil || fe != nil || cp.ChainID != chain.ID || cp.BlockNumber > min(fresh.BlockNumber, opts.EndBlocks[chain.ID]) || cp.BlockTimestamp > fresh.BlockTimestamp || (cp.BlockNumber == fresh.BlockNumber && head != opts.FinalizedHeads[chain.ID]) {
+			final := opts.FinalizedHeads[chain.ID]
+			if opts.isolatedContinuous() {
+				final = c.FinalizedHeads[chain.ID]
+			}
+			if partial && opts.isolatedContinuous() && final == (ManagedLiveHead{}) {
+				// The returning worker proved this initial header against its node's finality.
+				// It becomes the first authenticated floor for this chain.
+				final = head
+				c.FinalizedHeads = cloneLiveHeads(c.FinalizedHeads)
+				c.FinalizedHeads[chain.ID] = head
+				c.HistoryCuts = maps.Clone(c.HistoryCuts)
+				if c.HistoryCuts == nil {
+					c.HistoryCuts = map[uint64]uint64{}
+				}
+				c.HistoryCuts[chain.ID] = cp.BlockNumber
+			}
+			fresh, fe := checkpoint.Decode(final.Checkpoint)
+			if !ok || err != nil || fe != nil || cp.ChainID != chain.ID || cp.BlockNumber > min(fresh.BlockNumber, opts.EndBlocks[chain.ID]) || cp.BlockTimestamp > fresh.BlockTimestamp || (cp.BlockNumber == fresh.BlockNumber && head != final) {
 				return nil, nil, c, fmt.Errorf("invalid explicit managed baseline for chain %d", chain.ID)
 			}
 			if opts.runtimeInitial {
@@ -342,7 +358,10 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 			}
 			cursors[chain.ID] = head
 		}
-	} else if len(batch.Baselines) != 0 || len(batch.InitialCheckpoints) != 0 || len(cursors) != len(opts.Chains) {
+		if len(cursors) != len(c.Cursors)+len(batch.Baselines) {
+			return nil, nil, c, ErrManagedLiveBatchConflict
+		}
+	} else if len(batch.Baselines) != 0 || len(batch.InitialCheckpoints) != 0 || (!opts.isolatedContinuous() && len(cursors) != len(opts.Chains)) {
 		return nil, nil, c, ErrManagedLiveBatchConflict
 	}
 	before := cloneLiveHeads(cursors)
@@ -436,7 +455,9 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 		next.LogOnlyLastEvent = lastLog
 	}
 	next.Next += uint64(len(segments))
-	next.Tail = next.Next - 1
+	if len(segments) > 0 {
+		next.Tail = segments[len(segments)-1].Ordinal
+	}
 	next.Batches++
 	if opts.liveRuntime && len(batch.Blocks) == 0 {
 		next.Bootstraps++
@@ -445,8 +466,28 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 	if opts.runtimeInitial {
 		next.LogicalCursors = positions
 		if bootstrap {
-			next.LogicalSafe = cloneLiveCheckpoints(positions)
-			next.LogicalFinality = cloneLiveCheckpoints(positions)
+			next.LogicalSafe = cloneLiveCheckpoints(c.LogicalSafe)
+			next.LogicalFinality = cloneLiveCheckpoints(c.LogicalFinality)
+			if next.LogicalSafe == nil {
+				next.LogicalSafe = map[uint64]string{}
+			}
+			if next.LogicalFinality == nil {
+				next.LogicalFinality = map[uint64]string{}
+			}
+			for id, position := range batch.InitialCheckpoints {
+				next.LogicalSafe[id], next.LogicalFinality[id] = position, position
+			}
+			if c.Finalizations > 0 {
+				next.Finality = cloneLiveHeads(c.Finality)
+				maps.Copy(next.Finality, batch.Baselines)
+			}
+			if c.SafeOrdinal > 0 {
+				next.SafeHeads = cloneLiveHeads(c.SafeHeads)
+				next.SafeAnchors = cloneLiveCheckpoints(c.SafeAnchors)
+				for id, head := range batch.Baselines {
+					next.SafeHeads[id], next.SafeAnchors[id] = head, head.Checkpoint
+				}
+			}
 		}
 	}
 	next.LastOperation = batch.ID

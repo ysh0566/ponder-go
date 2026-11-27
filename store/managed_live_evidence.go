@@ -124,10 +124,10 @@ func liveHistoricalSegments(d managedLiveDurable, ordered []managedLiveOperation
 // SQL snapshot equality is checked separately. Replay proves the exact current
 // projection AND every archived segment, rather than trusting latest>=target.
 func (m *ManagedLive) validateDurable(d managedLiveDurable) ([]managedLiveOperation, error) {
-	return m.validateDurableOwner(d, m.owner.s.leaseToken, m.opened.Generation, m.opts.FinalizedHeads)
+	return m.validateDurableOwner(d, m.owner.s.leaseToken, m.opened.Generation, m.opts.FinalizedHeads, false)
 }
 
-func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken string, terminalGeneration uint64, terminalHeads map[uint64]ManagedLiveHead) ([]managedLiveOperation, error) {
+func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken string, terminalGeneration uint64, terminalHeads map[uint64]ManagedLiveHead, prior bool) ([]managedLiveOperation, error) {
 	if d.Control.Version != m.version() {
 		return nil, ErrManagedLiveBatchConflict
 	}
@@ -168,15 +168,24 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 			if err := decodeLiveJSON(op.Payload, &rolling); err != nil {
 				return nil, err
 			}
-			if validateLiveControl(rolling) != nil || rolling.Generation != op.Generation || rolling.LastOperation != op.ID || rolling.Tail != 0 || rolling.SafeOrdinal != 0 || len(rolling.SafeAnchors) != 0 || len(rolling.SafeHeads) != 0 || rolling.SafeJournalBoundary != 0 || rolling.Finalizations != 0 || len(rolling.Finality) != 0 || rolling.Reorgs != 0 || len(rolling.FinalizedHeads) != len(m.opts.Chains) || len(rolling.HistoryCuts) != len(m.opts.Chains) {
+			if validateLiveControl(rolling) != nil || rolling.Generation != op.Generation || rolling.LastOperation != op.ID || rolling.Tail != 0 || rolling.SafeOrdinal != 0 || len(rolling.SafeAnchors) != 0 || len(rolling.SafeHeads) != 0 || rolling.SafeJournalBoundary != 0 || rolling.Finalizations != 0 || len(rolling.Finality) != 0 || rolling.Reorgs != 0 || (!m.opts.isolatedContinuous() && len(rolling.FinalizedHeads) != len(m.opts.Chains)) || len(rolling.HistoryCuts) != len(rolling.FinalizedHeads) {
 				return nil, ErrManagedLiveBatchConflict
 			}
+			knownHeads := 0
 			for _, chain := range m.opts.Chains {
 				head, ok := rolling.FinalizedHeads[chain.ID]
+				if !ok && m.opts.isolatedContinuous() {
+					continue
+				}
+				knownHeads++
+				cut, hasCut := rolling.HistoryCuts[chain.ID]
 				normalized, cp, err := normalizeLiveHead(head)
-				if !ok || err != nil || normalized != head || cp.ChainID != chain.ID || rolling.HistoryCuts[chain.ID] != min(cp.BlockNumber, m.opts.EndBlocks[chain.ID]) {
+				if !hasCut || !ok || err != nil || normalized != head || cp.ChainID != chain.ID || cut != min(cp.BlockNumber, m.opts.EndBlocks[chain.ID]) {
 					return nil, ErrManagedLiveBatchConflict
 				}
+			}
+			if knownHeads != len(rolling.FinalizedHeads) {
+				return nil, ErrManagedLiveBatchConflict
 			}
 			request := managedHash(struct {
 				Identity, OpenID string
@@ -282,7 +291,7 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 				for _, head := range expectedProofs {
 					proofs = append(proofs, head)
 				}
-				if err := validateLiveFinalityBranch(auditOpts, baseline, rolling.Finality, liveSafeHeads(rolling, baseline), after.Cursors, active, proofs); err != nil {
+				if err := validateLiveFinalityBranch(auditOpts, baseline, after.Finality, liveSafeHeads(after, baseline), after.Cursors, active, proofs); err != nil {
 					return nil, err
 				}
 			}
@@ -397,7 +406,12 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 			return nil, ErrManagedLivePendingActions
 		}
 	}
-	if generation != d.Control.Generation || token != terminalToken || generation != terminalGeneration || managedHash(rolling) != managedHash(d.Control) || managedHash(rolling.FinalizedHeads) != managedHash(terminalHeads) || len(active) != len(d.Segments) || len(seenSegments) != len(history) {
+	expectedHeads := rolling.FinalizedHeads
+	if !prior && m.opts.isolatedContinuous() {
+		// The active owner's immutable opening may predate a late chain's baseline.
+		expectedHeads = rollingOpts.FinalizedHeads
+	}
+	if generation != d.Control.Generation || token != terminalToken || generation != terminalGeneration || managedHash(rolling) != managedHash(d.Control) || managedHash(expectedHeads) != managedHash(terminalHeads) || len(active) != len(d.Segments) || len(seenSegments) != len(history) {
 		return nil, fmt.Errorf("managed exact terminal control/owner/generation or history differs")
 	}
 	for i, segment := range active {
@@ -435,7 +449,7 @@ func (m *ManagedLive) validateDurableOwner(d managedLiveDurable, terminalToken s
 			return nil, ErrManagedLivePendingActions
 		}
 	} else {
-		if len(d.States) != len(d.Control.Cursors) || (!m.opts.isolatedSetup() && len(d.Control.Cursors) != len(m.opts.Chains)) {
+		if len(d.States) != len(d.Control.Cursors) || (!m.opts.isolatedSetup() && !m.opts.isolatedContinuous() && len(d.Control.Cursors) != len(m.opts.Chains)) {
 			return nil, ErrManagedLiveBatchConflict
 		}
 		states := map[uint64]managedLiveCursorState{}

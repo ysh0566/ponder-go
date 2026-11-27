@@ -19,8 +19,8 @@ var (
 	ErrManagedLiveClosed          = errors.New("managed live owner is closed")
 	ErrManagedLiveLegacyMutation  = errors.New("managed live requires receipt-backed writes; legacy mutation is rejected")
 	ErrManagedLiveReceiptConflict = errors.New("managed live open receipt has different inputs")
+	ErrMissingIsolatedBaseline    = errors.New("initialized Isolated cursor has no authenticated opening head")
 	ErrManagedLiveOpenIDUsed      = errors.New("managed live open ID is already durable; use a new explicit open attempt")
-	ErrMissingIsolatedBaseline    = errors.New("offline Isolated recovery requires an initialized cursor for each offline chain")
 	ErrManagedLivePendingActions  = errors.New("managed live recovery or activation is not available for this state")
 )
 

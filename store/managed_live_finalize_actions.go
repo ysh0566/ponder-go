@@ -118,7 +118,7 @@ func (m *ManagedLive) applyFinalizeTransaction(ctx context.Context, tx Transacti
 	if err != nil {
 		return ManagedLiveFinalizeResult{}, err
 	}
-	baseline, err := liveDurableBaselines(d.Operations)
+	baseline, err := liveDurableBaselines(d)
 	if err != nil {
 		return ManagedLiveFinalizeResult{}, err
 	}

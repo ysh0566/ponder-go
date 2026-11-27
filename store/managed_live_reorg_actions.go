@@ -9,9 +9,9 @@ import (
 	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
-func liveDurableBaselines(ops []managedLiveOperation) (map[uint64]ManagedLiveHead, error) {
+func liveDurableBaselines(d managedLiveDurable) (map[uint64]ManagedLiveHead, error) {
 	baselines := map[uint64]ManagedLiveHead{}
-	for _, op := range ops {
+	for _, op := range d.Operations {
 		if op.Kind != "batch" {
 			continue
 		}
@@ -25,11 +25,11 @@ func liveDurableBaselines(ops []managedLiveOperation) (map[uint64]ManagedLiveHea
 			}
 			baselines[id] = head
 		}
-		if len(baselines) != 0 && len(baselines) == len(e.AfterControl.FinalizedHeads) {
+		if len(baselines) != 0 && len(baselines) == len(d.Control.Cursors) {
 			return baselines, nil
 		}
 	}
-	if len(baselines) == 0 {
+	if len(baselines) != len(d.Control.Cursors) || len(baselines) == 0 {
 		return nil, ErrManagedLivePendingActions
 	}
 	return baselines, nil
@@ -99,7 +99,7 @@ func (m *ManagedLive) ApplyReorg(ctx context.Context, in ManagedLiveReorg, acqui
 			return liveReorgResult(evidence, false), nil
 		}
 	}
-	baselines, err := liveDurableBaselines(d.Operations)
+	baselines, err := liveDurableBaselines(d)
 	if err != nil {
 		return ManagedLiveReorgResult{}, err
 	}
@@ -137,6 +137,9 @@ func (m *ManagedLive) ApplyReorg(ctx context.Context, in ManagedLiveReorg, acqui
 		}
 	}
 	for _, chain := range m.opts.Chains {
+		if _, initialized := plan.After.Cursors[chain.ID]; !initialized && m.opts.isolatedContinuous() {
+			continue
+		}
 		cp, err := checkpoint.Decode(liveCursorCheckpoint(plan.After, chain.ID))
 		if err != nil {
 			return ManagedLiveReorgResult{}, err

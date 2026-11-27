@@ -32,9 +32,8 @@ type ManagedLiveRuntimeOptions struct {
 	MaxQueryParameters int
 	// Nil means all chains cached. A complete mixed/disabled policy opts into v7.
 	CacheRPCRequests map[uint64]bool
-	// ResumeUnavailable permits missing RPC heads only when both stores prove
-	// an initialized Isolated cursor for each absent chain. Recovery reuses its
-	// finalized business position. The runner authenticates it on reconnect.
+	// ResumeUnavailable allows continuous Isolated workers to open through a peer outage.
+	// A returning chain authenticates its stored position or enrolls from its first acquired baseline.
 	ResumeUnavailable bool
 	Continuous        bool
 	Setup             bool

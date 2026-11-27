@@ -235,19 +235,6 @@ func TestRuntimeIsolatedOfflineReopen(t *testing.T) {
 				var epochs []uint64
 				o := RuntimeOptions{BuildID: "isolated-offline", OpenID: "first", Historical: runtimeFixtureInput(f), Requesters: runtimeFactory(&finiteRPC{server: gateway}, &epochs), Live: &RuntimeLiveOptions{PollingInterval: time.Millisecond, RetryInterval: 20 * time.Millisecond}}
 				o.OnActivated = func(context.Context) error { return stop }
-				if !deepFork {
-					offline.Store(true)
-					open := OpenRuntimePostgres
-					if backend == "pglite" {
-						open = OpenRuntimePGlite
-					}
-					first, err := open(ctx, o)
-					var status *rpc.HTTPStatusError
-					if first != nil || !errors.Is(err, store.ErrMissingIsolatedBaseline) || !errors.As(err, &status) || status.StatusCode != 503 {
-						t.Fatalf("first opening without a baseline: runner=%v err=%v", first, err)
-					}
-					offline.Store(false)
-				}
 				r := runtimeOpen(t, backend, o)
 				if _, err := r.Run(ctx); !errors.Is(err, stop) {
 					t.Fatal(err)
@@ -365,16 +352,31 @@ func TestIsolatedReturningFinality(t *testing.T) {
 		build:     &config.ExecutableSourceIndexingBuild{Chains: []indexing.Object{{"id": uint64(1), "reorgWindow": uint64(0)}}},
 		finalized: map[uint64]store.ManagedLiveHead{1: head(3)},
 	}
-	if ok, err := r.verifyReturningChain(t.Context(), 0, requester, cursor); ok || err != nil {
-		t.Fatalf("lagging node: verified=%t err=%v", ok, err)
+	if ok, err := r.verifyReturningChain(t.Context(), 0, requester, cursor); ok.Hash != "" || err != nil {
+		t.Fatalf("lagging node: verified=%v err=%v", ok, err)
 	}
 	node.setLatest(4)
-	if ok, err := r.verifyReturningChain(t.Context(), 0, requester, cursor); !ok || err != nil {
-		t.Fatalf("canonical node: verified=%t err=%v", ok, err)
+	if ok, err := r.verifyReturningChain(t.Context(), 0, requester, cursor); ok.Hash == "" || err != nil {
+		t.Fatalf("canonical node: verified=%v err=%v", ok, err)
 	}
 	node.fork(1, 3)
-	if ok, err := r.verifyReturningChain(t.Context(), 0, requester, cursor); ok || !errors.Is(err, store.ErrManagedLiveDeepReorg) {
-		t.Fatalf("replacement of recorded opening finality: verified=%t err=%v", ok, err)
+	if ok, err := r.verifyReturningChain(t.Context(), 0, requester, cursor); ok.Hash != "" || !errors.Is(err, store.ErrManagedLiveDeepReorg) {
+		t.Fatalf("replacement of recorded opening finality: verified=%v err=%v", ok, err)
+	}
+	if h, err := r.verifyReturningChain(t.Context(), 0, requester, store.ManagedLiveHead{}); h.Hash != "" || !errors.Is(err, store.ErrManagedLiveDeepReorg) {
+		t.Fatalf("uninitialized chain changed its recorded opening: head=%v err=%v", h, err)
+	}
+	delete(r.finalized, 1)
+	if h, err := r.verifyReturningChain(t.Context(), 0, requester, cursor); h.Hash != "" || !errors.Is(err, store.ErrMissingIsolatedBaseline) {
+		t.Fatalf("stored cursor missing opening proof: head=%v err=%v", h, err)
+	}
+	r.build.SetupCallbacks = [][]indexing.Object{{{"block": uint64(5)}}}
+	if h, err := r.verifyReturningChain(t.Context(), 0, requester, store.ManagedLiveHead{}); h.Hash != "" || err != nil {
+		t.Fatalf("new chain below setup block: head=%v err=%v", h, err)
+	}
+	node.setLatest(5)
+	if h, err := r.verifyReturningChain(t.Context(), 0, requester, store.ManagedLiveHead{}); h != head(5) || err != nil {
+		t.Fatalf("first finalized head: got %v err=%v", h, err)
 	}
 }
 
@@ -444,16 +446,15 @@ func TestRuntimeIsolatedPartialSetupReopen(t *testing.T) {
 			if err := r.Close(ctx); err != nil {
 				t.Fatal(err)
 			}
-			open := OpenRuntimePostgres
-			if backend == "pglite" {
-				open = OpenRuntimePGlite
-			}
 			offline.Store(1)
-			o.OpenID = "missing-offline-cursor"
-			bad, err := open(ctx, o)
-			var status *rpc.HTTPStatusError
-			if bad != nil || !errors.Is(err, store.ErrMissingIsolatedBaseline) || !errors.As(err, &status) || status.StatusCode != 503 {
-				t.Fatalf("offline chain without committed setup: %v", err)
+			o.OpenID = "deferred-cursor"
+			r = runtimeOpen(t, backend, o)
+			deferred, err := r.Control(ctx)
+			if err != nil || len(deferred.Cursors) != 1 || deferred.Cursors[2] != prior.Cursors[2] || deferred.Serving {
+				t.Fatalf("deferred setup: %+v %v", deferred, err)
+			}
+			if err := r.Close(ctx); err != nil {
+				t.Fatal(err)
 			}
 			offline.Store(2)
 			o.OpenID = "partial-reopen"
@@ -474,8 +475,8 @@ func TestRuntimeIsolatedPartialSetupReopen(t *testing.T) {
 			}
 			r = runtimeOpen(t, backend, o)
 			reopened, err := r.Control(ctx)
-			if err != nil || reopened.Generation != prior.Generation+1 || len(reopened.Cursors) != 1 || reopened.Cursors[2] != prior.Cursors[2] {
-				t.Fatalf("reopen after rejected attempt: %+v %v", reopened, err)
+			if err != nil || reopened.Generation != deferred.Generation+1 || len(reopened.Cursors) != 1 || reopened.Cursors[2] != prior.Cursors[2] {
+				t.Fatalf("reopen after deferred setup: %+v %v", reopened, err)
 			}
 			result, err := r.Run(ctx)
 			if err != nil || !result.Recovered || !result.Ready || !result.Completed || !advanced {
@@ -499,5 +500,186 @@ func TestRuntimeIsolatedPartialSetupReopen(t *testing.T) {
 				}
 			})
 		})
+	}
+}
+
+// A fresh deployment may have no RPC for an entire chain. Only a real
+// canonical baseline may enroll it, even after a peer has unfinalized writes.
+func TestRuntimeIsolatedDeferredBootstrap(t *testing.T) {
+	for _, backend := range []string{"postgres", "pglite"} {
+		for _, setup := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/setup_%t", backend, setup), func(t *testing.T) {
+				continuousRoot(t)
+				ctx, cancel := context.WithTimeout(t.Context(), 4*time.Minute)
+				defer cancel()
+				node := newContinuousRPC(t, 2)
+				allowBaseline := make(chan struct{})
+				var awaitingPeer atomic.Bool
+				node.mu.Lock()
+				node.gate = func(ctx context.Context, id uint64, method string, args []any) error {
+					if id != 1 || method != "eth_getBlockByNumber" || len(args) != 2 || args[0] != "0x0" || args[1] != true {
+						return nil
+					}
+					if awaitingPeer.CompareAndSwap(false, true) {
+						if !setup {
+							node.fork(2, 2)
+						}
+						node.setLatest(3)
+					}
+					select {
+					case <-allowBaseline:
+						return nil
+					case <-ctx.Done():
+						return ctx.Err()
+					}
+				}
+				node.mu.Unlock()
+				var oneOffline, twoOffline atomic.Bool
+				oneOffline.Store(true)
+				twoOffline.Store(!setup)
+				gateway := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+					if req.URL.Path == "/1" && oneOffline.Load() || req.URL.Path == "/2" && twoOffline.Load() {
+						http.Error(w, "offline", http.StatusServiceUnavailable)
+						return
+					}
+					node.p.server.Config.Handler.ServeHTTP(w, req)
+				}))
+				defer gateway.Close()
+				raw := fmt.Sprintf(`{"ordering":"experimental_isolated","chains":{"one":{"id":1,"rpc":%q,"reorgWindow":2},"two":{"id":2,"rpc":%q,"reorgWindow":2}},"blocks":{"Blocks":{"chain":{"one":{},"two":{}},"startBlock":0,"endBlock":4,"interval":1}},"contracts":{"Seed":{"chain":{"one":{},"two":{}},"abi":[],"startBlock":0,"endBlock":4}}}`, gateway.URL+"/1", gateway.URL+"/2")
+				heights := map[uint64][]uint64{}
+				setupCalls := map[uint64]int{}
+				block := indexing.Handler(func(ctx context.Context, a *indexing.HandlerArgs) error {
+					n, err := continuousNumber(a)
+					if err != nil {
+						return err
+					}
+					id := finiteChain(a)
+					heights[id] = append(heights[id], n)
+					h, err := omniLogsFields(a.Event.Get("block"), "hash")
+					if err != nil {
+						return err
+					}
+					_, err = a.Context.DB.InsertOne(ctx, "seen", store.Row{"chainId": int(id), "height": int(n), "hash": h["hash"]}, store.Conflict{})
+					return err
+				})
+				callbacks := []config.SourceIndexingFunction{{Name: "Blocks:block", Fn: block}}
+				if setup {
+					callbacks = append(callbacks, config.SourceIndexingFunction{Name: "Seed:setup", Fn: indexing.Handler(func(ctx context.Context, a *indexing.HandlerArgs) error {
+						id := finiteChain(a)
+						setupCalls[id]++
+						_, err := a.Context.DB.InsertOne(ctx, "seen", store.Row{"chainId": int(id), "height": -1, "hash": "setup"}, store.Conflict{})
+						return err
+					})})
+				}
+				cfg, err := config.ParseSourceConfiguration([]byte(raw))
+				if err != nil {
+					t.Fatal(err)
+				}
+				b, err := config.BuildRuntimeSourceIndexing(ctx, cfg, config.SourceBuildOptions{}, callbacks)
+				if err != nil {
+					t.Fatal(err)
+				}
+				f := newManagedFiniteFixture(t, backend, b)
+				f.options.Owned.Storage.Schema = schema.Schema{Tables: []schema.Table{{Name: "seen", PrimaryKey: []string{"chain_id", "height"}, Columns: []schema.Column{
+					{Name: "chain_id", Property: "chainId", Type: "integer", NotNull: true}, {Name: "height", Type: "integer", NotNull: true}, {Name: "hash", Type: "text", NotNull: true},
+				}}}}
+				var r *RuntimeRunner
+				var epochs []uint64
+				var advanced, forked bool
+				var setupCommitted int
+				o := RuntimeOptions{BuildID: "deferred", OpenID: "first", Historical: runtimeFixtureInput(f), Requesters: runtimeFactory(&finiteRPC{server: gateway}, &epochs), Live: &RuntimeLiveOptions{PollingInterval: time.Millisecond, RetryInterval: 10 * time.Millisecond}}
+				if setup {
+					o.OnSetupCommitted = func(context.Context) error { setupCommitted++; return nil }
+				}
+				o.Live.OnProgress = func(ctx context.Context, p RuntimeLiveProgress) error {
+					if p.Type == "fetch-retry" && p.ChainID == 2 {
+						twoOffline.Store(false)
+					}
+					return nil
+				}
+				o.OnCommitted = func(ctx context.Context, g RuntimeCommit) error {
+					if g.ChainID == 2 && g.BlockRange[1] == 2 {
+						oneOffline.Store(false)
+					}
+					if g.ChainID == 2 && g.BlockRange[1] == 3 && !advanced {
+						c, err := r.Control(ctx)
+						if err != nil {
+							return err
+						}
+						ready, err := r.Ready(ctx)
+						if err != nil {
+							return err
+						}
+						_, initialized := c.Cursors[1]
+						_, acquired := c.FinalizedHeads[1]
+						if !awaitingPeer.Load() || ready || c.Serving || initialized || acquired || len(heights[1]) != 0 || setupCalls[1] != 0 || setupCommitted != 0 {
+							return fmt.Errorf("absent chain acquired state: %+v", c)
+						}
+						advanced = true
+						close(allowBaseline)
+					}
+					if g.ChainID == 1 && g.BlockRange[1] == 2 && !forked {
+						node.fork(2, 3)
+						node.setLatest(4)
+						forked = true
+					}
+					return nil
+				}
+				r = runtimeOpen(t, backend, o)
+				initial, err := r.Control(ctx)
+				if err != nil || initial.FinalizedHeads[1].Hash != "" || len(initial.Cursors) != 0 || (!setup && len(initial.FinalizedHeads) != 0) {
+					t.Fatalf("initial control %+v: %v", initial, err)
+				}
+				result, err := r.Run(ctx)
+				if err != nil || !result.Ready || !result.Completed || !advanced || !forked {
+					t.Fatalf("result=%+v advanced=%t forked=%t heights=%v: %v", result, advanced, forked, heights, err)
+				}
+				peerHeights := []uint64{0, 1, 2, 3, 3, 4}
+				if !setup {
+					peerHeights = []uint64{0, 1, 2, 2, 3, 3, 4}
+				}
+				if !slices.Equal(heights[1], []uint64{0, 1, 2, 3, 4}) || !slices.Equal(heights[2], peerHeights) {
+					t.Fatalf("callback heights %v", heights)
+				}
+				if setup && (setupCommitted != 1 || setupCalls[1] != 1 || setupCalls[2] != 1) {
+					t.Fatalf("setup committed=%d calls=%v", setupCommitted, setupCalls)
+				}
+				if err = r.Close(ctx); err != nil {
+					t.Fatal(err)
+				}
+				managedInspect(t, f, func(db store.Backend) {
+					rows := managedRows(t, db, "SELECT chain_id::text AS id,height::text AS n, hash FROM "+schema.Quote(f.options.Owned.Storage.BusinessNamespace)+".seen ORDER BY chain_id,height")
+					perChain := 5
+					if setup {
+						perChain++
+					}
+					if len(rows) != 2*perChain {
+						t.Fatal(rows)
+					}
+					node.mu.Lock()
+					defer node.mu.Unlock()
+					for i, row := range rows {
+						id := uint64(1 + i/perChain)
+						n := i % perChain
+						if setup {
+							n--
+						}
+						if row["id"] != fmt.Sprint(id) || row["n"] != fmt.Sprint(n) || n >= 0 && row["hash"] != node.canonical[id][uint64(n)]["hash"] || n < 0 && row["hash"] != "setup" {
+							t.Fatalf("unexpected row %v", row)
+						}
+					}
+				})
+				o.OpenID = "reopen"
+				o.OnCommitted = nil
+				r = runtimeOpen(t, backend, o)
+				result, err = r.Run(ctx)
+				if err != nil || !result.Recovered || !result.Completed || setup && (setupCalls[1] != 1 || setupCalls[2] != 1) {
+					t.Fatalf("reopen=%+v setup=%v err=%v", result, setupCalls, err)
+				}
+				if err = r.Close(ctx); err != nil {
+					t.Fatal(err)
+				}
+			})
+		}
 	}
 }
