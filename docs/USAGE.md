@@ -12,7 +12,11 @@
 
 如果各链分别维护自己的余额，使用 Isolated，在业务表主键中包含 `chain_id`。如果多条链共同维护一个按事件先后计算的值，使用 Omnichain，运行器会按跨链 checkpoint 排序回调。PostgreSQL 双库存储使用同一数据库内的两个命名空间，PGlite 使用两个数据目录。[独立多链示例](#从同一个-go-项目索引多条链) · [跨链排序示例](#按全局顺序索引多条链) · [双库存储](#独立存储的有限区间索引)
 
-在双库 Isolated 中，设置 `RuntimeOptions.Live` 即可跟随链头。实时追块时，一条链的 RPC 离线会使部署暂时未就绪，健康链仍可提交新区块。[Isolated 实时配置](#双库-isolated-实时追块) · [双库故障恢复测试](../historical/isolated_live_outage_test.go)
+**一条链在启动时就离线。** 如果健康链需要立即开始索引，将 `config.Config` 直接传给 `runtime.NewIndexer`，并选择 Isolated。各链分别启动，健康链可写入业务行，整个部署等其余链也追上后才就绪。[双链启动测试](../runtime/isolated_indexer_test.go)
+
+从来源声明构建配置时，`config.BuildSourceIndexing` 会先向每条配置链读取最新区块并计算最终确认位置，再筛选注册了回调的链。持续的 RPC 故障会在这一步返回错误，此时还没有可传入 `runtime.NewIndexerFromSource` 的构建结果。[来源构建](../config/source_indexing.go)
+
+在双库 Isolated 中，即使已经编译了来源配置，首次打开和冷重启仍需向所有参与链读取启动数据。设置 `RuntimeOptions.Live` 后，一旦进入实时阶段，一条链的 RPC 离线会使部署暂时未就绪，健康链仍可提交新区块。[双库打开流程](../historical/live_runtime.go) · [Isolated 实时配置](#双库-isolated-实时追块) · [故障恢复测试](../historical/isolated_live_outage_test.go)
 
 需要按全局顺序持续追块并自动保存业务数据时，使用普通入口的 Omnichain 模式。双库 Omnichain 应保留 `Live = nil`，并指定有限的结束高度。作业可以提前启动，等待区间最终确认。[跨链排序示例](#按全局顺序索引多条链) · [提前启动](#等待双库-omnichain-的区间最终确认) · [运行器检查](../historical/live_runtime.go)
 
@@ -643,7 +647,7 @@ func tokensByOwner(ctx context.Context, c *runtime.Context, address string, offs
 
 `OrderBy` 按参数顺序应用 `Asc()` 或 `Desc()`。分页时把主键加入排序条件，可稳定区分其他列值相同的行。`Limit(0)` 返回空结果，省略 `Limit` 可读取所有匹配行。页大小和偏移量须为非负数。更改查询条件会得到一个新查询，可以从同一个基础查询取不同页。
 
-`All(ctx)` 在当前回调的业务事务中执行，能读到已缓冲的写入。Isolated 查询自动限制到本次事件的链。在生成的 `--typed --callback-db` 回调中可以直接从绑定的表调用 `db.Token.Query()`。涉及三张或更多表的查询可以使用参数化 SQL。[模型查询测试](../orm/query_test.go)
+`All(ctx)` 在当前回调的业务事务中执行，能读到已缓冲的写入。Isolated 查询自动限制到本次事件的链。在生成的 `--typed --callback-db` 回调中可以直接从绑定的表调用 `db.Token.Query()`。使用生成的列查询三张或更多表时，可用 `orm.ThenInnerJoin` 或 `orm.ThenLeftJoin` 继续添加表。[三表授权查询](#查询授权事件的所有者和当前额度) · [模型查询测试](../orm/query_test.go)
 
 ### 查询地址转入或转出的记录
 
