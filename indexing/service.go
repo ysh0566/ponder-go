@@ -11,6 +11,7 @@ import (
 
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/store"
 )
 
@@ -207,14 +208,15 @@ func knownHandlerError(err error) bool {
 }
 func (s *Service) execute(ctx context.Context, event Object, view EventView, setup bool) error {
 	_, name, fn, err := callbackOf(event, setup)
+	chain, _ := event["chain"].(Object)
 	if err == nil {
-		chain, _ := event["chain"].(Object)
 		err = s.setChain(chain)
 	}
 	if err == nil {
 		if !setup {
 			s.args.Event = view
 		}
+		chainName, _ := chain["name"].(string)
 		start := s.options.Now()
 		err = fn(ctx, s.args)
 		// Setup checks the sticky error BEFORE duration; events check it AFTER.
@@ -222,7 +224,14 @@ func (s *Service) execute(ctx context.Context, event Object, view EventView, set
 			err = s.takeSticky()
 		}
 		if err == nil {
-			s.options.Metrics.Durations = append(s.options.Metrics.Durations, DurationObservation{Event: name, Seconds: s.options.Now().Sub(start).Seconds()})
+			elapsed := s.options.Now().Sub(start)
+			m := s.options.Metrics
+			m.Durations = append(m.Durations, DurationObservation{Event: name, Seconds: elapsed.Seconds()})
+			registry := metrics.Handlers(ctx)
+			if registry == nil {
+				registry = m.Registry
+			}
+			registry.ObserveHandler(chainName, name, elapsed)
 		}
 		if err == nil && !setup {
 			err = s.takeSticky()

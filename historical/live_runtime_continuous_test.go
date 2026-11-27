@@ -74,17 +74,22 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 			r = runtimeOpen(t, backend, o)
 			registry := metrics.New()
 			measurement := metrics.WithHistorical(metrics.WithRealtime(t.Context(), registry), registry)
+			measurement = metrics.WithHandlers(measurement, registry)
 			out, err := r.Run(measurement)
 			if err != nil || !out.Completed || !out.Ready || out.LiveBlocks != 8 || out.HistoricalBlocks != 0 || commits != 8 || !advanced {
 				t.Fatalf("actual continuous runtime result=%+v commits=%d advanced=%v err=%v", out, commits, advanced, err)
 			}
-			checkAcceptedHeads := func(count int) {
+			checkAcceptedHeads := func(count, executions int) {
 				t.Helper()
 				body, err := registry.Collect(t.Context())
 				if err != nil {
 					t.Fatal(err)
 				}
 				for _, chain := range []string{"one", "two"} {
+					want := fmt.Sprintf("ponder_indexing_function_duration_count{chain=%q,event=%q} %d\n", chain, "Blocks:block", executions)
+					if !strings.Contains(body, want) {
+						t.Fatalf("missing %q in metrics:\n%s", want, body)
+					}
 					for _, name := range []string{"ponder_realtime_latency", "ponder_realtime_block_arrival_latency"} {
 						want := fmt.Sprintf("%s_count{chain=%q} %d\n", name, chain, count)
 						if !strings.Contains(body, want) {
@@ -93,7 +98,7 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 					}
 				}
 			}
-			checkAcceptedHeads(2) // Only the polled heads 2 and 4, excluding gap blocks 1 and 3.
+			checkAcceptedHeads(2, 4) // Only the polled heads 2 and 4, excluding gap blocks 1 and 3.
 			c, err := r.Control(context.Background())
 			if err != nil || c.Version != "managed-live-continuous-v6" || c.Tail != 8 || c.SafeOrdinal != 0 {
 				t.Fatalf("continuous control=%+v err=%v", c, err)
@@ -135,7 +140,7 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 			if err != nil || !out.Completed || !out.Ready || !out.Recovered {
 				t.Fatalf("bounded end did not replay/reactivate: %+v %v", out, err)
 			}
-			checkAcceptedHeads(3) // Cold replay polls head 4 once more.
+			checkAcceptedHeads(3, 8) // Cold replay polls head 4 once more.
 			if len(visits) != 8 || len(ids) != 16 {
 				t.Fatalf("continuous replay: heads=%d operations=%d", len(visits), len(ids))
 			}
@@ -188,12 +193,12 @@ func TestRuntimeFailedHeadLatency(t *testing.T) {
 				}
 			}()
 			registry := metrics.New()
-			ctx := metrics.WithRealtime(t.Context(), registry)
+			ctx := metrics.WithHandlers(metrics.WithRealtime(t.Context(), registry), registry)
 			if _, err := r.Run(ctx); err == nil || !strings.Contains(err.Error(), stop.Error()) {
 				t.Fatalf("failed live callback: %v", err)
 			}
 			body, err := registry.Collect(ctx)
-			if err != nil || strings.Contains(body, "ponder_realtime_") {
+			if err != nil || strings.Contains(body, "ponder_realtime_") || strings.Contains(body, "ponder_indexing_function_duration") {
 				t.Fatalf("uncommitted head metrics=%q err=%v", body, err)
 			}
 		})

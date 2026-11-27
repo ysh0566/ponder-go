@@ -22,7 +22,7 @@ type Registry struct {
 	reg                                 *prometheus.Registry
 	reorgs                              *prometheus.CounterVec
 	blockArrival, realtimeLatency       *prometheus.HistogramVec
-	rpcDuration                         *prometheus.HistogramVec
+	rpcDuration, handlerDuration        *prometheus.HistogramVec
 	rpcErrors                           *prometheus.CounterVec
 	extract, transform                  *prometheus.GaugeVec
 	completed                           *prometheus.GaugeVec
@@ -62,7 +62,11 @@ func New() *Registry {
 	r.requestSize = histogram("ponder_http_server_request_size_bytes", "Size of HTTP requests received by the server", sizes)
 	r.responseSize = histogram("ponder_http_server_response_size_bytes", "Size of HTTP responses served by the server", sizes)
 	r.duration = histogram("ponder_http_server_request_duration_ms", "Duration of HTTP responses served by the server", networkDurationBuckets)
-	r.reg.MustRegister(r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
+	r.handlerDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name: "ponder_indexing_function_duration", Help: "Duration of indexing function execution",
+		Buckets: []float64{0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000},
+	}, []string{"chain", "event"})
+	r.reg.MustRegister(r.handlerDuration, r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
 	return r
 }
 
@@ -103,13 +107,14 @@ func (r *Registry) FlushIndexing() {
 	r.flush()
 }
 
-// ResetIndexing clears RPC measurements, reorg counts and event counts. Cache requests and
+// ResetIndexing clears callback durations, RPC measurements, reorg counts and event counts. Cache requests and
 // store operation counters are cumulative across indexing runs.
 func (r *Registry) ResetIndexing() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.flush()
 	r.completed.Reset()
+	r.handlerDuration.Reset()
 	r.reorgs.Reset()
 	r.rpcDuration.Reset()
 	r.rpcErrors.Reset()

@@ -100,6 +100,7 @@ func LaunchApplication(ctx context.Context, indexer ApplicationIndexer, routes *
 		indexCtx = metrics.WithRealtime(indexCtx, routes.Metrics)
 		indexCtx = metrics.WithReorgs(indexCtx, routes.Metrics)
 		indexCtx = metrics.WithHistorical(indexCtx, routes.Metrics)
+		indexCtx = metrics.WithHandlers(indexCtx, routes.Metrics)
 		go func(out chan<- error) { out <- indexer.RunIndexing(indexCtx, setReady) }(indexing)
 	}
 	var reporters sync.WaitGroup

@@ -94,9 +94,11 @@ func (m *devMonitor) completeBlock(id uint64) {
 func invokeHandler(ctx context.Context, handler Handler, c *Context) error {
 	m := devMonitorFrom(ctx)
 	registry := metrics.Historical(ctx)
-	if m == nil && registry == nil {
+	timings := metrics.Handlers(ctx)
+	if m == nil && registry == nil && timings == nil {
 		return handler(ctx, c)
 	}
+	chain, name := c.Chain.Name, c.Event.Name
 	finish := registry.StartTransform("index")
 	start := time.Now()
 	if err := handler(ctx, c); err != nil {
@@ -104,14 +106,15 @@ func invokeHandler(ctx context.Context, handler Handler, c *Context) error {
 	}
 	elapsed := time.Since(start)
 	finish()
+	timings.ObserveHandler(chain, name, elapsed)
 	if m == nil {
 		return nil
 	}
 	m.mu.Lock()
-	event := m.events[c.Event.Name]
+	event := m.events[name]
 	event.count++
 	event.elapsed += elapsed
-	m.events[c.Event.Name] = event
+	m.events[name] = event
 	m.mu.Unlock()
 	return nil
 }
