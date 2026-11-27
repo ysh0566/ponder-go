@@ -377,3 +377,127 @@ func TestIsolatedReturningFinality(t *testing.T) {
 		t.Fatalf("replacement of recorded opening finality: verified=%t err=%v", ok, err)
 	}
 }
+
+// A partially initialized Isolated deployment can retry setup on the online
+// chain while a peer whose setup already committed is offline.
+func TestRuntimeIsolatedPartialSetupReopen(t *testing.T) {
+	for _, backend := range []string{"postgres", "pglite"} {
+		t.Run(backend, func(t *testing.T) {
+			continuousRoot(t)
+			ctx, cancel := context.WithTimeout(t.Context(), 4*time.Minute)
+			defer cancel()
+			node := newContinuousRPC(t, 3)
+			var offline atomic.Int32
+			gateway := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				if req.URL.Path == fmt.Sprintf("/%d", offline.Load()) {
+					http.Error(w, "unavailable", http.StatusServiceUnavailable)
+					return
+				}
+				node.p.server.Config.Handler.ServeHTTP(w, req)
+			}))
+			defer gateway.Close()
+			raw := fmt.Sprintf(`{"ordering":"experimental_isolated","chains":{"one":{"id":1,"rpc":%q,"reorgWindow":0},"two":{"id":2,"rpc":%q,"reorgWindow":0}},"blocks":{"Blocks":{"chain":{"one":{},"two":{}},"startBlock":1,"endBlock":3,"interval":1}},"contracts":{"Seed":{"chain":{"one":{},"two":{}},"abi":[],"startBlock":1,"endBlock":3}}}`, gateway.URL+"/1", gateway.URL+"/2")
+			setupCalls := map[uint64]int{}
+			heights := map[uint64][]uint64{}
+			insert := func(ctx context.Context, a *indexing.HandlerArgs, height uint64) error {
+				_, err := a.Context.DB.InsertOne(ctx, "seen", store.Row{"chainId": int(finiteChain(a)), "height": int(height)}, store.Conflict{})
+				return err
+			}
+			setup := func(ctx context.Context, a *indexing.HandlerArgs) error {
+				id := finiteChain(a)
+				setupCalls[id]++
+				if err := insert(ctx, a, 0); err != nil {
+					return err
+				}
+				if id == 1 && setupCalls[id] == 1 {
+					return errors.New("interrupted first setup")
+				}
+				return nil
+			}
+			block := func(ctx context.Context, a *indexing.HandlerArgs) error {
+				n, err := continuousNumber(a)
+				if err != nil {
+					return err
+				}
+				id := finiteChain(a)
+				heights[id] = append(heights[id], n)
+				return insert(ctx, a, n)
+			}
+			build := runtimeSourceBuild(t, raw, config.SourceIndexingFunction{Name: "Seed:setup", Fn: indexing.Handler(setup)}, config.SourceIndexingFunction{Name: "Blocks:block", Fn: indexing.Handler(block)})
+			f := newManagedFiniteFixture(t, backend, build)
+			f.options.Owned.Storage.Schema = schema.Schema{Tables: []schema.Table{{
+				Name: "seen", PrimaryKey: []string{"chain_id", "height"},
+				Columns: []schema.Column{{Name: "chain_id", Property: "chainId", Type: "integer", NotNull: true}, {Name: "height", Type: "integer", NotNull: true}},
+			}}}
+			var epochs []uint64
+			o := RuntimeOptions{BuildID: "partial-setup", OpenID: "first", Historical: runtimeFixtureInput(f),
+				Requesters: runtimeFactory(&finiteRPC{server: gateway}, &epochs),
+				Live:       &RuntimeLiveOptions{PollingInterval: time.Millisecond, RetryInterval: 10 * time.Millisecond}}
+			r := runtimeOpen(t, backend, o)
+			if _, err := r.Run(ctx); err == nil || !strings.Contains(err.Error(), "interrupted first setup") {
+				t.Fatalf("initial setup: %v", err)
+			}
+			prior, err := r.Control(ctx)
+			if err != nil || len(prior.Cursors) != 1 || prior.Cursors[2].Hash == "" {
+				t.Fatalf("partial setup: %+v %v", prior, err)
+			}
+			if err := r.Close(ctx); err != nil {
+				t.Fatal(err)
+			}
+			open := OpenRuntimePostgres
+			if backend == "pglite" {
+				open = OpenRuntimePGlite
+			}
+			offline.Store(1)
+			o.OpenID = "missing-offline-cursor"
+			bad, err := open(ctx, o)
+			var status *rpc.HTTPStatusError
+			if bad != nil || !errors.Is(err, store.ErrMissingIsolatedBaseline) || !errors.As(err, &status) || status.StatusCode != 503 {
+				t.Fatalf("offline chain without committed setup: %v", err)
+			}
+			offline.Store(2)
+			o.OpenID = "partial-reopen"
+			advanced := false
+			o.OnCommitted = func(ctx context.Context, commit RuntimeCommit) error {
+				if commit.ChainID == 1 && commit.BlockRange[1] == 3 && !advanced {
+					c, err := r.Control(ctx)
+					if err != nil {
+						return err
+					}
+					if c.Serving || c.Cursors[2] != prior.Cursors[2] || len(heights[2]) != 0 || offline.Load() != 2 {
+						return fmt.Errorf("peer changed before reconnect: serving=%t cursors=%v events=%v", c.Serving, c.Cursors, heights)
+					}
+					advanced = true
+					offline.Store(0)
+				}
+				return nil
+			}
+			r = runtimeOpen(t, backend, o)
+			reopened, err := r.Control(ctx)
+			if err != nil || reopened.Generation != prior.Generation+1 || len(reopened.Cursors) != 1 || reopened.Cursors[2] != prior.Cursors[2] {
+				t.Fatalf("reopen after rejected attempt: %+v %v", reopened, err)
+			}
+			result, err := r.Run(ctx)
+			if err != nil || !result.Recovered || !result.Ready || !result.Completed || !advanced {
+				t.Fatalf("partial reopen: %+v advanced=%t error=%v", result, advanced, err)
+			}
+			if err := r.Close(ctx); err != nil {
+				t.Fatal(err)
+			}
+			if setupCalls[1] != 2 || setupCalls[2] != 1 || !slices.Equal(heights[1], []uint64{1, 2, 3}) || !slices.Equal(heights[2], []uint64{1, 2, 3}) {
+				t.Fatalf("setup attempts=%v event heights=%v", setupCalls, heights)
+			}
+			managedInspect(t, f, func(db store.Backend) {
+				rows := managedRows(t, db, "SELECT chain_id::text AS id,height::text AS height FROM "+schema.Quote(f.options.Owned.Storage.BusinessNamespace)+".seen ORDER BY chain_id,height")
+				if len(rows) != 8 {
+					t.Fatalf("committed rows: %v", rows)
+				}
+				for i, row := range rows {
+					if row["id"] != fmt.Sprint(1+i/4) || row["height"] != fmt.Sprint(i%4) {
+						t.Fatalf("unexpected row %v", row)
+					}
+				}
+			})
+		})
+	}
+}

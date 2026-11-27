@@ -77,7 +77,7 @@ func (s *Store) deleteIsolatedSegments(ctx context.Context, tx Transaction, segm
 // Both owner locks are held and the caller has authenticated the business and
 // sync ledgers. Complete only the missing heads on this opening's private map.
 func (opts *ManagedLiveOptions) restoreIsolatedFinality(prior managedLiveDurable) error {
-	if len(prior.Control.Cursors) != len(opts.Chains) {
+	if len(prior.Control.Cursors) == 0 {
 		return ErrMissingIsolatedBaseline
 	}
 	baselines, err := liveDurableBaselines(prior.Operations)
@@ -88,6 +88,9 @@ func (opts *ManagedLiveOptions) restoreIsolatedFinality(prior managedLiveDurable
 	for _, chain := range opts.Chains {
 		if _, online := opts.FinalizedHeads[chain.ID]; online {
 			continue
+		}
+		if _, initialized := prior.Control.Cursors[chain.ID]; !initialized {
+			return ErrMissingIsolatedBaseline
 		}
 		// An interrupted backfill may have authenticated opening finality
 		// beyond the last committed business block.
