@@ -356,7 +356,7 @@ func (d *Lifecycle) Ready(ctx context.Context) (bool, error) {
 }
 
 func (s *Store) readAppReady(ctx context.Context) (bool, error) {
-	rows, err := s.Backend.Query(ctx, "SELECT (value->'is_ready') = '1'::jsonb AS ready FROM "+s.internal("_ponder_go_app")+" WHERE key='app'")
+	rows, err := databaseQuery(ctx, s.Backend, "select_ready", "SELECT (value->'is_ready') = '1'::jsonb AS ready FROM "+s.internal("_ponder_go_app")+" WHERE key='app'")
 	if err != nil || len(rows.Rows) == 0 {
 		return false, err
 	}

@@ -673,7 +673,7 @@ func (s *Store) readProgress(ctx context.Context, q Querier, named bool) (map[st
 	if named {
 		sql = "SELECT c.chain_name AS chain,p.checkpoint FROM " + table + " p JOIN " + s.internal("_ponder_go_chains") + " c USING(chain_id)"
 	}
-	r, e := q.Query(ctx, sql)
+	r, e := databaseQuery(ctx, q, "select_checkpoints", sql)
 	if e != nil {
 		return nil, e
 	}

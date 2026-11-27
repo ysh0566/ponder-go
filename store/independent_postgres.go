@@ -27,7 +27,7 @@ func (p *independentPGBackend) Begin(ctx context.Context) (Transaction, error) {
 		p.mu.Unlock()
 		return nil, err
 	}
-	return &independentPGTx{Transaction: &pgTx{tx: tx}, release: p.mu.Unlock}, nil
+	return &independentPGTx{Transaction: &pgTx{tx: tx, pool: p.pool}, release: p.mu.Unlock}, nil
 }
 func (p *independentPGBackend) Query(ctx context.Context, q string, args ...any) (Result, error) {
 	if err := rejectIndependentUnlock(q); err != nil {
@@ -35,7 +35,7 @@ func (p *independentPGBackend) Query(ctx context.Context, q string, args ...any)
 	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	return pgQuery(ctx, p.connection, q, args...)
+	return pgQuery(ctx, p.connection, p.pool, q, args...)
 }
 func (p *independentPGBackend) Exec(ctx context.Context, q string, args ...any) error {
 	if err := rejectIndependentUnlock(q); err != nil {
@@ -43,8 +43,7 @@ func (p *independentPGBackend) Exec(ctx context.Context, q string, args ...any) 
 	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	_, err := p.connection.ExecContext(ctx, q, databaseArgs(args)...)
-	return err
+	return pgExec(ctx, p.connection, p.pool, q, args...)
 }
 func (p *independentPGBackend) Close() error {
 	p.mu.Lock()

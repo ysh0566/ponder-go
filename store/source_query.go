@@ -190,7 +190,7 @@ func (s *SourceSyncStore) runSourceQuery(ctx context.Context, q *sourceQuery, li
 	out := []filter.Object{}
 	sql := "select " + strings.Join(q.columns, ",") + " from " + s.cache.table(q.table) + " where " + strings.Join(q.where, " and ") + " order by " + strings.Join(q.order, ",") + " limit " + q.bind(limit)
 	err := s.transaction(ctx, func(tx Transaction) error {
-		result, e := tx.Query(ctx, sql, q.args...)
+		result, e := databaseQuery(ctx, tx, "select_"+q.table, sql, q.args...)
 		if e != nil {
 			return e
 		}

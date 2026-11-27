@@ -199,7 +199,7 @@ func (s *SourceSyncStore) InsertIntervals(ctx context.Context, chain uint64, int
 		// An unbound source store commits each batch separately. Only an explicit
 		// WithTransaction scope combines these writes with its surrounding work.
 		if e := s.transaction(ctx, func(tx Transaction) error {
-			return tx.Exec(ctx, "INSERT INTO "+s.cache.table("intervals")+" AS intervals(fragment_id,chain_id,blocks) VALUES"+strings.Join(values, ",")+" ON CONFLICT(fragment_id) DO UPDATE SET blocks=intervals.blocks+excluded.blocks", args...)
+			return databaseExec(ctx, tx, "insert_intervals", "INSERT INTO "+s.cache.table("intervals")+" AS intervals(fragment_id,chain_id,blocks) VALUES"+strings.Join(values, ",")+" ON CONFLICT(fragment_id) DO UPDATE SET blocks=intervals.blocks+excluded.blocks", args...)
 		}); e != nil {
 			return e
 		}
@@ -263,7 +263,7 @@ func (s *SourceSyncStore) GetIntervals(ctx context.Context, filters []filter.Obj
 			queries = append(queries, fmt.Sprintf("SELECT range_agg(unnested.blocks)::text AS merged_blocks,'%d' AS fragment FROM (SELECT unnest(blocks) AS blocks FROM %s WHERE fragment_id IN (%s)) AS unnested", i, s.cache.table("intervals"), strings.Join(slots, ",")))
 		}
 		if e := s.transaction(ctx, func(tx Transaction) error {
-			rows, e := tx.Query(ctx, strings.Join(queries, " UNION ALL "), args...)
+			rows, e := databaseQuery(ctx, tx, "select_intervals", strings.Join(queries, " UNION ALL "), args...)
 			if e != nil {
 				return e
 			}

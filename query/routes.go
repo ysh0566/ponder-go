@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/felixge/httpsnoop"
+	"github.com/ysh0566/ponder-go/metrics"
 )
 
 type Readiness interface {
@@ -34,6 +35,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		w.WriteHeader(http.StatusNoContent)
 		return
+	}
+	if s.Metrics != nil {
+		r = r.WithContext(metrics.WithDatabase(r.Context(), s.Metrics))
 	}
 	path, handler := s.route(r)
 	if path == "" || s.Metrics == nil {

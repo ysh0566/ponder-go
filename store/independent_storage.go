@@ -139,7 +139,7 @@ func openIndependentPostgres(ctx context.Context, o IndependentStorageOptions, m
 	}
 	s := &IndependentStorage{closeDone: make(chan struct{})}
 	var err error
-	s.businessBackend, err = OpenPostgres(ctx, o.PostgresURL)
+	s.businessBackend, err = openPostgres(ctx, o.PostgresURL, "user")
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +168,7 @@ func openIndependentPostgres(ctx context.Context, o IndependentStorageOptions, m
 		return fail(err)
 	}
 	s.businessBackend = &independentPGBackend{pgBackend: pool, connection: businessConnection}
-	s.syncBackend, err = OpenPostgres(ctx, o.PostgresURL)
+	s.syncBackend, err = openPostgres(ctx, o.PostgresURL, "sync")
 	if err != nil {
 		return fail(err)
 	}
