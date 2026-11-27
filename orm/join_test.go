@@ -20,6 +20,12 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 )
 
+// A custom executor implementing the original eager join API.
+type plainJoin struct {
+	orm.JoinExecutor
+	orm.Executor
+}
+
 func TestTypedJoins(t *testing.T) {
 	var model schema.Schema
 	for _, fixture := range []string{"dbwrites", "containers"} {
@@ -69,6 +75,59 @@ func TestTypedJoins(t *testing.T) {
 						return fmt.Errorf("outer join match: %+v", pair)
 					}
 				}
+				q := orm.QueryLeftJoin(records, on)
+				leftID := orm.JoinColumn(q.Left, dbwrites.TableColumns.Id)
+				rightID := orm.JoinColumn(q.Right, containers.PacketColumns.Id)
+				payload := orm.JoinColumn(q.Right, containers.PacketColumns.Payload)
+				missing, err := q.Where(rightID.IsNull()).All(ctx)
+				if err != nil || len(missing) != 1 || missing[0].Left.Id != "left-only" || missing[0].Right != nil {
+					return fmt.Errorf("left join WHERE right key IS NULL: %+v %v", missing, err)
+				}
+				base := q.Where(orm.Or(payload.Eq([]byte{0, 255}), leftID.Eq("left-only"))).OrderBy(rightID.Asc(), leftID.Desc())
+				page, err := base.Offset(1).Limit(1).All(ctx)
+				if err != nil || len(page) != 1 || page[0].Left.Id != "left-only" || page[0].Right != nil {
+					return fmt.Errorf("second page: %+v %v", page, err)
+				}
+				first, err := base.Limit(1).All(ctx)
+				if err != nil || len(first) != 1 || first[0].Right == nil || first[0].Right.Id != "match" {
+					return fmt.Errorf("first page: %+v %v", first, err)
+				}
+				empty, err := base.Limit(0).All(ctx)
+				if err != nil || len(empty) != 0 {
+					return fmt.Errorf("zero limit: %+v %v", empty, err)
+				}
+				if _, err := base.Offset(-1).All(ctx); err == nil {
+					return fmt.Errorf("accepted negative join offset")
+				}
+				j := orm.QueryInnerJoin(db, on)
+				document := orm.JoinColumn(j.Right, containers.PacketColumns.Document)
+				result, err := j.Where(document.Eq(doc)).All(ctx)
+				if err != nil || len(result) != 1 || result[0].Right.Id != "match" {
+					return fmt.Errorf("JSONB join filter: %+v %v", result, err)
+				}
+				legacy := plainJoin{db, db}
+				basic := orm.QueryInnerJoin(legacy, on)
+				all, err := basic.All(ctx)
+				if err != nil || len(all) != 1 {
+					return fmt.Errorf("original executor: %+v %v", all, err)
+				}
+				legacyTable := dbwrites.Table.BindExecutor(legacy)
+				raw, err := legacyTable.JoinRows(ctx, store.InnerJoin, "table", "packet", []store.JoinColumns{{Left: "id", Right: "id"}}, store.SelectOptions{})
+				if err != nil || len(raw) != 1 {
+					return fmt.Errorf("bound original executor: %+v %v", raw, err)
+				}
+				if _, err := basic.Limit(1).All(ctx); err == nil {
+					return fmt.Errorf("unsupported executor lost limit")
+				}
+				if _, err := orm.QueryInnerJoin(packets, on).Limit(1).All(ctx); err == nil {
+					return fmt.Errorf("wrong bound left table accepted")
+				}
+				for _, invalid := range []string{"id", "x.id", "left.missing", "right.id.extra"} {
+					options := store.SelectOptions{Order: []store.SelectOrder{{Column: invalid}}}
+					if _, err := db.JoinRows(ctx, store.InnerJoin, "table", "packet", []store.JoinColumns{{Left: "id", Right: "id"}}, options); err == nil {
+						return fmt.Errorf("accepted join order on %q", invalid)
+					}
+				}
 				return nil
 			}
 			abort := errors.New("stop callback")
@@ -108,6 +167,17 @@ func TestTypedCallbackSelfJoin(t *testing.T) {
 			samePayload := orm.Equal(custom.HoldingColumns.Payload, custom.HoldingColumns.Payload)
 			db := indexing.NewSessionDatabase(store.NewIndexingSession(s), new(indexing.ErrorState))
 			bound := custom.BindCallbackDatabase(db)
+			q := orm.QueryLeftJoin(bound.Holding, on)
+			child := orm.JoinColumn(q.Left, custom.HoldingColumns.Id)
+			parent := orm.JoinColumn(q.Right, custom.HoldingColumns.Id)
+			selected := q.Where(orm.Or(child.Eq(3), parent.IsNull())).OrderBy(parent.Asc(), child.Desc())
+			check := func(handle context.Context) error {
+				rows, err := selected.All(handle)
+				if err != nil || len(rows) != 2 || rows[0].Left.Id != 3 || rows[0].Right == nil || rows[0].Right.Id != 2 || rows[1].Left.Id != 2 || rows[1].Right != nil {
+					return fmt.Errorf("aliased self join: %+v %v", rows, err)
+				}
+				return nil
+			}
 			var binding *indexing.DatabaseBinding
 			var retained context.Context
 			txnErr := s.Apply(ctx, indexed("join", 1), func(w *store.Writer) error {
@@ -147,7 +217,10 @@ func TestTypedCallbackSelfJoin(t *testing.T) {
 						return fmt.Errorf("unexpected match: %+v", pair)
 					}
 				}
-				return nil
+				if _, err := q.Where(parent.Eq(-1)).All(handle); !errors.Is(err, custom.ErrUnits) {
+					return fmt.Errorf("right codec error: %v", err)
+				}
+				return check(handle)
 			})
 			if binding != nil {
 				if err := binding.Finish(txnErr); err != nil {
@@ -160,12 +233,15 @@ func TestTypedCallbackSelfJoin(t *testing.T) {
 			if _, err := orm.InnerJoin(retained, bound.Holding, on); err == nil {
 				t.Fatal("join reused a closed callback")
 			}
+			if _, err := selected.All(retained); err == nil {
+				t.Fatal("filtered join reused a closed callback")
+			}
 			err := db.WithReadOnly(ctx, 1, func(read context.Context) error {
 				got, err := orm.InnerJoin(read, bound.Holding, on, samePayload)
 				if err != nil || len(got) != 1 || got[0].Right.Id != 2 {
 					return fmt.Errorf("read-only join: %+v %v", got, err)
 				}
-				return nil
+				return check(read)
 			})
 			if err != nil {
 				t.Fatal(err)
@@ -180,6 +256,8 @@ func TestTypedJoinCaller(t *testing.T) {
 		t.Fatal(err)
 	}
 	compileDBCaller(t, code, `var rows []orm.Joined[TableRow,*TableRow] = result(orm.LeftJoin(ctx, db, orm.Equal(TableColumns.Id,TableColumns.Id))); _ = rows`)
+	compileDBCaller(t, code, `q:=orm.QueryLeftJoin(db,orm.Equal(TableColumns.Id,TableColumns.Id)); right:=orm.JoinColumn(q.Right,TableColumns.Id); var rows []orm.Joined[TableRow,*TableRow]=result(q.Where(right.IsNull()).OrderBy(right.Desc()).Limit(2).All(ctx)); _=rows`)
+	compileDBCaller(t, code, `type Peer struct{}; q:=orm.QueryInnerJoin(db,orm.Equal(TableColumns.Id,TableColumns.Id)); _=orm.JoinColumn(q.Right,orm.Column[Peer,string]{})`, "does not match inferred type")
 	compileDBCaller(t, code, `_ = orm.Equal(TableColumns.Other,TableColumns.Id)`, "does not match inferred type")
 	compileDBCaller(t, code, `_ = TableColumns.Unknown`, "Unknown undefined")
 	compileDBCaller(t, code, `var rows []orm.Joined[TableRow,TableRow] = result(orm.LeftJoin(ctx, db, orm.Equal(TableColumns.Id,TableColumns.Id))); _ = rows`, "cannot use")
@@ -216,6 +294,13 @@ func TestIsolatedTypedJoin(t *testing.T) {
 					joined, err := orm.LeftJoin(ctx, db, on)
 					if err != nil || len(joined) != 1 || joined[0].Right == nil || joined[0].Left.Other.Value() != int64(chain) || joined[0].Right.Other.Value() != int64(chain) {
 						return fmt.Errorf("chain %d joined rows %+v: %v", chain, joined, err)
+					}
+					q := orm.QueryLeftJoin(db, on)
+					l := orm.JoinColumn(q.Left, col.Other)
+					r := orm.JoinColumn(q.Right, col.Other)
+					page, err := q.Where(orm.Or(l.Eq(int64(chain)), r.Eq(1))).OrderBy(r.Asc()).Limit(1).All(ctx)
+					if err != nil || len(page) != 1 || page[0].Right == nil || page[0].Left.Other.Value() != int64(chain) || page[0].Right.Other.Value() != int64(chain) {
+						return fmt.Errorf("isolated join page on chain %d: %+v %v", chain, page, err)
 					}
 					return nil
 				}); err != nil {

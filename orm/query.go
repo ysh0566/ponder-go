@@ -86,11 +86,10 @@ type selectExecutor interface {
 	SelectRows(context.Context, string, store.SelectOptions) ([]store.Row, error)
 }
 
-// Query is a reusable single-table SELECT. Each method returns a new value.
+// Query is a reusable typed SELECT. Each method returns a new value.
 type Query[R any] struct {
 	table   string
-	db      selectExecutor
-	decode  Decoder[R]
+	read    func(context.Context, store.SelectOptions) ([]R, error)
 	options store.SelectOptions
 	err     error
 }
@@ -98,7 +97,17 @@ type Query[R any] struct {
 // Query starts a typed SELECT over this bound table.
 func (t Table[K, I, U, R]) Query() Query[R] {
 	db, _ := t.db.(selectExecutor)
-	return Query[R]{table: t.definition.name, db: db, decode: t.definition.decode}
+	q := Query[R]{table: t.definition.name}
+	if db != nil {
+		q.read = func(ctx context.Context, options store.SelectOptions) ([]R, error) {
+			rows, err := db.SelectRows(ctx, t.definition.name, options)
+			if err != nil {
+				return nil, err
+			}
+			return decodeRows(t.definition.decode, rows)
+		}
+	}
+	return q
 }
 
 // Where combines predicates with AND, including predicates from earlier calls.
@@ -151,12 +160,8 @@ func (q Query[R]) All(ctx context.Context) ([]R, error) {
 	if q.err != nil {
 		return nil, q.err
 	}
-	if q.db == nil {
+	if q.read == nil {
 		return nil, fmt.Errorf("the bound database does not support model queries")
 	}
-	rows, err := q.db.SelectRows(ctx, q.table, q.options)
-	if err != nil {
-		return nil, err
-	}
-	return decodeRows(q.decode, rows)
+	return q.read(ctx, q.options)
 }

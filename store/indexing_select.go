@@ -38,13 +38,27 @@ func (db *IndexingStore) SelectRows(ctx context.Context, name string, options Se
 	if err != nil {
 		return nil, err
 	}
+	query := "SELECT row_to_json(t)::text AS row FROM " + s.table(name) + " AS t"
+	query, args, err := db.applySelectOptions(query, options, "t", func(name string) (schema.Column, string, error) {
+		return qualifiedSelectColumn(table, "t", name)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return db.selectModelRows(ctx, table, query, args)
+}
+
+// A resolver returns a declared column and its quoted SQL reference.
+type selectResolver func(name string) (schema.Column, string, error)
+
+func (db *IndexingStore) applySelectOptions(query string, options SelectOptions, scopeAlias string, resolve selectResolver) (string, []any, error) {
 	if options.Offset < 0 || (options.Limit != nil && *options.Limit < 0) {
-		return nil, fmt.Errorf("limit and offset must be nonnegative")
+		return "", nil, fmt.Errorf("limit and offset must be nonnegative")
 	}
 	var where strings.Builder
 	var args []any
-	if s.Ordering == schema.Isolated {
-		where.WriteString("t.chain_id = $1")
+	if db.writer.s.Ordering == schema.Isolated {
+		where.WriteString(scopeAlias + ".chain_id = $1")
 		args = append(args, db.writer.event.Checkpoint.ChainID)
 	}
 	path := make(map[*SelectFilter]bool)
@@ -52,21 +66,19 @@ func (db *IndexingStore) SelectRows(ctx context.Context, name string, options Se
 		if where.Len() > 0 {
 			where.WriteString(" AND ")
 		}
-		if err := s.writeSelectFilter(&where, table, &options.Filters[i], &args, path); err != nil {
-			return nil, err
+		if err := db.writer.s.writeSelectFilter(&where, resolve, &options.Filters[i], &args, path); err != nil {
+			return "", nil, err
 		}
 	}
-	query := "SELECT row_to_json(t)::text AS row FROM " + s.table(name) + " AS t"
 	if where.Len() > 0 {
 		query += " WHERE " + where.String()
 	}
 	var order []string
 	for _, term := range options.Order {
-		c, err := selectColumn(table, term.Column)
+		_, expr, err := resolve(term.Column)
 		if err != nil {
-			return nil, err
+			return "", nil, err
 		}
-		expr := "t." + schema.Quote(c.Name)
 		if term.Descending {
 			expr += " DESC"
 		}
@@ -83,18 +95,18 @@ func (db *IndexingStore) SelectRows(ctx context.Context, name string, options Se
 		args = append(args, options.Offset)
 		query += fmt.Sprintf(" OFFSET $%d", len(args))
 	}
-	return db.selectModelRows(ctx, table, query, args)
+	return query, args, nil
 }
 
-func selectColumn(table schema.Table, name string) (schema.Column, error) {
+func qualifiedSelectColumn(table schema.Table, alias, name string) (schema.Column, string, error) {
 	i := slices.IndexFunc(table.Columns, func(c schema.Column) bool { return c.Name == name })
 	if i < 0 {
-		return schema.Column{}, fmt.Errorf("unknown column %s.%s", table.Name, name)
+		return schema.Column{}, "", fmt.Errorf("unknown column %s.%s", table.Name, name)
 	}
-	return table.Columns[i], nil
+	return table.Columns[i], alias + "." + schema.Quote(name), nil
 }
 
-func (s *Store) writeSelectFilter(sql *strings.Builder, table schema.Table, filter *SelectFilter, args *[]any, path map[*SelectFilter]bool) error {
+func (s *Store) writeSelectFilter(sql *strings.Builder, resolve selectResolver, filter *SelectFilter, args *[]any, path map[*SelectFilter]bool) error {
 	if filter.Operator == "AND" || filter.Operator == "OR" {
 		children, ok := filter.Value.([]SelectFilter)
 		if !ok || len(children) == 0 || filter.Column != "" {
@@ -110,18 +122,18 @@ func (s *Store) writeSelectFilter(sql *strings.Builder, table schema.Table, filt
 			if i > 0 {
 				sql.WriteString(" " + filter.Operator + " ")
 			}
-			if err := s.writeSelectFilter(sql, table, &children[i], args, path); err != nil {
+			if err := s.writeSelectFilter(sql, resolve, &children[i], args, path); err != nil {
 				return err
 			}
 		}
 		sql.WriteByte(')')
 		return nil
 	}
-	c, err := selectColumn(table, filter.Column)
+	c, ref, err := resolve(filter.Column)
 	if err != nil {
 		return err
 	}
-	expr := "t." + schema.Quote(c.Name) + " " + filter.Operator
+	expr := ref + " " + filter.Operator
 	switch filter.Operator {
 	case "IS NULL", "IS NOT NULL":
 	case "=", "<>", "<", "<=", ">", ">=":
