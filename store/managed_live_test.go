@@ -110,26 +110,41 @@ func TestManagedLiveLegacyMutationGuard(t *testing.T) {
 	a := &Actions{s}
 	cp := checkpoint.Block(10, 1, 1, true)
 	states := []CheckpointState{{ChainID: 1, ChainName: "one", LatestCheckpoint: checkpoint.MustEncode(cp), FinalizedCheckpoint: checkpoint.MustEncode(cp), SafeCheckpoint: checkpoint.MustEncode(cp)}}
-	for _, closed := range []bool{false, true} {
-		owner.closed.Store(closed)
-		want := ErrManagedLiveLegacyMutation
-		if closed {
-			want = ErrManagedLiveClosed
-		}
+	canceled, cancel := context.WithCancel(t.Context())
+	cancel()
+	for _, state := range []struct {
+		ctx          context.Context
+		closed, lost bool
+		want         error
+	}{
+		{ctx: t.Context(), want: ErrManagedLiveLegacyMutation},
+		{ctx: canceled, want: context.Canceled},
+		{ctx: t.Context(), lost: true, want: ErrLeaseLost},
+		{ctx: t.Context(), closed: true, want: ErrManagedLiveClosed},
+	} {
+		owner.closed.Store(state.closed)
+		owner.lost.Store(state.lost)
 		for name, call := range map[string]func() error{
-			"triggers":       func() error { return a.CreateTriggers(context.Background()) },
-			"crash-recovery": func() error { return a.CrashRecovery(context.Background()) },
+			"triggers":       func() error { return a.CreateTriggers(state.ctx) },
+			"crash-recovery": func() error { return a.CrashRecovery(state.ctx) },
 			"setup": func() error {
-				return a.InitializeMultichain(context.Background(), states, func(*Writer, func(uint64) error) error { t.Fatal("callback admitted"); return nil })
+				return a.InitializeMultichain(state.ctx, states, func(*Writer, func(uint64) error) error { t.Fatal("callback admitted"); return nil })
 			},
-			"revert":       func() error { return s.Revert(context.Background(), cp) },
-			"finalize":     func() error { return s.Finalize(context.Background(), cp) },
-			"atomic-apply": func() error { return s.Apply(context.Background(), Event{}, nil) },
-			"legacy-sync":  func() error { return s.SaveBlock(context.Background(), SyncBlock{}) },
-			"legacy-cache": func() error { _, e := s.EnableProtocolCache(context.Background()); return e },
+			"revert":       func() error { return s.Revert(state.ctx, cp) },
+			"finalize":     func() error { return s.Finalize(state.ctx, cp) },
+			"atomic-apply": func() error { return s.Apply(state.ctx, Event{}, nil) },
+			"atomic-handler": func() error {
+				return s.Apply(state.ctx, Event{ID: "unowned", Checkpoint: cp}, func(*Writer) error {
+					t.Fatal("atomic handler admitted")
+					return nil
+				})
+			},
+			"block-completion": func() error { return s.RecordBlockCompletion(state.ctx, SyncBlock{}) },
+			"legacy-sync":      func() error { return s.SaveBlock(state.ctx, SyncBlock{}) },
+			"legacy-cache":     func() error { _, e := s.EnableProtocolCache(state.ctx); return e },
 		} {
-			if err := call(); !errors.Is(err, want) {
-				t.Fatalf("%s closed=%v: got %v, want %v", name, closed, err, want)
+			if err := call(); !errors.Is(err, state.want) {
+				t.Fatalf("%s: got %v, want %v", name, err, state.want)
 			}
 		}
 	}

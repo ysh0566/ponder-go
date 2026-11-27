@@ -319,6 +319,9 @@ func (s *Store) lock(ctx context.Context, tx Transaction) error {
 	return nil
 }
 func (s *Store) Apply(ctx context.Context, event Event, handler func(*Writer) error) error {
+	if s.managedLive != nil {
+		return s.managedLive.rejectLegacy(ctx)
+	}
 	if handler == nil {
 		return fmt.Errorf("event handler is required")
 	}
@@ -328,14 +331,14 @@ func (s *Store) Apply(ctx context.Context, event Event, handler func(*Writer) er
 // RecordBlockCompletion records progress even when no callback matched. A fork
 // through an empty block does not invalidate callbacks on another chain.
 func (s *Store) RecordBlockCompletion(ctx context.Context, b SyncBlock) error {
+	if s.managedLive != nil {
+		return s.managedLive.rejectLegacy(ctx)
+	}
 	event := Event{ID: b.CompletionID(), Checkpoint: checkpoint.Block(b.Timestamp, b.ChainID, b.Number, true)}
 	return s.apply(ctx, event, nil)
 }
 
 func (s *Store) apply(ctx context.Context, event Event, handler func(*Writer) error) error {
-	if s.managedLive != nil {
-		return s.managedLive.rejectLegacy(ctx)
-	}
 	if s.staged {
 		return fmt.Errorf("staged actions store cannot use atomic Apply")
 	}

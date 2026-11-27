@@ -37,7 +37,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 
 PGlite 暂时无法通过 Go 的 `context` 立即取消已经发出的 SQL。监控方面，Go 写入进程还缺 12 个 Prometheus 指标族。[PGlite 使用说明](docs/USAGE.md#使用本地-pglite) · [指标明细](docs/RUNTIME_SUPPORT.md#prometheus-coverage)
 
-验收工作包括双库故障恢复、6 个参考应用的历史数据对账、2 项同条件性能基准和 17 条仍失败的服务商 RPC 用例。另在主线重现了两条 Go 回归失败，涉及受管理存储的错误类型和历史回调的事务收据边界。[复现结果](docs/RUNTIME_SUPPORT.md#native-regression-checks) · [应用与性能验证](docs/RUNTIME_SUPPORT.md#application-verification) · [RPC 实测记录](parity/runs/provider-policy-assertions/RESULT.md)
+验收工作包括双库故障恢复、6 个参考应用的历史数据对账、2 项同条件性能基准和 17 条仍失败的服务商 RPC 用例。[应用与性能验证](docs/RUNTIME_SUPPORT.md#application-verification) · [RPC 实测记录](parity/runs/provider-policy-assertions/RESULT.md)
 
 | 使用场景 | 当前能用什么 | 还缺什么 |
 | --- | --- | --- |
