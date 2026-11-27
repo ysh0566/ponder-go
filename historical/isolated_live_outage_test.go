@@ -304,7 +304,9 @@ func TestRuntimeIsolatedOfflineReopen(t *testing.T) {
 				}
 				r = runtimeOpen(t, backend, o)
 				peerOffline.Store(false)
-				out, err := r.Run(metrics.WithChainSync(ctx, registry))
+				out, err := r.Run(metrics.WithHistorical(metrics.WithChainSync(ctx, registry), registry))
+				assertBackfillTimes(t, registry, "one", false, false)
+				assertBackfillTimes(t, registry, "two", !deepFork, !deepFork)
 				if !held || !out.Recovered {
 					t.Fatalf("healthy commit=%t result=%+v: %v", held, out, err)
 				}

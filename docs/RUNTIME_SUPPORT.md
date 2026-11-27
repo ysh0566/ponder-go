@@ -47,11 +47,13 @@ The writer reports the processed block number and Unix timestamp per chain. The 
 
 The writer and query server measure labeled database method attempts on PostgreSQL and PGlite. PostgreSQL deployments also count explicit SQL submissions by pool. Each process exposes its own registry. [Database measurements](USAGE.md#查看数据库操作) · [Verification](../parity/runs/native-db-metrics/RESULT.md)
 
-The Go writer registers 24 of the 39 explicitly named upstream metric families under matching names. The remaining 15 fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Process gauges](../metrics/process.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
+The writer reports the rounded Unix seconds when its historical phase starts and ends. The default and Omnichain orderings publish one timestamp across participating chains. Isolated workers complete independently. Live polling preserves both measurements. [Go usage](USAGE.md#查看历史回填的起止时间) · [Timing verification](../parity/runs/native-backfill-wall-clock/RESULT.md)
+
+The Go writer registers 26 of the 39 explicitly named upstream metric families under matching names. The remaining 13 fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Process gauges](../metrics/process.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
 
 | Area | Families without a matching Go metric | Measurement |
 | --- | ---: | --- |
-| Historical sync | 9 | Concurrency group duration, start/end timestamps, total/cached/completed indexing seconds and block counts |
+| Historical sync | 7 | Concurrency group duration, total/cached/completed indexing seconds and block counts |
 | Indexing | 6 | Indexing timestamp, cache query and raw SQL duration, RPC action time, prefetch and request counts |
 
 ## Application verification

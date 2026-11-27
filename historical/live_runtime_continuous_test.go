@@ -77,6 +77,11 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 					live, complete = 0, 1
 				}
 				assertSyncMetrics(t, registry, fmt.Sprint(b.Executable().Chains[group.ChainID-1]["name"]), group.Head, live, complete)
+				if !group.Historical {
+					for _, chain := range b.Executable().Chains {
+						assertBackfillTimes(t, registry, fmt.Sprint(chain["name"]), true, true)
+					}
+				}
 				ids[group.OperationID] = true
 				visits[group.Head]++
 				return nil
@@ -159,9 +164,17 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 					t.Fatalf("head %+v observed %d times", head, count)
 				}
 			}
-			body, err := registry.Collect(t.Context())
-			if err != nil || strings.Contains(body, "ponder_historical_") {
-				t.Fatalf("live indexing and cold replay reported historical work: %q, %v", body, err)
+			families, err := registry.Gather()
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Each opening has a historical window, even with zero historical
+			// events. Replaying live blocks must not create historical work samples.
+			for _, family := range families {
+				name := family.GetName()
+				if strings.HasPrefix(name, "ponder_historical_") && name != "ponder_historical_start_timestamp_seconds" && name != "ponder_historical_end_timestamp_seconds" {
+					t.Fatalf("live replay published historical work in %s", name)
+				}
 			}
 			if err = r.Close(context.Background()); err != nil {
 				t.Fatal(err)

@@ -165,6 +165,8 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 				}
 				if group.ChainID == 202 && cp.BlockNumber == 2 {
 					assertSyncMetrics(t, registry, "second", state.Cursors[202], -1, 1)
+					assertBackfillTimes(t, registry, "second", true, true)
+					assertBackfillTimes(t, registry, "first", true, false)
 				}
 				observed[group.ChainID] = append(observed[group.ChainID], cp.BlockNumber)
 				return nil
@@ -173,7 +175,7 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 				opts.OpenID = owner
 				r = runtimeOpen(t, backend, opts)
 				registry = metrics.New()
-				result, err := r.Run(metrics.WithChainSync(ctx, registry))
+				result, err := r.Run(metrics.WithHistorical(metrics.WithChainSync(ctx, registry), registry))
 				if reject {
 					if err == nil || !strings.Contains(err.Error(), "interrupted isolated callback") || result.Ready {
 						t.Fatalf("interruption: %+v, %v", result, err)
@@ -181,6 +183,8 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 				} else if err != nil || !result.Ready || !result.Completed {
 					t.Fatalf("reopen: %+v, %v", result, err)
 				}
+				assertBackfillTimes(t, registry, "first", true, !reject)
+				assertBackfillTimes(t, registry, "second", true, true)
 				if (reject && slices.Contains(observed[101], uint64(2))) || (!reject && (!slices.Equal(observed[101], []uint64{0, 1, 2, 3}) || !slices.Equal(observed[202], []uint64{1, 2}))) {
 					t.Fatalf("%s reported duplicate, rolled back or missing blocks: %v", owner, observed)
 				}
