@@ -58,3 +58,12 @@ func assertBackfillTimes(t *testing.T, registry *metrics.Registry, chain string,
 		}
 	}
 }
+
+func assertIndexingTime(t *testing.T, registry *metrics.Registry, chain string, ts uint64) {
+	t.Helper()
+	body, err := registry.Collect(t.Context())
+	sample := fmt.Sprintf("ponder_indexing_timestamp{chain=%q} %g\n", chain, float64(ts))
+	if err != nil || !strings.Contains(body, sample) {
+		t.Fatalf("missing %s in metrics: %v\n%s", sample, err, body)
+	}
+}

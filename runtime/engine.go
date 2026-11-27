@@ -97,6 +97,7 @@ type Engine struct {
 	blooms        bloomPlan
 	filter        string
 	chain         config.Chain
+	indexingTime  metrics.IndexingTimeline
 	options       Options
 	cache         *store.ProtocolCache
 	syncMu        sync.Mutex
@@ -129,7 +130,12 @@ func NewWithOptions(c config.Config, s *store.Store, handlers map[string]Handler
 	if len(c.Chains) != 1 {
 		return nil, fmt.Errorf("single-chain engine requires one chain; use NewIndexer to coordinate multiple chains")
 	}
-	engine := &Engine{Config: c, Store: s, Handlers: handlers, chain: c.Chains[0], abis: map[string]abi.ABI{}, factories: map[string]factory.LogFactory{}, options: options}
+	chain := c.Chains[0]
+	engine := &Engine{
+		Config: c, Store: s, Handlers: handlers, chain: chain, options: options,
+		abis: map[string]abi.ABI{}, factories: map[string]factory.LogFactory{},
+		indexingTime: metrics.NewIndexingTimeline(map[uint64]string{chain.ID: chain.Name}, false),
+	}
 	for _, contract := range c.Contracts {
 		a, e := abi.Parse(string(contract.ABI))
 		if e != nil {
@@ -177,7 +183,6 @@ func NewWithOptions(c config.Config, s *store.Store, handlers map[string]Handler
 	}
 	// A notification endpoint changes when the worker wakes, not its indexed ranges.
 	identity := c
-	chain := engine.chain
 	chain.WS = ""
 	identity.Chains = []config.Chain{chain}
 	encoded, _ := json.Marshal(identity)
@@ -492,6 +497,15 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 		if cursor != "" && progressPoint == checkpoint.Block(stored.Timestamp, e.chain.ID, stored.Number, true) {
 			metrics.ChainSync(ctx).SetSyncBlock(e.chain.Name, stored.Number, stored.Timestamp)
 		}
+		if e.staged != nil {
+			// Staged handlers commit the whole block in one transaction. Its
+			// checkpoint may name the last event rather than the block end.
+			if progressPoint.ChainID == e.chain.ID && progressPoint.BlockNumber == stored.Number && progressPoint.BlockTimestamp == stored.Timestamp && progressPoint != checkpoint.Block(stored.Timestamp, e.chain.ID, stored.Number, false) {
+				e.indexingTime.Commit(metrics.ChainSync(ctx), e.chain.ID, stored.Timestamp)
+			}
+		} else {
+			e.restoreIndexingTime(ctx, progress)
+		}
 		return nil
 	}
 	for {
@@ -517,7 +531,18 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 				err = e.Store.RevertAndRewind(ctx, target)
 			}
 			if err == nil {
-				metrics.ChainSync(ctx).SetSyncBlock(e.chain.Name, n, timestamp)
+				registry := metrics.ChainSync(ctx)
+				registry.SetSyncBlock(e.chain.Name, n, timestamp)
+				if registry != nil {
+					if e.staged != nil || e.Store.Ordering == schema.Isolated {
+						e.indexingTime.Commit(registry, e.chain.ID, timestamp)
+					} else {
+						// A global undo can invalidate a peer's previously reported progress.
+						// A failed read clears the samples until the next reconciliation.
+						positions, _ := e.Store.Progress(ctx)
+						e.restoreIndexingTime(ctx, positions)
+					}
+				}
 				metrics.ObserveReorg(ctx, e.chain.Name)
 				if m := devMonitorFrom(ctx); m != nil {
 					m.rewind(e.chain.ID, e.Store.Ordering != schema.Isolated)
@@ -538,6 +563,14 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 			return err
 		}
 	}
+}
+
+// A saved header or a partially applied ordinary block does not complete its block.
+func (e *Engine) restoreIndexingTime(ctx context.Context, progress map[string]string) {
+	e.indexingTime.Restore(metrics.ChainSync(ctx), func(id uint64) (uint64, bool) {
+		cp, err := checkpoint.Decode(progress[strconv.FormatUint(id, 10)])
+		return cp.BlockTimestamp, err == nil && cp.ChainID == id && cp == checkpoint.Block(cp.BlockTimestamp, id, cp.BlockNumber, true)
+	})
 }
 
 type pending struct {
@@ -788,7 +821,9 @@ func (e *Engine) completeBlock(ctx context.Context, block store.SyncBlock) error
 	if err := e.Store.CompleteBlock(ctx, block, e.filter); err != nil {
 		return err
 	}
-	metrics.ChainSync(ctx).SetSyncBlock(e.chain.Name, block.Number, block.Timestamp)
+	registry := metrics.ChainSync(ctx)
+	registry.SetSyncBlock(e.chain.Name, block.Number, block.Timestamp)
+	e.indexingTime.Commit(registry, e.chain.ID, block.Timestamp)
 	if m := devMonitorFrom(ctx); m != nil {
 		m.completeBlock(e.chain.ID)
 	}

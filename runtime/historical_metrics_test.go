@@ -164,6 +164,12 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 						stamps[phase] = stamp
 						start = stamp
 					}
+					// Both tips have the same block time. The ordered writer has
+					// committed A's tip while B's last physical block is still 2.
+					indexed := fmt.Sprintf("ponder_indexing_timestamp{chain=%q} %g\n", chain.Name, float64(genesis+30))
+					if !strings.Contains(firstScrape, indexed) {
+						t.Fatalf("missing indexing time %s", indexed)
+					}
 					height := 3
 					if order == schema.Omnichain && chain.Name == "b" {
 						height = 2 // The equal-timestamp tip sorts after the global watermark.

@@ -137,7 +137,11 @@ func (r *RuntimeRunner) applyBoundedReorg(ctx context.Context, index int, c stor
 	if err := r.coordinateRuntimeReorg(ctx, index, request); err != nil {
 		return c, err
 	}
-	return r.domains.Control(ctx)
+	c, err := r.domains.Control(ctx)
+	if err == nil {
+		r.restoreIndexingTime(ctx, c)
+	}
+	return c, err
 }
 
 func runtimeCursorHeader(head store.ManagedLiveHead) indexing.Object {

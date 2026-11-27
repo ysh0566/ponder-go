@@ -112,6 +112,8 @@ func TestRuntimeIsolatedLiveOutage(t *testing.T) {
 						return fmt.Errorf("unexpected peer reorg on %d", p.ChainID)
 					}
 					assertSyncMetrics(t, registry, "one", p.Head, 1, -1)
+					ancestor, _ := checkpoint.Decode(p.Head.Checkpoint)
+					assertIndexingTime(t, registry, "one", ancestor.BlockTimestamp)
 					forks++
 				case "block":
 					cp, err := checkpoint.Decode(p.Head.Checkpoint)
@@ -136,6 +138,10 @@ func TestRuntimeIsolatedLiveOutage(t *testing.T) {
 						}
 						assertSyncMetrics(t, registry, "one", original, 1, -1)
 						assertSyncMetrics(t, registry, "two", p.Head, 1, -1)
+						first, _ := checkpoint.Decode(original.Checkpoint)
+						peer, _ := checkpoint.Decode(p.Head.Checkpoint)
+						assertIndexingTime(t, registry, "one", first.BlockTimestamp)
+						assertIndexingTime(t, registry, "two", peer.BlockTimestamp)
 						node.fork(1, 2)
 						node.setLatest(5)
 						offline.Store(false)

@@ -12,6 +12,7 @@ import (
 
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -244,7 +245,8 @@ func TestStagedRuntimePersistence(t *testing.T) {
 func TestStagedHandlerFailureAndReconnect(t *testing.T) {
 	for _, dialect := range []string{"pglite", "postgres"} {
 		t.Run(dialect, func(t *testing.T) {
-			ctx := context.Background()
+			registry := metrics.New()
+			ctx := metrics.WithChainSync(t.Context(), registry)
 			rpc, url := localChain(t)
 			b := stagedBackend(t, ctx, dialect, "memory://")
 			defer b.Close()
@@ -268,6 +270,10 @@ func TestStagedHandlerFailureAndReconnect(t *testing.T) {
 				t.Fatal(e)
 			}
 			stageRows(t, r.Store, 0)
+			body, err := registry.Collect(ctx)
+			if err != nil || strings.Contains(body, "ponder_indexing_timestamp{") {
+				t.Fatal("failed first callback published indexing progress", err)
+			}
 			fail = false
 			if e := r.Sync(ctx); e != nil {
 				t.Fatal("retry historical init without re-migrating", e)
@@ -288,6 +294,20 @@ func TestStagedHandlerFailureAndReconnect(t *testing.T) {
 			}
 			stageRows(t, r.Store, 1)
 			stageLatest(t, d, 0)
+			registry = metrics.New()
+			ctx = metrics.WithChainSync(t.Context(), registry)
+			if err := r.checkReorg(ctx, 1); err != nil {
+				t.Fatal(err)
+			}
+			stored, err := r.Store.SyncedBlock(ctx, 1, 0)
+			if err != nil || stored == nil {
+				t.Fatal("missing committed genesis", err)
+			}
+			body, err = registry.Collect(ctx)
+			want := fmt.Sprintf("ponder_indexing_timestamp{chain=%q} %g\n", "local", float64(stored.Timestamp))
+			if err != nil || !strings.Contains(body, want) {
+				t.Fatal("missing restored staged event checkpoint", want, err)
+			}
 			stageSilent(t, l)
 			fail = false
 			if e = r.Sync(ctx); e != nil {

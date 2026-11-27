@@ -124,7 +124,16 @@ func TestRuntimeOmnichainLogRanges(t *testing.T) {
 						}
 					})
 					if pass != 0 {
+						var last uint64
 						for _, c := range g.Chains {
+							ts, err := uintQuantity(c.Blocks[3]["timestamp"])
+							if err != nil {
+								t.Fatal(err)
+							}
+							last = max(last, ts)
+						}
+						for _, c := range g.Chains {
+							assertIndexingTime(t, registry, fmt.Sprint(build.Executable().Chains[c.ID-1]["name"]), last)
 							end, err := runtimeHead(c.ID, c.Blocks[3])
 							if err != nil {
 								t.Fatal(err)
