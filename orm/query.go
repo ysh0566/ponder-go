@@ -42,6 +42,34 @@ func (c Column[R, V]) IsNotNull() Predicate[R] {
 	return Predicate[R]{table: c.table, filter: store.SelectFilter{Column: c.name, Operator: "IS NOT NULL"}}
 }
 
+// And matches rows satisfying every predicate in the group.
+func And[R any](first Predicate[R], rest ...Predicate[R]) Predicate[R] {
+	return groupPredicates("AND", first, rest)
+}
+
+// Or matches rows satisfying any predicate in the group.
+func Or[R any](first Predicate[R], rest ...Predicate[R]) Predicate[R] {
+	return groupPredicates("OR", first, rest)
+}
+
+func groupPredicates[R any](operator string, first Predicate[R], rest []Predicate[R]) Predicate[R] {
+	if len(rest) == 0 || first.err != nil {
+		return first
+	}
+	terms := make([]store.SelectFilter, 1, len(rest)+1)
+	terms[0] = first.filter
+	for _, p := range rest {
+		if p.table != first.table {
+			return Predicate[R]{table: first.table, err: fmt.Errorf("filter column must belong to %s", first.table)}
+		}
+		if p.err != nil {
+			return p
+		}
+		terms = append(terms, p.filter)
+	}
+	return Predicate[R]{table: first.table, filter: store.SelectFilter{Operator: operator, Value: terms}}
+}
+
 type Order[R any] struct {
 	table string
 	term  store.SelectOrder
