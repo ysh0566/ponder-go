@@ -139,20 +139,14 @@ func planLiveRecovery(opts ManagedLiveOptions, c ManagedLiveControl, baseline ma
 		return e, err
 	}
 	if opts.runtimeOmnichain {
-		watermark := ""
-		for _, head := range opts.FinalizedHeads {
-			if watermark == "" || head.Checkpoint < watermark {
-				watermark = head.Checkpoint
-			}
-		}
 		for id, head := range c.Cursors {
 			cp, err := checkpoint.Decode(head.Checkpoint)
 			fresh, fe := checkpoint.Decode(opts.FinalizedHeads[id].Checkpoint)
 			if err != nil || fe != nil {
 				return e, ErrManagedLiveBatchConflict
 			}
-			if cp.BlockNumber >= opts.runtimeStarts[id] && !liveDown(c.LogicalCursors[id]) && (head.Checkpoint > watermark || cp.BlockNumber > fresh.BlockNumber) {
-				return e, fmt.Errorf("omnichain executed cursor exceeds fresh global finalized watermark")
+			if cp.BlockNumber >= opts.runtimeStarts[id] && !liveDown(c.LogicalCursors[id]) && (head.Checkpoint > opts.FinalizedHeads[id].Checkpoint || cp.BlockNumber > fresh.BlockNumber || (cp.BlockNumber == fresh.BlockNumber && head != opts.FinalizedHeads[id])) {
+				return e, fmt.Errorf("omnichain executed cursor exceeds or differs from fresh chain finality")
 			}
 		}
 	}

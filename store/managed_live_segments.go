@@ -369,13 +369,7 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 	predecessor := c.Tail
 	lastOmnichain := ""
 	lastLog := c.LogOnlyLastEvent
-	watermark := ""
 	if opts.runtimeOmnichain {
-		for _, head := range opts.FinalizedHeads {
-			if watermark == "" || head.Checkpoint < watermark {
-				watermark = head.Checkpoint
-			}
-		}
 		if logOnlyOptions(opts) {
 			lastOmnichain = c.LogOnlyLastEvent
 		}
@@ -408,17 +402,14 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 		if err != nil || pe != nil || !ok || !extends || cp.BlockTimestamp < previous.BlockTimestamp || cp.BlockNumber > opts.EndBlocks[cp.ChainID] {
 			return nil, nil, c, fmt.Errorf("managed block must extend its exact acquired cursor without gaps")
 		}
-		if opts.runtimeIsolated && !opts.liveContinuous {
+		if opts.atomicFinality() {
 			final := opts.FinalizedHeads[cp.ChainID]
 			_, limit, err := normalizeLiveHead(final)
 			if err != nil || cp.BlockNumber > limit.BlockNumber || cp.BlockTimestamp > limit.BlockTimestamp || (cp.BlockNumber == limit.BlockNumber && block.Head != final) {
-				return nil, nil, c, fmt.Errorf("isolated block exceeds or differs from its chain finality")
+				return nil, nil, c, fmt.Errorf("%s block exceeds or differs from its chain finality", managedStorageOrdering(&opts))
 			}
 		}
 		if opts.runtimeOmnichain {
-			if block.Head.Checkpoint > watermark {
-				return nil, nil, c, fmt.Errorf("omnichain block exceeds finalized watermark")
-			}
 			if opts.runtimeLogFilters[cp.ChainID] != nil {
 				if block.LogEventCount > 0 {
 					if block.LogFirstEvent <= lastOmnichain {
@@ -429,7 +420,7 @@ func planLiveBatch(opts ManagedLiveOptions, c ManagedLiveControl, batch ManagedL
 				}
 			} else {
 				if block.Head.Checkpoint <= lastOmnichain {
-					return nil, nil, c, fmt.Errorf("omnichain block must advance global order below finalized watermark")
+					return nil, nil, c, fmt.Errorf("omnichain block must advance global order")
 				}
 				lastOmnichain = block.Head.Checkpoint
 			}

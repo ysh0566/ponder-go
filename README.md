@@ -32,12 +32,17 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 
 如果项目使用单库，上述三种排序都可以从回填一直运行到实时。把业务数据和同步缓存分开部署时，主要功能缺口是 Omnichain 的持续索引。
 
-**双库 Omnichain 从回填切换到实时。** 双库作业目前可以等各链的有限区间全部最终确认后回填。剩下的是按全局顺序持续写入新区块，在一条链分叉时协调两库撤销和重放受影响的跨链回调，并支持在此期间中断后恢复。需要立即上线的项目可使用单库 Omnichain。自行管理持久化的应用也可消费 Go 实时事件流。[双库最终性检查](historical/live_runtime_omnichain_source_test.go) · [单库 Omnichain](docs/USAGE.md#按全局顺序索引多条链) · [Go 事件流](docs/USAGE.md#读取-omnichain-历史和实时事件)
+**双库 Omnichain 从回填切换到实时。** 双库作业可以等各链的有限区间分别最终确认后回填。即使两条链的结束块时间不同，作业也会按全局顺序提交较晚区块的回调，失败后可从已提交位置恢复。[结束时间不同的双库作业](docs/USAGE.md#等待双库-omnichain-的区间最终确认) 剩下的是按全局顺序持续写入新区块，在一条链分叉时协调两库撤销和重放受影响的跨链回调，并支持在此期间中断后恢复。需要立即上线的项目可使用单库 Omnichain。自行管理持久化的应用也可消费 Go 实时事件流。[双库最终性检查](historical/live_runtime_omnichain_source_test.go) · [单库 Omnichain](docs/USAGE.md#按全局顺序索引多条链) · [Go 事件流](docs/USAGE.md#读取-omnichain-历史和实时事件)
 双库 Isolated 已支持部分链离线时首次启动。固定或省略区块边界并启用持续索引后，健康链可以先提交，离线链首次恢复时会核验节点、运行本链的初始化并从配置的起点追块。仅执行已确认区间回填的作业仍需各参与链在线。[节点离线时首启与恢复](docs/USAGE.md#双库-isolated-实时追块)
 
 PGlite 的查询、写入、开启事务和订阅通知在等待连接时支持 Go `context` 取消。同一事务内的排队语句也可取消。已经发给引擎的 SQL 仍需等待数据库返回。监控方面，Go 写入进程还缺 8 个 Prometheus 指标族。[PGlite 使用说明](docs/USAGE.md#使用本地-pglite) · [指标明细](docs/RUNTIME_SUPPORT.md#prometheus-coverage)
 
-验收工作包括双库故障恢复、6 个参考应用的历史数据对账、2 项同条件性能基准和 17 条仍失败的服务商 RPC 用例。[应用与性能验证](docs/RUNTIME_SUPPORT.md#application-verification) · [RPC 实测记录](parity/runs/provider-policy-assertions/RESULT.md)
+还有四类验证工作。
+
+- **故障恢复**。复验主机掉电、双库在混合来源分叉期间中断，以及更多 PGlite 异常退出场景。[已覆盖的恢复场景](docs/RUNTIME_SUPPORT.md)
+- **应用结果**。8 个参考应用中，三链 WETH 和主网 ERC-20 已完成固定区间对账，其余 6 个仍需比较 Go 处理函数写出的各张业务表。[应用清单](docs/RUNTIME_SUPPORT.md#application-verification)
+- **性能**。rETH 和 Uniswap 的回填仍需在相同链数据、数据库和 RPC 条件下测量。[性能基准范围](docs/RUNTIME_SUPPORT.md#application-verification)
+- **节点行为**。17 条在线 RPC 用例在自建节点上仍失败。其中 16 条检查特定服务商的请求范围或响应大小限制，另 1 条需要 Swell 指定区间的 58 条历史日志。[逐项实测](parity/runs/provider-policy-assertions/RESULT.md)
 
 | 使用场景 | 当前能用什么 | 还缺什么 |
 | --- | --- | --- |

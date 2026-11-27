@@ -32,8 +32,8 @@ type runtimeRunnerCallbackKey struct{}
 // RuntimeOptions selects the owned RuntimeRunner lifecycle. A nil Live runs a
 // fixed range. Default multichain supports setup and per-chain RPC caching in
 // either mode. Isolated supports finalized ranges or continuous per-chain
-// finality and reorgs. Omnichain ranges must fit within the common finalized
-// watermark.
+// finality and reorgs. Finite Omnichain ranges require locally finalized ends. Setup
+// reads must fit within the common finalized checkpoint.
 // BuildID identifies handler code. OpenID is unique to a single opening.
 type RuntimeOptions struct {
 	// SourceCheckpoints enables source initial positions for bounded or continuous
@@ -47,7 +47,7 @@ type RuntimeOptions struct {
 	FactorySources bool
 	Live           *RuntimeLiveOptions
 	// OmnichainFinalityPollInterval lets Open wait for a bounded Omnichain range
-	// to become globally finalized. Zero checks once. Cancellation stops the wait.
+	// to reach its finalized ends and setup boundary. Zero checks once.
 	OmnichainFinalityPollInterval time.Duration
 	// Historical.QuerySize is the historical event query budget across chains (1..12000).
 	// Zero uses 12000. MaxQueryParameters controls batched sync writes in all orderings.

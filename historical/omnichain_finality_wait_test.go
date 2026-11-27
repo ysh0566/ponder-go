@@ -30,7 +30,7 @@ func TestRuntimeOmnichainFinalityWait(t *testing.T) {
 					switch polls[id].Add(1) {
 					case 1:
 						return "0x1" // Neither end exists yet.
-					case 2:
+					default:
 						return "0x3" // Both ends exist, but chain 2 has the earlier timestamp.
 					}
 				}
@@ -50,7 +50,7 @@ func TestRuntimeOmnichainFinalityWait(t *testing.T) {
 				snapshot, calls, epochs = want, nil, nil
 				o.OpenID = fmt.Sprintf("wait-%d", i)
 				r := runtimeOpen(t, backend, o)
-				if !slices.Equal(epochs, []uint64{0}) || (i == 0 && (polls[1].Load() != 3 || polls[2].Load() != 3)) {
+				if !slices.Equal(epochs, []uint64{0}) || (i == 0 && (polls[1].Load() != 2 || polls[2].Load() != 2)) {
 					t.Fatalf("unexpected acquisition: epochs %v, head reads %d and %d", epochs, polls[1].Load(), polls[2].Load())
 				}
 				out, err := r.Run(t.Context())

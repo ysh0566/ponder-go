@@ -1021,7 +1021,7 @@ Go 应用通过 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGli
 
 在默认多链排序下使用工厂合约发现子地址时，将 `RuntimeOptions.FactorySources` 和 `SourceCheckpoints` 都设为 `true`。将 `Live` 留空即可在固定高度结束。工厂地址配置里的 `startBlock` 和 `endBlock` 决定扫描创建事件的范围，子合约或账户配置的区间决定向 Go 回调投递哪些事件。例如，工厂在区块 1 创建的子合约，即使其日志回调从区块 3 才开始，仍可在区块 3 收到事件。重开同一部署时，运行器按区块哈希恢复子地址，RPC 节点需能返回创建区间的区块和日志。未最终确认的区块被替换后，回放会使用新分支创建的子地址。[有限区间工厂测试](../parity/runs/native-bounded-factory/RESULT.md)
 
-独立存储的 Omnichain 会自动启用来源 checkpoint。可以注册一个或多个区块回调，各自选择采样间隔，也可以只订阅合约日志、合约 CALL 或账户事件。每个来源都需要声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束位置必须都已进入全局最终确认范围。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
+独立存储的 Omnichain 会自动启用来源 checkpoint。可以注册一个或多个区块回调，各自选择采样间隔，也可以只订阅合约日志、合约 CALL 或账户事件。每个来源都需要声明有限区间。将来源的 `startBlock` 和 `endBlock` 都设为 `0` 可以只处理创世区块。区块回调会收到区块 0，日志回调会收到区块 0 内匹配的日志。各链的结束区块须在本链最终确认。[Omnichain 创世区块测试](../parity/runs/native-omnichain-genesis/RESULT.md)
 
 #### 订阅双库索引器的事件组提交
 
@@ -1082,7 +1082,9 @@ PGlite 对每笔事务执行一次。实时轮询、Go 处理函数的业务错�
 
 #### 等待双库 Omnichain 的区间最终确认
 
-两个构造函数都支持 `RuntimeOptions.OmnichainFinalityPollInterval`。零值表示在打开时检查一次。正值表示按指定间隔重新读取各链的最新区块，再按各自的重组窗口计算最终确认位置。例如，链 A 已产生结束区块，链 B 的最终确认时间仍早于这个区块时，作业会继续等待。若某个 `setup` 回调读取的区块高于该链最后一个事件，也会等到该区块最终确认。
+两个构造函数都支持 `RuntimeOptions.OmnichainFinalityPollInterval`。零值表示在打开时检查一次。正值表示按指定间隔重新读取各链的最新区块，再按各自的重组窗口计算最终确认位置。作业等到每条链自己的结束区块都已最终确认。若有 `setup`，其起始位置和配置的读取高度还须处于各链共同确认的位置以内。
+
+例如，A 和 B 都以第 3 块为结束高度，B 的结束块时间为 130，A 的为 140。两块都已在本链最终确认时，作业先提交共同确认位置以前的回调，再按 checkpoint 提交余下的 A 链回调。即使 B 停在第 3 块，作业也能就绪。如果 A 的最后一个区块中有回调失败，该块的业务写入和检查点一起回滚。使用相同的存储、配置和 `BuildID`，换一个 `OpenID` 重启后，会重新执行该块。[回调失败、空区块和重启验证](../parity/runs/native-omnichain-finalized-tail/RESULT.md)
 
 下面的 `opts` 是已配置好存储、来源和 Go 回调的 `historical.RuntimeOptions`。示例为等待和回填合计预留十分钟，作业结束后释放上下文。
 
@@ -1160,11 +1162,11 @@ handlers := []config.SourceIndexingFunction{
 }
 ```
 
-`recordIncomingTransaction` 和 `recordIncomingTransfer` 是项目自己的 `indexing.Handler`。每条链的结束区块都必须处于全局已最终确认的范围内。启用缓存时，运行器会在同步库中核对区间覆盖、交易回执和转账 trace。最后一次回调可能早于扫描结束高度。重启时沿用原来的配置、存储和 `BuildID`，并使用新的 `OpenID`。[两条本地链的恢复验证](../parity/runs/native-omnichain-sparse-accounts/RESULT.md)
+`recordIncomingTransaction` 和 `recordIncomingTransfer` 是项目自己的 `indexing.Handler`。每条链的结束区块须在本链最终确认。启用缓存时，运行器会在同步库中核对区间覆盖、交易回执和转账 trace。最后一次回调可能早于扫描结束高度。重启时沿用原来的配置、存储和 `BuildID`，并使用新的 `OpenID`。[两条本地链的恢复验证](../parity/runs/native-omnichain-sparse-accounts/RESULT.md)
 
 将某条链的 `cacheRpcRequests` 设为 `false` 时，运行器会直接向该链节点复核账户来源覆盖的每个区块，包括重启时需要重新核对的历史区间。节点须能按哈希返回完整区块和交易数（`eth_getBlockByHash`、`eth_getBlockTransactionCountByHash`），并提供整块或逐笔交易回执。订阅原生币转账还需要 `debug_traceBlockByHash` 的 `callTracer`。节点缺少数据时，本次扫描会返回错误，进度保留在已提交的回调组。[关闭缓存的双链验证](../parity/runs/native-omnichain-uncached-accounts/RESULT.md)
 
-例如，若要在 `mainnet` 同时索引账户交易和合约日志，在 `base` 只索引工厂子合约的日志，可将逐块来源（`interval: 1`、`offset: 0`）和账户来源的 `chain` 都设为 `mainnet`，在两条链上分别注册合约日志来源。每个来源可以指定自己的起止高度。所有结束高度都须处于各链共同的最终确认范围内。
+例如，若要在 `mainnet` 同时索引账户交易和合约日志，在 `base` 只索引工厂子合约的日志，可将逐块来源（`interval: 1`、`offset: 0`）和账户来源的 `chain` 都设为 `mainnet`，在两条链上分别注册合约日志来源。每个来源可以指定自己的起止高度。各来源的结束高度须在对应链最终确认。
 
 运行器按同一跨链顺序提交两类回调。逐块链执行到结束区块。纯日志链的最后一个事件可以早于结束区块，运行器会核对两者之间的扫描记录。使用相同的配置、数据库和 `BuildID` 重启后，已提交的回调不会重复执行。[可运行的 Go 配置和恢复测试](../historical/omnichain_factory_test.go) · [双后端验证](../parity/runs/native-omnichain-mixed/RESULT.md)
 

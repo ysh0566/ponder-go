@@ -238,7 +238,7 @@ func TestRuntimeOmnichainSourceOracle(t *testing.T) {
 	}
 }
 func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
-	for _, name := range []string{"global-finality", "genesis-global-finality", "local-finality", "live", "inverted-range", "interval", "factory", "uncached-log-only-live", "uncached-unbounded-contract-call", "ordering-mismatch"} {
+	for _, name := range []string{"global-finality", "genesis-global-finality", "local-finality", "bad-end-time", "live", "inverted-range", "interval", "factory", "uncached-log-only-live", "uncached-unbounded-contract-call", "ordering-mismatch"} {
 		t.Run(name, func(t *testing.T) {
 			g := loadOmnichainGolden(t)
 			latest := ""
@@ -246,6 +246,9 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 				latest = "0x2"
 			} else if name == "genesis-global-finality" {
 				latest = "0x0"
+			}
+			if name == "bad-end-time" {
+				g.Chains[0].Blocks[2]["timestamp"] = "0xff"
 			}
 			p := omnichainGoldenRPC(t, g, latest)
 			calls := []string{}
@@ -255,13 +258,15 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 			expected := "bounded finalized"
 			switch name {
 			case "global-finality":
-				expected = "global finalized watermark"
+				expected = "storage reached"
 			case "genesis-global-finality":
 				for _, group := range b.Executable().EventCallbacks {
 					f := group[0]["filter"].(map[string]any)
 					f["fromBlock"], f["toBlock"] = uint64(0), uint64(0)
 				}
-				expected = "global finalized watermark"
+				expected = "storage reached"
+			case "bad-end-time":
+				expected = "conflicts with opening chain finality"
 			case "local-finality":
 				for _, c := range b.Executable().Chains {
 					c["reorgWindow"] = uint64(1)
@@ -299,12 +304,12 @@ func TestRuntimeOmnichainPreflightBoundary(t *testing.T) {
 			opened := false
 			r, err := openRuntime(context.Background(), o, func(context.Context, store.IndependentStorageOptions, store.ManagedLiveRuntimeOptions) (*store.ManagedLiveDomains, error) {
 				opened = true
-				return nil, errors.New("storage must not open")
+				return nil, errors.New("storage reached")
 			})
 			if (name == "uncached-log-only-live" || name == "uncached-unbounded-contract-call") && len(epochs) != 0 {
 				t.Fatal("preflight opened RPC for an unsupported Omnichain configuration")
 			}
-			if r != nil || err == nil || !strings.Contains(err.Error(), expected) || opened || len(calls) != 0 {
+			if r != nil || err == nil || !strings.Contains(err.Error(), expected) || opened != (expected == "storage reached") || len(calls) != 0 {
 				t.Fatalf("unsafe preflight name%s runner%v opened%v calls%v err%v", name, r, opened, calls, err)
 			}
 		})

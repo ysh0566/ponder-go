@@ -37,11 +37,11 @@ func rangeLogBuild(t *testing.T, g omniLogsGolden, rpc *finiteRPC, handlers map[
 
 func TestRuntimeOmnichainLogRanges(t *testing.T) {
 	for _, backend := range []string{"postgres", "pglite"} {
-		for _, name := range []string{"fresh", "cached-outside-range"} {
+		for _, name := range []string{"fresh", "cached-outside-range", "finalized-sparse-tail", "finalized-empty-tail"} {
 			t.Run(backend+"/"+name, func(t *testing.T) {
 				continuousRoot(t)
 				g := loadOmniLogOnlyGolden(t)[0].Data
-				cached := name == "cached-outside-range"
+				cached := name == "cached-outside-range" || name == "finalized-empty-tail"
 				lateAddress := g.Address
 				if cached {
 					lateAddress = "0x" + strings.Repeat("7", 40)
@@ -74,7 +74,14 @@ func TestRuntimeOmnichainLogRanges(t *testing.T) {
 					}
 					return nil
 				})
-				p, counts := omniLogsRPC(t, g)
+				// Both ends are finalized. Chain one finishes beyond the common
+				// checkpoint, including a completely empty tail in the cached case.
+				p, counts := omniLogsRPCWithSelectors(t, g, nil, func(_ uint64, selector string) string {
+					if strings.HasPrefix(name, "finalized-") && selector == "latest" {
+						return "0x3"
+					}
+					return selector
+				})
 				build := rangeLogBuild(t, g, p, handlers, lateAddress)
 				f := newManagedFiniteFixture(t, backend, build)
 				omnichainGoldenStorage(&f)

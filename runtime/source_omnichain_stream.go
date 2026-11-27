@@ -190,16 +190,107 @@ func streamOmnichainLive(ctx context.Context, chains []SourceHistoricalChain, pe
 	}
 	// All ranges ended. A completed chain can have historical events past
 	// the timestamp of the last live source. Emit those in block order.
-	for len(buffer.pending) > 0 {
-		point := buffer.pending[0].point
-		key := checkpoint.MustEncode(checkpoint.Block(point.BlockTimestamp, point.ChainID, point.BlockNumber, true))
-		events, err := buffer.release(key, nil)
+	for group, err := range omnichainTailGroups(ctx, buffer.pending) {
 		if err != nil {
 			fail(err)
 			return
 		}
-		if !yield(SourceOmnichainUpdate{Type: "block", Events: events, Checkpoint: key, ChainID: point.ChainID}, nil) {
+		if !yield(SourceOmnichainUpdate{Type: "block", Events: group.Events, Checkpoint: group.Checkpoint, ChainID: group.ChainID}, nil) {
 			return
+		}
+	}
+}
+
+// omnichainTailGroups consumes a sorted tail one complete physical block at a time.
+// No live input remains that could insert an earlier event.
+func omnichainTailGroups(ctx context.Context, pending []omnichainEvent) iter.Seq2[SourceEventGroup, error] {
+	return func(yield func(SourceEventGroup, error) bool) {
+		for len(pending) > 0 {
+			if err := ctx.Err(); err != nil {
+				yield(SourceEventGroup{}, err)
+				return
+			}
+			point := pending[0].point
+			key := checkpoint.MustEncode(checkpoint.Block(point.BlockTimestamp, point.ChainID, point.BlockNumber, true))
+			var events []protocol.Object
+			for len(pending) > 0 && pending[0].key <= key {
+				events = append(events, pending[0].event)
+				pending = pending[1:]
+			}
+			height := float64(point.BlockNumber)
+			if !yield(SourceEventGroup{ChainID: point.ChainID, Checkpoint: key, BlockRange: [2]float64{height, height}, Events: events}, nil) {
+				return
+			}
+		}
+	}
+}
+
+// FinalizedSourceOmnichain yields finite, checkpoint-ordered historical groups.
+// Events after the common finalized checkpoint become eligible once every chain
+// has scanned its own final end. Each tail group closes exactly one block.
+func FinalizedSourceOmnichain(ctx context.Context, history SourceHistoricalCoordinatorOptions) iter.Seq2[[]SourceEventGroup, error] {
+	return func(yield func([]SourceEventGroup, error) bool) {
+		for _, chain := range history.Chains {
+			p := chain.Local.Progress
+			if p == nil || p.End == nil || p.Finalized == nil {
+				yield(nil, fmt.Errorf("finite Omnichain scan requires a finalized end on chain %d", chain.Local.ChainID))
+				return
+			}
+			final, err := sourceSyncProgressAtOrAfter(p.Finalized, p.End)
+			if err != nil {
+				yield(nil, err)
+				return
+			}
+			if !final {
+				yield(nil, fmt.Errorf("chain %d end exceeds finality", p.ChainID))
+				return
+			}
+		}
+		for output, err := range HistoricalSourceOmnichain(ctx, history) {
+			if err != nil {
+				yield(nil, err)
+				return
+			}
+			if output.Type == "events" {
+				if !yield(output.Groups, nil) {
+					return
+				}
+				continue
+			}
+			if output.Type != "pending" {
+				yield(nil, fmt.Errorf("unknown historical output %q", output.Type))
+				return
+			}
+			for _, chain := range history.Chains {
+				p := chain.Local.Progress
+				scanned, err := p.IsEnd()
+				if err == nil && scanned {
+					scanned, err = sourceSyncProgressAtOrAfter(p.Finalized, p.End)
+				}
+				if err != nil {
+					yield(nil, err)
+					return
+				}
+				if !scanned {
+					yield(nil, fmt.Errorf("chain %d has not scanned its finalized end", p.ChainID))
+					return
+				}
+			}
+			ordered, err := appendOmnichainEvents(nil, output.Pending)
+			if err != nil {
+				yield(nil, err)
+				return
+			}
+			orderOmnichainEvents(ordered)
+			for group, err := range omnichainTailGroups(ctx, ordered) {
+				if err != nil {
+					yield(nil, err)
+					return
+				}
+				if !yield([]SourceEventGroup{group}, nil) {
+					return
+				}
+			}
 		}
 	}
 }

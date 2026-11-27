@@ -3219,7 +3219,7 @@
         "parity/runs/native-omnichain-block-intervals/RESULT.md",
         "parity/runs/native-signed-block-intervals/RESULT.md"
       ],
-      "remaining": "The finalized independent-store runner requires finite globally finalized source ranges and a nonzero safe-integer block period. Live Omnichain and cross-chain reorgs remain open."
+      "remaining": "The finalized independent-store runner requires finite locally finalized source ranges and a nonzero safe-integer block period. Live Omnichain and cross-chain reorgs remain open."
     },
     {
       "id": "native-mixed-source-reorg",
@@ -3389,10 +3389,18 @@
       "status": "verified_subset",
       "implementation_files": [
         "historical/live_runtime.go",
-        "historical/live_runtime_omnichain.go"
+        "historical/live_runtime_omnichain.go",
+        "historical/live_runtime_omnichain_history.go",
+        "runtime/source_omnichain_stream.go",
+        "store/managed_live_segments.go",
+        "store/managed_live_recovery.go"
       ],
       "native_test_files": [
         "historical/omnichain_finality_wait_test.go",
+        "historical/omnichain_finalized_tail_test.go",
+        "historical/omnichain_genesis_test.go",
+        "historical/omnichain_log_ranges_test.go",
+        "runtime/source_omnichain_stream_test.go",
         "historical/live_runtime_omnichain_logs_test.go"
       ],
       "upstream_sources": [
@@ -3401,9 +3409,10 @@
         "packages/core/src/runtime/omnichain.ts"
       ],
       "evidence": [
-        "parity/runs/native-omnichain-finality-wait/RESULT.md"
+        "parity/runs/native-omnichain-finality-wait/RESULT.md",
+        "parity/runs/native-omnichain-finalized-tail/RESULT.md"
       ],
-      "remaining": "Continuous dual-store Omnichain requires unfinalized event handoff, global live ordering and cross-chain reorg recovery."
+      "remaining": "Finite jobs commit the locally finalized tail after the common historical checkpoint. Continuous dual-store Omnichain requires unfinalized event handoff, global live ordering and cross-chain reorg recovery."
     },
     {
       "id": "native-historical-commit-observers",
