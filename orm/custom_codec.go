@@ -49,14 +49,23 @@ func (c ColumnCodec[T]) Snapshot(value T) EncodedColumn {
 func ResolveColumnValues(table string, row store.Row) (store.Row, error) {
 	out := CopyValues(row)
 	for name, value := range out {
-		if field, ok := value.(EncodedColumn); ok {
-			if field.err != nil {
-				return nil, fmt.Errorf("%s.%s: %w", table, name, field.err)
-			}
-			out[name] = field.value
+		resolved, err := resolveColumnValue(table, name, value)
+		if err != nil {
+			return nil, err
 		}
+		out[name] = resolved
 	}
 	return out, nil
+}
+
+func resolveColumnValue(table, name string, value any) (any, error) {
+	if field, ok := value.(EncodedColumn); ok {
+		if field.err != nil {
+			return nil, fmt.Errorf("%s.%s: %w", table, name, field.err)
+		}
+		return field.value, nil
+	}
+	return value, nil
 }
 
 // ArrayColumnCodec applies a scalar codec to each non-NULL PostgreSQL array

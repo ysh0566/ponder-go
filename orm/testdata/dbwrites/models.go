@@ -98,6 +98,6 @@ var TableColumns = struct {
 	Id    orm.Column[TableRow, string]
 	Other orm.Column[TableRow, int64]
 }{
-	Id:    orm.ColumnOf[string](Table, "id"),
-	Other: orm.ColumnOf[int64](Table, "other"),
+	Id:    orm.ColumnOf[string](Table, "id").WithEncoder(func(v string) any { return v }),
+	Other: orm.ColumnOf[int64](Table, "other").WithEncoder(func(v int64) any { return v }),
 }

@@ -183,10 +183,10 @@ var PacketColumns = struct {
 	Origin   orm.Column[PacketRow, [2]float64]
 	Axis     orm.Column[PacketRow, [3]float64]
 }{
-	Id:       orm.ColumnOf[string](Packet, "id"),
-	Payload:  orm.ColumnOf[[]byte](Packet, "payload"),
-	Document: orm.ColumnOf[json.RawMessage](Packet, "document"),
-	Numbers:  orm.ColumnOf[[]orm.Nullable[int64]](Packet, "numbers"),
-	Origin:   orm.ColumnOf[[2]float64](Packet, "origin"),
-	Axis:     orm.ColumnOf[[3]float64](Packet, "axis"),
+	Id:       orm.ColumnOf[string](Packet, "id").WithEncoder(func(v string) any { return v }),
+	Payload:  orm.ColumnOf[[]byte](Packet, "payload").WithEncoder(func(v []byte) any { return orm.CloneBytes(v) }),
+	Document: orm.ColumnOf[json.RawMessage](Packet, "document").WithEncoder(func(v json.RawMessage) any { return orm.CloneBytes(v) }),
+	Numbers:  orm.ColumnOf[[]orm.Nullable[int64]](Packet, "numbers").WithEncoder(func(v []orm.Nullable[int64]) any { return orm.EncodeArray(v, func(v int64) any { return v }) }),
+	Origin:   orm.ColumnOf[[2]float64](Packet, "origin").WithEncoder(func(v [2]float64) any { return v }),
+	Axis:     orm.ColumnOf[[3]float64](Packet, "axis").WithEncoder(func(v [3]float64) any { return v }),
 }

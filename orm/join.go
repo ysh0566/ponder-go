@@ -12,6 +12,7 @@ import (
 type Column[R, V any] struct {
 	table, name string
 	decode      Decoder[R]
+	encode      func(V) any
 }
 
 // ColumnOf binds a physical column name to a model for generated code.

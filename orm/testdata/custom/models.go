@@ -144,10 +144,10 @@ var HoldingColumns = struct {
 	Limit   orm.Column[HoldingRow, Units]
 	History orm.Column[HoldingRow, []orm.Nullable[Units]]
 }{
-	Id:      orm.ColumnOf[Units](Holding, "id"),
-	Payload: orm.ColumnOf[Payload](Holding, "payload"),
-	Limit:   orm.ColumnOf[Units](Holding, "limit"),
-	History: orm.ColumnOf[[]orm.Nullable[Units]](Holding, "history"),
+	Id:      orm.ColumnOf[Units](Holding, "id").WithEncoder(func(v Units) any { return UnitsCodec.Snapshot(v) }),
+	Payload: orm.ColumnOf[Payload](Holding, "payload").WithEncoder(func(v Payload) any { return PayloadCodec.Snapshot(v) }),
+	Limit:   orm.ColumnOf[Units](Holding, "limit").WithEncoder(func(v Units) any { return UnitsCodec.Snapshot(v) }),
+	History: orm.ColumnOf[[]orm.Nullable[Units]](Holding, "history").WithEncoder(func(v []orm.Nullable[Units]) any { return orm.ArrayColumnCodec(UnitsCodec).Snapshot(v) }),
 }
 
 type CallbackDatabase struct {

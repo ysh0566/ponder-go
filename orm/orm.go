@@ -315,9 +315,14 @@ func (t Table[K, I, U, R]) Select(ctx context.Context) ([]R, error) {
 	if e != nil {
 		return nil, e
 	}
+	return decodeRows(t.definition.decode, rows)
+}
+
+func decodeRows[R any](decode Decoder[R], rows []store.Row) ([]R, error) {
 	result := make([]R, len(rows))
 	for i, row := range rows {
-		result[i], e = t.definition.decode(row)
+		var e error
+		result[i], e = decode(row)
 		if e != nil {
 			return nil, e
 		}

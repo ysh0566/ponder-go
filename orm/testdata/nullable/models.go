@@ -101,6 +101,6 @@ var AccountColumns = struct {
 	Address orm.Column[AccountRow, string]
 	Balance orm.Column[AccountRow, big.Int]
 }{
-	Address: orm.ColumnOf[string](Account, "address"),
-	Balance: orm.ColumnOf[big.Int](Account, "balance"),
+	Address: orm.ColumnOf[string](Account, "address").WithEncoder(func(v string) any { return v }),
+	Balance: orm.ColumnOf[big.Int](Account, "balance").WithEncoder(func(v big.Int) any { return orm.EncodeBigInt(v) }),
 }

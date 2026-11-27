@@ -568,7 +568,28 @@ func tokenOwners(ctx context.Context, c *runtime.Context) ([]orm.Joined[models.T
 
 使用 `orm.LeftJoin` 可以保留尚无匹配账户的代币，此时返回类型为 `[]orm.Joined[models.TokenRow, *models.AccountRow]`，可检查 `pair.Right == nil`。复合键可传入多个 `orm.Equal(...)`，每个条件都必须满足。在 Isolated 模式下，两侧的数据都限定到本次事件的链。
 
-在 `indexing.Handler` 中传入 `args.Context.DB`。使用 `--typed --callback-db` 的回调也可以传入已绑定的左表，如 `db.Token`。列使用相同的 Go 值类型，数据库还需支持两种存储类型之间的等值比较。查询会返回所有匹配的行。需要按事件参数筛选、排序或分页，可使用回调事务的参数化 SQL。[双后端与类型检查用例](../orm/join_test.go)
+在 `indexing.Handler` 中传入 `args.Context.DB`。使用 `--typed --callback-db` 的回调也可以传入已绑定的左表，如 `db.Token`。列使用相同的 Go 值类型，数据库还需支持两种存储类型之间的等值比较。连接查询会返回所有匹配行。需要对连接结果继续筛选、排序或分页时，可使用回调事务的参数化 SQL。[双后端与类型检查用例](../orm/join_test.go)
+
+### 在 Go 回调中过滤和分页
+
+在上一节的 ERC-721 项目中，用当前版本的 `ponder codegen --typed` 重新生成模型，以便比较值使用列的编码器。查询某个地址持有的代币时，可以按代币 ID 排序并只读取当前页。
+
+```go
+func tokensByOwner(ctx context.Context, c *runtime.Context, address string, offset int) ([]models.TokenRow, error) {
+    col := models.TokenColumns
+    return models.Token.Bind(c.DB.Indexing()).Query().
+        Where(col.Owner.Eq(address)).
+        OrderBy(col.Id.Asc()).
+        Limit(20).Offset(offset).
+        All(ctx)
+}
+```
+
+每个比较值使用该列的 Go 类型。例如代币 ID 列接受 `big.Int`，地址列接受 `string`。列提供 `Eq`、`Ne`、`Lt`、`Lte`、`Gt`、`Gte` 和 SQL NULL 检查 `IsNull`、`IsNotNull`。比较和排序遵循 PostgreSQL 列类型的运算规则，包括枚举和自定义编解码器的存储类型。多个 `Where` 条件按 AND 组合。
+
+`OrderBy` 按参数顺序应用 `Asc()` 或 `Desc()`。分页时把主键加入排序条件，可稳定区分其他列值相同的行。`Limit(0)` 返回空结果，省略 `Limit` 可读取所有匹配行。页大小和偏移量须为非负数。更改查询条件会得到一个新查询，可以从同一个基础查询取不同页。
+
+`All(ctx)` 在当前回调的业务事务中执行，能读到已缓冲的写入。Isolated 查询自动限制到本次事件的链。在生成的 `--typed --callback-db` 回调中可以直接从绑定的表调用 `db.Token.Query()`。涉及三张或更多表的查询可以使用参数化 SQL。[模型查询测试](../orm/query_test.go)
 
 ### 为数据库列绑定自定义 Go 类型
 

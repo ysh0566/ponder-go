@@ -210,8 +210,10 @@ var TradeColumns = struct {
 	Previous orm.Column[TradeRow, TradeType]
 	History  orm.Column[TradeRow, []orm.Nullable[TradeType]]
 }{
-	Kind:     orm.ColumnOf[TradeType](Trade, "kind"),
-	State:    orm.ColumnOf[Status](Trade, "state"),
-	Previous: orm.ColumnOf[TradeType](Trade, "previous"),
-	History:  orm.ColumnOf[[]orm.Nullable[TradeType]](Trade, "history"),
+	Kind:     orm.ColumnOf[TradeType](Trade, "kind").WithEncoder(func(v TradeType) any { return v.String() }),
+	State:    orm.ColumnOf[Status](Trade, "state").WithEncoder(func(v Status) any { return v.String() }),
+	Previous: orm.ColumnOf[TradeType](Trade, "previous").WithEncoder(func(v TradeType) any { return v.String() }),
+	History: orm.ColumnOf[[]orm.Nullable[TradeType]](Trade, "history").WithEncoder(func(v []orm.Nullable[TradeType]) any {
+		return orm.EncodeArray(v, func(v TradeType) any { return v.String() })
+	}),
 }

@@ -489,6 +489,10 @@ func (db *IndexingStore) Select(ctx context.Context, name string, key Row) ([]Ro
 		query += " WHERE " + where
 		args = values
 	}
+	return db.selectModelRows(ctx, table, query, args)
+}
+
+func (db *IndexingStore) selectModelRows(ctx context.Context, table schema.Table, query string, args []any) ([]Row, error) {
 	result, e := db.SQL(ctx, query, args...)
 	if e != nil {
 		return nil, e
