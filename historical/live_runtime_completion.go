@@ -353,6 +353,9 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			return result, fmt.Errorf("safe restart header differs from canonical RPC: %w", e)
 		}
 		headers[id] = raw
+		if store.ManagedLiveReachedBlock(control, id, n.BlockNumber) {
+			metrics.ChainSync(run).SetSyncBlock(fmt.Sprint(c["name"]), n.BlockNumber, n.BlockTimestamp)
+		}
 		final, e := checkpoint.Decode(r.finalized[id].Checkpoint)
 		if e != nil {
 			return result, e
@@ -500,6 +503,9 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 					return result, e
 				}
 				epoch = nil
+				for _, chain := range r.build.Chains {
+					metrics.ChainSync(run).SetSyncPhase(fmt.Sprint(chain["name"]), true)
+				}
 				result.Completed = true
 				return result, nil
 			}
@@ -591,10 +597,15 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		if e != nil {
 			return result, e
 		}
+		r.observeSyncHead(run, i, block.head)
 		if block.history {
 			result.HistoricalBlocks++
+			if store.ManagedLiveReachedBlock(control, id, r.ends[id]) {
+				metrics.ChainSync(run).SetSyncPhase(fmt.Sprint(r.build.Chains[i]["name"]), true)
+			}
 		} else {
 			result.LiveBlocks++
+			metrics.ChainSync(run).SetSyncPhase(fmt.Sprint(r.build.Chains[i]["name"]), false)
 		}
 		epoch.Clients().Clear()
 		if r.options.OnCommitted != nil || (block.history && r.options.Historical.OnCommitted != nil) {
@@ -668,6 +679,15 @@ func (r *RuntimeRunner) notifyCommitted(ctx context.Context, groups []GroupResul
 		}
 	}
 	return errors.Join(errs...)
+}
+
+// The physical header remains valid for source checkpoints inside a block.
+func (r *RuntimeRunner) observeSyncHead(ctx context.Context, index int, head store.ManagedLiveHead) {
+	if registry := metrics.ChainSync(ctx); registry != nil {
+		if cp, err := checkpoint.Decode(head.Checkpoint); err == nil {
+			registry.SetSyncBlock(fmt.Sprint(r.build.Chains[index]["name"]), cp.BlockNumber, cp.BlockTimestamp)
+		}
+	}
 }
 
 func runtimeChainID(c indexing.Object) uint64 { id, _ := uintQuantity(c["id"]); return id }

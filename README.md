@@ -30,9 +30,10 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 
 用 Go 新写索引器，普通入口 `runtime.NewIndexer` 已支持默认多链、Isolated 和 Omnichain 的历史回填、持续追块和重组恢复。使用编译后的 Go 来源配置时可选 `runtime.NewIndexerFromSource`。两个入口都使用 `runtime.Handler`。[运行模式矩阵](docs/RUNTIME_SUPPORT.md) · [选择运行入口](docs/USAGE.md#选择-go-索引器的运行入口)
 
-**Isolated 可在一条链离线时先索引健康链。** 单库项目可直接使用 `runtime.NewIndexer`，也可将来源声明与 Go 回调交给 `runtime.NewSourceIndexer`。当来源和工厂的区块范围使用数字或省略边界时，新入口在编译期间无需访问 RPC。显式写 `"latest"` 的边界则需要在编译时读取该链。独立业务库和同步库的 Isolated 运行器仍需要所有参与链在线才能首次打开或冷重启。[来源配置示例](docs/USAGE.md#用编译后的-go-来源配置启动多链) · [启动与重启测试](runtime/isolated_indexer_test.go)
+直接影响 Go 项目运行方式的两项待办都在**双库模式**，即业务数据和同步缓存分别存储。
 
-**双库 Omnichain 实时索引仍待实现。** 固定区间的作业可以提前启动，等每条链的结束区块和初始化区块都达到全局最终确认位置后再回填。默认在打开时检查一次，Go 应用也可配置轮询间隔。[提前启动的用法](docs/USAGE.md#等待双库-omnichain-的区间最终确认) Go 应用可通过 `runtime.StreamSourceOmnichain` 读取按全局检查点排列的历史与实时事件，包括回填时暂缓交付的事件。[Go 事件流用法](docs/USAGE.md#读取-omnichain-历史和实时事件) 如果项目同时需要 `indexing.Handler`、独立的同步缓存和跨链全局实时排序，就会遇到这个限制。双库运行器还需要将实时事件和检查点写入业务事务，保存可供重启恢复的进度。一条链分叉时，需要协调两个库撤销受影响的写入，并按顺序重放依赖这些写入的其他链回调。[最终性边界](historical/live_runtime_omnichain_source_test.go)
+1. **Omnichain 从回填切换到实时。** 双库作业目前可以等各链的有限区间全部最终确认后回填。剩下的是按全局顺序持续写入新区块，在一条链分叉时协调两库撤销和重放受影响的跨链回调，并支持在此期间中断后恢复。需要立即上线的项目可使用单库 Omnichain。自行管理持久化的应用也可消费 Go 实时事件流。[双库最终性检查](historical/live_runtime_omnichain_source_test.go) · [单库 Omnichain](docs/USAGE.md#按全局顺序索引多条链) · [Go 事件流](docs/USAGE.md#读取-omnichain-历史和实时事件)
+2. **Isolated 在部分链离线时首次启动或冷重启。** 双库在打开时仍需要所有参与链的启动数据。待实现的行为是让健康链先提交，离线链恢复后独立追平。双库已经启动后，健康链可以在另一条链离线期间继续提交。单库 Isolated 在区块边界为固定值或省略时，也已支持部分链离线启动和冷重启。[双库启动实测](parity/runs/native-go-startup-audit/RESULT.md) · [单库来源配置](docs/USAGE.md#用编译后的-go-来源配置启动多链)
 
 | 使用场景 | 当前能用什么 | 还缺什么 |
 | --- | --- | --- |
@@ -44,7 +45,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 | 双库 Omnichain，所有链只监听日志 | 支持已最终确认的静态合约日志和工厂子合约日志，各来源的区间可重叠或不相交。可逐链关闭 RPC 缓存。即使区间中间或末尾没有可解码的事件，也能核对扫描进度、就绪并重启。[工厂发现与重启](parity/runs/native-omnichain-log-factory/RESULT.md) · [逐来源区间](parity/runs/native-omnichain-log-ranges/RESULT.md) · [关闭缓存与恢复](parity/runs/native-omnichain-uncached-logs/RESULT.md) | 实时追块与跨链重组仍待实现。 |
 | 在 RPC 故障或链重组时保持索引一致 | PostgreSQL 和 PGlite 均已验证同一条日志命中三个 Go 回调、同一笔 CALL 命中两个函数选择器相同的回调，以及回调失败后的重启和链重组重放。默认多链和 Omnichain 在同链节点切换、分支改变后均会重放受影响的跨链回调。 | 服务商对日志请求区间和响应大小的限制，以及 Swell 归档数据的完整性，仍待在具备相应策略和链历史的端点复验。[节点实测](parity/runs/provider-policy-assertions/RESULT.md) · [节点切换测试](parity/runs/native-rpc-pool-reorg/RESULT.md) · [回调重放测试](parity/runs/native-callback-overlap/RESULT.md) |
 | 在分叉后复用 RPC 结果 | 普通 Go 索引器会保留共同祖先及更早高度的回调 RPC 结果，替换分支上的请求会重新读取。有限日志区间按结束高度判断，未参与回滚的链保留缓存。[用法与边界](docs/USAGE.md#在分叉后复用按高度读取的-rpc-结果) | 仅给出区块哈希、动态标签或无法确定高度的请求，在该链回滚时仍会清除。 |
-| 用 Prometheus 监控索引器 | 写入进程和独立查询进程的 `/metrics` 提供 Go 版本、运行命令和数据库类型。写入进程还报告排序模式、按链和事件统计的回调耗时、历史回填分步耗时、按链和方法统计的 RPC 耗时与失败次数，以及每条链成功处理的分叉次数。普通 Go 索引器和双库持续索引作业还会按链记录出块到接收、接收到提交的耗时。[查询进程信息](docs/USAGE.md#查看版本与运行配置) · [回调耗时](docs/USAGE.md#查看-go-回调耗时) · [实时区块延迟](docs/USAGE.md#查看实时区块延迟) · [回填指标](docs/USAGE.md#查看历史回填耗时) · [RPC 指标](docs/USAGE.md#查看-rpc-耗时与错误数) · [分叉指标](docs/USAGE.md#查看发生分叉的链) | 上游 39 个具名指标族中，Go 写入进程已注册 17 个同名指标族。其余 22 个涉及数据库操作、历史同步、索引执行和链同步状态。[缺少的指标分组](docs/RUNTIME_SUPPORT.md#prometheus-coverage) |
+| 用 Prometheus 监控索引器 | 写入进程和独立查询进程的 `/metrics` 提供 Go 版本、运行命令和数据库类型。写入进程还报告排序模式、按链和事件统计的回调耗时、历史回填分步耗时、按链和方法统计的 RPC 耗时与失败次数，以及每条链成功处理的分叉次数。写入进程可按链查看已处理的区块高度、区块时间和实时或完成状态。普通 Go 索引器和双库持续索引作业还会按链记录出块到接收、接收到提交的耗时。[同步位置与状态](docs/USAGE.md#查看每条链的同步位置) · [查询进程信息](docs/USAGE.md#查看版本与运行配置) · [回调耗时](docs/USAGE.md#查看-go-回调耗时) · [实时区块延迟](docs/USAGE.md#查看实时区块延迟) · [回填指标](docs/USAGE.md#查看历史回填耗时) · [RPC 指标](docs/USAGE.md#查看-rpc-耗时与错误数) · [分叉指标](docs/USAGE.md#查看发生分叉的链) | 上游 39 个具名指标族中，Go 写入进程已注册 21 个同名指标族。仍缺数据库操作 3 个、历史同步 9 个、索引执行 6 个。[缺少的指标分组](docs/RUNTIME_SUPPORT.md#prometheus-coverage) |
 | 验收生产部署 | 单库已验证受限账号写入、分叉回滚、发布与清理，以及写事务中断后的恢复。双库默认多链已验证在重组的三个提交时点恢复。双库 Omnichain 的已确认区间已验证初始化、运行回调、就绪后的应用退出，以及区块回填后就绪事务提交前的数据库中断。仅监听日志时，还覆盖写入首个区块头分页后和就绪事务提交前中断数据库。[日志扫描恢复](parity/runs/native-omnichain-scan-activation/RESULT.md)[PostgreSQL 账号配置](docs/USAGE.md#postgresql-写入与部署管理账号) · [原生多链恢复](parity/runs/native-multichain-engine-recovery/RESULT.md) · [双库默认多链恢复](parity/runs/native-coordinated-engine-recovery/RESULT.md) · [双库 Omnichain 中断恢复](docs/USAGE.md#独立业务库与同步库的中断恢复) | 仍需验收主机掉电、其他 PGlite 运行模式的应用异常退出，以及独立双库的写入与部署管理账号最小权限。 |
 
 双库索引器还支持以下回调和回填选项。

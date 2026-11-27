@@ -948,6 +948,7 @@
         "runtime/source_managed_continuous.go",
         "historical/live_runtime_continuous.go",
         "metrics/process.go",
+        "metrics/chain_sync.go",
         "internal/version/version.go",
         "store/query_reader.go"
       ],
@@ -972,11 +973,15 @@
         "parity/runs/native-realtime-head-latency/RESULT.md",
         "parity/runs/native-atomic-head-latency/RESULT.md",
         "parity/runs/native-handler-duration/RESULT.md",
-        "parity/runs/native-process-info/RESULT.md"
+        "parity/runs/native-process-info/RESULT.md",
+        "parity/runs/native-chain-sync-metrics/RESULT.md"
       ],
-      "remaining": "The application reports its Go version and active command, database and writer ordering. The writer observes setup and event callback duration by chain and event. The writer counts successful canonical fork rollbacks by chain and records RPC outcomes by chain and method. The dual-store continuous writer and the atomic Go indexer observe arrival and processing latency after committing a polled head. Database method duration and error metrics, and comparative production benchmarks remain open.",
+      "remaining": "The writer registers 21 of the 39 named upstream metric families. The 18 outstanding families measure database operations (3), historical sync (9) and indexing (6). The writer reports the processed height, block timestamp and realtime or completed phase by chain. The application reports its Go version and active command, database and writer ordering. The writer observes setup and event callback duration by chain and event. The writer counts successful canonical fork rollbacks by chain and records RPC outcomes by chain and method. The dual-store continuous writer and the atomic Go indexer observe arrival and processing latency after committing a polled head. Database method duration and error metrics, and comparative production benchmarks remain open.",
       "native_test_files": [
         "metrics/historical_test.go",
+        "metrics/chain_sync_test.go",
+        "historical/chain_sync_metrics_test.go",
+        "historical/isolated_finalized_test.go",
         "runtime/historical_metrics_test.go",
         "runtime/polled_heads_test.go",
         "historical/runtime_commit_observer_test.go",

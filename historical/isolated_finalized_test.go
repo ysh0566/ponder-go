@@ -21,6 +21,7 @@ import (
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
@@ -151,6 +152,7 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 			}}
 			var r *RuntimeRunner
 			observed := map[uint64][]uint64{}
+			var registry *metrics.Registry
 			opts.Historical.OnCommitted = func(ctx context.Context, group GroupResult) error {
 				state, err := r.Control(ctx)
 				if err != nil {
@@ -163,13 +165,17 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 				if group.ChainID == 101 && cp.BlockNumber == 0 && group.Attempts != 2 {
 					return fmt.Errorf("expected one refetch for block.gasUsed, got %+v", group)
 				}
+				if group.ChainID == 202 && cp.BlockNumber == 2 {
+					assertSyncMetrics(t, registry, "second", state.Cursors[202], -1, 1)
+				}
 				observed[group.ChainID] = append(observed[group.ChainID], cp.BlockNumber)
 				return nil
 			}
 			for _, owner := range []string{"first", "resume", "complete"} {
 				opts.OpenID = owner
 				r = runtimeOpen(t, backend, opts)
-				result, err := r.Run(ctx)
+				registry = metrics.New()
+				result, err := r.Run(metrics.WithChainSync(ctx, registry))
 				if reject {
 					if err == nil || !strings.Contains(err.Error(), "interrupted isolated callback") || result.Ready {
 						t.Fatalf("interruption: %+v, %v", result, err)

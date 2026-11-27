@@ -97,7 +97,7 @@ func TestApplicationServeOnly(t *testing.T) {
 		t.Fatal("query-only application did not become ready")
 	}
 	body, err := routes.Metrics.Collect(ctx)
-	if err != nil || !strings.Contains(body, `ponder_settings_info{command="serve",database="pglite"} 1`) {
+	if err != nil || !strings.Contains(body, `ponder_settings_info{command="serve",database="pglite"} 1`) || strings.Contains(body, "ponder_sync_") {
 		cancel()
 		t.Fatalf("query-only process settings: %s %v", body, err)
 	}

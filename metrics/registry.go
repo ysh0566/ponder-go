@@ -21,6 +21,9 @@ type Registry struct {
 	mu                                  sync.Mutex
 	reg                                 *prometheus.Registry
 	info                                applicationInfo
+	syncBlock, syncTimestamp            *prometheus.GaugeVec
+	syncRealtime, syncComplete          *prometheus.GaugeVec
+	liveChains                          map[string]bool
 	reorgs                              *prometheus.CounterVec
 	blockArrival, realtimeLatency       *prometheus.HistogramVec
 	rpcDuration, handlerDuration        *prometheus.HistogramVec
@@ -37,6 +40,11 @@ type Registry struct {
 func New() *Registry {
 	r := &Registry{
 		reg:            prometheus.NewRegistry(),
+		syncBlock:      chainGauge("ponder_sync_block", "Closest-to-tip synced block number"),
+		syncTimestamp:  chainGauge("ponder_sync_block_timestamp", "Closest-to-tip synced block timestamp"),
+		syncRealtime:   chainGauge("ponder_sync_is_realtime", "Boolean (0 or 1) indicating if the sync is realtime mode"),
+		syncComplete:   chainGauge("ponder_sync_is_complete", "Boolean (0 or 1) indicating if the sync has synced all blocks"),
+		liveChains:     make(map[string]bool),
 		reorgs:         prometheus.NewCounterVec(prometheus.CounterOpts{Name: "ponder_realtime_reorg_total", Help: "Count of how many re-orgs have occurred"}, []string{"chain"}),
 		rpcDuration:    prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "ponder_rpc_request_duration", Help: "Duration of successful RPC requests", Buckets: networkDurationBuckets}, []string{"chain", "method"}),
 		rpcErrors:      prometheus.NewCounterVec(prometheus.CounterOpts{Name: "ponder_rpc_request_error_total", Help: "Total count of failed RPC requests"}, []string{"chain", "method"}),
@@ -67,7 +75,7 @@ func New() *Registry {
 		Name: "ponder_indexing_function_duration", Help: "Duration of indexing function execution",
 		Buckets: []float64{0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000},
 	}, []string{"chain", "event"})
-	r.reg.MustRegister(&r.info, r.handlerDuration, r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
+	r.reg.MustRegister(r.syncBlock, r.syncTimestamp, r.syncRealtime, r.syncComplete, &r.info, r.handlerDuration, r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
 	return r
 }
 
@@ -115,6 +123,11 @@ func (r *Registry) ResetIndexing() {
 	defer r.mu.Unlock()
 	r.flush()
 	r.info.settings = nil
+	// The pinned indexing reset retains the last observed sync timestamp.
+	r.syncBlock.Reset()
+	r.syncComplete.Reset()
+	r.syncRealtime.Reset()
+	clear(r.liveChains)
 	r.completed.Reset()
 	r.handlerDuration.Reset()
 	r.reorgs.Reset()

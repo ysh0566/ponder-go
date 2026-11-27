@@ -14,6 +14,7 @@ import (
 
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/internal/testanvil"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
@@ -150,10 +151,22 @@ func testCompiledIndexer(t *testing.T, urls []string, order schema.Ordering, dia
 		}
 		run, cancel := context.WithTimeout(ctx, time.Minute)
 		var ready bool
-		err = indexer.RunIndexing(run, func(v bool) { ready = v })
+		registry := metrics.New()
+		err = indexer.RunIndexing(metrics.WithChainSync(run, registry), func(v bool) { ready = v })
 		cancel()
 		if err != nil || !ready {
 			t.Fatal("bounded completion", ready, err)
+		}
+		body, err := registry.Collect(ctx)
+		if err != nil || strings.Contains(body, "ponder_sync_is_realtime{") {
+			t.Fatalf("backfill-only run: %s, %v", body, err)
+		}
+		for _, name := range []string{"first", "second"} {
+			for _, sample := range []string{fmt.Sprintf("ponder_sync_block{chain=%q} 2", name), fmt.Sprintf("ponder_sync_is_complete{chain=%q} 1", name)} {
+				if !strings.Contains(body, sample+"\n") {
+					t.Fatalf("open %d missing %s: %s", attempt, sample, body)
+				}
+			}
 		}
 		for _, client := range base.RPCClients() {
 			if client.Cache != nil {

@@ -43,14 +43,15 @@ The writer exposes setup and event callback duration in milliseconds for each ch
 
 The Go CLI and the launched application's version gauge use the same Go release identifier. The settings gauge reports the command and business database on both writers and standalone query processes. Writers also include their configured ordering. [Process metric examples](USAGE.md#查看版本与运行配置) · [Backend and command tests](../parity/runs/native-process-info/RESULT.md)
 
-The Go writer registers 17 of the 39 explicitly named upstream metric families under matching names. The remaining 22 fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Process gauges](../metrics/process.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
+The writer reports the processed block number and Unix timestamp per chain. The realtime and completion gauges distinguish a live chain reaching its finite end from a range that completed entirely during backfill. [Chain sync examples](USAGE.md#查看每条链的同步位置) · [Reorg and restart tests](../parity/runs/native-chain-sync-metrics/RESULT.md)
+
+The Go writer registers 21 of the 39 explicitly named upstream metric families under matching names. The remaining 18 fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Process gauges](../metrics/process.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
 
 | Area | Families without a matching Go metric | Measurement |
 | --- | ---: | --- |
 | Database | 3 | Method duration, method errors and PostgreSQL query count |
 | Historical sync | 9 | Concurrency group duration, start/end timestamps, total/cached/completed indexing seconds and block counts |
 | Indexing | 6 | Indexing timestamp, cache query and raw SQL duration, RPC action time, prefetch and request counts |
-| Chain sync | 4 | Current block and timestamp, realtime and completion status |
 
 ## Application verification
 

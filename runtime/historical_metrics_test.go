@@ -141,6 +141,19 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 					t.Fatal("initial catch-up published realtime head latency")
 				}
 				for _, chain := range cfg.Chains {
+					height := 3
+					if order == schema.Omnichain && chain.Name == "b" {
+						height = 2 // The equal-timestamp tip sorts after the global watermark.
+					}
+					for _, sample := range []string{
+						fmt.Sprintf("ponder_sync_block{chain=%q} %d", chain.Name, height),
+						fmt.Sprintf("ponder_sync_block_timestamp{chain=%q} %g", chain.Name, float64(genesis+10*height)),
+						fmt.Sprintf("ponder_sync_is_realtime{chain=%q} 1", chain.Name),
+					} {
+						if !strings.Contains(firstScrape, sample+"\n") {
+							t.Fatalf("missing sync sample %s in %s", sample, firstScrape)
+						}
+					}
 					sample := fmt.Sprintf(`ponder_rpc_request_duration_count{chain="%s",method="eth_chainId"}`, chain.Name)
 					if !strings.Contains(firstScrape, sample) {
 						t.Fatalf("missing chain RPC sample %s", sample)

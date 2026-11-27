@@ -111,7 +111,7 @@ func TestAtomicHandlerFailureHasNoHeadSample(t *testing.T) {
 			}
 			reg := metrics.New()
 			mined := false
-			err = indexer.RunIndexing(metrics.WithRealtime(ctx, reg), func(ready bool) {
+			err = indexer.RunIndexing(metrics.WithChainSync(metrics.WithRealtime(ctx, reg), reg), func(ready bool) {
 				if ready && !mined {
 					mined = true
 					var result any
@@ -124,7 +124,7 @@ func TestAtomicHandlerFailureHasNoHeadSample(t *testing.T) {
 				t.Fatalf("mined=%t indexing error=%v", mined, err)
 			}
 			body, err := reg.Collect(ctx)
-			if err != nil || strings.Contains(body, "ponder_realtime_") {
+			if err != nil || strings.Contains(body, "ponder_realtime_") || strings.Contains(body, `ponder_sync_block{chain="one"} 1`) {
 				t.Fatalf("rejected head exposed metrics: %q, %v", body, err)
 			}
 			rows, err := db.Backend.Query(ctx, "SELECT id FROM "+schema.Quote(db.Namespace)+".entry")

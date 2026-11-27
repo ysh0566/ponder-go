@@ -107,6 +107,7 @@ func LaunchApplication(ctx context.Context, indexer ApplicationIndexer, routes *
 	} else {
 		indexing = make(chan error, 1)
 		indexCtx := metrics.WithRPC(run, routes.Metrics)
+		indexCtx = metrics.WithChainSync(indexCtx, routes.Metrics)
 		indexCtx = metrics.WithRealtime(indexCtx, routes.Metrics)
 		indexCtx = metrics.WithReorgs(indexCtx, routes.Metrics)
 		indexCtx = metrics.WithHistorical(indexCtx, routes.Metrics)
