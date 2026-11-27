@@ -13,6 +13,7 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 	"iter"
 	"sort"
+	"time"
 )
 
 func (r *RuntimeRunner) omnichainHistoricalSources(ctx context.Context, epoch *indexing.RuntimeEpoch) ([]source.SourceHistoricalChain, error) {
@@ -236,7 +237,8 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 		crash = append(crash, source.SourceCrashRecoveryCheckpoint{ChainID: c.Local.ChainID, Checkpoint: store.ManagedLiveCursorCheckpoint(control, c.Local.ChainID)})
 	}
 	options := source.SourceHistoricalCoordinatorOptions{Chains: chains, BuildChains: chains, CrashRecovery: crash, QuerySize: r.options.Historical.QuerySize, Clock: r.options.Historical.Clock}
-	for output, e := range source.HistoricalSourceOmnichain(epoch.Context(), options) {
+	groups := source.HistoricalSourceOmnichain(epoch.Context(), options)
+	for output, e := range timedHistoricalGroups(ctx, groups) {
 		if e != nil {
 			return out, e
 		}
@@ -390,4 +392,26 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 	}
 	out.Completed = true
 	return out, nil
+}
+
+// The coordinator prefetches while its consumer writes. The extract sample
+// measures only the wait for the next yield. Early consumer exits drop that pair.
+func timedHistoricalGroups[T any](ctx context.Context, groups iter.Seq2[T, error]) iter.Seq2[T, error] {
+	registry := metrics.Historical(ctx)
+	if registry == nil {
+		return groups
+	}
+	return func(yield func(T, error) bool) {
+		start := time.Now()
+		for group, err := range groups {
+			received := time.Now()
+			if !yield(group, err) {
+				return
+			}
+			if err == nil {
+				registry.ObserveHistoricalGroup(received.Sub(start), time.Since(received))
+			}
+			start = time.Now()
+		}
+	}
 }

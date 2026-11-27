@@ -202,6 +202,14 @@ curl -fsS http://127.0.0.1:42069/metrics | grep '^ponder_historical_'
 
 `runtime.NewIndexer` 和 `runtime.NewIndexerFromSource` 在首次追平过程中计入已达到最终确认范围的区块。双库 `historical.RuntimeRunner` 按实际回填阶段计时。实时追块和实时分叉重放均沿用原有累计值。独立 `serve` 进程拥有自己的指标注册表，要看回填耗时应抓取写入进程。`runtime.LaunchApplication` 自动连接查询服务的注册表。直接调用 `Run` 时，可传入 `metrics.WithHistorical(ctx, registry)`，再用 `registry.Collect(ctx)` 读取。[运行时验证](../parity/runs/native-historical-duration-metrics/RESULT.md)
 
+在写入进程上执行下面的 PromQL 查询，即可查看历史数据的等待和处理耗时。
+
+```promql
+ponder_historical_concurrency_group_duration
+```
+
+`group="extract"` 累计等待下一批历史数据就绪的毫秒数，`group="transform"` 累计消费这批数据的毫秒数，包括其中执行的回调和数据库写入。启用预取时，只计算消费端实际等待数据的时间。两组按进程汇总所有链，支持小数毫秒。并行链的耗时会累加；要查看整次回填经过的时间，可使用下节的起止时间。索引指标重置会保留这两个累计值，重启进程后从新注册表开始记录。[分组计时验证](../parity/runs/native-historical-group-duration/RESULT.md)
+
 ### 查看历史回填的起止时间
 
 抓取写入进程的 `/metrics`。以下 PromQL 表达式按链计算本次回填的墙钟耗时，单位为秒。

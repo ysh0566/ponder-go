@@ -184,6 +184,8 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 				}
 				first := historicalSamples(firstScrape)
 				for _, series := range []string{
+					`concurrency_group_duration{group="extract"}`,
+					`concurrency_group_duration{group="transform"}`,
 					`extract_duration{step="decode"}`,
 					`transform_duration{step="begin"}`,
 					`transform_duration{step="index"}`,

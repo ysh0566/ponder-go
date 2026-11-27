@@ -183,6 +183,7 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 				} else if err != nil || !result.Ready || !result.Completed {
 					t.Fatalf("reopen: %+v, %v", result, err)
 				}
+				assertHistoricalGroups(t, registry, owner != "complete")
 				assertBackfillTimes(t, registry, "first", true, !reject)
 				assertBackfillTimes(t, registry, "second", true, true)
 				if (reject && slices.Contains(observed[101], uint64(2))) || (!reject && (!slices.Equal(observed[101], []uint64{0, 1, 2, 3}) || !slices.Equal(observed[202], []uint64{1, 2}))) {

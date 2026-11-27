@@ -14,6 +14,7 @@ import (
 	"github.com/ysh0566/ponder-go/store"
 	"iter"
 	"sync"
+	"time"
 )
 
 type runtimeAcquiredBlock struct {
@@ -528,7 +529,9 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			}
 			queue = r.newBlockQueue(epoch.Context(), epoch, control, ends, proofs, headers, children, syncers, realtime)
 		}
+		extractStart := time.Now()
 		batch, e, ok := queue.next()
+		received := time.Now()
 		if boundedDefault && e != nil && errors.As(e, &fork) {
 			r.transitioning.Store(true)
 			queue.close()
@@ -658,6 +661,9 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			if e != nil {
 				return result, e
 			}
+		}
+		if block.history {
+			metrics.Historical(run).ObserveHistoricalGroup(received.Sub(extractStart), time.Since(received))
 		}
 	}
 }
