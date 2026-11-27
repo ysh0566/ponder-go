@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"os"
 	"strings"
 	"testing"
@@ -16,6 +17,7 @@ import (
 	"github.com/ysh0566/ponder-go/orm/testdata/containers"
 	"github.com/ysh0566/ponder-go/orm/testdata/custom"
 	"github.com/ysh0566/ponder-go/orm/testdata/dbwrites"
+	"github.com/ysh0566/ponder-go/orm/testdata/strict"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -26,9 +28,21 @@ type plainJoin struct {
 	orm.Executor
 }
 
+// An embedded native executor can customize both two-table entry points.
+type overriddenJoin struct{ *store.IndexingStore }
+
+var errJoinOverride = errors.New("overridden join")
+
+func (overriddenJoin) Join(context.Context, store.JoinKind, string, string, []store.JoinColumns) ([]store.JoinedRow, error) {
+	return nil, errJoinOverride
+}
+func (overriddenJoin) JoinRows(context.Context, store.JoinKind, string, string, []store.JoinColumns, store.SelectOptions) ([]store.JoinedRow, error) {
+	return nil, errJoinOverride
+}
+
 func TestTypedJoins(t *testing.T) {
 	var model schema.Schema
-	for _, fixture := range []string{"dbwrites", "containers"} {
+	for _, fixture := range []string{"dbwrites", "containers", "strict"} {
 		data, err := os.ReadFile("testdata/" + fixture + "/model.json")
 		if err != nil {
 			t.Fatal(err)
@@ -46,15 +60,17 @@ func TestTypedJoins(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			const id = "0x1234"
 			on := orm.Equal(dbwrites.TableColumns.Id, containers.PacketColumns.Id)
 			doc := json.RawMessage(`{"n":9007199254740993}`)
 			write := func(w *store.Writer) error {
 				db := w.Indexing()
 				records, packets := dbwrites.Table.Bind(db), containers.Packet.Bind(db)
-				if _, err := records.InsertMany(ctx, []dbwrites.TableInsert{dbwrites.NewTableInsert("match"), dbwrites.NewTableInsert("left-only")}); err != nil {
+				if _, err := records.InsertMany(ctx, []dbwrites.TableInsert{dbwrites.NewTableInsert(id), dbwrites.NewTableInsert("left-only")}); err != nil {
 					return err
 				}
-				input := containers.NewPacketInsert("match", []byte{0, 255}, doc, []orm.Nullable[int64]{orm.Null[int64](), orm.Some(int64(9))})
+				inputPayload := []byte{0, 255}
+				input := containers.NewPacketInsert(id, inputPayload, doc, []orm.Nullable[int64]{orm.Null[int64](), orm.Some(int64(9))})
 				if _, err := packets.Insert(ctx, input); err != nil {
 					return err
 				}
@@ -63,7 +79,7 @@ func TestTypedJoins(t *testing.T) {
 					return fmt.Errorf("buffered inner join: %+v %v", inner, err)
 				}
 				p := inner[0].Right
-				if inner[0].Left.Id != "match" || p.Id != "match" || !bytes.Equal(p.Payload, []byte{0, 255}) || !bytes.Equal(p.Document, doc) || len(p.Numbers) != 2 || p.Numbers[0].Valid() || p.Numbers[1].Value() != 9 {
+				if inner[0].Left.Id != id || p.Id != id || !bytes.Equal(p.Payload, []byte{0, 255}) || !bytes.Equal(p.Document, doc) || len(p.Numbers) != 2 || p.Numbers[0].Valid() || p.Numbers[1].Value() != 9 {
 					return fmt.Errorf("typed result: %+v", inner)
 				}
 				joined, err := orm.LeftJoin(ctx, records, on)
@@ -89,7 +105,7 @@ func TestTypedJoins(t *testing.T) {
 					return fmt.Errorf("second page: %+v %v", page, err)
 				}
 				first, err := base.Limit(1).All(ctx)
-				if err != nil || len(first) != 1 || first[0].Right == nil || first[0].Right.Id != "match" {
+				if err != nil || len(first) != 1 || first[0].Right == nil || first[0].Right.Id != id {
 					return fmt.Errorf("first page: %+v %v", first, err)
 				}
 				empty, err := base.Limit(0).All(ctx)
@@ -102,7 +118,7 @@ func TestTypedJoins(t *testing.T) {
 				j := orm.QueryInnerJoin(db, on)
 				document := orm.JoinColumn(j.Right, containers.PacketColumns.Document)
 				result, err := j.Where(document.Eq(doc)).All(ctx)
-				if err != nil || len(result) != 1 || result[0].Right.Id != "match" {
+				if err != nil || len(result) != 1 || result[0].Right.Id != id {
 					return fmt.Errorf("JSONB join filter: %+v %v", result, err)
 				}
 				legacy := plainJoin{db, db}
@@ -110,6 +126,12 @@ func TestTypedJoins(t *testing.T) {
 				all, err := basic.All(ctx)
 				if err != nil || len(all) != 1 {
 					return fmt.Errorf("original executor: %+v %v", all, err)
+				}
+				overridden := orm.QueryInnerJoin(overriddenJoin{db}, on)
+				for _, query := range []orm.Query[orm.Joined[dbwrites.TableRow, containers.PacketRow]]{overridden.Query, overridden.Limit(1)} {
+					if _, err := query.All(ctx); !errors.Is(err, errJoinOverride) {
+						return fmt.Errorf("bypassed two-table executor override: %v", err)
+					}
 				}
 				legacyTable := dbwrites.Table.BindExecutor(legacy)
 				raw, err := legacyTable.JoinRows(ctx, store.InnerJoin, "table", "packet", []store.JoinColumns{{Left: "id", Right: "id"}}, store.SelectOptions{})
@@ -126,6 +148,28 @@ func TestTypedJoins(t *testing.T) {
 					options := store.SelectOptions{Order: []store.SelectOrder{{Column: invalid}}}
 					if _, err := db.JoinRows(ctx, store.InnerJoin, "table", "packet", []store.JoinColumns{{Left: "id", Right: "id"}}, options); err == nil {
 						return fmt.Errorf("accepted join order on %q", invalid)
+					}
+				}
+				account, err := strict.Account.Bind(db).Insert(ctx, strict.NewAccountInsert(id, *big.NewInt(99)))
+				if err != nil {
+					return err
+				}
+				thirdOn := orm.Equal(orm.JoinColumn(q.Right, containers.PacketColumns.Id), strict.AccountColumns.Address)
+				three := orm.ThenLeftJoin(q, thirdOn)
+				matched, err := three.Where(orm.JoinColumn(three.Right, strict.AccountColumns.Balance).Eq(*big.NewInt(99))).All(ctx)
+				if err != nil || len(matched) != 1 || matched[0].Left.Left.Id != id || matched[0].Left.Right == nil ||
+					!bytes.Equal(matched[0].Left.Right.Payload, inputPayload) || matched[0].Right == nil || matched[0].Right.Address != account.Address {
+					return fmt.Errorf("three distinct models: %+v %v", matched, err)
+				}
+				badFirst := orm.QueryLeftJoin(legacyTable, on)
+				if _, err := orm.ThenLeftJoin(badFirst, thirdOn).All(ctx); err == nil {
+					return fmt.Errorf("original executor silently accepted a third table")
+				}
+				step := store.JoinStep{Kind: store.LeftJoin, Table: "packet", On: []store.JoinColumns{{Left: "id", Right: "id"}}}
+				for _, invalid := range []string{"id", "later.id", "left.bad", "right.id.extra"} {
+					next := store.JoinStep{Kind: store.InnerJoin, Table: "table", On: []store.JoinColumns{{Left: invalid, Right: "id"}}}
+					if _, err := db.JoinSequence(ctx, "table", []store.JoinStep{step, next}, store.SelectOptions{}); err == nil {
+						return fmt.Errorf("accepted invalid prior join column %q", invalid)
 					}
 				}
 				return nil
@@ -171,10 +215,36 @@ func TestTypedCallbackSelfJoin(t *testing.T) {
 			child := orm.JoinColumn(q.Left, custom.HoldingColumns.Id)
 			parent := orm.JoinColumn(q.Right, custom.HoldingColumns.Id)
 			selected := q.Where(orm.Or(child.Eq(3), parent.IsNull())).OrderBy(parent.Asc(), child.Desc())
+			col := custom.HoldingColumns
+			// Match another child of the same parent, with the original child's payload.
+			siblings := orm.ThenLeftJoin(q,
+				orm.Equal(parent, col.Limit),
+				orm.Equal(orm.JoinColumn(q.Left, col.Payload), col.Payload))
+			original := orm.JoinColumn(siblings.Left, child)
+			four := orm.ThenInnerJoin(siblings, orm.Equal(original, col.Id))
+			originalID := orm.JoinColumn(four.Left, original)
+			siblingID := orm.JoinColumn(four.Left, orm.JoinColumn(siblings.Right, col.Id))
+			page := four.Where(orm.Or(siblingID.IsNull(), originalID.Gte(1))).OrderBy(originalID.Asc()).Offset(1).Limit(2)
 			check := func(handle context.Context) error {
 				rows, err := selected.All(handle)
 				if err != nil || len(rows) != 2 || rows[0].Left.Id != 3 || rows[0].Right == nil || rows[0].Right.Id != 2 || rows[1].Left.Id != 2 || rows[1].Right != nil {
 					return fmt.Errorf("aliased self join: %+v %v", rows, err)
+				}
+				chained, err := page.All(handle)
+				if err != nil || len(chained) != 2 {
+					return fmt.Errorf("filtered four-table page: %+v %v", chained, err)
+				}
+				missing, found := chained[0], chained[1]
+				if missing.Left.Left.Left.Id != 2 || missing.Left.Left.Right != nil || missing.Left.Right != nil || missing.Right.Id != 2 ||
+					found.Left.Left.Left.Id != 3 || found.Left.Left.Right == nil || found.Left.Left.Right.Id != 2 ||
+					found.Left.Right == nil || found.Left.Right.Id != 3 || found.Right.Id != 3 {
+					return fmt.Errorf("nested left joins: %+v", chained)
+				}
+				// Joining through the nullable side excludes the unmatched row.
+				onlyMatches := orm.ThenInnerJoin(siblings, orm.Equal(orm.JoinColumn(siblings.Right, col.Id), col.Id))
+				matches, err := onlyMatches.All(handle)
+				if err != nil || len(matches) != 2 {
+					return fmt.Errorf("inner join after optional match: %+v %v", matches, err)
 				}
 				return nil
 			}
@@ -236,6 +306,9 @@ func TestTypedCallbackSelfJoin(t *testing.T) {
 			if _, err := selected.All(retained); err == nil {
 				t.Fatal("filtered join reused a closed callback")
 			}
+			if _, err := page.All(retained); err == nil {
+				t.Fatal("chained join reused a closed callback")
+			}
 			err := db.WithReadOnly(ctx, 1, func(read context.Context) error {
 				got, err := orm.InnerJoin(read, bound.Holding, on, samePayload)
 				if err != nil || len(got) != 1 || got[0].Right.Id != 2 {
@@ -257,6 +330,9 @@ func TestTypedJoinCaller(t *testing.T) {
 	}
 	compileDBCaller(t, code, `var rows []orm.Joined[TableRow,*TableRow] = result(orm.LeftJoin(ctx, db, orm.Equal(TableColumns.Id,TableColumns.Id))); _ = rows`)
 	compileDBCaller(t, code, `q:=orm.QueryLeftJoin(db,orm.Equal(TableColumns.Id,TableColumns.Id)); right:=orm.JoinColumn(q.Right,TableColumns.Id); var rows []orm.Joined[TableRow,*TableRow]=result(q.Where(right.IsNull()).OrderBy(right.Desc()).Limit(2).All(ctx)); _=rows`)
+	first := `q:=orm.QueryLeftJoin(db,orm.Equal(TableColumns.Id,TableColumns.Id)); key:=orm.JoinColumn(q.Right,TableColumns.Id); `
+	compileDBCaller(t, code, first+`three:=orm.ThenInnerJoin(q,orm.Equal(key,TableColumns.Id)); var rows []orm.Joined[orm.Joined[TableRow,*TableRow],TableRow]=result(three.All(ctx)); _=rows`)
+	compileDBCaller(t, code, first+`_=orm.ThenInnerJoin(q,orm.Equal(key,TableColumns.Other))`, "does not match inferred type")
 	compileDBCaller(t, code, `type Peer struct{}; q:=orm.QueryInnerJoin(db,orm.Equal(TableColumns.Id,TableColumns.Id)); _=orm.JoinColumn(q.Right,orm.Column[Peer,string]{})`, "does not match inferred type")
 	compileDBCaller(t, code, `_ = orm.Equal(TableColumns.Other,TableColumns.Id)`, "does not match inferred type")
 	compileDBCaller(t, code, `_ = TableColumns.Unknown`, "Unknown undefined")
@@ -301,6 +377,11 @@ func TestIsolatedTypedJoin(t *testing.T) {
 					page, err := q.Where(orm.Or(l.Eq(int64(chain)), r.Eq(1))).OrderBy(r.Asc()).Limit(1).All(ctx)
 					if err != nil || len(page) != 1 || page[0].Right == nil || page[0].Left.Other.Value() != int64(chain) || page[0].Right.Other.Value() != int64(chain) {
 						return fmt.Errorf("isolated join page on chain %d: %+v %v", chain, page, err)
+					}
+					three := orm.ThenLeftJoin(q, orm.Equal(orm.JoinColumn(q.Right, col.Id), col.Id))
+					result, err := three.All(ctx)
+					if err != nil || len(result) != 1 || result[0].Right == nil || result[0].Right.Other.Value() != int64(chain) {
+						return fmt.Errorf("isolated third alias on chain %d: %+v %v", chain, result, err)
 					}
 					return nil
 				}); err != nil {

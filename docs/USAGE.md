@@ -603,6 +603,27 @@ func rankedTransfers(ctx context.Context, c *runtime.Context, since int64, offse
 
 需要保留找不到账户的转账时，使用 `orm.QueryLeftJoin`，结果的 `Right` 为可空指针。对绑定到右侧的账户主键调用 `IsNull()` 可以只选出这些转账。Isolated 会在筛选和分页之前限定两侧的链。[连接与分页测试](../orm/join_test.go)
 
+### 查询授权事件的所有者和当前额度
+
+`api-functions` 模板提供授权事件、账户和额度三张表。下面的查询返回指定时间以来发生的授权事件、所有者账户，以及查询时该所有者对同一 spender 的额度。一个所有者可以授权多个 spender，匹配额度时需要同时比较两列。
+
+```go
+type approvalWithOwner = orm.Joined[models.ApprovalEventRow, models.AccountRow]
+
+func approvalPage(ctx context.Context, c *runtime.Context, since int64, offset int) ([]orm.Joined[approvalWithOwner, *models.AllowanceRow], error) {
+    events, accounts, allowances := models.ApprovalEventColumns, models.AccountColumns, models.AllowanceColumns
+    pair := orm.QueryInnerJoin(c.DB.Indexing(), orm.Equal(events.Owner, accounts.Address))
+    owner := orm.JoinColumn(pair.Right, accounts.Address)
+    spender := orm.JoinColumn(pair.Left, events.Spender)
+    q := orm.ThenLeftJoin(pair, orm.Equal(owner, allowances.Owner), orm.Equal(spender, allowances.Spender))
+    at := orm.JoinColumn(q.Left, orm.JoinColumn(pair.Left, events.Timestamp))
+    id := orm.JoinColumn(q.Left, orm.JoinColumn(pair.Left, events.Id))
+    return q.Where(at.Gte(since)).OrderBy(at.Desc(), id.Asc()).Limit(3).Offset(offset).All(ctx)
+}
+```
+
+第一步内联接只保留已有所有者账户的事件。`row.Left.Left` 是授权事件，`row.Left.Right` 是账户。没有对应额度记录时，`row.Right` 为 `nil`。继续追加表时，把当前查询交给 `orm.ThenInnerJoin` 或 `orm.ThenLeftJoin`，用 `orm.JoinColumn` 从已有结果选取联接列。所有联接建好后再筛选、排序和分页。调用 `All` 后，数据库在回调事务中用同一条 SELECT 完成联接和分页。Isolated 下每个表都按事件所属链限定。[验证记录](../parity/runs/native-chained-joins/RESULT.md)
+
 ### 在 Go 回调中过滤和分页
 
 在上面的 ERC-721 项目中，用当前版本的 `ponder codegen --typed` 重新生成模型，以便比较值使用列的编码器。查询某个地址持有的代币时，可以按代币 ID 排序并只读取当前页。

@@ -318,7 +318,7 @@ func (t Table[K, I, U, R]) Select(ctx context.Context) ([]R, error) {
 	return decodeRows(t.definition.decode, rows)
 }
 
-func decodeRows[R any](decode Decoder[R], rows []store.Row) ([]R, error) {
+func decodeRows[R, V any](decode func(V) (R, error), rows []V) ([]R, error) {
 	result := make([]R, len(rows))
 	for i, row := range rows {
 		var e error
