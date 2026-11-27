@@ -1025,9 +1025,10 @@
       "evidence": [
         "docs/USAGE.md",
         "parity/runs/native-deployment-roles/RESULT.md",
+        "parity/runs/native-managed-postgres-roles/RESULT.md",
         "parity/runs/native-managed-cli-serve/RESULT.md"
       ],
-      "remaining": "The usage guide covers writing Go handlers, generating typed models, running both database backends, serving SQL, and operating split business and sync stores. Host power loss and least-privilege writer and deployment-manager logins for the split stores still need acceptance."
+      "remaining": "The usage guide covers writing Go handlers, generating typed models, running both database backends, serving SQL, and operating split business and sync stores. Managed PostgreSQL writer and manager grants are exercised on live default multichain and bounded finalized Isolated and Omnichain. Host power loss and further PGlite process exit scenarios remain open."
     },
     {
       "id": "type-fixtures",
@@ -2176,10 +2177,16 @@
         "examples/erc20/main.go",
         "store/deployment.go",
         "store/prune.go",
-        "docs/examples/postgres-writer.sql"
+        "docs/examples/postgres-writer.sql",
+        "docs/examples/postgres-managed-writer.sql",
+        "store/independent_storage.go",
+        "store/managed_live_domains_bootstrap.go",
+        "store/protocol_cache.go",
+        "store/sync_migration.go"
       ],
       "native_test_files": [
         "cmd/ponder/deployment_roles_test.go",
+        "historical/postgres_roles_test.go",
         "store/engine_recovery_test.go"
       ],
       "upstream_sources": [
@@ -2188,9 +2195,10 @@
         "packages/core/src/database/actions.test.ts"
       ],
       "evidence": [
-        "parity/runs/native-deployment-roles/RESULT.md"
+        "parity/runs/native-deployment-roles/RESULT.md",
+        "parity/runs/native-managed-postgres-roles/RESULT.md"
       ],
-      "remaining": "The grants apply to the native atomic PostgreSQL store and the example business table. Independent business and sync database lifecycles, host loss and cross-chain provider pool failover are separate scenarios."
+      "remaining": "The atomic writer uses prepared data grants. The managed writer retains local business object ownership for activation, with scoped sync DML on a verified cache and no database CREATE after handoff. Tested with default live reorg, Isolated finalized and Omnichain finalized histories. Host power loss and other fault combinations remain separate."
     },
     {
       "id": "native-rpc-pool-reorg",

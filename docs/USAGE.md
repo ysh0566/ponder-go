@@ -1287,6 +1287,8 @@ env -u PONDER_LOCAL_DATABASE_URL -u DATABASE_PRIVATE_URL -u DATABASE_URL -u POND
 
 生成的 `package.json` 固定了 PGlite 0.2.13。Go 进程在同一应用中提供索引和 HTTP 查询。数据默认写入项目的 `.ponder/pglite`。重启时使用同一目录和 schema 即可恢复已提交进度。开发时改用 `ponder dev --schema ponder_go_token`，CLI 会显示实际使用的开发 schema。应用运行期间可按前文的 `/status` 和 `/sql/db` 示例查询。
 
+PGlite 驱动在发送 SQL 前检查 Go 的 `context`。SQL 一旦发出，调用就会等待数据库响应。在回调中设置 context 超时，目前无法立即中断已经运行的 PGlite 查询。[驱动实现](../store/backend.go)
+
 生成项目优先使用 `PONDER_LOCAL_DATABASE_URL` 指定的 PostgreSQL，其次使用 `PONDER_PGLITE_DIR` 指定的目录。两者均未设置时，依次检查 `DATABASE_PRIVATE_URL`、`DATABASE_URL`，最后使用默认 PGlite 目录。相对路径从 Go 项目目录解析。需要稳定的视图名称时，`start --views-schema` 会在首次追上链头后发布视图。独立的 `ponder serve` 使用 PostgreSQL。[上游独立查询范围](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/bin/commands/serve.ts#L102-L109)
 
 按 Ctrl+C 停止索引器后，在安装驱动的项目目录中管理本地部署。将下面的 schema 名替换为你的实际部署名称。
@@ -1352,7 +1354,34 @@ PONDER_LOCAL_DATABASE_URL="$WRITER_URL" PONDER_DATABASE_MODE=existing \
 
 视图发布由 `deploy_manager` 运行 `ponder db create-views`，写入进程使用普通的 `start`。部署和首次发布所需的 schema 均已创建后，管理员可执行 `REVOKE CREATE ON DATABASE indexer FROM deploy_manager`。该账号仍能把已有视图切换到已准备好的下一部署，或清理已停用、未发布的旧部署。要创建新的部署或新的视图 schema，再授予数据库级 `CREATE`。
 
-测试使用独立登录账号和真实 Anvil 交易，覆盖 ERC-20 回调、重启后的重组、跨链回放标记、发布切换和定向清理。使用独立业务库与同步库的 `historical.RuntimeRunner` 有自己的对象与启动流程。[受限账号验证](../parity/runs/native-deployment-roles/RESULT.md)
+测试使用独立登录账号和真实 Anvil 交易，覆盖 ERC-20 回调、重启后的重组、跨链回放标记、发布切换和定向清理。双库运行器的授权步骤见下一节。[受限账号验证](../parity/runs/native-deployment-roles/RESULT.md)
+
+### 双库 PostgreSQL 的写入与管理权限
+
+`historical.OpenRuntimePostgres` 通过同一个登录账号建立业务和同步连接池。业务端重启或进入就绪状态时会重建本部署的索引、触发器和通知函数，因此写入账号保留业务表及这些对象的所有权。同步端会在两个存储都已初始化并绑定后核对台账、标记和缓存结构，然后用数据权限重开。管理账号可以回收 schema 的所有权，控制谁能使用或修改缓存。[运行时验证](../parity/runs/native-managed-postgres-roles/RESULT.md)
+
+以下配置适用于专用数据库 `indexer`。示例使用管理登录账号 `deploy_manager`、本部署专用的写入登录账号 `index_writer` 和持有缓存对象的角色 `index_cache_owner`。两个登录账号均为普通账号，管理账号使用 `INHERIT`。在新的专用数据库中，以数据库管理员身份执行以下准备。
+
+```sql
+CREATE ROLE index_cache_owner NOLOGIN;
+GRANT index_writer, index_cache_owner TO deploy_manager;
+REVOKE ALL ON DATABASE indexer FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+GRANT CONNECT, CREATE ON DATABASE indexer TO deploy_manager;
+GRANT CONNECT, CREATE, TEMPORARY ON DATABASE indexer TO index_writer;
+```
+
+1. **准备部署。** 由部署人员使用 `index_writer` 的凭据首次打开项目，以便新业务对象从一开始就属于该账号。使用示例的 `--schema ponder_go_blocks` 和同步根 `ponder_go_blocks_cache`。若需要发布视图，首次启动前设 `DATABASE_VIEWS_SCHEMA=ponder_go_blocks_views`，等 `/ready` 返回 200 后停止进程并关闭连接。对未配置发布视图的自定义入口，调用 `OpenRuntimePostgres` 后直接 `Close` 即可先准备两库，业务回调可以等交接后再执行。[示例启动命令](#用-cli-启动独立存储的多链索引器)
+2. **移交权限。** 在写入进程已停止时，由数据库管理员执行 `REVOKE CREATE ON DATABASE indexer FROM index_writer`。再由管理账号执行下方 SQL 脚本。它在一个事务内移交当前版本的缓存表、函数和命名空间，只允许写入账号向台账追加记录、更新头记录的序号和哈希，并读写同步所需的缓存数据。业务 schema 和配置的发布视图 schema 保留对象创建权限，业务镜像和缓存 schema 只授予使用权限。部署名称不同的项目需要同步替换脚本中列出的 schema 名称。[双库授权 SQL](examples/postgres-managed-writer.sql)
+3. **使用受限账号启动。** 继续使用相同的 `BuildID`、业务和同步命名空间，保持 `DATABASE_PRIVATE_URL` 指向 `index_writer`，按原命令启动。事务内的通知需要数据库级 `TEMPORARY`。本次部署交接完成后，数据库管理员也可以撤销 `deploy_manager` 的数据库级 `CREATE`。管理账号仍可维护已有 schema 的授权。
+
+从仓库根目录执行交接脚本。
+
+```sh
+psql "$MANAGER_URL" -X -v ON_ERROR_STOP=1 -f docs/examples/postgres-managed-writer.sql
+```
+
+写入账号可以修改其拥有的业务表及触发器，运维时应把它作为该部署的可信账号。上述配置保留了数据库级、命名空间级和同步台账的权限边界。缺少台账读取权限会在恢复应用回调之前返回 PostgreSQL 的 `42501`。修复授权后可以使用新的 `OpenID` 重开原部署。
 
 ## 独立业务库与同步库的中断恢复
 
