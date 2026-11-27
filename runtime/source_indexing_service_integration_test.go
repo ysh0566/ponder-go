@@ -265,7 +265,14 @@ func TestSourceHistoricalIndexingServiceComposition(t *testing.T) {
 				}
 			}
 
-			committedEvent, err := backend.Query(ctx, "SELECT event_id,checkpoint,(operation_end-operation_boundary)::text AS operations FROM "+schema.Quote(db.Namespace)+`."_ponder_go_events"`)
+			// The default multichain writer reserves both ends of a receipt
+			// in the journal sequence, even when a callback writes nothing.
+			committedEvent, err := backend.Query(ctx, fmt.Sprintf(`
+				SELECT e.event_id, e.checkpoint, (
+					SELECT count(*)::text FROM %[1]s."_ponder_go_journal" AS j
+					WHERE j.operation_id > e.operation_boundary AND j.operation_id < e.operation_end
+				) AS operations
+				FROM %[1]s."_ponder_go_events" AS e`, schema.Quote(db.Namespace)))
 			if err != nil || len(committedEvent.Rows) != 1 {
 				t.Fatalf("committed event %v %v", committedEvent, err)
 			}

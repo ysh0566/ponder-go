@@ -489,7 +489,9 @@
       ],
       "native_test_files": [
         "orm/join_test.go",
-        "orm/query_test.go"
+        "orm/query_test.go",
+        "store/orm_upstream_test.go",
+        "store/orm_codec_boundaries_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/indexing-store/index.ts"
@@ -504,7 +506,8 @@
         "parity/runs/native-typed-select/RESULT.md",
         "parity/runs/native-query-groups/RESULT.md",
         "parity/runs/native-join-pages/RESULT.md",
-        "parity/runs/native-chained-joins/RESULT.md"
+        "parity/runs/native-chained-joins/RESULT.md",
+        "parity/runs/native-managed-receipt-regressions/RESULT.md"
       ],
       "remaining": "Buffered native ORM tested on PG/PGlite: returned row copies, conflict operations, defaults/NULL/Undefined, explicit cache invalidation/flush, typed columns and single-table Select; 28 new exact source mappings. Generated typed columns support two-table inner and left equality joins, multiple predicates and self joins. Single-table typed comparisons, NULL checks, ordering, and pagination run in the bound callback transaction. Single-table predicates support nested AND and OR groups. Typed inner and left joins can be chained in one SQL query, with composite predicates over prior aliases, nullable results, chain isolation and filtered, ordered pages. Cache profile/prefetch/eviction, Promise adaptation and source cases with compile-error obligations remain. JSON U+0000/raw JSON large numeric undo and byte PK bridge now verified on both backends. Complete custom codecs, callback value types and array combinations require follow-up; no full ORM claim."
     },
@@ -582,9 +585,14 @@
       ],
       "evidence": [
         "parity/runs/batch-8.json",
-        "parity/runs/batch-11.json"
+        "parity/runs/batch-11.json",
+        "parity/runs/native-managed-receipt-regressions/RESULT.md"
       ],
-      "remaining": "A single database trigger captures declared business-table DML; manual Go capture removed. Statement failure and four process boundaries verified on both backends. All source action/store tests and server/host crash cases remain. json-v2 before-images use json with raw JSON numeric/escape-preserving restore; trigger keys are read directly from OLD/NEW. New default shadow format; old explicit formats rejected without migration. Multi-batch savepoint rollback/retry verified. Server/host crash and remaining source cases still pending. json-v3 adds persisted operation/row_data and a mode fingerprint. Separate staged source actions now expose MAX/assigned/latest/finalized durability; 14 process-exit tests and 6 guard/ordering leaves pass on PG/PGlite. CrashRecovery leaves metadata unchanged until caller resets latest to safe. No automatic staged runtime/migration or server/host crash claim."
+      "remaining": "A single database trigger captures declared business-table DML; manual Go capture removed. Statement failure and four process boundaries verified on both backends. All source action/store tests and server/host crash cases remain. json-v2 before-images use json with raw JSON numeric/escape-preserving restore; trigger keys are read directly from OLD/NEW. New default shadow format; old explicit formats rejected without migration. Multi-batch savepoint rollback/retry verified. Server/host crash and remaining source cases still pending. json-v3 adds persisted operation/row_data and a mode fingerprint. Separate staged source actions now expose MAX/assigned/latest/finalized durability; 14 process-exit tests and 6 guard/ordering leaves pass on PG/PGlite. CrashRecovery leaves metadata unchanged until caller resets latest to safe. No automatic staged runtime/migration or server/host crash claim.",
+      "native_test_files": [
+        "store/managed_live_test.go",
+        "store/multichain_receipt_test.go"
+      ]
     },
     {
       "id": "reorg",
@@ -1539,9 +1547,13 @@
       "evidence": [
         "parity/runs/source-indexing-service-verification.json",
         "parity/runs/batch-37.json",
-        "docs/SOURCE_INDEXING_SERVICE.md"
+        "docs/SOURCE_INDEXING_SERVICE.md",
+        "parity/runs/native-managed-receipt-regressions/RESULT.md"
       ],
-      "remaining": "Historical M38 handler subset remains12 formal mappings for15 runtime originals/33assertions, with3 exact TS-only gaps. M39 now replays all23 descriptor operations and provides strict standalone AsyncCache prepared admission plus8 separately mapped action originals. Generic synchronous fallback timing, concurrent cache-read visibility, commit order and batchinsert grouping remain unproved; captured service sync-table snapshots stay archival-only. RPC profile/prefetch/LRU is separately verified in M40, owned reusable bindings in M41; no outer runner/readiness/cutover claim; native stronger PGlite transaction safety is not source failure parity."
+      "remaining": "Historical M38 handler subset remains12 formal mappings for15 runtime originals/33assertions, with3 exact TS-only gaps. M39 now replays all23 descriptor operations and provides strict standalone AsyncCache prepared admission plus8 separately mapped action originals. Generic synchronous fallback timing, concurrent cache-read visibility, commit order and batchinsert grouping remain unproved; captured service sync-table snapshots stay archival-only. RPC profile/prefetch/LRU is separately verified in M40, owned reusable bindings in M41; no outer runner/readiness/cutover claim; native stronger PGlite transaction safety is not source failure parity.",
+      "native_test_files": [
+        "runtime/source_indexing_service_integration_test.go"
+      ]
     },
     {
       "id": "source-indexing-actions-m39",

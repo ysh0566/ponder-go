@@ -33,17 +33,9 @@ The dual-store runtime accepts `Historical.QuerySize` in each ordering. Cached h
 
 ## Native regression checks
 
-Two Go tests from the native suite failed again on main at `190a3d7f`. They are tracked separately from the 17 upstream RPC cases. The first test needs no node or database. The second ran against a fresh PostgreSQL 14.24 database.
+A managed live store rejects direct atomic event writes and block-completion writes at the public entry point. With a valid lease and active context, the caller receives `ErrManagedLiveLegacyMutation`. A closed owner returns `ErrManagedLiveClosed`. Canceled calls and lost leases retain their respective errors. This also covers a call with a missing handler. [Store entry points](../store/store.go) · [Guard tests](../store/managed_live_test.go)
 
-| Test | Observed result |
-| --- | --- |
-| `TestManagedLiveLegacyMutationGuard` | Calling the public `Store.Apply` on a managed live store with a nil handler returns the missing-handler error before reaching the managed-store guard. The test expects the caller to receive the managed-mutation error. [Public entry point](../store/store.go) · [Regression test](../store/managed_live_test.go) |
-| `TestSourceHistoricalIndexingServiceComposition/postgres` | Dispatch produced the expected six business rows and six journal rows. The assertion subtracts the receipt's starting sequence position from its ending position and expects six. The current default multichain writer reserves a closing position, giving a difference of seven. The receipt check needs to account for the reserved boundary and verify which journal entries it encloses. [Receipt implementation](../store/store.go) · [Integration test](../runtime/source_indexing_service_integration_test.go) |
-
-```sh
-go test -count=1 -run '^TestManagedLiveLegacyMutationGuard$' ./store
-go test -count=1 -run '^TestSourceHistoricalIndexingServiceComposition$/^postgres$' ./runtime
-```
+In default multichain ordering, the journal sequence reserves opening and closing positions for an executed callback. The historical composition test checks all six expected writes against the interior of the committed receipt, together with the event checkpoint, journal order and rollback of the failed attempt. The mutable JSON test reads the source fixture's integer from Go's `json.Number` before adding one and checking its independent snapshots. [Historical transaction](../runtime/source_indexing_service_integration_test.go) · [Mutable JSON callback](../store/orm_upstream_test.go) · [Regression results](../parity/runs/native-managed-receipt-regressions/RESULT.md)
 
 ## Prometheus coverage
 

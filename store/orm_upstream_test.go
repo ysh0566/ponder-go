@@ -410,8 +410,12 @@ func TestUpstreamORM(t *testing.T) {
 					expectSourceMatch(t, found, value(2, "two", []int64{2}, []byte{2}, 2000))
 					updated, e := db.UpdateFunc(ctx, "account", key, func(row Row) (Row, error) {
 						m := row["metadata"].(map[string]any)
+						count, err := m["count"].(json.Number).Int64()
+						if err != nil {
+							return nil, err
+						}
 						v := append(row["values"].([]int64), 3)
-						return value(int64(m["count"].(float64))+1, "three", v, []byte{3}, 3000), nil
+						return value(count+1, "three", v, []byte{3}, 3000), nil
 					})
 					if e != nil {
 						return e
