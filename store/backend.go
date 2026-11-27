@@ -169,9 +169,10 @@ func pgQuery(ctx context.Context, q sqlQuerier, pool, s string, args ...any) (Re
 }
 
 type pgliteBackend struct {
-	// Accessed while a transaction holds mu. Closing the engine releases all pins.
+	// A transaction owns session from BEGIN through its final response.
+	// The session also protects the deployment pins and the closed flag.
 	pinned    map[string]bool
-	mu        sync.Mutex
+	session   pgliteSlot
 	cmd       *exec.Cmd
 	in        io.WriteCloser
 	closed    bool
@@ -183,6 +184,7 @@ type pgliteBackend struct {
 }
 type pgliteTx struct {
 	p      *pgliteBackend
+	wire   pgliteSlot
 	done   bool
 	failed bool
 }
@@ -220,14 +222,45 @@ func openPGlite(ctx context.Context, directory string, inheritedLocks []*os.File
 		cmd.Wait()
 		return nil, fmt.Errorf("invalid PGlite handshake")
 	}
-	p := &pgliteBackend{pinned: make(map[string]bool), cmd: cmd, in: in, responses: make(chan []byte, 1), scanDone: make(chan struct{}), listeners: map[string]map[*notificationQueue]struct{}{}}
+	p := &pgliteBackend{
+		session: make(pgliteSlot, 1), pinned: make(map[string]bool),
+		cmd: cmd, in: in, responses: make(chan []byte, 1), scanDone: make(chan struct{}),
+		listeners: map[string]map[*notificationQueue]struct{}{},
+	}
 	go p.readResponses(lines)
 	return p, nil
 }
 func (p *pgliteBackend) Dialect() string { return "pglite" }
+
+// Each slot has capacity one. A transaction holds the backend slot and takes
+// its own wire slot for each statement, including the final commit or rollback.
+type pgliteSlot chan struct{}
+
+func (s pgliteSlot) lockContext(ctx context.Context) error {
+	// An uncontended caller checks cancellation again before sending SQL.
+	select {
+	case s <- struct{}{}:
+		return nil
+	default:
+	}
+	select {
+	case s <- struct{}{}:
+		if err := ctx.Err(); err != nil {
+			s.unlock()
+			return err
+		}
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func (s pgliteSlot) lock()   { s <- struct{}{} }
+func (s pgliteSlot) unlock() { <-s }
+
 func (p *pgliteBackend) Close() error {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.session.lock()
+	defer p.session.unlock()
 	if p.closed {
 		return nil
 	}
@@ -261,6 +294,9 @@ func (p *pgliteBackend) roundtrip(ctx context.Context, action, sql string, args 
 	if e != nil {
 		return out, e
 	}
+	if e := ctx.Err(); e != nil {
+		return out, e
+	}
 	if _, e = p.in.Write(append(request, '\n')); e != nil {
 		return out, e
 	}
@@ -283,13 +319,17 @@ func (p *pgliteBackend) roundtrip(ctx context.Context, action, sql string, args 
 	return response.Result, nil
 }
 func (p *pgliteBackend) Query(c context.Context, s string, a ...any) (Result, error) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	if err := p.session.lockContext(c); err != nil {
+		return Result{Rows: []map[string]any{}}, err
+	}
+	defer p.session.unlock()
 	return p.roundtrip(c, "query", s, a...)
 }
 func (p *pgliteBackend) Exec(c context.Context, s string, a ...any) error {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	if err := p.session.lockContext(c); err != nil {
+		return err
+	}
+	defer p.session.unlock()
 	action := "query"
 	if len(a) == 0 {
 		action = "exec"
@@ -298,14 +338,20 @@ func (p *pgliteBackend) Exec(c context.Context, s string, a ...any) error {
 	return e
 }
 func (p *pgliteBackend) Begin(c context.Context) (Transaction, error) {
-	p.mu.Lock()
+	if err := p.session.lockContext(c); err != nil {
+		return nil, err
+	}
 	if _, e := p.roundtrip(c, "query", "BEGIN"); e != nil {
-		p.mu.Unlock()
+		p.session.unlock()
 		return nil, e
 	}
-	return &pgliteTx{p: p}, nil
+	return &pgliteTx{p: p, wire: make(pgliteSlot, 1)}, nil
 }
 func (t *pgliteTx) Query(c context.Context, s string, a ...any) (Result, error) {
+	if err := t.wire.lockContext(c); err != nil {
+		return Result{}, err
+	}
+	defer t.wire.unlock()
 	if t.done {
 		return Result{}, fmt.Errorf("transaction is closed")
 	}
@@ -323,10 +369,12 @@ func (t *pgliteTx) Exec(c context.Context, s string, a ...any) error {
 	return e
 }
 func (t *pgliteTx) finish(c context.Context, command string) error {
+	t.wire.lock()
+	defer t.wire.unlock()
 	if t.done {
 		return nil
 	}
-	defer t.p.mu.Unlock()
+	defer t.p.session.unlock()
 	t.done = true
 	if command == "COMMIT" && (t.failed || c.Err() != nil) {
 		_, rollbackErr := t.p.roundtrip(context.Background(), "query", "ROLLBACK")
@@ -338,10 +386,9 @@ func (t *pgliteTx) finish(c context.Context, command string) error {
 		}
 		return fmt.Errorf("cannot commit failed transaction")
 	}
-	if command == "ROLLBACK" {
-		c = context.Background()
-	}
-	_, e := t.p.roundtrip(c, "query", command)
+	// After deciding to commit or roll back, receive the database outcome
+	// before releasing the connection, even if c is canceled in between.
+	_, e := t.p.roundtrip(context.Background(), "query", command)
 	return e
 }
 func (t *pgliteTx) Commit(c context.Context) error   { return t.finish(c, "COMMIT") }

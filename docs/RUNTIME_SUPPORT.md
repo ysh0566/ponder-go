@@ -31,6 +31,8 @@ With RPC caching enabled in the atomic Go runtime, `rpc.Client.CallCached` recor
 
 The dual-store runtime accepts `Historical.QuerySize` in each ordering. Cached historical reads split the initial SQL row budget across chains. Isolated workers receive a per-chain share. A dense block can grow the query until every event fits. Uncached chains decode their RPC data in memory. [Read limits and recovery](../parity/runs/native-historical-query-size/RESULT.md)
 
+A PGlite transaction holds the instance’s single connection until its final response. Waiting queries, writes, transaction starts and listener registrations honor their Go contexts. Concurrent statements sharing one transaction also queue before dispatch. Once a statement reaches the engine, the caller waits for the actual SQL result. [PGlite usage](USAGE.md#使用本地-pglite) · [Cancellation tests](../parity/runs/native-pglite-queued-cancel/RESULT.md)
+
 ## Native regression checks
 
 A managed live store rejects direct atomic event writes and block-completion writes at the public entry point. With a valid lease and active context, the caller receives `ErrManagedLiveLegacyMutation`. A closed owner returns `ErrManagedLiveClosed`. Canceled calls and lost leases retain their respective errors. This also covers a call with a missing handler. [Store entry points](../store/store.go) · [Guard tests](../store/managed_live_test.go)

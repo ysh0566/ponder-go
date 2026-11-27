@@ -1302,7 +1302,9 @@ env -u PONDER_LOCAL_DATABASE_URL -u DATABASE_PRIVATE_URL -u DATABASE_URL -u POND
 
 生成的 `package.json` 固定了 PGlite 0.2.13。Go 进程在同一应用中提供索引和 HTTP 查询。数据默认写入项目的 `.ponder/pglite`。重启时使用同一目录和 schema 即可恢复已提交进度。开发时改用 `ponder dev --schema ponder_go_token`，CLI 会显示实际使用的开发 schema。应用运行期间可按前文的 `/status` 和 `/sql/db` 示例查询。
 
-PGlite 驱动在发送 SQL 前检查 Go 的 `context`。SQL 一旦发出，调用就会等待数据库响应。在回调中设置 context 超时，目前无法立即中断已经运行的 PGlite 查询。[驱动实现](../store/backend.go)
+PGlite 每个实例有一个 SQL 连接。一个事务占用连接时，排队的 `Query`、`Exec`、`Begin` 和 `store.Listen` 会在各自的 Go `context` 取消或超时时返回，调用方可用 `errors.Is` 判断 `context.Canceled` 或 `context.DeadlineExceeded`。排队请求的取消不影响占用连接的事务。同一事务内并发提交的语句逐条发送，等待中的语句也可取消。
+
+驱动会在参数编码完成后、写入引擎前再次检查取消状态。SQL 一旦发出，调用会等待真实的数据库结果。调用 `Commit` 时若上下文已经取消，驱动会回滚事务。如果取消发生在提交命令发出之后，则以数据库返回的提交结果为准。PGlite 0.2.13 仍缺少用于中断执行中 SQL 的查询接口。[驱动实现](../store/backend.go) · [取消、回滚与连接复用验证](../parity/runs/native-pglite-queued-cancel/RESULT.md)
 
 生成项目优先使用 `PONDER_LOCAL_DATABASE_URL` 指定的 PostgreSQL，其次使用 `PONDER_PGLITE_DIR` 指定的目录。两者均未设置时，依次检查 `DATABASE_PRIVATE_URL`、`DATABASE_URL`，最后使用默认 PGlite 目录。相对路径从 Go 项目目录解析。需要稳定的视图名称时，`start --views-schema` 会在首次追上链头后发布视图。独立的 `ponder serve` 使用 PostgreSQL。[上游独立查询范围](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/bin/commands/serve.ts#L102-L109)
 
