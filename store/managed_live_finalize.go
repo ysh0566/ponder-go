@@ -206,7 +206,7 @@ func liveHeadLineage(head, baseline ManagedLiveHead, proofs map[string]ManagedLi
 // finality may remain above a globally rewound private cursor, but both must
 // describe the same branch. Heads above finality must also connect back to it.
 func validateLiveFinalityBranch(opts ManagedLiveOptions, baseline, confirmed, safe, cursors map[uint64]ManagedLiveHead, active []ManagedLiveSegment, proofs []ManagedLiveHead) error {
-	if len(baseline) != len(opts.Chains) || len(confirmed) != len(opts.Chains) || len(safe) != len(opts.Chains) || len(cursors) != len(opts.Chains) {
+	if (!opts.isolatedContinuous() && len(cursors) != len(opts.Chains)) || len(baseline) != len(cursors) || len(confirmed) != len(cursors) || len(safe) != len(cursors) {
 		return ErrManagedLiveBatchConflict
 	}
 	byKey, err := liveProofMap(proofs)
@@ -215,6 +215,9 @@ func validateLiveFinalityBranch(opts ManagedLiveOptions, baseline, confirmed, sa
 	}
 	currentLines := map[uint64]map[uint64]ManagedLiveHead{}
 	for _, chain := range opts.Chains {
+		if _, started := cursors[chain.ID]; !started && opts.isolatedContinuous() {
+			continue
+		}
 		finalLine, err := liveHeadLineage(confirmed[chain.ID], baseline[chain.ID], byKey, opts.verifiedRangeParents)
 		if err != nil {
 			return err
@@ -234,6 +237,9 @@ func validateLiveFinalityBranch(opts ManagedLiveOptions, baseline, confirmed, sa
 			return ErrManagedLiveBatchConflict
 		}
 		currentLines[chain.ID] = currentLine
+	}
+	if len(currentLines) != len(cursors) {
+		return ErrManagedLiveBatchConflict
 	}
 	for _, segment := range active {
 		_, cp, err := normalizeLiveHead(segment.Block.Head)

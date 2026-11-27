@@ -328,16 +328,6 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		Continuous:         o.Live != nil,
 		ObserveDomain:      runtimeDomainObserver(r),
 	})
-	if errors.Is(err, store.ErrMissingIsolatedBaseline) {
-		causes := []error{err}
-		for _, c := range b.Chains {
-			id := runtimeChainID(c)
-			if cause := r.offlineAtOpen[id]; cause != nil {
-				causes = append(causes, fmt.Errorf("chain %d opening RPC: %w", id, cause))
-			}
-		}
-		return nil, errors.Join(causes...)
-	}
 	if err != nil {
 		return nil, err
 	}
@@ -347,7 +337,9 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 			return nil, errors.Join(err, r.domains.Close(context.Background()))
 		}
 		for id := range r.offlineAtOpen {
-			r.finalized[id] = control.FinalizedHeads[id]
+			if head, ok := control.FinalizedHeads[id]; ok {
+				r.finalized[id] = head
+			}
 		}
 	}
 	opened = true
@@ -625,7 +617,7 @@ func runtimeHistoricalComplete(c store.ManagedLiveControl) bool {
 }
 
 func historicalCompleteExcept(c store.ManagedLiveControl, offline map[uint64]error) bool {
-	if c.Batches == 0 {
+	if c.Batches == 0 && len(offline) == 0 {
 		return false
 	}
 	for id, cut := range c.HistoryCuts {

@@ -84,9 +84,6 @@ func prepareLiveDomains(ctx context.Context, s *IndependentStorage, o Independen
 			if l.Binding != nil || len(l.Records) > 0 {
 				return false, ErrManagedLiveReceiptConflict
 			}
-			if resumeOffline {
-				return false, ErrMissingIsolatedBaseline
-			}
 			return false, nil
 		}
 		// Both lifetime owner locks are already held. Authenticate the entire prior
@@ -135,9 +132,6 @@ func prepareLiveDomains(ctx context.Context, s *IndependentStorage, o Independen
 	}
 	if hasBusiness {
 		return false, ErrManagedLiveReceiptConflict
-	}
-	if resumeOffline {
-		return false, ErrMissingIsolatedBaseline
 	}
 	if err = cache.s.initializeInternal(ctx, tx); err != nil {
 		return false, err

@@ -109,6 +109,20 @@ func (m *ManagedLive) runRuntimeSetup(ctx context.Context, tx Transaction, basel
 	}
 	// Setup is the committed initial safe prefix, not a replayable live segment.
 	// Every setup mutation is first flushed/attributed, then pruned atomically.
+	if m.opts.isolatedContinuous() {
+		// Other chains may have live segments whose undo rows must survive setup.
+		if err := tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_journal")+" WHERE chain_id=$1 AND checkpoint<=$2", first, initial[first]); err != nil {
+			return err
+		}
+		rows, err := tx.Query(ctx, "SELECT 1 FROM "+s.internal("_ponder_go_journal")+" WHERE chain_id=$1 LIMIT 1", first)
+		if err != nil {
+			return err
+		}
+		if len(rows.Rows) != 0 {
+			return fmt.Errorf("isolated setup journal escaped its initial checkpoint")
+		}
+		return nil
+	}
 	if err := s.pruneInitialSafePrefix(ctx, tx); err != nil {
 		return err
 	}

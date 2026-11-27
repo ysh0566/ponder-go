@@ -49,9 +49,11 @@ type RuntimeLiveProgress struct {
 }
 
 type runtimeLiveItem struct {
-	index int
-	event source.SourceRealtimeEvent
-	head  bool
+	index    int
+	event    source.SourceRealtimeEvent
+	head     bool
+	baseline store.ManagedLiveHead
+	initial  string
 	// replay holds a real RPC-acquired and ABI-decoded initial block after a
 	// global undo restores an inclusive Down cursor. It is not a header receipt.
 	replay *runtimeAcquiredBlock
@@ -184,7 +186,7 @@ func (r *RuntimeRunner) liveBranch(ctx context.Context, requester rpc.Requester,
 }
 
 // Probe a disconnected Isolated chain without holding up other generators.
-// A successful read only admits reconstruction from the durable cursor.
+// Readiness waits for the consumer to restore or enroll the returning chain.
 func (r *RuntimeRunner) waitForIsolatedRPC(ctx context.Context, i int, requester rpc.Requester, c store.ManagedLiveControl) iter.Seq2[*source.SourceEventBatch, error] {
 	return func(yield func(*source.SourceEventBatch, error) bool) {
 		actions := rpc.NewActions(requester)
@@ -196,8 +198,17 @@ func (r *RuntimeRunner) waitForIsolatedRPC(ctx context.Context, i int, requester
 			id := runtimeChainID(r.build.Chains[i])
 			recovered := true
 			var err error
+			item := &runtimeLiveItem{index: i}
 			if r.offlineAtOpen[id] != nil {
-				recovered, err = r.verifyReturningChain(ctx, i, requester, c.Cursors[id])
+				var finalized store.ManagedLiveHead
+				finalized, err = r.verifyReturningChain(ctx, i, requester, c.Cursors[id])
+				recovered = finalized.Hash != ""
+				if recovered && c.Cursors[id].Hash == "" {
+					if opening, known := r.finalized[id]; known {
+						finalized = opening
+					}
+					item.baseline, item.initial, err = r.acquireBootstrap(ctx, requester, i, finalized)
+				}
 				if err != nil && !rpc.IsTransient(err) {
 					yield(nil, err)
 					return
@@ -214,7 +225,7 @@ func (r *RuntimeRunner) waitForIsolatedRPC(ctx context.Context, i int, requester
 			if recovered {
 				kind = "rpc-recovered"
 			}
-			item := &runtimeLiveItem{index: i, event: source.SourceRealtimeEvent{Type: kind}}
+			item.event = source.SourceRealtimeEvent{Type: kind}
 			if !yield(&source.SourceEventBatch{Events: []indexing.Object{{"runtimeLive": item}}}, nil) || recovered {
 				return
 			}
@@ -222,29 +233,41 @@ func (r *RuntimeRunner) waitForIsolatedRPC(ctx context.Context, i int, requester
 	}
 }
 
-// Before replay a returning cold chain must prove its durable safe cursor is
-// still an ancestor of current canonical finality. No business callback runs here.
-func (r *RuntimeRunner) verifyReturningChain(ctx context.Context, i int, requester rpc.Requester, cursor store.ManagedLiveHead) (bool, error) {
+// Returning chains authenticate their stored position, or supply finality for
+// their first bootstrap. A zero head means the endpoint is still behind.
+func (r *RuntimeRunner) verifyReturningChain(ctx context.Context, i int, requester rpc.Requester, cursor store.ManagedLiveHead) (store.ManagedLiveHead, error) {
 	id := runtimeChainID(r.build.Chains[i])
 	raw, err := r.acquireChainFinality(ctx, i, requester.(rpc.AsyncRequester))
 	if err != nil {
-		return false, err
+		return store.ManagedLiveHead{}, err
 	}
 	head, err := runtimeHead(id, raw)
 	if err != nil {
-		return false, err
+		return store.ManagedLiveHead{}, err
 	}
 	// The node can return a hash-addressed orphan. Anchor replay to the
 	// canonical numbered chain, including the case where the heights match.
 	previous := r.finalized[id]
-	limit, _ := checkpoint.Decode(previous.Checkpoint)
 	current, _ := checkpoint.Decode(head.Checkpoint)
+	if previous.Hash == "" {
+		if cursor.Hash != "" {
+			return store.ManagedLiveHead{}, errors.Join(store.ErrManagedLiveReceiptConflict, store.ErrMissingIsolatedBaseline)
+		}
+		if current.BlockNumber < r.lastSetupBlock(i) {
+			return store.ManagedLiveHead{}, nil
+		}
+		return head, nil
+	}
+	if cursor.Hash == "" {
+		cursor = previous
+	}
+	limit, _ := checkpoint.Decode(previous.Checkpoint)
 	if current.BlockNumber < limit.BlockNumber {
 		// A lagging endpoint cannot authenticate this cursor yet.
-		return false, nil
+		return store.ManagedLiveHead{}, nil
 	}
 	if current.BlockTimestamp < limit.BlockTimestamp {
-		return false, store.ErrManagedLiveFinalityRegression
+		return store.ManagedLiveHead{}, store.ErrManagedLiveFinalityRegression
 	}
 	err = r.walkFinalizedLineageFrom(ctx, requester, id, head, cursor, func(n uint64, acquired store.ManagedLiveHead) error {
 		if n == limit.BlockNumber && acquired != previous {
@@ -252,7 +275,10 @@ func (r *RuntimeRunner) verifyReturningChain(ctx context.Context, i int, request
 		}
 		return nil
 	})
-	return err == nil, err
+	if err != nil {
+		return store.ManagedLiveHead{}, err
+	}
+	return head, nil
 }
 
 func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl, known *runtimeLiveHeaders, offline map[uint64]bool) (q *runtimeLiveQueue, err error) {
@@ -665,18 +691,38 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			if e = sealQueue(); e != nil {
 				return out, e
 			}
-			delete(offline, id)
 			if r.offlineAtOpen[id] != nil {
-				// The stored cursor can now be reported as canonical, including
-				// when a finite chain already ended before this restart.
+				if _, initialized := c.Cursors[id]; !initialized {
+					epoch, e = r.newEpoch(ctx, learned)
+					if e != nil {
+						return out, e
+					}
+					if e = r.applyBootstrap(ctx, epoch, c, map[uint64]store.ManagedLiveHead{id: item.baseline}, map[uint64]string{id: item.initial}); e != nil {
+						return out, e
+					}
+					c, e = r.domains.Control(ctx)
+					if e != nil {
+						return out, e
+					}
+					r.finalized[id] = c.FinalizedHeads[id]
+					if e = r.notifySetupCommitted(ctx, c); e != nil {
+						return out, e
+					}
+					learned, e = epoch.Seal(ctx)
+					if e != nil {
+						return out, e
+					}
+					epoch = nil
+				}
+				delete(r.offlineAtOpen, id)
 				cursor := c.Cursors[id]
 				cp, _ := checkpoint.Decode(cursor.Checkpoint)
 				if store.ManagedLiveReachedBlock(c, id, cp.BlockNumber) {
 					r.observeSyncHead(ctx, i, cursor)
 				}
 				metrics.ChainSync(ctx).SetSyncPhase(fmt.Sprint(r.build.Chains[i]["name"]), store.ManagedLiveReachedBlock(c, id, r.ends[id]))
-				delete(r.offlineAtOpen, id)
 			}
+			delete(offline, id)
 			if e = restart(); e != nil {
 				return out, e
 			}

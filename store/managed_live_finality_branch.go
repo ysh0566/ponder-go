@@ -6,7 +6,7 @@ func (m *ManagedLive) validateBatchFinality(d managedLiveDurable, after ManagedL
 	if d.Control.Finalizations == 0 {
 		return nil
 	}
-	baseline, err := liveDurableBaselines(d.Operations)
+	baseline, err := liveDurableBaselines(d)
 	if err != nil {
 		return err
 	}
@@ -30,5 +30,11 @@ func (m *ManagedLive) validateBatchFinality(d managedLiveDurable, after ManagedL
 	active := append(append([]ManagedLiveSegment(nil), d.Segments...), segments...)
 	opts := m.opts
 	opts.verifiedRangeParents = d.rangeParents
-	return validateLiveFinalityBranch(opts, baseline, d.Control.Finality, liveSafeHeads(d.Control, baseline), after.Cursors, active, proofs)
+	for id, head := range after.Cursors {
+		if _, existed := d.Control.Cursors[id]; !existed {
+			baseline[id] = head
+			proofs = append(proofs, head)
+		}
+	}
+	return validateLiveFinalityBranch(opts, baseline, after.Finality, liveSafeHeads(after, baseline), after.Cursors, active, proofs)
 }

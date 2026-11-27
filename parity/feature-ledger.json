@@ -2290,9 +2290,10 @@
       "evidence": [
         "parity/runs/native-compiled-indexer/RESULT.md",
         "parity/runs/native-isolated-source-start/RESULT.md",
-        "parity/runs/native-managed-source-build/RESULT.md"
+        "parity/runs/native-managed-source-build/RESULT.md",
+        "parity/runs/native-isolated-deferred-bootstrap/RESULT.md"
       ],
-      "remaining": "Single-store source declarations with fixed or omitted bounds can start isolated workers through a peer outage. Explicit latest bounds require that chain at compile time. The dual-store runtime build also defers head reads for static bounds and creates fresh clients for participating chains only. A first dual-store opening requires canonical headers from every participating chain. Continuous Isolated restarts can restore authenticated heads for unavailable chains with committed cursors. The full upstream-style build acquires all configured heads."
+      "remaining": "Single-store source declarations with fixed or omitted bounds can start isolated workers through a peer outage. Explicit latest bounds require that chain at compile time. The dual-store runtime build also defers head reads for static bounds and creates fresh clients for participating chains only. Continuous dual-store Isolated defers unavailable chains at first opening and restart, enrolling each with an authenticated baseline. Finalized bounded jobs require every participating endpoint. The full upstream-style build acquires all configured heads."
     },
     {
       "id": "native-coordinated-engine-recovery",
@@ -3290,9 +3291,13 @@
         "historical/live_runtime.go",
         "historical/live_runtime_continuous.go",
         "historical/live_runtime_completion.go",
+        "historical/live_runtime_setup.go",
         "store/managed_live_domains_bootstrap.go",
         "store/managed_live_runtime.go",
         "store/managed_live_isolated.go",
+        "store/managed_live_evidence.go",
+        "store/managed_live_segments.go",
+        "store/managed_live_setup.go",
         "store/managed_live_reorg.go",
         "store/managed_live_finalize.go",
         "store/managed_live_recovery.go"
@@ -3302,6 +3307,8 @@
         "historical/isolated_live_outage_test.go",
         "historical/live_runtime_test.go",
         "store/managed_live_isolated_test.go",
+        "store/managed_live_finalize_test.go",
+        "store/managed_live_reorg_test.go",
         "store/managed_live_domains_integrity_database_test.go"
       ],
       "upstream_sources": [
@@ -3314,9 +3321,10 @@
         "parity/runs/native-isolated-rpc-outage/RESULT.md",
         "parity/runs/native-isolated-offline-reopen/RESULT.md",
         "parity/runs/native-isolated-partial-reopen/RESULT.md",
+        "parity/runs/native-isolated-deferred-bootstrap/RESULT.md",
         "runtime/isolated_indexer_test.go"
       ],
-      "remaining": "During a sustained live RPC outage healthy peers commit independently. A continuous writer can cold-restart if every unavailable chain has a committed initial cursor and validates durable finality before replay. An available chain can retry setup and commit independently even if that cursor is its first. First opening or an unavailable chain without its own committed cursor still requires its endpoint. Selective RPC method failures and engine interruption with mixed factory/account sources require further coverage."
+      "remaining": "During a sustained live RPC outage healthy peers commit independently. A continuous writer can start or reopen through a partial or total RPC outage. An unavailable chain with a committed cursor validates durable finality before replay. A returning chain without a cursor authenticates its baseline and commits setup independently of peer writes. Selective RPC method failures and engine interruption with mixed factory/account sources require further coverage."
     },
     {
       "id": "native-runtime-query-budget",

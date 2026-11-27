@@ -74,13 +74,22 @@ func (s *Store) deleteIsolatedSegments(ctx context.Context, tx Transaction, segm
 	return tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_live_segments")+" WHERE ordinal IN (SELECT s.ordinal"+items, string(payload))
 }
 
+func (o ManagedLiveOptions) isolatedContinuous() bool {
+	return o.runtimeIsolated && o.liveContinuous
+}
+
 // Both owner locks are held and the caller has authenticated the business and
 // sync ledgers. Complete only the missing heads on this opening's private map.
 func (opts *ManagedLiveOptions) restoreIsolatedFinality(prior managedLiveDurable) error {
 	if len(prior.Control.Cursors) == 0 {
-		return ErrMissingIsolatedBaseline
+		for id, head := range prior.Control.FinalizedHeads {
+			if _, online := opts.FinalizedHeads[id]; !online {
+				opts.FinalizedHeads[id] = head
+			}
+		}
+		return nil
 	}
-	baselines, err := liveDurableBaselines(prior.Operations)
+	baselines, err := liveDurableBaselines(prior)
 	if err != nil {
 		return err
 	}
@@ -90,7 +99,10 @@ func (opts *ManagedLiveOptions) restoreIsolatedFinality(prior managedLiveDurable
 			continue
 		}
 		if _, initialized := prior.Control.Cursors[chain.ID]; !initialized {
-			return ErrMissingIsolatedBaseline
+			if head, ok := prior.Control.FinalizedHeads[chain.ID]; ok {
+				opts.FinalizedHeads[chain.ID] = head
+			}
+			continue
 		}
 		// An interrupted backfill may have authenticated opening finality
 		// beyond the last committed business block.

@@ -62,7 +62,7 @@ func liveReorgUnitRequest(d managedLiveDurable, ancestor ManagedLiveHead) Manage
 
 func liveReorgUnitApply(t *testing.T, m *ManagedLive, d *managedLiveDurable, r ManagedLiveReorg) managedLiveReorgPlan {
 	t.Helper()
-	baseline, err := liveDurableBaselines(d.Operations)
+	baseline, err := liveDurableBaselines(*d)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -252,14 +252,14 @@ func TestManagedLiveReorgUnit(t *testing.T) {
 		m, d, b := liveReorgUnitHistory(t)
 		liveReorgUnitApply(t, m, &d, liveReorgUnitRequest(d, b.Blocks[0].Head))
 		r := liveReorgUnitRequest(d, b.Blocks[9].Head)
-		baselines, _ := liveDurableBaselines(d.Operations)
+		baselines, _ := liveDurableBaselines(d)
 		if _, err := planLiveReorg(m.opts, d.Control, baselines, d.Segments, d.Journal, d.Proofs, r); err == nil {
 			t.Fatal("retained B9 proof promoted rewound B5 cursor")
 		}
 	})
 	t.Run("durable_safe_baseline_and_global_ordinal_fences", func(t *testing.T) {
 		m, d, b := liveReorgUnitHistory(t)
-		baselines, _ := liveDurableBaselines(d.Operations)
+		baselines, _ := liveDurableBaselines(d)
 		r := liveReorgUnitRequest(d, liveSegmentsUnitBlock(10, 3, b.Baselines[10].ParentHash).Head)
 		if _, err := planLiveReorg(m.opts, d.Control, baselines, d.Segments, d.Journal, d.Proofs, r); !errors.Is(err, ErrManagedLiveDeepReorg) {
 			t.Fatalf("deep baseline=%v", err)
@@ -291,7 +291,7 @@ func TestManagedLiveReorgUnit(t *testing.T) {
 	t.Run("archive_text_preserves_noncanonical_JSON_key_order", func(t *testing.T) {
 		m, d, b := liveReorgUnitHistory(t)
 		r := liveReorgUnitRequest(d, b.Blocks[0].Head)
-		baselines, _ := liveDurableBaselines(d.Operations)
+		baselines, _ := liveDurableBaselines(d)
 		plan, err := planLiveReorg(m.opts, d.Control, baselines, d.Segments, d.Journal, d.Proofs, r)
 		if err != nil {
 			t.Fatal(err)

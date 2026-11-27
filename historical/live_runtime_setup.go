@@ -124,8 +124,9 @@ func (r *RuntimeRunner) lastSetupBlock(i int) uint64 {
 }
 
 // acquireBootstrap authenticates the initial position before any setup writes.
-func (r *RuntimeRunner) acquireBootstrap(epoch *indexing.RuntimeEpoch, i int, id uint64) (store.ManagedLiveHead, string, error) {
-	final, err := checkpoint.Decode(r.finalized[id].Checkpoint)
+func (r *RuntimeRunner) acquireBootstrap(ctx context.Context, requester rpc.Requester, i int, opening store.ManagedLiveHead) (store.ManagedLiveHead, string, error) {
+	id := runtimeChainID(r.build.Chains[i])
+	final, err := checkpoint.Decode(opening.Checkpoint)
 	if err != nil {
 		return store.ManagedLiveHead{}, "", err
 	}
@@ -135,7 +136,7 @@ func (r *RuntimeRunner) acquireBootstrap(epoch *indexing.RuntimeEpoch, i int, id
 	} else {
 		n = min(r.starts[id]-1, final.BlockNumber, r.ends[id])
 	}
-	raw, err := rpc.NewActions(epoch.Requester(i)).GetSourceBlockByNumber(epoch.Context(), source.Hex(n), true)
+	raw, err := rpc.NewActions(requester).GetSourceBlockByNumber(ctx, source.Hex(n), true)
 	if err != nil {
 		return store.ManagedLiveHead{}, "", err
 	}
@@ -144,7 +145,7 @@ func (r *RuntimeRunner) acquireBootstrap(epoch *indexing.RuntimeEpoch, i int, id
 		return head, "", err
 	}
 	if r.setup || r.options.SourceCheckpoints {
-		if err := r.walkFinalizedLineage(epoch.Context(), epoch.Requester(i), id, head, r.setupLineageCheck(i, id)); err != nil {
+		if err := r.walkFinalizedLineageFrom(ctx, requester, id, opening, head, r.setupLineageCheck(i, id)); err != nil {
 			return head, "", err
 		}
 	}
@@ -159,42 +160,44 @@ func (r *RuntimeRunner) acquireBootstrap(epoch *indexing.RuntimeEpoch, i int, id
 	return head, position, nil
 }
 
+func (r *RuntimeRunner) applyBootstrap(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl, heads map[uint64]store.ManagedLiveHead, positions map[uint64]string) error {
+	b := store.ManagedLiveBatch{ID: r.nextID("bootstrap"), Generation: c.Generation, ExpectedLastOperation: c.LastOperation, ExpectedTail: c.Tail, Baselines: heads}
+	if r.options.SourceCheckpoints {
+		b.InitialCheckpoints = positions
+	}
+	a, err := r.domains.RetainBatch(ctx, b)
+	if err != nil {
+		return err
+	}
+	return r.retryHistorical(epoch.Context(), func() error {
+		var err error
+		if r.setup {
+			_, err = epoch.Bootstrap(epoch.Context(), b, a)
+		} else {
+			_, err = r.domains.ApplyRuntimeBatch(epoch.Context(), b, a, nil)
+		}
+		return err
+	})
+}
+
 func (r *RuntimeRunner) bootstrapRuntime(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl) (store.ManagedLiveControl, error) {
-	isolated := r.setup && r.build.Ordering == string(schema.Isolated)
+	isolated := r.build.Ordering == string(schema.Isolated) && (r.setup || len(r.offlineAtOpen) != 0 || c.Batches != 0 && len(c.Cursors) < len(r.build.Chains))
 	if c.Batches != 0 && (!isolated || len(c.Cursors) == len(r.build.Chains)) {
 		return c, nil
 	}
-	apply := func(heads map[uint64]store.ManagedLiveHead, positions map[uint64]string) error {
-		b := store.ManagedLiveBatch{ID: r.nextID("bootstrap"), Generation: c.Generation, ExpectedLastOperation: c.LastOperation, ExpectedTail: c.Tail, Baselines: heads}
-		if r.options.SourceCheckpoints {
-			b.InitialCheckpoints = positions
-		}
-		a, err := r.domains.RetainBatch(ctx, b)
-		if err != nil {
-			return err
-		}
-		return r.retryHistorical(epoch.Context(), func() error {
-			var err error
-			if r.setup {
-				_, err = epoch.Bootstrap(epoch.Context(), b, a)
-			} else {
-				_, err = r.domains.ApplyRuntimeBatch(epoch.Context(), b, a, nil)
-			}
-			return err
-		})
-	}
+
 	heads := map[uint64]store.ManagedLiveHead{}
 	positions := map[uint64]string{}
 	var failures []error
 	for i, chain := range r.build.Chains {
 		id := runtimeChainID(chain)
-		if _, done := c.Cursors[id]; done {
+		if _, done := c.Cursors[id]; done || r.offlineAtOpen[id] != nil {
 			continue
 		}
 		if err := ctx.Err(); err != nil {
 			return c, err
 		}
-		head, pos, err := r.acquireBootstrap(epoch, i, id)
+		head, pos, err := r.acquireBootstrap(epoch.Context(), epoch.Requester(i), i, r.finalized[id])
 		if !isolated {
 			if err != nil {
 				return c, err
@@ -203,7 +206,7 @@ func (r *RuntimeRunner) bootstrapRuntime(ctx context.Context, epoch *indexing.Ru
 			continue
 		}
 		if err == nil {
-			err = apply(map[uint64]store.ManagedLiveHead{id: head}, map[uint64]string{id: pos})
+			err = r.applyBootstrap(ctx, epoch, c, map[uint64]store.ManagedLiveHead{id: head}, map[uint64]string{id: pos})
 		}
 		if err != nil {
 			failures = append(failures, fmt.Errorf("setup chain %d: %w", id, err))
@@ -218,7 +221,7 @@ func (r *RuntimeRunner) bootstrapRuntime(ctx context.Context, epoch *indexing.Ru
 		return c, err
 	}
 	if !isolated {
-		if err := apply(heads, positions); err != nil {
+		if err := r.applyBootstrap(ctx, epoch, c, heads, positions); err != nil {
 			return c, err
 		}
 		var err error
@@ -227,10 +230,12 @@ func (r *RuntimeRunner) bootstrapRuntime(ctx context.Context, epoch *indexing.Ru
 			return c, err
 		}
 	}
-	if r.setup && r.options.OnSetupCommitted != nil {
-		if err := r.options.OnSetupCommitted(context.WithValue(ctx, runtimeRunnerCallbackKey{}, r)); err != nil {
-			return c, err
-		}
+	return c, r.notifySetupCommitted(ctx, c)
+}
+
+func (r *RuntimeRunner) notifySetupCommitted(ctx context.Context, c store.ManagedLiveControl) error {
+	if len(c.Cursors) == len(r.build.Chains) && r.setup && r.options.OnSetupCommitted != nil {
+		return r.options.OnSetupCommitted(context.WithValue(ctx, runtimeRunnerCallbackKey{}, r))
 	}
-	return c, nil
+	return nil
 }

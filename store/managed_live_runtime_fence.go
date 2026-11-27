@@ -44,7 +44,10 @@ func (d *ManagedLiveDomains) runtimeFenceFor(op managedLiveOperation) (managedRu
 	for _, chain := range d.live().opts.Chains {
 		h, ok := c.Cursors[chain.ID]
 		if !ok {
-			h = c.FinalizedHeads[chain.ID]
+			h, ok = c.FinalizedHeads[chain.ID]
+			if !ok && d.live().opts.isolatedContinuous() {
+				continue
+			}
 		}
 		cp, err := checkpoint.Decode(h.Checkpoint)
 		if err != nil || cp.ChainID != chain.ID {
@@ -139,7 +142,10 @@ func (d *ManagedLiveDomains) ensureRuntimeFence(ctx context.Context) error {
 			if !runtimeRPCCacheEnabled(d.live().opts, chain.ID) {
 				continue
 			}
-			cut := want.Cuts[chain.ID]
+			cut, acquired := want.Cuts[chain.ID]
+			if !acquired {
+				continue
+			}
 			table := d.storage.syncCache.table("rpc_request_results")
 			rows, e := tx.Query(ctx, "SELECT row_to_json(r)::text AS row FROM "+table+" r WHERE chain_id=$1 AND block_number>$2 ORDER BY request_hash", chain.ID, cut)
 			if e != nil {

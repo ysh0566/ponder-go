@@ -68,7 +68,7 @@ func (d *ManagedLiveDomains) RuntimeFinalizeHeaders(ctx context.Context, request
 	if ledger.Pending != "" {
 		return nil, ErrManagedLiveDomainsPending
 	}
-	baselines, err := liveDurableBaselines(b.Operations)
+	baselines, err := liveDurableBaselines(b)
 	if err != nil {
 		return nil, err
 	}

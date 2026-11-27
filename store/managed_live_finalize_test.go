@@ -18,7 +18,7 @@ func liveFinalizeUnitRequest(d managedLiveDurable, id string, heads map[uint64]M
 
 func liveFinalizeUnitApply(t *testing.T, m *ManagedLive, d *managedLiveDurable, r ManagedLiveFinalize) managedLiveFinalizePlan {
 	t.Helper()
-	baseline, err := liveDurableBaselines(d.Operations)
+	baseline, err := liveDurableBaselines(*d)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -304,7 +304,7 @@ func TestManagedLiveFinalizeUnit(t *testing.T) {
 	})
 	t.Run("safe_and_own_finality_fences_after_prefix_pruning", func(t *testing.T) {
 		m, d, b := liveFinalizeUnitPartial(t)
-		baseline, _ := liveDurableBaselines(d.Operations)
+		baseline, _ := liveDurableBaselines(d)
 		for _, ancestor := range []ManagedLiveHead{b.Baselines[10], b.Blocks[1].Head} {
 			r := liveReorgUnitRequest(d, ancestor)
 			if _, err := planLiveReorg(m.opts, d.Control, baseline, d.Segments, d.Journal, d.Proofs, r); !errors.Is(err, ErrManagedLiveDeepReorg) {
@@ -363,7 +363,7 @@ func liveFinalizeUnitRetainedForks(t *testing.T) (*ManagedLive, managedLiveDurab
 func TestManagedLiveFinalizeUnitRetainedFinalityLineage(t *testing.T) {
 	t.Run("higher_competing_fork_rejected_above_low_private_cursor", func(t *testing.T) {
 		m, d, _, alternate := liveFinalizeUnitRetainedForks(t)
-		baseline, err := liveDurableBaselines(d.Operations)
+		baseline, err := liveDurableBaselines(d)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -389,7 +389,7 @@ func TestManagedLiveFinalizeUnitRetainedFinalityLineage(t *testing.T) {
 	})
 	t.Run("full_receipt_replay_rejects_historical_fork_switch", func(t *testing.T) {
 		m, d, _, alternate := liveFinalizeUnitRetainedForks(t)
-		baseline, err := liveDurableBaselines(d.Operations)
+		baseline, err := liveDurableBaselines(d)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -460,7 +460,7 @@ func TestManagedLiveFinalizeUnitRejectInputs(t *testing.T) {
 	for name, change := range mutations {
 		t.Run(name, func(t *testing.T) {
 			m, d, b := liveFinalizeUnitPartial(t)
-			baseline, _ := liveDurableBaselines(d.Operations)
+			baseline, _ := liveDurableBaselines(d)
 			r := liveFinalizeUnitRequest(d, "bad-input", map[uint64]ManagedLiveHead{1: b.Blocks[9].Head})
 			change(&r)
 			if _, err := planLiveFinalize(m.opts, d.Control, baseline, d.Segments, d.Journal, d.Proofs, r); err == nil {
@@ -480,7 +480,7 @@ func TestManagedLiveFinalizeUnitRejectInputs(t *testing.T) {
 		if _, err := m.validateDurable(d); err != nil {
 			t.Fatal(err)
 		}
-		baseline, _ := liveDurableBaselines(d.Operations)
+		baseline, _ := liveDurableBaselines(d)
 		request := liveFinalizeUnitRequest(d, "wrong-retained-finality", map[uint64]ManagedLiveHead{10: b.Blocks[8].Head})
 		if _, err := planLiveFinalize(m.opts, d.Control, baseline, d.Segments, d.Journal, d.Proofs, request); err == nil {
 			t.Fatal("known retained proof on another fork confirmed current branch")
