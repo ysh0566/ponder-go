@@ -24,6 +24,9 @@ type ProtocolCache struct {
 }
 
 func (s *Store) EnableProtocolCache(ctx context.Context) (*ProtocolCache, error) {
+	return s.openProtocolCache(ctx, false)
+}
+func (s *Store) openProtocolCache(ctx context.Context, existing bool) (*ProtocolCache, error) {
 	if s.managedLive != nil {
 		return nil, s.managedLive.rejectLegacy(ctx)
 	}
@@ -39,7 +42,12 @@ func (s *Store) EnableProtocolCache(ctx context.Context) (*ProtocolCache, error)
 	if e != nil {
 		return nil, e
 	}
-	if e = m.Migrate(ctx); e != nil {
+	if existing {
+		e = m.openLatest(ctx, false)
+	} else {
+		e = m.Migrate(ctx)
+	}
+	if e != nil {
 		return nil, e
 	}
 	cache := &ProtocolCache{s: s, namespace: m.LatestSchema()}

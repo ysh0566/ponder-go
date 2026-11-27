@@ -43,119 +43,122 @@ func domainPriorOwner(s *IndependentStorage, o IndependentStorageOptions, opts M
 // Bootstrap the native sync ownership metadata AND protocol marker in one
 // transaction. A pre-genesis empty marker can retry initialization; a bound
 // domain may never reconstruct its missing peer or missing protocol evidence.
-func prepareLiveDomains(ctx context.Context, s *IndependentStorage, o IndependentStorageOptions, opts *ManagedLiveOptions) error {
+func prepareLiveDomains(ctx context.Context, s *IndependentStorage, o IndependentStorageOptions, opts *ManagedLiveOptions) (bool, error) {
 	d, err := domainPriorOwner(s, o, *opts)
 	if err != nil {
-		return err
+		return false, err
 	}
 	cache := d.storage.syncCache
 	b := s.syncBackend
 	legacy, err := s.syncBackend.Query(ctx, "SELECT nspname FROM pg_namespace WHERE nspname=$1", o.SyncNamespace+"_legacy")
 	if err != nil {
-		return err
+		return false, err
 	}
 	if len(legacy.Rows) != 0 {
-		return ErrManagedLiveReceiptConflict
+		return false, ErrManagedLiveReceiptConflict
 	}
 	business, err := s.businessBackend.Query(ctx, "SELECT nspname FROM pg_namespace WHERE nspname=$1", o.BusinessNamespace)
 	if err != nil {
-		return err
+		return false, err
 	}
 	hasBusiness := len(business.Rows) > 0
 	resumeOffline := opts.resumeUnavailable && len(opts.FinalizedHeads) < len(opts.Chains)
 	tx, err := b.Begin(ctx)
 	if err != nil {
-		return err
+		return false, err
 	}
 	defer tx.Rollback(context.Background())
 	if err = cache.s.lock(ctx, tx); err != nil {
-		return err
+		return false, err
 	}
 	r, err := tx.Query(ctx, "SELECT nspname FROM pg_namespace WHERE nspname=$1", o.SyncNamespace)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if len(r.Rows) > 0 {
 		l, e := d.readLedger(ctx, tx)
 		if e != nil {
-			return e
+			return false, e
 		}
 		if !hasBusiness {
 			if l.Binding != nil || len(l.Records) > 0 {
-				return ErrManagedLiveReceiptConflict
+				return false, ErrManagedLiveReceiptConflict
 			}
 			if resumeOffline {
-				return ErrMissingIsolatedBaseline
+				return false, ErrMissingIsolatedBaseline
 			}
-			return nil
+			return false, nil
 		}
 		// Both lifetime owner locks are already held. Authenticate the entire prior
 		// business snapshot and every cross-domain reference BEFORE recovery writes.
 		bt, e := s.businessBackend.Begin(ctx)
 		if e != nil {
-			return e
+			return false, e
 		}
 		defer bt.Rollback(context.Background())
 		if e = d.live().owner.s.lock(ctx, bt); e != nil {
-			return e
+			return false, e
 		}
 		prior, _, e := d.live().readDurableState(ctx, bt, true)
 		if e != nil {
 			if opts.liveRuntime {
-				return fmt.Errorf("runtime preopen durable: %w", e)
+				return false, fmt.Errorf("runtime preopen durable: %w", e)
 			}
-			return e
+			return false, e
 		}
 		if e = d.checkBinding(l, prior); e != nil {
 			if opts.liveRuntime {
-				return fmt.Errorf("runtime preopen binding: %w", e)
+				return false, fmt.Errorf("runtime preopen binding: %w", e)
 			}
-			return e
+			return false, e
 		}
 		for id, ack := range l.Acks {
 			if e = d.checkAck(l.Intents[id], ack, prior); e != nil {
-				return e
+				return false, e
 			}
 		}
 		if e = d.checkRuntimeLedger(l, prior); e != nil {
-			return fmt.Errorf("runtime preopen ledger: %w", e)
+			return false, fmt.Errorf("runtime preopen ledger: %w", e)
 		}
 		if l.Pending != "" {
 			if _, _, e = d.domainProof(l.Intents[l.Pending], prior); e != nil {
-				return e
+				return false, e
 			}
 		}
 		if resumeOffline {
-			return opts.restoreIsolatedFinality(prior)
+			if err := opts.restoreIsolatedFinality(prior); err != nil {
+				return false, err
+			}
 		}
-		return nil
+		// A bound ledger authenticated the complete existing cache catalog.
+		return l.Binding != nil, nil
 	}
 	if hasBusiness {
-		return ErrManagedLiveReceiptConflict
+		return false, ErrManagedLiveReceiptConflict
 	}
 	if resumeOffline {
-		return ErrMissingIsolatedBaseline
+		return false, ErrMissingIsolatedBaseline
 	}
 	if err = cache.s.initializeInternal(ctx, tx); err != nil {
-		return err
+		return false, err
 	}
 	if err = cache.s.createUserObjects(ctx, tx, true); err != nil {
-		return err
+		return false, err
 	}
 	head, log := d.table("head"), d.table("log")
 	for _, sql := range []string{"CREATE TABLE " + head + "(key text PRIMARY KEY CHECK(key='head'),spec text NOT NULL,sequence bigint NOT NULL,hash text NOT NULL,catalog text NOT NULL)", "CREATE TABLE " + log + "(sequence bigint PRIMARY KEY,kind text NOT NULL,id text NOT NULL,previous text NOT NULL,payload text NOT NULL,hash text NOT NULL,UNIQUE(kind,id))"} {
 		if err = tx.Exec(ctx, sql); err != nil {
-			return err
+			return false, err
 		}
 	}
 	catalog, err := liveDomainCatalog(ctx, tx, o.SyncNamespace)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if err = tx.Exec(ctx, "INSERT INTO "+head+" VALUES('head',$1,0,$2,$3)", d.spec, managedHash(d.spec), catalog); err != nil {
-		return err
+		return false, err
 	}
-	return tx.Commit(ctx)
+	return false, tx.Commit(ctx)
 }
 
 func (d *ManagedLiveDomains) checkBinding(l liveDomainLedger, b managedLiveDurable) error {

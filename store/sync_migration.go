@@ -87,7 +87,7 @@ func (m *SyncMigrator) lock(ctx context.Context, tx Transaction) error {
 	return nil
 }
 func (m *SyncMigrator) Migrate(ctx context.Context) error {
-	e := m.migrateOnce(ctx)
+	e := m.openLatest(ctx, true)
 	// Repeatable-read snapshots can predate a concurrent creator even after
 	// waiting on its advisory lock. Match the source's namespace-conflict
 	// recovery, then verify the committed owner's complete schema afresh.
@@ -104,13 +104,17 @@ func (m *SyncMigrator) Migrate(ctx context.Context) error {
 	}
 	return e
 }
-func (m *SyncMigrator) migrateOnce(ctx context.Context) error {
+func (m *SyncMigrator) openLatest(ctx context.Context, allowCreate bool) error {
 	tx, e := m.backend.Begin(ctx)
 	if e != nil {
 		return e
 	}
 	defer tx.Rollback(context.Background())
-	if e = tx.Exec(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"); e != nil {
+	isolation := "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"
+	if !allowCreate {
+		isolation += ", READ ONLY"
+	}
+	if e = tx.Exec(ctx, isolation); e != nil {
 		return e
 	}
 	if e = tx.Exec(ctx, "SET LOCAL statement_timeout=3600000"); e != nil {
@@ -128,6 +132,9 @@ func (m *SyncMigrator) migrateOnce(ctx context.Context) error {
 			return e
 		}
 		return tx.Commit(ctx)
+	}
+	if !allowCreate {
+		return fmt.Errorf("sync cache has not been migrated")
 	}
 	// An older standalone cache is never an input to initialization.
 	// Refuse an occupied scope before creating any current tables.

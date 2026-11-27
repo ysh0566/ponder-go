@@ -287,12 +287,14 @@ func (s *IndependentStorage) initialize(ctx context.Context, o IndependentStorag
 	return s.initializeMode(ctx, o, nil)
 }
 func (s *IndependentStorage) initializeMode(ctx context.Context, o IndependentStorageOptions, managed *managedStorageOptions) error {
+	var boundSync bool
+	var err error
 	if managed != nil && managed.live != nil && managed.live.coordinated {
-		if err := prepareLiveDomains(ctx, s, o, managed.live); err != nil {
+		boundSync, err = prepareLiveDomains(ctx, s, o, managed.live)
+		if err != nil {
 			return err
 		}
 	}
-	var err error
 	if managed == nil {
 		s.business, err = NewActions(ctx, s.businessBackend, o.Schema, o.BusinessNamespace, o.Ordering)
 	} else {
@@ -306,11 +308,15 @@ func (s *IndependentStorage) initializeMode(ctx context.Context, o IndependentSt
 	if err != nil {
 		return err
 	}
-	syncStore, err := New(ctx, s.syncBackend, schema.Schema{}, o.SyncNamespace, o.Ordering)
+	openSync := New
+	if boundSync {
+		openSync = OpenExisting
+	}
+	syncStore, err := openSync(ctx, s.syncBackend, schema.Schema{}, o.SyncNamespace, o.Ordering)
 	if err != nil {
 		return err
 	}
-	s.syncCache, err = syncStore.EnableProtocolCache(ctx)
+	s.syncCache, err = syncStore.openProtocolCache(ctx, boundSync)
 	if s.managed != nil {
 		if err == nil {
 			err = s.managed.requireLease(ctx, s.managed.reader())
