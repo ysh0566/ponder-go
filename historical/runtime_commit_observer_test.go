@@ -153,6 +153,9 @@ func TestRuntimeOmnichainCommitObserver(t *testing.T) {
 						}
 					}
 				}
+				if owner == "resume" {
+					assertHistoricalGroups(t, registry, true)
+				}
 				control, err := r.Control(t.Context())
 				if err != nil {
 					t.Fatal(err)

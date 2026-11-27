@@ -22,6 +22,7 @@ import (
 	"github.com/ysh0566/ponder-go/events"
 	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	source "github.com/ysh0566/ponder-go/runtime"
 	"github.com/ysh0566/ponder-go/schema"
@@ -346,7 +347,9 @@ func (r *Runner) Run(ctx context.Context) (result Result, err error) {
 		}
 		coordinator := source.SourceHistoricalCoordinatorOptions{Chains: chains, BuildChains: buildChains, CrashRecovery: crash, QuerySize: r.options.QuerySize, Clock: r.options.Clock}
 		if !finiteEndsReached(cursors, end) {
+			extractStart := time.Now()
 			for group, e := range source.HistoricalSourceMultichain(run, coordinator) {
+				received := time.Now()
 				if e != nil {
 					return e
 				}
@@ -376,6 +379,8 @@ func (r *Runner) Run(ctx context.Context) (result Result, err error) {
 					}
 				}
 				cursors[group.ChainID] = group.Checkpoint
+				metrics.Historical(run).ObserveHistoricalGroup(received.Sub(extractStart), time.Since(received))
+				extractStart = time.Now()
 				// Do not pull again after all finite ends are confirmed. The real M37
 				// iterator may otherwise refresh latest/finality after a long historical
 				// pass; range break cancels and joins its prestarted extraction work.

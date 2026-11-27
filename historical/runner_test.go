@@ -34,6 +34,7 @@ import (
 	"github.com/ysh0566/ponder-go/events"
 	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
@@ -870,10 +871,12 @@ func TestFiniteHistoricalRunnerFiniteBoundary(t *testing.T) {
 				return nil
 			}
 			r := f.start(t)
-			result, e := r.Run(context.Background())
+			registry := metrics.New()
+			result, e := r.Run(metrics.WithHistorical(t.Context(), registry))
 			if e != nil || !result.Completed {
 				t.Fatal(result, e)
 			}
+			assertHistoricalGroups(t, registry, true)
 			finiteAssertEnds(t, r, 5)
 			latest := 0
 			for _, c := range p.snapshot() {

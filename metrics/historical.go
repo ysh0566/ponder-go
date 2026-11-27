@@ -105,3 +105,15 @@ func startTiming(series *prometheus.GaugeVec, step string) func() {
 		series.WithLabelValues(step).Add(float64(elapsed) / float64(time.Millisecond))
 	}
 }
+
+// ObserveHistoricalGroup publishes both sides of a successfully consumed batch.
+// Extraction is time spent obtaining it, transformation is time spent consuming it.
+func (r *Registry) ObserveHistoricalGroup(extract, transform time.Duration) {
+	if r == nil {
+		return
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.groupDuration.WithLabelValues("extract").Add(float64(extract) / float64(time.Millisecond))
+	r.groupDuration.WithLabelValues("transform").Add(float64(transform) / float64(time.Millisecond))
+}

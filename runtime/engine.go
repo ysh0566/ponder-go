@@ -274,7 +274,9 @@ func (e *Engine) syncToHead(ctx context.Context, samples polledHeads, window *me
 			if err = ctx.Err(); err != nil {
 				return false, err
 			}
+			headerStart := time.Now()
 			b, err := e.block(ctx, Hex(n))
+			headerDuration := time.Since(headerStart)
 			if err != nil {
 				return false, err
 			}
@@ -293,7 +295,7 @@ func (e *Engine) syncToHead(ctx context.Context, samples polledHeads, window *me
 					return false, err
 				}
 			}
-			if err = e.process(ctx, b, latest); err != nil {
+			if err = e.process(ctx, b, latest, headerDuration); err != nil {
 				return false, err
 			}
 			samples.committed(e.chain.ID, b)
@@ -545,7 +547,8 @@ type pending struct {
 	callback protocol.Object
 }
 
-func (e *Engine) process(ctx context.Context, b, latest Block) error {
+func (e *Engine) process(ctx context.Context, b, latest Block, headerDuration time.Duration) error {
+	extractStart := time.Now()
 	number, err := Number(b.Number)
 	if err != nil {
 		return err
@@ -716,6 +719,17 @@ func (e *Engine) process(ctx context.Context, b, latest Block) error {
 		return err
 	}
 	finishDecode()
+	received := time.Now()
+	block := store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}
+	complete := func() error {
+		if err := e.completeBlock(ctx, block); err != nil {
+			return err
+		}
+		if registry != nil {
+			registry.ObserveHistoricalGroup(headerDuration+received.Sub(extractStart), time.Since(received))
+		}
+		return nil
+	}
 	if e.staged != nil {
 		ordered := make([]OrderedEvent, len(events))
 		for i, event := range events {
@@ -751,7 +765,7 @@ func (e *Engine) process(ctx context.Context, b, latest Block) error {
 		if err != nil {
 			return err
 		}
-		return e.completeBlock(ctx, store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload})
+		return complete()
 	}
 	for _, event := range events {
 		handler := e.Handlers[event.event.Name]
@@ -765,11 +779,10 @@ func (e *Engine) process(ctx context.Context, b, latest Block) error {
 		}
 	}
 	// Every completed block gets durable progress even if it has no matching events.
-	block := store.SyncBlock{ChainID: e.chain.ID, Number: number, Hash: b.Hash, ParentHash: b.ParentHash, Timestamp: timestamp, Payload: payload}
 	if err = e.Store.RecordBlockCompletion(ctx, block); err != nil {
 		return err
 	}
-	return e.completeBlock(ctx, block)
+	return complete()
 }
 func (e *Engine) completeBlock(ctx context.Context, block store.SyncBlock) error {
 	if err := e.Store.CompleteBlock(ctx, block, e.filter); err != nil {

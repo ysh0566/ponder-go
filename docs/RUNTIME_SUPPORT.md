@@ -31,9 +31,25 @@ With RPC caching enabled in the atomic Go runtime, `rpc.Client.CallCached` recor
 
 The dual-store runtime accepts `Historical.QuerySize` in each ordering. Cached historical reads split the initial SQL row budget across chains. Isolated workers receive a per-chain share. A dense block can grow the query until every event fits. Uncached chains decode their RPC data in memory. [Read limits and recovery](../parity/runs/native-historical-query-size/RESULT.md)
 
+## Native regression checks
+
+Two Go tests from the native suite failed again on main at `190a3d7f`. They are tracked separately from the 17 upstream RPC cases. The first test needs no node or database. The second ran against a fresh PostgreSQL 14.24 database.
+
+| Test | Observed result |
+| --- | --- |
+| `TestManagedLiveLegacyMutationGuard` | Calling the public `Store.Apply` on a managed live store with a nil handler returns the missing-handler error before reaching the managed-store guard. The test expects the caller to receive the managed-mutation error. [Public entry point](../store/store.go) · [Regression test](../store/managed_live_test.go) |
+| `TestSourceHistoricalIndexingServiceComposition/postgres` | Dispatch produced the expected six business rows and six journal rows. The assertion subtracts the receipt's starting sequence position from its ending position and expects six. The current default multichain writer reserves a closing position, giving a difference of seven. The receipt check needs to account for the reserved boundary and verify which journal entries it encloses. [Receipt implementation](../store/store.go) · [Integration test](../runtime/source_indexing_service_integration_test.go) |
+
+```sh
+go test -count=1 -run '^TestManagedLiveLegacyMutationGuard$' ./store
+go test -count=1 -run '^TestSourceHistoricalIndexingServiceComposition$/^postgres$' ./runtime
+```
+
 ## Prometheus coverage
 
 The writer’s Prometheus registry reports cumulative historical extraction and transformation time in milliseconds by step. The atomic Go indexer measures finalized backfill through first catch-up. The dual-store runner measures its historical pipeline, including SQL row formatting on cached scans and raw event building on cached and in-memory scans. Live polls and live replays leave the historical durations unchanged. A separate query process has its own registry. [Metrics guide](USAGE.md#查看历史回填耗时) · [Verification](../parity/runs/native-historical-duration-metrics/RESULT.md)
+
+The writer also reports the cumulative milliseconds spent waiting for historical batches (`group="extract"`) and consuming them (`group="transform"`) under `ponder_historical_concurrency_group_duration`. Each completed pair covers the work visible at the batch boundary. Concurrent workers add their observations to the same series. [Group timing and restart tests](../parity/runs/native-historical-group-duration/RESULT.md)
 
 The writer's RPC histogram records successful attempts in milliseconds, and its error counter includes individual failed attempts before a retry. Both use the configured chain name and JSON-RPC method. The Go writer counts each successfully handled canonical fork on its originating chain, including unfinalized blocks in a bounded run. A fresh registry starts empty. [Fork measurements](USAGE.md#查看发生分叉的链) · [RPC query examples](USAGE.md#查看-rpc-耗时与错误数) · [Transport coverage](../rpc/custom_transport_test.go)
 
@@ -49,11 +65,11 @@ The writer and query server measure labeled database method attempts on PostgreS
 
 The writer reports the rounded Unix seconds when its historical phase starts and ends. The default and Omnichain orderings publish one timestamp across participating chains. Isolated workers complete independently. Live polling preserves both measurements. [Go usage](USAGE.md#查看历史回填的起止时间) · [Timing verification](../parity/runs/native-backfill-wall-clock/RESULT.md)
 
-The Go writer registers 26 of the 39 explicitly named upstream metric families under matching names. The remaining 13 fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Process gauges](../metrics/process.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
+The Go writer registers 27 of the 39 explicitly named upstream metric families under matching names. The remaining 12 fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Process gauges](../metrics/process.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
 
 | Area | Families without a matching Go metric | Measurement |
 | --- | ---: | --- |
-| Historical sync | 7 | Concurrency group duration, total/cached/completed indexing seconds and block counts |
+| Historical sync | 6 | Total, cached and completed block counts and chain-time seconds |
 | Indexing | 6 | Indexing timestamp, cache query and raw SQL duration, RPC action time, prefetch and request counts |
 
 ## Application verification

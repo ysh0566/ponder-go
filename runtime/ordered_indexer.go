@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/interval"
@@ -21,14 +22,15 @@ type orderedIndexer struct {
 }
 
 type orderedChain struct {
-	engine       *Engine
-	latest       Block
-	head         uint64
-	start        uint64
-	endFinalized bool
-	gaps         []interval.Interval
-	next         Block
-	key          string
+	engine         *Engine
+	latest         Block
+	head           uint64
+	start          uint64
+	endFinalized   bool
+	gaps           []interval.Interval
+	next           Block
+	headerDuration time.Duration
+	key            string
 }
 
 func (r *orderedIndexer) RunIndexing(ctx context.Context, ready func(bool)) error {
@@ -64,6 +66,7 @@ func (c *orderedChain) advance(ctx context.Context) error {
 	}
 	gap := &c.gaps[0]
 	n := uint64(gap[0])
+	start := time.Now()
 	b, err := c.engine.block(ctx, Hex(n))
 	if err != nil {
 		return err
@@ -87,6 +90,7 @@ func (c *orderedChain) advance(ctx context.Context) error {
 			return errIndexingFork
 		}
 	}
+	c.headerDuration = time.Since(start)
 	c.next = b
 	c.key = checkpoint.MustEncode(cp)
 	if gap[0] == gap[1] {
@@ -269,7 +273,7 @@ func processAvailable(ctx context.Context, samples polledHeads, chains []ordered
 		if picked.key > finalWatermark {
 			blockCtx = metrics.WithHistorical(ctx, nil)
 		}
-		if err := picked.engine.process(blockCtx, picked.next, picked.latest); err != nil {
+		if err := picked.engine.process(blockCtx, picked.next, picked.latest, picked.headerDuration); err != nil {
 			return err
 		}
 		samples.committed(picked.engine.chain.ID, picked.next)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
@@ -136,7 +137,8 @@ func TestRuntimeBoundedLifecycle(t *testing.T) {
 				}
 				return nil
 			}
-			out, err := r.Run(context.Background())
+			registry := metrics.New()
+			out, err := r.Run(metrics.WithHistorical(t.Context(), registry))
 			if err != nil {
 				c, e := r.domains.Control(context.Background())
 				t.Logf("diagnostic calls=%v control=%+v readErr=%v", calls, c, e)
@@ -145,6 +147,7 @@ func TestRuntimeBoundedLifecycle(t *testing.T) {
 			if !out.Ready || !out.Completed || out.HistoricalBlocks != 4 || out.LiveBlocks != 2 || activations != 1 {
 				t.Fatalf("result=%+v activations=%d", out, activations)
 			}
+			assertHistoricalGroups(t, registry, true)
 			seen := map[string]int{}
 			for i, call := range calls {
 				parts := strings.Split(call, ":")
