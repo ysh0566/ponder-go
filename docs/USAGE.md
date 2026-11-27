@@ -591,6 +591,24 @@ func tokensByOwner(ctx context.Context, c *runtime.Context, address string, offs
 
 `All(ctx)` 在当前回调的业务事务中执行，能读到已缓冲的写入。Isolated 查询自动限制到本次事件的链。在生成的 `--typed --callback-db` 回调中可以直接从绑定的表调用 `db.Token.Query()`。涉及三张或更多表的查询可以使用参数化 SQL。[模型查询测试](../orm/query_test.go)
 
+### 查询地址转入或转出的记录
+
+在 ERC-721 模型中，可以用 `orm.Or` 匹配转出方或接收方，再用 `orm.And` 限定事件的时间范围。导入 `github.com/ysh0566/ponder-go/orm` 后，下面的函数查询指定地址在半开时间区间内参与的转账。同一笔转账的双方都是该地址时，结果只包含一行。
+
+```go
+func walletTransfers(ctx context.Context, c *runtime.Context, address string, start, end int64) ([]models.TransferEventRow, error) {
+    col := models.TransferEventColumns
+    wallet := orm.Or(col.From.Eq(address), col.To.Eq(address))
+    window := orm.And(col.Timestamp.Gte(start), col.Timestamp.Lt(end))
+    return models.TransferEvent.Bind(c.DB.Indexing()).Query().
+        Where(wallet, window).
+        OrderBy(col.Timestamp.Asc(), col.Id.Asc()).
+        All(ctx)
+}
+```
+
+`orm.And` 和 `orm.Or` 接受同一张表的一个或多个条件，也可以嵌套。多次调用 `Where` 会继续用 AND 限定结果。Isolated 模式会对整个条件组应用当前链限制。[组合条件与分页测试](../orm/query_test.go) · [链隔离测试](../orm/join_test.go)
+
 ### 为数据库列绑定自定义 Go 类型
 
 例如，索引器可以在 Go 回调中使用 `time.Duration`，并在数据库中以 `text` 保存 `"1.5s"`。在 `schema.json` 的列上设置 `goCodec`。`type` 指定已有的存储类型，`goCodec.type` 和 `goCodec.name` 分别指向生成包中的 Go 类型和编解码器变量。两者均使用导出的 Go 标识符。

@@ -40,10 +40,22 @@ func TestTypedSelect(t *testing.T) {
 				base := table.Query().Where(col.Other.Gte(0), col.Other.Lt(2)).OrderBy(col.Other.Desc())
 				first := base.OrderBy(col.Id.Asc()).Limit(2)
 				reversed := base.OrderBy(col.Id.Desc()).Limit(2)
+				// Reuse a caller-owned slice after building the disjunction.
+				alternatives := []orm.Predicate[dbwrites.TableRow]{col.Id.Eq("b"), col.Id.Eq(quoted)}
+				selectedIDs := orm.Or(col.Id.Eq("a"), alternatives...)
+				alternatives[1] = col.Id.Eq("d")
+				sorted := table.Query().OrderBy(col.Id.Asc())
+				shared := orm.Or(orm.And(col.Id.Eq("a"), col.Other.Eq(0)), col.Other.IsNull())
 				for _, tc := range []struct {
 					query orm.Query[dbwrites.TableRow]
 					want  []string
 				}{
+					{sorted.Where(selectedIDs), []string{"a", "b", quoted}},
+					{sorted.Where(orm.Or(shared, shared)), []string{"a", quoted}},
+					{sorted.Where(orm.Or(col.Other.IsNull(), orm.And(col.Other.Gte(1), col.Id.Ne("c")))), []string{"d", quoted}},
+					{sorted.Where(orm.And(selectedIDs, orm.Or(col.Other.Eq(0), col.Other.IsNull()))).Where(col.Id.Ne("b")).Limit(1).Offset(1), []string{quoted}},
+					{sorted.Where(orm.Or(col.Other.Gt(0), col.Id.Eq("a"))), []string{"a", "c", "d"}},
+					{sorted.Where(orm.Or(orm.And(col.Id.Eq(quoted)))), []string{quoted}},
 					{first, []string{"c", "d"}},
 					{reversed, []string{"d", "c"}},
 					{first.Offset(2), []string{"a", "b"}},
@@ -74,7 +86,17 @@ func TestTypedSelect(t *testing.T) {
 						return fmt.Errorf("invalid query executed")
 					}
 				}
+				alias := orm.Define[dbwrites.TableKey, dbwrites.TableInsert, dbwrites.TableUpdate, dbwrites.TableRow]("other_table", nil, nil, nil, nil)
+				foreign := orm.ColumnOf[string](alias, "id")
+				if _, err := sorted.Where(orm.Or(col.Id.Eq("a"), foreign.IsNull())).All(ctx); err == nil {
+					return fmt.Errorf("group admitted a physical column from another table")
+				}
+				cycle := make([]store.SelectFilter, 1)
+				cycle[0] = store.SelectFilter{Operator: "OR", Value: cycle}
 				for _, bad := range []store.SelectOptions{
+					{Filters: cycle},
+					{Filters: []store.SelectFilter{{Operator: "OR", Value: []store.SelectFilter{}}}},
+					{Filters: []store.SelectFilter{{Operator: "AND", Value: []store.SelectFilter{{Column: "missing", Operator: "IS NULL"}}}}},
 					{Filters: []store.SelectFilter{{Column: "missing", Operator: "="}}},
 					{Filters: []store.SelectFilter{{Column: "id", Operator: "OR"}}},
 					{Order: []store.SelectOrder{{Column: "missing"}}},
@@ -117,12 +139,15 @@ func TestTypedSelectCodecs(t *testing.T) {
 			payload := custom.Payload{255}
 			history := []orm.Nullable[custom.Units]{orm.Some(custom.Units(7)), orm.Null[custom.Units]()}
 			query := table.Query().Where(col.Id.Eq(3), col.Payload.Eq(payload), col.History.Eq(history))
+			grouped := table.Query().Where(orm.Or(col.Limit.IsNotNull(), orm.And(col.Id.Eq(3), col.Payload.Eq(payload), col.History.Eq(history))))
 			payload[0] = 0
 			history[0] = orm.Some(custom.Units(0))
 			check := func(ctx context.Context) error {
-				got, err := query.All(ctx)
-				if err != nil || len(got) != 1 || got[0].Id != 3 {
-					return fmt.Errorf("encoded query: %+v %v", got, err)
+				for _, q := range []orm.Query[custom.HoldingRow]{query, grouped} {
+					got, err := q.All(ctx)
+					if err != nil || len(got) != 1 || got[0].Id != 3 {
+						return fmt.Errorf("encoded query: %+v %v", got, err)
+					}
 				}
 				return nil
 			}
@@ -134,6 +159,9 @@ func TestTypedSelectCodecs(t *testing.T) {
 				}
 				defer lease.Revoke()
 				if _, err = table.Query().Where(col.Id.Eq(-2)).All(handle); !errors.Is(err, custom.ErrUnits) {
+					return fmt.Errorf("lost codec error: %v", err)
+				}
+				if _, err = table.Query().Where(orm.Or(col.Limit.IsNull(), orm.And(col.Id.Eq(3), col.Id.Eq(-2)))).All(handle); !errors.Is(err, custom.ErrUnits) {
 					return fmt.Errorf("lost codec error: %v", err)
 				}
 				input := custom.NewHoldingInsert(3, custom.Payload{255}).WithHistory(orm.Some([]orm.Nullable[custom.Units]{orm.Some(custom.Units(7)), orm.Null[custom.Units]()}))
@@ -152,6 +180,9 @@ func TestTypedSelectCodecs(t *testing.T) {
 			}
 			if _, err := query.All(handle); err == nil {
 				t.Fatal("released query binding")
+			}
+			if _, err := grouped.All(handle); err == nil {
+				t.Fatal("grouped query reused a released binding")
 			}
 			if err := db.WithReadOnly(ctx, 1, check); err != nil {
 				t.Fatal(err)
@@ -219,6 +250,8 @@ func TestTypedSelectCaller(t *testing.T) {
 		t.Fatal(err)
 	}
 	compileDBCaller(t, code, `var _ []TableRow = result(table.Query().Where(TableColumns.Other.Gt(3)).OrderBy(TableColumns.Id.Desc()).Limit(2).All(ctx))`)
+	compileDBCaller(t, code, `var _ []TableRow = result(table.Query().Where(orm.Or(TableColumns.Id.Eq("x"), orm.And(TableColumns.Other.Gte(3), TableColumns.Other.Lt(7)))).All(ctx))`)
+	compileDBCaller(t, code, `type PeerRow struct{}; _ = orm.Or(TableColumns.Id.IsNull(), orm.Predicate[PeerRow]{})`, "does not match inferred type")
 	compileDBCaller(t, code, `_ = TableColumns.Other.Eq("bad")`, "cannot use")
 	compileDBCaller(t, code, `type PeerRow struct{}; _ = table.Query().Where(orm.Predicate[PeerRow]{})`, "cannot use")
 	compileDBCaller(t, code, `type PeerRow struct{}; _ = table.Query().OrderBy(orm.Order[PeerRow]{})`, "cannot use")

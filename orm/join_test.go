@@ -205,9 +205,13 @@ func TestIsolatedTypedJoin(t *testing.T) {
 					if _, err := db.InsertOne(ctx, "table", store.Row{"chainId": int64(chain), "id": "shared", "other": int64(chain)}, store.Conflict{}); err != nil {
 						return err
 					}
-					page, err := dbwrites.Table.Bind(db).Query().Where(dbwrites.TableColumns.Id.Eq("shared")).OrderBy(dbwrites.TableColumns.Other.Asc()).Limit(1).All(ctx)
-					if err != nil || len(page) != 1 || page[0].Other.Value() != int64(chain) {
-						return fmt.Errorf("chain %d selected rows %+v: %v", chain, page, err)
+					col := dbwrites.TableColumns
+					match := col.Id.Eq("shared")
+					for _, filter := range []orm.Predicate[dbwrites.TableRow]{match, orm.Or(match, col.Other.Eq(1))} {
+						page, err := dbwrites.Table.Bind(db).Query().Where(filter).OrderBy(col.Other.Asc()).Limit(1).All(ctx)
+						if err != nil || len(page) != 1 || page[0].Other.Value() != int64(chain) {
+							return fmt.Errorf("chain %d selected rows %+v: %v", chain, page, err)
+						}
 					}
 					joined, err := orm.LeftJoin(ctx, db, on)
 					if err != nil || len(joined) != 1 || joined[0].Right == nil || joined[0].Left.Other.Value() != int64(chain) || joined[0].Right.Other.Value() != int64(chain) {
