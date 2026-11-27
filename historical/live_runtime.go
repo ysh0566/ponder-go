@@ -54,7 +54,7 @@ type RuntimeOptions struct {
 	// schedules PostgreSQL transaction-conflict retries during setup and backfill.
 	Historical                   Options
 	BuildID, OpenID, ViewsSchema string
-	// Requesters supplies fresh transports for preflight, fetch epochs and uncached source scans.
+	// Requesters overrides the compiled transport factory for preflight, fetch epochs and uncached source scans.
 	Requesters  func(context.Context, uint64) ([]rpc.Requester, error)
 	OnActivated func(context.Context) error
 	// OnCommitted runs after each newly applied business event group, including
@@ -117,8 +117,14 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	if o.Historical.RetryWait == nil {
 		o.Historical.RetryWait = waitRetry
 	}
-	if o.Historical.Build == nil || o.BuildID == "" || o.OpenID == "" || o.Requesters == nil {
-		return nil, fmt.Errorf("compiled build, BuildID, OpenID and fresh requester factory required")
+	if o.Historical.Build == nil || o.BuildID == "" || o.OpenID == "" {
+		return nil, fmt.Errorf("compiled build, BuildID and OpenID required")
+	}
+	if o.Requesters == nil {
+		build := o.Historical.Build
+		o.Requesters = func(context.Context, uint64) ([]rpc.Requester, error) {
+			return build.NewRuntimeRequesters()
+		}
 	}
 	if _, err := store.SourceQueryParameterBudget(o.Historical.MaxQueryParameters); err != nil {
 		return nil, err

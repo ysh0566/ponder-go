@@ -46,7 +46,16 @@ func TestRuntimeIsolatedLiveOutage(t *testing.T) {
 				_, err = a.Context.DB.InsertOne(ctx, "seen", store.Row{"chainId": int(id), "height": int(height), "hash": a.Event.Get("block").(map[string]any)["hash"]}, store.Conflict{})
 				return err
 			})
-			build := runtimeSourceBuild(t, raw, config.SourceIndexingFunction{Name: "Blocks:block", Fn: handler})
+			cfg, err := config.ParseSourceConfiguration([]byte(raw))
+			if err != nil {
+				t.Fatal(err)
+			}
+			offline.Store(true)
+			build, err := config.BuildRuntimeSourceIndexing(t.Context(), cfg, config.SourceBuildOptions{}, []config.SourceIndexingFunction{{Name: "Blocks:block", Fn: handler}})
+			if err != nil || failures.Load() != 0 {
+				t.Fatalf("compile with a participating chain offline: requests=%d, err=%v", failures.Load(), err)
+			}
+			offline.Store(false)
 			f := newManagedFiniteFixture(t, backend, build)
 			f.options.Owned.Storage.Schema = schema.Schema{Tables: []schema.Table{{Name: "seen", PrimaryKey: []string{"chain_id", "height"}, Columns: []schema.Column{
 				{Name: "chain_id", Property: "chainId", Type: "integer", NotNull: true}, {Name: "height", Type: "integer", NotNull: true}, {Name: "hash", Type: "text", NotNull: true},

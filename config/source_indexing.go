@@ -9,6 +9,7 @@ import (
 
 	"github.com/ysh0566/ponder-go/abi"
 	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/rpc"
 )
 
 type SourceIndexingBuild struct {
@@ -92,15 +93,37 @@ func BuildSourceIndexing(ctx context.Context, config *SourceConfiguration, built
 	return buildSourceIndexing(ctx, config, built, functions, true)
 }
 
-// BuildNativeSourceConfigs compiles the single-store workers. A "latest" source
-// or factory bound needs one snapshot per chain. Workers acquire their own
-// finality when they run.
-func BuildNativeSourceConfigs(ctx context.Context, config *SourceConfiguration, options SourceBuildOptions, functions []SourceIndexingFunction) ([]Config, error) {
+// BuildRuntimeSourceIndexing compiles callbacks for a Go writer that acquires
+// finality when it opens. Static bounds require no network access. Explicit
+// "latest" bounds share a per-chain snapshot. FinalizedBlocks is empty.
+func BuildRuntimeSourceIndexing(ctx context.Context, config *SourceConfiguration, options SourceBuildOptions, functions []SourceIndexingFunction) (*SourceIndexingBuild, error) {
 	base, err := BuildSourceConfig(config, options)
 	if err != nil {
 		return nil, err
 	}
-	build, err := buildSourceIndexing(ctx, config, base, functions, false)
+	return buildSourceIndexing(ctx, config, base, functions, false)
+}
+
+// NewRuntimeRequesters constructs fresh transports for the participating chains
+// in executable order, preserving the configuration's transport and concurrency settings.
+func (build *SourceIndexingBuild) NewRuntimeRequesters() ([]rpc.Requester, error) {
+	if build == nil || build.base == nil || build.base.value == nil || len(build.base.value.Chains) == 0 || len(build.chains) == 0 {
+		return nil, fmt.Errorf("compiled source chains required for runtime requesters")
+	}
+	requesters := make([]rpc.Requester, len(build.chains))
+	for i, chain := range build.chains {
+		client, err := build.base.value.newRPC(chain)
+		if err != nil {
+			return nil, err
+		}
+		requesters[i] = client
+	}
+	return requesters, nil
+}
+
+// BuildNativeSourceConfigs compiles the single-store workers.
+func BuildNativeSourceConfigs(ctx context.Context, config *SourceConfiguration, options SourceBuildOptions, functions []SourceIndexingFunction) ([]Config, error) {
+	build, err := BuildRuntimeSourceIndexing(ctx, config, options, functions)
 	if err != nil {
 		return nil, err
 	}

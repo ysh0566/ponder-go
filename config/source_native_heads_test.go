@@ -90,3 +90,42 @@ func TestNativeSourceHeadReads(t *testing.T) {
 		})
 	}
 }
+
+func TestRuntimeSourceRequesters(t *testing.T) {
+	input, err := config.ParseSourceConfiguration([]byte(`{"chains":{"idle":{"id":303,"rpc":"http://unused.invalid"},"token":{"id":101,"ethGetLogsBlockRange":25},"logs":{"id":202,"rpc":["http://node-a.invalid","http://node-b.invalid"]}},"blocks":{"B":{"chain":{"logs":{},"token":{}}}}}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	calls := 0
+	opts := config.SourceBuildOptions{RPCMaxConcurrency: 12, RPCTransports: map[string]rpc.TransportFunc{
+		"token": func(context.Context, string, any) (json.RawMessage, error) {
+			calls++
+			return json.RawMessage(`"0x65"`), nil
+		},
+	}}
+	build, err := config.BuildRuntimeSourceIndexing(t.Context(), input, opts, []config.SourceIndexingFunction{{Name: "B:block", Fn: func() {}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	exec := build.Executable()
+	if calls != 0 || len(exec.FinalizedBlocks) != 0 || len(exec.Chains) != 2 {
+		t.Fatalf("compiled %d chains and %d finalized headers after %d calls", len(exec.Chains), len(exec.FinalizedBlocks), calls)
+	}
+	previous := exec.RPCs
+	for epoch := 0; epoch < 2; epoch++ {
+		reqs, err := build.NewRuntimeRequesters()
+		if err != nil || len(reqs) != 2 {
+			t.Fatalf("requesters: %v, %v", reqs, err)
+		}
+		token, logs := reqs[0].(*rpc.Client), reqs[1].(*rpc.Client)
+		if token == previous[0] || logs == previous[1] || token.ChainID != 101 || token.ChainName != "token" || !token.HasCustomTransport() || !token.FixedLogBlockRange ||
+			logs.ChainID != 202 || logs.ChainName != "logs" || logs.HasCustomTransport() || !reflect.DeepEqual(logs.URLs, []string{"http://node-a.invalid", "http://node-b.invalid"}) {
+			t.Fatal("RPC order, identity or transport settings changed")
+		}
+		var id string
+		if err := token.Call(t.Context(), "eth_chainId", nil, &id); err != nil || id != "0x65" || calls != epoch+1 || token.TransportRequests() != 1 {
+			t.Fatalf("fresh transport read: %q calls=%d err=%v", id, calls, err)
+		}
+		previous = []*rpc.Client{token, logs}
+	}
+}

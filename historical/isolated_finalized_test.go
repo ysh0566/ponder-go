@@ -22,7 +22,6 @@ import (
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/indexing"
 	"github.com/ysh0566/ponder-go/metrics"
-	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -73,12 +72,13 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 			release := make(chan struct{})
 			releasePeer := sync.OnceFunc(func() { close(release) })
 			firstURL := isolatedSlowNode(t, nodes[101].url, release)
-			raw := fmt.Sprintf(`{"ordering":"experimental_isolated","chains":{"first":{"id":101,"rpc":%q,"reorgWindow":0},"second":{"id":202,"rpc":%q,"reorgWindow":0,"cacheRpcRequests":false}},"blocks":{"Head":{"chain":{"first":{"startBlock":0,"endBlock":3},"second":{"startBlock":1,"endBlock":2}},"interval":1}},"accounts":{"Wallet":{"chain":{"first":{},"second":{}},"address":%q,"startBlock":1,"endBlock":2}}}`, firstURL, nodes[202].url, nodes[101].wallet)
+			unused := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				t.Errorf("runtime contacted a chain without callbacks")
+				http.Error(w, "offline", http.StatusServiceUnavailable)
+			}))
+			t.Cleanup(unused.Close)
+			raw := fmt.Sprintf(`{"ordering":"experimental_isolated","chains":{"idle":{"id":303,"rpc":%q},"first":{"id":101,"rpc":%q,"reorgWindow":0},"second":{"id":202,"rpc":%q,"reorgWindow":0,"cacheRpcRequests":false}},"blocks":{"Head":{"chain":{"first":{"startBlock":0,"endBlock":3},"second":{"startBlock":1,"endBlock":2}},"interval":1}},"accounts":{"Wallet":{"chain":{"first":{},"second":{}},"address":%q,"startBlock":1,"endBlock":2}}}`, unused.URL, firstURL, nodes[202].url, nodes[101].wallet)
 			cfg, err := config.ParseSourceConfiguration([]byte(raw))
-			if err != nil {
-				t.Fatal(err)
-			}
-			base, err := config.BuildSourceConfig(cfg, config.SourceBuildOptions{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -130,7 +130,7 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 				_, err = a.Context.DB.InsertOne(ctx, "seen", store.Row{"chainId": int(id), "height": int(n), "kind": "tx"}, store.Conflict{})
 				return err
 			})
-			build, err := config.BuildSourceIndexing(ctx, cfg, base, []config.SourceIndexingFunction{{Name: "Head:block", Fn: handler}, {Name: "Wallet:transaction:to", Fn: onTransaction}})
+			build, err := config.BuildRuntimeSourceIndexing(ctx, cfg, config.SourceBuildOptions{}, []config.SourceIndexingFunction{{Name: "Head:block", Fn: handler}, {Name: "Wallet:transaction:to", Fn: onTransaction}})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -147,9 +147,7 @@ func TestRuntimeIsolatedFinalized(t *testing.T) {
 				{Name: "chain_id", Property: "chainId", Type: "integer", NotNull: true}, {Name: "height", Type: "integer", NotNull: true}, {Name: "kind", Type: "text", NotNull: true},
 			}}}}
 			f.options.Owned.Storage.Ordering = schema.Isolated
-			opts := RuntimeOptions{BuildID: "isolated-finalized", Historical: runtimeFixtureInput(f), Requesters: func(context.Context, uint64) ([]rpc.Requester, error) {
-				return []rpc.Requester{rpc.New(firstURL), rpc.New(nodes[202].url)}, nil
-			}}
+			opts := RuntimeOptions{BuildID: "isolated-finalized", Historical: runtimeFixtureInput(f)}
 			var r *RuntimeRunner
 			observed := map[uint64][]uint64{}
 			var registry *metrics.Registry

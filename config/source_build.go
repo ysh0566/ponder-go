@@ -10,9 +10,10 @@ import (
 )
 
 type sourceConfigBuild struct {
-	Chains []*sourceObject
-	RPCs   []*rpc.Client
-	Logs   []*sourceObject
+	maxConcurrency int
+	Chains         []*sourceObject
+	RPCs           []*rpc.Client
+	Logs           []*sourceObject
 }
 type sourceBuilder struct {
 	// Catalog must be generated from fixed source Object.values(viemChains), first
@@ -164,19 +165,28 @@ func (builder *sourceBuilder) buildConfig(config *sourceObject, maxConcurrency i
 	}
 	// Source currently creates all RPCs after validating every chain. Preserve
 	// error ordering. Native request slots are shared by cache-scoped clients.
+	result.maxConcurrency = maxConcurrency
 	for _, chain := range result.Chains {
-		client, err := buildSourceRPC(chain.get("rpc"), maxConcurrency/len(result.Chains))
+		client, err := result.newRPC(chain)
 		if err != nil {
 			return nil, err
-		}
-		client.ChainName = sourceString(chain.get("name"))
-		client.FixedLogBlockRange = !filter.IsUndefined(chain.get("ethGetLogsBlockRange"))
-		if id, ok := sourceNumber(chain.get("id")); ok && id >= 0 && math.Trunc(id) == id && id <= 9007199254740991 {
-			client.ChainID = uint64(id)
 		}
 		result.RPCs = append(result.RPCs, client)
 	}
 	return result, nil
+}
+
+func (build *sourceConfigBuild) newRPC(chain *sourceObject) (*rpc.Client, error) {
+	client, err := buildSourceRPC(chain.get("rpc"), build.maxConcurrency/len(build.Chains))
+	if err != nil {
+		return nil, err
+	}
+	client.ChainName = sourceString(chain.get("name"))
+	client.FixedLogBlockRange = !filter.IsUndefined(chain.get("ethGetLogsBlockRange"))
+	if id, ok := sourceNumber(chain.get("id")); ok && id >= 0 && math.Trunc(id) == id && id <= 9007199254740991 {
+		client.ChainID = uint64(id)
+	}
+	return client, nil
 }
 
 func buildSourceRPC(value any, concurrency int) (*rpc.Client, error) {
