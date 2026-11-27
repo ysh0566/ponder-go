@@ -3,7 +3,7 @@ package store
 import (
 	"context"
 	"fmt"
-	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/ysh0566/ponder-go/schema"
@@ -31,46 +31,95 @@ func (db *IndexingStore) Join(ctx context.Context, kind JoinKind, leftTable, rig
 // JoinRows applies WHERE, ORDER BY, LIMIT and OFFSET to joined rows. Filter
 // and order column names use "left." or "right." followed by the physical name.
 func (db *IndexingStore) JoinRows(ctx context.Context, kind JoinKind, leftTable, rightTable string, on []JoinColumns, options SelectOptions) ([]JoinedRow, error) {
+	rows, err := db.JoinSequence(ctx, leftTable, []JoinStep{{Kind: kind, Table: rightTable, On: on}}, options)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]JoinedRow, len(rows))
+	for i, row := range rows {
+		out[i] = JoinedRow{Left: row[0], Right: row[1]}
+	}
+	return out, nil
+}
+
+// JoinStep adds a table to the preceding result. The right column is always a
+// physical name. The left column is a physical name for the first step, then
+// a path through the nested result (for example "right.id" or "left.left.id").
+type JoinStep struct {
+	Kind  JoinKind
+	Table string
+	On    []JoinColumns
+}
+
+// resolveJoinColumn follows the nested Joined shape. Each left descends into
+// the preceding result. A right selects the most recently joined table.
+func resolveJoinColumn(tables []schema.Table, path string) (schema.Column, string, error) {
+	n := len(tables)
+	name := path
+	for n > 1 {
+		side, rest, ok := strings.Cut(name, ".")
+		if !ok || (side != "left" && side != "right") {
+			return schema.Column{}, "", fmt.Errorf("invalid join column path %q", path)
+		}
+		name = rest
+		if side == "right" {
+			break
+		}
+		n--
+	}
+	return qualifiedSelectColumn(tables[n-1], "t"+strconv.Itoa(n-1), name)
+}
+
+// JoinSequence executes a left-associative chain of joins in the current
+// callback. Each row contains one entry per table, in declaration order.
+// Unmatched sides of LEFT JOIN are nil.
+func (db *IndexingStore) JoinSequence(ctx context.Context, root string, steps []JoinStep, options SelectOptions) ([][]Row, error) {
 	if err := db.active(); err != nil {
 		return nil, err
 	}
-	if (kind != InnerJoin && kind != LeftJoin) || len(on) == 0 {
-		return nil, fmt.Errorf("join requires INNER or LEFT and at least one equality predicate")
+	if len(steps) == 0 {
+		return nil, fmt.Errorf("join requires at least one step")
 	}
 	s := db.writer.s
-	left, err := s.model(leftTable)
+	first, err := s.model(root)
 	if err != nil {
 		return nil, err
 	}
-	right, err := s.model(rightTable)
-	if err != nil {
-		return nil, err
-	}
-	var predicates []string
-	for _, pair := range on {
-		if !slices.ContainsFunc(left.Columns, func(c schema.Column) bool { return c.Name == pair.Left }) {
-			return nil, fmt.Errorf("unknown join column %s.%s", left.Name, pair.Left)
+	tables := []schema.Table{first}
+	projections := []string{"row_to_json(t0.*)::text AS t0"}
+	var from strings.Builder
+	from.WriteString(s.table(first.Name) + " AS t0")
+	for i, step := range steps {
+		if (step.Kind != InnerJoin && step.Kind != LeftJoin) || len(step.On) == 0 {
+			return nil, fmt.Errorf("join requires INNER or LEFT and at least one equality predicate")
 		}
-		if !slices.ContainsFunc(right.Columns, func(c schema.Column) bool { return c.Name == pair.Right }) {
-			return nil, fmt.Errorf("unknown join column %s.%s", right.Name, pair.Right)
+		right, err := s.model(step.Table)
+		if err != nil {
+			return nil, err
 		}
-		predicates = append(predicates, "l."+schema.Quote(pair.Left)+" = r."+schema.Quote(pair.Right))
-	}
-	query := "SELECT row_to_json(l.*)::text AS left_row, row_to_json(r.*)::text AS right_row FROM " +
-		s.table(left.Name) + " AS l " + string(kind) + " JOIN " + s.table(right.Name) + " AS r ON " + strings.Join(predicates, " AND ")
-	if s.Ordering == schema.Isolated {
-		query += " AND r.chain_id = l.chain_id"
-	}
-	query, args, err := db.applySelectOptions(query, options, "l", func(name string) (schema.Column, string, error) {
-		side, column, _ := strings.Cut(name, ".")
-		switch side {
-		case "left":
-			return qualifiedSelectColumn(left, "l", column)
-		case "right":
-			return qualifiedSelectColumn(right, "r", column)
-		default:
-			return schema.Column{}, "", fmt.Errorf("join column %q must specify left or right", name)
+		alias := "t" + strconv.Itoa(i+1)
+		var predicates []string
+		for _, pair := range step.On {
+			_, lhs, err := resolveJoinColumn(tables, pair.Left)
+			if err != nil {
+				return nil, err
+			}
+			_, rhs, err := qualifiedSelectColumn(right, alias, pair.Right)
+			if err != nil {
+				return nil, err
+			}
+			predicates = append(predicates, lhs+" = "+rhs)
 		}
+		if s.Ordering == schema.Isolated {
+			predicates = append(predicates, alias+".chain_id = t0.chain_id")
+		}
+		fmt.Fprintf(&from, " %s JOIN %s AS %s ON %s", step.Kind, s.table(right.Name), alias, strings.Join(predicates, " AND "))
+		projections = append(projections, "row_to_json("+alias+".*)::text AS "+alias)
+		tables = append(tables, right)
+	}
+	query := "SELECT " + strings.Join(projections, ", ") + " FROM " + from.String()
+	query, args, err := db.applySelectOptions(query, options, "t0", func(name string) (schema.Column, string, error) {
+		return resolveJoinColumn(tables, name)
 	})
 	if err != nil {
 		return nil, err
@@ -79,16 +128,16 @@ func (db *IndexingStore) JoinRows(ctx context.Context, kind JoinKind, leftTable,
 	if err != nil {
 		return nil, err
 	}
-	out := make([]JoinedRow, len(result.Rows))
+	out := make([][]Row, len(result.Rows))
 	for i, row := range result.Rows {
-		out[i].Left, err = decodeModelRow(left, row["left_row"])
-		if err != nil {
-			return nil, err
-		}
-		if row["right_row"] != nil {
-			out[i].Right, err = decodeModelRow(right, row["right_row"])
-			if err != nil {
-				return nil, err
+		out[i] = make([]Row, len(tables))
+		for j, table := range tables {
+			raw := row["t"+strconv.Itoa(j)]
+			if raw != nil {
+				out[i][j], err = decodeModelRow(table, raw)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 	}

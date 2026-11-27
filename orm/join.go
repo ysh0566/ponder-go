@@ -3,6 +3,7 @@ package orm
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -86,6 +87,7 @@ type JoinQuery[L, R, T any] struct {
 	Query[Joined[L, T]]
 	Left  JoinSide[L, Joined[L, T]]
 	Right JoinSide[R, Joined[L, T]]
+	plan  joinPlan[Joined[L, T]]
 }
 
 // InnerJoin returns matching pairs. Additional predicates are combined with AND.
@@ -95,7 +97,7 @@ func InnerJoin[L, R any](ctx context.Context, db JoinExecutor, on JoinCondition[
 
 // QueryInnerJoin starts a query over matching pairs.
 func QueryInnerJoin[L, R any](db JoinExecutor, on JoinCondition[L, R], and ...JoinCondition[L, R]) JoinQuery[L, R, R] {
-	return buildJoinQuery(db, store.InnerJoin, on, and, on.decodeRight)
+	return buildJoinQuery(firstJoinInput(db, on), store.InnerJoin, on, and, on.decodeRight)
 }
 
 // LeftJoin preserves unmatched left rows and returns a nil Right for them.
@@ -105,26 +107,67 @@ func LeftJoin[L, R any](ctx context.Context, db JoinExecutor, on JoinCondition[L
 
 // QueryLeftJoin starts a query that preserves unmatched left rows.
 func QueryLeftJoin[L, R any](db JoinExecutor, on JoinCondition[L, R], and ...JoinCondition[L, R]) JoinQuery[L, R, *R] {
-	return buildJoinQuery(db, store.LeftJoin, on, and, func(row store.Row) (*R, error) {
+	return buildJoinQuery(firstJoinInput(db, on), store.LeftJoin, on, and, nullableDecoder(on.decodeRight))
+}
+
+// ThenInnerJoin adds a required table. Use JoinColumn on the preceding query
+// to identify the existing side of each equality.
+func ThenInnerJoin[A, B, T, R any](q JoinQuery[A, B, T], on JoinCondition[Joined[A, T], R], and ...JoinCondition[Joined[A, T], R]) JoinQuery[Joined[A, T], R, R] {
+	return buildJoinQuery(q.nextInput(), store.InnerJoin, on, and, on.decodeRight)
+}
+
+// ThenLeftJoin adds an optional table. Its Right field is nil on a missing match.
+func ThenLeftJoin[A, B, T, R any](q JoinQuery[A, B, T], on JoinCondition[Joined[A, T], R], and ...JoinCondition[Joined[A, T], R]) JoinQuery[Joined[A, T], R, *R] {
+	return buildJoinQuery(q.nextInput(), store.LeftJoin, on, and, nullableDecoder(on.decodeRight))
+}
+
+func nullableDecoder[R any](decode Decoder[R]) Decoder[*R] {
+	return func(row store.Row) (*R, error) {
 		if row == nil {
 			return nil, nil
 		}
-		value, err := on.decodeRight(row)
+		value, err := decode(row)
 		return &value, err
-	})
+	}
 }
 
-func buildJoinQuery[L, R, T any](db JoinExecutor, kind store.JoinKind, on JoinCondition[L, R], and []JoinCondition[L, R], decodeRight Decoder[T]) JoinQuery[L, R, T] {
-	// Spaces cannot occur in physical model names. The scope distinguishes both
-	// inputs even when different definitions use the same Go row type.
-	scope := on.left + " JOIN " + on.right
+type joinPlan[R any] struct {
+	db          JoinExecutor
+	root, scope string
+	steps       []store.JoinStep
+	decode      func([]store.Row) (R, error)
+	err         error
+}
+
+func firstJoinInput[L, R any](db JoinExecutor, on JoinCondition[L, R]) joinPlan[L] {
+	p := joinPlan[L]{db: db, root: on.left, scope: on.left}
+	if on.decodeLeft != nil {
+		p.decode = func(rows []store.Row) (L, error) { return on.decodeLeft(rows[0]) }
+	}
+	return p
+}
+
+func (q JoinQuery[L, R, T]) nextInput() joinPlan[Joined[L, T]] {
+	p := q.plan
+	p.err = q.err
+	if p.err == nil && hasJoinOptions(q.options) {
+		p.err = fmt.Errorf("add joins before filtering, ordering or paging")
+	}
+	return p
+}
+
+func buildJoinQuery[L, R, T any](input joinPlan[L], kind store.JoinKind, on JoinCondition[L, R], and []JoinCondition[L, R], decodeRight Decoder[T]) JoinQuery[L, R, T] {
+	scope := input.scope + " JOIN " + on.right
 	q := JoinQuery[L, R, T]{
-		Query: Query[Joined[L, T]]{table: scope},
-		Left:  JoinSide[L, Joined[L, T]]{on.left, scope, "left."},
+		Query: Query[Joined[L, T]]{table: scope, err: input.err},
+		Left:  JoinSide[L, Joined[L, T]]{input.scope, scope, "left."},
 		Right: JoinSide[R, Joined[L, T]]{on.right, scope, "right."},
 	}
-	if on.decodeLeft == nil || on.decodeRight == nil {
-		q.err = fmt.Errorf("join requires generated columns on both sides")
+	if q.err != nil {
+		return q
+	}
+	if input.decode == nil || on.left != input.scope || on.decodeRight == nil {
+		q.err = fmt.Errorf("join requires a column from its left input and a generated right column")
 		return q
 	}
 	pairs := []store.JoinColumns{on.columns}
@@ -135,25 +178,69 @@ func buildJoinQuery[L, R, T any](db JoinExecutor, kind store.JoinKind, on JoinCo
 		}
 		pairs = append(pairs, extra.columns)
 	}
-	q.read = func(ctx context.Context, options store.SelectOptions) ([]Joined[L, T], error) {
-		rows, err := readJoinRows(ctx, db, kind, on.left, on.right, pairs, options)
+	steps := append(slices.Clip(input.steps), store.JoinStep{Kind: kind, Table: on.right, On: pairs})
+	q.plan = joinPlan[Joined[L, T]]{db: input.db, root: input.root, scope: scope, steps: steps,
+		decode: func(rows []store.Row) (pair Joined[L, T], err error) {
+			last := len(rows) - 1
+			pair.Left, err = input.decode(rows[:last])
+			if err == nil {
+				pair.Right, err = decodeRight(rows[last])
+			}
+			return pair, err
+		},
+	}
+	q.read = q.plan.all
+	return q
+}
+
+func (p joinPlan[R]) all(ctx context.Context, options store.SelectOptions) ([]R, error) {
+	// An executor can embed the native store and override its two-table methods.
+	// Preserve those overrides even when it also inherits JoinSequence.
+	if len(p.steps) == 1 {
+		step := p.steps[0]
+		rows, err := readJoinRows(ctx, p.db, step.Kind, p.root, step.Table, step.On, options)
 		if err != nil {
 			return nil, err
 		}
-		out := make([]Joined[L, T], len(rows))
-		for i, row := range rows {
-			out[i].Left, err = on.decodeLeft(row.Left)
-			if err != nil {
-				return nil, err
-			}
-			out[i].Right, err = decodeRight(row.Right)
-			if err != nil {
-				return nil, err
-			}
-		}
-		return out, nil
+		return decodeRows(func(row store.JoinedRow) (R, error) {
+			return p.decode([]store.Row{row.Left, row.Right})
+		}, rows)
 	}
-	return q
+	db, ok := p.db.(sequenceExecutor)
+	if !ok {
+		return nil, fmt.Errorf("the bound database does not support chained joins")
+	}
+	rows, err := db.JoinSequence(ctx, p.root, p.steps, options)
+	if err != nil {
+		return nil, err
+	}
+	return decodeRows(func(row []store.Row) (R, error) {
+		if len(row) != len(p.steps)+1 {
+			var zero R
+			return zero, fmt.Errorf("join executor returned %d tables, expected %d", len(row), len(p.steps)+1)
+		}
+		return p.decode(row)
+	}, rows)
+}
+
+type sequenceExecutor interface {
+	JoinSequence(context.Context, string, []store.JoinStep, store.SelectOptions) ([][]store.Row, error)
+}
+
+// JoinSequence lets a generated callback table execute a chain of model joins.
+func (t Table[K, I, U, R]) JoinSequence(ctx context.Context, root string, steps []store.JoinStep, options store.SelectOptions) ([][]store.Row, error) {
+	if root != t.definition.name {
+		return nil, fmt.Errorf("join uses %s as its left table, bound table is %s", root, t.definition.name)
+	}
+	db, ok := t.db.(sequenceExecutor)
+	if !ok {
+		return nil, fmt.Errorf("the bound database does not support chained joins")
+	}
+	return db.JoinSequence(ctx, root, steps, options)
+}
+
+func hasJoinOptions(options store.SelectOptions) bool {
+	return len(options.Filters) != 0 || len(options.Order) != 0 || options.Limit != nil || options.Offset != 0
 }
 
 // Keep the original executor contract for queries without additional clauses.
@@ -161,7 +248,7 @@ func readJoinRows(ctx context.Context, db JoinExecutor, kind store.JoinKind, lef
 	if db == nil {
 		return nil, fmt.Errorf("join requires a bound database")
 	}
-	if len(options.Filters) == 0 && len(options.Order) == 0 && options.Limit == nil && options.Offset == 0 {
+	if !hasJoinOptions(options) {
 		return db.Join(ctx, kind, left, right, pairs)
 	}
 	executor, ok := db.(joinRowsExecutor)

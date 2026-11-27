@@ -503,9 +503,10 @@
         "parity/runs/native-typed-joins/RESULT.md",
         "parity/runs/native-typed-select/RESULT.md",
         "parity/runs/native-query-groups/RESULT.md",
-        "parity/runs/native-join-pages/RESULT.md"
+        "parity/runs/native-join-pages/RESULT.md",
+        "parity/runs/native-chained-joins/RESULT.md"
       ],
-      "remaining": "Buffered native ORM tested on PG/PGlite: returned row copies, conflict operations, defaults/NULL/Undefined, explicit cache invalidation/flush, typed columns and single-table Select; 28 new exact source mappings. Generated typed columns support two-table inner and left equality joins, multiple predicates and self joins. Single-table typed comparisons, NULL checks, ordering, and pagination run in the bound callback transaction. Single-table predicates support nested AND and OR groups. Two-table joins support filtered and ordered pages with explicitly bound left and right columns. Multiway joins, cache profile/prefetch/eviction, Promise adaptation and source cases with compile-error obligations remain. JSON U+0000/raw JSON large numeric undo and byte PK bridge now verified on both backends. Complete custom codecs, callback value types and array combinations require follow-up; no full ORM claim."
+      "remaining": "Buffered native ORM tested on PG/PGlite: returned row copies, conflict operations, defaults/NULL/Undefined, explicit cache invalidation/flush, typed columns and single-table Select; 28 new exact source mappings. Generated typed columns support two-table inner and left equality joins, multiple predicates and self joins. Single-table typed comparisons, NULL checks, ordering, and pagination run in the bound callback transaction. Single-table predicates support nested AND and OR groups. Typed inner and left joins can be chained in one SQL query, with composite predicates over prior aliases, nullable results, chain isolation and filtered, ordered pages. Cache profile/prefetch/eviction, Promise adaptation and source cases with compile-error obligations remain. JSON U+0000/raw JSON large numeric undo and byte PK bridge now verified on both backends. Complete custom codecs, callback value types and array combinations require follow-up; no full ORM claim."
     },
     {
       "id": "pglite",

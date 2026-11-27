@@ -217,6 +217,17 @@ func (db *Database) JoinRows(ctx context.Context, kind store.JoinKind, left, rig
 	return rows, db.capture(err)
 }
 
+// JoinSequence holds the callback lease while all joined rows are read.
+func (db *Database) JoinSequence(ctx context.Context, root string, steps []store.JoinStep, options store.SelectOptions) ([][]store.Row, error) {
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return nil, db.capture(err)
+	}
+	defer release()
+	rows, err := underlying.JoinSequence(ctx, root, steps, options)
+	return rows, db.capture(err)
+}
+
 func (db *Database) SQL(ctx context.Context, query string, args ...any) (store.Result, error) {
 	underlying, release, err := db.acquire(ctx)
 	if err != nil {
