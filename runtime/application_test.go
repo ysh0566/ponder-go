@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -74,6 +75,7 @@ func TestApplicationShutdownJoinsHandler(t *testing.T) {
 }
 
 func TestApplicationServeOnly(t *testing.T) {
+	t.Setenv("PONDER_COMMAND", "")
 	t.Setenv("PONDER_HOSTNAME", "127.0.0.1")
 	t.Setenv("PONDER_PORT", "0")
 	ctx, cancel := context.WithCancel(t.Context())
@@ -93,6 +95,11 @@ func TestApplicationServeOnly(t *testing.T) {
 	if !routes.Ready.Load() {
 		cancel()
 		t.Fatal("query-only application did not become ready")
+	}
+	body, err := routes.Metrics.Collect(ctx)
+	if err != nil || !strings.Contains(body, `ponder_settings_info{command="serve",database="pglite"} 1`) {
+		cancel()
+		t.Fatalf("query-only process settings: %s %v", body, err)
 	}
 	cancel()
 	if err := app.Wait(); err != nil || routes.Ready.Load() {

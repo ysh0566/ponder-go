@@ -116,6 +116,14 @@ func (s *Server) database() store.QueryReader {
 
 func (s *Server) HasDatabase() bool { return s.database().Available() }
 
+// SetApplicationMetrics publishes the active command and business database to /metrics.
+func (s *Server) SetApplicationMetrics(command string) {
+	reader := s.database()
+	if s.Metrics != nil && reader.Available() {
+		s.Metrics.SetSettings(command, reader.Dialect(), string(reader.Ordering()))
+	}
+}
+
 // NewAtNamespace serves SQL from an explicitly selected published schema and
 // listens on its writer's live-query channel. Close it when serving ends.
 func NewAtNamespace(ctx context.Context, s *store.Store, namespace string) (*Server, error) {

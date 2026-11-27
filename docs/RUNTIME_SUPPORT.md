@@ -41,7 +41,9 @@ The dual-store continuous writer records two latency histograms per chain after 
 
 The writer exposes setup and event callback duration in milliseconds for each chain and registered event. The histogram covers actual executions during historical indexing, live indexing and replay. The Go registry always includes the chain label. The pinned callback implementation supplies the event label when observing the upstream histogram. [PromQL example](USAGE.md#查看-go-回调耗时) · [Callback tests](../parity/runs/native-handler-duration/RESULT.md)
 
-The Go writer registers 15 of the 39 explicitly named upstream metric families under matching names. The remaining 24 fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
+The Go CLI and the launched application's version gauge use the same Go release identifier. The settings gauge reports the command and business database on both writers and standalone query processes. Writers also include their configured ordering. [Process metric examples](USAGE.md#查看版本与运行配置) · [Backend and command tests](../parity/runs/native-process-info/RESULT.md)
+
+The Go writer registers 17 of the 39 explicitly named upstream metric families under matching names. The remaining 22 fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Process gauges](../metrics/process.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
 
 | Area | Families without a matching Go metric | Measurement |
 | --- | ---: | --- |
@@ -49,7 +51,6 @@ The Go writer registers 15 of the 39 explicitly named upstream metric families u
 | Historical sync | 9 | Concurrency group duration, start/end timestamps, total/cached/completed indexing seconds and block counts |
 | Indexing | 6 | Indexing timestamp, cache query and raw SQL duration, RPC action time, prefetch and request counts |
 | Chain sync | 4 | Current block and timestamp, realtime and completion status |
-| Process information | 2 | Version and settings |
 
 ## Application verification
 

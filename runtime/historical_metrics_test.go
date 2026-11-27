@@ -20,6 +20,7 @@ import (
 )
 
 func TestApplicationHistoricalTimings(t *testing.T) {
+	t.Setenv("PONDER_COMMAND", "")
 	for _, order := range []schema.Ordering{schema.Multichain, schema.Isolated, schema.Omnichain} {
 		for _, dialect := range []string{"postgres", "pglite"} {
 			t.Run(string(order)+"/"+dialect, func(t *testing.T) {
@@ -129,6 +130,10 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 					return strings.Join(lines, "\n")
 				}
 				firstScrape := scrape()
+				settings := fmt.Sprintf(`ponder_settings_info{command="start",database="%s",ordering="%s"} 1`, dialect, order)
+				if !strings.Contains(firstScrape, settings) {
+					t.Fatalf("missing settings sample %s", settings)
+				}
 				if !strings.Contains(firstScrape, "ponder_indexing_function_duration_count") {
 					t.Fatal("no callback timings at initial catch-up")
 				}

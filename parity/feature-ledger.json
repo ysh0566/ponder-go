@@ -946,7 +946,10 @@
         "runtime/polled_heads.go",
         "runtime/ordered_indexer.go",
         "runtime/source_managed_continuous.go",
-        "historical/live_runtime_continuous.go"
+        "historical/live_runtime_continuous.go",
+        "metrics/process.go",
+        "internal/version/version.go",
+        "store/query_reader.go"
       ],
       "upstream_sources": [
         "packages/core/src/internal/metrics.ts",
@@ -957,7 +960,10 @@
         "packages/core/src/runtime/omnichain.ts",
         "packages/core/src/runtime/isolated.ts",
         "packages/core/src/sync-store/index.ts",
-        "packages/core/src/utils/timer.ts"
+        "packages/core/src/utils/timer.ts",
+        "packages/core/src/bin/commands/start.ts",
+        "packages/core/src/bin/commands/dev.ts",
+        "packages/core/src/bin/commands/serve.ts"
       ],
       "evidence": [
         "parity/runs/native-historical-duration-metrics/RESULT.md",
@@ -965,9 +971,10 @@
         "parity/runs/native-reorg-metrics/RESULT.md",
         "parity/runs/native-realtime-head-latency/RESULT.md",
         "parity/runs/native-atomic-head-latency/RESULT.md",
-        "parity/runs/native-handler-duration/RESULT.md"
+        "parity/runs/native-handler-duration/RESULT.md",
+        "parity/runs/native-process-info/RESULT.md"
       ],
-      "remaining": "The writer observes setup and event callback duration by chain and event. The writer counts successful canonical fork rollbacks by chain and records RPC outcomes by chain and method. The dual-store continuous writer and the atomic Go indexer observe arrival and processing latency after committing a polled head. Database method duration and error metrics, and comparative production benchmarks remain open.",
+      "remaining": "The application reports its Go version and active command, database and writer ordering. The writer observes setup and event callback duration by chain and event. The writer counts successful canonical fork rollbacks by chain and records RPC outcomes by chain and method. The dual-store continuous writer and the atomic Go indexer observe arrival and processing latency after committing a polled head. Database method duration and error metrics, and comparative production benchmarks remain open.",
       "native_test_files": [
         "metrics/historical_test.go",
         "runtime/historical_metrics_test.go",
@@ -983,7 +990,9 @@
         "runtime/mixed_source_reorg_test.go",
         "historical/live_runtime_reorg_test.go",
         "historical/live_runtime_bounded_reorg_test.go",
-        "historical/isolated_live_test.go"
+        "historical/isolated_live_test.go",
+        "runtime/dev_metrics_test.go",
+        "runtime/application_test.go"
       ]
     },
     {

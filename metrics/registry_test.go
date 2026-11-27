@@ -236,3 +236,19 @@ func TestHandlerDuration(t *testing.T) {
 	r.ResetIndexing()
 	expectSamples(t, r, "ponder_indexing_function_duration")
 }
+
+func TestProcessInfo(t *testing.T) {
+	r := New()
+	const version = "ponder_version_info"
+	const settings = "ponder_settings_info"
+	release := sample{map[string]string{"version": "0.18.2-go.0", "major": "0", "minor": "18", "patch": "2"}, 1}
+	expectSamples(t, r, version)
+	expectSamples(t, r, settings)
+	r.SetSettings("start", "postgres", "omnichain")
+	expectSamples(t, r, settings, sample{map[string]string{"command": "start", "database": "postgres", "ordering": "omnichain"}, 1})
+	r.SetSettings("serve", "postgres", "omnichain")
+	expectSamples(t, r, settings, sample{map[string]string{"command": "serve", "database": "postgres"}, 1})
+	r.ResetIndexing()
+	expectSamples(t, r, settings)
+	expectSamples(t, r, version, release)
+}

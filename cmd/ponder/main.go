@@ -9,6 +9,7 @@ import (
 	"github.com/ysh0566/ponder-go/abi"
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/config"
+	release "github.com/ysh0566/ponder-go/internal/version"
 	"github.com/ysh0566/ponder-go/logging"
 	"github.com/ysh0566/ponder-go/orm"
 	"github.com/ysh0566/ponder-go/schema"
@@ -20,7 +21,7 @@ import (
 	"syscall"
 )
 
-const version = "0.18.2-go.0"
+const version = release.Full
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

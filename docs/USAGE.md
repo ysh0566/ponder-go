@@ -146,6 +146,19 @@ curl -fsSG "$base/sql/db" \
 | `GET /sql/live` | 用同样的 `sql` 参数建立 SSE 订阅。先用 `/sql/db` 读取当前结果；订阅在相关表变动且结果改变时发送数据。 |
 | `GET /metrics` | 以 Prometheus 文本格式读取服务指标。 |
 
+### 查看版本与运行配置
+
+读取应用的 `/metrics`，可以核对当前进程使用的 Go 版本、启动命令和业务数据库。下面是用 `ponder start` 启动 PostgreSQL 默认多链索引器时的两个样本。
+
+```text
+ponder_version_info{major="0",minor="18",patch="2",version="0.18.2-go.0"} 1
+ponder_settings_info{command="start",database="postgres",ordering="multichain"} 1
+```
+
+`database` 为 `postgres` 或 `pglite`。写入进程的 `ordering` 为 `multichain`、`omnichain` 或 `experimental_isolated`。热重载子进程报告 `command="dev"`。抓取独立的 `ponder serve` 进程时，配置样本为 `ponder_settings_info{command="serve",database="postgres"} 1`。
+
+直接调用 `runtime.LaunchApplication` 时，若未指定 CLI 命令，传入索引器会报告 `start`，仅启动查询服务会报告 `serve`。自行把 `query.Server` 挂到 HTTP 路由时，可调用 `server.SetApplicationMetrics("serve")` 为独立查询服务发布相同的进程信息。[命令与数据库验证](../parity/runs/native-process-info/RESULT.md)
+
 ### 查看 Go 回调耗时
 
 抓取写入进程的 `/metrics`，可按配置中的链名和事件名查看 setup、历史回填及实时追块的回调耗时。下面的 PromQL 返回过去 5 分钟各回调的 P95，单位为毫秒。
