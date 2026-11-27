@@ -30,6 +30,8 @@ type Registry struct {
 	blockArrival, realtimeLatency       *prometheus.HistogramVec
 	rpcDuration, handlerDuration        *prometheus.HistogramVec
 	rpcErrors                           *prometheus.CounterVec
+	historyTotal, historyCached         *prometheus.GaugeVec
+	historyDone                         *prometheus.GaugeVec
 	historyStart, historyEnd            *prometheus.GaugeVec
 	extract, transform, groupDuration   *prometheus.GaugeVec
 	completed                           *prometheus.GaugeVec
@@ -55,6 +57,9 @@ func New() *Registry {
 		reorgs:          prometheus.NewCounterVec(prometheus.CounterOpts{Name: "ponder_realtime_reorg_total", Help: "Count of how many re-orgs have occurred"}, []string{"chain"}),
 		rpcDuration:     prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "ponder_rpc_request_duration", Help: "Duration of successful RPC requests", Buckets: networkDurationBuckets}, []string{"chain", "method"}),
 		rpcErrors:       prometheus.NewCounterVec(prometheus.CounterOpts{Name: "ponder_rpc_request_error_total", Help: "Total count of failed RPC requests"}, []string{"chain", "method"}),
+		historyTotal:    chainGauge("ponder_historical_total_blocks", "Number of blocks required for the historical sync"),
+		historyCached:   chainGauge("ponder_historical_cached_blocks", "Number of blocks that were found in the cache for the historical sync"),
+		historyDone:     chainGauge("ponder_historical_completed_blocks", "Number of blocks that have been processed for the historical sync"),
 		historyStart:    chainGauge("ponder_historical_start_timestamp_seconds", "Timestamp at which historical indexing started"),
 		historyEnd:      chainGauge("ponder_historical_end_timestamp_seconds", "Timestamp at which historical indexing ended"),
 		groupDuration:   prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: "ponder_historical_concurrency_group_duration", Help: "Duration of historical concurrency groups"}, []string{"group"}),
@@ -85,7 +90,7 @@ func New() *Registry {
 		Name: "ponder_indexing_function_duration", Help: "Duration of indexing function execution",
 		Buckets: []float64{0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000},
 	}, []string{"chain", "event"})
-	r.reg.MustRegister(r.dbDuration, r.dbErrors, r.postgresQueries, r.syncBlock, r.syncTimestamp, r.indexTime, r.syncRealtime, r.syncComplete, &r.info, r.handlerDuration, r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.historyStart, r.historyEnd, r.groupDuration, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
+	r.reg.MustRegister(r.dbDuration, r.dbErrors, r.postgresQueries, r.syncBlock, r.syncTimestamp, r.indexTime, r.syncRealtime, r.syncComplete, &r.info, r.handlerDuration, r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.historyStart, r.historyEnd, r.historyTotal, r.historyCached, r.historyDone, r.groupDuration, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
 	return r
 }
 
@@ -144,6 +149,9 @@ func (r *Registry) ResetIndexing() {
 	clear(r.liveChains)
 	r.historyStart.Reset()
 	r.historyEnd.Reset()
+	r.historyTotal.Reset()
+	r.historyCached.Reset()
+	r.historyDone.Reset()
 	r.completed.Reset()
 	r.handlerDuration.Reset()
 	r.reorgs.Reset()

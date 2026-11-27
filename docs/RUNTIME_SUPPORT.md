@@ -61,11 +61,13 @@ The writer reports the rounded Unix seconds when its historical phase starts and
 
 The writer publishes the chain time of committed indexing progress as `ponder_indexing_timestamp` with a `chain` label. Default multichain and Isolated track each chain independently. Omnichain publishes one ordered position for all participating chains. The finite dual-store Omnichain runner advances to the verified scan end on activation, including empty tails. [Reading indexing progress](USAGE.md#查看每条链的同步位置) · [Restart and fork checks](../parity/runs/native-indexing-timestamp/RESULT.md)
 
-The Go writer registers 28 of the 39 explicitly named upstream metric families under matching names. The remaining 11 fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Process gauges](../metrics/process.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
+The writer reports total, cached and newly acquired historical block counts per chain. Atomic workers publish the confirmed prefix at the end of the initial scan. Dual-store source scans publish coverage as acquisition advances. [Semantics and PromQL](USAGE.md#查看历史回填的区块数) · [Cache and restart verification](../parity/runs/native-historical-block-counts/RESULT.md)
+
+The Go writer registers 31 of the 39 explicitly named upstream metric families under matching names. The remaining eight fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Process gauges](../metrics/process.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
 
 | Area | Families without a matching Go metric | Measurement |
 | --- | ---: | --- |
-| Historical sync | 6 | Block counts use `ponder_historical_total_blocks`, `ponder_historical_cached_blocks`, `ponder_historical_completed_blocks`. Chain time in seconds uses `ponder_historical_total_indexing_seconds`, `ponder_historical_cached_indexing_seconds`, `ponder_historical_completed_indexing_seconds`. |
+| Historical sync | 3 | Chain time in seconds uses `ponder_historical_total_indexing_seconds`, `ponder_historical_cached_indexing_seconds`, `ponder_historical_completed_indexing_seconds`. |
 | Indexing | 5 | `ponder_indexing_cache_query_duration`, `ponder_indexing_store_raw_sql_duration`, `ponder_indexing_rpc_action_duration`, `ponder_indexing_rpc_prefetch_total`, `ponder_indexing_rpc_requests_total`. |
 
 ## Application verification

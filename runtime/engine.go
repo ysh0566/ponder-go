@@ -257,7 +257,9 @@ func (e *Engine) syncToHead(ctx context.Context, samples polledHeads, window *me
 	if err != nil {
 		return false, err
 	}
+	scan := e.historicalScan(ctx, start, missing)
 	if start > head {
+		scan.empty()
 		if e.staged != nil {
 			return false, e.startRealtime(ctx)
 		}
@@ -310,9 +312,13 @@ func (e *Engine) syncToHead(ctx context.Context, samples polledHeads, window *me
 		if err = e.startRealtime(ctx); err != nil {
 			return false, err
 		}
-		return false, e.finalizeStaged(ctx, latest)
+		err := e.finalizeStaged(ctx, latest)
+		if err == nil {
+			scan.finish(min(head, e.staged.historyEnd))
+		}
+		return false, err
 	}
-	return e.finalizeIndexed(ctx, latest, head)
+	return e.finalizeIndexed(ctx, latest, head, scan)
 }
 
 var errIndexingFork = errors.New("chain changed during indexing")
@@ -329,17 +335,22 @@ func (e *Engine) finalityCutoff(latest Block) (uint64, error) {
 	return now - window, nil
 }
 
-func (e *Engine) finalizeIndexed(ctx context.Context, latest Block, through uint64) (bool, error) {
+func (e *Engine) finalizeIndexed(ctx context.Context, latest Block, through uint64, scan *atomicHistoricalScan) (bool, error) {
 	cutoff, err := e.finalityCutoff(latest)
 	if err != nil {
 		return false, err
 	}
 	candidate, err := e.Store.IndexedFinalityCandidate(ctx, e.chain.ID, through, cutoff)
-	if err != nil || candidate == nil {
+	if err != nil {
 		return false, err
+	}
+	if candidate == nil {
+		scan.empty()
+		return false, nil
 	}
 	done := e.endBlock != nil && candidate.Number == *e.endBlock
 	if candidate.Hash == e.finalizedHash && e.finalizedHash != "" {
+		scan.finish(candidate.Number)
 		return done, nil
 	}
 	canonical, err := e.block(ctx, Hex(candidate.Number))
@@ -366,6 +377,7 @@ func (e *Engine) finalizeIndexed(ctx context.Context, latest Block, through uint
 		return false, err
 	}
 	finalize()
+	scan.finish(candidate.Number)
 	e.finalizedHash = candidate.Hash
 	return done, nil
 }
@@ -852,21 +864,25 @@ func (e *Engine) pollingInterval() time.Duration {
 	return interval
 }
 
-func pollIndexer(ctx context.Context, interval time.Duration, ready func(bool), window *metrics.BackfillWindow, sync func(context.Context, polledHeads, *metrics.BackfillWindow) (bool, error), endpoints ...string) error {
+func pollIndexer(ctx context.Context, pollInterval time.Duration, ready func(bool), window *metrics.BackfillWindow, sync func(context.Context, polledHeads, *metrics.BackfillWindow) (bool, error), endpoints ...string) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	heads := headNotifications(ctx, endpoints...)
-	retry := min(interval, time.Second)
+	retry := min(pollInterval, time.Second)
 	// Remember catch-up tips so a fork on the first live poll cannot
 	// turn a replay of an unchanged peer into a fresh head sample.
 	samples := make(polledHeads)
 	pollCtx := metrics.WithRealtime(ctx, nil)
+	if metrics.Historical(ctx) != nil {
+		// One poller owns this plan through retries. The live context drops it.
+		pollCtx = context.WithValue(pollCtx, atomicBackfillKey{}, map[uint64][]interval.Interval{})
+	}
 	for {
 		done, err := sync(pollCtx, samples, window)
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		delay := interval
+		delay := pollInterval
 		notify := heads
 		if err != nil {
 			notify = nil
@@ -883,7 +899,7 @@ func pollIndexer(ctx context.Context, interval time.Duration, ready func(bool), 
 			if done {
 				return nil
 			}
-			retry = min(interval, time.Second)
+			retry = min(pollInterval, time.Second)
 			// Subsequent polls and reorg replay belong to the live run.
 			ctx = metrics.WithHistorical(ctx, nil)
 			pollCtx = ctx

@@ -144,6 +144,9 @@ func TestRuntimeBoundedLifecycle(t *testing.T) {
 				t.Logf("diagnostic calls=%v control=%+v readErr=%v", calls, c, e)
 				t.Fatal(err)
 			}
+			for _, name := range []string{"one", "two"} {
+				assertHistoricalBlockCounts(t, registry, name, 2, 0, 2)
+			}
 			if !out.Ready || !out.Completed || out.HistoricalBlocks != 4 || out.LiveBlocks != 2 || activations != 1 {
 				t.Fatalf("result=%+v activations=%d", out, activations)
 			}
@@ -199,9 +202,13 @@ func TestRuntimeBoundedLifecycle(t *testing.T) {
 			if ready, err := r2.Ready(context.Background()); err != nil || ready {
 				t.Fatalf("recovery ready=%v err=%v", ready, err)
 			}
-			out, err = r2.Run(context.Background())
+			registry = metrics.New()
+			out, err = r2.Run(metrics.WithHistorical(t.Context(), registry))
 			if err != nil {
 				t.Fatal(err)
+			}
+			for _, name := range []string{"one", "two"} {
+				assertHistoricalBlockCounts(t, registry, name, 2, 2, 0)
 			}
 			if !out.Recovered || !out.Completed || !out.Ready || out.HistoricalBlocks != 0 || out.LiveBlocks != 2 {
 				t.Fatalf("recovery result=%+v", out)

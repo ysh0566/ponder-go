@@ -213,6 +213,26 @@ ponder_historical_concurrency_group_duration
 
 `group="extract"` 累计等待下一批历史数据就绪的毫秒数，`group="transform"` 累计消费这批数据的毫秒数，包括其中执行的回调和数据库写入。启用预取时，只计算消费端实际等待数据的时间。两组按进程汇总所有链，支持小数毫秒。并行链的耗时会累加；要查看整次回填经过的时间，可使用下节的起止时间。索引指标重置会保留这两个累计值，重启进程后从新注册表开始记录。[分组计时验证](../parity/runs/native-historical-group-duration/RESULT.md)
 
+### 查看历史回填的区块数
+
+写入进程的 `/metrics` 按 `chain` 提供三个区块数。区间包含起点和终点。比如从第 100 块到第 104 块，总数为 5。
+
+| 指标 | 含义 |
+| --- | --- |
+| `ponder_historical_total_blocks` | 本次历史扫描覆盖的区块数 |
+| `ponder_historical_cached_blocks` | 扫描开始时已有覆盖的区块数，包含来源范围间无需重新取数的高度 |
+| `ponder_historical_completed_blocks` | 本次扫描新补齐的区块数，包含已扫过但没有事件的区块 |
+
+以下 PromQL 显示各链还需获取的区块数。三个值均为 0 意味着当前回填区间为空。
+
+```promql
+ponder_historical_total_blocks - ponder_historical_cached_blocks - ponder_historical_completed_blocks
+```
+
+单库写入进程在首轮扫描完成后，根据已经确认的连续区间发布快照。Omnichain 只计入全局排序已允许处理的区间。双库默认多链和 Isolated 在启动时统计已验证的持久化进度，随后按成功提交的历史区块推进。启动时离线并直接加入实时阶段的链没有本次回填样本。
+
+双库来源扫描会复用已有区间，重叠来源只计算一次。关闭 RPC 缓存时，正在运行的来源扫描将已扫过的范围计入 `completed_blocks`。已完成的有限作业再次运行时，可以复用整个持久化结果。这些数值描述区块取数进度，回调的提交位置可查看 `ponder_indexing_timestamp`。[缓存、空区间与重启测试](../parity/runs/native-historical-block-counts/RESULT.md)
+
 ### 查看历史回填的起止时间
 
 抓取写入进程的 `/metrics`。以下 PromQL 表达式按链计算本次回填的墙钟耗时，单位为秒。

@@ -389,6 +389,21 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		if e = lineage.finish(); e != nil {
 			return result, e
 		}
+		if r.build.Ordering != "omnichain" && metrics.Historical(run) != nil {
+			start, end := r.starts[id], min(control.HistoryCuts[id], r.ends[id])
+			total, reused := float64(0), float64(0)
+			if start <= end {
+				total = float64(end - start + 1)
+				next, e := store.ManagedLiveNextBlock(control, id)
+				if e != nil {
+					return result, e
+				}
+				if next > start {
+					reused = min(total, float64(next-start))
+				}
+			}
+			metrics.Historical(run).SetHistoricalBlocks(fmt.Sprint(c["name"]), total, reused, 0)
+		}
 		if isolatedWindows[id] != nil && store.ManagedLiveReachedBlock(control, id, control.HistoryCuts[id]) {
 			isolatedWindows[id].Finish()
 		}
@@ -621,6 +636,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		r.observeSyncHead(run, i, block.head)
 		if block.history {
 			result.HistoricalBlocks++
+			metrics.Historical(run).AddHistoricalBlocks(fmt.Sprint(r.build.Chains[i]["name"]), 1)
 			if isolatedWindows[id] != nil && store.ManagedLiveReachedBlock(control, id, control.HistoryCuts[id]) {
 				isolatedWindows[id].Finish()
 			}

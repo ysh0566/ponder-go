@@ -27,6 +27,8 @@ type orderedChain struct {
 	head           uint64
 	start          uint64
 	endFinalized   bool
+	finalHeight    uint64
+	scan           *atomicHistoricalScan
 	gaps           []interval.Interval
 	next           Block
 	headerDuration time.Duration
@@ -132,7 +134,7 @@ func (r *orderedIndexer) sync(ctx context.Context, samples polledHeads, window *
 		if err != nil {
 			return false, err
 		}
-		chains[i] = orderedChain{engine: e, latest: latest, head: head.BlockNumber, endFinalized: e.endBlock != nil && safe.BlockNumber >= *e.endBlock}
+		chains[i] = orderedChain{engine: e, latest: latest, head: head.BlockNumber, finalHeight: safe.BlockNumber, endFinalized: e.endBlock != nil && safe.BlockNumber >= *e.endBlock}
 		if !chains[i].endFinalized {
 			allFinished = false
 			watermark = min(watermark, checkpoint.MustEncode(head))
@@ -169,6 +171,20 @@ func (r *orderedIndexer) sync(ctx context.Context, samples polledHeads, window *
 		r.sealed = finalWatermark
 	}
 	for _, c := range chains {
+		if c.scan != nil {
+			through := c.finalHeight
+			if c.engine.endBlock != nil {
+				through = min(through, *c.engine.endBlock)
+			}
+			// The first withheld block bounds the prefix admitted by the global watermark.
+			if c.key == "" {
+				c.scan.finish(through)
+			} else if n, _ := Number(c.next.Number); n > 0 {
+				c.scan.finish(min(through, n-1))
+			} else {
+				c.scan.empty()
+			}
+		}
 		metrics.ChainSync(ctx).SetSyncPhase(c.engine.chain.Name, c.endFinalized && c.key == "")
 	}
 	return allFinished, nil
@@ -228,7 +244,7 @@ func (r *orderedIndexer) syncMultichain(ctx context.Context, samples polledHeads
 		if c.engine.endBlock != nil {
 			through = min(through, *c.engine.endBlock)
 		}
-		finished, err := c.engine.finalizeIndexed(ctx, c.latest, through)
+		finished, err := c.engine.finalizeIndexed(ctx, c.latest, through, c.scan)
 		if err != nil {
 			return false, err
 		}
@@ -254,6 +270,7 @@ func processAvailable(ctx context.Context, samples polledHeads, chains []ordered
 		if err != nil {
 			return err
 		}
+		c.scan = c.engine.historicalScan(ctx, start, c.gaps)
 		if err = c.advance(ctx); err != nil {
 			return err
 		}

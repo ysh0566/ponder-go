@@ -90,7 +90,17 @@ func TestRuntimeOmnichainLogRanges(t *testing.T) {
 						seedSparseSource(t, r, g)
 					}
 					registry := metrics.New()
-					out, err := r.Run(metrics.WithChainSync(ctx, registry))
+					out, err := r.Run(metrics.WithChainSync(metrics.WithHistorical(ctx, registry), registry))
+					if pass == 0 && !cached {
+						// Height two on chain one lies between its disjoint log filters.
+						assertHistoricalBlockCounts(t, registry, "one", 3, 1, 2)
+						assertHistoricalBlockCounts(t, registry, "two", 3, 0, 3)
+					} else if pass <= 1 {
+						// On restart, the failed callback's input is available on both chains.
+						for _, name := range []string{"one", "two"} {
+							assertHistoricalBlockCounts(t, registry, name, 3, 3, 0)
+						}
+					}
 					if pass == 0 {
 						if err == nil || !strings.Contains(err.Error(), "range callback interrupted") || out.Ready || out.Completed || len(calls) == 0 || calls[len(calls)-1] != "2:3:B:1" {
 							t.Fatalf("callback rollback: result=%+v calls=%v err=%v", out, calls, err)

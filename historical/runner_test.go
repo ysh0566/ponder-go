@@ -883,6 +883,7 @@ func TestFiniteHistoricalRunnerFiniteBoundary(t *testing.T) {
 					t.Fatal(err)
 				}
 				assertIndexingTime(t, registry, name, ts)
+				assertHistoricalBlockCounts(t, registry, name, 5, 0, 5)
 			}
 			finiteAssertEnds(t, r, 5)
 			latest := 0
@@ -894,6 +895,14 @@ func TestFiniteHistoricalRunnerFiniteBoundary(t *testing.T) {
 			if latest != 2 || p.inflight.Load() != 0 {
 				t.Fatal("extra latest read or worker leak", latest, p.inflight.Load())
 			}
+			reopened := metrics.New()
+			resumed, e := r.Run(metrics.WithHistorical(t.Context(), reopened))
+			if e != nil || !resumed.Resumed || !resumed.Completed || len(resumed.Groups) != 0 {
+				t.Fatal(resumed, e)
+			}
+			for _, name := range []string{"one", "two"} {
+				assertHistoricalBlockCounts(t, reopened, name, 5, 5, 0)
+			}
 		})
 	}
 }
@@ -903,9 +912,13 @@ func TestFiniteHistoricalRunnerCacheDisabled(t *testing.T) {
 			p := newFiniteRPC(t, 4)
 			build := finiteBuild(t, p, 4, false, indexing.Handler(finiteIncrement), nil)
 			r := newFiniteFixture(t, backend, build).start(t)
-			result, e := r.Run(context.Background())
+			registry := metrics.New()
+			result, e := r.Run(metrics.WithHistorical(t.Context(), registry))
 			if e != nil || !result.Completed {
 				t.Fatal(result, e)
+			}
+			for _, name := range []string{"one", "two"} {
+				assertHistoricalBlockCounts(t, registry, name, 4, 0, 4)
 			}
 			finiteAssertEnds(t, r, 4)
 			e = r.owner.WithHistoricalSync(context.Background(), 0, func(ctx context.Context, s *indexing.HistoricalSync) error {

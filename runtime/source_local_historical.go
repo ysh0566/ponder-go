@@ -51,6 +51,7 @@ func sourceLocalStoreMissing(s SourceLocalHistoricalStore) bool {
 type SourceLocalHistoricalOptions struct {
 	FilterSession   *filter.Session
 	ChainID         uint64
+	ChainName       string
 	Requester       rpc.Requester
 	Actions         *rpc.Actions
 	EventCallbacks  []protocol.Object
@@ -62,10 +63,10 @@ type SourceLocalHistoricalOptions struct {
 	// persistence provider. It is not an arbitrary cancellation override.
 	// Leave nil for a standalone SourceSyncStore and legacy M37 behavior.
 	PersistenceContext context.Context
-	From, To        string
-	Limit           int
-	IsCatchup       bool
-	Acquisition     SourceHistoricalOptions
+	From, To           string
+	Limit              int
+	IsCatchup          bool
+	Acquisition        SourceHistoricalOptions
 	// Clock and TargetDuration control the same adaptive window estimator as the
 	// source. A nil Clock uses time.Now; the default target is production's 10s.
 	Clock          func() time.Time
@@ -258,7 +259,9 @@ func LocalSourceSync(ctx context.Context, o SourceLocalHistoricalOptions) iter.S
 			fail(e)
 			return
 		}
+		registry := metrics.Historical(ctx)
 		if first > finalized {
+			registry.PlanHistoricalBlocks(o.ChainName, 0, 0, false)
 			o.Progress.Current = o.Progress.Finalized
 			return
 		}
@@ -268,10 +271,13 @@ func LocalSourceSync(ctx context.Context, o SourceLocalHistoricalOptions) iter.S
 			return
 		}
 		planningFilters, cached := sourceLocalPlanning(o, filters)
-		if _, e = RequiredSourceIntervalUnion(planningFilters, store.SourceInterval{first, lastNumber}, cached); e != nil {
+		required, e := RequiredSourceIntervalUnion(planningFilters, store.SourceInterval{first, lastNumber}, cached)
+		if e != nil {
 			fail(e)
 			return
 		}
+		total := math.Max(0, lastNumber-first+1)
+		registry.PlanHistoricalBlocks(o.ChainName, total, total-sourceIntervalSize(required), o.IsCatchup)
 		if o.Progress.Current != nil {
 			current, e := sourceHistoricalNumber(o.Progress.Current["number"])
 			if e != nil {
@@ -300,7 +306,7 @@ func LocalSourceSync(ctx context.Context, o SourceLocalHistoricalOptions) iter.S
 		finished := make(chan struct{})
 		go func() {
 			defer close(finished)
-			q.finish(sourceRunLocalSync(owned, o, filters, syncer, first, lastNumber, last, q.emit))
+			q.finish(sourceRunLocalSync(owned, o, filters, syncer, required, first, lastNumber, last, q.emit))
 		}()
 		defer func() { cancel(); <-finished }()
 		for {
@@ -318,7 +324,7 @@ func LocalSourceSync(ctx context.Context, o SourceLocalHistoricalOptions) iter.S
 		}
 	}
 }
-func sourceRunLocalSync(ctx context.Context, o SourceLocalHistoricalOptions, filters []filter.Object, syncer *SourceHistoricalSync, first, lastNumber float64, last filter.Object, emit func(float64)) error {
+func sourceRunLocalSync(ctx context.Context, o SourceLocalHistoricalOptions, filters []filter.Object, syncer *SourceHistoricalSync, missing []store.SourceInterval, first, lastNumber float64, last filter.Object, emit func(float64)) error {
 	now := o.Clock
 	if now == nil {
 		now = time.Now
@@ -386,6 +392,15 @@ func sourceRunLocalSync(ctx context.Context, o SourceLocalHistoricalOptions, fil
 		}
 		if isLast {
 			o.Progress.Current = last
+		}
+		if registry := metrics.Historical(ctx); registry != nil {
+			// A window may cross cached holes and disjoint filter ranges. Each
+			// newly acquired height contributes once, even with overlapping filters.
+			for len(missing) > 0 && missing[0][1] < p.span[0] {
+				missing = missing[1:]
+			}
+			covered := sourceIntervalIntersection(missing, []store.SourceInterval{p.span})
+			registry.AddHistoricalBlocks(o.ChainName, sourceIntervalSize(covered))
 		}
 		if len(p.required) > 0 || isLast {
 			emit(p.span[1])
@@ -488,10 +503,13 @@ func LocalSourceInMemoryEvents(ctx context.Context, o SourceLocalHistoricalOptio
 			fail(e)
 			return
 		}
+		registry := metrics.Historical(ctx)
 		if first > finalized {
+			registry.PlanHistoricalBlocks(o.ChainName, 0, 0, false)
 			o.Progress.Current = o.Progress.Finalized
 			return
 		}
+		registry.PlanHistoricalBlocks(o.ChainName, math.Max(0, lastNumber-first+1), 0, o.IsCatchup)
 		if o.Progress.Current != nil {
 			n, e := sourceHistoricalNumber(o.Progress.Current["number"])
 			if e != nil {
@@ -527,6 +545,7 @@ func LocalSourceInMemoryEvents(ctx context.Context, o SourceLocalHistoricalOptio
 			return
 		}
 		cursor := float64(from.BlockNumber)
+		registry.AddHistoricalBlocks(o.ChainName, math.Min(cursor, lastNumber+1)-first)
 		for data, e := range syncer.SyncBlockData(ctx, required, factories) {
 			if e != nil {
 				fail(e)
@@ -547,6 +566,7 @@ func LocalSourceInMemoryEvents(ctx context.Context, o SourceLocalHistoricalOptio
 				return
 			}
 			span := [2]float64{cursor, data.Cursor}
+			registry.AddHistoricalBlocks(o.ChainName, data.Cursor-cursor+1)
 			cursor = data.Cursor + 1
 			if !yield(&SourceRawEventBatch{Events: built, Checkpoint: cp, BlockRange: span}, nil) {
 				return
@@ -554,6 +574,7 @@ func LocalSourceInMemoryEvents(ctx context.Context, o SourceLocalHistoricalOptio
 		}
 		o.Progress.Current = last
 		if cursor <= lastNumber {
+			registry.AddHistoricalBlocks(o.ChainName, lastNumber-cursor+1)
 			yield(&SourceRawEventBatch{Events: []protocol.RawEvent{}, Checkpoint: o.To, BlockRange: [2]float64{cursor, lastNumber}}, nil)
 		}
 	}
