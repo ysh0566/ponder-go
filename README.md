@@ -30,7 +30,7 @@ CLI 版本为 `0.18.2-go.0`。运行 `ponder init my-indexer` 创建 ERC-20 索�
 
 用 Go 新写索引器，普通入口 `runtime.NewIndexer` 已支持默认多链、Isolated 和 Omnichain 的历史回填、持续追块和重组恢复。使用编译后的 Go 来源配置时可选 `runtime.NewIndexerFromSource`。两个入口都使用 `runtime.Handler`。[运行模式矩阵](docs/RUNTIME_SUPPORT.md) · [选择运行入口](docs/USAGE.md#选择-go-索引器的运行入口)
 
-业务数据和同步缓存分开管理时，`historical.RuntimeRunner` 已支持默认多链和 Isolated 持续追块。Isolated 遇到分叉时仅撤销该链的未确认写入。进程重启时，各链从自己的安全检查点继续。[双库 Isolated 用法](docs/USAGE.md#双库-isolated-实时追块) · [分叉与重启验证](parity/runs/native-isolated-live/RESULT.md)
+**Isolated 冷启动还有两处依赖所有链的 RPC。** 如果启动时就要在另一条链离线的情况下写入健康链，可直接把 `config.Config` 交给单库 `runtime.NewIndexer`。使用编译配置时，`config.BuildSourceIndexing` 会先读取每条配置链的最新区块并计算最终确认位置，一条链离线即可阻止构建。使用独立业务库和同步库时，即使配置已编译，首次打开和冷重启还会重新读取每条参与链的区块头。双库 Isolated 进入实时阶段后，健康链可以独立提交。[启动故障复验](parity/runs/native-go-startup-audit/RESULT.md) · [双库分叉与重启](parity/runs/native-isolated-live/RESULT.md)
 
 **双库 Omnichain 实时索引仍待实现。** 固定区间的作业可以提前启动，等每条链的结束区块和初始化区块都达到全局最终确认位置后再回填。默认在打开时检查一次，Go 应用也可配置轮询间隔。[提前启动的用法](docs/USAGE.md#等待双库-omnichain-的区间最终确认) Go 应用可通过 `runtime.StreamSourceOmnichain` 读取按全局检查点排列的历史与实时事件，包括回填时暂缓交付的事件。[Go 事件流用法](docs/USAGE.md#读取-omnichain-历史和实时事件) 如果项目同时需要 `indexing.Handler`、独立的同步缓存和跨链全局实时排序，就会遇到这个限制。双库运行器还需要将实时事件和检查点写入业务事务，保存可供重启恢复的进度。一条链分叉时，需要协调两个库撤销受影响的写入，并按顺序重放依赖这些写入的其他链回调。[最终性边界](historical/live_runtime_omnichain_source_test.go)
 

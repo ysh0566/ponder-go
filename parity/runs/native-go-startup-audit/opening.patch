@@ -1,0 +1,57 @@
+--- a/historical/isolated_live_outage_test.go
++++ b/historical/isolated_live_outage_test.go
+@@ -4,0 +5 @@
++	"errors"
+@@ -8,0 +10 @@
++	"strings"
+@@ -15,0 +18 @@
++	"github.com/ysh0566/ponder-go/rpc"
+@@ -47,0 +51,19 @@
++			cfg, err := config.ParseSourceConfiguration([]byte(raw))
++			if err != nil {
++				t.Fatal(err)
++			}
++			base, err := config.BuildSourceConfig(cfg, config.SourceBuildOptions{})
++			if err != nil {
++				t.Fatal(err)
++			}
++			for _, client := range base.RPCClients() {
++				client.Retries = 0
++			}
++			offline.Store(true)
++			candidate, err := config.BuildSourceIndexing(t.Context(), cfg, base, []config.SourceIndexingFunction{{Name: "Blocks:block", Fn: handler}})
++			if candidate != nil || err == nil || !strings.Contains(err.Error(), "503") || len(calls[2]) != 0 || failures.Load() == 0 {
++				t.Fatalf("unavailable source build=%v err=%v callbacks=%v", candidate, err, calls)
++			}
++			t.Logf("source build with chain one offline: HTTP 503, healthy callbacks=%d", len(calls[2]))
++			offline.Store(false)
++			failures.Store(0)
+@@ -130,0 +153,26 @@
++
++			checkOfflineOpening := func(openID string) {
++				t.Helper()
++				offline.Store(true)
++				defer offline.Store(false)
++				attempt := o
++				attempt.OpenID = openID
++				open := OpenRuntimePostgres
++				if backend == "pglite" {
++					open = OpenRuntimePGlite
++				}
++				before := len(calls[2])
++				runner, err := open(t.Context(), attempt)
++				if runner != nil {
++					runner.Close(t.Context())
++					t.Fatal("unexpected offline open")
++				}
++				var status *rpc.HTTPStatusError
++				if !errors.As(err, &status) || status.StatusCode != http.StatusServiceUnavailable || len(calls[2]) != before {
++					t.Fatalf("open %s: healthy callbacks %d -> %d; err %v", openID, before, len(calls[2]), err)
++				}
++				t.Logf("%s: opening failed with HTTP %d; healthy callbacks %d -> %d", openID, status.StatusCode, before, len(calls[2]))
++			}
++			checkOfflineOpening("new-offline")
++			failures.Store(0)
++
+@@ -148,0 +197 @@
++			checkOfflineOpening("reopen-offline")
