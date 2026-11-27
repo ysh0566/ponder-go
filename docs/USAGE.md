@@ -7,14 +7,13 @@
 | 业务需要 | 运行入口 | 可用的多链模式 |
 | --- | --- | --- |
 | 用 Go 配置链和来源，在回调里写业务表 | `runtime.NewIndexer` | 默认多链、Isolated、Omnichain 均可回填并持续追块。 |
+| 用来源声明和 Go 回调启动单库索引器 | `runtime.NewSourceIndexer` | 三种排序均可用，固定区块边界可离线编译。 |
 | 已用 Go 编译来源配置，并注册了 `runtime.Handler` | `runtime.NewIndexerFromSource` | 沿用编译配置选定的排序，一次启动所有注册了来源的链。 |
 | 分开管理业务数据和同步缓存，使用 `indexing.Handler` | `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` | 默认多链与 Isolated 均可持续运行。Omnichain 的各链区间须在共同最终确认检查点以内。 |
 
 如果各链分别维护自己的余额，使用 Isolated，在业务表主键中包含 `chain_id`。如果多条链共同维护一个按事件先后计算的值，使用 Omnichain，运行器会按跨链 checkpoint 排序回调。PostgreSQL 双库存储使用同一数据库内的两个命名空间，PGlite 使用两个数据目录。[独立多链示例](#从同一个-go-项目索引多条链) · [跨链排序示例](#按全局顺序索引多条链) · [双库存储](#独立存储的有限区间索引)
 
-**一条链在启动时就离线。** 如果健康链需要立即开始索引，将 `config.Config` 直接传给 `runtime.NewIndexer`，并选择 Isolated。各链分别启动，健康链可写入业务行，整个部署等其余链也追上后才就绪。[双链启动测试](../runtime/isolated_indexer_test.go)
-
-从来源声明构建配置时，`config.BuildSourceIndexing` 会先向每条配置链读取最新区块并计算最终确认位置，再筛选注册了回调的链。持续的 RPC 故障会在这一步返回错误，此时还没有可传入 `runtime.NewIndexerFromSource` 的构建结果。[来源构建](../config/source_indexing.go)
+**一条链在启动时就离线。** 单库 Isolated 可直接用 `runtime.NewIndexer`，或将来源声明与回调交给 `runtime.NewSourceIndexer`。后者会按声明校验所有来源与工厂，只有起止高度显式写为 `"latest"` 的链才需要在编译时读取区块头。同一条链上的所有动态边界共用一次读取。例如从第 1 块开始持续追块，可写 `"startBlock": 1` 并省略 `endBlock`。这样即使另一条已注册的链离线，健康链也可以先提交，故障链恢复并追上后部署才就绪。冷重启也可按链恢复。[来源配置示例](#用编译后的-go-来源配置启动多链) · [双链启动测试](../runtime/isolated_indexer_test.go)
 
 在双库 Isolated 中，即使已经编译了来源配置，首次打开和冷重启仍需向所有参与链读取启动数据。设置 `RuntimeOptions.Live` 后，一旦进入实时阶段，一条链的 RPC 离线会使部署暂时未就绪，健康链仍可提交新区块。[双库打开流程](../historical/live_runtime.go) · [Isolated 实时配置](#双库-isolated-实时追块) · [故障恢复测试](../historical/isolated_live_outage_test.go)
 
@@ -792,16 +791,26 @@ if err != nil {
 
 ### 用编译后的 Go 来源配置启动多链
 
-如果项目用来源配置声明链、合约或区块，可以直接用整份构建结果创建索引器。下面的 `sourceConfig` 是 `config.ParseSourceConfiguration` 返回的配置，其中 `Head` 是在多条链上声明的区块来源。`db` 是按相同排序打开的 `*store.Store`，`onHead` 是 Go 函数 `func(context.Context, *runtime.Context) error`。
+如果项目用来源配置声明链、合约或区块，可将声明与 Go 回调一起交给单库索引器。下面的 `sourceConfig` 由 `config.ParseSourceConfiguration` 返回，`Head` 是在多条链上声明的区块来源。`db` 是按相同排序打开的 `*store.Store`，`onHead` 是 Go 函数 `func(context.Context, *runtime.Context) error`。
+
+```go
+functions := []config.SourceIndexingFunction{
+    {Name: "Head:block", Fn: runtime.Handler(onHead)},
+}
+worker, err := runtime.NewSourceIndexer(ctx, sourceConfig, config.SourceBuildOptions{}, functions, db, runtime.Options{})
+if err != nil {
+    return err
+}
+```
+
+如果还需要每条参与链的最终确认区块，可显式生成完整构建结果。此过程要访问所有配置链。独立业务库和同步库也使用这种构建结果。[来源构建](../config/source_indexing.go)
 
 ```go
 base, err := config.BuildSourceConfig(sourceConfig, config.SourceBuildOptions{})
 if err != nil {
     return err
 }
-build, err := config.BuildSourceIndexing(ctx, sourceConfig, base, []config.SourceIndexingFunction{
-    {Name: "Head:block", Fn: runtime.Handler(onHead)},
-})
+build, err := config.BuildSourceIndexing(ctx, sourceConfig, base, functions)
 if err != nil {
     return err
 }

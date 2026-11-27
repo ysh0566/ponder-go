@@ -84,6 +84,15 @@ func sourceFinalized(ctx context.Context, chain *sourceObject, client *rpc.Clien
 	return blocks[result.Hash], nil
 }
 
+// Source and factory bounds resolve against the same head.
+func sourceNeedsLatest(source *sourceObject) bool {
+	hasLatest := func(o *sourceObject) bool {
+		return o.get("startBlock") == "latest" || o.get("endBlock") == "latest"
+	}
+	address, ok := source.get("address").(*sourceObject)
+	return hasLatest(source) || (ok && hasLatest(address))
+}
+
 func sourceResolveBlock(value any, latest *sourceObject) (any, error) {
 	if filter.IsUndefined(value) {
 		return filter.Undefined, nil

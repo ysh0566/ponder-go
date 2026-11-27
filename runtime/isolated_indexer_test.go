@@ -22,6 +22,14 @@ import (
 )
 
 func TestIsolatedIndexer(t *testing.T) {
+	testIsolatedIndexer(t, false)
+}
+
+func TestIsolatedSourceIndexer(t *testing.T) {
+	testIsolatedIndexer(t, true)
+}
+
+func testIsolatedIndexer(t *testing.T, fromSource bool) {
 	for _, dialect := range []string{"postgres", "pglite"} {
 		t.Run(dialect, func(t *testing.T) {
 			ctx := t.Context()
@@ -75,7 +83,7 @@ func TestIsolatedIndexer(t *testing.T) {
 			start := func() (*Application, *query.Server) {
 				t.Helper()
 				routes := query.New(db)
-				worker, err := NewIndexer(cfg, db, map[string]Handler{"Head:block": func(ctx context.Context, c *Context) error {
+				onHead := Handler(func(ctx context.Context, c *Context) error {
 					if c.Chain.ID == 101 {
 						firstCalls.Add(1)
 					} else {
@@ -89,7 +97,18 @@ func TestIsolatedIndexer(t *testing.T) {
 						return err
 					}
 					return c.DB.Write(ctx, "height", store.Row{"chain_id": c.Chain.ID, "number": number, "hash": c.Event.Block.Hash}, store.Insert)
-				}})
+				})
+				var worker ApplicationIndexer
+				if fromSource {
+					raw := fmt.Sprintf(`{"ordering":"experimental_isolated","chains":{"first":{"id":101,"rpc":%q,"pollingInterval":100},"second":{"id":202,"rpc":%q,"pollingInterval":100,"reorgWindow":0}},"blocks":{"Head":{"chain":{"first":{},"second":{}},"startBlock":1}}}`, first, gateway.URL)
+					project, parseErr := config.ParseSourceConfiguration([]byte(raw))
+					if parseErr != nil {
+						t.Fatal(parseErr)
+					}
+					worker, err = NewSourceIndexer(ctx, project, config.SourceBuildOptions{}, []config.SourceIndexingFunction{{Name: "Head:block", Fn: onHead}}, db, Options{})
+				} else {
+					worker, err = NewIndexer(cfg, db, map[string]Handler{"Head:block": onHead})
+				}
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -164,9 +183,16 @@ func TestIsolatedIndexer(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			offline.Store(true)
+			call(first, "evm_mine")
 			app, routes = start()
+			await(func() bool { return rows()["101/2"] != "" })
+			if routes.Ready.Load() || rows()["202/2"] != before["202/2"] {
+				t.Fatal("cold restart lost the peer row or became ready during its outage")
+			}
+			offline.Store(false)
 			await(func() bool { return routes.Ready.Load() })
-			if firstCalls.Load() != 3 || secondCalls.Load() != 2 || len(rows()) != 3 {
+			if firstCalls.Load() != 4 || secondCalls.Load() != 2 || len(rows()) != 4 {
 				t.Fatalf("unexpected replay: %d/%d, %v", firstCalls.Load(), secondCalls.Load(), rows())
 			}
 		})

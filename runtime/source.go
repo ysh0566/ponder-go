@@ -26,6 +26,20 @@ func NewFromSource(build *config.SourceIndexingBuild, chain string, s *store.Sto
 	return NewWithOptions(cfg, s, handlers, options)
 }
 
+// NewSourceIndexer compiles source declarations for a single store. Only
+// explicit "latest" bounds need RPC during compilation. With Isolated
+// ordering the workers can then start and recover independently.
+func NewSourceIndexer(ctx context.Context, project *config.SourceConfiguration, buildOptions config.SourceBuildOptions, functions []config.SourceIndexingFunction, db *store.Store, options Options) (ApplicationIndexer, error) {
+	if db == nil {
+		return nil, fmt.Errorf("indexer requires a store")
+	}
+	configs, err := config.BuildNativeSourceConfigs(ctx, project, buildOptions, functions)
+	if err != nil {
+		return nil, err
+	}
+	return newSourceIndexer(configs, db, options)
+}
+
 // NewIndexerFromSource starts from the complete compiled build. Its registered
 // callbacks use runtime.Handler. Serve or run the returned indexer with the same
 // application entry points used by NewIndexer.
@@ -37,6 +51,10 @@ func NewIndexerFromSource(build *config.SourceIndexingBuild, db *store.Store, op
 	if err != nil {
 		return nil, err
 	}
+	return newSourceIndexer(configs, db, options)
+}
+
+func newSourceIndexer(configs []config.Config, db *store.Store, options Options) (ApplicationIndexer, error) {
 	var workers isolatedIndexer
 	for _, cfg := range configs {
 		handlers, err := sourceHandlers(cfg.SourcePlan)
