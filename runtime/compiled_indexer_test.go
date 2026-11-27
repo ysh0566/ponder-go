@@ -111,7 +111,8 @@ func testCompiledIndexer(t *testing.T, urls []string, order schema.Ordering, dia
 		calls = append(calls, c.Chain.Name+"/"+key)
 		return nil
 	})
-	build, err := config.BuildSourceIndexing(ctx, input, base, []config.SourceIndexingFunction{{Name: "Head:block", Fn: record}, {Name: "Init:setup", Fn: record}})
+	functions := []config.SourceIndexingFunction{{Name: "Head:block", Fn: record}, {Name: "Init:setup", Fn: record}}
+	build, err := config.BuildSourceIndexing(ctx, input, base, functions)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -138,7 +139,12 @@ func testCompiledIndexer(t *testing.T, urls []string, order schema.Ordering, dia
 		if err != nil {
 			t.Fatal(err)
 		}
-		indexer, err := NewIndexerFromSource(build, db, Options{})
+		var indexer ApplicationIndexer
+		if attempt == 0 {
+			indexer, err = NewIndexerFromSource(build, db, Options{})
+		} else {
+			indexer, err = NewSourceIndexer(ctx, input, options, functions, db, Options{})
+		}
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -89,23 +89,54 @@ func sourceQuotedNames(names []string) string {
 // BuildSourceIndexing resolves actual RPC heads before constructing callbacks.
 // This dynamic adapter intentionally does not satisfy source type obligations.
 func BuildSourceIndexing(ctx context.Context, config *SourceConfiguration, built *SourceConfigBuild, functions []SourceIndexingFunction) (*SourceIndexingBuild, error) {
+	return buildSourceIndexing(ctx, config, built, functions, true)
+}
+
+// BuildNativeSourceConfigs compiles the single-store workers. A "latest" source
+// or factory bound needs one snapshot per chain. Workers acquire their own
+// finality when they run.
+func BuildNativeSourceConfigs(ctx context.Context, config *SourceConfiguration, options SourceBuildOptions, functions []SourceIndexingFunction) ([]Config, error) {
+	base, err := BuildSourceConfig(config, options)
+	if err != nil {
+		return nil, err
+	}
+	build, err := buildSourceIndexing(ctx, config, base, functions, false)
+	if err != nil {
+		return nil, err
+	}
+	return build.NativeConfigs()
+}
+
+func buildSourceIndexing(ctx context.Context, config *SourceConfiguration, built *SourceConfigBuild, functions []SourceIndexingFunction, withFinalizedBlocks bool) (*SourceIndexingBuild, error) {
 	if config == nil || built == nil || built.value == nil {
 		return nil, fmt.Errorf("source configuration and config build are required")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 	chains := built.value.Chains
 	latest := make([]*sourceObject, len(chains))
 	finalized := make([]*sourceObject, len(chains))
 	chainByName := map[string]int{}
 	chainNames := []string{}
+	fetchLatest := func(i int) error {
+		block, err := sourceHeader(ctx, built.value.RPCs[i], "latest")
+		if err != nil {
+			return fmt.Errorf("Unable to fetch \"latest\" block for chain '%s':\n%w", chains[i].get("name"), err)
+		}
+		latest[i] = block
+		return nil
+	}
 	for i, chain := range chains {
 		name := sourceString(chain.get("name"))
 		chainByName[name], chainNames = i, append(chainNames, name)
-		block, err := sourceHeader(ctx, built.value.RPCs[i], "latest")
-		if err != nil {
-			return nil, fmt.Errorf("Unable to fetch \"latest\" block for chain '%s':\n%s", name, err)
+		if !withFinalizedBlocks {
+			continue
 		}
-		latest[i] = block
-		block, err = sourceFinalized(ctx, chain, built.value.RPCs[i], block)
+		if err := fetchLatest(i); err != nil {
+			return nil, err
+		}
+		block, err := sourceFinalized(ctx, chain, built.value.RPCs[i], latest[i])
 		if err != nil {
 			return nil, err
 		}
@@ -170,6 +201,11 @@ func BuildSourceIndexing(ctx context.Context, config *SourceConfiguration, built
 			index, ok := chainByName[chainName]
 			if !ok {
 				return nil, fmt.Errorf("Validation failed: Invalid chain for '%s'. Got '%s', expected one of [%s].", name, chainName, sourceQuotedNames(chainNames))
+			}
+			if latest[index] == nil && sourceNeedsLatest(source) {
+				if err := fetchLatest(index); err != nil {
+					return nil, err
+				}
 			}
 			from, err := sourceResolveBlock(source.get("startBlock"), latest[index])
 			if err != nil {
@@ -238,7 +274,9 @@ func BuildSourceIndexing(ctx context.Context, config *SourceConfiguration, built
 		}
 		result.chains = append(result.chains, chain)
 		result.chainIndexes = append(result.chainIndexes, i)
-		result.finalized = append(result.finalized, finalized[i])
+		if withFinalizedBlocks {
+			result.finalized = append(result.finalized, finalized[i])
+		}
 		result.callbacks, result.setup, result.contracts = append(result.callbacks, callbacks), append(result.setup, setup), append(result.contracts, contracts)
 	}
 	if len(result.chains) == 0 {

@@ -2222,20 +2222,25 @@
       "status": "verified_subset",
       "implementation_files": [
         "config/source_native.go",
+        "config/source_indexing.go",
+        "config/source_blocks.go",
         "runtime/indexer.go",
         "runtime/source.go"
       ],
       "native_test_files": [
-        "runtime/compiled_indexer_test.go"
+        "runtime/compiled_indexer_test.go",
+        "runtime/isolated_indexer_test.go",
+        "config/source_native_heads_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/build/config.ts",
         "packages/core/src/build/config.test.ts"
       ],
       "evidence": [
-        "parity/runs/native-compiled-indexer/RESULT.md"
+        "parity/runs/native-compiled-indexer/RESULT.md",
+        "parity/runs/native-isolated-source-start/RESULT.md"
       ],
-      "remaining": "The constructor binds native runtime.Handler callbacks. The independent storage runtime has a separate lifecycle and callback interface."
+      "remaining": "Single-store source declarations with fixed or omitted bounds can start isolated workers through a peer outage. Explicit latest bounds require that chain at compile time. The full build and independent storage runtime acquire heads during startup."
     },
     {
       "id": "native-coordinated-engine-recovery",
