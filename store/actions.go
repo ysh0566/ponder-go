@@ -135,7 +135,7 @@ func (s *Store) commitBlock(ctx context.Context, tx Transaction, table string, t
 	if s.Ordering == schema.Isolated {
 		query += " AND chain_id=$2"
 	}
-	return tx.Exec(ctx, query, args...)
+	return databaseExec(ctx, tx, "commit_block", query, args...)
 }
 func (a *Actions) CommitBlock(ctx context.Context, table string, target checkpoint.Checkpoint) error {
 	return a.transaction(ctx, func(tx Transaction) error { return a.s.commitBlock(ctx, tx, table, target) })

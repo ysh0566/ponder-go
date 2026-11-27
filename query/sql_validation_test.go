@@ -77,9 +77,27 @@ func TestSQLValidationHTTP(t *testing.T) {
 					t.Fatalf("Public cached diagnostic %q: status=%d body=%q error=%v", message, status, body, err)
 				}
 			}
+			if status, _, err := responseBody("SELECT 1 / 0"); err != nil || status != 500 {
+				t.Fatalf("database error: status=%d err=%v", status, err)
+			}
 			tooLong := "SELECT 1 /*" + strings.Repeat("😀", 2_500) + "*/"
 			if status, body, err := responseBody(tooLong); err != nil || status != 500 || !strings.Contains(body, "Invalid query") {
 				t.Fatalf("Public SQL cap: status=%d body=%q error=%v", status, body, err)
+			}
+			body, err := server.Metrics.Collect(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, sample := range []string{
+				`ponder_database_method_duration_count{method="readonly_query"} 2`,
+				`ponder_database_method_error_total{method="readonly_query"} 1`,
+			} {
+				if !strings.Contains(body, sample+"\n") {
+					t.Fatalf("missing %s in %s", sample, body)
+				}
+			}
+			if got := strings.Contains(body, `ponder_postgres_query_total{pool="default"}`); got != (dialect == "postgres") {
+				t.Fatalf("PostgreSQL submissions on %s: %t", dialect, got)
 			}
 		})
 	}

@@ -449,6 +449,6 @@ func queryReadOnlyInNamespace(ctx context.Context, backend Backend, namespace, s
 	if e = tx.Exec(ctx, "SET LOCAL statement_timeout='5s'"); e != nil {
 		return Result{}, e
 	}
-	result, e := tx.Query(ctx, strings.TrimSpace(sql), args...)
+	result, e := databaseQuery(ctx, tx, "readonly_query", strings.TrimSpace(sql), args...)
 	return result, e
 }

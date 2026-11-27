@@ -9,6 +9,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/ysh0566/ponder-go/metrics"
 )
 
 // SourceQueryAttempt reports a labeled operation after one attempt.
@@ -117,7 +119,7 @@ func NewSourceQueryBuilder(b Backend, observe func(SourceQueryAttempt)) (*Source
 				if err != nil {
 					return nil, nil, nil, err
 				}
-				return beginSourceConnection(ctx, conn, func() { conn.Close() })
+				return beginSourceConnection(ctx, conn, pg.pool, func() { conn.Close() })
 			}
 		} else {
 			// A caller-provided backend retains its own connection ownership.
@@ -135,11 +137,10 @@ func NewSourceQueryBuilder(b Backend, observe func(SourceQueryAttempt)) (*Source
 type sourceSQLConnection struct{ conn *sql.Conn }
 
 func (c sourceSQLConnection) Query(ctx context.Context, s string, args ...any) (Result, error) {
-	return pgQuery(ctx, c.conn, s, args...)
+	return pgQuery(ctx, c.conn, "dedicated", s, args...)
 }
 func (c sourceSQLConnection) Exec(ctx context.Context, s string, args ...any) error {
-	_, err := c.conn.ExecContext(ctx, s, databaseArgs(args)...)
-	return err
+	return pgExec(ctx, c.conn, "dedicated", s, args...)
 }
 
 // NewSourceConnectionQueryBuilder borrows one dedicated PostgreSQL connection.
@@ -149,18 +150,18 @@ func NewSourceConnectionQueryBuilder(conn *sql.Conn, observe func(SourceQueryAtt
 	}
 	q := &SourceQueryBuilder{raw: sourceSQLConnection{conn}, client: conn, dialect: "postgres", observe: observe}
 	q.begin = func(ctx context.Context) (Transaction, any, func(), error) {
-		return beginSourceConnection(ctx, conn, func() {})
+		return beginSourceConnection(ctx, conn, "dedicated", func() {})
 	}
 	return q, nil
 }
 
-func beginSourceConnection(ctx context.Context, conn *sql.Conn, release func()) (Transaction, any, func(), error) {
+func beginSourceConnection(ctx context.Context, conn *sql.Conn, pool string, release func()) (Transaction, any, func(), error) {
 	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
 		release()
 		return nil, nil, nil, err
 	}
-	return &pgTx{tx}, conn, release, nil
+	return &pgTx{tx: tx, pool: pool}, conn, release, nil
 }
 
 func (q *SourceQueryBuilder) Dialect() string { return q.dialect }
@@ -207,8 +208,12 @@ func (q *SourceQueryBuilder) run(ctx context.Context, label string, transaction,
 		if !errors.Is(err, ErrIndeterminateCommit) {
 			err = ParseDBError(err)
 		}
-		if label != "" && q.observe != nil {
-			q.observe(SourceQueryAttempt{Label: label, Transaction: transaction, Number: attempt + 1, Duration: time.Since(start), Err: err})
+		if label != "" {
+			elapsed := time.Since(start)
+			metrics.ObserveDatabaseMethod(ctx, label, elapsed, err)
+			if q.observe != nil {
+				q.observe(SourceQueryAttempt{Label: label, Transaction: transaction, Number: attempt + 1, Duration: elapsed, Err: err})
+			}
 		}
 		if q.txFailure != nil {
 			if failed := q.txFailure.Load(); failed != nil {

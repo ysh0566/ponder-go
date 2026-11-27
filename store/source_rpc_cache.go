@@ -44,7 +44,7 @@ func (c *ProtocolCache) insertSourceRPC(ctx context.Context, q Querier, chain ui
 	if err != nil {
 		return err
 	}
-	return q.Exec(ctx, query, args...)
+	return databaseExec(ctx, q, "insert_rpc_requests", query, args...)
 }
 
 // prepareSourceRPC constructs the complete immutable SQL row payload before an
@@ -159,7 +159,7 @@ func (c *ProtocolCache) getSourceRPC(ctx context.Context, q Querier, chain uint6
 	}
 	results := map[string]string{}
 	collect := func(query string, args ...any) error {
-		rows, e := q.Query(ctx, query, args...)
+		rows, e := databaseQuery(ctx, q, "select_rpc_requests", query, args...)
 		if e != nil {
 			return e
 		}
@@ -218,5 +218,5 @@ func (c *ProtocolCache) pruneSourceRPC(ctx context.Context, q Querier, chain uin
 		slots[i] = "$" + strconv.Itoa(i+2)
 		args[i+1] = n
 	}
-	return q.Exec(ctx, "DELETE FROM "+c.table("rpc_request_results")+" WHERE chain_id=$1 AND block_number IN ("+strings.Join(slots, ",")+")", args...)
+	return databaseExec(ctx, q, "delete_rpc_requests", "DELETE FROM "+c.table("rpc_request_results")+" WHERE chain_id=$1 AND block_number IN ("+strings.Join(slots, ",")+")", args...)
 }

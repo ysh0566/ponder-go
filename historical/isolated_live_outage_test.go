@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"slices"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -145,9 +146,19 @@ func TestRuntimeIsolatedLiveOutage(t *testing.T) {
 			r = runtimeOpen(t, backend, o)
 			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Minute)
 			defer cancel()
-			out, err := r.Run(metrics.WithChainSync(ctx, registry))
+			out, err := r.Run(metrics.WithChainSync(metrics.WithDatabase(ctx, registry), registry))
 			if err != nil || !out.Ready || !out.Completed || !recovered || len(retryChains) < 2 || forks != 1 {
 				t.Fatalf("run=%+v retry chains=%v forks=%d recovered=%t callbacks=%v: %v", out, retryChains, forks, recovered, calls, err)
+			}
+			body, err := registry.Collect(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, pool := range []string{"user", "sync"} {
+				sample := fmt.Sprintf(`ponder_postgres_query_total{pool=%q}`, pool)
+				if strings.Contains(body, sample) != (backend == "postgres") {
+					t.Fatalf("unexpected %s sample on %s", sample, backend)
+				}
 			}
 			for _, id := range retryChains {
 				if id != 1 {

@@ -159,7 +159,7 @@ func (c *AsyncSourceRPCRequestCache) runWrites() {
 		q.queue = q.queue[1:]
 		q.mu.Unlock()
 		err := c.base.cache.asyncRPCTransaction(job.ctx, func(tx Transaction) error {
-			return tx.Exec(job.ctx, job.query, job.args...)
+			return databaseExec(job.ctx, tx, "insert_rpc_requests", job.query, job.args...)
 		})
 		job.cancel()
 		job.result <- err

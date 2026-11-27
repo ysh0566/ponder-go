@@ -208,6 +208,18 @@ curl -fsS http://127.0.0.1:42069/metrics | grep '^ponder_historical_'
 
 区块查询、状态读取、存储证明和费用历史可使用显式十六进制高度。支持 EIP-1898 的状态读取也可传仅含 `blockNumber` 的对象。对于 `eth_getLogs`，同时指定数值 `fromBlock` 和 `toBlock` 时，以结束高度判断整个区间能否复用。只给区块哈希、动态标签或自定义方法的结果会在该链分叉时清除。需要随新区块变化的数据应使用 `Call`。[两种数据库上的分叉测试](../parity/runs/native-rpc-rewind-heights/RESULT.md)
 
+### 查看数据库操作
+
+写入进程和独立的 `ponder serve` 进程分别在自己的 `/metrics` 中报告数据库操作。PostgreSQL 和 PGlite 都记录带方法名的操作，包括同步块读写、区间查询、RPC 缓存读写和通过校验后执行的只读 SQL。比如，要查看最近五分钟只读 SQL 的第 95 百分位耗时（毫秒），可在 Prometheus 中查询：
+
+```promql
+histogram_quantile(0.95, sum by (le) (rate(ponder_database_method_duration_bucket{method="readonly_query"}[5m])))
+```
+
+`ponder_database_method_error_total{method="readonly_query"}` 统计该方法执行失败的次数。每次带标签的尝试各记录一次耗时，包括重试成功前的失败。进入数据库前被 HTTP 校验拒绝的请求不会产生只读 SQL 样本。直接使用 `store.SourceQueryBuilder` 时，可将 `metrics.WithDatabase(ctx, registry)` 传给操作，并为 `Wrap` 或 `Transaction` 选用固定的方法名，避免把 SQL 或业务 ID 用作标签。
+
+PostgreSQL 还提供 `ponder_postgres_query_total{pool="…"}`。单库和独立 `serve` 进程通过 `store.OpenPostgres` 打开的连接池名为 `default`。双库写入进程的业务库和同步库分别为 `user` 和 `sync`，交给查询构造器的外部专用连接为 `dedicated`。例如，`sum by (pool) (rate(ponder_postgres_query_total[5m]))` 给出每秒提交的 SQL 数。一项只读操作可以包含多条 SQL，因为设定只读事务和搜索路径也需要执行语句。计数覆盖通过 Go 存储层显式提交的 `Query` 和 `Exec`，包括执行失败的语句。驱动内部的事务控制、独立通知连接和绕过这些方法的管理操作均不计入。PGlite 只报告数据库方法指标。
+
 ### 查看 RPC 耗时与错误数
 
 从写入进程读取 `/metrics`，用 `chain` 和 `method` 标签筛选链名与 JSON-RPC 方法。下面的 PromQL 查询给出过去 5 分钟内各链、各方法成功请求的 P95 耗时，单位为毫秒。

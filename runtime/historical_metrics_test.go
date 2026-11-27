@@ -130,6 +130,12 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 					return strings.Join(lines, "\n")
 				}
 				firstScrape := scrape()
+				if !strings.Contains(firstScrape, `ponder_database_method_duration_count{method="insert_blocks"}`) {
+					t.Fatal("missing writer database timings at first catch-up")
+				}
+				if got := strings.Contains(firstScrape, `ponder_postgres_query_total{pool="default"}`); got != (dialect == "postgres") {
+					t.Fatalf("PostgreSQL statement metrics on %s: %t", dialect, got)
+				}
 				settings := fmt.Sprintf(`ponder_settings_info{command="start",database="%s",ordering="%s"} 1`, dialect, order)
 				if !strings.Contains(firstScrape, settings) {
 					t.Fatalf("missing settings sample %s", settings)

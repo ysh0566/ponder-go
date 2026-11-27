@@ -6,7 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
+
+	"github.com/ysh0566/ponder-go/metrics"
 )
 
 const sourceSelectSchemata = `select "schema_name" from "information_schema"."schemata"`
@@ -388,4 +391,74 @@ func (tx *lostCommit) Commit(ctx context.Context) error {
 		return err
 	}
 	return errors.New("Connection terminated unexpectedly")
+}
+
+func TestDatabaseQueryAttempts(t *testing.T) {
+	for _, dialect := range []string{"postgres", "pglite"} {
+		t.Run(dialect, func(t *testing.T) {
+			r := metrics.New()
+			ctx := metrics.WithDatabase(t.Context(), r)
+			b := sourceBackend(t, t.Context(), dialect)
+			var attempts []SourceQueryAttempt
+			q, err := NewSourceQueryBuilder(b, func(a SourceQueryAttempt) { attempts = append(attempts, a) })
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = q.Wrap(ctx, "probe", func(db Querier) error {
+				if len(attempts) == 0 {
+					_, err := db.Query(ctx, "SELECT 1 / 0")
+					return err
+				}
+				return db.Exec(ctx, "SELECT 42")
+			})
+			if err != nil || len(attempts) != 2 || attempts[0].Err == nil || attempts[1].Err != nil {
+				t.Fatalf("attempts=%+v err=%v", attempts, err)
+			}
+			queryInTx := func(tx *SourceQueryBuilder) error {
+				_, err := tx.Query(ctx, "SELECT 1")
+				return err
+			}
+			if err := q.Transaction(ctx, "", queryInTx); err != nil {
+				t.Fatal(err)
+			}
+			if dialect == "postgres" {
+				conn, err := q.Client().(*sql.DB).Conn(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer conn.Close()
+				dedicated, err := NewSourceConnectionQueryBuilder(conn, nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err := dedicated.Query(ctx, "SELECT 1"); err != nil {
+					t.Fatal(err)
+				}
+				if err := dedicated.Transaction(ctx, "", queryInTx); err != nil {
+					t.Fatal(err)
+				}
+			}
+			body, err := r.Collect(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, sample := range []string{
+				`ponder_database_method_duration_count{method="probe"} 2`,
+				`ponder_database_method_error_total{method="probe"} 1`,
+			} {
+				if !strings.Contains(body, sample+"\n") {
+					t.Fatalf("missing %s in %s", sample, body)
+				}
+			}
+			if dialect == "postgres" {
+				for _, sample := range []string{`ponder_postgres_query_total{pool="default"} 3`, `ponder_postgres_query_total{pool="dedicated"} 2`} {
+					if !strings.Contains(body, sample+"\n") {
+						t.Fatalf("missing %s in %s", sample, body)
+					}
+				}
+			} else if strings.Contains(body, "ponder_postgres_query_total") {
+				t.Fatal(body)
+			}
+		})
+	}
 }

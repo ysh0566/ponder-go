@@ -6,9 +6,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/jackc/pgx/v5"
-	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/ysh0566/ponder-go/bridge"
 	"io"
 	"os"
 	"os/exec"
@@ -16,6 +13,11 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/ysh0566/ponder-go/bridge"
+	"github.com/ysh0566/ponder-go/metrics"
 )
 
 type Result struct {
@@ -39,6 +41,7 @@ type Backend interface {
 	Dialect() string
 }
 type pgBackend struct {
+	pool          string
 	db            *sql.DB
 	url           string
 	notifyMu      sync.Mutex
@@ -48,9 +51,16 @@ type pgBackend struct {
 	pinSession    *deploymentSession
 	pinned        map[string]bool
 }
-type pgTx struct{ tx *sql.Tx }
+type pgTx struct {
+	tx   *sql.Tx
+	pool string
+}
 
 func OpenPostgres(ctx context.Context, url string) (Backend, error) {
+	return openPostgres(ctx, url, "default")
+}
+
+func openPostgres(ctx context.Context, url, pool string) (Backend, error) {
 	db, e := sql.Open("pgx", url)
 	if e != nil {
 		return nil, e
@@ -60,7 +70,7 @@ func OpenPostgres(ctx context.Context, url string) (Backend, error) {
 		db.Close()
 		return nil, e
 	}
-	return &pgBackend{db: db, url: url, listeners: map[*pgNotifications]struct{}{}}, nil
+	return &pgBackend{db: db, pool: pool, url: url, listeners: map[*pgNotifications]struct{}{}}, nil
 }
 func (p *pgBackend) Dialect() string { return "postgres" }
 func (p *pgBackend) Close() error {
@@ -83,21 +93,19 @@ func (p *pgBackend) Close() error {
 }
 func (p *pgBackend) Begin(ctx context.Context) (Transaction, error) {
 	tx, e := p.db.BeginTx(ctx, nil)
-	return &pgTx{tx}, e
+	return &pgTx{tx: tx, pool: p.pool}, e
 }
 func (p *pgBackend) Query(c context.Context, s string, a ...any) (Result, error) {
-	return pgQuery(c, p.db, s, a...)
+	return pgQuery(c, p.db, p.pool, s, a...)
 }
 func (p *pgBackend) Exec(c context.Context, s string, a ...any) error {
-	_, e := p.db.ExecContext(c, s, databaseArgs(a)...)
-	return e
+	return pgExec(c, p.db, p.pool, s, a...)
 }
 func (p *pgTx) Query(c context.Context, s string, a ...any) (Result, error) {
-	return pgQuery(c, p.tx, s, a...)
+	return pgQuery(c, p.tx, p.pool, s, a...)
 }
 func (p *pgTx) Exec(c context.Context, s string, a ...any) error {
-	_, e := p.tx.ExecContext(c, s, databaseArgs(a)...)
-	return e
+	return pgExec(c, p.tx, p.pool, s, a...)
 }
 func (p *pgTx) Commit(context.Context) error   { return p.tx.Commit() }
 func (p *pgTx) Rollback(context.Context) error { return p.tx.Rollback() }
@@ -106,7 +114,18 @@ type sqlQuerier interface {
 	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
 }
 
-func pgQuery(ctx context.Context, q sqlQuerier, s string, args ...any) (Result, error) {
+type sqlExecutor interface {
+	ExecContext(context.Context, string, ...any) (sql.Result, error)
+}
+
+func pgExec(ctx context.Context, db sqlExecutor, pool, statement string, args ...any) error {
+	metrics.SubmitPostgresQuery(ctx, pool)
+	_, err := db.ExecContext(ctx, statement, databaseArgs(args)...)
+	return err
+}
+
+func pgQuery(ctx context.Context, q sqlQuerier, pool, s string, args ...any) (Result, error) {
+	metrics.SubmitPostgresQuery(ctx, pool)
 	out := Result{Rows: []map[string]any{}}
 	rows, e := q.QueryContext(ctx, s, databaseArgs(args)...)
 	if e != nil {

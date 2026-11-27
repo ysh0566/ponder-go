@@ -928,6 +928,11 @@
       "implementation_files": [
         "query/http.go",
         "metrics/registry.go",
+        "metrics/database.go",
+        "store/database_metrics.go",
+        "store/backend.go",
+        "store/source_query_builder.go",
+        "query/routes.go",
         "metrics/handler.go",
         "indexing/service.go",
         "runtime/source_page.go",
@@ -954,6 +959,7 @@
       ],
       "upstream_sources": [
         "packages/core/src/internal/metrics.ts",
+        "packages/core/src/database/queryBuilder.ts",
         "packages/core/src/indexing/index.ts",
         "packages/core/src/runtime/historical.ts",
         "packages/core/src/runtime/realtime.ts",
@@ -974,11 +980,16 @@
         "parity/runs/native-atomic-head-latency/RESULT.md",
         "parity/runs/native-handler-duration/RESULT.md",
         "parity/runs/native-process-info/RESULT.md",
-        "parity/runs/native-chain-sync-metrics/RESULT.md"
+        "parity/runs/native-chain-sync-metrics/RESULT.md",
+        "parity/runs/native-db-metrics/RESULT.md"
       ],
-      "remaining": "The writer registers 21 of the 39 named upstream metric families. The 18 outstanding families measure database operations (3), historical sync (9) and indexing (6). The writer reports the processed height, block timestamp and realtime or completed phase by chain. The application reports its Go version and active command, database and writer ordering. The writer observes setup and event callback duration by chain and event. The writer counts successful canonical fork rollbacks by chain and records RPC outcomes by chain and method. The dual-store continuous writer and the atomic Go indexer observe arrival and processing latency after committing a polled head. Database method duration and error metrics, and comparative production benchmarks remain open.",
+      "remaining": "The writer registers 24 of the 39 named upstream metric families. The 15 outstanding families measure historical sync (9) and indexing (6). The writer and query server record labeled database attempts and PostgreSQL submissions by pool. The writer reports the processed height, block timestamp and realtime or completed phase by chain. The application reports its Go version and active command, database and writer ordering. The writer observes setup and event callback duration by chain and event. The writer counts successful canonical fork rollbacks by chain and records RPC outcomes by chain and method. The dual-store continuous writer and the atomic Go indexer observe arrival and processing latency after committing a polled head. Comparative production benchmarks remain open.",
       "native_test_files": [
         "metrics/historical_test.go",
+        "metrics/database_test.go",
+        "store/source_query_builder_test.go",
+        "historical/isolated_live_outage_test.go",
+        "query/sql_validation_test.go",
         "metrics/chain_sync_test.go",
         "historical/chain_sync_metrics_test.go",
         "historical/isolated_finalized_test.go",

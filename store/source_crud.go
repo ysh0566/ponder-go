@@ -57,7 +57,7 @@ func (s *SourceSyncStore) insertSourceRows(ctx context.Context, table string, ch
 			values = append(values, "("+strings.Join(slots, ",")+")")
 		}
 		if e := s.transaction(ctx, func(tx Transaction) error {
-			return tx.Exec(ctx, "INSERT INTO "+s.cache.table(table)+"("+strings.Join(quoted, ",")+") VALUES"+strings.Join(values, ",")+" ON CONFLICT("+conflict+") DO NOTHING", args...)
+			return databaseExec(ctx, tx, "insert_"+table, "INSERT INTO "+s.cache.table(table)+"("+strings.Join(quoted, ",")+") VALUES"+strings.Join(values, ",")+" ON CONFLICT("+conflict+") DO NOTHING", args...)
 		}); e != nil {
 			return e
 		}
@@ -105,7 +105,7 @@ func (s *SourceSyncStore) InsertTraces(ctx context.Context, chain uint64, traces
 func (s *SourceSyncStore) PruneByChain(ctx context.Context, chain uint64) error {
 	return s.transaction(ctx, func(tx Transaction) error {
 		for _, table := range []string{"logs", "blocks", "traces", "transactions", "transaction_receipts", "factory_addresses"} {
-			if e := tx.Exec(ctx, "DELETE FROM "+s.cache.table(table)+" WHERE chain_id=$1", chain); e != nil {
+			if e := databaseExec(ctx, tx, "delete_"+table, "DELETE FROM "+s.cache.table(table)+" WHERE chain_id=$1", chain); e != nil {
 				return e
 			}
 		}

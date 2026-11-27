@@ -67,7 +67,7 @@ func (b SyncBlock) CompletionID() string {
 }
 
 func (s *Store) SyncedBlock(ctx context.Context, chain, number uint64) (*SyncBlock, error) {
-	r, e := s.Backend.Query(ctx, "SELECT hash,parent_hash,timestamp::text AS timestamp,payload::text AS payload FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number=$2", chain, number)
+	r, e := databaseQuery(ctx, s.Backend, "select_blocks", "SELECT hash,parent_hash,timestamp::text AS timestamp,payload::text AS payload FROM "+s.syncTable("blocks")+" WHERE chain_id=$1 AND number=$2", chain, number)
 	if e != nil {
 		return nil, e
 	}
@@ -120,7 +120,7 @@ func (s *Store) CompleteBlock(ctx context.Context, b SyncBlock, filter string) e
 	if e = s.saveBlock(ctx, tx, b); e != nil {
 		return e
 	}
-	r, e := tx.Query(ctx, "SELECT start_block::text AS start,end_block::text AS end FROM "+s.syncTable("intervals")+" WHERE chain_id=$1 AND filter=$2", b.ChainID, filter)
+	r, e := databaseQuery(ctx, tx, "select_intervals", "SELECT start_block::text AS start,end_block::text AS end FROM "+s.syncTable("intervals")+" WHERE chain_id=$1 AND filter=$2", b.ChainID, filter)
 	if e != nil {
 		return e
 	}
@@ -134,7 +134,7 @@ func (s *Store) CompleteBlock(ctx context.Context, b SyncBlock, filter string) e
 		return e
 	}
 	for _, x := range interval.Union(xs) {
-		if e = tx.Exec(ctx, "INSERT INTO "+s.syncTable("intervals")+" VALUES ($1,$2,$3,$4)", b.ChainID, filter, x[0], x[1]); e != nil {
+		if e = databaseExec(ctx, tx, "insert_intervals", "INSERT INTO "+s.syncTable("intervals")+" VALUES ($1,$2,$3,$4)", b.ChainID, filter, x[0], x[1]); e != nil {
 			return e
 		}
 	}
@@ -176,10 +176,10 @@ func (s *Store) saveBlock(ctx context.Context, tx Transaction, b SyncBlock) erro
 			return e
 		}
 	}
-	return tx.Exec(ctx, "INSERT INTO "+s.syncTable("blocks")+" VALUES ($1,$2,$3,$4,$5,$6::jsonb) ON CONFLICT(chain_id,number) DO UPDATE SET hash=excluded.hash,parent_hash=excluded.parent_hash,timestamp=excluded.timestamp,payload=excluded.payload", b.ChainID, b.Number, b.Hash, b.ParentHash, b.Timestamp, string(b.Payload))
+	return databaseExec(ctx, tx, "insert_blocks", "INSERT INTO "+s.syncTable("blocks")+" VALUES ($1,$2,$3,$4,$5,$6::jsonb) ON CONFLICT(chain_id,number) DO UPDATE SET hash=excluded.hash,parent_hash=excluded.parent_hash,timestamp=excluded.timestamp,payload=excluded.payload", b.ChainID, b.Number, b.Hash, b.ParentHash, b.Timestamp, string(b.Payload))
 }
 func (s *Store) Missing(ctx context.Context, chain uint64, filter string, wanted interval.Interval) ([]interval.Interval, error) {
-	r, e := s.Backend.Query(ctx, "SELECT start_block::text AS start,end_block::text AS end FROM "+s.syncTable("intervals")+" WHERE chain_id=$1 AND filter=$2 ORDER BY start_block", chain, filter)
+	r, e := databaseQuery(ctx, s.Backend, "select_intervals", "SELECT start_block::text AS start,end_block::text AS end FROM "+s.syncTable("intervals")+" WHERE chain_id=$1 AND filter=$2 ORDER BY start_block", chain, filter)
 	if e != nil {
 		return nil, e
 	}
