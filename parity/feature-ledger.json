@@ -482,11 +482,14 @@
         "store/row_sql.go",
         "store/indexing_join.go",
         "orm/join.go",
+        "orm/query.go",
+        "store/indexing_select.go",
         "orm/generate.go",
         "indexing/database.go"
       ],
       "native_test_files": [
-        "orm/join_test.go"
+        "orm/join_test.go",
+        "orm/query_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/indexing-store/index.ts"
@@ -497,9 +500,10 @@
         "parity/runs/go-test.jsonl",
         "parity/runs/go-race.jsonl",
         "parity/runs/batch-8.json",
-        "parity/runs/native-typed-joins/RESULT.md"
+        "parity/runs/native-typed-joins/RESULT.md",
+        "parity/runs/native-typed-select/RESULT.md"
       ],
-      "remaining": "Buffered native ORM tested on PG/PGlite: returned row copies, conflict operations, defaults/NULL/Undefined, explicit cache invalidation/flush, typed columns and single-table Select; 28 new exact source mappings. Generated typed columns support two-table inner and left equality joins, multiple predicates and self joins. Typed filters, ordering, pagination, multiway joins, cache profile/prefetch/eviction, Promise adaptation and source cases with compile-error obligations remain. JSON U+0000/raw JSON large numeric undo and byte PK bridge now verified on both backends. Complete custom codecs, callback value types and array combinations require follow-up; no full ORM claim."
+      "remaining": "Buffered native ORM tested on PG/PGlite: returned row copies, conflict operations, defaults/NULL/Undefined, explicit cache invalidation/flush, typed columns and single-table Select; 28 new exact source mappings. Generated typed columns support two-table inner and left equality joins, multiple predicates and self joins. Single-table typed comparisons, NULL checks, ordering, and pagination run in the bound callback transaction. OR expressions, filtering and paging join results, multiway joins, cache profile/prefetch/eviction, Promise adaptation and source cases with compile-error obligations remain. JSON U+0000/raw JSON large numeric undo and byte PK bridge now verified on both backends. Complete custom codecs, callback value types and array combinations require follow-up; no full ORM claim."
     },
     {
       "id": "pglite",

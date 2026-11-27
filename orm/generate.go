@@ -229,7 +229,7 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 			}
 		}
 		body.WriteString("return out,nil },\n)\n")
-		writeJoinColumns(&body, name, columns, used)
+		writeModelColumns(&body, name, columns, used)
 	}
 	if len(model.Tables) == 0 {
 		return nil, fmt.Errorf("typed model codegen requires an onchain table")
@@ -265,7 +265,7 @@ func generateModels(packageName string, model schema.Schema, callbackDB bool) ([
 
 // Allocate column bindings after the existing table, enum and application codec
 // symbols so regenerating an existing project preserves those public names.
-func writeJoinColumns(body *strings.Builder, model string, columns []generatedColumn, used map[string]bool) {
+func writeModelColumns(body *strings.Builder, model string, columns []generatedColumn, used map[string]bool) {
 	name := model + "Columns"
 	for n := 2; used[name]; n++ {
 		name = fmt.Sprintf("%sColumns%d", model, n)
@@ -277,7 +277,9 @@ func writeJoinColumns(body *strings.Builder, model string, columns []generatedCo
 	}
 	body.WriteString("}{\n")
 	for _, c := range columns {
-		fmt.Fprintf(body, "%s: orm.ColumnOf[%s](%s,%q),\n", c.field, c.typ, model, c.column.Name)
+		fmt.Fprintf(body, "%s: orm.ColumnOf[%s](%s,%q)", c.field, c.typ, model, c.column.Name)
+		fmt.Fprintf(body, ".WithEncoder(func(v %s) any { return %s })", c.typ, fmt.Sprintf(c.encode, "v"))
+		body.WriteString(",\n")
 	}
 	body.WriteString("}\n")
 }

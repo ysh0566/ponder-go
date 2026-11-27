@@ -190,6 +190,17 @@ func (db *Database) Select(ctx context.Context, name string, key store.Row) ([]s
 	return v, db.capture(e)
 }
 
+// SelectRows holds the callback lease while the scoped model query executes.
+func (db *Database) SelectRows(ctx context.Context, name string, options store.SelectOptions) ([]store.Row, error) {
+	underlying, release, err := db.acquire(ctx)
+	if err != nil {
+		return nil, db.capture(err)
+	}
+	defer release()
+	rows, err := underlying.SelectRows(ctx, name, options)
+	return rows, db.capture(err)
+}
+
 // Join executes a model join under the same callback lease as Select.
 func (db *Database) Join(ctx context.Context, kind store.JoinKind, left, right string, on []store.JoinColumns) ([]store.JoinedRow, error) {
 	underlying, release, err := db.acquire(ctx)
