@@ -31,7 +31,9 @@ func (w *Writer) SQL(ctx context.Context, query string, args ...any) (Result, er
 	if e = w.validateSQLScope(tree); e != nil {
 		return Result{}, &RawSQLError{e}
 	}
+	registry := w.metrics
 	if orm := w.indexingSession(); orm != nil {
+		registry = orm.metrics
 		readonly := sqlquery.IsReadonly(query)
 		if !readonly {
 			if e = orm.Cache.Flush(ctx); e != nil {
@@ -59,6 +61,8 @@ func (w *Writer) SQL(ctx context.Context, query string, args ...any) (Result, er
 			}
 		}
 	}
+	observe := registry.StartRawSQL()
+	defer observe()
 	if e = w.tx.Exec(ctx, "SAVEPOINT ponder_go_sql"); e != nil {
 		w.err = e
 		return Result{}, &RawSQLError{e}

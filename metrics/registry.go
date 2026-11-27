@@ -21,7 +21,8 @@ type Registry struct {
 	mu                                  sync.Mutex
 	reg                                 *prometheus.Registry
 	info                                applicationInfo
-	dbDuration                          *prometheus.HistogramVec
+	dbDuration, cacheDuration           *prometheus.HistogramVec
+	rawSQLDuration                      prometheus.Histogram
 	dbErrors, postgresQueries           *prometheus.CounterVec
 	syncBlock, syncTimestamp, indexTime *prometheus.GaugeVec
 	syncRealtime, syncComplete          *prometheus.GaugeVec
@@ -46,6 +47,8 @@ func New() *Registry {
 	r := &Registry{
 		reg:             prometheus.NewRegistry(),
 		dbDuration:      prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "ponder_database_method_duration", Help: "Duration of database operations", Buckets: networkDurationBuckets}, []string{"method"}),
+		cacheDuration:   prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "ponder_indexing_cache_query_duration", Help: "Duration of cache operations", Buckets: networkDurationBuckets}, []string{"table", "method"}),
+		rawSQLDuration:  prometheus.NewHistogram(prometheus.HistogramOpts{Name: "ponder_indexing_store_raw_sql_duration", Help: "Duration of raw SQL store operations", Buckets: networkDurationBuckets}),
 		dbErrors:        prometheus.NewCounterVec(prometheus.CounterOpts{Name: "ponder_database_method_error_total", Help: "Total number of errors encountered during database operations"}, []string{"method"}),
 		postgresQueries: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "ponder_postgres_query_total", Help: "Total number of queries submitted to the database"}, []string{"pool"}),
 		indexTime:       chainGauge("ponder_indexing_timestamp", "Timestamp through which all events have been completed"),
@@ -90,7 +93,7 @@ func New() *Registry {
 		Name: "ponder_indexing_function_duration", Help: "Duration of indexing function execution",
 		Buckets: []float64{0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000},
 	}, []string{"chain", "event"})
-	r.reg.MustRegister(r.dbDuration, r.dbErrors, r.postgresQueries, r.syncBlock, r.syncTimestamp, r.indexTime, r.syncRealtime, r.syncComplete, &r.info, r.handlerDuration, r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.historyStart, r.historyEnd, r.historyTotal, r.historyCached, r.historyDone, r.groupDuration, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
+	r.reg.MustRegister(r.cacheDuration, r.rawSQLDuration, r.dbDuration, r.dbErrors, r.postgresQueries, r.syncBlock, r.syncTimestamp, r.indexTime, r.syncRealtime, r.syncComplete, &r.info, r.handlerDuration, r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.historyStart, r.historyEnd, r.historyTotal, r.historyCached, r.historyDone, r.groupDuration, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
 	return r
 }
 

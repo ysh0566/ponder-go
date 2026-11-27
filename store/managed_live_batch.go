@@ -264,7 +264,7 @@ func (m *ManagedLive) runLiveBlock(ctx context.Context, tx Transaction, segment 
 	if err := s.eventContext(ctx, tx, checkpoint.MaxString, cp.ChainID, false); err != nil {
 		return err
 	}
-	w := &Writer{s: s, tx: tx, event: Event{ID: fmt.Sprintf("%s/%d", segment.OperationID, segment.Ordinal), Checkpoint: cp}, encoded: checkpoint.MaxString, changed: map[string]bool{}}
+	w := s.newWriter(ctx, tx, Event{ID: fmt.Sprintf("%s/%d", segment.OperationID, segment.Ordinal), Checkpoint: cp}, checkpoint.MaxString)
 	// Per-block caches never publish predictions beyond the enclosing batch.
 	defer func() {
 		w.closed.Store(true)

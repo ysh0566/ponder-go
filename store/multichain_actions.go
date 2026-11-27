@@ -147,7 +147,7 @@ func (a *Actions) InitializeMultichain(ctx context.Context, states []CheckpointS
 		if err := a.s.eventContext(ctx, tx, checkpoint.MaxString, states[0].ChainID, false); err != nil {
 			return err
 		}
-		w := &Writer{s: a.s, tx: tx, encoded: checkpoint.MaxString, changed: map[string]bool{}}
+		w := a.s.newWriter(ctx, tx, Event{}, checkpoint.MaxString)
 		defer w.closed.Store(true)
 		var previous *checkpoint.Checkpoint
 		attribute := func(chain uint64) error {
@@ -264,7 +264,7 @@ func (a *Actions) ProcessHistoricalGroup(ctx context.Context, chainName string, 
 		if err := a.s.eventContext(ctx, tx, checkpoint.MaxString, target.ChainID, false); err != nil {
 			return err
 		}
-		w := &Writer{s: a.s, tx: tx, event: Event{Checkpoint: checkpoint.Checkpoint{ChainID: target.ChainID}}, encoded: checkpoint.MaxString, changed: map[string]bool{}}
+		w := a.s.newWriter(ctx, tx, Event{Checkpoint: checkpoint.Checkpoint{ChainID: target.ChainID}}, checkpoint.MaxString)
 		defer w.closed.Store(true)
 		if err := handler(w); err != nil {
 			return err

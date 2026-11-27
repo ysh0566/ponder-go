@@ -175,7 +175,7 @@ func (s *IndexingSession) WithReadOnly(ctx context.Context, chain uint64, fn fun
 	if err = s.owner.requireLease(ctx, tx); err != nil {
 		return err
 	}
-	w := &Writer{s: s.owner, tx: tx, event: Event{Checkpoint: checkpoint.Checkpoint{ChainID: chain}}, changed: map[string]bool{}}
+	w := s.owner.newWriter(ctx, tx, Event{Checkpoint: checkpoint.Checkpoint{ChainID: chain}}, "")
 	db, err := s.bind(w, true)
 	if err != nil {
 		return err

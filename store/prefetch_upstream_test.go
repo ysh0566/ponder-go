@@ -3,7 +3,9 @@ package store
 import (
 	"context"
 	"fmt"
+	"github.com/ysh0566/ponder-go/metrics"
 	"math/big"
+	"strings"
 	"sync"
 	"testing"
 )
@@ -46,6 +48,8 @@ func TestNativeProfilePrefetch(t *testing.T) {
 			for _, exists := range []bool{false, true} {
 				t.Run(fmt.Sprint(exists), func(t *testing.T) {
 					sourceORMTransaction(t, dialect, sourceAccountModel(), true, func(ctx context.Context, db *IndexingStore) error {
+						registry := metrics.New()
+						db.metrics = registry
 						alice := "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 						bob := "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
 						if exists {
@@ -92,6 +96,10 @@ func TestNativeProfilePrefetch(t *testing.T) {
 						}
 						if reads != db.Cache.tables["account"].diskReads {
 							return fmt.Errorf("prefetched lookup issued a disk read")
+						}
+						body, err := registry.Collect(ctx)
+						if err != nil || !strings.Contains(body, `ponder_indexing_cache_query_duration_count{method="load",table="account"} 1`+"\n") {
+							return fmt.Errorf("expected one prefetch load, got %s (%v)", body, err)
 						}
 						return nil
 					})

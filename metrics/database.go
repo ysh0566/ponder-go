@@ -37,3 +37,26 @@ func SubmitPostgresQuery(ctx context.Context, pool string) {
 		r.postgresQueries.WithLabelValues(pool).Inc()
 	}
 }
+
+// StartCacheQuery measures a cache operation that reaches the database.
+// Call the returned function only after the find, load or flush succeeds.
+func (r *Registry) StartCacheQuery(table, method string) func() {
+	if r == nil {
+		return noTiming
+	}
+	start := time.Now()
+	return func() {
+		r.cacheDuration.WithLabelValues(table, method).Observe(float64(time.Since(start)) / float64(time.Millisecond))
+	}
+}
+
+// StartRawSQL measures a submitted callback statement, including savepoint recovery.
+func (r *Registry) StartRawSQL() func() {
+	if r == nil {
+		return noTiming
+	}
+	start := time.Now()
+	return func() {
+		r.rawSQLDuration.Observe(float64(time.Since(start)) / float64(time.Millisecond))
+	}
+}

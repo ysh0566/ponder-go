@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/schema"
 	"math/big"
 	"os"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 )
@@ -236,5 +239,93 @@ func TestUpstreamSQLCases(t *testing.T) {
 				})
 			}
 		})
+	}
+}
+
+func TestIndexingStoreDurations(t *testing.T) {
+	for _, dialect := range []string{"postgres", "pglite"} {
+		t.Run(dialect, func(t *testing.T) {
+			ctx := t.Context()
+			db, err := New(ctx, sourceBackend(t, ctx, dialect), sourceAccountModel(), fmt.Sprintf("ponder_go_durations_%x", time.Now().UnixNano()), schema.Multichain)
+			if err != nil {
+				t.Fatal(err)
+			}
+			registry := metrics.New()
+			run := metrics.WithHandlers(ctx, registry)
+			key := Row{"address": sourceZeroAddress}
+			row := Row{"address": sourceZeroAddress, "balance": big.NewInt(1)}
+			err = db.Apply(run, event("metrics", 1, 1), func(w *Writer) error {
+				if _, err := w.SQL(ctx, "SELECT 1"); err != nil {
+					return err
+				}
+				if _, err := w.SQL(ctx, "SELECT 1/0"); err == nil {
+					return errors.New("division by zero succeeded")
+				}
+				index := w.Indexing()
+				if _, err := index.SQL(ctx, "CREATE TABLE forbidden(id bigint)"); err == nil {
+					return errors.New("indexing guard accepted DDL")
+				}
+				if _, err := index.Find(ctx, "account", key); err != nil {
+					return err
+				}
+				if _, err := index.Find(ctx, "account", key); err != nil {
+					return err
+				}
+				if _, err := index.InsertOne(ctx, "account", row, Conflict{}); err != nil {
+					return err
+				}
+				if _, err := index.SQL(ctx, "SELECT balance FROM account"); err != nil {
+					return err
+				}
+				_, err := index.Update(ctx, "account", key, Row{"balance": big.NewInt(2)})
+				return err // the event transaction flushes this update
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			// A failed buffer flush prevents the raw query from starting. An
+			// explicitly supplied cache registry owns the measurements in this event.
+			other := metrics.New()
+			err = db.Apply(run, event("duplicate", 1, 2), func(w *Writer) error {
+				index := w.Indexing(CacheOptions{Complete: true, Metrics: other})
+				if _, err := index.SQL(ctx, "SELECT 1"); err != nil {
+					return err
+				}
+				if _, err := index.InsertOne(ctx, "account", row, Conflict{}); err != nil {
+					return err
+				}
+				_, err := index.SQL(ctx, "SELECT balance FROM account")
+				return err
+			})
+			if err == nil {
+				t.Fatal("duplicate insert should have failed at flush")
+			}
+			registry.ResetIndexing()
+			assertStoreDurationCounts(t, registry, 3, map[string]int{"find": 1, "flush": 2})
+			assertStoreDurationCounts(t, other, 1, nil)
+		})
+	}
+}
+
+func assertStoreDurationCounts(t *testing.T, r *metrics.Registry, sql int, cache map[string]int) {
+	t.Helper()
+	body, err := r.Collect(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{fmt.Sprintf("ponder_indexing_store_raw_sql_duration_count %d", sql)}
+	for op, count := range cache {
+		want = append(want, fmt.Sprintf("ponder_indexing_cache_query_duration_count{method=%q,table=\"account\"} %d", op, count))
+	}
+	var got []string
+	for _, line := range strings.Split(body, "\n") {
+		if strings.HasPrefix(line, "ponder_indexing_cache_query_duration_count") || strings.HasPrefix(line, "ponder_indexing_store_raw_sql_duration_count") {
+			got = append(got, line)
+		}
+	}
+	slices.Sort(got)
+	slices.Sort(want)
+	if !slices.Equal(got, want) {
+		t.Fatalf("duration counts %v, want %v", got, want)
 	}
 }

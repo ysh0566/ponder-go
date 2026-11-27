@@ -42,6 +42,7 @@ type Event struct {
 	Payload    json.RawMessage       `json:"payload"`
 }
 type Writer struct {
+	metrics  *metrics.Registry
 	advanced bool
 	s        *Store
 	tx       Transaction
@@ -53,6 +54,12 @@ type Writer struct {
 	orm      *IndexingStore
 	closed   atomic.Bool
 }
+
+// Bind measurements to the transaction so callbacks can supply their own context.
+func (s *Store) newWriter(ctx context.Context, tx Transaction, event Event, encoded string) *Writer {
+	return &Writer{s: s, tx: tx, event: event, encoded: encoded, changed: map[string]bool{}, metrics: metrics.Handlers(ctx)}
+}
+
 type Row map[string]any
 type WriteMode int
 
@@ -404,7 +411,7 @@ func (s *Store) apply(ctx context.Context, event Event, handler func(*Writer) er
 	if e != nil {
 		return e
 	}
-	w := &Writer{s: s, tx: tx, event: event, encoded: encoded, changed: map[string]bool{}}
+	w := s.newWriter(ctx, tx, event, encoded)
 	defer w.closed.Store(true)
 	if handler != nil {
 		e = handler(w)
