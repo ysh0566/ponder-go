@@ -215,3 +215,24 @@ func TestRealtimeBlockLatency(t *testing.T) {
 		t.Fatalf("found %d realtime histograms", seen)
 	}
 }
+
+func TestHandlerDuration(t *testing.T) {
+	r := New()
+	r.ObserveHandler("one", "Token:setup", 50*time.Microsecond)
+	r.ObserveHandler("one", "Token:setup", 250*time.Microsecond)
+	list, err := r.Gather()
+	if err != nil || len(list) != 1 || len(list[0].Metric) != 1 {
+		t.Fatal(list, err)
+	}
+	h := list[0].Metric[0].GetHistogram()
+	var bounds []float64
+	for _, b := range h.Bucket {
+		bounds = append(bounds, b.GetUpperBound())
+	}
+	want := []float64{0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000}
+	if !reflect.DeepEqual(bounds, want) || h.Bucket[3].GetCumulativeCount() != 1 || h.GetSampleCount() != 2 || h.GetSampleSum() != 0.3 {
+		t.Fatal(h)
+	}
+	r.ResetIndexing()
+	expectSamples(t, r, "ponder_indexing_function_duration")
+}

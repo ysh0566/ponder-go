@@ -142,6 +142,16 @@ curl -fsSG "$base/sql/db" \
 | `GET /sql/live` | 用同样的 `sql` 参数建立 SSE 订阅。先用 `/sql/db` 读取当前结果；订阅在相关表变动且结果改变时发送数据。 |
 | `GET /metrics` | 以 Prometheus 文本格式读取服务指标。 |
 
+### 查看 Go 回调耗时
+
+抓取写入进程的 `/metrics`，可按配置中的链名和事件名查看 setup、历史回填及实时追块的回调耗时。下面的 PromQL 返回过去 5 分钟各回调的 P95，单位为毫秒。
+
+```promql
+histogram_quantile(0.95, sum by (le, chain, event) (rate(ponder_indexing_function_duration_bucket[5m])))
+```
+
+例如，`ponder_indexing_function_duration_count{chain="mainnet",event="Token:Transfer"}` 表示已记录多少次执行。回调返回错误时不采样。回调正常返回后，即便事务随后回滚，已经产生的样本也会保留。实际重放该回调时会再采样。双库事件回调捕获可重试错误并返回成功时，会先采样再由运行器处理错误。setup 会先检查该错误。直接调用 Go 运行器时，可用 `metrics.WithHandlers(ctx, registry)` 指定注册表。[普通索引器与双库验证](../parity/runs/native-handler-duration/RESULT.md)
+
 ### 查看历史回填耗时
 
 在运行索引器的进程上读取 Prometheus 指标。将端口换成应用实际监听的端口。

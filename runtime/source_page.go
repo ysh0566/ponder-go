@@ -142,7 +142,7 @@ func (e *Engine) DispatchSourceEvents(ctx context.Context, events []OrderedEvent
 			if handler == nil {
 				continue
 			}
-			if err := handler(ctx, &Context{Event: event.Event, DB: w, Client: client, Chain: e.chain}); err != nil {
+			if err := invokeHandler(ctx, handler, &Context{Event: event.Event, DB: w, Client: client, Chain: e.chain}); err != nil {
 				return fmt.Errorf("%s: %w", event.Event.Name, err)
 			}
 		}

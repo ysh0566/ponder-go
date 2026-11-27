@@ -129,6 +129,9 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 					return strings.Join(lines, "\n")
 				}
 				firstScrape := scrape()
+				if !strings.Contains(firstScrape, "ponder_indexing_function_duration_count") {
+					t.Fatal("no callback timings at initial catch-up")
+				}
 				if strings.Contains(firstScrape, "ponder_realtime_latency_count") || strings.Contains(firstScrape, "ponder_realtime_block_arrival_latency_count") {
 					t.Fatal("initial catch-up published realtime head latency")
 				}
@@ -186,7 +189,11 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 					for {
 						body := scrape()
 						label := fmt.Sprintf(`_count{chain=%q} `, name)
-						if strings.Contains(body, "ponder_realtime_latency"+label) && strings.Contains(body, "ponder_realtime_block_arrival_latency"+label) {
+						callbackCount := fmt.Sprintf("ponder_indexing_function_duration_count{chain=%q,event=%q} ", name, "head:block")
+						_, sample, _ := strings.Cut(body, callbackCount)
+						value, _, _ := strings.Cut(sample, "\n")
+						count, _ := strconv.Atoi(value)
+						if count >= 4 && strings.Contains(body, "ponder_realtime_latency"+label) && strings.Contains(body, "ponder_realtime_block_arrival_latency"+label) {
 							break
 						}
 						select {

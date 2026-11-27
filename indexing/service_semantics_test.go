@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -127,8 +128,10 @@ func TestServiceSupplementalTwoChainIdentityAndSetup(t *testing.T) {
 			return check(a, 1, "0x0")
 		})}
 		o.Build.SetupCallbacks = [][]Object{{setup}}
+		registry := metrics.New()
+		ctx := metrics.WithHandlers(t.Context(), registry)
 		s := mustSemanticService(t, o)
-		if e := s.ProcessSetupEvents(context.Background()); e != nil {
+		if e := s.ProcessSetupEvents(ctx); e != nil {
 			t.Fatal(e)
 		}
 		for _, p := range []int{1, 2, 3} {
@@ -137,7 +140,7 @@ func TestServiceSupplementalTwoChainIdentityAndSetup(t *testing.T) {
 			if p == 2 {
 				chain = 1
 			}
-			if e := s.ProcessHistoricalEvents(context.Background(), []Object{semanticEvent(o.Build.Chains[chain], cb, 2)}, nil); e != nil {
+			if e := s.ProcessHistoricalEvents(ctx, []Object{semanticEvent(o.Build.Chains[chain], cb, 2)}, nil); e != nil {
 				t.Fatal(e)
 			}
 		}
@@ -145,8 +148,21 @@ func TestServiceSupplementalTwoChainIdentityAndSetup(t *testing.T) {
 			t.Fatal("two chains share client")
 		}
 		phase = 4
-		if e := s.ProcessSetupEvents(context.Background()); e != nil {
+		if e := s.ProcessSetupEvents(ctx); e != nil {
 			t.Fatal(e)
+		}
+		body, err := registry.Collect(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, series := range []string{
+			`{chain="one",event="Token:setup"} 2`,
+			`{chain="one",event="Token:Transfer"} 2`,
+			`{chain="two",event="Token:Transfer"} 1`,
+		} {
+			if !strings.Contains(body, "ponder_indexing_function_duration_count"+series+"\n") {
+				t.Fatalf("missing callback timing %s", series)
+			}
 		}
 		if s.EventCount()["Token:Transfer"] != 3 || len(s.Metrics().Durations) != 5 {
 			t.Fatal("dispatch counts/durations", s.EventCount(), s.Metrics())
@@ -185,6 +201,8 @@ func TestServiceSupplementalStickyErrorTiming(t *testing.T) {
 					return nil
 				})
 				cb["fn"] = fn
+				registry := metrics.New()
+				o.Metrics = &Metrics{Registry: registry}
 				o.OnError = func(ob ErrorObservation) {
 					reported++
 					if ob.Err != caught {
@@ -208,6 +226,14 @@ func TestServiceSupplementalStickyErrorTiming(t *testing.T) {
 				wantDuration := 0
 				if !setup && !returned {
 					wantDuration = 1
+				}
+				body, err := registry.Collect(t.Context())
+				if err != nil {
+					t.Fatal(err)
+				}
+				hasSample := strings.Contains(body, "ponder_indexing_function_duration_count")
+				if hasSample != (wantDuration == 1) {
+					t.Fatalf("exported sticky duration order: %v %v, %v %s", setup, returned, err, body)
 				}
 				if len(s.Metrics().Durations) != wantDuration {
 					t.Fatal("sticky duration order", setup, returned, s.Metrics())

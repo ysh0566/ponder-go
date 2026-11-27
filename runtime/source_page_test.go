@@ -18,6 +18,7 @@ import (
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/filter"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
@@ -30,7 +31,8 @@ func TestSourcePageRuntime(t *testing.T) {
 	for _, dialect := range []string{"postgres", "pglite"} {
 		for _, disabled := range []bool{false, true} {
 			t.Run(fmt.Sprintf("%s/cache_disabled_%t", dialect, disabled), func(t *testing.T) {
-				ctx := context.Background()
+				registry := metrics.New()
+				ctx := metrics.WithHandlers(context.Background(), registry)
 				raw, endpoint := localChain(t)
 				raw.RequestsPerSecond = 0
 				backend := stagedBackend(t, ctx, dialect, "memory://")
@@ -224,6 +226,10 @@ func TestSourcePageRuntime(t *testing.T) {
 				beforeReplay := callCount.Load()
 				if e = engine.DispatchSourceEvents(ctx, page.Events); e != nil || callCount.Load() != beforeReplay || attempts != 2 {
 					t.Fatal("source page replay repeated handler", attempts, callCount.Load(), e)
+				}
+				body, err := registry.Collect(ctx)
+				if err != nil || !strings.Contains(body, "ponder_indexing_function_duration_count{chain=\"local\",event=\"T:Seen\"} 1\n") {
+					t.Fatalf("one callback returned successfully across failure, retry and duplicate: %v %s", err, body)
 				}
 				second, e := engine.ReadSourcePage(ctx, source, page.Cursor+1, float64(last), 1)
 				if e != nil || len(second.Events) != 1 || second.Cursor != float64(last) {

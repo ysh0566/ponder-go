@@ -927,6 +927,9 @@
       "implementation_files": [
         "query/http.go",
         "metrics/registry.go",
+        "metrics/handler.go",
+        "indexing/service.go",
+        "runtime/source_page.go",
         "runtime/dev_metrics.go",
         "metrics/historical.go",
         "runtime/application.go",
@@ -946,6 +949,7 @@
       ],
       "upstream_sources": [
         "packages/core/src/internal/metrics.ts",
+        "packages/core/src/indexing/index.ts",
         "packages/core/src/runtime/historical.ts",
         "packages/core/src/runtime/realtime.ts",
         "packages/core/src/runtime/multichain.ts",
@@ -959,9 +963,10 @@
         "parity/runs/native-rpc-metrics/RESULT.md",
         "parity/runs/native-reorg-metrics/RESULT.md",
         "parity/runs/native-realtime-head-latency/RESULT.md",
-        "parity/runs/native-atomic-head-latency/RESULT.md"
+        "parity/runs/native-atomic-head-latency/RESULT.md",
+        "parity/runs/native-handler-duration/RESULT.md"
       ],
-      "remaining": "The writer counts successful canonical fork rollbacks by chain and records RPC outcomes by chain and method. The dual-store continuous writer and the atomic Go indexer observe arrival and processing latency after committing a polled head. Database method duration and error metrics, and comparative production benchmarks remain open.",
+      "remaining": "The writer observes setup and event callback duration by chain and event. The writer counts successful canonical fork rollbacks by chain and records RPC outcomes by chain and method. The dual-store continuous writer and the atomic Go indexer observe arrival and processing latency after committing a polled head. Database method duration and error metrics, and comparative production benchmarks remain open.",
       "native_test_files": [
         "metrics/historical_test.go",
         "runtime/historical_metrics_test.go",
@@ -969,6 +974,8 @@
         "historical/runtime_commit_observer_test.go",
         "historical/live_runtime_continuous_test.go",
         "metrics/registry_test.go",
+        "indexing/service_semantics_test.go",
+        "runtime/source_page_test.go",
         "runtime/source_omnichain_stream_test.go",
         "rpc/custom_transport_test.go",
         "cmd/ponder/managed_start_test.go",
