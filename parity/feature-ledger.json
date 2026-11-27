@@ -974,6 +974,7 @@
       ],
       "evidence": [
         "parity/runs/native-historical-duration-metrics/RESULT.md",
+        "parity/runs/native-backfill-wall-clock/RESULT.md",
         "parity/runs/native-rpc-metrics/RESULT.md",
         "parity/runs/native-reorg-metrics/RESULT.md",
         "parity/runs/native-realtime-head-latency/RESULT.md",
@@ -983,7 +984,7 @@
         "parity/runs/native-chain-sync-metrics/RESULT.md",
         "parity/runs/native-db-metrics/RESULT.md"
       ],
-      "remaining": "The writer registers 24 of the 39 named upstream metric families. The 15 outstanding families measure historical sync (9) and indexing (6). The writer and query server record labeled database attempts and PostgreSQL submissions by pool. The writer reports the processed height, block timestamp and realtime or completed phase by chain. The application reports its Go version and active command, database and writer ordering. The writer observes setup and event callback duration by chain and event. The writer counts successful canonical fork rollbacks by chain and records RPC outcomes by chain and method. The dual-store continuous writer and the atomic Go indexer observe arrival and processing latency after committing a polled head. Comparative production benchmarks remain open.",
+      "remaining": "The writer registers 26 of the 39 named upstream metric families, including per-chain wall-clock backfill start and end timestamps. The 13 outstanding families measure historical sync (7) and indexing (6). The writer and query server record labeled database attempts and PostgreSQL submissions by pool. The writer reports the processed height, block timestamp and realtime or completed phase by chain. The application reports its Go version and active command, database and writer ordering. The writer observes setup and event callback duration by chain and event. The writer counts successful canonical fork rollbacks by chain and records RPC outcomes by chain and method. The dual-store continuous writer and the atomic Go indexer observe arrival and processing latency after committing a polled head. Comparative production benchmarks remain open.",
       "native_test_files": [
         "metrics/historical_test.go",
         "metrics/database_test.go",

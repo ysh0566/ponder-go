@@ -33,12 +33,14 @@ type orderedChain struct {
 
 func (r *orderedIndexer) RunIndexing(ctx context.Context, ready func(bool)) error {
 	delay := r.workers[0].pollingInterval()
-	var endpoints []string
+	var endpoints, names []string
 	for _, w := range r.workers {
 		delay = min(delay, w.pollingInterval())
 		endpoints = append(endpoints, w.chain.WS)
+		names = append(names, w.chain.Name)
 	}
-	return pollIndexer(ctx, delay, ready, r.sync, endpoints...)
+	window := metrics.Historical(ctx).NewBackfillWindow(names...)
+	return pollIndexer(ctx, delay, ready, window, r.sync, endpoints...)
 }
 
 func (e *Engine) blockCheckpoint(b Block) (checkpoint.Checkpoint, error) {
@@ -95,11 +97,11 @@ func (c *orderedChain) advance(ctx context.Context) error {
 	return nil
 }
 
-func (r *orderedIndexer) sync(ctx context.Context, samples polledHeads) (bool, error) {
+func (r *orderedIndexer) sync(ctx context.Context, samples polledHeads, window *metrics.BackfillWindow) (bool, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if r.workers[0].Store.Ordering == schema.Multichain {
-		return r.syncMultichain(ctx, samples)
+		return r.syncMultichain(ctx, samples, window)
 	}
 	chains := make([]orderedChain, len(r.workers))
 	watermark, finalWatermark := checkpoint.MaxString, checkpoint.MaxString
@@ -133,6 +135,7 @@ func (r *orderedIndexer) sync(ctx context.Context, samples polledHeads) (bool, e
 			finalWatermark = min(finalWatermark, checkpoint.MustEncode(safe))
 		}
 	}
+	window.Start()
 	if err := processAvailable(ctx, samples, chains, watermark, finalWatermark); err != nil {
 		return false, err
 	}
@@ -170,7 +173,7 @@ func (r *orderedIndexer) sync(ctx context.Context, samples polledHeads) (bool, e
 // syncMultichain reconciles all available heads before collecting missing ranges.
 // A peer rewind can invalidate gaps on any chain. Only omnichain waits for
 // the slowest head's checkpoint before applying a block.
-func (r *orderedIndexer) syncMultichain(ctx context.Context, samples polledHeads) (bool, error) {
+func (r *orderedIndexer) syncMultichain(ctx context.Context, samples polledHeads, window *metrics.BackfillWindow) (bool, error) {
 	var chains []orderedChain
 	var unavailable error
 	for _, e := range r.workers {
@@ -200,6 +203,9 @@ func (r *orderedIndexer) syncMultichain(ctx context.Context, samples polledHeads
 		// Survivors are part of the replacement batch. An offline peer must
 		// not silently move its callbacks behind the new fork on restart.
 		return false, unavailable
+	}
+	if len(chains) != 0 {
+		window.Start()
 	}
 	if err := processAvailable(ctx, samples, chains, checkpoint.MaxString, checkpoint.MaxString); err != nil {
 		return false, err

@@ -202,6 +202,18 @@ curl -fsS http://127.0.0.1:42069/metrics | grep '^ponder_historical_'
 
 `runtime.NewIndexer` 和 `runtime.NewIndexerFromSource` 在首次追平过程中计入已达到最终确认范围的区块。双库 `historical.RuntimeRunner` 按实际回填阶段计时。实时追块和实时分叉重放均沿用原有累计值。独立 `serve` 进程拥有自己的指标注册表，要看回填耗时应抓取写入进程。`runtime.LaunchApplication` 自动连接查询服务的注册表。直接调用 `Run` 时，可传入 `metrics.WithHistorical(ctx, registry)`，再用 `registry.Collect(ctx)` 读取。[运行时验证](../parity/runs/native-historical-duration-metrics/RESULT.md)
 
+### 查看历史回填的起止时间
+
+抓取写入进程的 `/metrics`。以下 PromQL 表达式按链计算本次回填的墙钟耗时，单位为秒。
+
+```promql
+ponder_historical_end_timestamp_seconds - ponder_historical_start_timestamp_seconds
+```
+
+两个指标都带 `chain` 标签，使用写入进程的系统时间，四舍五入到最近的 Unix 秒。回填未完成时只有开始时间，表达式会在结束时间发布后返回结果。同一秒内完成的回填可以得到 0。查看最近一个已处理区块的链上时间可用 `ponder_sync_block_timestamp`。
+
+默认多链和 Omnichain 为参与链报告同一组起止时间。单库入口在首次成功追平时记录结束时间。双库默认多链在已提交的历史区间结束时记录，双库 Omnichain 会先核验整个区间的扫描进度。Isolated 按链记录，健康链可以先结束。已初始化的双库 Isolated 在某条链离线时冷重启，该链恢复后直接进入实时恢复流程，本次运行不会为它生成历史起止时间。后续实时轮询和重放保留已发布的时间。[实现及验证](../parity/runs/native-backfill-wall-clock/RESULT.md)
+
 ### 在分叉后复用按高度读取的 RPC 结果
 
 普通 Go 运行器开启 RPC 缓存后，回调可用 `rpc.Client.CallCached` 重复读取已最终确认的数据。例如，`eth_getBalance` 在参数中指定 `"0x64"`，缓存就记录第 100 块。若链回滚到第 100 块，重放时会复用该结果。若共同祖先是第 99 块，下一次读取会重新请求节点。全局回滚需要重放其他链的回调时，每条受影响的链按自己的回退高度清理。处理函数失败时，本次事务新写入的缓存也会回滚。

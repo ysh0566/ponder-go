@@ -210,7 +210,7 @@ func (r *RuntimeRunner) refetchOmnichainBlock(ctx context.Context, chain source.
 	return events, r.validateOmnichainPartition(block.id, events, block.head)
 }
 
-func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexing.RuntimeEpoch, control store.ManagedLiveControl, proofs map[uint64]*runtimeLineage, result RuntimeResult) (out RuntimeResult, err error) {
+func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexing.RuntimeEpoch, control store.ManagedLiveControl, proofs map[uint64]*runtimeLineage, result RuntimeResult, window *metrics.BackfillWindow) (out RuntimeResult, err error) {
 	out = result
 	defer func() {
 		if epoch != nil {
@@ -371,6 +371,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 	if err != nil || !out.Ready {
 		return out, errors.Join(fmt.Errorf("omnichain activation failed"), err)
 	}
+	window.Finish()
 	if registry := metrics.ChainSync(ctx); registry != nil {
 		for i, chain := range r.build.Chains {
 			id := runtimeChainID(chain)

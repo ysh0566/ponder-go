@@ -129,6 +129,9 @@ func TestRuntimeOmnichainCommitObserver(t *testing.T) {
 				if owner == "resume" && (refreshed[1].Load() != 1 || refreshed[2].Load() != 1) {
 					t.Fatalf("clock advance produced head refresh counts %d and %d", refreshed[1].Load(), refreshed[2].Load())
 				}
+				for _, chain := range r.build.Chains {
+					assertBackfillTimes(t, registry, fmt.Sprint(chain["name"]), true, owner != "first")
+				}
 				text, err := registry.Collect(t.Context())
 				if err != nil {
 					t.Fatal(err)

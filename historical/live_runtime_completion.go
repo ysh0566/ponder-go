@@ -335,6 +335,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			return result, err
 		}
 	}
+	window, isolatedWindows := r.startBackfillWindows(run)
 	control, err = r.bootstrapRuntime(run, epoch, control)
 	if err != nil {
 		return result, err
@@ -387,11 +388,14 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		if e = lineage.finish(); e != nil {
 			return result, e
 		}
+		if isolatedWindows[id] != nil && store.ManagedLiveReachedBlock(control, id, control.HistoryCuts[id]) {
+			isolatedWindows[id].Finish()
+		}
 	}
 	if r.build.Ordering == "omnichain" {
 		owned := epoch
 		epoch = nil
-		return r.runOmnichainFinalized(run, owned, control, proofs, result)
+		return r.runOmnichainFinalized(run, owned, control, proofs, result, window)
 	}
 	activated := false
 	boundedDefault := r.options.Live == nil && r.build.Ordering == "multichain"
@@ -401,6 +405,10 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			return result, err
 		}
 		if queue == nil {
+			if window != nil && runtimeHistoricalComplete(control) {
+				window.Finish()
+				window = nil
+			}
 			if r.options.Live != nil && historicalCompleteExcept(control, r.offlineAtOpen) {
 				owned := epoch
 				epoch = nil
@@ -609,6 +617,9 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 		r.observeSyncHead(run, i, block.head)
 		if block.history {
 			result.HistoricalBlocks++
+			if isolatedWindows[id] != nil && store.ManagedLiveReachedBlock(control, id, control.HistoryCuts[id]) {
+				isolatedWindows[id].Finish()
+			}
 			if store.ManagedLiveReachedBlock(control, id, r.ends[id]) {
 				metrics.ChainSync(run).SetSyncPhase(fmt.Sprint(r.build.Chains[i]["name"]), true)
 			}
@@ -691,6 +702,35 @@ func (r *RuntimeRunner) notifyCommitted(ctx context.Context, groups []GroupResul
 }
 
 // The physical header remains valid for source checkpoints inside a block.
+// Ordered chains share one historical phase. A cold Isolated peer which
+// joins directly in realtime has no historical phase on this opening.
+func (r *RuntimeRunner) startBackfillWindows(ctx context.Context) (*metrics.BackfillWindow, map[uint64]*metrics.BackfillWindow) {
+	registry := metrics.Historical(ctx)
+	if registry == nil {
+		return nil, nil
+	}
+	if r.build.Ordering == string(schema.Isolated) {
+		windows := make(map[uint64]*metrics.BackfillWindow, len(r.build.Chains))
+		for _, chain := range r.build.Chains {
+			id := runtimeChainID(chain)
+			if r.offlineAtOpen[id] != nil {
+				continue
+			}
+			window := registry.NewBackfillWindow(fmt.Sprint(chain["name"]))
+			window.Start()
+			windows[id] = window
+		}
+		return nil, windows
+	}
+	names := make([]string, 0, len(r.build.Chains))
+	for _, chain := range r.build.Chains {
+		names = append(names, fmt.Sprint(chain["name"]))
+	}
+	window := registry.NewBackfillWindow(names...)
+	window.Start()
+	return window, nil
+}
+
 func (r *RuntimeRunner) observeSyncHead(ctx context.Context, index int, head store.ManagedLiveHead) {
 	if registry := metrics.ChainSync(ctx); registry != nil {
 		if cp, err := checkpoint.Decode(head.Checkpoint); err == nil {

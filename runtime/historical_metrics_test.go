@@ -26,6 +26,7 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 			t.Run(string(order)+"/"+dialect, func(t *testing.T) {
 				ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 				defer cancel()
+				earliest := time.Now().Round(time.Second).Unix()
 				const genesis = 1700000000
 				var clients []*rpc.Client
 				window := 12
@@ -146,7 +147,23 @@ func TestApplicationHistoricalTimings(t *testing.T) {
 				if strings.Contains(firstScrape, "ponder_realtime_latency_count") || strings.Contains(firstScrape, "ponder_realtime_block_arrival_latency_count") {
 					t.Fatal("initial catch-up published realtime head latency")
 				}
+				stamps := map[string]float64{}
 				for _, chain := range cfg.Chains {
+					var start float64
+					for _, phase := range []string{"start", "end"} {
+						key := fmt.Sprintf("ponder_historical_%s_timestamp_seconds{chain=%q} ", phase, chain.Name)
+						_, tail, ok := strings.Cut(firstScrape, key)
+						raw, _, _ := strings.Cut(tail, "\n")
+						stamp, err := strconv.ParseFloat(raw, 64)
+						if !ok || err != nil || stamp < float64(earliest) || stamp > float64(time.Now().Round(time.Second).Unix()) || stamp < start {
+							t.Fatalf("invalid %s timestamp %q for chain %s", phase, raw, chain.Name)
+						}
+						if earlier, found := stamps[phase]; found && order != schema.Isolated && earlier != stamp {
+							t.Fatalf("global %s timestamps differ: %v and %v", phase, earlier, stamp)
+						}
+						stamps[phase] = stamp
+						start = stamp
+					}
 					height := 3
 					if order == schema.Omnichain && chain.Name == "b" {
 						height = 2 // The equal-timestamp tip sorts after the global watermark.

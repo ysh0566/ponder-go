@@ -214,7 +214,7 @@ func TestRuntimeOmnichainLogOnlySource(t *testing.T) {
 							if err != nil {
 								t.Fatal(err)
 							}
-							_, err = r.runOmnichainFinalized(context.Background(), faultEpoch, control, map[uint64]*runtimeLineage{}, RuntimeResult{})
+							_, err = r.runOmnichainFinalized(context.Background(), faultEpoch, control, map[uint64]*runtimeLineage{}, RuntimeResult{}, nil)
 							if err == nil || !strings.Contains(err.Error(), "scanned endpoint") {
 								_ = faultEpoch.Abort(context.Background())
 								t.Fatalf("endpoint mismatch accepted: %v", err)

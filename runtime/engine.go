@@ -210,11 +210,11 @@ func (e *Engine) block(ctx context.Context, number any) (Block, error) {
 	return *b, nil
 }
 func (e *Engine) Sync(ctx context.Context) error {
-	_, err := e.syncToHead(ctx, nil)
+	_, err := e.syncToHead(ctx, nil, nil)
 	return err
 }
 
-func (e *Engine) syncToHead(ctx context.Context, samples polledHeads) (bool, error) {
+func (e *Engine) syncToHead(ctx context.Context, samples polledHeads, window *metrics.BackfillWindow) (bool, error) {
 	e.syncMu.Lock()
 	defer e.syncMu.Unlock()
 	latest, err := e.acquireHead(ctx, samples)
@@ -225,6 +225,7 @@ func (e *Engine) syncToHead(ctx context.Context, samples polledHeads) (bool, err
 	if err != nil {
 		return false, err
 	}
+	window.Start()
 	if e.staged != nil {
 		if err = e.initializeStaged(ctx, latest); err != nil {
 			return false, err
@@ -785,8 +786,9 @@ func (e *Engine) Run(ctx context.Context) error { return e.RunIndexing(ctx, func
 
 // RunIndexing resumes from committed progress after transient RPC outages.
 func (e *Engine) RunIndexing(ctx context.Context, ready func(bool)) error {
-	return pollIndexer(ctx, e.pollingInterval(), ready, func(ctx context.Context, samples polledHeads) (bool, error) {
-		done, err := e.syncToHead(ctx, samples)
+	window := metrics.Historical(ctx).NewBackfillWindow(e.chain.Name)
+	return pollIndexer(ctx, e.pollingInterval(), ready, window, func(ctx context.Context, samples polledHeads, window *metrics.BackfillWindow) (bool, error) {
+		done, err := e.syncToHead(ctx, samples, window)
 		if err == nil {
 			metrics.ChainSync(ctx).SetSyncPhase(e.chain.Name, done)
 		}
@@ -802,7 +804,7 @@ func (e *Engine) pollingInterval() time.Duration {
 	return interval
 }
 
-func pollIndexer(ctx context.Context, interval time.Duration, ready func(bool), sync func(context.Context, polledHeads) (bool, error), endpoints ...string) error {
+func pollIndexer(ctx context.Context, interval time.Duration, ready func(bool), window *metrics.BackfillWindow, sync func(context.Context, polledHeads, *metrics.BackfillWindow) (bool, error), endpoints ...string) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	heads := headNotifications(ctx, endpoints...)
@@ -812,7 +814,7 @@ func pollIndexer(ctx context.Context, interval time.Duration, ready func(bool), 
 	samples := make(polledHeads)
 	pollCtx := metrics.WithRealtime(ctx, nil)
 	for {
-		done, err := sync(pollCtx, samples)
+		done, err := sync(pollCtx, samples, window)
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
@@ -827,6 +829,8 @@ func pollIndexer(ctx context.Context, interval time.Duration, ready func(bool), 
 			delay = retry
 			retry = min(retry*2, 30*time.Second)
 		} else {
+			window.Finish()
+			window = nil
 			ready(true)
 			if done {
 				return nil
