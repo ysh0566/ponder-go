@@ -64,7 +64,7 @@ func TestManagedLiveDomainsBootstrap(t *testing.T) {
 					business, syncBackend := liveDomainsRawOpen(t, o, dialect, true), liveDomainsRawOpen(t, o, dialect, false)
 					fault := &liveDomainFaultBackend{Backend: syncBackend, phase: "bootstrap", mode: mode}
 					bare := &IndependentStorage{businessBackend: business, syncBackend: fault}
-					if e = prepareLiveDomains(ctx, bare, o, normalized); e == nil || !fault.fired {
+					if e = prepareLiveDomains(ctx, bare, o, &normalized); e == nil || !fault.fired {
 						t.Fatalf("bootstrap fault missed %v", e)
 					}
 					r, e := syncBackend.Query(ctx, "SELECT nspname FROM pg_namespace WHERE nspname=$1", o.SyncNamespace)
@@ -79,7 +79,7 @@ func TestManagedLiveDomainsBootstrap(t *testing.T) {
 						t.Fatalf("bootstrap partial DDL survived rollback %v", r.Rows)
 					}
 					bare.syncBackend = syncBackend
-					if e = prepareLiveDomains(ctx, bare, o, normalized); e != nil {
+					if e = prepareLiveDomains(ctx, bare, o, &normalized); e != nil {
 						t.Fatalf("bootstrap retry=%v", e)
 					}
 					if e = business.Close(); e != nil {

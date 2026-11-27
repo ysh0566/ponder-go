@@ -20,6 +20,7 @@ var (
 	ErrManagedLiveLegacyMutation  = errors.New("managed live requires receipt-backed writes; legacy mutation is rejected")
 	ErrManagedLiveReceiptConflict = errors.New("managed live open receipt has different inputs")
 	ErrManagedLiveOpenIDUsed      = errors.New("managed live open ID is already durable; use a new explicit open attempt")
+	ErrMissingIsolatedBaseline    = errors.New("offline Isolated recovery requires an initialized cursor for each chain")
 	ErrManagedLivePendingActions  = errors.New("managed live recovery or activation is not available for this state")
 )
 
@@ -49,6 +50,7 @@ type ManagedLiveOptions struct {
 	runtimeFactories    bool
 	runtimeOmnichain    bool
 	runtimeIsolated     bool
+	resumeUnavailable   bool
 	runtimeBlockScan    bool
 	runtimeLogFilters   map[uint64][]filter.Object
 	runtimeLogCallbacks map[uint64][]filter.Object
@@ -112,12 +114,15 @@ func normalizeManagedLiveOptions(o IndependentStorageOptions, in ManagedLiveOpti
 	if in.OpenID == "" || len(in.OpenID) > 128 || strings.TrimSpace(in.OpenID) != in.OpenID || strings.ContainsAny(in.OpenID, "\x00\r\n") {
 		return ManagedLiveOptions{}, fmt.Errorf("managed live requires an explicit bounded open ID")
 	}
-	if len(in.FinalizedHeads) != len(base.Chains) {
+	if !in.resumeUnavailable && len(in.FinalizedHeads) != len(base.Chains) {
 		return ManagedLiveOptions{}, fmt.Errorf("managed live requires exactly the configured fresh finalized heads")
 	}
-	out := ManagedLiveOptions{runtimeOmnichain: in.runtimeOmnichain, runtimeIsolated: in.runtimeIsolated, ManagedFiniteOptions: base, OpenID: in.OpenID, FinalizedHeads: map[uint64]ManagedLiveHead{}}
+	out := ManagedLiveOptions{resumeUnavailable: in.resumeUnavailable, runtimeOmnichain: in.runtimeOmnichain, runtimeIsolated: in.runtimeIsolated, ManagedFiniteOptions: base, OpenID: in.OpenID, FinalizedHeads: map[uint64]ManagedLiveHead{}}
 	for _, chain := range base.Chains {
 		head, ok := in.FinalizedHeads[chain.ID]
+		if !ok && in.resumeUnavailable {
+			continue
+		}
 		cp, e := checkpoint.Decode(head.Checkpoint)
 		if !ok || e != nil || chain.ID > 9007199254740991 || cp.ChainID != chain.ID || cp.BlockNumber > 9007199254740991 || cp == checkpoint.Max || cp != checkpoint.Block(cp.BlockTimestamp, chain.ID, cp.BlockNumber, true) {
 			return ManagedLiveOptions{}, fmt.Errorf("invalid fresh finalized checkpoint for chain %d", chain.ID)
@@ -132,6 +137,9 @@ func normalizeManagedLiveOptions(o IndependentStorageOptions, in ManagedLiveOpti
 		}
 		head.Hash, head.ParentHash = strings.ToLower(head.Hash), strings.ToLower(head.ParentHash)
 		out.FinalizedHeads[chain.ID] = head
+	}
+	if len(out.FinalizedHeads) != len(in.FinalizedHeads) {
+		return ManagedLiveOptions{}, fmt.Errorf("unknown chain in finalized heads")
 	}
 	return out, nil
 }

@@ -2,6 +2,7 @@ package historical
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -15,6 +16,7 @@ import (
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/indexing"
 	"github.com/ysh0566/ponder-go/metrics"
+	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -186,5 +188,190 @@ func TestRuntimeIsolatedLiveOutage(t *testing.T) {
 				}
 			})
 		})
+	}
+}
+
+// An initialized writer can audit both stores and let an available chain
+// commit even when the other RPC is absent throughout the cold opening.
+func TestRuntimeIsolatedOfflineReopen(t *testing.T) {
+	for _, backend := range []string{"postgres", "pglite"} {
+		for _, deepFork := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/deep_fork_%t", backend, deepFork), func(t *testing.T) {
+				continuousRoot(t)
+				ctx, cancel := context.WithTimeout(t.Context(), 4*time.Minute)
+				defer cancel()
+				node := newContinuousRPC(t, 2)
+				var offline, peerOffline atomic.Bool
+				gateway := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+					if (offline.Load() && req.URL.Path == "/1") || (peerOffline.Load() && req.URL.Path == "/2") {
+						http.Error(w, "unavailable", http.StatusServiceUnavailable)
+						return
+					}
+					node.p.server.Config.Handler.ServeHTTP(w, req)
+				}))
+				defer gateway.Close()
+				raw := fmt.Sprintf(`{"ordering":"experimental_isolated","chains":{"one":{"id":1,"rpc":%q,"reorgWindow":0},"two":{"id":2,"rpc":%q,"reorgWindow":0}},"blocks":{"Blocks":{"chain":{"one":{},"two":{}},"startBlock":1,"endBlock":5,"interval":1}}}`, gateway.URL+"/1", gateway.URL+"/2")
+				calls := map[uint64][]uint64{}
+				handler := indexing.Handler(func(ctx context.Context, a *indexing.HandlerArgs) error {
+					id := finiteChain(a)
+					n, err := continuousNumber(a)
+					if err != nil {
+						return err
+					}
+					block, err := omniLogsFields(a.Event.Get("block"), "hash")
+					if err != nil {
+						return err
+					}
+					calls[id] = append(calls[id], n)
+					_, err = a.Context.DB.InsertOne(ctx, "seen", store.Row{"chainId": int(id), "height": int(n), "hash": block["hash"]}, store.Conflict{})
+					return err
+				})
+				b := runtimeSourceBuild(t, raw, config.SourceIndexingFunction{Name: "Blocks:block", Fn: handler})
+				f := newManagedFiniteFixture(t, backend, b)
+				f.options.Owned.Storage.Schema = schema.Schema{Tables: []schema.Table{{Name: "seen", PrimaryKey: []string{"chain_id", "height"}, Columns: []schema.Column{
+					{Name: "chain_id", Property: "chainId", Type: "integer", NotNull: true}, {Name: "height", Type: "integer", NotNull: true}, {Name: "hash", Type: "text", NotNull: true},
+				}}}}
+				stop := errors.New("stop after first catch-up")
+				var epochs []uint64
+				o := RuntimeOptions{BuildID: "isolated-offline", OpenID: "first", Historical: runtimeFixtureInput(f), Requesters: runtimeFactory(&finiteRPC{server: gateway}, &epochs), Live: &RuntimeLiveOptions{PollingInterval: time.Millisecond, RetryInterval: 20 * time.Millisecond}}
+				o.OnActivated = func(context.Context) error { return stop }
+				if !deepFork {
+					offline.Store(true)
+					open := OpenRuntimePostgres
+					if backend == "pglite" {
+						open = OpenRuntimePGlite
+					}
+					first, err := open(ctx, o)
+					var status *rpc.HTTPStatusError
+					if first != nil || !errors.Is(err, store.ErrMissingIsolatedBaseline) || !errors.As(err, &status) || status.StatusCode != 503 {
+						t.Fatalf("first opening without a baseline: runner=%v err=%v", first, err)
+					}
+					offline.Store(false)
+				}
+				r := runtimeOpen(t, backend, o)
+				if _, err := r.Run(ctx); !errors.Is(err, stop) {
+					t.Fatal(err)
+				}
+				prior, err := r.Control(ctx)
+				if err != nil || !store.ManagedLiveReachedBlock(prior, 1, 2) || !store.ManagedLiveReachedBlock(prior, 2, 2) {
+					t.Fatalf("opening cursors: %v, err=%v", prior.Cursors, err)
+				}
+				if err := r.Close(ctx); err != nil {
+					t.Fatal(err)
+				}
+				o.OpenID, o.OnActivated = "cold", nil
+				offline.Store(true)
+				peerOffline.Store(deepFork)
+				node.setLatest(3)
+				held := false
+				registry := metrics.New()
+				o.OnCommitted = func(ctx context.Context, g RuntimeCommit) error {
+					n, err := checkpoint.Decode(g.Head.Checkpoint)
+					if err != nil {
+						return err
+					}
+					if g.ChainID == 1 {
+						if n.BlockNumber == 3 {
+							assertSyncMetrics(t, registry, "one", g.Head, 1, -1)
+						}
+						return nil
+					}
+					switch n.BlockNumber {
+					case 3:
+						node.setLatest(4)
+					case 4:
+						c, err := r.Control(ctx)
+						if err != nil {
+							return err
+						}
+						ready, err := r.Ready(ctx)
+						if err != nil {
+							return err
+						}
+						if !offline.Load() || ready || c.Serving || c.Cursors[1] != prior.Cursors[1] || !slices.Equal(calls[1], []uint64{1, 2}) {
+							return fmt.Errorf("peer failed to advance independently: control=%+v calls=%v", c, calls)
+						}
+						held = true
+						from := uint64(3)
+						if deepFork {
+							from = 2
+						}
+						node.fork(1, from)
+						node.setLatest(5)
+						offline.Store(false)
+					}
+					return nil
+				}
+				r = runtimeOpen(t, backend, o)
+				peerOffline.Store(false)
+				out, err := r.Run(metrics.WithChainSync(ctx, registry))
+				if !held || !out.Recovered {
+					t.Fatalf("healthy commit=%t result=%+v: %v", held, out, err)
+				}
+				if deepFork {
+					if err == nil || !errors.Is(err, store.ErrManagedLiveDeepReorg) || out.Ready || !slices.Equal(calls[1], []uint64{1, 2}) {
+						t.Fatalf("returning finalized fork: result=%+v calls=%v err=%v", out, calls, err)
+					}
+				} else if err != nil || !out.Ready || !out.Completed || !slices.Equal(calls[1], []uint64{1, 2, 3, 4, 5}) || !slices.Equal(calls[2], []uint64{1, 2, 3, 4, 5}) {
+					t.Fatalf("reopen: result=%+v calls=%v err=%v", out, calls, err)
+				}
+				if err := r.Close(ctx); err != nil {
+					t.Fatal(err)
+				}
+				managedInspect(t, f, func(db store.Backend) {
+					rows := managedRows(t, db, "SELECT height::text AS height, hash FROM "+schema.Quote(f.options.Owned.Storage.BusinessNamespace)+".seen WHERE chain_id=1 ORDER BY height")
+					expected := 5
+					if deepFork {
+						expected = 2
+					}
+					if len(rows) != expected {
+						t.Fatal(rows)
+					}
+					if !deepFork {
+						node.mu.Lock()
+						defer node.mu.Unlock()
+						for i, row := range rows {
+							if row["hash"] != node.canonical[1][uint64(i+1)]["hash"] {
+								t.Fatal("orphaned row", row)
+							}
+						}
+					}
+				})
+			})
+		}
+	}
+}
+
+func TestIsolatedReturningFinality(t *testing.T) {
+	node := newContinuousRPC(t, 2)
+	requester := rpc.New(node.p.server.URL + "/1")
+	requester.Retries = 0
+	requester.RequestsPerSecond = 0
+	head := func(n uint64) store.ManagedLiveHead {
+		t.Helper()
+		h, err := runtimeHead(1, node.canonical[1][n])
+		if err != nil {
+			t.Fatal(err)
+		}
+		return h
+	}
+	// An interrupted backfill acquired block 3 before the business safe
+	// cursor at 1. A returning node must prove both positions.
+	cursor := head(1)
+	r := &RuntimeRunner{
+		options:   RuntimeOptions{Live: &RuntimeLiveOptions{}},
+		build:     &config.ExecutableSourceIndexingBuild{Chains: []indexing.Object{{"id": uint64(1), "reorgWindow": uint64(0)}}},
+		finalized: map[uint64]store.ManagedLiveHead{1: head(3)},
+	}
+	if ok, err := r.verifyReturningChain(t.Context(), 0, requester, cursor); ok || err != nil {
+		t.Fatalf("lagging node: verified=%t err=%v", ok, err)
+	}
+	node.setLatest(4)
+	if ok, err := r.verifyReturningChain(t.Context(), 0, requester, cursor); !ok || err != nil {
+		t.Fatalf("canonical node: verified=%t err=%v", ok, err)
+	}
+	node.fork(1, 3)
+	if ok, err := r.verifyReturningChain(t.Context(), 0, requester, cursor); ok || !errors.Is(err, store.ErrManagedLiveDeepReorg) {
+		t.Fatalf("replacement of recorded opening finality: verified=%t err=%v", ok, err)
 	}
 }

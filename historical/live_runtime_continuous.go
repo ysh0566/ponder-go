@@ -185,7 +185,7 @@ func (r *RuntimeRunner) liveBranch(ctx context.Context, requester rpc.Requester,
 
 // Probe a disconnected Isolated chain without holding up other generators.
 // A successful read only admits reconstruction from the durable cursor.
-func (r *RuntimeRunner) waitForIsolatedRPC(ctx context.Context, i int, requester rpc.Requester) iter.Seq2[*source.SourceEventBatch, error] {
+func (r *RuntimeRunner) waitForIsolatedRPC(ctx context.Context, i int, requester rpc.Requester, c store.ManagedLiveControl) iter.Seq2[*source.SourceEventBatch, error] {
 	return func(yield func(*source.SourceEventBatch, error) bool) {
 		actions := rpc.NewActions(requester)
 		for {
@@ -193,22 +193,68 @@ func (r *RuntimeRunner) waitForIsolatedRPC(ctx context.Context, i int, requester
 				yield(nil, err)
 				return
 			}
-			_, err := actions.GetSourceBlockByNumber(ctx, "latest", false)
+			id := runtimeChainID(r.build.Chains[i])
+			recovered := true
+			var err error
+			if r.offlineAtOpen[id] != nil {
+				recovered, err = r.verifyReturningChain(ctx, i, requester, c.Cursors[id])
+				if err != nil && !rpc.IsTransient(err) {
+					yield(nil, err)
+					return
+				}
+			} else {
+				_, err = actions.GetSourceBlockByNumber(ctx, "latest", false)
+			}
 			if canceled := ctx.Err(); canceled != nil {
 				yield(nil, canceled)
 				return
 			}
 			kind := "fetch-retry"
-			if err == nil {
+			recovered = recovered && err == nil
+			if recovered {
 				kind = "rpc-recovered"
 			}
 			item := &runtimeLiveItem{index: i, event: source.SourceRealtimeEvent{Type: kind}}
-			if !yield(&source.SourceEventBatch{Events: []indexing.Object{{"runtimeLive": item}}}, nil) || err == nil {
+			if !yield(&source.SourceEventBatch{Events: []indexing.Object{{"runtimeLive": item}}}, nil) || recovered {
 				return
 			}
 		}
 	}
 }
+
+// Before replay a returning cold chain must prove its durable safe cursor is
+// still an ancestor of current canonical finality. No business callback runs here.
+func (r *RuntimeRunner) verifyReturningChain(ctx context.Context, i int, requester rpc.Requester, cursor store.ManagedLiveHead) (bool, error) {
+	id := runtimeChainID(r.build.Chains[i])
+	raw, err := r.acquireChainFinality(ctx, i, requester.(rpc.AsyncRequester))
+	if err != nil {
+		return false, err
+	}
+	head, err := runtimeHead(id, raw)
+	if err != nil {
+		return false, err
+	}
+	// The node can return a hash-addressed orphan. Anchor replay to the
+	// canonical numbered chain, including the case where the heights match.
+	previous := r.finalized[id]
+	limit, _ := checkpoint.Decode(previous.Checkpoint)
+	current, _ := checkpoint.Decode(head.Checkpoint)
+	if current.BlockNumber < limit.BlockNumber {
+		// A lagging endpoint cannot authenticate this cursor yet.
+		return false, nil
+	}
+	if current.BlockTimestamp < limit.BlockTimestamp {
+		return false, store.ErrManagedLiveFinalityRegression
+	}
+	err = r.walkFinalizedLineageFrom(ctx, requester, id, head, cursor, func(n uint64, acquired store.ManagedLiveHead) error {
+		if n == limit.BlockNumber && acquired != previous {
+			return store.ErrManagedLiveDeepReorg
+		}
+		return nil
+	})
+	return err == nil, err
+}
+
 func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.RuntimeEpoch, c store.ManagedLiveControl, known *runtimeLiveHeaders, offline map[uint64]bool) (q *runtimeLiveQueue, err error) {
 	run, cancel := context.WithCancel(ctx)
 	q = &runtimeLiveQueue{cancel: cancel, stop: func() {}, children: make([]*source.SourceHistoricalChildren, len(r.build.Chains))}
@@ -234,7 +280,7 @@ func (r *RuntimeRunner) newLiveQueue(ctx context.Context, epoch *indexing.Runtim
 			q.joins = append(q.joins, join)
 		}
 		if offline[id] {
-			add(r.waitForIsolatedRPC(work, i, epoch.Requester(i)))
+			add(r.waitForIsolatedRPC(work, i, epoch.Requester(i), c))
 			continue
 		}
 		filters := []filter.Object{}
@@ -428,7 +474,9 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 		if registry := metrics.ChainSync(ctx); registry != nil {
 			for _, chain := range r.build.Chains {
 				id := runtimeChainID(chain)
-				registry.SetSyncPhase(fmt.Sprint(chain["name"]), store.ManagedLiveReachedBlock(c, id, r.ends[id]))
+				if r.offlineAtOpen[id] == nil {
+					registry.SetSyncPhase(fmt.Sprint(chain["name"]), store.ManagedLiveReachedBlock(c, id, r.ends[id]))
+				}
 			}
 		}
 	}
@@ -451,7 +499,7 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 	if c.Serving {
 		ready(true)
 	}
-	if runtimeCanActivate(c) && !c.Serving {
+	if len(r.offlineAtOpen) == 0 && runtimeCanActivate(c) && !c.Serving {
 		if err = activate(); err != nil {
 			return out, err
 		}
@@ -463,6 +511,9 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 	var offline map[uint64]bool
 	if r.build.Ordering == string(schema.Isolated) {
 		offline = make(map[uint64]bool)
+		for id := range r.offlineAtOpen {
+			offline[id] = true
+		}
 	}
 	waitForRetry := func(fetch *runtimeLiveFetchError) error {
 		if offline != nil {
@@ -611,9 +662,20 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			}
 			continue
 		case "rpc-recovered":
-			delete(offline, id)
 			if e = sealQueue(); e != nil {
 				return out, e
+			}
+			delete(offline, id)
+			if r.offlineAtOpen[id] != nil {
+				// The stored cursor can now be reported as canonical, including
+				// when a finite chain already ended before this restart.
+				cursor := c.Cursors[id]
+				cp, _ := checkpoint.Decode(cursor.Checkpoint)
+				if store.ManagedLiveReachedBlock(c, id, cp.BlockNumber) {
+					r.observeSyncHead(ctx, i, cursor)
+				}
+				metrics.ChainSync(ctx).SetSyncPhase(fmt.Sprint(r.build.Chains[i]["name"]), store.ManagedLiveReachedBlock(c, id, r.ends[id]))
+				delete(r.offlineAtOpen, id)
 			}
 			if e = restart(); e != nil {
 				return out, e

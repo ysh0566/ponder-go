@@ -3260,6 +3260,9 @@
       "implementation_files": [
         "historical/live_runtime.go",
         "historical/live_runtime_continuous.go",
+        "historical/live_runtime_completion.go",
+        "store/managed_live_domains_bootstrap.go",
+        "store/managed_live_runtime.go",
         "store/managed_live_isolated.go",
         "store/managed_live_reorg.go",
         "store/managed_live_finalize.go",
@@ -3269,7 +3272,8 @@
         "historical/isolated_live_test.go",
         "historical/isolated_live_outage_test.go",
         "historical/live_runtime_test.go",
-        "store/managed_live_isolated_test.go"
+        "store/managed_live_isolated_test.go",
+        "store/managed_live_domains_integrity_database_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/runtime/isolated.ts",
@@ -3279,9 +3283,10 @@
       "evidence": [
         "parity/runs/native-isolated-live/RESULT.md",
         "parity/runs/native-isolated-rpc-outage/RESULT.md",
+        "parity/runs/native-isolated-offline-reopen/RESULT.md",
         "runtime/isolated_indexer_test.go"
       ],
-      "remaining": "During a sustained live RPC outage healthy peers commit independently. Initial startup and cold reopen still need all configured chains. Selective RPC method failures and engine interruption with mixed factory/account sources require further coverage."
+      "remaining": "During a sustained live RPC outage healthy peers commit independently. After all chains have committed initial cursors, a continuous writer can cold-restart with unavailable endpoints and validate their durable finality before replay. First opening and incomplete initialization still require each participating endpoint. Selective RPC method failures and engine interruption with mixed factory/account sources require further coverage."
     },
     {
       "id": "native-runtime-query-budget",

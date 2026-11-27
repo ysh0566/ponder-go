@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+
+	"github.com/ysh0566/ponder-go/checkpoint"
 )
 
 // Isolated chains can finalize or discard interleaved segments independently.
@@ -70,4 +72,36 @@ func (s *Store) deleteIsolatedSegments(ctx context.Context, tx Transaction, segm
 		return err
 	}
 	return tx.Exec(ctx, "DELETE FROM "+s.internal("_ponder_go_live_segments")+" WHERE ordinal IN (SELECT s.ordinal"+items, string(payload))
+}
+
+// Both owner locks are held and the caller has authenticated the business and
+// sync ledgers. Complete only the missing heads on this opening's private map.
+func (opts *ManagedLiveOptions) restoreIsolatedFinality(prior managedLiveDurable) error {
+	if len(prior.Control.Cursors) != len(opts.Chains) {
+		return ErrMissingIsolatedBaseline
+	}
+	baselines, err := liveDurableBaselines(prior.Operations)
+	if err != nil {
+		return err
+	}
+	public := livePublicFinality(prior.Control, baselines)
+	for _, chain := range opts.Chains {
+		if _, online := opts.FinalizedHeads[chain.ID]; online {
+			continue
+		}
+		// An interrupted backfill may have authenticated opening finality
+		// beyond the last committed business block.
+		opening, committed := prior.Control.FinalizedHeads[chain.ID], public[chain.ID]
+		from, err := checkpoint.Decode(opening.Checkpoint)
+		to, e := checkpoint.Decode(committed.Checkpoint)
+		if err != nil || e != nil || from.ChainID != chain.ID || to.ChainID != chain.ID ||
+			(from.BlockNumber == to.BlockNumber && opening != committed) {
+			return ErrManagedLiveReceiptConflict
+		}
+		if from.BlockNumber > to.BlockNumber {
+			committed = opening
+		}
+		opts.FinalizedHeads[chain.ID] = committed
+	}
+	return nil
 }
