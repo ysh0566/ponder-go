@@ -58,7 +58,7 @@ func (r *RuntimeRunner) newBlockQueue(ctx context.Context, epoch *indexing.Runti
 		rawPrevious := headers[id]
 		generators[i] = source.SourceEventGenerator{Next: func(call context.Context) <-chan source.SourceEventStep {
 			out := make(chan source.SourceEventStep, 1)
-			if number > ends[id] {
+			if end, enabled := ends[id]; !enabled || number > end {
 				out <- source.SourceEventStep{Done: true}
 				close(out)
 				return out
@@ -252,6 +252,9 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 	makeSources := func() error {
 		for i, c := range r.build.Chains {
 			id, _ := uintQuantity(c["id"])
+			if r.offlineAtOpen[id] != nil {
+				continue
+			}
 			filters := []filter.Object{}
 			for _, cb := range r.session.Callbacks(r.build.EventCallbacks[i]) {
 				filters = append(filters, cb["filter"].(map[string]any))
@@ -339,6 +342,9 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 
 	for i, c := range r.build.Chains {
 		id, _ := uintQuantity(c["id"])
+		if r.offlineAtOpen[id] != nil {
+			continue
+		}
 		cursor := control.Cursors[id]
 		n, e := checkpoint.Decode(cursor.Checkpoint)
 		if e != nil {
@@ -395,7 +401,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			return result, err
 		}
 		if queue == nil {
-			if r.options.Live != nil && runtimeHistoricalComplete(control) {
+			if r.options.Live != nil && historicalCompleteExcept(control, r.offlineAtOpen) {
 				owned := epoch
 				epoch = nil
 				return r.runContinuous(run, owned, control, headers, result, ready)
@@ -437,7 +443,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 				fork, activated = nil, false
 				continue
 			}
-			if !activated && runtimeCanActivate(control) {
+			if !activated && len(r.offlineAtOpen) == 0 && runtimeCanActivate(control) {
 				learned, e := epoch.Seal(run)
 				if e != nil {
 					return result, e
@@ -473,6 +479,9 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			ends := map[uint64]uint64{}
 			work := false
 			for _, c := range r.build.Chains {
+				if r.offlineAtOpen[runtimeChainID(c)] != nil {
+					continue
+				}
 				cp, _ := checkpoint.Decode(control.Cursors[runtimeChainID(c)].Checkpoint)
 				end := r.ends[runtimeChainID(c)]
 				if !activated {

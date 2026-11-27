@@ -43,8 +43,8 @@ func domainPriorOwner(s *IndependentStorage, o IndependentStorageOptions, opts M
 // Bootstrap the native sync ownership metadata AND protocol marker in one
 // transaction. A pre-genesis empty marker can retry initialization; a bound
 // domain may never reconstruct its missing peer or missing protocol evidence.
-func prepareLiveDomains(ctx context.Context, s *IndependentStorage, o IndependentStorageOptions, opts ManagedLiveOptions) error {
-	d, err := domainPriorOwner(s, o, opts)
+func prepareLiveDomains(ctx context.Context, s *IndependentStorage, o IndependentStorageOptions, opts *ManagedLiveOptions) error {
+	d, err := domainPriorOwner(s, o, *opts)
 	if err != nil {
 		return err
 	}
@@ -62,6 +62,7 @@ func prepareLiveDomains(ctx context.Context, s *IndependentStorage, o Independen
 		return err
 	}
 	hasBusiness := len(business.Rows) > 0
+	resumeOffline := opts.resumeUnavailable && len(opts.FinalizedHeads) < len(opts.Chains)
 	tx, err := b.Begin(ctx)
 	if err != nil {
 		return err
@@ -82,6 +83,9 @@ func prepareLiveDomains(ctx context.Context, s *IndependentStorage, o Independen
 		if !hasBusiness {
 			if l.Binding != nil || len(l.Records) > 0 {
 				return ErrManagedLiveReceiptConflict
+			}
+			if resumeOffline {
+				return ErrMissingIsolatedBaseline
 			}
 			return nil
 		}
@@ -121,10 +125,16 @@ func prepareLiveDomains(ctx context.Context, s *IndependentStorage, o Independen
 				return e
 			}
 		}
+		if resumeOffline {
+			return opts.restoreIsolatedFinality(prior)
+		}
 		return nil
 	}
 	if hasBusiness {
 		return ErrManagedLiveReceiptConflict
+	}
+	if resumeOffline {
+		return ErrMissingIsolatedBaseline
 	}
 	if err = cache.s.initializeInternal(ctx, tx); err != nil {
 		return err

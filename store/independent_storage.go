@@ -288,7 +288,7 @@ func (s *IndependentStorage) initialize(ctx context.Context, o IndependentStorag
 }
 func (s *IndependentStorage) initializeMode(ctx context.Context, o IndependentStorageOptions, managed *managedStorageOptions) error {
 	if managed != nil && managed.live != nil && managed.live.coordinated {
-		if err := prepareLiveDomains(ctx, s, o, *managed.live); err != nil {
+		if err := prepareLiveDomains(ctx, s, o, managed.live); err != nil {
 			return err
 		}
 	}

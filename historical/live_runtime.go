@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/config"
@@ -83,28 +84,29 @@ type RuntimeResult struct {
 	HistoricalBlocks, LiveBlocks, Refetches int
 }
 type RuntimeRunner struct {
-	domains           *store.ManagedLiveDomains
-	setup             bool
-	sparseChains      map[uint64]bool
-	build             *config.ExecutableSourceIndexingBuild
-	session           *filter.Session
-	release           func()
-	options           RuntimeOptions
-	starts, ends      map[uint64]uint64
-	latest, finalized map[uint64]store.ManagedLiveHead
-	finalBlocks       []indexing.Object
-	sequence          uint64
-	active            atomic.Bool
-	attempted         atomic.Bool
-	failed            atomic.Bool
-	transitioning     atomic.Bool
-	mu                sync.Mutex
-	closing           bool
-	cancel            context.CancelFunc
-	runDone           chan struct{}
-	closeOnce         sync.Once
-	closeDone         chan struct{}
-	closeErr          error
+	domains       *store.ManagedLiveDomains
+	setup         bool
+	sparseChains  map[uint64]bool
+	build         *config.ExecutableSourceIndexingBuild
+	session       *filter.Session
+	release       func()
+	options       RuntimeOptions
+	starts, ends  map[uint64]uint64
+	finalized     map[uint64]store.ManagedLiveHead
+	offlineAtOpen map[uint64]error
+	finalBlocks   []indexing.Object
+	sequence      uint64
+	active        atomic.Bool
+	attempted     atomic.Bool
+	failed        atomic.Bool
+	transitioning atomic.Bool
+	mu            sync.Mutex
+	closing       bool
+	cancel        context.CancelFunc
+	runDone       chan struct{}
+	closeOnce     sync.Once
+	closeDone     chan struct{}
+	closeErr      error
 }
 
 func OpenRuntimePostgres(ctx context.Context, o RuntimeOptions) (*RuntimeRunner, error) {
@@ -188,7 +190,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	if o.Historical.Owned.Service.Database != nil || o.Historical.Owned.Service.Clients != nil || len(o.Historical.Owned.Service.Build.Chains) != 0 {
 		return nil, fmt.Errorf("runtime owns service build/database/clients")
 	}
-	r := &RuntimeRunner{build: b, session: session, release: release, options: o, starts: map[uint64]uint64{}, latest: map[uint64]store.ManagedLiveHead{}, finalized: map[uint64]store.ManagedLiveHead{}, finalBlocks: make([]indexing.Object, len(b.Chains)), closeDone: make(chan struct{}), runDone: make(chan struct{})}
+	r := &RuntimeRunner{build: b, session: session, release: release, options: o, starts: map[uint64]uint64{}, finalized: map[uint64]store.ManagedLiveHead{}, finalBlocks: make([]indexing.Object, len(b.Chains)), closeDone: make(chan struct{}), runDone: make(chan struct{})}
 	close(r.runDone)
 	r.sparseChains = make(map[uint64]bool)
 	for i, c := range b.Chains {
@@ -313,6 +315,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	logFilters, logABIs := r.sparseSources()
 	r.domains, err = opener(ctx, storage, store.ManagedLiveRuntimeOptions{
 		ManagedLiveOptions: store.ManagedLiveOptions{ManagedFiniteOptions: plan, OpenID: o.OpenID, FinalizedHeads: r.finalized},
+		ResumeUnavailable:  len(r.offlineAtOpen) != 0,
 		MaxQueryParameters: o.Historical.MaxQueryParameters,
 		OpenLogScanRPC:     openLogScanRPC,
 		LogOnlyFilters:     logFilters,
@@ -325,8 +328,27 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		Continuous:         o.Live != nil,
 		ObserveDomain:      runtimeDomainObserver(r),
 	})
+	if errors.Is(err, store.ErrMissingIsolatedBaseline) {
+		causes := []error{err}
+		for _, c := range b.Chains {
+			id := runtimeChainID(c)
+			if cause := r.offlineAtOpen[id]; cause != nil {
+				causes = append(causes, fmt.Errorf("chain %d opening RPC: %w", id, cause))
+			}
+		}
+		return nil, errors.Join(causes...)
+	}
 	if err != nil {
 		return nil, err
+	}
+	if len(r.offlineAtOpen) != 0 {
+		control, err := r.domains.Control(ctx)
+		if err != nil {
+			return nil, errors.Join(err, r.domains.Close(context.Background()))
+		}
+		for id := range r.offlineAtOpen {
+			r.finalized[id] = control.FinalizedHeads[id]
+		}
 	}
 	opened = true
 	return r, nil
@@ -341,68 +363,25 @@ func (r *RuntimeRunner) retryHistorical(ctx context.Context, apply func() error)
 
 func (r *RuntimeRunner) acquireOpeningHeads(ctx context.Context, reqs []rpc.Requester) error {
 	for i, c := range r.build.Chains {
-		if reqs[i] == nil {
-			return fmt.Errorf("nil runtime requester")
-		}
-		if _, ok := reqs[i].(rpc.AsyncRequester); !ok {
+		req, ok := reqs[i].(rpc.AsyncRequester)
+		if !ok {
 			return fmt.Errorf("async runtime requester required")
 		}
-		id, _ := uintQuantity(c["id"])
-		progress := source.NewSourceSyncProgressRPC(reqs[i].(rpc.AsyncRequester))
-		latestResult := <-progress.BeginBlockByNumber(ctx, "latest", false, source.SourceSyncProgressRequestOptions{RetryNullBlockRequest: true})
-		latest, e := latestResult.Block, latestResult.Err
-		if e != nil {
-			return e
-		}
-		n, e := uintQuantity(latest["number"])
-		if e != nil {
-			return e
-		}
-		window, e := uintQuantity(c["reorgWindow"])
-		if e != nil {
-			return e
-		}
-		if r.options.Live == nil && r.options.OmnichainFinalityPollInterval == 0 && r.ends[id] > n {
-			return fmt.Errorf("bounded runtime end exceeds acquired latest block")
-		}
-		latestFinal := runtimeFinalityHeader(latest)
-		acquired := map[*finality.Block]indexing.Object{latestFinal: latest}
-		var blockTime *float64
-		if viem, ok := c["viemChain"].(map[string]any); ok {
-			if ms, ok := viem["blockTime"].(float64); ok {
-				copy := ms
-				blockTime = &copy
+		id := runtimeChainID(c)
+		final, err := r.acquireChainFinality(ctx, i, req)
+		if err != nil {
+			if ctx.Err() == nil && r.options.Live != nil && r.build.Ordering == string(schema.Isolated) && rpc.IsTransient(err) {
+				if r.offlineAtOpen == nil {
+					r.offlineAtOpen = make(map[uint64]error)
+				}
+				r.offlineAtOpen[id] = err
+				continue
 			}
+			return err
 		}
-		finalHead, e := finality.GetFinalizedBlock(ctx, finality.Chain{ReorgWindow: int(window), BlockTimeMS: blockTime}, func(ctx context.Context, request finality.Request) (*finality.Block, error) {
-			result := <-progress.BeginBlockByNumber(ctx, source.Hex(request.Number), request.IncludeTransactions, source.SourceSyncProgressRequestOptions{RetryNullBlockRequest: request.RetryNullBlockRequest})
-			if result.Err != nil {
-				return nil, result.Err
-			}
-			block := result.Block
-			got, err := uintQuantity(block["number"])
-			if err != nil || got != request.Number {
-				return nil, fmt.Errorf("invalid finality header at requested height %d", request.Number)
-			}
-			head := runtimeFinalityHeader(block)
-			acquired[head] = block
-			return head, nil
-		}, latestFinal, nil)
-		if e != nil {
-			return e
-		}
-		final, ok := acquired[finalHead]
-		if !ok {
-			return fmt.Errorf("finality search returned an unacquired header")
-		}
-
-		r.latest[id], e = runtimeHead(id, latest)
-		if e != nil {
-			return e
-		}
-		r.finalized[id], e = runtimeHead(id, final)
-		if e != nil {
-			return e
+		r.finalized[id], err = runtimeHead(id, final)
+		if err != nil {
+			return err
 		}
 		if r.build.Ordering == string(schema.Isolated) {
 			f, _ := checkpoint.Decode(r.finalized[id].Checkpoint)
@@ -416,6 +395,63 @@ func (r *RuntimeRunner) acquireOpeningHeads(ctx context.Context, reqs []rpc.Requ
 		r.finalBlocks[i] = final
 	}
 	return nil
+}
+
+func (r *RuntimeRunner) acquireChainFinality(ctx context.Context, i int, req rpc.AsyncRequester) (indexing.Object, error) {
+	c := r.build.Chains[i]
+	id := runtimeChainID(c)
+	progress := source.NewSourceSyncProgressRPC(req)
+	latestResult := <-progress.BeginBlockByNumber(ctx, "latest", false, source.SourceSyncProgressRequestOptions{RetryNullBlockRequest: true})
+	latest, e := latestResult.Block, latestResult.Err
+	if e != nil {
+		return nil, e
+	}
+	n, e := uintQuantity(latest["number"])
+	if e != nil {
+		return nil, e
+	}
+	window, e := uintQuantity(c["reorgWindow"])
+	if e != nil {
+		return nil, e
+	}
+	if r.options.Live == nil && r.options.OmnichainFinalityPollInterval == 0 && r.ends[id] > n {
+		return nil, fmt.Errorf("bounded runtime end exceeds acquired latest block")
+	}
+	if _, err := runtimeHead(id, latest); err != nil {
+		return nil, err
+	}
+	latestFinal := runtimeFinalityHeader(latest)
+	acquired := map[*finality.Block]indexing.Object{latestFinal: latest}
+	var blockTime *float64
+	if viem, ok := c["viemChain"].(map[string]any); ok {
+		if ms, ok := viem["blockTime"].(float64); ok {
+			copy := ms
+			blockTime = &copy
+		}
+	}
+	finalHead, e := finality.GetFinalizedBlock(ctx, finality.Chain{ReorgWindow: int(window), BlockTimeMS: blockTime}, func(ctx context.Context, request finality.Request) (*finality.Block, error) {
+		result := <-progress.BeginBlockByNumber(ctx, source.Hex(request.Number), request.IncludeTransactions, source.SourceSyncProgressRequestOptions{RetryNullBlockRequest: request.RetryNullBlockRequest})
+		if result.Err != nil {
+			return nil, result.Err
+		}
+		block := result.Block
+		got, err := uintQuantity(block["number"])
+		if err != nil || got != request.Number {
+			return nil, fmt.Errorf("invalid finality header at requested height %d", request.Number)
+		}
+		head := runtimeFinalityHeader(block)
+		acquired[head] = block
+		return head, nil
+	}, latestFinal, nil)
+	if e != nil {
+		return nil, e
+	}
+	final, ok := acquired[finalHead]
+	if !ok {
+		return nil, fmt.Errorf("finality search returned an unacquired header")
+	}
+
+	return final, nil
 }
 
 func runtimeHead(id uint64, b indexing.Object) (store.ManagedLiveHead, error) {
@@ -585,10 +621,17 @@ func runtimeStableInput(v reflect.Value) (any, error) {
 }
 
 func runtimeHistoricalComplete(c store.ManagedLiveControl) bool {
+	return historicalCompleteExcept(c, nil)
+}
+
+func historicalCompleteExcept(c store.ManagedLiveControl, offline map[uint64]error) bool {
 	if c.Batches == 0 {
 		return false
 	}
 	for id, cut := range c.HistoryCuts {
+		if offline[id] != nil {
+			continue
+		}
 		_, err := checkpoint.Decode(c.Cursors[id].Checkpoint)
 		if err != nil || !store.ManagedLiveReachedBlock(c, id, cut) {
 			return false
@@ -598,11 +641,14 @@ func runtimeHistoricalComplete(c store.ManagedLiveControl) bool {
 }
 
 func (r *RuntimeRunner) walkFinalizedLineage(ctx context.Context, requester rpc.Requester, id uint64, boundary store.ManagedLiveHead, visit func(uint64, store.ManagedLiveHead) error) error {
+	return r.walkFinalizedLineageFrom(ctx, requester, id, r.finalized[id], boundary, visit)
+}
+
+func (r *RuntimeRunner) walkFinalizedLineageFrom(ctx context.Context, requester rpc.Requester, id uint64, head, boundary store.ManagedLiveHead, visit func(uint64, store.ManagedLiveHead) error) error {
 	target, err := checkpoint.Decode(boundary.Checkpoint)
 	if err != nil {
 		return err
 	}
-	head := r.finalized[id]
 	cp, err := checkpoint.Decode(head.Checkpoint)
 	if err != nil {
 		return err

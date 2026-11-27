@@ -31,7 +31,11 @@ type ManagedLiveRuntimeOptions struct {
 	// MaxQueryParameters bounds batched sync writes for this opening.
 	MaxQueryParameters int
 	// Nil means all chains cached. A complete mixed/disabled policy opts into v7.
-	CacheRPCRequests  map[uint64]bool
+	CacheRPCRequests map[uint64]bool
+	// ResumeUnavailable permits missing RPC heads only when both stores prove
+	// an initialized Isolated deployment. Recovery reuses each absent chain's
+	// finalized business position. The runner authenticates it on reconnect.
+	ResumeUnavailable bool
 	Continuous        bool
 	Setup             bool
 	SourceCheckpoints bool
@@ -62,6 +66,10 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 	if in.ObserveDomain != nil && !in.Continuous {
 		return nil, fmt.Errorf("domain observer requires continuous indexing")
 	}
+	if in.ResumeUnavailable && (o.Ordering != schema.Isolated || !in.Continuous) {
+		return nil, fmt.Errorf("offline recovery requires continuous Isolated indexing")
+	}
+	in.resumeUnavailable = in.ResumeUnavailable
 	if o.Ordering == schema.Omnichain || o.Ordering == schema.Isolated {
 		if !in.SourceCheckpoints {
 			return nil, fmt.Errorf("%s requires source checkpoints", o.Ordering)
@@ -70,7 +78,11 @@ func openManagedLiveRuntime(ctx context.Context, o IndependentStorageOptions, in
 			return nil, fmt.Errorf("omnichain requires the bounded finalized runtime format")
 		}
 		for _, chain := range in.Chains {
-			cp, err := checkpoint.Decode(in.FinalizedHeads[chain.ID].Checkpoint)
+			head, ok := in.FinalizedHeads[chain.ID]
+			if !ok && in.ResumeUnavailable {
+				continue
+			}
+			cp, err := checkpoint.Decode(head.Checkpoint)
 			if err != nil || cp.ChainID != chain.ID || (!in.Continuous && cp.BlockNumber < in.EndBlocks[chain.ID]) {
 				return nil, fmt.Errorf("%s runtime end exceeds acquired finality", o.Ordering)
 			}
