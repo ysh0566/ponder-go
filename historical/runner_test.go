@@ -872,11 +872,18 @@ func TestFiniteHistoricalRunnerFiniteBoundary(t *testing.T) {
 			}
 			r := f.start(t)
 			registry := metrics.New()
-			result, e := r.Run(metrics.WithHistorical(t.Context(), registry))
+			result, e := r.Run(metrics.WithChainSync(metrics.WithHistorical(t.Context(), registry), registry))
 			if e != nil || !result.Completed {
 				t.Fatal(result, e)
 			}
 			assertHistoricalGroups(t, registry, true)
+			for id, name := range map[uint64]string{1: "one", 2: "two"} {
+				ts, err := uintQuantity(finiteBlock(id, 5)["timestamp"])
+				if err != nil {
+					t.Fatal(err)
+				}
+				assertIndexingTime(t, registry, name, ts)
+			}
 			finiteAssertEnds(t, r, 5)
 			latest := 0
 			for _, c := range p.snapshot() {

@@ -876,6 +876,7 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			if e != nil {
 				return out, e
 			}
+			r.restoreIndexingTime(ctx, c)
 			publishPhases()
 			if e = r.liveNotify(ctx, "reorg", id, head); e != nil {
 				return out, e

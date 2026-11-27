@@ -311,7 +311,9 @@ func (r *Runner) Run(ctx context.Context) (result Result, err error) {
 		}
 		initial := make([]indexing.InitialChainCheckpoint, len(buildChains))
 		end := map[uint64]string{}
+		names := make(map[uint64]string, len(buildChains))
 		for i, c := range buildChains {
+			names[c.Local.ChainID] = fmt.Sprint(c.Chain["name"])
 			start, e := c.Local.Progress.GetCheckpoint(source.SourceSyncStart)
 			if e != nil {
 				return e
@@ -345,6 +347,11 @@ func (r *Runner) Run(ctx context.Context) (result Result, err error) {
 			crash[i] = source.SourceCrashRecoveryCheckpoint{ChainID: c.ChainID, Checkpoint: c.Cursor}
 			cursors[c.ChainID] = c.Cursor
 		}
+		timeline := metrics.NewIndexingTimeline(names, false)
+		registry := metrics.ChainSync(run)
+		timeline.Restore(registry, func(id uint64) (uint64, bool) {
+			return indexedCursorTime(id, cursors[id])
+		})
 		coordinator := source.SourceHistoricalCoordinatorOptions{Chains: chains, BuildChains: buildChains, CrashRecovery: crash, QuerySize: r.options.QuerySize, Clock: r.options.Clock}
 		if !finiteEndsReached(cursors, end) {
 			extractStart := time.Now()
@@ -369,6 +376,7 @@ func (r *Runner) Run(ctx context.Context) (result Result, err error) {
 				if e != nil {
 					return e
 				}
+				timeline.Commit(registry, group.ChainID, target.BlockTimestamp)
 				result.Groups = append(result.Groups, done)
 				// Only a confirmed commit (including durable reconciliation) clears the
 				// ephemeral RPC values. Profiles/attempt counters are retained.

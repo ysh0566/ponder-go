@@ -23,7 +23,7 @@ type Registry struct {
 	info                                applicationInfo
 	dbDuration                          *prometheus.HistogramVec
 	dbErrors, postgresQueries           *prometheus.CounterVec
-	syncBlock, syncTimestamp            *prometheus.GaugeVec
+	syncBlock, syncTimestamp, indexTime *prometheus.GaugeVec
 	syncRealtime, syncComplete          *prometheus.GaugeVec
 	liveChains                          map[string]bool
 	reorgs                              *prometheus.CounterVec
@@ -46,6 +46,7 @@ func New() *Registry {
 		dbDuration:      prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "ponder_database_method_duration", Help: "Duration of database operations", Buckets: networkDurationBuckets}, []string{"method"}),
 		dbErrors:        prometheus.NewCounterVec(prometheus.CounterOpts{Name: "ponder_database_method_error_total", Help: "Total number of errors encountered during database operations"}, []string{"method"}),
 		postgresQueries: prometheus.NewCounterVec(prometheus.CounterOpts{Name: "ponder_postgres_query_total", Help: "Total number of queries submitted to the database"}, []string{"pool"}),
+		indexTime:       chainGauge("ponder_indexing_timestamp", "Timestamp through which all events have been completed"),
 		syncBlock:       chainGauge("ponder_sync_block", "Closest-to-tip synced block number"),
 		syncTimestamp:   chainGauge("ponder_sync_block_timestamp", "Closest-to-tip synced block timestamp"),
 		syncRealtime:    chainGauge("ponder_sync_is_realtime", "Boolean (0 or 1) indicating if the sync is realtime mode"),
@@ -84,7 +85,7 @@ func New() *Registry {
 		Name: "ponder_indexing_function_duration", Help: "Duration of indexing function execution",
 		Buckets: []float64{0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000},
 	}, []string{"chain", "event"})
-	r.reg.MustRegister(r.dbDuration, r.dbErrors, r.postgresQueries, r.syncBlock, r.syncTimestamp, r.syncRealtime, r.syncComplete, &r.info, r.handlerDuration, r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.historyStart, r.historyEnd, r.groupDuration, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
+	r.reg.MustRegister(r.dbDuration, r.dbErrors, r.postgresQueries, r.syncBlock, r.syncTimestamp, r.indexTime, r.syncRealtime, r.syncComplete, &r.info, r.handlerDuration, r.blockArrival, r.realtimeLatency, r.reorgs, r.rpcDuration, r.rpcErrors, r.historyStart, r.historyEnd, r.groupDuration, r.extract, r.transform, r.completed, r.cache, r.queries, r.active, r.duration, r.requestSize, r.responseSize)
 	return r
 }
 
@@ -137,6 +138,7 @@ func (r *Registry) ResetIndexing() {
 	r.postgresQueries.Reset()
 	// The pinned indexing reset retains the last observed sync timestamp.
 	r.syncBlock.Reset()
+	r.indexTime.Reset()
 	r.syncComplete.Reset()
 	r.syncRealtime.Reset()
 	clear(r.liveChains)

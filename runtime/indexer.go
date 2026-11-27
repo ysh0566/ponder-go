@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/ysh0566/ponder-go/config"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -77,6 +78,14 @@ func NewIndexerWithOptions(cfg config.Config, db *store.Store, handlers map[stri
 func coordinateWorkers(workers isolatedIndexer, order schema.Ordering) ApplicationIndexer {
 	if order == schema.Isolated {
 		return workers
+	}
+	names := make(map[uint64]string, len(workers))
+	for _, w := range workers {
+		names[w.chain.ID] = w.chain.Name
+	}
+	timeline := metrics.NewIndexingTimeline(names, order == schema.Omnichain)
+	for _, w := range workers {
+		w.indexingTime = timeline
 	}
 	return &orderedIndexer{workers: workers}
 }

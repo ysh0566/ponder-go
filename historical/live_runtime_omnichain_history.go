@@ -332,6 +332,12 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 				out.HistoricalBlocks += int(last.BlockNumber - first.BlockNumber)
 			}
 		}
+		if registry := metrics.ChainSync(ctx); registry != nil {
+			// The acquired batch is sorted by checkpoint.
+			last := blocks[len(blocks)-1]
+			cp, _ := checkpoint.Decode(last.head.Checkpoint)
+			r.indexingTime.Commit(registry, last.id, cp.BlockTimestamp)
+		}
 		control, e = r.domains.Control(ctx)
 		if e != nil {
 			return out, e
@@ -375,14 +381,19 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 	}
 	window.Finish()
 	if registry := metrics.ChainSync(ctx); registry != nil {
+		var end string
 		for i, chain := range r.build.Chains {
 			id := runtimeChainID(chain)
 			// Activation verified this inclusive scan end, even if the last
 			// matching event was in an earlier block.
 			if head, err := proofs[id].head(r.ends[id]); err == nil {
 				r.observeSyncHead(ctx, i, head)
+				end = max(end, head.Checkpoint)
 			}
 			registry.SetSyncPhase(fmt.Sprint(chain["name"]), true)
+		}
+		if cp, err := checkpoint.Decode(end); err == nil {
+			r.indexingTime.Commit(registry, cp.ChainID, cp.BlockTimestamp)
 		}
 	}
 	if r.options.OnActivated != nil {

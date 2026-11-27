@@ -393,6 +393,7 @@ func (r *RuntimeRunner) run(ctx context.Context, ready func(bool)) (result Runti
 			isolatedWindows[id].Finish()
 		}
 	}
+	r.restoreIndexingTime(run, control)
 	if r.build.Ordering == "omnichain" {
 		owned := epoch
 		epoch = nil
@@ -741,8 +742,25 @@ func (r *RuntimeRunner) observeSyncHead(ctx context.Context, index int, head sto
 	if registry := metrics.ChainSync(ctx); registry != nil {
 		if cp, err := checkpoint.Decode(head.Checkpoint); err == nil {
 			registry.SetSyncBlock(fmt.Sprint(r.build.Chains[index]["name"]), cp.BlockNumber, cp.BlockTimestamp)
+			if r.build.Ordering != "omnichain" && cp != checkpoint.Block(cp.BlockTimestamp, cp.ChainID, cp.BlockNumber, false) {
+				r.indexingTime.Commit(registry, cp.ChainID, cp.BlockTimestamp)
+			}
 		}
 	}
+}
+
+func (r *RuntimeRunner) restoreIndexingTime(ctx context.Context, control store.ManagedLiveControl) {
+	r.indexingTime.Restore(metrics.ChainSync(ctx), func(id uint64) (uint64, bool) {
+		if r.offlineAtOpen[id] != nil {
+			return 0, false
+		}
+		return indexedCursorTime(id, store.ManagedLiveCursorCheckpoint(control, id))
+	})
+}
+
+func indexedCursorTime(id uint64, cursor string) (uint64, bool) {
+	cp, err := checkpoint.Decode(cursor)
+	return cp.BlockTimestamp, err == nil && cp.ChainID == id && cp != checkpoint.Block(cp.BlockTimestamp, id, cp.BlockNumber, false)
 }
 
 func runtimeChainID(c indexing.Object) uint64 { id, _ := uintQuantity(c["id"]); return id }

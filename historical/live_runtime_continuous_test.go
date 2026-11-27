@@ -76,7 +76,13 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 				if cp.BlockNumber == 4 {
 					live, complete = 0, 1
 				}
-				assertSyncMetrics(t, registry, fmt.Sprint(b.Executable().Chains[group.ChainID-1]["name"]), group.Head, live, complete)
+				name := fmt.Sprint(b.Executable().Chains[group.ChainID-1]["name"])
+				assertSyncMetrics(t, registry, name, group.Head, live, complete)
+				at, err := checkpoint.Decode(group.Head.Checkpoint)
+				if err != nil {
+					return err
+				}
+				assertIndexingTime(t, registry, name, at.BlockTimestamp)
 				if !group.Historical {
 					for _, chain := range b.Executable().Chains {
 						assertBackfillTimes(t, registry, fmt.Sprint(chain["name"]), true, true)
@@ -216,13 +222,20 @@ func TestRuntimeFailedHeadLatency(t *testing.T) {
 				}
 			}()
 			registry := metrics.New()
-			ctx := metrics.WithHandlers(metrics.WithRealtime(t.Context(), registry), registry)
+			ctx := metrics.WithChainSync(metrics.WithHandlers(metrics.WithRealtime(t.Context(), registry), registry), registry)
 			if _, err := r.Run(ctx); err == nil || !strings.Contains(err.Error(), stop.Error()) {
 				t.Fatalf("failed live callback: %v", err)
 			}
 			body, err := registry.Collect(ctx)
 			if err != nil || strings.Contains(body, "ponder_realtime_") || strings.Contains(body, "ponder_indexing_function_duration") {
 				t.Fatalf("uncommitted head metrics=%q err=%v", body, err)
+			}
+			for id, name := range []string{"one", "two"} {
+				ts, err := uintQuantity(finiteBlock(uint64(id+1), 0)["timestamp"])
+				if err != nil {
+					t.Fatal(err)
+				}
+				assertIndexingTime(t, registry, name, ts)
 			}
 		})
 	}

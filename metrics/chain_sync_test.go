@@ -29,3 +29,35 @@ func TestChainSyncGauges(t *testing.T) {
 	}
 	expectSamples(t, r, "ponder_sync_block_timestamp", sample{labels, 100})
 }
+
+func TestIndexingTimeline(t *testing.T) {
+	r := New()
+	a, b := map[string]string{"chain": "a"}, map[string]string{"chain": "b"}
+	names := map[uint64]string{1: "a", 2: "b"}
+	global := NewIndexingTimeline(names, true)
+	local := NewIndexingTimeline(names, false)
+	const family = "ponder_indexing_timestamp"
+	global.Commit(nil, 1, 15)
+	global.Commit(r, 3, 100)
+	expectSamples(t, r, family)
+	global.Commit(r, 2, 30)
+	expectSamples(t, r, family, sample{a, 30}, sample{b, 30})
+	positions := map[uint64]uint64{1: 10, 2: 20}
+	get := func(id uint64) (uint64, bool) { v, ok := positions[id]; return v, ok }
+	global.Restore(r, get)
+	expectSamples(t, r, family, sample{a, 20}, sample{b, 20})
+	local.Restore(r, get)
+	expectSamples(t, r, family, sample{a, 10}, sample{b, 20})
+	delete(positions, 2)
+	positions[1] = 0
+	local.Restore(r, get)
+	expectSamples(t, r, family, sample{a, 0})
+	delete(positions, 1)
+	global.Restore(r, get)
+	expectSamples(t, r, family)
+	local.Commit(r, 1, 40)
+	local.Commit(r, 2, 20)
+	expectSamples(t, r, family, sample{a, 40}, sample{b, 20})
+	r.ResetIndexing()
+	expectSamples(t, r, family)
+}

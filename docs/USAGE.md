@@ -163,17 +163,20 @@ ponder_settings_info{command="start",database="postgres",ordering="multichain"} 
 抓取 Go **写入进程**的 `/metrics`，用 `chain` 标签选择配置中的链名。下面的命令只显示已有样本。
 
 ```sh
-curl -fsS http://127.0.0.1:42069/metrics | grep -E '^ponder_sync_(block|is_)'
+curl -fsS http://127.0.0.1:42069/metrics | grep -E '^ponder_(sync_(block|is_)|indexing_timestamp)'
 ```
 
 | 指标 | 如何解读 |
 | --- | --- |
 | `ponder_sync_block` | 写入进程已处理的区块高度。分叉回滚后，高度可以下降。 |
 | `ponder_sync_block_timestamp` | 上述区块的 Unix 时间戳，单位为秒。 |
+| `ponder_indexing_timestamp` | 已提交的索引进度所对应的链上时间，单位为 Unix 秒。默认多链与 Isolated 各自推进，每个 Omnichain 标签显示同一全局进度。 |
 | `ponder_sync_is_realtime` | 链进入实时阶段时为 1。如果这条链随后完成有限区间，变为 0。 |
 | `ponder_sync_is_complete` | 链完成配置的有限区间时为 1。只做历史回填就已完成的链会直接发布此值。 |
 
 新进程在取得进度或进入对应阶段后才发布样本。只做回填的链可以一直没有实时状态样本。只监听日志的双库 Omnichain 作业完成时，高度可到达已核验的扫描终点，即使最后一条匹配日志在更早的区块。需要判断 RPC 故障是否影响整个部署时，查询 `/ready`。独立 `serve` 进程有自己的注册表。自行调用运行器时，将 `metrics.WithChainSync(ctx, registry)` 传给 `RunIndexing` 或双库运行器的 `Run`。[运行与重启验证](../parity/runs/native-chain-sync-metrics/RESULT.md)
+
+例如，`ponder_indexing_timestamp{chain="mainnet"}` 可以查看主网回调已处理到的链上时间。若两条 Omnichain 链在同一秒出块，按全局顺序提交第一条链的区块后，两个标签都会显示这一秒。第二条链的实际区块高度仍可通过 `ponder_sync_block` 单独查询。分叉回滚时索引时间可以下降。双库 Omnichain 在完成经核验的有限区间后，将索引时间更新为各链扫描终点中的最晚时间，即使尾部没有匹配事件。[提交、回滚与重启验证](../parity/runs/native-indexing-timestamp/RESULT.md)
 
 ### 查看 Go 回调耗时
 

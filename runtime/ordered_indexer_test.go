@@ -17,6 +17,7 @@ import (
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/factory"
 	"github.com/ysh0566/ponder-go/internal/testanvil"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
@@ -25,7 +26,8 @@ import (
 func TestOrderedIndexer(t *testing.T) {
 	for _, dialect := range []string{"postgres", "pglite"} {
 		t.Run(dialect, func(t *testing.T) {
-			ctx := t.Context()
+			registry := metrics.New()
+			ctx := metrics.WithChainSync(t.Context(), registry)
 			const genesis = 1700000000
 			first := testanvil.StartChain(t, 101, "--no-mining", "--timestamp", "1700000000")
 			second := testanvil.StartChain(t, 202, "--no-mining", "--timestamp", "1700000000")
@@ -112,21 +114,47 @@ func TestOrderedIndexer(t *testing.T) {
 					t.Fatalf("ledger %+v, want %s: %v", rows, want, err)
 				}
 			}
+			assertTime := func(offset uint64) {
+				t.Helper()
+				body, err := registry.Collect(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, name := range []string{"A", "B"} {
+					want := fmt.Sprintf("ponder_indexing_timestamp{chain=%q} %g\n", name, float64(genesis+offset))
+					if !strings.Contains(body, want) {
+						t.Fatalf("missing %s", want)
+					}
+				}
+			}
 			w := worker()
 			poll(w, "A0,B0,A10,B20,A30")
+			assertTime(30)
 			if call(first, "evm_revert", fork) != true {
 				t.Fatal("could not restore first chain snapshot")
 			}
 			mine(first, 25)
 			mine(first, 50)
+			for _, engine := range w.(*orderedIndexer).workers {
+				if engine.chain.ID == 101 {
+					if err := engine.checkReorg(ctx, 2); err != nil {
+						t.Fatal(err)
+					}
+				}
+			}
+			assertTime(0)
 			poll(w, "A0,B0,B20,A25,B40")
+			assertTime(40)
 			before := calls
 			if err := db.Backend.Close(); err != nil {
 				t.Fatal(err)
 			}
 			db = open()
+			registry = metrics.New()
+			ctx = metrics.WithChainSync(t.Context(), registry)
 			w = worker()
 			poll(w, "A0,B0,B20,A25,B40")
+			assertTime(40)
 			if calls != before {
 				t.Fatalf("cold reopen reran %d callbacks", calls-before)
 			}

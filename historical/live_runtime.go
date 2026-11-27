@@ -13,6 +13,7 @@ import (
 	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/finality"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	source "github.com/ysh0566/ponder-go/runtime"
 	"github.com/ysh0566/ponder-go/schema"
@@ -84,6 +85,7 @@ type RuntimeResult struct {
 	HistoricalBlocks, LiveBlocks, Refetches int
 }
 type RuntimeRunner struct {
+	indexingTime  metrics.IndexingTimeline
 	domains       *store.ManagedLiveDomains
 	setup         bool
 	sparseChains  map[uint64]bool
@@ -192,6 +194,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 	}
 	r := &RuntimeRunner{build: b, session: session, release: release, options: o, starts: map[uint64]uint64{}, finalized: map[uint64]store.ManagedLiveHead{}, finalBlocks: make([]indexing.Object, len(b.Chains)), closeDone: make(chan struct{}), runDone: make(chan struct{})}
 	close(r.runDone)
+	chainNames := make(map[uint64]string, len(b.Chains))
 	r.sparseChains = make(map[uint64]bool)
 	for i, c := range b.Chains {
 		_, ok := c["cacheRpcRequests"].(bool)
@@ -202,6 +205,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		if e != nil {
 			return nil, e
 		}
+		chainNames[id] = fmt.Sprint(c["name"])
 		if _, duplicate := r.starts[id]; duplicate {
 			return nil, fmt.Errorf("duplicate runtime chain")
 		}
@@ -269,6 +273,7 @@ func openRuntime(ctx context.Context, o RuntimeOptions, opener func(context.Cont
 		}
 	}
 	r.build = b
+	r.indexingTime = metrics.NewIndexingTimeline(chainNames, b.Ordering == "omnichain")
 	plan, err := managedPlanWithUnbounded(b, o.Live != nil)
 	if err != nil {
 		return nil, err
