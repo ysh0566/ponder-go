@@ -204,6 +204,15 @@ func TestManagedMultichainCLIStart(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			unused := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				t.Errorf("CLI contacted a chain without callbacks")
+				http.Error(w, "offline", http.StatusServiceUnavailable)
+			}))
+			t.Cleanup(unused.Close)
+			cfg = bytes.Replace(cfg, []byte(`"chains": {`), []byte(fmt.Sprintf(`"chains": {"idle":{"id":303,"rpc":%q},`, unused.URL)), 1)
+			if !bytes.Contains(cfg, []byte(unused.URL)) {
+				t.Fatal("test configuration is missing its offline chain")
+			}
 			if backend == "postgres-serve" {
 				// Make the block mined while the writer is offline historical
 				// on reopen, before live-query triggers are reinstalled.

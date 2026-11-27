@@ -2230,12 +2230,18 @@
         "config/source_indexing.go",
         "config/source_blocks.go",
         "runtime/indexer.go",
-        "runtime/source.go"
+        "runtime/source.go",
+        "historical/live_runtime.go",
+        "config/source_build.go",
+        "examples/managed-multichain/main.go"
       ],
       "native_test_files": [
         "runtime/compiled_indexer_test.go",
         "runtime/isolated_indexer_test.go",
-        "config/source_native_heads_test.go"
+        "config/source_native_heads_test.go",
+        "historical/isolated_finalized_test.go",
+        "historical/isolated_live_outage_test.go",
+        "cmd/ponder/managed_start_test.go"
       ],
       "upstream_sources": [
         "packages/core/src/build/config.ts",
@@ -2243,9 +2249,10 @@
       ],
       "evidence": [
         "parity/runs/native-compiled-indexer/RESULT.md",
-        "parity/runs/native-isolated-source-start/RESULT.md"
+        "parity/runs/native-isolated-source-start/RESULT.md",
+        "parity/runs/native-managed-source-build/RESULT.md"
       ],
-      "remaining": "Single-store source declarations with fixed or omitted bounds can start isolated workers through a peer outage. Explicit latest bounds require that chain at compile time. The full build and independent storage runtime acquire heads during startup."
+      "remaining": "Single-store source declarations with fixed or omitted bounds can start isolated workers through a peer outage. Explicit latest bounds require that chain at compile time. The dual-store runtime build also defers head reads for static bounds and creates fresh clients for participating chains only. At storage open every participating chain must still provide its canonical headers. The full upstream-style build acquires all configured heads."
     },
     {
       "id": "native-coordinated-engine-recovery",

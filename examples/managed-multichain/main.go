@@ -16,7 +16,6 @@ import (
 	"github.com/ysh0566/ponder-go/historical"
 	"github.com/ysh0566/ponder-go/indexing"
 	"github.com/ysh0566/ponder-go/query"
-	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/runtime"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
@@ -78,11 +77,7 @@ func run(ctx context.Context) (err error) {
 		return err
 	}
 	buildOptions := config.SourceBuildOptions{RPCMaxConcurrency: 4}
-	base, err := config.BuildSourceConfig(src, buildOptions)
-	if err != nil {
-		return err
-	}
-	build, err := config.BuildSourceIndexing(ctx, src, base, []config.SourceIndexingFunction{
+	build, err := config.BuildRuntimeSourceIndexing(ctx, src, buildOptions, []config.SourceIndexingFunction{
 		{Name: "Head:block", Fn: indexing.Handler(recordBlock)},
 	})
 	if err != nil {
@@ -98,17 +93,6 @@ func run(ctx context.Context) (err error) {
 		Development: mode == "dev", BuildID: buildID, OpenID: rand.Text(), ViewsSchema: views,
 		Live: &historical.RuntimeLiveOptions{}, SourceCheckpoints: true,
 		Historical: historical.Options{Build: build, Owned: indexing.OwnedOptions{Storage: storage, Service: indexing.Options{Errors: &indexing.ErrorState{}}}},
-		Requesters: func(context.Context, uint64) ([]rpc.Requester, error) {
-			fresh, err := config.BuildSourceConfig(src, buildOptions)
-			if err != nil {
-				return nil, err
-			}
-			var clients []rpc.Requester
-			for _, client := range fresh.RPCClients() {
-				clients = append(clients, client)
-			}
-			return clients, nil
-		},
 	})
 	if err != nil {
 		return err

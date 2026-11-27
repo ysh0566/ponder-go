@@ -15,7 +15,7 @@
 
 **一条链在启动时就离线。** 单库 Isolated 可直接用 `runtime.NewIndexer`，或将来源声明与回调交给 `runtime.NewSourceIndexer`。后者会按声明校验所有来源与工厂，只有起止高度显式写为 `"latest"` 的链才需要在编译时读取区块头。同一条链上的所有动态边界共用一次读取。例如从第 1 块开始持续追块，可写 `"startBlock": 1` 并省略 `endBlock`。这样即使另一条已注册的链离线，健康链也可以先提交，故障链恢复并追上后部署才就绪。冷重启也可按链恢复。[来源配置示例](#用编译后的-go-来源配置启动多链) · [双链启动测试](../runtime/isolated_indexer_test.go)
 
-在双库 Isolated 中，即使已经编译了来源配置，首次打开和冷重启仍需向所有参与链读取启动数据。设置 `RuntimeOptions.Live` 后，一旦进入实时阶段，一条链的 RPC 离线会使部署暂时未就绪，健康链仍可提交新区块。[双库打开流程](../historical/live_runtime.go) · [Isolated 实时配置](#双库-isolated-实时追块) · [故障恢复测试](../historical/isolated_live_outage_test.go)
+双库 Isolated 使用 `config.BuildRuntimeSourceIndexing` 编译 Go 回调时，固定或省略的区块边界无需访问 RPC。打开双库和冷重启仍需向所有参与链读取启动数据。没有回调且没有动态边界的闲置链可以离线。设置 `RuntimeOptions.Live` 后，一旦进入实时阶段，一条链的 RPC 离线会使部署暂时未就绪，健康链仍可提交新区块。[双库打开流程](../historical/live_runtime.go) · [Isolated 实时配置](#双库-isolated-实时追块) · [故障恢复测试](../historical/isolated_live_outage_test.go)
 
 需要按全局顺序持续追块并自动保存业务数据时，使用普通入口的 Omnichain 模式。双库 Omnichain 应保留 `Live = nil`，并指定有限的结束高度。作业可以提前启动，等待区间最终确认。[跨链排序示例](#按全局顺序索引多条链) · [提前启动](#等待双库-omnichain-的区间最终确认) · [运行器检查](../historical/live_runtime.go)
 
@@ -871,6 +871,8 @@ base, err := config.BuildSourceConfig(sourceConfig, options)
 
 仓库中的 Go 示例监听两条链。每条链从区块 1 开始，每个区块向业务表 `indexed_block` 插入一行。同步缓存使用单独的存储。回调和 HTTP 服务在同一个 Go 进程中运行。[示例代码](../examples/managed-multichain/main.go) · [链配置](../examples/managed-multichain/ponder.json)
 
+示例先用 `config.BuildRuntimeSourceIndexing` 编译 Go 回调。对于固定或省略的区块边界，编译期间可以离线。双库打开时再向有回调的链核验最新块和最终区块。每个执行阶段按参与链的顺序从配置重新建立 RPC 客户端。若项目需要自行设置 HTTP 客户端或按阶段更换节点，可用 `RuntimeOptions.Requesters` 提供自己的工厂。显式的 `"latest"` 边界（包括工厂地址的边界）在编译时需要读取相应链的最新块。[编译与重启验证](../parity/runs/native-managed-source-build/RESULT.md)
+
 在两个终端各启动一个本地节点，并保持运行。
 
 ```sh
@@ -1163,7 +1165,7 @@ opts.Historical.Owned.Storage.Ordering = schema.Isolated
 opts.Live = nil
 ```
 
-用 `config.BuildSourceIndexing` 注册 `indexing.Handler`，将编译结果赋给 `opts.Historical.Build`。准备好业务和同步存储、`Requesters`、`BuildID` 与 `OpenID` 后，用 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 打开并调用 `Run`。启动时需要连通所有参与链，各来源的结束区块必须已在本链最终确认。每条链可从区块 0 开始，无需对齐各链的区块高度或时间戳。
+用 `config.BuildRuntimeSourceIndexing` 注册 `indexing.Handler`，将编译结果赋给 `opts.Historical.Build`。准备好业务和同步存储、`BuildID` 与 `OpenID` 后，用 `historical.OpenRuntimePostgres` 或 `historical.OpenRuntimePGlite` 打开并调用 `Run`。启动时需要连通所有参与链，各来源的结束区块必须已在本链最终确认。每条链可从区块 0 开始，无需对齐各链的区块高度或时间戳。
 
 回调通过 `a.Context.DB` 写入本链的 `chainId`。每个区块的业务变更与该链的安全进度一起提交。若回调失败，本次运行返回错误。关闭后沿用两个存储位置、配置和 `BuildID`，换一个新的 `OpenID` 即可继续。各链已成功提交的回调都会保留。如需处理尚未最终确认的区块，可启用实时轮询。[双库 Isolated 实时追块](#双库-isolated-实时追块) · [完整的双链 Go 示例和恢复断言](../historical/isolated_finalized_test.go) · [运行模式矩阵](RUNTIME_SUPPORT.md)
 
