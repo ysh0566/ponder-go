@@ -392,3 +392,29 @@ func TestSourceOmnichainStreamPolledFork(t *testing.T) {
 		t.Fatalf("observed hashes %v", hashes)
 	}
 }
+
+func TestFinalizedSourceOmnichainAdmission(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		progress *SourceSyncProgress
+		want     string
+	}{
+		{"missing-progress", nil, "requires a finalized end"},
+		{"unbounded", &SourceSyncProgress{Finalized: realtimeControlBlock(2)}, "requires a finalized end"},
+		{"future-end", &SourceSyncProgress{End: realtimeControlBlock(3), Finalized: realtimeControlBlock(2)}, "end exceeds finality"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			history := SourceHistoricalCoordinatorOptions{Chains: []SourceHistoricalChain{{Local: SourceLocalHistoricalOptions{ChainID: 1, Progress: tc.progress}}}}
+			var failure error
+			for groups, err := range FinalizedSourceOmnichain(t.Context(), history) {
+				if failure != nil || len(groups) != 0 || err == nil {
+					t.Fatalf("unexpected yield %v %v", groups, err)
+				}
+				failure = err
+			}
+			if failure == nil || !strings.Contains(failure.Error(), tc.want) {
+				t.Fatalf("expected %q, got %v", tc.want, failure)
+			}
+		})
+	}
+}

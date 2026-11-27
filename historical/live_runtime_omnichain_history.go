@@ -237,21 +237,12 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 		crash = append(crash, source.SourceCrashRecoveryCheckpoint{ChainID: c.Local.ChainID, Checkpoint: store.ManagedLiveCursorCheckpoint(control, c.Local.ChainID)})
 	}
 	options := source.SourceHistoricalCoordinatorOptions{Chains: chains, BuildChains: chains, CrashRecovery: crash, QuerySize: r.options.Historical.QuerySize, Clock: r.options.Historical.Clock}
-	groups := source.HistoricalSourceOmnichain(epoch.Context(), options)
-	for output, e := range timedHistoricalGroups(ctx, groups) {
+	batches := source.FinalizedSourceOmnichain(epoch.Context(), options)
+	for groups, e := range timedHistoricalGroups(ctx, batches) {
 		if e != nil {
 			return out, e
 		}
-		if output.Type == "pending" {
-			if len(output.Pending) != 0 {
-				return out, fmt.Errorf("omnichain finalized closure cannot execute pending live events")
-			}
-			continue
-		}
-		if output.Type != "events" {
-			return out, fmt.Errorf("unknown omnichain historical output %s", output.Type)
-		}
-		blocks, positions, e := r.omnichainAcquiredGroups(epoch.Context(), epoch, control, output.Groups, proofs)
+		blocks, positions, e := r.omnichainAcquiredGroups(epoch.Context(), epoch, control, groups, proofs)
 		if e != nil {
 			return out, e
 		}
@@ -344,15 +335,15 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 		}
 		epoch.Clients().Clear()
 		if r.options.Historical.OnCommitted != nil || r.options.OnCommitted != nil {
-			counts := make(map[uint64]int, len(output.Groups))
+			counts := make(map[uint64]int, len(groups))
 			for _, block := range blocks {
 				counts[block.id] += len(block.events)
 			}
-			groups := make([]GroupResult, 0, len(output.Groups))
-			for _, g := range output.Groups {
-				groups = append(groups, GroupResult{ChainID: g.ChainID, Checkpoint: g.Checkpoint, BlockRange: g.BlockRange, Events: counts[g.ChainID]})
+			receipts := make([]GroupResult, 0, len(groups))
+			for _, g := range groups {
+				receipts = append(receipts, GroupResult{ChainID: g.ChainID, Checkpoint: g.Checkpoint, BlockRange: g.BlockRange, Events: counts[g.ChainID]})
 			}
-			if err := r.notifyCommitted(ctx, groups, receipt, control, attempts, true); err != nil {
+			if err := r.notifyCommitted(ctx, receipts, receipt, control, attempts, true); err != nil {
 				return out, err
 			}
 		}

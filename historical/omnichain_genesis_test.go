@@ -76,6 +76,7 @@ func TestOmnichainGenesis(t *testing.T) {
 			{"log_range", false, false, 3},
 			{"empty_genesis", false, false, 0},
 			{"genesis_logs", false, true, 0},
+			{"both_at_genesis", false, true, 0},
 		} {
 			t.Run(backend+"/"+tc.name, func(t *testing.T) {
 				continuousRoot(t)
@@ -88,7 +89,12 @@ func TestOmnichainGenesis(t *testing.T) {
 				for _, e := range want {
 					keys = append(keys, e.Key)
 				}
-				p, _ := omniLogsRPC(t, g)
+				p, _ := omniLogsRPCWithSelectors(t, g, nil, func(_ uint64, selector string) string {
+					if tc.name == "both_at_genesis" && selector == "latest" {
+						return "0x0"
+					}
+					return selector
+				})
 				var calls []string
 				handlers := omniLogsHandlers(func() []omniLogsEvent { return want }, &calls, nil)
 				b := omniLogsBuildRange(t, g, p, handlers, 0, tc.end, tc.closing)

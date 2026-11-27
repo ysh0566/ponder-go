@@ -72,7 +72,8 @@ func (r *RuntimeRunner) setupLineageCheck(i int, id uint64) func(uint64, store.M
 	}
 }
 
-// Every finite event range and its setup reads must fit the common watermark.
+// Each event range must be locally finalized. Setup reads run before event
+// ordering begins and remain bounded by the common finalized checkpoint.
 func (r *RuntimeRunner) validateOmnichainFinalizedRange(ctx context.Context, requesters []rpc.Requester) error {
 	watermark := r.omnichainWatermark()
 	for i, chain := range r.build.Chains {
@@ -81,7 +82,7 @@ func (r *RuntimeRunner) validateOmnichainFinalizedRange(ctx context.Context, req
 		if err != nil {
 			return err
 		}
-		checkHeight := func(height uint64, field string) error {
+		checkHeight := func(height uint64, field string, requireCommon bool) error {
 			if height > final.BlockNumber {
 				return pendingOmnichainRange("omnichain " + field + " exceeds chain finality")
 			}
@@ -97,18 +98,23 @@ func (r *RuntimeRunner) validateOmnichainFinalizedRange(ctx context.Context, req
 			if err != nil || cp.BlockNumber != height {
 				return fmt.Errorf("invalid omnichain %s header at requested height %d", field, height)
 			}
-			if head.Checkpoint > watermark {
+			if cp.BlockTimestamp > final.BlockTimestamp || (height == final.BlockNumber && head != r.finalized[id]) {
+				return fmt.Errorf("omnichain %s conflicts with opening chain finality", field)
+			}
+			if requireCommon && head.Checkpoint > watermark {
 				return pendingOmnichainRange("omnichain " + field + " exceeds global finalized watermark")
 			}
 			return nil
 		}
 		end := r.ends[id]
-		if err := checkHeight(end, "end"); err != nil {
+		hasSetup := len(r.build.SetupCallbacks[i]) != 0
+		setupHeight := max(r.starts[id], r.lastSetupBlock(i))
+		if err := checkHeight(end, "end", hasSetup && setupHeight == end); err != nil {
 			return err
 		}
 		// A setup-only contract can set its default RPC height past the last event.
-		if setupHeight := r.lastSetupBlock(i); setupHeight > end {
-			if err := checkHeight(setupHeight, "setup block"); err != nil {
+		if hasSetup && setupHeight != end {
+			if err := checkHeight(setupHeight, "setup block", true); err != nil {
 				return err
 			}
 		}
