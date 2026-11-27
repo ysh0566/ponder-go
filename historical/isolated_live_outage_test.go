@@ -13,6 +13,7 @@ import (
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -77,6 +78,7 @@ func TestRuntimeIsolatedLiveOutage(t *testing.T) {
 					return nil
 				}
 			}
+			registry := metrics.New()
 			live.OnProgress = func(ctx context.Context, p RuntimeLiveProgress) error {
 				switch p.Type {
 				case "ready":
@@ -97,6 +99,7 @@ func TestRuntimeIsolatedLiveOutage(t *testing.T) {
 					if p.ChainID != 1 {
 						return fmt.Errorf("unexpected peer reorg on %d", p.ChainID)
 					}
+					assertSyncMetrics(t, registry, "one", p.Head, 1, -1)
 					forks++
 				case "block":
 					cp, err := checkpoint.Decode(p.Head.Checkpoint)
@@ -119,6 +122,8 @@ func TestRuntimeIsolatedLiveOutage(t *testing.T) {
 						if ready || c.Serving || !offline.Load() || failures.Load() < 2 || c.Cursors[1] != original || c.Cursors[2] != p.Head {
 							return fmt.Errorf("unexpected state during outage: ready=%v serving=%v cursors=%v failures=%d", ready, c.Serving, c.Cursors, failures.Load())
 						}
+						assertSyncMetrics(t, registry, "one", original, 1, -1)
+						assertSyncMetrics(t, registry, "two", p.Head, 1, -1)
 						node.fork(1, 2)
 						node.setLatest(5)
 						offline.Store(false)
@@ -131,7 +136,7 @@ func TestRuntimeIsolatedLiveOutage(t *testing.T) {
 			r = runtimeOpen(t, backend, o)
 			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Minute)
 			defer cancel()
-			out, err := r.Run(ctx)
+			out, err := r.Run(metrics.WithChainSync(ctx, registry))
 			if err != nil || !out.Ready || !out.Completed || !recovered || len(retryChains) < 2 || forks != 1 {
 				t.Fatalf("run=%+v retry chains=%v forks=%d recovered=%t callbacks=%v: %v", out, retryChains, forks, recovered, calls, err)
 			}

@@ -7,6 +7,7 @@ import (
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/filter"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	source "github.com/ysh0566/ponder-go/runtime"
 	"github.com/ysh0566/ponder-go/store"
@@ -322,6 +323,7 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 		}
 		out.HistoricalBlocks += len(blocks)
 		for _, block := range blocks {
+			r.observeSyncHead(ctx, block.index, block.head)
 			if block.rangeFirst != (store.ManagedLiveHead{}) {
 				first, _ := checkpoint.Decode(block.rangeFirst.Checkpoint)
 				last, _ := checkpoint.Decode(block.head.Checkpoint)
@@ -368,6 +370,17 @@ func (r *RuntimeRunner) runOmnichainFinalized(ctx context.Context, epoch *indexi
 	out.Ready, err = r.domains.Ready(ctx)
 	if err != nil || !out.Ready {
 		return out, errors.Join(fmt.Errorf("omnichain activation failed"), err)
+	}
+	if registry := metrics.ChainSync(ctx); registry != nil {
+		for i, chain := range r.build.Chains {
+			id := runtimeChainID(chain)
+			// Activation verified this inclusive scan end, even if the last
+			// matching event was in an earlier block.
+			if head, err := proofs[id].head(r.ends[id]); err == nil {
+				r.observeSyncHead(ctx, i, head)
+			}
+			registry.SetSyncPhase(fmt.Sprint(chain["name"]), true)
+		}
 	}
 	if r.options.OnActivated != nil {
 		if err = r.options.OnActivated(context.WithValue(ctx, runtimeRunnerCallbackKey{}, r)); err != nil {

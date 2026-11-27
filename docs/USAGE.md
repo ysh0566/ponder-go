@@ -158,6 +158,23 @@ ponder_settings_info{command="start",database="postgres",ordering="multichain"} 
 
 直接调用 `runtime.LaunchApplication` 时，若未指定 CLI 命令，传入索引器会报告 `start`，仅启动查询服务会报告 `serve`。自行把 `query.Server` 挂到 HTTP 路由时，可调用 `server.SetApplicationMetrics("serve")` 为独立查询服务发布相同的进程信息。[命令与数据库验证](../parity/runs/native-process-info/RESULT.md)
 
+### 查看每条链的同步位置
+
+抓取 Go **写入进程**的 `/metrics`，用 `chain` 标签选择配置中的链名。下面的命令只显示已有样本。
+
+```sh
+curl -fsS http://127.0.0.1:42069/metrics | grep -E '^ponder_sync_(block|is_)'
+```
+
+| 指标 | 如何解读 |
+| --- | --- |
+| `ponder_sync_block` | 写入进程已处理的区块高度。分叉回滚后，高度可以下降。 |
+| `ponder_sync_block_timestamp` | 上述区块的 Unix 时间戳，单位为秒。 |
+| `ponder_sync_is_realtime` | 链进入实时阶段时为 1。如果这条链随后完成有限区间，变为 0。 |
+| `ponder_sync_is_complete` | 链完成配置的有限区间时为 1。只做历史回填就已完成的链会直接发布此值。 |
+
+新进程在取得进度或进入对应阶段后才发布样本。只做回填的链可以一直没有实时状态样本。只监听日志的双库 Omnichain 作业完成时，高度可到达已核验的扫描终点，即使最后一条匹配日志在更早的区块。需要判断 RPC 故障是否影响整个部署时，查询 `/ready`。独立 `serve` 进程有自己的注册表。自行调用运行器时，将 `metrics.WithChainSync(ctx, registry)` 传给 `RunIndexing` 或双库运行器的 `Run`。[运行与重启验证](../parity/runs/native-chain-sync-metrics/RESULT.md)
+
 ### 查看 Go 回调耗时
 
 抓取写入进程的 `/metrics`，可按配置中的链名和事件名查看 setup、历史回填及实时追块的回调耗时。下面的 PromQL 返回过去 5 分钟各回调的 P95，单位为毫秒。

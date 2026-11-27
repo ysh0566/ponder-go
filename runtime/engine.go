@@ -447,11 +447,13 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 		}
 	}
 	var height uint64
+	var progressPoint checkpoint.Checkpoint
 	if cursor != "" {
 		cp, err := checkpoint.Decode(cursor)
 		if err != nil {
 			return err
 		}
+		progressPoint = cp
 		height = cp.BlockNumber
 	}
 	if e.staged == nil {
@@ -482,6 +484,11 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 		return err
 	}
 	if stored != nil && canonical.Hash == stored.Hash && head >= height {
+		// A saved header can precede a failed callback. Restore a published
+		// position only when its durable checkpoint covers the whole block.
+		if cursor != "" && progressPoint == checkpoint.Block(stored.Timestamp, e.chain.ID, stored.Number, true) {
+			metrics.ChainSync(ctx).SetSyncBlock(e.chain.Name, stored.Number, stored.Timestamp)
+		}
 		return nil
 	}
 	for {
@@ -507,6 +514,7 @@ func (e *Engine) checkReorg(ctx context.Context, head uint64) error {
 				err = e.Store.RevertAndRewind(ctx, target)
 			}
 			if err == nil {
+				metrics.ChainSync(ctx).SetSyncBlock(e.chain.Name, n, timestamp)
 				metrics.ObserveReorg(ctx, e.chain.Name)
 				if m := devMonitorFrom(ctx); m != nil {
 					m.rewind(e.chain.ID, e.Store.Ordering != schema.Isolated)
@@ -766,6 +774,7 @@ func (e *Engine) completeBlock(ctx context.Context, block store.SyncBlock) error
 	if err := e.Store.CompleteBlock(ctx, block, e.filter); err != nil {
 		return err
 	}
+	metrics.ChainSync(ctx).SetSyncBlock(e.chain.Name, block.Number, block.Timestamp)
 	if m := devMonitorFrom(ctx); m != nil {
 		m.completeBlock(e.chain.ID)
 	}
@@ -776,7 +785,13 @@ func (e *Engine) Run(ctx context.Context) error { return e.RunIndexing(ctx, func
 
 // RunIndexing resumes from committed progress after transient RPC outages.
 func (e *Engine) RunIndexing(ctx context.Context, ready func(bool)) error {
-	return pollIndexer(ctx, e.pollingInterval(), ready, e.syncToHead, e.chain.WS)
+	return pollIndexer(ctx, e.pollingInterval(), ready, func(ctx context.Context, samples polledHeads) (bool, error) {
+		done, err := e.syncToHead(ctx, samples)
+		if err == nil {
+			metrics.ChainSync(ctx).SetSyncPhase(e.chain.Name, done)
+		}
+		return done, err
+	}, e.chain.WS)
 }
 
 func (e *Engine) pollingInterval() time.Duration {

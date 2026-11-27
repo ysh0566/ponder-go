@@ -424,6 +424,15 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 		return out, err
 	}
 	epoch = nil
+	publishPhases := func() {
+		if registry := metrics.ChainSync(ctx); registry != nil {
+			for _, chain := range r.build.Chains {
+				id := runtimeChainID(chain)
+				registry.SetSyncPhase(fmt.Sprint(chain["name"]), store.ManagedLiveReachedBlock(c, id, r.ends[id]))
+			}
+		}
+	}
+	publishPhases()
 	seen := map[uint64]bool{}
 	activate := func() error {
 		if e := r.domains.ActivateRuntime(ctx, r.nextID("live-activate"), c.Cursors); e != nil {
@@ -671,6 +680,10 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			if e != nil {
 				return out, e
 			}
+			r.observeSyncHead(ctx, i, head)
+			if store.ManagedLiveReachedBlock(c, id, r.ends[id]) {
+				metrics.ChainSync(ctx).SetSyncPhase(fmt.Sprint(r.build.Chains[i]["name"]), true)
+			}
 			if r.options.OnCommitted != nil {
 				number, _ := uintQuantity(event.Block["number"]) // already checked by runtimeHead
 				group := GroupResult{ChainID: id, Checkpoint: head.Checkpoint, BlockRange: [2]float64{float64(number), float64(number)}, Events: len(input)}
@@ -755,6 +768,7 @@ func (r *RuntimeRunner) runContinuous(ctx context.Context, epoch *indexing.Runti
 			if e != nil {
 				return out, e
 			}
+			publishPhases()
 			if e = r.liveNotify(ctx, "reorg", id, head); e != nil {
 				return out, e
 			}
@@ -833,6 +847,8 @@ func (r *RuntimeRunner) coordinateRuntimeReorg(ctx context.Context, index int, r
 		result, err = r.domains.CoordinateReorg(ctx, request)
 	}
 	if err == nil && result.Outcome == "reorg" && len(request.Orphaned) != 0 {
+		r.observeSyncHead(ctx, index, request.Reorg.Ancestor)
+		metrics.ChainSync(ctx).SetSyncPhase(fmt.Sprint(r.build.Chains[index]["name"]), false)
 		metrics.ObserveReorg(ctx, fmt.Sprint(r.build.Chains[index]["name"]))
 	}
 	return err

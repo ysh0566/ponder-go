@@ -61,19 +61,29 @@ func TestRuntimeContinuousFutureEnd(t *testing.T) {
 				}
 				return nil
 			}}}
+			registry := metrics.New()
 			ids := map[string]bool{}
 			visits := map[store.ManagedLiveHead]int{}
 			o.OnCommitted = func(_ context.Context, group RuntimeCommit) error {
 				if group.OperationID == "" || ids[group.OperationID] || group.Head.Hash == "" || group.Head.Checkpoint != group.Checkpoint || group.Safe || group.Historical || group.Events != 1 || !group.Applied {
 					return fmt.Errorf("unexpected continuous commit: %+v", group)
 				}
+				cp, err := checkpoint.Decode(group.Head.Checkpoint)
+				if err != nil {
+					return err
+				}
+				live, complete := 1, -1
+				if cp.BlockNumber == 4 {
+					live, complete = 0, 1
+				}
+				assertSyncMetrics(t, registry, fmt.Sprint(b.Executable().Chains[group.ChainID-1]["name"]), group.Head, live, complete)
 				ids[group.OperationID] = true
 				visits[group.Head]++
 				return nil
 			}
 			r = runtimeOpen(t, backend, o)
-			registry := metrics.New()
 			measurement := metrics.WithHistorical(metrics.WithRealtime(t.Context(), registry), registry)
+			measurement = metrics.WithChainSync(measurement, registry)
 			measurement = metrics.WithHandlers(measurement, registry)
 			out, err := r.Run(measurement)
 			if err != nil || !out.Completed || !out.Ready || out.LiveBlocks != 8 || out.HistoricalBlocks != 0 || commits != 8 || !advanced {

@@ -11,6 +11,7 @@ import (
 	"github.com/ysh0566/ponder-go/checkpoint"
 	"github.com/ysh0566/ponder-go/config"
 	"github.com/ysh0566/ponder-go/indexing"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/schema"
 	"github.com/ysh0566/ponder-go/store"
 )
@@ -88,7 +89,8 @@ func TestRuntimeOmnichainLogRanges(t *testing.T) {
 					if cached && pass == 0 {
 						seedSparseSource(t, r, g)
 					}
-					out, err := r.Run(ctx)
+					registry := metrics.New()
+					out, err := r.Run(metrics.WithChainSync(ctx, registry))
 					if pass == 0 {
 						if err == nil || !strings.Contains(err.Error(), "range callback interrupted") || out.Ready || out.Completed || len(calls) == 0 || calls[len(calls)-1] != "2:3:B:1" {
 							t.Fatalf("callback rollback: result=%+v calls=%v err=%v", out, calls, err)
@@ -127,6 +129,7 @@ func TestRuntimeOmnichainLogRanges(t *testing.T) {
 							if err != nil {
 								t.Fatal(err)
 							}
+							assertSyncMetrics(t, registry, fmt.Sprint(build.Executable().Chains[c.ID-1]["name"]), end, -1, 1)
 							want := end.Checkpoint
 							if cached && c.ID == 1 {
 								ts, err := uintQuantity(c.Blocks[1]["timestamp"])

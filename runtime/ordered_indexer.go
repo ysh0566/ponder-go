@@ -21,13 +21,14 @@ type orderedIndexer struct {
 }
 
 type orderedChain struct {
-	engine *Engine
-	latest Block
-	head   uint64
-	start  uint64
-	gaps   []interval.Interval
-	next   Block
-	key    string
+	engine       *Engine
+	latest       Block
+	head         uint64
+	start        uint64
+	endFinalized bool
+	gaps         []interval.Interval
+	next         Block
+	key          string
 }
 
 func (r *orderedIndexer) RunIndexing(ctx context.Context, ready func(bool)) error {
@@ -125,8 +126,8 @@ func (r *orderedIndexer) sync(ctx context.Context, samples polledHeads) (bool, e
 		if err != nil {
 			return false, err
 		}
-		chains[i] = orderedChain{engine: e, latest: latest, head: head.BlockNumber}
-		if e.endBlock == nil || safe.BlockNumber < *e.endBlock {
+		chains[i] = orderedChain{engine: e, latest: latest, head: head.BlockNumber, endFinalized: e.endBlock != nil && safe.BlockNumber >= *e.endBlock}
+		if !chains[i].endFinalized {
 			allFinished = false
 			watermark = min(watermark, checkpoint.MustEncode(head))
 			finalWatermark = min(finalWatermark, checkpoint.MustEncode(safe))
@@ -159,6 +160,9 @@ func (r *orderedIndexer) sync(ctx context.Context, samples polledHeads) (bool, e
 		}
 		finalize()
 		r.sealed = finalWatermark
+	}
+	for _, c := range chains {
+		metrics.ChainSync(ctx).SetSyncPhase(c.engine.chain.Name, c.endFinalized && c.key == "")
 	}
 	return allFinished, nil
 }
@@ -218,6 +222,7 @@ func (r *orderedIndexer) syncMultichain(ctx context.Context, samples polledHeads
 		if err != nil {
 			return false, err
 		}
+		metrics.ChainSync(ctx).SetSyncPhase(c.engine.chain.Name, finished)
 		done = done && finished
 	}
 	return done, unavailable
