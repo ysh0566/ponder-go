@@ -42,7 +42,7 @@ func (m *ManagedLive) runRuntimeSetup(ctx context.Context, tx Transaction, basel
 	if err := s.eventContext(ctx, tx, checkpoint.MaxString, first, false); err != nil {
 		return err
 	}
-	w := &Writer{s: s, tx: tx, encoded: checkpoint.MaxString, changed: map[string]bool{}}
+	w := s.newWriter(ctx, tx, Event{}, checkpoint.MaxString)
 	defer func() {
 		w.closed.Store(true)
 		if orm := w.indexingSession(); orm != nil {

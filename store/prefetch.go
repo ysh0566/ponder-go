@@ -254,6 +254,7 @@ func (cache *IndexingCache) Prefetch(ctx context.Context, events []ProfileEvent)
 		for key, row := range prediction {
 			items = append(items, item{key, row})
 		}
+		observe := cache.db.metrics.StartCacheQuery(table.Name, "load")
 		for len(items) > 0 {
 			limit := 250
 			if per := 60000 / len(table.Keys()); per < limit {
@@ -307,6 +308,7 @@ func (cache *IndexingCache) Prefetch(ctx context.Context, events []ProfileEvent)
 			}
 			items = items[limit:]
 		}
+		observe()
 	}
 	for name, rows := range loaded {
 		for key, row := range rows {

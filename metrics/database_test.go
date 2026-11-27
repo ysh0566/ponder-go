@@ -60,3 +60,27 @@ func TestDatabaseMeasurements(t *testing.T) {
 		expectSamples(t, r, name)
 	}
 }
+
+func TestStoreDurationHistograms(t *testing.T) {
+	r := New()
+	const raw = "ponder_indexing_store_raw_sql_duration"
+	const cache = "ponder_indexing_cache_query_duration"
+	if count := singleHistogram(t, r, raw).GetSampleCount(); count != 0 {
+		t.Fatalf("initial SQL count %d", count)
+	}
+	finish := r.StartRawSQL()
+	finish()
+	finish = r.StartCacheQuery("account", "find")
+	finish()
+	r.ResetIndexing()
+	for _, name := range []string{raw, cache} {
+		h := singleHistogram(t, r, name)
+		var bounds []float64
+		for _, b := range h.Bucket {
+			bounds = append(bounds, b.GetUpperBound())
+		}
+		if h.GetSampleCount() != 1 || !slices.Equal(bounds, []float64{1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000}) {
+			t.Fatalf("%s count %d, bounds %v", name, h.GetSampleCount(), bounds)
+		}
+	}
+}

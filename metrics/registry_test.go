@@ -8,6 +8,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	dto "github.com/prometheus/client_model/go"
 )
 
 type sample struct {
@@ -216,15 +218,26 @@ func TestRealtimeBlockLatency(t *testing.T) {
 	}
 }
 
+func singleHistogram(t *testing.T, r *Registry, name string) *dto.Histogram {
+	t.Helper()
+	families, err := r.Gather()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range families {
+		if f.GetName() == name && len(f.Metric) == 1 && f.Metric[0].Histogram != nil {
+			return f.Metric[0].Histogram
+		}
+	}
+	t.Fatalf("expected one histogram series for %s", name)
+	return nil
+}
+
 func TestHandlerDuration(t *testing.T) {
 	r := New()
 	r.ObserveHandler("one", "Token:setup", 50*time.Microsecond)
 	r.ObserveHandler("one", "Token:setup", 250*time.Microsecond)
-	list, err := r.Gather()
-	if err != nil || len(list) != 1 || len(list[0].Metric) != 1 {
-		t.Fatal(list, err)
-	}
-	h := list[0].Metric[0].GetHistogram()
+	h := singleHistogram(t, r, "ponder_indexing_function_duration")
 	var bounds []float64
 	for _, b := range h.Bucket {
 		bounds = append(bounds, b.GetUpperBound())

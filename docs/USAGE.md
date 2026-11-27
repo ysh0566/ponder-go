@@ -263,6 +263,18 @@ histogram_quantile(0.95, sum by (le) (rate(ponder_database_method_duration_bucke
 
 PostgreSQL 还提供 `ponder_postgres_query_total{pool="…"}`。单库和独立 `serve` 进程通过 `store.OpenPostgres` 打开的连接池名为 `default`。双库写入进程的业务库和同步库分别为 `user` 和 `sync`，交给查询构造器的外部专用连接为 `dedicated`。例如，`sum by (pool) (rate(ponder_postgres_query_total[5m]))` 给出每秒提交的 SQL 数。一项只读操作可以包含多条 SQL，因为设定只读事务和搜索路径也需要执行语句。计数覆盖通过 Go 存储层显式提交的 `Query` 和 `Exec`，包括执行失败的语句。驱动内部的事务控制、独立通知连接和绕过这些方法的管理操作均不计入。PGlite 只报告数据库方法指标。
 
+### 查看回调 SQL 和缓存耗时
+
+Go 写入进程在 `/metrics` 暴露两个毫秒直方图，适用于单库和双库的 PostgreSQL、PGlite。下面的 PromQL 按业务表和操作查看最近五分钟缓存访问数据库的 P95 耗时。
+
+```promql
+histogram_quantile(0.95, sum by (le, table, method) (rate(ponder_indexing_cache_query_duration_bucket[5m])))
+```
+
+`find` 对应缓存未命中后完成的一次查库，`load` 对应为一张表预取一批预测行，`flush` 对应一张表的一批插入或更新写入。内存命中、空批次和失败的缓存操作都不产生样本。
+
+`ponder_indexing_store_raw_sql_duration` 记录回调 SQL 进入保存点后执行和清理所用的时间，包括数据库报错后的恢复。SQL 校验和执行前的缓存刷盘另行处理。比如，`increase(ponder_indexing_store_raw_sql_duration_count[5m])` 可估算最近五分钟回调提交了多少条 SQL。两组数据都在进程内累计。自行启动运行器时，传入 `metrics.WithHandlers(ctx, registry)` 即可采集。[执行失败和事务恢复测试](../store/sql_test.go)
+
 ### 查看 RPC 耗时与错误数
 
 从写入进程读取 `/metrics`，用 `chain` 和 `method` 标签筛选链名与 JSON-RPC 方法。下面的 PromQL 查询给出过去 5 分钟内各链、各方法成功请求的 P95 耗时，单位为毫秒。

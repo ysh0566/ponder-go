@@ -99,7 +99,7 @@ func (a *Actions) rawBatch(ctx context.Context, chain uint64, handler func(*Writ
 		if e := a.s.eventContext(ctx, tx, checkpoint.MaxString, chain, false); e != nil {
 			return e
 		}
-		w := &Writer{s: a.s, tx: tx, event: Event{Checkpoint: checkpoint.Checkpoint{ChainID: chain}}, encoded: checkpoint.MaxString, changed: map[string]bool{}}
+		w := a.s.newWriter(ctx, tx, Event{Checkpoint: checkpoint.Checkpoint{ChainID: chain}}, checkpoint.MaxString)
 		defer w.closed.Store(true)
 		e := handler(w)
 		w.closed.Store(true)

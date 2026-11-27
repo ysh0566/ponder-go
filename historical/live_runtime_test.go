@@ -113,6 +113,9 @@ func TestRuntimeBoundedLifecycle(t *testing.T) {
 				escapedClient = a.Context.Client
 				escapedDB, escapedCtx = a.Context.DB, context.WithoutCancel(ctx)
 				calls = append(calls, fmt.Sprintf("%d:%d", finiteChain(a), n))
+				if _, err := a.Context.DB.SQL(ctx, "SELECT 1"); err != nil {
+					return err
+				}
 				return finiteIncrement(ctx, a)
 			})
 			b := runtimeBuild(t, p, 3, 1, h)
@@ -138,7 +141,7 @@ func TestRuntimeBoundedLifecycle(t *testing.T) {
 				return nil
 			}
 			registry := metrics.New()
-			out, err := r.Run(metrics.WithHistorical(t.Context(), registry))
+			out, err := r.Run(metrics.WithHandlers(metrics.WithHistorical(t.Context(), registry), registry))
 			if err != nil {
 				c, e := r.domains.Control(context.Background())
 				t.Logf("diagnostic calls=%v control=%+v readErr=%v", calls, c, e)
@@ -151,6 +154,10 @@ func TestRuntimeBoundedLifecycle(t *testing.T) {
 				t.Fatalf("result=%+v activations=%d", out, activations)
 			}
 			assertHistoricalGroups(t, registry, true)
+			body, err := registry.Collect(t.Context())
+			if err != nil || !strings.Contains(body, fmt.Sprintf("ponder_indexing_store_raw_sql_duration_count %d\n", len(calls))) || !strings.Contains(body, `ponder_indexing_cache_query_duration_count{method="flush",table="account"}`) {
+				t.Fatalf("missing managed store timings: %v\n%s", err, body)
+			}
 			seen := map[string]int{}
 			for i, call := range calls {
 				parts := strings.Split(call, ":")

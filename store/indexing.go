@@ -100,11 +100,13 @@ func (w *Writer) indexingLocked(options ...CacheOptions) *IndexingStore {
 		return w.orm
 	}
 	complete := len(options) > 0 && options[0].Complete
-	db := &IndexingStore{writer: w}
+	db := &IndexingStore{writer: w, metrics: w.metrics}
 	profile := w.s.profileState
 	maxBytes := int64(128 << 20)
 	if len(options) > 0 {
-		db.metrics = options[0].Metrics
+		if options[0].Metrics != nil {
+			db.metrics = options[0].Metrics
+		}
 		if options[0].Profile != nil {
 			profile = options[0].Profile
 		}
@@ -247,6 +249,7 @@ func (db *IndexingStore) get(ctx context.Context, t schema.Table, cache *tableCa
 			}
 		}
 	}
+	observe := db.metrics.StartCacheQuery(t.Name, "find")
 	row, e := db.writer.findPhysical(ctx, t.Name, physical)
 	if e != nil {
 		return nil, e
@@ -259,6 +262,7 @@ func (db *IndexingStore) get(ctx context.Context, t schema.Table, cache *tableCa
 		row = logical
 	}
 	cache.rows[ck] = row
+	observe()
 	return row, nil
 }
 
@@ -639,9 +643,11 @@ func (cache *IndexingCache) flush(ctx context.Context, checkActive bool, tables 
 			if len(rows) == 0 {
 				continue
 			}
+			observe := cache.db.metrics.StartCacheQuery(t.Name, "flush")
 			if e := w.s.writeRows(ctx, w.tx, t, rows, buffer.mode); e != nil {
 				return e
 			}
+			observe()
 		}
 	}
 	if e := w.tx.Exec(ctx, "RELEASE SAVEPOINT ponder_go_flush"); e != nil {
