@@ -65,12 +65,14 @@ The writer reports total, cached and newly acquired historical block counts per 
 
 The Go writer measures callback SQL attempts, including database errors, and successful cache reads, prefetches and flushes by table. [PromQL and labels](USAGE.md#查看回调-sql-和缓存耗时) · [Store verification](../parity/runs/native-indexing-store-durations/RESULT.md)
 
-The Go writer registers 33 of the 39 explicitly named upstream metric families under matching names. The remaining six fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Process gauges](../metrics/process.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
+The indexing client reports speculative contract reads by chain and source. Database candidate counts include lookups that miss or fail. RPC prefetch counts include requests with a pending or failed result. [Prefetch queries](USAGE.md#查看-rpc-预取次数) · [Backend verification](../parity/runs/native-indexing-rpc-prefetch/RESULT.md)
+
+The Go writer registers 34 of the 39 explicitly named upstream metric families under matching names. The remaining five fall into these groups. The counts compare metric names exposed to monitoring systems. For example, the Go dev terminal can already display per-chain progress and handler timings. [Go registry](../metrics/registry.go) · [Process gauges](../metrics/process.go) · [Pinned upstream registry](https://github.com/ponder-sh/ponder/blob/17c6d5ba0648c1a29bcb74c7d4c56733a4ec5334/packages/core/src/internal/metrics.ts#L144-L445)
 
 | Area | Families without a matching Go metric | Measurement |
 | --- | ---: | --- |
 | Historical sync | 3 | Chain time in seconds uses `ponder_historical_total_indexing_seconds`, `ponder_historical_cached_indexing_seconds`, `ponder_historical_completed_indexing_seconds`. |
-| Indexing | 3 | `ponder_indexing_rpc_action_duration`, `ponder_indexing_rpc_prefetch_total`, `ponder_indexing_rpc_requests_total`. |
+| Indexing | 2 | `ponder_indexing_rpc_action_duration`, `ponder_indexing_rpc_requests_total`. |
 
 ## Application verification
 

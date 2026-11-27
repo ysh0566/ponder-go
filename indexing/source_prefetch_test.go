@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/ysh0566/ponder-go/metrics"
 	"github.com/ysh0566/ponder-go/rpc"
 	"github.com/ysh0566/ponder-go/schema"
 	"io"
@@ -117,6 +118,8 @@ func replaySourcePrefetch(t *testing.T, backend string, record Object) Object {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
+	registry := metrics.New()
+	ctx = metrics.WithRPC(ctx, registry)
 	db := indexingReplayStore(t, backend)
 	cache, err := db.EnableProtocolCache(ctx)
 	if err != nil {
@@ -248,6 +251,11 @@ func replaySourcePrefetch(t *testing.T, backend string, record Object) Object {
 	}
 	indexingEqual(t, "strict original raw transport tape", actualTape, expectedRequests)
 	disabled := record["id"] == "4ace7b36bca44245e4b7"
+	wantPrefetch := map[string]float64{"mainnet/database": 1}
+	if disabled {
+		wantPrefetch = map[string]float64{"mainnet/rpc": 1}
+	}
+	assertRPCPrefetchCounts(t, registry, wantPrefetch)
 	checked := 4
 	if disabled {
 		checked = 5
