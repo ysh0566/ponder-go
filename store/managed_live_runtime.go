@@ -33,7 +33,7 @@ type ManagedLiveRuntimeOptions struct {
 	// Nil means all chains cached. A complete mixed/disabled policy opts into v7.
 	CacheRPCRequests map[uint64]bool
 	// ResumeUnavailable permits missing RPC heads only when both stores prove
-	// an initialized Isolated deployment. Recovery reuses each absent chain's
+	// an initialized Isolated cursor for each absent chain. Recovery reuses its
 	// finalized business position. The runner authenticates it on reconnect.
 	ResumeUnavailable bool
 	Continuous        bool

@@ -15,7 +15,7 @@
 
 **一条链在启动时就离线。** 单库 Isolated 可直接用 `runtime.NewIndexer`，或将来源声明与回调交给 `runtime.NewSourceIndexer`。后者会按声明校验所有来源与工厂，只有起止高度显式写为 `"latest"` 的链才需要在编译时读取区块头。同一条链上的所有动态边界共用一次读取。例如从第 1 块开始持续追块，可写 `"startBlock": 1` 并省略 `endBlock`。这样即使另一条已注册的链离线，健康链也可以先提交，故障链恢复并追上后部署才就绪。冷重启也可按链恢复。[来源配置示例](#用编译后的-go-来源配置启动多链) · [双链启动测试](../runtime/isolated_indexer_test.go)
 
-双库 Isolated 使用 `config.BuildRuntimeSourceIndexing` 编译 Go 回调时，固定或省略的区块边界无需访问 RPC。双库首次初始化需要所有参与链在线。各链都有持久化检查点后，持续索引作业可以在部分链节点离线时冷重启。没有回调且没有动态边界的闲置链可以离线。设置 `RuntimeOptions.Live` 后，一旦进入实时阶段，一条链的 RPC 离线会使部署暂时未就绪，健康链仍可提交新区块。[双库打开流程](../historical/live_runtime.go) · [Isolated 实时配置](#双库-isolated-实时追块) · [故障恢复测试](../historical/isolated_live_outage_test.go)
+双库 Isolated 使用 `config.BuildRuntimeSourceIndexing` 编译 Go 回调时，固定或省略的区块边界无需访问 RPC。双库首次初始化需要所有参与链在线。持续索引作业冷重启时，离线链需要已有检查点，在线链可以重试尚未完成的初始化。没有回调且没有动态边界的闲置链可以离线。设置 `RuntimeOptions.Live` 后，一旦进入实时阶段，一条链的 RPC 离线会使部署暂时未就绪，健康链仍可提交新区块。[双库打开流程](../historical/live_runtime.go) · [Isolated 实时配置](#双库-isolated-实时追块) · [故障恢复测试](../historical/isolated_live_outage_test.go)
 
 需要按全局顺序持续追块并自动保存业务数据时，使用普通入口的 Omnichain 模式。双库 Omnichain 应保留 `Live = nil`，并指定有限的结束高度。作业可以提前启动，等待区间最终确认。[跨链排序示例](#按全局顺序索引多条链) · [提前启动](#等待双库-omnichain-的区间最终确认) · [运行器检查](../historical/live_runtime.go)
 
@@ -1230,7 +1230,9 @@ PGlite 可使用 `historical.OpenRuntimePGlite`。双库 Isolated 实时部署�
 
 进入实时阶段后，如果 A 链的节点持续返回 HTTP 503，整个部署的 `Ready` 变为 false，B 链仍会执行回调并提交业务数据和检查点。运行器按 `Live.RetryInterval` 查询 A 链的最新区块，默认间隔为一秒。使用 `Live.OnProgress` 时，`fetch-retry` 通知的 `ChainID` 标识故障链。A 链恢复响应后，运行器从已提交的检查点重新校验分支。如果节点换了分支，会撤销 A 链的孤块，再执行替换分支的回调。各链达到可服务条件后，整个部署恢复就绪。首次启动仍需要取得各链的启动数据。[持续 503、健康链进度和恢复后的业务行](../parity/runs/native-isolated-rpc-outage/RESULT.md)
 
-**冷重启时节点离线。** 保留原业务库、同步库、命名空间和 `BuildID`，重新打开时使用新的 `OpenID`。如果每条参与链都已提交初始检查点，运行器会在核验两库的恢复记录后，使用离线链已持久化的最终确认位置。即使它的节点在打开时返回 503，健康链也可以继续回填和追块。该链恢复响应后，运行器从节点重新取得最终确认区块，沿父区块哈希核对到安全检查点。核验成功后才允许该链重放回调。如果已确认的区块发生变化，运行器停止并返回错误。部署在各链追平前保持未就绪。节点响应超时取决于项目的 RPC 超时和重试配置。若省略 `RuntimeOptions.Live` 执行已确认的有限区间回填，每次打开时都需要所有参与链在线。[两种数据库的冷重启和分叉测试](../parity/runs/native-isolated-offline-reopen/RESULT.md)
+**冷重启时节点离线。** 保留原业务库、同步库、命名空间和 `BuildID`，重新打开时使用新的 `OpenID`。如果每条离线链都已提交初始检查点，运行器会在核验两库的恢复记录后，使用离线链已持久化的最终确认位置。例如，链 A 的 `setup` 报错回滚，链 B 的 `setup` 已提交。此时即使 B 的节点返回 503，重启也可以重试 A 的 `setup` 并处理 A 的区块。如果离线的是尚无检查点的 A，打开会返回 `store.ErrMissingIsolatedBaseline` 及其 RPC 错误。[部分初始化的恢复测试](../parity/runs/native-isolated-partial-reopen/RESULT.md)
+
+已提交检查点的离线链恢复响应后，运行器从节点重新取得最终确认区块，沿父区块哈希核对到安全检查点。核验成功后才允许该链重放回调。如果已确认的区块发生变化，运行器停止并返回错误。部署在各链追平前保持未就绪。节点响应超时取决于项目的 RPC 超时和重试配置。若省略 `RuntimeOptions.Live` 执行已确认的有限区间回填，每次打开时都需要所有参与链在线。[两种数据库的冷重启和分叉测试](../parity/runs/native-isolated-offline-reopen/RESULT.md)
 
 
 ### 为同一条链配置多个 RPC 节点

@@ -2272,7 +2272,7 @@
         "parity/runs/native-isolated-source-start/RESULT.md",
         "parity/runs/native-managed-source-build/RESULT.md"
       ],
-      "remaining": "Single-store source declarations with fixed or omitted bounds can start isolated workers through a peer outage. Explicit latest bounds require that chain at compile time. The dual-store runtime build also defers head reads for static bounds and creates fresh clients for participating chains only. At storage open every participating chain must still provide its canonical headers. The full upstream-style build acquires all configured heads."
+      "remaining": "Single-store source declarations with fixed or omitted bounds can start isolated workers through a peer outage. Explicit latest bounds require that chain at compile time. The dual-store runtime build also defers head reads for static bounds and creates fresh clients for participating chains only. A first dual-store opening requires canonical headers from every participating chain. Continuous Isolated restarts can restore authenticated heads for unavailable chains with committed cursors. The full upstream-style build acquires all configured heads."
     },
     {
       "id": "native-coordinated-engine-recovery",
@@ -3293,9 +3293,10 @@
         "parity/runs/native-isolated-live/RESULT.md",
         "parity/runs/native-isolated-rpc-outage/RESULT.md",
         "parity/runs/native-isolated-offline-reopen/RESULT.md",
+        "parity/runs/native-isolated-partial-reopen/RESULT.md",
         "runtime/isolated_indexer_test.go"
       ],
-      "remaining": "During a sustained live RPC outage healthy peers commit independently. After all chains have committed initial cursors, a continuous writer can cold-restart with unavailable endpoints and validate their durable finality before replay. First opening and incomplete initialization still require each participating endpoint. Selective RPC method failures and engine interruption with mixed factory/account sources require further coverage."
+      "remaining": "During a sustained live RPC outage healthy peers commit independently. A continuous writer can cold-restart if every unavailable chain has a committed initial cursor and validates durable finality before replay. An available chain can retry setup and commit independently even if that cursor is its first. First opening or an unavailable chain without its own committed cursor still requires its endpoint. Selective RPC method failures and engine interruption with mixed factory/account sources require further coverage."
     },
     {
       "id": "native-runtime-query-budget",
